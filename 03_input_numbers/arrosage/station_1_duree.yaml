@@ -29,7 +29,7 @@
 arrosage_rainbird_station_1_duree_minutes:
   name: "Arrosage Rain Bird — Durée station 1"
   min: 1
-  max: 10
+  max: 60
   step: 1
   initial: 2
   unit_of_measurement: "min"

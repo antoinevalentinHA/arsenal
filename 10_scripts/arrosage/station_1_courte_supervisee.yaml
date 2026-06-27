@@ -27,7 +27,7 @@
 #   Gardes        : binary_sensor.rain_bird_pont_donnees_disponibles
 #                   binary_sensor.arrosage_rain_bird_preconditions_runtime
 #                   sensor.rain_bird_bat_bt_2_e9a3_active_station (repos avant lancement)
-#   Durée         : input_number.arrosage_rainbird_station_1_duree_minutes (helper opérateur, borné [1,10])
+#   Durée         : input_number.arrosage_rainbird_station_1_duree_minutes (helper opérateur, borné [1,60])
 #                   number.rain_bird_bat_bt_2_e9a3_station_1_duration (réglée depuis le helper, clampée)
 #   Commande      : switch.rain_bird_bat_bt_2_e9a3_station_1
 #   Confirmation  : switch.rain_bird_bat_bt_2_e9a3_station_1 == on (PREUVE PRIMAIRE)
@@ -67,9 +67,9 @@ arrosage_rain_bird_station_1_courte_supervisee:
         station_switch: switch.rain_bird_bat_bt_2_e9a3_station_1
         station_duration: number.rain_bird_bat_bt_2_e9a3_station_1_duration
         active_sensor: sensor.rain_bird_bat_bt_2_e9a3_active_station
-        # Durée opérateur lue depuis le helper borné, clampée défensivement à [1,10]
+        # Durée opérateur lue depuis le helper borné, clampée défensivement à [1,60]
         # (repli 2 si indisponible). Le number.… natif n'est jamais exposé à l'UI.
-        duree_minutes: "{{ [[states('input_number.arrosage_rainbird_station_1_duree_minutes') | int(2), 1] | max, 10] | min }}"
+        duree_minutes: "{{ [[states('input_number.arrosage_rainbird_station_1_duree_minutes') | int(2), 1] | max, 60] | min }}"
         idle_states: ['idle', 'none', 'off', '']
         dispo_ok: "{{ is_state('binary_sensor.rain_bird_pont_donnees_disponibles', 'on') }}"
         precond_ok: "{{ is_state('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'on') }}"
@@ -100,7 +100,7 @@ arrosage_rain_bird_station_1_courte_supervisee:
             - stop: "Refus : gardes Run non satisfaites"
 
     # =========================================================
-    # ▶️ COMMANDE ENCADRÉE — durée paramétrée (helper, clamp [1,10]) puis ouverture station 1
+    # ▶️ COMMANDE ENCADRÉE — durée paramétrée (helper, clamp [1,60]) puis ouverture station 1
     # =========================================================
     - service: number.set_value
       target:
