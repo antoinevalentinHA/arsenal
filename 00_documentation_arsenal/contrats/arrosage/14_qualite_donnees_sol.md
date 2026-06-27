@@ -4,8 +4,11 @@
 **Version contrat :** v0.1
 **Statut :** **Normatif — socle transverse de qualité/confiance** des trois points
 d'humidité sol. Définit **le mécanisme** (états, agrégation, dégradation de
-confiance), **pas les valeurs finales** (durées de fraîcheur, seuils). Aucune
-entité runtime n'est créée par ce lot.
+confiance), **pas les valeurs finales** (durées de fraîcheur, seuils). **Livré
+(v0) :** le mécanisme de fraîcheur / points frais est implémenté dans le runtime
+d'observation du canal réservoir sol (`12_template_sensors/arrosage/reservoir_sol.yaml`,
+PR #103), avec une **fenêtre de fraîcheur provisoire** (à confirmer par
+l'observation) ; **aucune durée ni aucun seuil final n'est figé**.
 
 > **Garde-fou de lecture.** Ce contrat **ne fixe aucune durée de fraîcheur
 > chiffrée**, **aucun seuil chiffré définitif**, **n'exclut aucun capteur

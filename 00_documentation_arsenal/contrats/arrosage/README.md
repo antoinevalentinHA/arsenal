@@ -3,9 +3,12 @@
 
 **Domaine :** `arrosage` — arrosage automatique du jardin
 **Version contrat :** v0.1
-**Statut :** Normatif — **antérieur au runtime**. Fixe la doctrine et les
-invariants opposables **avant** toute implémentation (capteurs, helpers,
-automations, scripts, dashboards). Aucune entité runtime n'est créée par ce lot.
+**Statut :** Normatif. Fixe la doctrine et les invariants opposables du domaine.
+**Partiellement livré :** le **socle décision / action** (besoin → intention →
+exécution) reste **antérieur au runtime**, tandis que le **runtime d'observation
+v0 du canal réservoir sol est livré** (`12_template_sensors/arrosage/reservoir_sol.yaml`,
+PR #103). Les contrats restent **normatifs** : ils définissent ce que le système
+doit faire, indépendamment de leur état d'implémentation.
 
 ---
 
@@ -28,10 +31,12 @@ automations, scripts, dashboards). Aucune entité runtime n'est créée par ce l
 
 ## Convention — noms conceptuels (NON figés)
 
-Ce lot étant antérieur au runtime, **aucun `entity_id` final, nom de capteur
-réel, ID d'automation, seuil ou durée définitif n'est figé**. Les noms employés
-sont **conceptuels** et marqués par des chevrons : `‹besoin_hydrique_zone›`,
-`‹intention_arrosage_zone›`, `‹rainbird_detecte›`, etc.
+Le **socle décisionnel** (besoin → intention → exécution) étant antérieur au
+runtime, **aucun `entity_id` final, nom de capteur réel, ID d'automation, seuil ou
+durée définitif n'est figé** pour cette chaîne. Les noms employés sont
+**conceptuels** et marqués par des chevrons : `‹besoin_hydrique_zone›`,
+`‹intention_arrosage_zone›`, `‹rainbird_detecte›`, etc. *(L'**observation v0**
+fait exception : ses entités sont réelles et livrées, cf. [`15`](15_canal_reservoir_sol.md).)*
 
 > Un nom conceptuel `‹…›` désigne un **rôle**, pas une entité. Sa ratification
 > en `entity_id` réel relève de la Phase 0 terrain
@@ -59,7 +64,7 @@ sont **conceptuels** et marqués par des chevrons : `‹besoin_hydrique_zone›`
 | [`12_capteurs_humidite_sol.md`](12_capteurs_humidite_sol.md) | **Relevé factuel + doctrine d'observation** des capteurs d'humidité sol **Zigbee** : nommage canonique des zones, entités Zone 1 **confirmées** / Zone 2–3 **attendues**, table de mapping à compléter, classification (observation / calibration manuelle / firmware hors runtime) ; couche d'observation qui **ne déclenche pas** l'arrosage |
 | [`13_observation_hydrique_jardin.md`](13_observation_hydrique_jardin.md) | **Chapeau** de l'observabilité hydrique (v0 = **observation + diagnostic uniquement**) : invariants, frontière observation/diagnostic/recommandation/action, architecture par **canaux** (réservoir sol / demande climatique / modulateurs), classes de recommandation **futures non émises**. Aucune reco, aucune action en v0. |
 | [`14_qualite_donnees_sol.md`](14_qualite_donnees_sol.md) | **Socle transverse de qualité/confiance** des trois points sol : états par point (frais/stale/indisponible/suspect), qualité agrégée, invariants de dégradation, capteur « suspect » (concept, sans seuil chiffré), Point 2 à suivre, vérification humaine = drapeau diagnostic. **Mécanisme, pas valeurs.** |
-| [`15_canal_reservoir_sol.md`](15_canal_reservoir_sol.md) | **Canal réservoir sol (observation v0)** : grandeurs à produire plus tard — humidité représentative (**médiane**), point le plus sec (**minimum**), hétérogénéité (**max − min**), nombre de points frais, état qualitatif du canal (`complet`/`degrade`/`insuffisant`/`indisponible`/`heterogene`/`a_verifier`). Dépend de `14` ; **n'émet aucune reco**, ne pilote rien, aucun seuil chiffré. |
+| [`15_canal_reservoir_sol.md`](15_canal_reservoir_sol.md) | **Canal réservoir sol (observation v0 — runtime livré, #103)** : grandeurs produites par `reservoir_sol.yaml` — humidité représentative (**médiane**), point le plus sec (**minimum**), hétérogénéité (**max − min**), nombre de points frais, état qualitatif du canal (`complet`/`degrade`/`insuffisant`/`indisponible`/`heterogene`/`a_verifier`). Dépend de `14` ; **n'émet aucune reco**, ne pilote rien, aucun seuil chiffré. |
 
 > **Deux natures de documents.** Les fichiers `01`–`07`, `09`–`11`, `13`, `14` et
 > `15` sont **normatifs** (doctrine et invariants opposables). Les fichiers `08` et `12`

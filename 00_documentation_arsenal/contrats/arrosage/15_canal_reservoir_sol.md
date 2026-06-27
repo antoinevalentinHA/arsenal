@@ -3,9 +3,10 @@
 
 **Version contrat :** v0.1
 **Statut :** **Normatif — définit les grandeurs d'observation** du **canal
-réservoir sol (lent)** que le futur runtime v0 produira. **Observation /
-diagnostic uniquement**, en deçà de toute recommandation et de toute action.
-Aucune entité runtime n'est créée par ce lot.
+réservoir sol (lent)**. **Observation / diagnostic uniquement**, en deçà de toute
+recommandation et de toute action. **Runtime v0 livré :**
+`12_template_sensors/arrosage/reservoir_sol.yaml` (PR #103) produit ces grandeurs ;
+le contrat reste la référence normative de ce qui doit être observé.
 
 > **Position dans le socle v0.** Ce contrat **dérive** du chapeau
 > [`13_observation_hydrique_jardin.md`](13_observation_hydrique_jardin.md) (canal
@@ -110,9 +111,10 @@ dans les agrégats. Lecture conceptuelle (alignée [`14`](14_qualite_donnees_sol
 | **1/3** | canal **insuffisant** pour une agrégation représentative |
 | **0/3** | canal **indisponible** |
 
-> **Pas d'entité runtime figée.** Les `entity_id`/structures d'exposition **ne
-> sont pas inventés** ici : la convention runtime sera fixée au lot
-> d'implémentation. Le contrat fixe **ce qui doit être visible**, pas **comment**.
+> **Le contrat fixe ce qui doit être visible, pas comment.** Les `entity_id` ne
+> sont pas figés par ce contrat : la convention runtime est portée par le lot
+> d'implémentation (**livré** — `12_template_sensors/arrosage/reservoir_sol.yaml`,
+> PR #103). Le contrat définit les grandeurs ; le runtime en choisit la forme.
 
 ---
 
