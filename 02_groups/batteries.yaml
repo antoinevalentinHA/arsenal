@@ -100,3 +100,8 @@ batteries:
     - sensor.sdb_enfants_batterie
     - sensor.stock_carton_batterie
     - sensor.stock_pf_batterie
+    # Jardin — pont Rain Bird + sondes humidité sol (points de mesure)
+    - sensor.rain_bird_bat_bt_2_e9a3_battery_level
+    - sensor.jardin_humidite_sol_zone_1_battery
+    - sensor.jardin_humidite_sol_zone_2_battery
+    - sensor.jardin_humidite_sol_zone_3_battery
