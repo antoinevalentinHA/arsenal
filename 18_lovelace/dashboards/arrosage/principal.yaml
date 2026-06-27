@@ -15,11 +15,13 @@ views:
           navigation_path: /reglages-arrosage-dashboard
 
     # ==========================================================
-    # 💧 ARROSAGE — VUE MÉTIER (lecture seule)
+    # 💧 ARROSAGE — VUE MÉTIER & COMMANDE MANUELLE
     # ----------------------------------------------------------
-    # Contexte pluie et suspension. Observation seule : aucune
-    # carte n'est actionnable, aucun paramétrage ici. Les seuils
-    # modifiables vivent dans /reglages-arrosage-dashboard.
+    # 1) Contexte pluie et suspension : observation seule.
+    # 2) Commande manuelle supervisée de la station 1 (Run / Stop) :
+    #    chaque action sous confirmation, envoyée uniquement via les
+    #    scripts supervisés (gardes runtime incluses). Les seuils et la
+    #    durée modifiables vivent dans /reglages-arrosage-dashboard.
     # ==========================================================
     cards:
       - type: vertical-stack
@@ -88,3 +90,45 @@ views:
               • Fiabilité : {{ state_attr('binary_sensor.arrosage_suspension_pluie', 'fiabilite') or '—' }}
               </div>
             text_only: true
+
+          # =========================================================
+          # 💧 Commande manuelle supervisée (station 1)
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 💧 Commande manuelle supervisée
+
+          - type: markdown
+            content: >
+              <div style="font-size: 13px; line-height: 1.45;">
+              Commandes <b>supervisées</b> de la station 1 Rain Bird. Chaque
+              action demande une <b>confirmation</b> et n'envoie la commande
+              native qu'à travers son script (gardes runtime incluses).
+              La durée se règle dans <i>/reglages-arrosage-dashboard</i>.
+              </div>
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: carte_action_standard_warning
+                entity: script.arrosage_rain_bird_station_1_courte_supervisee
+                name: Arroser station 1
+                icon: mdi:sprinkler-variant
+                variables:
+                  confirmation: "⚠️ Lancer l'arrosage supervisé de la station 1 ?"
+                  service: script.turn_on
+                  data:
+                    entity_id: script.arrosage_rain_bird_station_1_courte_supervisee
+
+              - type: custom:button-card
+                template: carte_action_standard
+                entity: script.arrosage_rain_bird_stop_supervise
+                name: "Arrêter l'arrosage"
+                icon: mdi:stop
+                variables:
+                  confirmation: "Arrêter l'arrosage Rain Bird en cours ?"
+                  service: script.turn_on
+                  data:
+                    entity_id: script.arrosage_rain_bird_stop_supervise
