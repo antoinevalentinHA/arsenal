@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Arrosage — Action script supervisé (confirmé)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Déclencher un script d'arrosage supervisé Rain Bird
+#     (Run / Stop) après confirmation explicite de l'utilisateur.
+#     Spécialisation Arrosage du socle d'action script confirmé :
+#     n'apporte que le câblage métier (service, cible, confirmation
+#     par défaut). Aucune logique, aucune couleur propre.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_action_script_confirme
+#     - UI uniquement (aucune décision, aucune commande native)
+#
+# 🎨 SEMANTIQUE (héritée du socle, NON redéfinie)
+#     - entity script.* = on  -> 🟢 vert  (script en cours d'exécution)
+#     - entity script.* = off -> ⚪ gris  (aucun cycle en cours)
+#     La couleur traduit l'état du script, pas le poids de l'action :
+#     la protection d'impact est portée par la confirmation modale et
+#     par les gardes runtime internes au script supervisé.
+#
+# 🔗 DEPENDANCES
+#     - entity : le script.* d'arrosage porté par l'instance
+#       (déclenché via script.turn_on)
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation modale obligatoire avant déclenchement
+#       (texte surchargé par variables.confirmation)
+#     - N'expose JAMAIS une commande native : seule frontière = le
+#       script supervisé désigné par entity
+#     - Ne redéfinit ni couleur, ni state mapping, ni show_* du socle
+#     - Icône et nom fixés par l'instance (Run / Stop diffèrent)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_action_arrosage_script
+#     entity: script.arrosage_rain_bird_station_1_courte_supervisee
+#     name: Démarrer station 1
+#     icon: mdi:sprinkler-variant
+#     variables:
+#       confirmation: "Démarrer l'arrosage supervisé de la station 1 ?"
+#
+# 🔗 SATELLITE DE : socle_action_script_confirme
+# ==========================================================
+
+carte_action_arrosage_script:
+  template: socle_action_script_confirme
+
+  tap_action:
+    action: call-service
+    service: script.turn_on
+    confirmation:
+      text: >
+        [[[
+          return variables?.confirmation
+            || "Confirmer l'exécution de ce script d'arrosage ?";
+        ]]]
+    service_data:
+      entity_id: '[[[ return entity.entity_id ]]]'
