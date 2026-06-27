@@ -105,3 +105,65 @@ views:
             features:
               - type: numeric-input
                 style: buttons
+
+          - type: custom:button-card
+            template: section_header
+            name: ⚙️ Arrosage automatique
+
+          - type: markdown
+            content: >
+              <div style="font-size: 13px; line-height: 1.45;">
+              Paramètres de l'arrosage <b>automatique</b> V1. L'interrupteur maître
+              <b>autorise ou coupe</b> l'automatisme ; les autres réglages
+              paramètrent la décision. <b>Aucun</b> arrosage n'est déclenché
+              directement depuis cette page.
+              </div>
+
+          - type: tile
+            entity: input_boolean.arrosage_automatique_actif
+            name: Arrosage automatique
+            icon: mdi:water-pump
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 💧 Seuils de décision
+
+          - type: tile
+            entity: input_number.arrosage_seuil_humidite_declenchement
+            name: Seuil humidité (%)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: tile
+            entity: input_number.arrosage_hysteresis_humidite
+            name: Hystérésis (%)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: tile
+            entity: input_number.arrosage_intervalle_minimal_heures
+            name: Intervalle minimal (h)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🕔 Fenêtre Arsenal
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: input_datetime.arrosage_fenetre_debut
+                name: Début
+
+              - type: tile
+                entity: input_datetime.arrosage_fenetre_fin
+                name: Fin
