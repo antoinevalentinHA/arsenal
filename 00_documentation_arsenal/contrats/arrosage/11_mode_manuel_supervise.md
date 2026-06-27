@@ -150,14 +150,16 @@ et **après** la commande :
 
 ---
 
-## 9. Validation terrain (2026-06-26) — Run & Stop supervisés
+## 9. Validation terrain (2026-06-26 → 2026-06-27) — Run & Stop supervisés
 
 > **Note factuelle (terrain), non normative.** Cette section **constate** des
 > tests des **scripts livrés** ; elle **ne modifie** aucune règle des §1–§8,
 > **ne crée** ni **ne modifie** aucune entité ou script. Historique : le **Stop**
 > a été validé d'emblée (Test 2) ; le **Run** révélait un **défaut de confirmation
 > de démarrage** (Test 1). Ce défaut a depuis été **corrigé** (PR #97) puis
-> **re-validé terrain** (Test 3) : la **réserve Run / P3 est levée**.
+> **re-validé terrain** (Test 3) : la **réserve Run / P3 est levée**. Le **Test 4**
+> valide en outre la **durée paramétrable** (helper borné) à une valeur **non
+> triviale (1 min)** : le réglage opérateur est réellement honoré.
 
 ### Test 1 — Run supervisé station 1 courte : commande effective, **démarrage non confirmé par le script**
 
@@ -243,14 +245,41 @@ Action : `script.arrosage_rain_bird_station_1_courte_supervisee` (runtime **post
   **durée conservée à 2 min** ; **Stop final OK**.
 - **Pont exploitable** malgré santé `degrade`, **préconditions runtime `on`**.
 
+### Test 4 — Run station 1 courte APRÈS paramétrage de durée : durée réglée à 1 min via le helper (validé) (2026-06-27)
+
+Action : `script.arrosage_rain_bird_station_1_courte_supervisee`, runtime
+**post-paramétrage** — la durée n'est plus codée en dur : elle est **lue depuis le
+helper borné** `input_number.arrosage_rainbird_station_1_duree_minutes`, clampée
+`[1,10]`, puis appliquée à `number.…_station_1_duration` avant ouverture.
+
+| Observation | Valeur |
+|---|---|
+| Durée réglée via le helper | **1 min** (borne basse `[1,10]`) |
+| Durée effective de l'arrosage | conforme au réglage (**1 min**) |
+| Confirmation de démarrage (`switch` natif) | OK — **aucune** notification « démarrage non confirmé » |
+| Stop final supervisé | OK |
+| Verdict | **validé terrain** |
+
+**Interprétation — durée paramétrable validée.**
+
+- La **chaîne de durée paramétrable** (helper borné → clamp `[1,10]` →
+  `number.set_value` → `delay`) est **validée terrain** à une valeur **distincte du
+  défaut** (1 min ≠ 2 min des Tests 1/3) : le **réglage opérateur est réellement
+  honoré** de bout en bout.
+- La **confirmation de démarrage par le `switch` natif** (acquis #97) reste valide
+  avec la durée paramétrée : aucun faux négatif de démarrage.
+- Le **`number.…` natif n'est jamais exposé** : la durée transite **uniquement** par
+  le helper borné, conformément au §2.3.
+
 > **Cadre de la validation.** Validation **runtime manuelle supervisée** uniquement.
 > **Aucun mode automatique** d'arrosage n'est introduit ; **aucun seuil hydrique**
 > n'est fixé ; **aucun lien** capteurs humidité → déclenchement d'arrosage. La
 > Phase 0 reste ouverte pour le reste ([`07`](07_phase_0_terrain.md) : `rain_delay`
 > / expiration, plaque d'acier, emplacement définitif).
 
-> **Portée et limites.** Le **Stop sécurité** (Test 2) et le **Run court** (Test 3,
-> après #97) sont **validés terrain**. Ces tests **n'introduisent aucun arrosage
+> **Portée et limites.** Le **Stop sécurité** (Test 2), le **Run court** (Test 3,
+> après #97) et le **Run à durée paramétrée** (Test 4, 1 min via helper) sont
+> **validés terrain**. Ces tests **n'introduisent aucun arrosage
 > automatique** et **ne ferment pas** la Phase 0 : `rain_delay` / expiration
 > (T07–T09, dead-man switch), plaque d'acier (T17) et emplacement définitif (T19)
 > restent **à qualifier** ([`07`](07_phase_0_terrain.md)). La santé **`degrade`**
