@@ -1,5 +1,5 @@
 # CONTRAT ARSENAL — ARROSAGE
-## 10 — Pré-requis runtime avant toute automatisation
+## 10 — Pré-requis runtime avant les raffinements d'autorité
 
 **Version contrat :** v0.1
 **Statut :** **Normatif — partiellement réalisé.** Définit la **barrière de
@@ -19,13 +19,28 @@ jamais présumés.
 > Plusieurs pré-requis restent **à qualifier terrain** (P1, P2, P5, P6, P7 —
 > cf. §2). Le contrat reste la référence normative : pointeur, pas duplication.
 
+> **Arbitrage V1 (réconciliation contrat [`17_decision_v1.md`](17_decision_v1.md)).**
+> Cette barrière P1–P7 **ne bloque pas** la **V1 d'arrosage automatique** : la V1
+> **délègue** aux scripts **Run/Stop supervisés déjà validés terrain** (P3/P4),
+> **ne neutralise jamais** le secours et **s'abstient** si le pont est dégradé. La
+> barrière **gate** désormais les seuls **raffinements d'autorité** : `rain_delay` /
+> dead-man switch (P1/P7 ↔ T07–T09), neutralisation du secours, régimes avancés,
+> multi-zone.
+>
+> **Règle d'interprétation.** Ci-dessous, « ferme l'automatisation » / « avant toute
+> automatisation » se lit **« ferme / avant tout raffinement d'autorité »** ; la V1
+> déléguée aux scripts supervisés validés en est **exceptée**.
+
 ---
 
 ## 1. Principe — une barrière, pas une intention
 
-> **Aucune automatisation, aucun script, aucun helper, aucun dashboard** d'action
-> n'est créé tant que **tous** les pré-requis ci-dessous ne sont pas
-> **confirmés**.
+> **Aucun raffinement d'autorité** (dead-man `rain_delay`, neutralisation du
+> secours, régimes avancés, multi-zone) n'est créé tant que **tous** les pré-requis
+> ci-dessous ne sont pas **confirmés**. La **V1 automatique** (contrat
+> [`17`](17_decision_v1.md)) en est **exceptée** : elle est autorisée car elle
+> **délègue** aux scripts Run/Stop supervisés **déjà validés terrain** (P3/P4) et ne
+> neutralise jamais le secours.
 
 Ce document **ne remplace pas** la Phase 0 ([`07_phase_0_terrain.md`](07_phase_0_terrain.md)) :
 il en est la **lecture orientée pont**, déclenchée par le **déploiement réel** du
@@ -109,15 +124,18 @@ neutralise pas le filet de survie ([`03_coexistence_rainbird.md`](03_coexistence
   qu'ils ne sont pas confirmés) ;
 - ❌ il **n'autorise** aucune écriture d'entité, même « action candidate »
   ([`09`](09_classification_entites.md)) ;
-- ❌ il **n'ouvre** aucun lot runtime avant la clôture de la Phase 0
-  ([`07`](07_phase_0_terrain.md) §5).
+- ❌ il **n'ouvre** aucun lot runtime de **raffinement d'autorité** avant la clôture
+  de la Phase 0 ([`07`](07_phase_0_terrain.md) §5) ; la **V1 automatique** (contrat
+  [`17`](17_decision_v1.md)), déléguée aux scripts supervisés validés, en est
+  **exceptée**.
 
 ---
 
 ## 5. Invariants des pré-requis
 
 1. **Tous** les pré-requis P1–P7 sont **obligatoires** et **cumulatifs** ; un seul
-   non satisfait **ferme** l'automatisation.
+   non satisfait **ferme** tout **raffinement d'autorité** (V1 exceptée — cf.
+   arbitrage en tête, contrat [`17`](17_decision_v1.md)).
 2. Un pré-requis **présumé** ne vaut pas **confirmé** : seule une vérification
    terrain le valide.
 3. **P7 (plaque acier/fosse)** et **P1 (poll BLE)** conditionnent la fiabilité de
@@ -138,4 +156,5 @@ neutralise pas le filet de survie ([`03_coexistence_rainbird.md`](03_coexistence
 - Observation (présumé → confirmé) : [`06_observation_et_preuves.md`](06_observation_et_preuves.md)
 - Résilience / fraîcheur-disponibilité : [`resilience_integrations.md`](../resilience_integrations.md)
 - Exécution supervisée une fois la barrière levée : [`11_mode_manuel_supervise.md`](11_mode_manuel_supervise.md)
+- Décision V1 (exception à la barrière, V1 non bloquée) : [`17_decision_v1.md`](17_decision_v1.md)
 - Index du domaine : [`README.md`](README.md)

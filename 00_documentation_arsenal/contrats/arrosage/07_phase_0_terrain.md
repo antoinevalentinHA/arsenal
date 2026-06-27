@@ -2,17 +2,36 @@
 ## 07 — Phase 0 terrain (pré-requis obligatoire)
 
 **Version contrat :** v0.1
-**Statut :** Normatif — antérieur au runtime
-**Objet :** Définir la **Phase 0** : la campagne de terrain **obligatoire** avant
-toute automatisation réelle de l'arrosage. Tant que la Phase 0 n'est pas close,
-les hypothèses du domaine restent **présumées**, jamais acquises.
+**Statut :** **Normatif — re-cadré par le contrat [`17_decision_v1.md`](17_decision_v1.md)
+(décision V1).** Définit la **Phase 0** : la campagne de terrain de qualification du
+pont et du `rain_delay`, avec ses critères de clôture.
+**Objet :** Décrire les tests terrain et leur clôture. **Sa lecture suspensive ne
+bloque plus la V1 automatique** (voir l'arbitrage ci-dessous).
+
+> **Arbitrage V1 (réconciliation contrat [`17_decision_v1.md`](17_decision_v1.md)).**
+> La **V1 d'arrosage automatique** mono-station est **autorisée sans attendre la
+> clôture de la Phase 0** : elle **délègue** son exécution aux scripts **Run/Stop
+> supervisés déjà validés terrain** (P3/P4, [`11_mode_manuel_supervise.md`](11_mode_manuel_supervise.md) §9),
+> **ne neutralise jamais** le secours Rain Bird et **s'abstient** si le pont est
+> dégradé. Ce que la Phase 0 — et la barrière P1–P7 de
+> [`10_prerequis_runtime.md`](10_prerequis_runtime.md) — continue de **gater**, ce
+> sont les **raffinements d'autorité** : `rain_delay` / dead-man switch (T07–T09),
+> neutralisation du secours, régimes avancés (R3/R5), multi-zone — **réservés à un
+> lot ultérieur**.
+>
+> **Règle d'interprétation.** Dans tout ce qui suit, « avant toute automatisation /
+> exécution réelle » se lit désormais **« avant tout raffinement d'autorité »** : la
+> V1 déléguée aux scripts supervisés validés n'y est **pas** subordonnée.
 
 ---
 
 ## 1. Principe
 
-> **Aucune intention ne doit être branchée sur une exécution réelle avant que la
-> Phase 0 soit close.**
+> **Aucun raffinement d'autorité ne doit être branché sur une exécution réelle
+> avant que la Phase 0 soit close.** *(Re-cadrage V1, contrat [`17`](17_decision_v1.md) :
+> ce principe vise le dead-man `rain_delay`, la neutralisation du secours et les
+> régimes avancés ; la **V1 automatique** déléguée aux scripts Run/Stop supervisés
+> **déjà validés terrain** n'y est **pas** subordonnée.)*
 
 Le domaine `arrosage` repose sur des hypothèses matérielles (comportement de
 `rain_delay`, latence BLE, fiabilité Zigbee, nombre réel de stations) qui
@@ -118,14 +137,19 @@ La Phase 0 est **close** lorsque :
 - [ ] aucun nom conceptuel `‹…›` n'est promu en `entity_id` runtime **avant**
       la clôture.
 
-> **Verrou.** Aucun lot runtime (capteurs, helpers, automations, scripts,
-> dashboards) ne doit être ouvert tant que ces critères ne sont pas satisfaits.
+> **Verrou (re-cadré V1).** Aucun lot runtime de **raffinement d'autorité**
+> (dead-man `rain_delay`, neutralisation du secours, régimes avancés, multi-zone)
+> ne doit être ouvert tant que ces critères ne sont pas satisfaits. La **V1
+> automatique** (contrat [`17`](17_decision_v1.md)), qui **délègue** aux scripts
+> supervisés déjà validés et **ne neutralise jamais** le secours, **n'est pas**
+> bloquée par ce verrou.
 
 ---
 
 ## 6. Invariants de la Phase 0
 
-1. La Phase 0 est **obligatoire** et **antérieure** à toute exécution réelle.
+1. La Phase 0 est **obligatoire** et **antérieure** à tout **raffinement
+   d'autorité** (V1 exceptée — cf. arbitrage en tête, contrat [`17`](17_decision_v1.md)).
 2. **T09 (expiration `rain_delay` → reprise) est bloquant** pour la doctrine de
    secours.
 3. Le **mapping capteur sol ↔ zone** (T02) conditionne le besoin par zone.
@@ -136,8 +160,11 @@ La Phase 0 est **close** lorsque :
    **présumé** tant qu'ils ne sont pas qualifiés.
 6. Un comportement **non confirmé** reste **présumé** : il ne fonde aucune
    automatisation.
-7. La clôture de la Phase 0 **promeut** les hypothèses en faits — et **seulement
-   alors** les noms conceptuels peuvent devenir des entités réelles.
+7. La clôture de la Phase 0 **promeut** les hypothèses en faits. *(Re-cadrage V1,
+   contrat [`17`](17_decision_v1.md) : les entités de la **V1 automatique** —
+   déléguée aux scripts supervisés déjà validés — peuvent naître **avant** cette
+   clôture ; « seulement alors » ne vise plus que les entités de **raffinement
+   d'autorité**.)*
 
 ---
 
@@ -151,5 +178,6 @@ La Phase 0 est **close** lorsque :
 - Inventaire du pont (relevé runtime) : [`08_inventaire_pont_runtime.md`](08_inventaire_pont_runtime.md)
 - Classification des entités : [`09_classification_entites.md`](09_classification_entites.md)
 - Pré-requis runtime (barrière de sortie) : [`10_prerequis_runtime.md`](10_prerequis_runtime.md)
+- Décision V1 (lève la lecture suspensive pour la V1) : [`17_decision_v1.md`](17_decision_v1.md)
 - Résilience / reconnexion : [`resilience_integrations.md`](../resilience_integrations.md)
 - Index du domaine : [`README.md`](README.md)
