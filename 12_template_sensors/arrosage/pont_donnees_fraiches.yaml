@@ -4,8 +4,8 @@
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #   Indiquer si les données EXPLOITABLES du Rain Bird sont à la
-#   fois présentes et récemment rafraîchies — pas seulement si
-#   le pont a un heartbeat récent.
+#   fois présentes et récemment rafraîchies — c.-à-d. que le pont
+#   émet encore ses télémétries périodiques.
 #
 # 🧩 PÉRIMÈTRE
 #   - Évaluation booléenne uniquement
@@ -20,23 +20,43 @@
 #     sensor.rain_bird_bat_bt_2_e9a3_active_station
 #     sensor.rain_bird_bat_bt_2_e9a3_battery_level
 #     sensor.rain_bird_bat_bt_2_e9a3_ble_rssi
-#   Lit (récence) :
-#     sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat (état + last_updated)
+#   Lit (récence — HORLOGE DE LIVENESS) :
+#     sensor.rain_bird_bat_bt_2_e9a3_bridge_uptime (last_reported)
+#   Lit (garde de disponibilité — complémentaire) :
+#     binary_sensor.rain_bird_pont_donnees_disponibles
 #
 # 🆔 UNIQUE_ID
 #   rain_bird_pont_donnees_fraiches
 #
 # 🧱 PRINCIPE (off par défaut, jamais faux positif)
-#   FRAÎCHEUR MÉTIER = tolérance LONGUE. Le bridge Rain Bird poll
-#   lentement hors commande (de l'ordre de 4 h) ; un seuil court (ex.
-#   15 min) rendrait ce capteur faux la majorité du temps. Seuil retenu :
-#   18000 s (5 h) — marge opérationnelle autour d'un poll lent ~4 h.
+#   HORLOGE = bridge_uptime.last_reported, PAS bridge_heartbeat.
+#     Doctrine Arsenal : la fraîcheur / liveness se mesure sur
+#     last_reported (avancé à CHAQUE report reçu, même valeur
+#     inchangée), jamais sur last_updated / last_changed (qui ne
+#     bougent qu'au changement de valeur).
+#     bridge_heartbeat reste écarté comme source : payload constant
+#     "online", retain=true, pas d'expire_after — il peut afficher
+#     "online" alors que le pont est silencieux ; on lui préfère
+#     bridge_uptime, dont la valeur (secondes monotones) change à
+#     chaque cycle et dont un reboot se voit (reset).
+#     bridge_uptime.last_reported avance donc à chaque cycle firmware
+#     (~1 h) → vraie preuve de fraîcheur.
+#
+#   SEUIL = 10800 s (3 h). Cadence firmware ~1 h ; 3 h tolère ~2
+#     cycles manqués (blip WiFi / light-sleep / jitter) sans flapping,
+#     tout en détectant un pont réellement mort en ≤ 3 h. Un seuil de
+#     7200 s (2 h) serait plus réactif mais sujet aux faux négatifs.
+#     Note : la récence ne dépend PLUS du poll BLE lent (~4 h) — elle
+#     suit l'uptime (~1 h), d'où un seuil bien plus court qu'avant.
+#
 #   on  = données exploitables présentes (active_station, batterie,
 #         BLE non unknown/unavailable)
-#         ET heartbeat exploitable mis à jour il y a < 18000 s (5 h).
+#         ET pont disponible (garde complémentaire)
+#         ET bridge_uptime reporté il y a < 10800 s (3 h).
 #   off = au moins une donnée cœur indisponible (ex. BLE down)
-#         OU heartbeat absent / périmé (>= 5 h).
-#   Un heartbeat frais alors que les données BLE sont unknown ne
+#         OU pont indisponible
+#         OU uptime absent / périmé (>= 3 h).
+#   Un uptime frais alors que les données BLE sont unknown ne
 #   suffit PAS : la fraîcheur du pont ≠ fraîcheur des données utiles.
 #   Disponibilité du pont != fraîcheur métier (voir pont_sante).
 #
@@ -60,11 +80,12 @@
           'sensor.rain_bird_bat_bt_2_e9a3_ble_rssi'
         ] %}
         {% set exploitable = (core | map('states') | select('in', indispo) | list | length) == 0 %}
-        {% set hb = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
-        {% set hb_st = states(hb) %}
-        {% set recent = hb_st is not none and hb_st not in indispo
-              and (now() - states[hb].last_updated).total_seconds() < 18000 %}
-        {{ 'mdi:timer-check-outline' if (exploitable and recent) else 'mdi:timer-alert-outline' }}
+        {% set dispo = is_state('binary_sensor.rain_bird_pont_donnees_disponibles', 'on') %}
+        {% set up = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_uptime' %}
+        {% set up_st = states(up) %}
+        {% set recent = up_st is not none and up_st not in indispo
+              and (now() - states[up].last_reported).total_seconds() < 10800 %}
+        {{ 'mdi:timer-check-outline' if (exploitable and dispo and recent) else 'mdi:timer-alert-outline' }}
       state: >
         {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
         {% set core = [
@@ -73,11 +94,12 @@
           'sensor.rain_bird_bat_bt_2_e9a3_ble_rssi'
         ] %}
         {% set exploitable = (core | map('states') | select('in', indispo) | list | length) == 0 %}
-        {% set hb = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
-        {% set hb_st = states(hb) %}
-        {% set recent = hb_st is not none and hb_st not in indispo
-              and (now() - states[hb].last_updated).total_seconds() < 18000 %}
-        {{ 'on' if (exploitable and recent) else 'off' }}
+        {% set dispo = is_state('binary_sensor.rain_bird_pont_donnees_disponibles', 'on') %}
+        {% set up = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_uptime' %}
+        {% set up_st = states(up) %}
+        {% set recent = up_st is not none and up_st not in indispo
+              and (now() - states[up].last_reported).total_seconds() < 10800 %}
+        {{ 'on' if (exploitable and dispo and recent) else 'off' }}
       attributes:
         donnees_exploitables: >
           {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
@@ -87,13 +109,16 @@
             'sensor.rain_bird_bat_bt_2_e9a3_ble_rssi'
           ] %}
           {{ (core | map('states') | select('in', indispo) | list | length) == 0 }}
-        heartbeat_age_secondes: >
+        pont_disponible: >
+          {{ is_state('binary_sensor.rain_bird_pont_donnees_disponibles', 'on') }}
+        uptime_age_secondes: >
           {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
-          {% set hb = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
-          {% set hb_st = states(hb) %}
-          {% if hb_st is none or hb_st in indispo %}
+          {% set up = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_uptime' %}
+          {% set up_st = states(up) %}
+          {% if up_st is none or up_st in indispo %}
             inconnu
           {% else %}
-            {{ (now() - states[hb].last_updated).total_seconds() | int }}
+            {{ (now() - states[up].last_reported).total_seconds() | int }}
           {% endif %}
-        seuil_secondes: "18000"
+        source_horloge: "bridge_uptime.last_reported"
+        seuil_secondes: "10800"
