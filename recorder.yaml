@@ -308,6 +308,9 @@ include:
     - sensor.jardin_humidite_sol_heterogeneite
     - sensor.jardin_humidite_sol_points_frais
     - sensor.jardin_reservoir_sol_etat
+    # Seuil de déclenchement V1 : historisé pour tracer la ligne de référence
+    # sur le graphe humidité sol (dashboard arrosage). Réglage durable, pas une action.
+    - input_number.arrosage_seuil_humidite_declenchement
 
     # =====================================================
     # ==== 🎛️ MODES DE LA MAISON ====

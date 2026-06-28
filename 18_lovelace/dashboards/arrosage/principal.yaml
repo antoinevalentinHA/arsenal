@@ -92,6 +92,44 @@ views:
             text_only: true
 
           # =========================================================
+          # 🌱 Humidité du sol (réservoir lent)
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🌱 Humidité du sol
+
+          - type: custom:mini-graph-card
+            name: 🌱 Humidité du sol
+            icon: mdi:water-percent
+            entities:
+              - entity: sensor.jardin_humidite_sol_mediane
+                name: Médiane
+              - entity: sensor.jardin_humidite_sol_minimum
+                name: Minimum
+              - entity: input_number.arrosage_seuil_humidite_declenchement
+                name: Seuil
+                color: rgba(158, 158, 158, 0.2)
+                show_state: true
+                show_fill: false
+            hours_to_show: 72
+            points_per_hour: 4
+            line_width: 3
+            animate: true
+            smoothing: true
+            show:
+              labels: true
+              legend: true
+              extrema: true
+              fill: fade
+              icon: false
+            font_size: 75
+            height: 160
+            align_state: center
+            decimals: 1
+            tap_action:
+              action: more-info
+
+          # =========================================================
           # 💧 Commande manuelle supervisée (station 1)
           # =========================================================
           - type: custom:button-card
