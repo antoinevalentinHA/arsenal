@@ -35,10 +35,14 @@
 #
 # ⏱️ FENÊTRE DE FRAÎCHEUR — 21600 s (6 h) — PARAMÈTRE RUNTIME D'OBSERVATION v0
 #   Valeur conservatrice, NON un seuil agronomique final. La fraîcheur est
-#   évaluée sur `last_updated`, qui n'avance que lorsque l'état CHANGE ; une
-#   humidité sol peut rester quasi-stable plusieurs heures (sonde vivante mais
-#   valeur figée). Une fenêtre courte marquerait alors le canal "stale" à tort
-#   (faux indisponible). 6 h tolère ces plateaux tout en captant une sonde
+#   évaluée sur `last_reported` (et NON last_updated) : on mesure la LIVENESS
+#   de la sonde (rapporte-t-elle encore ?), pas la stabilité de la valeur.
+#   `last_reported` se rafraîchit à chaque écriture du coordinateur même valeur
+#   identique ; `last_updated` n'avancerait qu'au changement d'état, et une
+#   humidité sol quasi-stable plusieurs heures (sonde vivante mais valeur figée)
+#   y paraîtrait "stale" à tort (faux indisponible) — exactement le faux gel que
+#   la doctrine repo-wide proscrit (contrat resilience_integrations §5,
+#   invariant 1). 6 h tolère en outre les plateaux tout en captant une sonde
 #   réellement muette (pile/maillage) en quelques heures — sans action en v0,
 #   la latence de détection est sans danger. Même ordre de grandeur que la
 #   tolérance de fraîcheur du pont (18000 s). À CONFIRMER par l'observation
@@ -84,7 +88,7 @@
           {% set st = states(p) %}
           {% set num = st | float(none) %}
           {% if st not in indispo and num is not none and states[p] is not none
-                and (now() - states[p].last_updated).total_seconds() < seuil %}
+                and (now() - states[p].last_reported).total_seconds() < seuil %}
             {% set ns.vals = ns.vals + [num] %}
           {% endif %}
         {% endfor %}
