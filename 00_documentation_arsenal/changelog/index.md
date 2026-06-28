@@ -1435,6 +1435,19 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Météo — palmarès nuits chaudes : minimale journalière la plus haute (rangs valeur/date, automation d'évaluation, capteurs + anomalie, contrat `palmares_min_haute.md`, checker + workflow, historisation Recorder).
 - Lovelace : reclassement par domaine (`dashboards/<domaine>/<role>.yaml`, includes rangés en sous-dossiers), `dashboards.yaml` re-pointé avec **clés publiques inchangées** ; chemins `!include`, checkers et contrats UI mis à jour.
 
+---
+
+## 🧠 ARSENAL HA — [v16.2.0](changelogs/v16/v16_2_0.md) — STABLE — 2026-06-27
+**Tags :** clim, ventilation, arrosage, rain_bird, meteo, pluie, reseau, esp32, recorder, lovelace, ui, contrats, ci
+
+**Signal net :**
+- Climatisation — recommandation ventilation (`fan_mode_recommande.yaml`, contrat 14 v2.0) : référentiel unique `x = sensor.clim_intensite_besoin_froid`, grille à deux latches d'hystérésis (`latch_moyen` 1.0/0.6, `latch_fort` 2.0/1.5), plancher `Faible`, frein chambre froide ramené à un cap `Faible` ; abandon du double référentiel ON/OFF ; `Silencieux` n'est plus émis par la recommandation.
+- Climatisation — résolution ventilation (`application_mode.yaml`, contrat 12 v2.0) : arbitrage absence → Fort en « Auto Arsenal » (`presence_confort_thermique_stabilisee == off` + `presence_visiteur == off` + clim active), `quiet` borné à `low` hors plage silencieuse, mode `single` → `queued` (max 2), ajout des triggers présence / allumage clim / reprise Airstage / dérive `fan_mode auto`.
+- Climatisation — diagnostic : conformité comparée à la cible effective (silence/absence/recommandation), ajout de `raison_arbitrage` ; cartes : `auto` constructeur en orange, affichage cible effective + arbitrage.
+- Arrosage : ajout du domaine (pré-runtime, observation v0) — contrats `contrats/arrosage/` (16 fichiers), audits de conception, helpers, scripts supervisés, capteurs pont Rain Bird et canal réservoir sol, statistiques pluie 24/48/72h, dashboards (`arrosage`, `rain_bird`) et button cards, prefix `1027 - arrosage`.
+- Supervision réseau : retrait de `binary_sensor.esp32_proxy_2` (reflashé en pont Rain Bird) des groupes ping ; seuil ESP32 critique 3 → 2 proxies KO ; contrat `ping_lan_synthese.md` v1.0 → v1.1.
+- Recorder : historisation (lecture seule) du pont Rain Bird, du canal réservoir sol et des cumuls/prévisions de pluie.
+
 ==================================================
 FIN INDEX
 ==================================================
