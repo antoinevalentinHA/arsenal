@@ -12,6 +12,9 @@
 #     vit → programme interne neutralisé pendant l'autorité Arsenal ;
 #   - à chaque changement du maître (on/off) → application immédiate
 #     (neutralisation ou retour au secours) ;
+#   - à chaque changement de fraîcheur du pont (R6) → ré-application
+#     immédiate : un pont qui (re)devient frais peut être re-neutralisé,
+#     un pont périmé cesse aussitôt d'être renouvelé (03 §6) ;
 #   - au démarrage de Home Assistant → réaffirme l'état voulu.
 #
 # 🧯 FAIL-SAFE PAR CONSTRUCTION
@@ -40,6 +43,10 @@
     - id: maitre
       platform: state
       entity_id: input_boolean.arrosage_automatique_actif
+
+    - id: fraicheur
+      platform: state
+      entity_id: binary_sensor.rain_bird_pont_donnees_fraiches
 
     - id: demarrage
       platform: homeassistant
