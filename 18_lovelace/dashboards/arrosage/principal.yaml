@@ -49,13 +49,6 @@ views:
             entities:
               - entity: sensor.jardin_humidite_sol_mediane
                 name: Médiane
-              - entity: sensor.jardin_humidite_sol_minimum
-                name: Minimum
-              - entity: input_number.arrosage_seuil_humidite_declenchement
-                name: Seuil
-                color: rgba(158, 158, 158, 0.2)
-                show_state: true
-                show_fill: false
             hours_to_show: 72
             points_per_hour: 4
             line_width: 3
@@ -63,7 +56,7 @@ views:
             smoothing: true
             show:
               labels: true
-              legend: true
+              legend: false
               extrema: true
               fill: fade
               icon: false
