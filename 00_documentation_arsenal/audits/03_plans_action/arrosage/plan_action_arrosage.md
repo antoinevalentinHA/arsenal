@@ -1,6 +1,6 @@
 # Plan d'action vivant — Chantier arrosage
 
-> **NON NORMATIF — boussole de livraison.** Ce document **oriente le chantier** arrosage jusqu'à sa **première livraison publiable** ; il ne définit aucune règle. En cas de divergence, **les contrats du domaine font foi** ([`contrats/arrosage/README.md`](../../../contrats/arrosage/README.md)).
+> **NON NORMATIF — boussole de livraison.** Ce document **oriente le chantier** arrosage jusqu'à sa **complétude** (le domaine est déjà publié incrémentalement, v16.2 / v16.3 ; reste à le rendre complet) ; il ne définit aucune règle. En cas de divergence, **les contrats du domaine font foi** ([`contrats/arrosage/README.md`](../../../contrats/arrosage/README.md)).
 >
 > **Ce n'est pas** : un changelog, une release note, un contrat normatif, un journal de PR, un backlog fourre-tout, ni une liste d'idées. Le **cockpit d'état** reste le registre, ligne **C10** ([`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md)) ; ce plan ne le duplique pas.
 >
@@ -12,8 +12,8 @@
 |---|---|
 | **mergé** | code intégré à `main`, CI verte — n'implique ni publication ni validation terrain |
 | **durci** | comportement renforcé (fail-safe, fraîcheur, explicabilité) sur un acquis déjà mergé |
-| **publié** | inscrit dans un **changelog de release** Arsenal — n'a **pas** eu lieu pour ce domaine |
-| **livré** | le domaine peut entrer dans une release **sans ambiguïté** (cf. §3) — **pas encore atteint** |
+| **publié** | inscrit dans un **changelog de release** Arsenal — **fait** : releases **v16.2** (observation v0) et **v16.3** (V1 + durcissements) |
+| **livré** | le domaine est **complet** — manques (§5) résorbés et validations terrain faites — au point d'être exploitable sans ambiguïté (cf. §3) — **pas encore atteint** |
 
 ---
 
@@ -28,8 +28,8 @@
 
 - **V1 runtime mergée** (décision besoin sol → intention → exécution déléguée au script Run supervisé).
 - **Durcissements post-V1 mergés**, portant sur UI/réglages, observabilité décisionnelle, fraîcheur, coexistence fail-safe et explicabilité de l'intention.
-- **Ensemble non publié** : aucun changelog hors release.
-- **Domaine non livré** : mergé + durci **≠** livrable. C'est précisément ce plan qui trace le chemin restant.
+- **Publié incrémentalement** : releases **v16.2** (observation v0 + pré-runtime) et **v16.3** (V1 automatique + durcissements).
+- **Domaine non encore complet** : publié **≠** complet. Les manques (§5) restent à résorber ; c'est précisément ce plan qui trace le chemin restant.
 
 ## 3. Objectif de livraison
 
@@ -40,10 +40,9 @@
 - diagnostic **compréhensible** (dont la santé du pont) ;
 - **notifications utiles arbitrées** (signal vs bruit tranché) ;
 - **validations terrain minimales** effectuées ;
-- **aucune dette bloquante** connue ;
-- **changelog rédigé uniquement au moment de la release**.
+- **aucune dette bloquante** connue.
 
-> Aucune promesse de release immédiate. La livraison est **conditionnée** à l'atteinte des critères ci-dessus, pas à une date.
+> Le domaine est déjà **publié** incrémentalement (v16.2 / v16.3) ; chaque incrément l'est **dans le changelog de sa release** (co-commit). « Livrer » ne désigne donc pas la première publication mais la **complétude** : l'atteinte des critères ci-dessus, **conditionnée** à leur réalisation, pas à une date.
 
 ## 4. Acquis (haut niveau, sans détail PR par PR)
 
@@ -71,7 +70,7 @@ Quelques **axes ordonnés**, pas un backlog. Chaque lot sera **audité avant YAM
 2. **Diagnostic pont explicable** — surface lisible de la santé/fraîcheur du pont.
 3. **Notifications** — un jeu **minimal et utile**, une fois l'arbitrage signal/bruit tranché (§7).
 4. **Validations terrain** — exécuter le minimum nécessaire (§8) et en consigner le verdict.
-5. **Préparation release** — **uniquement** quand les critères du §3 sont réunis ; le changelog se rédige **à ce moment-là**.
+5. **Complétude / clôture du chantier** — quand les critères du §3 sont réunis ; chaque lot d'ici là est **publié dans le changelog de sa release** (co-commit), pas accumulé pour un changelog final.
 
 ## 7. Questions ouvertes (à trancher avant livraison)
 
@@ -115,4 +114,4 @@ Hors périmètre de la **première** livraison (différés, **non bloquants**) :
 
 ---
 
-*Plan d'action vivant — non normatif. Couvre le chemin jusqu'à la première livraison publiable du domaine arrosage, pas sa trajectoire long terme. Cockpit d'état : [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md) (C10). Doctrine du domaine : [`contrats/arrosage/README.md`](../../../contrats/arrosage/README.md).*
+*Plan d'action vivant — non normatif. Couvre le chemin jusqu'à la complétude du domaine arrosage (déjà publié incrémentalement, v16.2 / v16.3), pas sa trajectoire long terme. Cockpit d'état : [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md) (C10). Doctrine du domaine : [`contrats/arrosage/README.md`](../../../contrats/arrosage/README.md).*
