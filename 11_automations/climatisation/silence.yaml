@@ -97,6 +97,15 @@
     - platform: state
       entity_id: sensor.clim_mode_silencieux_local
 
+    # 🔁 Dérive du ventilateur vers le « auto » constructeur :
+    #    en plage silencieuse, application_mode s’abstient (not override_actif)
+    #    et le quiet doit être réasserti par cette autorité. Borné to: "auto"
+    #    → la correction (→ quiet) ne re-déclenche pas ce trigger.
+    - platform: state
+      entity_id: climate.clim
+      attribute: fan_mode
+      to: 'auto'
+
     # 🔁 Redémarrage / remise en état du système
     - platform: state
       entity_id: input_boolean.systeme_stable
@@ -113,13 +122,18 @@
     - choose:
 
         # 🎧 Activation du mode silencieux
+        #    Réveil sur absence de quiet réalisé (mode_silencieux_local == off)
+        #    OU sur dérive du ventilateur vers le « auto » constructeur
+        #    (fan_mode == auto), uniquement clim active.
         - conditions:
             - condition: template
               value_template: >
                 {{ states('binary_sensor.clim_silencieux_autorise') == 'on' }}
             - condition: template
               value_template: >
-                {{ states('sensor.clim_mode_silencieux_local') == 'off' }}
+                {{ (states('sensor.clim_mode_silencieux_local') == 'off'
+                    or state_attr('climate.clim', 'fan_mode') == 'auto')
+                   and states('climate.clim') not in ['off', 'unknown', 'unavailable'] }}
           sequence:
             - service: switch.turn_on
               target:
