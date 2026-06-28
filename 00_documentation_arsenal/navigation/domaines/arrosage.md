@@ -5,7 +5,7 @@
 
 ## Orientation
 
-Arrosage automatique du jardin, en **coexistence gouvernée** avec le contrôleur Rain Bird via un pont ESP32. Le domaine couvre : le **pont Rain Bird** (santé / disponibilité, observation), l'**observation hydrique** (canal réservoir sol), les **capteurs d'humidité sol** (trois points de mesure d'une zone unique), et la **supervision transverse** des sondes (batteries / LQI Zigbee). **La décision et l'action d'arrosage restent pré-runtime** : seule la couche **observation / diagnostic v0** est livrée. **Aucune architecture dédiée.**
+Arrosage automatique du jardin, en **coexistence gouvernée** avec le contrôleur Rain Bird via un pont ESP32. Le domaine couvre : le **pont Rain Bird** (santé / disponibilité, observation), l'**observation hydrique** (canal réservoir sol), les **capteurs d'humidité sol** (trois points de mesure d'une zone unique), et la **supervision transverse** des sondes (batteries / LQI Zigbee). **La décision et l'action d'arrosage V1 sont livrées** (V1 automatique mono-station : besoin sol → intention → exécution déléguée au script Run supervisé, coexistence `rain_delay` minimale), aux côtés de la couche **observation / diagnostic v0** (canal réservoir sol).
 
 ## Contrat — « ce que le système doit faire »
 
@@ -18,11 +18,11 @@ Arrosage automatique du jardin, en **coexistence gouvernée** avec le contrôleu
 
 ## Réalisation runtime (technique, non détaillée)
 
-- La couche d'observation / diagnostic v0 (canal réservoir sol, santé du pont) est réalisée sous `12_template_sensors/arrosage/`. **Réalisation technique uniquement** : le *quoi* est fixé par les contrats, le *comment* relève du runtime ; non détaillée ici.
+- La couche d'observation / diagnostic v0 (canal réservoir sol, santé du pont) est réalisée sous `12_template_sensors/arrosage/`. La **V1 automatique** (décision besoin sol → intention, déclenchement, exécution supervisée, coexistence `rain_delay`) est réalisée sous `12_template_sensors/arrosage/`, `11_automations/arrosage/` et `10_scripts/arrosage/`. **Réalisation technique uniquement** : le *quoi* est fixé par les contrats, le *comment* relève du runtime ; non détaillée ici.
 
 ## Audits & état
 
-> **Source d'état faisant foi** : le cockpit [`REGISTRE_CHANTIERS.md`](../../audits/REGISTRE_CHANTIERS.md) (ligne **C10**) — observation v0 livrée ; décision / action pré-runtime.
+> **Source d'état faisant foi** : le cockpit [`REGISTRE_CHANTIERS.md`](../../audits/REGISTRE_CHANTIERS.md) (ligne **C10**) — V1 automatique (décision / action) livrée ; observation v0 livrée.
 > Artefacts d'audit : conception (cadrage besoin hydrique, plan d'observation v0) — voir [`cadrage_besoin_hydrique_decision_arrosage.md`](../../audits/02_conception/arrosage/cadrage_besoin_hydrique_decision_arrosage.md). Chaîne d'audit **partielle** (conception ; pas de clôture).
 
 ## Liens croisés (sens & appartenance)
@@ -33,7 +33,7 @@ Arrosage automatique du jardin, en **coexistence gouvernée** avec le contrôleu
 
 ## Points de vigilance (non normatif)
 
-- **Décision / action pré-runtime** : ne pas lire le domaine comme actionnable ; seule l'observation v0 est livrée.
+- **Décision / action V1 livrées** : le domaine est actionnable (V1 automatique mono-station) ; la calibration par l'observation (modulateurs) reste un chantier ultérieur.
 - **Une zone Rain Bird, trois points de mesure** d'humidité (pas trois zones d'arrosage).
 - **Chaîne d'audit partielle** : conception présente, pas de clôture ; l'état réel est porté par le registre (C10).
 
