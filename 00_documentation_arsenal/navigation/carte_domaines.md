@@ -38,7 +38,7 @@
 | [`pannes`](domaines/pannes.md) | C | Folder (9) — `internet` + `secteur`. Réf. résilience croisée avec `energie_chaudiere`. |
 | [`boiler`](domaines/boiler.md) | C·Ext | Contrat HA (`contrats/boiler/`) **distinct** de l'outil `outils_externes/boiler_pi/` (pont Raspberry Pi). |
 | [`eclairage`](domaines/eclairage.md) | C·A | Folder (7) + `architecture/eclairage_jardin.md`. |
-| [`arrosage`](domaines/arrosage.md) | C·Au·RT | Folder (16) — coexistence gouvernée Rain Bird (pont ESP32) + observation hydrique. **Observation v0 livrée** (canal réservoir sol) ; **décision/action pré-runtime**. Chaîne d'audit partielle (conception). État → `REGISTRE_CHANTIERS` (C10). |
+| [`arrosage`](domaines/arrosage.md) | C·Au·RT | Folder (16) — coexistence gouvernée Rain Bird (pont ESP32) + observation hydrique. **V1 automatique livrée** (décision/action mono-station, coexistence `rain_delay`) ; **observation v0 livrée** (canal réservoir sol). Chaîne d'audit partielle (conception). État → `REGISTRE_CHANTIERS` (C10). |
 | [`ouvertures`](domaines/ouvertures.md) | C·A | Folder (3) + `architecture/ouvertures.md`. **Léger — hub conservé** (carte explicite plutôt qu'invisibilisation). |
 | [`voiture`](domaines/voiture.md) | C·A·Au | `architecture/voiture.md` porte un **contenu erroné** (copie d'aération) — signalé par l'audit structurel. |
 | [`energie_chaudiere`](domaines/energie_chaudiere.md) | C·RT | Fichier `contrats/bluetti.md` (Bluetti AC180). Couche dérivée **vérifiée fidèle au runtime**. Nom de fichier ≠ nom canonique. |

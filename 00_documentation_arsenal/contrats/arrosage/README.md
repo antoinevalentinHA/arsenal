@@ -4,11 +4,13 @@
 **Domaine :** `arrosage` — arrosage automatique du jardin
 **Version contrat :** v0.1
 **Statut :** Normatif. Fixe la doctrine et les invariants opposables du domaine.
-**Partiellement livré :** le **socle décision / action** (besoin → intention →
-exécution) reste **antérieur au runtime**, tandis que le **runtime d'observation
-v0 du canal réservoir sol est livré** (`12_template_sensors/arrosage/reservoir_sol.yaml`,
-PR #103). Les contrats restent **normatifs** : ils définissent ce que le système
-doit faire, indépendamment de leur état d'implémentation.
+**Livré :** la **V1 automatique** — socle décision / action (besoin sol →
+intention → exécution déléguée au script Run supervisé), coexistence `rain_delay`
+minimale — est livrée (contrat [`17`](17_decision_v1.md), runtime PR #125), de même
+que le **runtime d'observation v0 du canal réservoir sol**
+(`12_template_sensors/arrosage/reservoir_sol.yaml`, PR #103). Les contrats restent
+**normatifs** : ils définissent ce que le système doit faire, indépendamment de
+leur état d'implémentation.
 
 ---
 
@@ -31,12 +33,16 @@ doit faire, indépendamment de leur état d'implémentation.
 
 ## Convention — noms conceptuels (NON figés)
 
-Le **socle décisionnel** (besoin → intention → exécution) étant antérieur au
-runtime, **aucun `entity_id` final, nom de capteur réel, ID d'automation, seuil ou
-durée définitif n'est figé** pour cette chaîne. Les noms employés sont
-**conceptuels** et marqués par des chevrons : `‹besoin_hydrique_zone›`,
-`‹intention_arrosage_zone›`, `‹rainbird_detecte›`, etc. *(L'**observation v0**
-fait exception : ses entités sont réelles et livrées, cf. [`15`](15_canal_reservoir_sol.md).)*
+La **V1 automatique** fige ses entités réelles (cf. [`17`](17_decision_v1.md) :
+`binary_sensor.arrosage_besoin_sol`, `binary_sensor.arrosage_intention`,
+`sensor.arrosage_dernier_effectif`, `input_boolean.arrosage_automatique_actif`).
+**Au-delà de la V1 mono-station** (multi-zone, raffinements de régime), le socle
+décisionnel reste antérieur au runtime : **aucun `entity_id` final, nom de capteur
+réel, ID d'automation, seuil ou durée définitif n'est figé** pour ces extensions.
+Les noms employés dans les contrats conceptuels sont **conceptuels** et marqués par
+des chevrons : `‹besoin_hydrique_zone›`, `‹intention_arrosage_zone›`,
+`‹rainbird_detecte›`, etc. *(L'**observation v0** fait exception : ses entités sont
+réelles et livrées, cf. [`15`](15_canal_reservoir_sol.md).)*
 
 > Un nom conceptuel `‹…›` désigne un **rôle**, pas une entité. Sa ratification
 > en `entity_id` réel relève de la Phase 0 terrain
