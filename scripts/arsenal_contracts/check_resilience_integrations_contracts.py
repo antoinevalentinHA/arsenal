@@ -33,6 +33,13 @@ REGISTRE = ROOT / "scripts" / "arsenal_contracts" / "resilience_integrations_reg
 
 DIR_GROUPS = ROOT / "02_groups" / "integrations"
 FILE_AGE = ROOT / "12_template_sensors" / "system" / "integrations" / "age_des_donnees.yaml"
+# Fichiers de fraîcheur/liveness arrosage soumis à la MÊME doctrine last_reported
+# (R14). Périmètre strictement limité à ces calculs de fraîcheur — pas de
+# bannissement global de last_updated (usages légitimes ailleurs).
+FILES_ARROSAGE_FRAICHEUR = [
+    ROOT / "12_template_sensors" / "arrosage" / "pont_donnees_fraiches.yaml",
+    ROOT / "12_template_sensors" / "arrosage" / "reservoir_sol.yaml",
+]
 FILE_ETAT = ROOT / "12_template_sensors" / "system" / "integrations" / "etat.yaml"
 FILE_WAN = ROOT / "12_template_sensors" / "system" / "connectivite" / "internet" / "contexte_wan_indisponible.yaml"
 FILE_SCRIPT_CANON = ROOT / "10_scripts" / "system" / "resilience_integration_recover.yaml"
@@ -297,20 +304,19 @@ def short_id(entity_id):
     return entity_id.split(".", 1)[1] if entity_id and "." in entity_id else entity_id
 
 
-def age_temporal_reference():
+def _temporal_reference_scan(path):
     """
-    Verrou strictement ciblé sur age_des_donnees.yaml (FILE_AGE).
-    La fraîcheur doit dériver de `last_reported` (liveness : l'intégration
-    rapporte-t-elle encore ?) et NON de `last_updated` / `last_changed`
-    (stabilité de valeur), qui font passer une intégration saine mais calme
-    pour gelée -> relances en boucle. Analyse hors commentaires.
+    Scanne un fichier de fraîcheur : la fraîcheur doit dériver de
+    `last_reported` (liveness : la source rapporte-t-elle encore ?) et NON de
+    `last_updated` / `last_changed` (stabilité de valeur), qui font passer une
+    source saine mais calme pour gelée -> faux stale. Analyse hors commentaires.
     Retourne (has_last_reported: bool, forbidden: list[str]).
     """
-    if not FILE_AGE.is_file():
-        return (False, ["age_des_donnees.yaml introuvable"])
+    if not path.is_file():
+        return (False, [f"{path.name} introuvable"])
     has_last_reported = False
     forbidden = []
-    for i, line in enumerate(FILE_AGE.read_text(encoding="utf-8", errors="ignore").splitlines(), 1):
+    for i, line in enumerate(path.read_text(encoding="utf-8", errors="ignore").splitlines(), 1):
         if line.strip().startswith("#"):
             continue
         if "last_reported" in line:
@@ -319,6 +325,14 @@ def age_temporal_reference():
             if tok in line:
                 forbidden.append(f"L.{i}: {tok}")
     return (has_last_reported, forbidden)
+
+
+def age_temporal_reference():
+    """
+    Verrou strictement ciblé sur age_des_donnees.yaml (FILE_AGE).
+    Cf. _temporal_reference_scan. Retourne (has_last_reported, forbidden).
+    """
+    return _temporal_reference_scan(FILE_AGE)
 
 
 # ──────────────────────────────────────────────────────────────
@@ -693,6 +707,30 @@ def main():
                "age_des_donnees.yaml ne dérive pas la fraîcheur de last_reported")
     for (_i, regle, cat, msg) in RESULTS:
         if _i == "Référence temporelle":
+            sym = {PASS: "✔", DETTE: "⚠", EXCEPTION: "✔", WARN: "⚠", FAIL: "✗"}[cat]
+            tag = "" if cat == PASS else f" {cat}"
+            print(f"  {sym} {regle}{tag} {msg}")
+    print()
+
+    # ---------- R14-arrosage : fraîcheur arrosage = last_reported ----------
+    # Même doctrine que R14, étendue aux calculs de fraîcheur/liveness arrosage
+    # (heartbeat pont + fraîcheur sol). Périmètre strictement limité à ces
+    # fichiers : pas de bannissement global de last_updated.
+    print("[Référence temporelle arrosage]  global")
+    for path in FILES_ARROSAGE_FRAICHEUR:
+        has_lr, forbidden = _temporal_reference_scan(path)
+        if forbidden:
+            record("Référence temporelle arrosage", "R14-arrosage", FAIL,
+                   f"{path.name} : fraîcheur dérivée de last_updated/last_changed "
+                   f"(faux stale) : " + ", ".join(forbidden))
+        elif has_lr:
+            record("Référence temporelle arrosage", "R14-arrosage", PASS,
+                   f"{path.name} : fraîcheur dérivée de last_reported (liveness)")
+        else:
+            record("Référence temporelle arrosage", "R14-arrosage", FAIL,
+                   f"{path.name} : ne dérive pas la fraîcheur de last_reported")
+    for (_i, regle, cat, msg) in RESULTS:
+        if _i == "Référence temporelle arrosage":
             sym = {PASS: "✔", DETTE: "⚠", EXCEPTION: "✔", WARN: "⚠", FAIL: "✗"}[cat]
             tag = "" if cat == PASS else f" {cat}"
             print(f"  {sym} {regle}{tag} {msg}")
