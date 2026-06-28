@@ -313,6 +313,21 @@ include:
     - input_number.arrosage_seuil_humidite_declenchement
 
     # =====================================================
+    # ==== 💧 ARROSAGE — OBSERVABILITÉ CHAÎNE DÉCISIONNELLE V1 ====
+    # =====================================================
+    # Permet aux audits de LIRE la décision V1 (besoin → intention → effectif)
+    # et l'état du maître d'automatisme, au lieu de les reconstruire — sur le
+    # modèle des blocs clim / chauffage. Indispensable pour corréler les
+    # décisions et arrosages réels avec le graphe humidité sol déjà historisé.
+    # Entités existantes, lecture seule, faible volume. Aucun seuil ni logique
+    # modifié. Les helpers de réglage (hystérésis / intervalle / fenêtre) sont
+    # volontairement EXCLUS (variation rare, faible valeur d'historisation).
+    - binary_sensor.arrosage_besoin_sol
+    - binary_sensor.arrosage_intention
+    - sensor.arrosage_dernier_effectif
+    - input_boolean.arrosage_automatique_actif
+
+    # =====================================================
     # ==== 🎛️ MODES DE LA MAISON ====
     # =====================================================
     - input_select.mode_maison
