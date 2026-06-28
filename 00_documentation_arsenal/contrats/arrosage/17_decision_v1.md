@@ -2,16 +2,17 @@
 ## 17 — Décision d'arrosage V1 (paramétrable, livrable)
 
 **Version contrat :** v1.0
-**Statut :** **Normatif — décision V1 ; runtime V1 réalisé (mergé).** Définit la
-**fonction de décision** d'un arrosage automatique **V1** mono-station : ses
-**entrées**, sa **règle paramétrable**, ses **invariants de sûreté** et la
+**Statut :** **Normatif — décision V1 ; runtime V1 réalisé (mergé, publié v16.3).**
+Définit la **fonction de décision** d'un arrosage automatique **V1** mono-station :
+ses **entrées**, sa **règle paramétrable**, ses **invariants de sûreté** et la
 **délégation** de l'exécution au script Run supervisé **déjà validé terrain**. Ce
 document **ne crée aucun runtime** (convention du domaine) ; le runtime V1
-correspondant est **mergé** (CI verte) et **documenté dans l'encart ci-dessous**.
-Le **domaine arrosage n'est pas publié en release** : « réalisé » = mergé/durci,
-**pas** « livré » au sens release (cf. plan d'action de chantier / registre C10).
+correspondant est **mergé** (CI verte), **publié** en release **v16.3** et
+**documenté dans l'encart ci-dessous**. La publication du runtime V1 **ne vaut pas
+complétude du domaine** : des manques subsistent (cf. plan d'action de chantier /
+registre C10).
 
-> **Réalisation runtime V1 (mergé, non publié).** La décision spécifiée ici est
+> **Réalisation runtime V1 (mergé, publié v16.3).** La décision spécifiée ici est
 > **réalisée** au runtime. **Mappage conceptuel → entités réelles** (concentré ici,
 > le corps du contrat conserve les rôles) :
 >
