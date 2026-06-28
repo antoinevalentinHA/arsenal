@@ -1448,6 +1448,20 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Supervision réseau : retrait de `binary_sensor.esp32_proxy_2` (reflashé en pont Rain Bird) des groupes ping ; seuil ESP32 critique 3 → 2 proxies KO ; contrat `ping_lan_synthese.md` v1.0 → v1.1.
 - Recorder : historisation (lecture seule) du pont Rain Bird, du canal réservoir sol et des cumuls/prévisions de pluie.
 
+---
+
+## 🧠 ARSENAL HA — [v16.3.0](changelogs/v16/v16_3_0.md) — STABLE — 2026-06-28
+**Tags :** arrosage, rain_bird, zigbee, resilience, recorder, lovelace, ui, clim, ventilation, contrats, ci, documentation
+
+**Signal net :**
+- Arrosage — V1 automatique (décision & action) : ajout de `binary_sensor.arrosage_besoin_sol`, `binary_sensor.arrosage_intention`, `sensor.arrosage_dernier_effectif`, du maître `input_boolean.arrosage_automatique_actif`, des helpers de décision (seuils, fenêtre, durée), de l'automation `declenchement.yaml` (exécution déléguée au script Run supervisé) et de la coexistence `rain_delay` (`coexistence_rain_delay.yaml` + `rain_delay_appliquer.yaml`) ; contrats `16_canal_demande_climatique.md` et `17_decision_v1.md` (arrosage 16 → 18 fichiers).
+- Arrosage — exécution supervisée : durée de la station 1 paramétrable via `input_number.arrosage_rainbird_station_1_duree_minutes` (clamp `[1,60]`) ; retrait des drapeaux de recette des préconditions runtime (garde devenue radio/opérationnelle) ; suppression de `tests_terrain.yaml`.
+- Arrosage — fraîcheur sur `last_reported` : `pont_donnees_fraiches.yaml` passe de `bridge_heartbeat.last_updated` (18000 s) à `bridge_uptime.last_reported` (10800 s) ; `reservoir_sol.yaml` aligné ; sondes sol jardin intégrées aux périmètres batteries / linkquality.
+- Climatisation — silence : `silence.yaml` réasserte le `quiet` sur dérive `climate.clim` `fan_mode == auto` en plage silencieuse.
+- Résilience intégrations : `age_des_donnees.yaml` et le contrat `resilience_integrations.md` fondés sur `last_reported` (liveness) ; checker enrichi (R14, R14-arrosage, R6-coexistence).
+- Recorder : historisation (lecture seule) de la chaîne décisionnelle V1 arrosage (besoin / intention / dernier effectif / maître / seuil).
+- Documentation : carve-out V1 dans les contrats arrosage (Phase 0 / P1–P7 ne bloquent plus la V1 déléguée) ; ajout du hub `navigation/domaines/arrosage.md` (21 → 22 hubs) et de C10 au registre des chantiers.
+
 ==================================================
 FIN INDEX
 ==================================================
