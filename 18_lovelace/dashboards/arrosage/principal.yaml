@@ -84,10 +84,16 @@ views:
 
           - type: markdown
             content: >
+              {% set m = (state_attr('binary_sensor.arrosage_suspension_pluie', 'motif') or '') | trim %}
+              {% set fi = (state_attr('binary_sensor.arrosage_suspension_pluie', 'fiabilite') or '') | trim %}
+              {% set lib = {'observe_24h': 'Pluie observée (24 h)', 'observe_48h': 'Pluie observée (48 h)', 'observe_72h': 'Pluie observée (72 h)', 'prevue': 'Pluie prévue'} %}
+              {% set fmap = {'confirme': 'Confirmée (pluie observée)', 'presume': 'Présumée (pluie prévue)'} %}
+              {% set ns = namespace(r=[]) %}
+              {% for c in m.split(', ') %}{% if c in lib %}{% set ns.r = ns.r + [lib[c]] %}{% endif %}{% endfor %}
               <div style="font-size: 13px; line-height: 1.6;">
-              <b>Diagnostic suspension pluie :</b><br>
-              • Motif : {{ state_attr('binary_sensor.arrosage_suspension_pluie', 'motif') or '—' }}<br>
-              • Fiabilité : {{ state_attr('binary_sensor.arrosage_suspension_pluie', 'fiabilite') or '—' }}
+              <b>Suspension pluie :</b><br>
+              • Raison(s) : {{ ns.r | join(' · ') if ns.r | length > 0 else 'Aucune (pas de suspension)' }}<br>
+              • Fiabilité : {{ fmap[fi] if fi in fmap else '—' }}
               </div>
             text_only: true
 
