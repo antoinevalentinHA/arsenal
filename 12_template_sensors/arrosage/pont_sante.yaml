@@ -33,7 +33,7 @@
 #   4. ok           : disponible ET frais ET radio correcte
 #   Disponibilité du pont != fraîcheur métier : des données anciennes
 #   mais un pont disponible = DÉGRADÉ, jamais indisponible. La fraîcheur
-#   métier (5 h) est portée par pont_donnees_fraiches.
+#   métier (uptime < 3 h) est portée par pont_donnees_fraiches.
 #
 # 🚫 INTERDITS
 #   - Piloter directement un équipement
