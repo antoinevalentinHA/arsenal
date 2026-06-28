@@ -40,6 +40,10 @@ FILES_ARROSAGE_FRAICHEUR = [
     ROOT / "12_template_sensors" / "arrosage" / "pont_donnees_fraiches.yaml",
     ROOT / "12_template_sensors" / "arrosage" / "reservoir_sol.yaml",
 ]
+# R6 (contrat 03 §6 / 17 §1) : la coexistence rain_delay ne doit neutraliser le
+# secours que si le pont est FRAIS. Verrou anti-régression sur le script écrivain.
+FILE_RAIN_DELAY = ROOT / "10_scripts" / "arrosage" / "rain_delay_appliquer.yaml"
+GATE_NEUTRALISATION = "maitre_on and dispo_ok and frais_ok"
 FILE_ETAT = ROOT / "12_template_sensors" / "system" / "integrations" / "etat.yaml"
 FILE_WAN = ROOT / "12_template_sensors" / "system" / "connectivite" / "internet" / "contexte_wan_indisponible.yaml"
 FILE_SCRIPT_CANON = ROOT / "10_scripts" / "system" / "resilience_integration_recover.yaml"
@@ -333,6 +337,29 @@ def age_temporal_reference():
     Cf. _temporal_reference_scan. Retourne (has_last_reported, forbidden).
     """
     return _temporal_reference_scan(FILE_AGE)
+
+
+def coexistence_freshness_gate():
+    """
+    R6 : la coexistence rain_delay (rain_delay_appliquer.yaml) ne doit
+    neutraliser le secours Rain Bird que si le pont est FRAIS — sinon un pont
+    périmé mais « présent » resterait neutralisé (viole 03 §6 / 17 §1 :
+    pont dégradé ⇒ bascule secours). Verrou anti-régression : la branche de
+    neutralisation doit garder sur la fraîcheur. Analyse hors commentaires.
+    Retourne (ok: bool, problems: list[str]).
+    """
+    if not FILE_RAIN_DELAY.is_file():
+        return (False, [f"{FILE_RAIN_DELAY.name} introuvable"])
+    code = [l for l in FILE_RAIN_DELAY.read_text(encoding="utf-8", errors="ignore").splitlines()
+            if not l.strip().startswith("#")]
+    body = "\n".join(code)
+    problems = []
+    if "binary_sensor.rain_bird_pont_donnees_fraiches" not in body:
+        problems.append("garde fraîcheur absente (pont_donnees_fraiches non référencé)")
+    if GATE_NEUTRALISATION not in body:
+        problems.append(f"branche de neutralisation non gardée par la fraîcheur "
+                        f"(attendu : « {GATE_NEUTRALISATION} »)")
+    return (not problems, problems)
 
 
 # ──────────────────────────────────────────────────────────────
@@ -731,6 +758,25 @@ def main():
                    f"{path.name} : ne dérive pas la fraîcheur de last_reported")
     for (_i, regle, cat, msg) in RESULTS:
         if _i == "Référence temporelle arrosage":
+            sym = {PASS: "✔", DETTE: "⚠", EXCEPTION: "✔", WARN: "⚠", FAIL: "✗"}[cat]
+            tag = "" if cat == PASS else f" {cat}"
+            print(f"  {sym} {regle}{tag} {msg}")
+    print()
+
+    # ---------- R6 : coexistence rain_delay gardée par la fraîcheur ----------
+    # Aligne le runtime sur 03 §6 / 17 §1 : pont dégradé/périmé ⇒ Arsenal cesse
+    # de neutraliser ⇒ rain_delay expire ⇒ secours Rain Bird reprend.
+    print("[Coexistence rain_delay — garde fraîcheur]  global")
+    gate_ok, gate_problems = coexistence_freshness_gate()
+    if gate_ok:
+        record("Coexistence fraîcheur", "R6-coexistence", PASS,
+               f"{FILE_RAIN_DELAY.name} : neutralisation gardée par "
+               f"pont_donnees_fraiches (03 §6)")
+    else:
+        record("Coexistence fraîcheur", "R6-coexistence", FAIL,
+               f"{FILE_RAIN_DELAY.name} : " + " ; ".join(gate_problems))
+    for (_i, regle, cat, msg) in RESULTS:
+        if _i == "Coexistence fraîcheur":
             sym = {PASS: "✔", DETTE: "⚠", EXCEPTION: "✔", WARN: "⚠", FAIL: "✗"}[cat]
             tag = "" if cat == PASS else f" {cat}"
             print(f"  {sym} {regle}{tag} {msg}")

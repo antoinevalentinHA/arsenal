@@ -6,15 +6,17 @@
 #   Encapsuler l'écriture native de `rain_delay` (contrat 11 §2 :
 #   jamais un `number` brut) pour réaliser la COEXISTENCE MINIMALE
 #   V1 (contrat 17, 03 §4) :
-#     - Arsenal autorité (maître `on`) + pont joignable
+#     - Arsenal autorité (maître `on`) + pont joignable ET FRAIS
 #       → pose un `rain_delay` court et borné : le programme
 #         interne Rain Bird est temporairement neutralisé.
 #     - Arsenal en retrait (maître `off`) + pont joignable
 #       → remet `rain_delay` à 0 : le secours interne reprend
-#         immédiatement la main.
-#     - Pont indisponible → AUCUNE écriture : `rain_delay` n'est
-#       plus renouvelé, expire, et le secours reprend seul
-#       (direction de défaillance, 03 §5 — fail-safe).
+#         immédiatement la main. (Rendre la main est toujours la
+#         direction sûre : NON gaté par la fraîcheur.)
+#     - Pont indisponible OU données périmées (non fraîches)
+#       → AUCUNE écriture : `rain_delay` n'est plus renouvelé,
+#         expire, et le secours reprend seul (direction de
+#         défaillance, 03 §5/§6 — pont dégradé ⇒ bascule secours).
 #
 # 🧱 INVARIANTS rain_delay (contrat 03 §4) — CONSERVÉS
 #   court · borné · renouvelé · JAMAIS permanent. La valeur posée
@@ -25,7 +27,9 @@
 # 🔗 ENTITÉS
 #   - number.rain_bird_bat_bt_2_e9a3_rain_delay (écrit, encadré)
 #   - input_boolean.arrosage_automatique_actif (autorité Arsenal)
-#   - binary_sensor.rain_bird_pont_donnees_disponibles (garde)
+#   - binary_sensor.rain_bird_pont_donnees_disponibles (garde présence)
+#   - binary_sensor.rain_bird_pont_donnees_fraiches (garde fraîcheur/liveness,
+#     R6 : ne neutralise le secours que si le pont rapporte encore — 03 §6)
 #
 # 🚫 NE FAIT PAS
 #   - aucune autre commande native (station, stop, run_program,
@@ -47,12 +51,17 @@ arrosage_rain_bird_rain_delay_appliquer:
         valeur_active: 2
         maitre_on: "{{ is_state('input_boolean.arrosage_automatique_actif', 'on') }}"
         dispo_ok: "{{ is_state('binary_sensor.rain_bird_pont_donnees_disponibles', 'on') }}"
+        # R6 (03 §6 / 17 §1) : fraîcheur = liveness. unknown/unavailable ⇒ non frais
+        # ⇒ pas de neutralisation ⇒ expiration ⇒ secours (direction sûre).
+        frais_ok: "{{ is_state('binary_sensor.rain_bird_pont_donnees_fraiches', 'on') }}"
 
     - choose:
-        # Arsenal autorité + pont joignable → neutralisation temporaire
+        # Arsenal autorité + pont joignable ET FRAIS → neutralisation temporaire.
+        # La fraîcheur ne gate QUE cette branche : un pont périmé cesse d'être
+        # neutralisé, rain_delay expire, le secours reprend (03 §5/§6).
         - conditions:
             - condition: template
-              value_template: "{{ maitre_on and dispo_ok }}"
+              value_template: "{{ maitre_on and dispo_ok and frais_ok }}"
           sequence:
             - service: number.set_value
               target:
@@ -70,4 +79,5 @@ arrosage_rain_bird_rain_delay_appliquer:
                 entity_id: "{{ rd_entity }}"
               data:
                 value: 0
-      # default : pont indisponible → aucune écriture (expiration → secours)
+      # default : pont indisponible OU non frais (maître on) → aucune écriture
+      #           → rain_delay expire → secours Rain Bird reprend (03 §5/§6)
