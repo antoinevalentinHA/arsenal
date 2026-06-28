@@ -33,41 +33,9 @@ views:
             template: section_header
             name: 🌧️ Pluie observée & prévue
 
-          - type: grid
-            columns: 3
-            square: false
-            cards:
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: sensor.pluie_cumul_24h
-                name: Cumul 24 h
-                icon: mdi:weather-rainy
-
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: sensor.pluie_cumul_48h
-                name: Cumul 48 h
-                icon: mdi:weather-rainy
-
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: sensor.pluie_cumul_72h
-                name: Cumul 72 h
-                icon: mdi:weather-pouring
-
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: sensor.pluie_prevue
-                name: Pluie prévue
-                icon: mdi:weather-cloudy-clock
-
-              - type: custom:button-card
-                template: carte_arrosage_pluie_raison
-                entity: binary_sensor.arrosage_suspension_pluie
+          - type: custom:button-card
+            template: carte_arrosage_pluie_raison
+            entity: binary_sensor.arrosage_suspension_pluie
           # =========================================================
           # 🌱 Humidité du sol (réservoir lent)
           # =========================================================
