@@ -66,37 +66,8 @@ views:
                 icon: mdi:weather-cloudy-clock
 
               - type: custom:button-card
-                template: carte_etat_binaire_interprete_inverse
+                template: carte_arrosage_pluie_raison
                 entity: binary_sensor.arrosage_suspension_pluie
-                name: Suspension pluie
-                icon: mdi:water-off
-                variables:
-                  label_on: Suspension pluie
-                  label_off: Pas de suspension
-                  color_on: 'rgba(33, 150, 243, 0.2)'
-                  color_off: 'rgba(158, 158, 158, 0.2)'
-                tap_action:
-                  action: none
-                hold_action:
-                  action: none
-                double_tap_action:
-                  action: none
-
-          - type: markdown
-            content: >
-              {% set m = (state_attr('binary_sensor.arrosage_suspension_pluie', 'motif') or '') | trim %}
-              {% set fi = (state_attr('binary_sensor.arrosage_suspension_pluie', 'fiabilite') or '') | trim %}
-              {% set lib = {'observe_24h': 'Pluie observée (24 h)', 'observe_48h': 'Pluie observée (48 h)', 'observe_72h': 'Pluie observée (72 h)', 'prevue': 'Pluie prévue'} %}
-              {% set fmap = {'confirme': 'Confirmée (pluie observée)', 'presume': 'Présumée (pluie prévue)'} %}
-              {% set ns = namespace(r=[]) %}
-              {% for c in m.split(', ') %}{% if c in lib %}{% set ns.r = ns.r + [lib[c]] %}{% endif %}{% endfor %}
-              <div style="font-size: 13px; line-height: 1.6;">
-              <b>Suspension pluie :</b><br>
-              • Raison(s) : {{ ns.r | join(' · ') if ns.r | length > 0 else 'Aucune (pas de suspension)' }}<br>
-              • Fiabilité : {{ fmap[fi] if fi in fmap else '—' }}
-              </div>
-            text_only: true
-
           # =========================================================
           # 🌱 Humidité du sol (réservoir lent)
           # =========================================================
