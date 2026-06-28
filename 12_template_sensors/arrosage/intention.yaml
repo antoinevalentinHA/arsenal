@@ -17,6 +17,15 @@
 #   6. préconditions runtime `on` ET données pont disponibles ;
 #   7. état du canal réservoir sol exploitable (complet/degrade).
 #
+# 🏷️ EXPLICABILITÉ (R7) — attributs LECTURE SEULE, état INCHANGÉ
+#   `motif`     : cause DOMINANTE (premier gate échouant, ordre de priorité)
+#                 maitre_off > pont_indisponible > preconditions_non_remplies
+#                 > canal_sol_indisponible > suspension_pluie > hors_fenetre
+#                 > cooldown_actif > sol_suffisant ; sinon `arrosage_requis`.
+#   `categorie` : arrose / suspendu / abstention / repos (dérivée du motif).
+#   Recompute les MÊMES booléens que `state` (aucune entrée nouvelle, pas de
+#   `pont_donnees_fraiches`) ; codes internes, traduction laissée à l'UI.
+#
 # 🔗 ENTRÉES
 #   - binary_sensor.arrosage_besoin_sol
 #   - input_boolean.arrosage_automatique_actif
@@ -65,3 +74,63 @@
           {% set cooldown_ok = (now() - as_datetime(last)).total_seconds() / 3600 >= cd %}
         {% endif %}
         {{ 'on' if (maitre and besoin and fenetre_ok and not susp and precond and dispo and etat_ok and cooldown_ok) else 'off' }}
+      attributes:
+        # Cause DOMINANTE (premier gate échouant). Mêmes booléens que `state`,
+        # aucune entrée nouvelle. Lecture seule : n'influence pas la décision.
+        motif: >
+          {% set maitre = is_state('input_boolean.arrosage_automatique_actif', 'on') %}
+          {% set besoin = is_state('binary_sensor.arrosage_besoin_sol', 'on') %}
+          {% set susp = is_state('binary_sensor.arrosage_suspension_pluie', 'on') %}
+          {% set precond = is_state('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'on') %}
+          {% set dispo = is_state('binary_sensor.rain_bird_pont_donnees_disponibles', 'on') %}
+          {% set etat = states('sensor.jardin_reservoir_sol_etat') %}
+          {% set etat_ok = etat in ['complet', 'degrade'] %}
+          {% set t = now().strftime('%H:%M:%S') %}
+          {% set deb = states('input_datetime.arrosage_fenetre_debut') %}
+          {% set fin = states('input_datetime.arrosage_fenetre_fin') %}
+          {% set fenetre_ok = deb not in ['unknown', 'unavailable'] and fin not in ['unknown', 'unavailable'] and deb <= t <= fin %}
+          {% set last = states('sensor.arrosage_dernier_effectif') %}
+          {% set cd = states('input_number.arrosage_intervalle_minimal_heures') | float(24) %}
+          {% if last in ['unknown', 'unavailable', 'none', 'None', ''] %}
+            {% set cooldown_ok = true %}
+          {% else %}
+            {% set cooldown_ok = (now() - as_datetime(last)).total_seconds() / 3600 >= cd %}
+          {% endif %}
+          {{ 'maitre_off' if not maitre
+             else 'pont_indisponible' if not dispo
+             else 'preconditions_non_remplies' if not precond
+             else 'canal_sol_indisponible' if not etat_ok
+             else 'suspension_pluie' if susp
+             else 'hors_fenetre' if not fenetre_ok
+             else 'cooldown_actif' if not cooldown_ok
+             else 'sol_suffisant' if not besoin
+             else 'arrosage_requis' }}
+        # Catégorie dérivée du motif dominant (même ordre de priorité).
+        categorie: >
+          {% set maitre = is_state('input_boolean.arrosage_automatique_actif', 'on') %}
+          {% set besoin = is_state('binary_sensor.arrosage_besoin_sol', 'on') %}
+          {% set susp = is_state('binary_sensor.arrosage_suspension_pluie', 'on') %}
+          {% set precond = is_state('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'on') %}
+          {% set dispo = is_state('binary_sensor.rain_bird_pont_donnees_disponibles', 'on') %}
+          {% set etat = states('sensor.jardin_reservoir_sol_etat') %}
+          {% set etat_ok = etat in ['complet', 'degrade'] %}
+          {% set t = now().strftime('%H:%M:%S') %}
+          {% set deb = states('input_datetime.arrosage_fenetre_debut') %}
+          {% set fin = states('input_datetime.arrosage_fenetre_fin') %}
+          {% set fenetre_ok = deb not in ['unknown', 'unavailable'] and fin not in ['unknown', 'unavailable'] and deb <= t <= fin %}
+          {% set last = states('sensor.arrosage_dernier_effectif') %}
+          {% set cd = states('input_number.arrosage_intervalle_minimal_heures') | float(24) %}
+          {% if last in ['unknown', 'unavailable', 'none', 'None', ''] %}
+            {% set cooldown_ok = true %}
+          {% else %}
+            {% set cooldown_ok = (now() - as_datetime(last)).total_seconds() / 3600 >= cd %}
+          {% endif %}
+          {{ 'repos' if not maitre
+             else 'abstention' if not dispo
+             else 'abstention' if not precond
+             else 'abstention' if not etat_ok
+             else 'suspendu' if susp
+             else 'repos' if not fenetre_ok
+             else 'repos' if not cooldown_ok
+             else 'repos' if not besoin
+             else 'arrose' }}
