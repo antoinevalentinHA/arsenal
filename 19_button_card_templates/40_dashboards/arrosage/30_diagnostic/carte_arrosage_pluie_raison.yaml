@@ -1,0 +1,91 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Arrosage — Suspension pluie interprétée (raison)
+#
+# 🗂️ COUCHE : diagnostic
+# 🧱 TYPE UI : état + contexte interprété
+# 🔍 NIVEAU DE CONFIANCE : élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Présenter, en UNE seule carte, le diagnostic de suspension
+#   pluie sous forme humaine :
+#     - state  → fiabilité lisible (Confirmée / Présumée / —)
+#     - label  → raison(s) courte(s) (pluie observée / prévue / aucune)
+#     - couleur → bleu si suspension active, gris sinon
+#   Remplace le couple « carte on/off + bloc markdown » du dashboard.
+#
+# 📡 SOURCE
+#   - binary_sensor.arrosage_suspension_pluie
+#       state            → on/off (suspension active ou non)
+#       attributes.fiabilite → confirme | presume | aucun
+#       attributes.motif     → observe_24h, observe_48h, observe_72h, prevue
+#
+# ⚙️ LOGIQUE UI (traduction portée par le template, pas le runtime)
+#   - Traduit la fiabilité backend en libellé lisible.
+#   - Traduit les codes internes du motif en raisons courtes,
+#     SANS jamais exposer observe_24h / observe_48h / observe_72h / prevue.
+#   - Cas dégradé (absent / unknown / unavailable) → "—" / "aucune".
+#   - Aucun calcul de diagnostic, aucune décision : lecture seule.
+#
+# 🧱 INSPIRATION
+#   Pattern alarme_diagnostic_coherence_raison (traduction code → libellé
+#   portée par la carte UI).
+#
+# 🔗 SATELLITE DE : socle_status_label
+#
+# 🏷️ STATUT
+#   Diagnostic UI — Arsenal v14.x
+# ==========================================================
+
+carte_arrosage_pluie_raison:
+  template: socle_status_label
+
+  show_icon: false
+  show_name: true
+  show_state: true
+  show_label: true
+
+  name: Suspension pluie
+
+  state_display: >
+    [[[
+      const f = entity.attributes?.fiabilite;
+      const c = (f || "").toString().trim();
+      const map = {
+        "confirme": "Confirmée",
+        "presume": "Présumée"
+      };
+      return map[c] || "—";
+    ]]]
+
+  label: >
+    [[[
+      const raw = entity.attributes?.motif;
+      const m = (raw || "").toString().trim();
+
+      if (!m || m === "aucun" || m === "unknown" || m === "unavailable")
+        return "aucune";
+
+      const codes = m.split(",").map(s => s.trim());
+
+      const fenetres = { "observe_24h": "24 h", "observe_48h": "48 h", "observe_72h": "72 h" };
+      const observees = ["observe_24h", "observe_48h", "observe_72h"]
+        .filter(k => codes.includes(k))
+        .map(k => fenetres[k]);
+
+      const parts = [];
+      if (observees.length > 0) parts.push("pluie observée " + observees.join(" · "));
+      if (codes.includes("prevue")) parts.push("pluie prévue");
+
+      return parts.length > 0 ? parts.join(" · ") : "aucune";
+    ]]]
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            return entity.state === "on"
+              ? "rgba(33, 150, 243, 0.2)"
+              : "rgba(158, 158, 158, 0.2)";
+          ]]]
