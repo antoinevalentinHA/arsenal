@@ -75,6 +75,60 @@ views:
               action: more-info
 
           # =========================================================
+          # 🤖 État de l'automatisme (lecture)
+          # =========================================================
+          # Lecture seule de la chaîne de décision V1 : maître, intention,
+          # besoin sol, dernier arrosage effectif. Le maître se règle dans
+          # /reglages-arrosage-dashboard ; ici il est exposé sans interaction.
+          - type: custom:button-card
+            template: section_header
+            name: 🤖 État de l'automatisme
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: carte_mode_binaire_interprete
+                entity: input_boolean.arrosage_automatique_actif
+                name: Automatisme
+                icon: mdi:robot
+                variables:
+                  label_on: Actif
+                  label_off: En pause
+                  color_on: 'rgba(76, 175, 80, 0.2)'
+                  color_off: 'rgba(158, 158, 158, 0.2)'
+
+              - type: custom:button-card
+                template: carte_mode_binaire_interprete
+                entity: binary_sensor.arrosage_intention
+                name: Intention
+                icon: mdi:water-sync
+                variables:
+                  label_on: Arrosage souhaité
+                  label_off: Aucun arrosage souhaité
+                  color_on: 'rgba(33, 150, 243, 0.2)'
+                  color_off: 'rgba(158, 158, 158, 0.2)'
+
+              - type: custom:button-card
+                template: carte_mode_binaire_interprete
+                entity: binary_sensor.arrosage_besoin_sol
+                name: Besoin sol
+                icon: mdi:sprout
+                variables:
+                  label_on: Besoin détecté
+                  label_off: Sol suffisant
+                  color_on: 'rgba(255, 152, 0, 0.2)'
+                  color_off: 'rgba(76, 175, 80, 0.2)'
+
+              - type: tile
+                entity: sensor.arrosage_dernier_effectif
+                name: Dernier arrosage
+                icon: mdi:history
+                tap_action:
+                  action: more-info
+
+          # =========================================================
           # 💧 Commande manuelle supervisée (station 1)
           # =========================================================
           - type: custom:button-card
