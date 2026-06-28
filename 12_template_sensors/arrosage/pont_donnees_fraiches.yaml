@@ -21,7 +21,15 @@
 #     sensor.rain_bird_bat_bt_2_e9a3_battery_level
 #     sensor.rain_bird_bat_bt_2_e9a3_ble_rssi
 #   Lit (récence) :
-#     sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat (état + last_updated)
+#     sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat (état + last_reported)
+#
+# 🕒 RÉFÉRENCE TEMPORELLE — last_reported (et NON last_updated)
+#   La récence du heartbeat mesure la LIVENESS du pont (rapporte-t-il
+#   encore ?), pas la stabilité de la valeur. `last_reported` se rafraîchit
+#   à chaque écriture du coordinateur même valeur identique ; `last_updated`
+#   ne bouge qu'au changement d'état et ferait passer un pont sain mais
+#   « calme » pour gelé. Aligné sur la doctrine repo-wide (contrat
+#   resilience_integrations §5, invariant 1).
 #
 # 🆔 UNIQUE_ID
 #   rain_bird_pont_donnees_fraiches
@@ -63,7 +71,7 @@
         {% set hb = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
         {% set hb_st = states(hb) %}
         {% set recent = hb_st is not none and hb_st not in indispo
-              and (now() - states[hb].last_updated).total_seconds() < 18000 %}
+              and (now() - states[hb].last_reported).total_seconds() < 18000 %}
         {{ 'mdi:timer-check-outline' if (exploitable and recent) else 'mdi:timer-alert-outline' }}
       state: >
         {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
@@ -76,7 +84,7 @@
         {% set hb = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
         {% set hb_st = states(hb) %}
         {% set recent = hb_st is not none and hb_st not in indispo
-              and (now() - states[hb].last_updated).total_seconds() < 18000 %}
+              and (now() - states[hb].last_reported).total_seconds() < 18000 %}
         {{ 'on' if (exploitable and recent) else 'off' }}
       attributes:
         donnees_exploitables: >
@@ -94,6 +102,6 @@
           {% if hb_st is none or hb_st in indispo %}
             inconnu
           {% else %}
-            {{ (now() - states[hb].last_updated).total_seconds() | int }}
+            {{ (now() - states[hb].last_reported).total_seconds() | int }}
           {% endif %}
         seuil_secondes: "18000"
