@@ -2,12 +2,38 @@
 ## 17 — Décision d'arrosage V1 (paramétrable, livrable)
 
 **Version contrat :** v1.0
-**Statut :** **Normatif — décision V1.** Définit la **fonction de décision**
-d'un arrosage automatique **V1** mono-station : ses **entrées**, sa **règle
-paramétrable**, ses **invariants de sûreté** et la **délégation** de l'exécution
-au script Run supervisé **déjà validé terrain**. **Runtime non livré dans ce
-document** : aucun template/helper/automation/script/UI n'est créé ici — leur
-matérialisation relève des Lots 2 (helpers) et 3 (runtime).
+**Statut :** **Normatif — décision V1 ; runtime V1 réalisé (mergé).** Définit la
+**fonction de décision** d'un arrosage automatique **V1** mono-station : ses
+**entrées**, sa **règle paramétrable**, ses **invariants de sûreté** et la
+**délégation** de l'exécution au script Run supervisé **déjà validé terrain**. Ce
+document **ne crée aucun runtime** (convention du domaine) ; le runtime V1
+correspondant est **mergé** (CI verte) et **documenté dans l'encart ci-dessous**.
+Le **domaine arrosage n'est pas publié en release** : « réalisé » = mergé/durci,
+**pas** « livré » au sens release (cf. plan d'action de chantier / registre C10).
+
+> **Réalisation runtime V1 (mergé, non publié).** La décision spécifiée ici est
+> **réalisée** au runtime. **Mappage conceptuel → entités réelles** (concentré ici,
+> le corps du contrat conserve les rôles) :
+>
+> | Rôle | Entité réelle |
+> |---|---|
+> | besoin sol | `binary_sensor.arrosage_besoin_sol` |
+> | intention V1 | `binary_sensor.arrosage_intention` (attributs `motif` / `categorie`) |
+> | historique prouvé | `sensor.arrosage_dernier_effectif` |
+> | interrupteur maître | `input_boolean.arrosage_automatique_actif` |
+> | seuil de déclenchement | `input_number.arrosage_seuil_humidite_declenchement` |
+> | hystérésis | `input_number.arrosage_hysteresis_humidite` |
+> | cooldown / intervalle minimal | `input_number.arrosage_intervalle_minimal_heures` |
+> | fenêtre Arsenal | `input_datetime.arrosage_fenetre_debut` / `_fin` |
+> | durée station 1 (réutilisée, §5) | `input_number.arrosage_rainbird_station_1_duree_minutes` |
+> | exécution (décision → script) | automation `10270000000002` → `script.arrosage_rain_bird_station_1_courte_supervisee` |
+> | coexistence `rain_delay` | automation `10270000000003` → `script.arrosage_rain_bird_rain_delay_appliquer` |
+>
+> Le **plafond journalier (1/j)** n'a **pas** de helper dédié : il est porté par le
+> **cooldown** (`input_number.arrosage_intervalle_minimal_heures`). Les **valeurs**
+> des paramètres restent **réglables** (§6) ; le comportement reste **opposable**
+> par les invariants §4. Cet encart **documente** le runtime ; il ne le duplique
+> pas (le détail vit dans les fichiers).
 
 > **Positionnement.** Ce contrat est la **spécialisation livrable** de l'intention
 > ([`05_intention.md`](05_intention.md)) pour la **V1 mono-station** : là où 04/05
@@ -60,30 +86,34 @@ paramètres opérateur, en **déléguant l'exécution** au script supervisé ép
   complet, les **régimes avancés** (R3/R5, `mode Off`), le multi-zone et toute
   coexistence sophistiquée.
 
-> **Convention de nommage.** Les **paramètres et entités V1 non encore créés**
-> sont **conceptuels** (`‹…›`) ; leur matérialisation est aux Lots 2/3. Les
-> **entités déjà livrées** consommées ou déléguées sont citées telles quelles.
+> **Convention de nommage.** Les entités et paramètres V1 sont **matérialisés**
+> (cf. encart « Réalisation runtime V1 »). Les noms `‹…›` employés dans le corps
+> désignent des **rôles** ; leur `entity_id` réel figure dans la table de l'encart.
+> Au-delà de la V1 mono-station (multi-zone, régimes avancés), les rôles restent
+> **conceptuels**, non figés.
 
 ---
 
 ## 2. Entrées de la décision V1
 
-| Entrée | Rôle dans la décision | Source (livrée ou `‹conceptuelle›`) |
+| Entrée | Rôle dans la décision | Source (entité réelle) |
 |---|---|---|
 | **Humidité représentative du sol** (médiane) | Mesure du « réservoir » : basse ⇒ besoin | `sensor.jardin_humidite_sol_mediane` ([`15`](15_canal_reservoir_sol.md)) |
 | **État du canal réservoir sol** | Qualité de lecture : `indisponible`/`insuffisant` ⇒ prudence | `sensor.jardin_reservoir_sol_etat` ([`15`](15_canal_reservoir_sol.md)) |
 | **Suspension pluie** | Pluie observée/prévue ⇒ **inhibe** l'arrosage | `binary_sensor.arrosage_suspension_pluie` |
-| **Fenêtre horaire Arsenal** | Arsenal n'agit que dans `‹fenetre_arsenal›`, **disjointe** du secours | `‹fenetre_arsenal›` (helper, Lot 2) |
-| **Cooldown / intervalle minimal** | Délai minimal entre deux arrosages Arsenal (anti-acharnement) | `‹cooldown_arrosage›` (helper, Lot 2) |
-| **Plafond journalier** | Au plus **un** arrosage Arsenal par jour | `‹plafond_journalier›` (= 1, Lot 2) |
-| **Interrupteur maître** | Autorise/coupe globalement l'automatisme Arsenal | `‹interrupteur_maitre_arrosage›` (helper, Lot 2) |
+| **Fenêtre horaire Arsenal** | Arsenal n'agit que dans la fenêtre, **disjointe** du secours | `input_datetime.arrosage_fenetre_debut` / `_fin` |
+| **Cooldown / intervalle minimal** | Délai minimal entre deux arrosages Arsenal (anti-acharnement) | `input_number.arrosage_intervalle_minimal_heures` |
+| **Plafond journalier** | Au plus **un** arrosage Arsenal par jour | porté par le **cooldown** (`input_number.arrosage_intervalle_minimal_heures`) — pas de helper dédié |
+| **Interrupteur maître** | Autorise/coupe globalement l'automatisme Arsenal | `input_boolean.arrosage_automatique_actif` |
 | **Préconditions runtime + santé pont** | Pont **exploitable** pour exécuter/observer | `binary_sensor.arrosage_rain_bird_preconditions_runtime`, `sensor.rain_bird_pont_sante` |
-| **Historique d'arrosage** *(fonctionnel)* | « Quand a-t-on **réellement** arrosé pour la dernière fois ? » — applique cooldown + plafond | `‹dernier_arrosage_effectif›` — **matérialisé au Lot 3**, horodaté sur **démarrage prouvé par le switch natif** (jamais ACK seul, [`06`](06_observation_et_preuves.md)) |
+| **Historique d'arrosage** *(fonctionnel)* | « Quand a-t-on **réellement** arrosé pour la dernière fois ? » — applique cooldown + plafond | `sensor.arrosage_dernier_effectif` — horodaté sur **démarrage prouvé par le switch natif** (jamais ACK seul, [`06`](06_observation_et_preuves.md)) |
 
 > **Historique exprimé fonctionnellement.** La décision **tient compte d'un
 > historique d'arrosage** pour éviter les déclenchements trop rapprochés. Ce
-> contrat **ne fige pas** `sensor.arrosage_dernier_effectif` : sa création est un
-> **sous-produit prouvé de l'exécution** (Lot 3), pas une entrée à inventer ici.
+> contrat **documente** `sensor.arrosage_dernier_effectif` comme **sous-produit
+> prouvé de l'exécution** (horodaté sur le démarrage prouvé par le switch natif,
+> jamais sur un ACK seul, [`06`](06_observation_et_preuves.md)) — il ne l'invente
+> pas comme entrée.
 
 ---
 
@@ -115,8 +145,9 @@ besoin → décision de 04/05, mais **concret et paramétré**.
 
 Si une condition manque, l'intention est **inactive**, et la cause reste
 **explicable** (motif dominant, modèle [`aeration_recommandation.md`](../aeration_recommandation.md)).
-Tous les seuils/bornes/fenêtres sont des **paramètres** (Lot 2), **non figés
-ici**.
+Tous les seuils/bornes/fenêtres sont des **helpers réglables** (cf. encart
+« Réalisation runtime V1 ») ; leurs **valeurs** restent calibrables (§6), non
+figées doctrinalement.
 
 ---
 
@@ -168,8 +199,8 @@ l'exécution est **déléguée** au script supervisé **déjà validé terrain**
 
 ## 6. Calibration par l'observation (renvoi Lot 4)
 
-Les **paramètres** (`‹seuil_humidite_declenchement›`, `‹hysteresis_humidite›`,
-`‹fenetre_arsenal›`, `‹cooldown_arrosage›`) sont des **helpers durables** (Lot 2),
+Les **paramètres** (seuil de déclenchement, hystérésis, fenêtre, cooldown) sont
+des **helpers durables** désormais créés (cf. encart « Réalisation runtime V1 »),
 **réglés** ensuite par l'observation (Lot 4) : ET₀/VPD
 ([`16`](16_canal_demande_climatique.md)), tendance, tarissement entrent comme
 **modulateurs non destructeurs** (canaux non fondus, désactivables) servant à
@@ -186,11 +217,12 @@ décision ni à **retarder** l'automatisation.
   **minimale** fait, elle, partie de la V1 — §1, §4) ;
 - ❌ `mode Off` Rain Bird / neutralisation **permanente** du secours ;
 - ❌ **commande native nouvelle** ; besoin **multi-zone** ;
-- ❌ figer `sensor.arrosage_dernier_effectif` (Lot 3) ou tout `entity_id` de
-  paramètre V1 (Lot 2) ;
 - ❌ tout **cockpit de recette**, checklist Lovelace, entité temporaire de
-  qualification ou helper manuel de validation ;
-- ❌ tout **runtime / helper / automation / script / UI** **dans ce document**.
+  qualification ou helper manuel de validation.
+
+> Ce document **ne contient** aucun runtime : il le **spécifie et le référence**
+> (encart « Réalisation runtime V1 »). Convention du domaine — le runtime vit dans
+> ses fichiers ; le contrat reste la référence normative.
 
 ---
 
@@ -207,7 +239,8 @@ décision ni à **retarder** l'automatisation.
    et de façon auto-réversible** (`rain_delay`), **jamais** en permanence, et **ne
    bloque jamais tout arrosage**.
 6. **Historique prouvé** (switch natif), jamais présumé.
-7. **Aucune commande native nouvelle** ; **aucun seuil/`entity_id` V1 figé** ici.
+7. **Aucune commande native nouvelle** ; les `entity_id` V1 sont **matérialisés
+   dans le runtime** (encart), non redéfinis dans ce document.
 
 ---
 
