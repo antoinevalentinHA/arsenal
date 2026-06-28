@@ -14,6 +14,15 @@
 # ⚠️ NOTE UI
 #   - Pas de device_class: duration
 #     (sinon l'UI peut afficher 4:00 au lieu de 240 min)
+#
+# 🕒 REFERENCE TEMPORELLE — last_reported (et NON last_updated)
+#   La fraîcheur mesure la LIVENESS de l'intégration, pas la stabilité
+#   de la valeur. `last_reported` se rafraîchit à chaque écriture du
+#   coordinateur même si la valeur est identique, et ne gèle que si
+#   l'intégration cesse réellement de rapporter. `last_updated`, lui,
+#   ne bouge qu'au changement de valeur : une intégration saine mais
+#   « calme » (valeurs stables) y paraît figée -> faux gel -> relances.
+#   Choix délibéré : ne PAS revenir à last_updated / last_changed ici.
 # ==========================================================
 
 - sensor:
@@ -33,10 +42,10 @@
           {% if items | count > 0 %}
             {% set entites = items
                 | rejectattr('state', 'in', ['unknown','unavailable'])
-                | selectattr('last_updated', 'defined')
+                | selectattr('last_reported', 'defined')
                 | list %}
             {% if entites | count > 0 %}
-              {% set last = entites | map(attribute='last_updated') | map('as_timestamp') | max %}
+              {% set last = entites | map(attribute='last_reported') | map('as_timestamp') | max %}
               {% set age = ((now().timestamp() - last) / 60) | int(0) %}
               {{ [age, MAX_MINUTES] | min }}
             {% else %}

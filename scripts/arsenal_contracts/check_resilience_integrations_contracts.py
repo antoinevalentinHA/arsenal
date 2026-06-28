@@ -297,6 +297,30 @@ def short_id(entity_id):
     return entity_id.split(".", 1)[1] if entity_id and "." in entity_id else entity_id
 
 
+def age_temporal_reference():
+    """
+    Verrou strictement ciblé sur age_des_donnees.yaml (FILE_AGE).
+    La fraîcheur doit dériver de `last_reported` (liveness : l'intégration
+    rapporte-t-elle encore ?) et NON de `last_updated` / `last_changed`
+    (stabilité de valeur), qui font passer une intégration saine mais calme
+    pour gelée -> relances en boucle. Analyse hors commentaires.
+    Retourne (has_last_reported: bool, forbidden: list[str]).
+    """
+    if not FILE_AGE.is_file():
+        return (False, ["age_des_donnees.yaml introuvable"])
+    has_last_reported = False
+    forbidden = []
+    for i, line in enumerate(FILE_AGE.read_text(encoding="utf-8", errors="ignore").splitlines(), 1):
+        if line.strip().startswith("#"):
+            continue
+        if "last_reported" in line:
+            has_last_reported = True
+        for tok in ("last_updated", "last_changed"):
+            if tok in line:
+                forbidden.append(f"L.{i}: {tok}")
+    return (has_last_reported, forbidden)
+
+
 # ──────────────────────────────────────────────────────────────
 # Cœur : évaluation d'une intégration contre le dépôt
 # ──────────────────────────────────────────────────────────────
@@ -649,6 +673,26 @@ def main():
         record("Contexte WAN", "R13-b", FAIL, "garde WAN absente du script canon")
     for (_i, regle, cat, msg) in RESULTS:
         if _i == "Contexte WAN":
+            sym = {PASS: "✔", DETTE: "⚠", EXCEPTION: "✔", WARN: "⚠", FAIL: "✗"}[cat]
+            tag = "" if cat == PASS else f" {cat}"
+            print(f"  {sym} {regle}{tag} {msg}")
+    print()
+
+    # ---------- R14 global : référence temporelle du capteur d'âge ----------
+    print("[Référence temporelle]  global")
+    has_lr, forbidden = age_temporal_reference()
+    if forbidden:
+        record("Référence temporelle", "R14", FAIL,
+               "fraîcheur dérivée de last_updated/last_changed (faux gels) : "
+               + ", ".join(forbidden))
+    elif has_lr:
+        record("Référence temporelle", "R14", PASS,
+               "fraîcheur dérivée de last_reported (liveness) dans age_des_donnees.yaml")
+    else:
+        record("Référence temporelle", "R14", FAIL,
+               "age_des_donnees.yaml ne dérive pas la fraîcheur de last_reported")
+    for (_i, regle, cat, msg) in RESULTS:
+        if _i == "Référence temporelle":
             sym = {PASS: "✔", DETTE: "⚠", EXCEPTION: "✔", WARN: "⚠", FAIL: "✗"}[cat]
             tag = "" if cat == PASS else f" {cat}"
             print(f"  {sym} {regle}{tag} {msg}")

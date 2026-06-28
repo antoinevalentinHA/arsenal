@@ -29,7 +29,7 @@ Les deux axes doivent exister **séparément**. Aucun ne peut servir de substitu
 
 | Terme | Définition |
 |---|---|
-| **Fraîcheur** | Âge des données, dérivé du `last_updated` le plus récent des membres exploitables du groupe source, plafonné. Mesure le vieillissement. |
+| **Fraîcheur** | Âge des données, dérivé du `last_reported` le plus récent des membres exploitables du groupe source, plafonné. Mesure la *liveness* (l'intégration rapporte-t-elle encore ?), pas la stabilité de la valeur. `last_reported` se rafraîchit à chaque écriture du coordinateur même valeur identique ; `last_updated`/`last_changed` ne bougent qu'au changement de valeur et feraient passer une intégration saine mais « calme » pour gelée. |
 | **Disponibilité** | Présence d'au moins un membre exploitable du groupe source. L'**indisponibilité franche** = « 0 membre exploitable » maintenu sur une temporisation. Mesure la disparition. |
 | **Recovery** | Procédure de relance déléguée au script canon `resilience_integration_recover` (attempt / reset / block), bornée par backoff et plafond, inhibée en panne secteur. |
 | **Chaîne complète** | Intégration possédant tous les maillons des couches diagnostic, décision, action, UI (§4), câblant **les deux** axes : gel silencieux ET indisponibilité franche. |
@@ -58,7 +58,7 @@ Les deux axes doivent exister **séparément**. Aucun ne peut servir de substitu
 
 ## 5. Invariants obligatoires
 
-1. **Fraîcheur** — capteur d'âge dérivé de `last_updated`, plafonné.
+1. **Fraîcheur** — capteur d'âge dérivé de `last_reported` (liveness), plafonné. Usage de `last_updated`/`last_changed` proscrit ici : ils mesurent la stabilité de valeur, pas la liveness, et génèrent de faux gels sur intégration saine mais calme.
 2. **Disponibilité** — binaire d'indisponibilité distinct de l'âge, fondé sur comptage de membres exploitables (« 0 membre exploitable » maintenu = indisponibilité confirmée).
 3. **Non-substitution** — l'âge ne prouve pas la disponibilité.
 4. **Recovery** — convergence vers le script canon unique, jamais une seconde chaîne d'action.
