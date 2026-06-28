@@ -78,6 +78,7 @@ Quelques **axes ordonnés**, pas un backlog. Chaque lot sera **audité avant YAM
 - Quel **niveau d'explicabilité UI** est **suffisant** pour livrer (sans sur-ingénierie) ?
 - Quelles **validations terrain** sont **nécessaires** (vs souhaitables mais non bloquantes) ?
 - Quels **signaux** permettent d'affirmer que le domaine est **publiable** ?
+- **Couplage des seuils de fraîcheur sol (observé 2026-06-29).** Le gate « canal sol exploitable » de l'intention accepte l'état `degrade` (**2 points frais**, [`14`](../../../contrats/arrosage/14_qualite_donnees_sol.md) / [`15`](../../../contrats/arrosage/15_canal_reservoir_sol.md)), mais la **médiane** qui alimente `besoin_sol` exige **3 points frais** (`availability ≥ 3`). À 2 points frais : médiane indisponible → `besoin_sol = off` → pas d'arrosage, et le `motif` dominant affiche `sol_suffisant` au lieu d'une cause « médiane indisponible (2/3) ». Comportement **abstention-safe** (on n'arrose pas dans le doute ; le secours Rain Bird reste le filet), mais (a) la branche `degrade` ne peut **jamais** porter une intention positive et (b) le motif est **trompeur** dans ce cas. **Arbitrage** : aligner les deux seuils (médiane tolère 2 points ?) **ou** assumer 3/3 et **corriger le libellé du motif**. À observer en validation terrain (§8) avant toute décision.
 
 ## 8. Validations terrain nécessaires
 
