@@ -11,6 +11,7 @@ Arrosage automatique du jardin, en **coexistence gouvernée** avec le contrôleu
 
 - Index du domaine (porte d'entrée) : [`README.md`](../../contrats/arrosage/README.md) — doctrine, structure des contrats, chaîne conceptuelle.
 - Coexistence Arsenal ↔ Rain Bird : [`03_coexistence_rainbird.md`](../../contrats/arrosage/03_coexistence_rainbird.md).
+- Décision d'arrosage V1 (capacité livrée) : [`17_decision_v1.md`](../../contrats/arrosage/17_decision_v1.md).
 - Observation hydrique (chapeau v0) : [`13_observation_hydrique_jardin.md`](../../contrats/arrosage/13_observation_hydrique_jardin.md).
 - Capteurs humidité sol : [`12_capteurs_humidite_sol.md`](../../contrats/arrosage/12_capteurs_humidite_sol.md).
 
