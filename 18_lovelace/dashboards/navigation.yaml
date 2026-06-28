@@ -104,12 +104,11 @@ views:
                       navigation_path: /deshumidificateur-dashboard
 
                   - type: custom:button-card
-                    template: bouton_navigation
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_arrosage_dashboard
                     name: Arrosage
                     icon: mdi:sprinkler-variant
-                    styles:
-                      icon:
-                        - color: "#43A047"
                     tap_action:
                       action: navigate
                       navigation_path: /arrosage-dashboard

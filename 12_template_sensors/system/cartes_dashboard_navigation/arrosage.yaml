@@ -1,0 +1,48 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – Arrosage
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Fournir un état visuel synthétique destiné au bouton de
+#     navigation Arrosage (lecture rapide uniquement, NAV/HUB).
+#
+#  🎯 États possibles (volontairement réduits) :
+#     - alert    → arrosage actif / requis (intention satisfaite)
+#     - normal   → suspension pluie (abstention volontaire, info)
+#     - off      → repos, conditions non réunies, abstention
+#     - unknown  → donnée intention non exploitable / pont indispo
+#
+#  🎨 Couleur (Exception 3 — NAV/HUB) :
+#     alert→🔴  normal→🔵  off→⚪  unknown→⚪ (gris indispo prime)
+#
+#  ⚠️ Simplification assumée :
+#     - Pas de « confort » : la sémantique vert/favorable ne
+#       s'applique pas à l'arrosage (cf. R4).
+#     - « arrose » = épisode actif → alert, comme aération /
+#       chauffage (l'action en cours attire l'attention).
+#     - Le diagnostic fin (motif d'abstention, santé pont) vit
+#       dans le domaine ; ici, usage purement visuel NAV/HUB.
+#
+#  🔗 Entrées :
+#     - binary_sensor.arrosage_intention (attribut `categorie`)
+#     - binary_sensor.rain_bird_pont_donnees_disponibles
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_arrosage_dashboard"
+      unique_id: etat_arrosage_dashboard
+      state: >
+        {% set UNAV = ['unknown', 'unavailable', 'none', 'None', ''] %}
+        {% set intention = states('binary_sensor.arrosage_intention') %}
+        {% set categorie = state_attr('binary_sensor.arrosage_intention', 'categorie') %}
+        {% set dispo = states('binary_sensor.rain_bird_pont_donnees_disponibles') %}
+
+        {% if intention in UNAV or dispo == 'unavailable' %}
+          unknown
+        {% elif categorie == 'arrose' or intention == 'on' %}
+          alert
+        {% elif categorie == 'suspendu' %}
+          normal
+        {% else %}
+          off
+        {% endif %}
