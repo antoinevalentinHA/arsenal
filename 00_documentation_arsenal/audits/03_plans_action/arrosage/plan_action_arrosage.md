@@ -68,6 +68,8 @@ Surfaces que les §5/§6 listaient encore comme purs manques alors qu'elles sont
 
 > Le domaine est déjà **publié** incrémentalement (v16.2 / v16.3) ; chaque incrément l'est **dans le changelog de sa release** (co-commit). « Livrer » ne désigne donc pas la première publication mais la **complétude** : l'atteinte des critères ci-dessus, **conditionnée** à leur réalisation, pas à une date.
 
+> **État des conditions de livraison.** runtime cohérent ✅ (Option A intégrée) · UI exploitable ✅ (verdict + raison, §4/§6.2) · diagnostic compréhensible ✅ (pont côté Système, §6.3) · notifications utiles arbitrées ✅ (actionnables couvertes ; nominale écartée par défaut, §5/§6.4) · dette bloquante connue : **aucune**. **Le domaine est donc fonctionnellement complet côté décision / action / UI / diagnostic.** Seule reste la **validation terrain minimale**, conservée en **suivi opportuniste** (§8) — **aucune simulation ni validation forcée** : elle sera constatée à l'occasion. Le chantier est ainsi **en quasi-clôture**, sous la seule réserve terrain.
+
 ## 4. Acquis (haut niveau, sans détail PR par PR)
 
 - **Décision / action V1** : socle besoin → intention → exécution supervisée ([`17_decision_v1.md`](../../../contrats/arrosage/17_decision_v1.md)).
@@ -77,14 +79,16 @@ Surfaces que les §5/§6 listaient encore comme purs manques alors qu'elles sont
 - **Observabilité / historisation de base** de la chaîne de décision (Recorder).
 - **UI et découvrabilité déjà amorcées** : réglages, cartes, hub de domaine et `carte_domaines` réconciliés.
 - **Diagnostic & alerte pont** : surfaces de diagnostic / santé / qualité BLE-Wi-Fi / disponibilité-fraîcheur du pont **et** notification « pont indisponible » **livrées techniquement** (détail et réserves au §2 ter — livré ≠ exploitable/arbitré).
+- **Lisibilité du verdict — LIVRÉE en UI** : `motif` / `categorie` de l'intention surfacés (carte `carte_arrosage_intention_raison`), verdict + raison **groupés en grille 2 colonnes** dans `arrosage/principal.yaml`. Le cockpit répond à « pourquoi ça arrose / s'abstient » ; le runtime décide, l'UI explique.
+- **Notifications actionnables — COUVERTES** : pont indisponible + retour, refus / démarrage non confirmé (Run supervisé), stop impossible / non confirmé (Stop supervisé). Doctrine « notifier l'anomalie, pas le nominal » appliquée.
 
 ## 5. Manques avant livraison
 
 > Reclassés selon les trois axes du §2 bis. Une surface **livrée techniquement** (§2 ter) peut rester un manque si elle n'est pas **exploitable opérateur** ou si un **arbitrage** demeure.
 
-- **UI opérateur à finaliser** *(exploitabilité)* : l'état décisionnel et le `motif` / `categorie` ne sont pas encore surfacés de façon exploitable ; l'exploitation quotidienne doit être lisible et complète.
+- **UI opérateur — LIVRÉ (lisibilité du verdict)** : le `motif` et la `categorie` de `binary_sensor.arrosage_intention` sont **surfacés en UI** ; verdict binaire et raison lisible **groupés en grille 2 colonnes** dans `arrosage/principal.yaml`. Le cockpit répond désormais à « pourquoi le système arrose ou s'abstient ». **Le runtime décide, l'UI explique** (traduction des codes portée par la carte, lecture seule).
 - **Diagnostic pont — RÉSOLU (faux manque UI)** : surface livrée **et** exploitable opérateur **côté Système** (`18_lovelace/dashboards/systeme/rain_bird.yaml`, navigable depuis `systeme/principal.yaml` → `/diagnostics-rain-bird-dashboard`). Le diagnostic pont est une information de **maintenance / infrastructure** : il vit côté Système, **pas** dans le cockpit arrosage (cf. §6.3). Rien à créer ni à ajouter au cockpit.
-- **Notifications — une notification livrée, jeu complet à arbitrer** : la notification « pont indisponible » existe (§2 ter) ; l'**arbitrage signal/bruit** du complément (quoi d'autre notifier, quand) reste ouvert (§7).
+- **Notifications — actionnables déjà couvertes** : tous les événements **anormaux / actionnables** sont **déjà notifiés** — pont Rain Bird indisponible prolongé (≥ 30 min) + retour (`pont_indisponible_notification.yaml`) ; refus de lancement station 1, démarrage non confirmé (`station_1_courte_supervisee.yaml`) ; stop impossible, stop non confirmé (`stop_supervise.yaml`). **Aucun manque actionnable.** Une éventuelle notification **nominale « arrosage effectué »** est **distincte** et **non retenue par défaut** (cf. §7) : événement nominal, déjà observable via `Dernier arrosage` + Recorder, à risque de bruit — reste un **micro-arbitrage propriétaire futur éventuel**, pas un manque bloquant.
 - **Validations terrain à effectuer** : arrosage réellement déclenché, comportement sur la durée.
 - **Lisibilité du verdict d'arrosage / historique opérateur** : pouvoir relire *pourquoi* le système a arrosé ou s'est abstenu — directement lié au cadrage du `motif` (§7).
 - **Clarté sur les conditions de livraison** : savoir, à un instant donné, ce qui reste réellement bloquant.
@@ -94,13 +98,13 @@ Surfaces que les §5/§6 listaient encore comme purs manques alors qu'elles sont
 Quelques **axes ordonnés**, pas un backlog. Chaque lot sera **audité avant YAML** ; l'ordre est indicatif.
 
 1. **Arbitrage §7 (seuils sol / motif) — TRANCHÉ (Option A), runtime réaligné.** Lot contrat+runtime appliqué (contrats `15`/`17` clarifiés, `reservoir_sol.yaml` : médiane disponible dès 2 points frais). **Reste** : confirmer l'effet positif en validation terrain (§8). Les codes `motif` n'ont **pas** changé (Option A les rend honnêtes sans nouveau code).
-2. **UI d'exploitation / lisibilité de l'intention** — rendre l'état et le `motif` / `categorie` exploitables par l'opérateur. Le §7 étant tranché sans changement de vocabulaire motif, ce lot **n'est plus bloqué** par lui.
+2. **UI d'exploitation / lisibilité de l'intention — LIVRÉ.** Le `motif` / `categorie` de `binary_sensor.arrosage_intention` sont surfacés via une carte diagnostic (`carte_arrosage_intention_raison`), verdict + raison **groupés en grille 2 colonnes** dans `arrosage/principal.yaml`. **Le runtime décide, l'UI explique** (lecture seule). Plus rien à faire sur cet axe.
 3. **Diagnostic pont — FAUX MANQUE, COUVERT (décision propriétaire).** Pas de lot UI : la surface existe déjà et est exploitable.
    - **Couvert par** `18_lovelace/dashboards/systeme/rain_bird.yaml` (page système dédiée, enregistrée dans les dashboards, lecture seule) : santé, données disponibles/fraîches, RSSI Wi-Fi, RSSI BLE, batterie, heartbeat, station active, version, uptime, mémoire libre.
    - **Navigable depuis** `18_lovelace/dashboards/systeme/principal.yaml` (tuile « Rain Bird – Santé du pont » → `/diagnostics-rain-bird-dashboard`).
    - **Ajout au cockpit arrosage `principal.yaml` : REFUSÉ.** Le diagnostic détaillé est une information de maintenance / infrastructure ; il ne doit pas polluer le cockpit. Le cockpit signale déjà le blocage fonctionnel via le **motif `pont_indisponible`** de la carte « raison du verdict ».
    - **Capteurs qualitatifs non affichés** (`pont_qualite_ble`, `pont_qualite_wifi`, `pont_diagnostic_resume`) : considérés **redondants** tant que la page système expose déjà les signaux utiles (RSSI bruts + santé) ; **non surfacés volontairement**, pas un manque.
-4. **Notifications** — partir de la notification « pont indisponible » **déjà livrée** (§2 ter) et arbitrer le **complément** minimal et utile, une fois l'arbitrage signal/bruit tranché (§7).
+4. **Notifications — actionnables COUVERTES.** Les notifications utiles existent déjà (pont indisponible + retour ; refus / démarrage non confirmé ; stop impossible / non confirmé — cf. §5). Doctrine respectée : on notifie **l'anomalie, pas le nominal**. Seule la notification **nominale « arrosage effectué »** resterait à décider : **non retenue par défaut** (bruit, déjà observable), **micro-arbitrage propriétaire** non bloquant — **aucun lot d'implémentation requis** sans cet arbitrage.
 5. **Validations terrain** — exécuter le minimum nécessaire (§8) et en consigner le verdict.
 6. **Complétude / clôture du chantier** — quand les critères du §3 sont réunis ; chaque lot d'ici là est **publié dans le changelog de sa release** (co-commit), pas accumulé pour un changelog final.
 
