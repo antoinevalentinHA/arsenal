@@ -1462,6 +1462,18 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Recorder : historisation (lecture seule) de la chaîne décisionnelle V1 arrosage (besoin / intention / dernier effectif / maître / seuil).
 - Documentation : carve-out V1 dans les contrats arrosage (Phase 0 / P1–P7 ne bloquent plus la V1 déléguée) ; ajout du hub `navigation/domaines/arrosage.md` (21 → 22 hubs) et de C10 au registre des chantiers.
 
+---
+
+## 🧠 ARSENAL HA — [v16.3.1](changelogs/v16/v16_3_1.md) — STABLE — 2026-06-29
+**Tags :** arrosage, rain_bird, alarme, presence, meteo, palmares, lovelace, navigation, ui, contrats, registres, changelog
+
+**Signal net :**
+- Arrosage — mode dégradé exploitable (Option A) : disponibilité de `sensor.jardin_humidite_sol_mediane` abaissée de `>= 3` à `>= 2` points frais (médiane = moyenne à 2 points), canal `degrade` (2/3) désormais recevable pour `binary_sensor.arrosage_intention` ; contrats `15`/`17` et README alignés (runtime V1 acté, PR #125) ; coexistence `rain_delay` passée en `mode: queued` ; ajout de la carte `carte_arrosage_intention_raison`.
+- Alarme — suppression du trio absence (phase 2, #160) : absence prolongée recalculée inline dans `binary_sensor.alarme_systeme_coherent` (seuil 480 s sur l'âge de `binary_sensor.presence_famille_securite`, sans timer ni projection d'armement) ; retrait des fichiers timer/automation/template et de la constante `ENT_ABSENT_5MIN` du checker ; comportement préservé.
+- Météo — badge « récent » des palmarès : seuil figé 7 j remplacé par `input_number.palmares_meteo_fraicheur_jours`, calcul sur la date la plus récente du palmarès (au lieu du seul rang 1).
+- Lovelace — navigation à couleurs dynamiques : tuiles Arrosage / Rec. météo / Volets / NAS passées en `bouton_navigation_dynamique` (retrait des couleurs figées) + capteurs d'état pilotant la couleur ; ouverture de l'arbitrage D-NAV-COULEUR.
+- Registres et clôtures : C8 (mode nuit clim) et C9 (absence sécurité) déplacés en « Clos récents », C10 arrosage mis à jour ; ajout des changelogs `v16_2_0` / `v16_3_0` à l'index.
+
 ==================================================
 FIN INDEX
 ==================================================
