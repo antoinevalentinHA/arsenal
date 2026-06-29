@@ -1,0 +1,47 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – Volets
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Fournir un état visuel synthétique destiné au bouton de
+#     navigation « Volets » (lecture rapide uniquement, NAV/HUB).
+#     Signale que le domaine intervient seul : fermeture
+#     automatique sur pluie forte en cours.
+#
+#  🎯 États possibles (volontairement réduits) :
+#     - normal → fermeture pluie active (pluie forte ET dispositif
+#                armé selon mode/présence) — action automatique, info
+#     - off     → repos (pas de fermeture pluie en cours)
+#
+#  🎨 Couleur (Exception 3 — NAV/HUB) :
+#     normal→🔵  off→⚪
+#
+#  ⚠️ Simplification assumée (cf. dossier D-NAV-COULEUR §2 ter) :
+#     - La POSITION des volets n'est PAS un signal : ouvert comme
+#       fermé est nominal (jour vs nuit). Seul l'événement
+#       « fermeture pluie » est notable, comme « arrose » côté arrosage.
+#     - Bleu « info » (action automatique), pas rouge : ce n'est pas
+#       une alerte de sécurité. Pas de vert « confort » (R4).
+#     - Le détail (cibles, fenêtres concernées, diagnostic) vit dans
+#       le domaine volets ; ici, usage purement visuel NAV/HUB.
+#     - Donnée indisponible → off (⚪), le gris prime.
+#
+#  🔗 Entrées :
+#     - binary_sensor.intention_pluie_forte
+#     - binary_sensor.autorisation_fermeture_volets_pluie_sejour
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_volets_dashboard"
+      unique_id: etat_volets_dashboard
+      state: >
+        {% set UNAV = ['unknown', 'unavailable', 'none', 'None', ''] %}
+        {% set pluie = states('binary_sensor.intention_pluie_forte') %}
+        {% set arme = states('binary_sensor.autorisation_fermeture_volets_pluie_sejour') %}
+        {% if pluie in UNAV or arme in UNAV %}
+          off
+        {% elif pluie == 'on' and arme == 'on' %}
+          normal
+        {% else %}
+          off
+        {% endif %}
