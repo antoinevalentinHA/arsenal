@@ -142,13 +142,25 @@ besoin → décision de 04/05, mais **concret et paramétré**.
    observer ;
 7. **aucune inconnue critique** : état réservoir sol `indisponible`/`insuffisant`
    ⇒ **abstention prudente** (jamais conclure « sol humide » par défaut,
-   [`04`](04_besoin_hydrique.md) §4).
+   [`04`](04_besoin_hydrique.md) §4). L'état **`degrade` (2/3 points frais) est
+   recevable** : il peut **porter une intention positive** si la médiane (alors
+   exploitable, [`15`](15_canal_reservoir_sol.md) §2/§5) passe sous le seuil.
 
 Si une condition manque, l'intention est **inactive**, et la cause reste
 **explicable** (motif dominant, modèle [`aeration_recommandation.md`](../aeration_recommandation.md)).
 Tous les seuils/bornes/fenêtres sont des **helpers réglables** (cf. encart
 « Réalisation runtime V1 ») ; leurs **valeurs** restent calibrables (§6), non
 figées doctrinalement.
+
+> **Arbitrage §7 — Option A (décision opérateur, V1 mono-zone actuelle).** La
+> multiplicité des trois capteurs sol sert à **fiabiliser** la décision, pas à la
+> **bloquer** dès qu'un capteur manque : le canal `degrade` (2/3 points frais) est
+> donc **exploitable** et la médiane est disponible dès **2 points frais**
+> ([`15`](15_canal_reservoir_sol.md) §2/§5). L'**abstention** reste entière à
+> **1/3** (`insuffisant`) et **0/3** (`indisponible`). Cet arbitrage ne change que
+> la **recevabilité d'une lecture dégradée** ; il **ne modifie ni la séparation
+> décision / action**, ni l'exécution déléguée (§5), ni aucun seuil métier
+> d'humidité.
 
 ---
 

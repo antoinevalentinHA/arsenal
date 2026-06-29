@@ -96,7 +96,11 @@
       attributes:
         seuil_fraicheur_secondes: "21600"
 
-    # ----- 1. Humidité représentative = médiane des points frais (3/3) -----
+    # ----- 1. Humidité représentative = médiane des points frais (>= 2/3) -----
+    #   Exploitable dès 2 points frais (canal `degrade`), indisponible à <= 1
+    #   (canal `insuffisant`/`indisponible` -> abstention). À 2 points, la médiane
+    #   = moyenne des deux valeurs : lecture dégradée mais exploitable, assumée en
+    #   installation mono-zone (contrats 15 §2/§5, 17 §3.7 — Option A).
     - name: "Jardin humidite sol mediane"
       unique_id: jardin_humidite_sol_mediane
       default_entity_id: sensor.jardin_humidite_sol_mediane
@@ -107,7 +111,7 @@
       availability: >
         {% set raw = states('sensor.jardin_humidite_sol_valeurs_fraiches') %}
         {% set vals = raw | from_json if raw not in ['unknown', 'unavailable'] else [] %}
-        {{ vals | length >= 3 }}
+        {{ vals | length >= 2 }}
       state: >
         {% set raw = states('sensor.jardin_humidite_sol_valeurs_fraiches') %}
         {% set vals = (raw | from_json if raw not in ['unknown', 'unavailable'] else []) | sort %}
