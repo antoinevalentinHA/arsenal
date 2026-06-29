@@ -56,6 +56,16 @@ recommandation** et **ne pilotent rien**.
   autant les extrêmes ; **cohérente** avec seulement trois points ; reste une
   **observation**, pas une décision.
 
+**Disponibilité (installation mono-zone actuelle) :**
+- la médiane est **exploitable dès 2 points frais** (canal `degrade`), et
+  **indisponible à 1 ou 0 point frais** (canal `insuffisant`/`indisponible`) ;
+- à **2 points frais**, la médiane correspond **mécaniquement à la moyenne des
+  deux valeurs** disponibles : lecture **assumée comme dégradée mais exploitable**,
+  cohérente avec la multiplicité des capteurs (rendre la lecture plus robuste, ne
+  pas la bloquer dès qu'un capteur manque), cf. §5 ;
+- cette exploitabilité **ne modifie aucun seuil métier d'humidité** : elle ne porte
+  que sur le **nombre de points frais** requis pour publier la grandeur.
+
 **Interdits (opposables) :**
 - ❌ ne pas en faire un **score de besoin hydrique** ;
 - ❌ ne pas l'utiliser **seule** pour **recommander** l'arrosage ;
@@ -104,12 +114,12 @@ recommandation** et **ne pilotent rien**.
 Le futur runtime **doit rendre visible** le **nombre de points frais** utilisés
 dans les agrégats. Lecture conceptuelle (alignée [`14`](14_qualite_donnees_sol.md) §3/§4) :
 
-| Points frais | Lecture du canal |
-|---|---|
-| **3/3** | lecture **complète** |
-| **2/3** | lecture **dégradée** |
-| **1/3** | canal **insuffisant** pour une agrégation représentative |
-| **0/3** | canal **indisponible** |
+| Points frais | Lecture du canal | Exploitable pour la décision automatique |
+|---|---|---|
+| **3/3** | lecture **complète** | oui |
+| **2/3** | lecture **dégradée** mais **exploitable** | **oui** (médiane = moyenne des 2 points) |
+| **1/3** | canal **insuffisant** pour une agrégation représentative | non — **abstention** |
+| **0/3** | canal **indisponible** | non — **abstention** |
 
 > **Le contrat fixe ce qui doit être visible, pas comment.** Les `entity_id` ne
 > sont pas figés par ce contrat : la convention runtime est portée par le lot
