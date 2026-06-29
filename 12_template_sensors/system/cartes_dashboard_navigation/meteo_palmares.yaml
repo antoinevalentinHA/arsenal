@@ -16,6 +16,10 @@
 #     alert→🔴  normal→🔵  off→⚪
 #
 #  ⚠️ Simplification assumée :
+#     - « Frais » = un record entré au palmarès à N'IMPORTE QUEL
+#       rang (1→10) dans la fenêtre — pas seulement le record absolu
+#       (rang 1). Aligné sur le badge « 🔥 récent » des cartes palmarès,
+#       qui partagent la même définition et la même fenêtre.
 #     - Pas de « confort » : la sémantique vert/favorable ne
 #       s'applique pas à un record (cohérent R4 arrosage).
 #     - Priorité chaleur 🔴 > froid/pluie 🔵 si plusieurs familles
@@ -26,11 +30,11 @@
 #       ici, usage purement visuel NAV/HUB.
 #
 #  🔗 Entrées :
-#     - input_text.palmares_temperature_journalier_chaud_rang_01_date
-#     - input_text.palmares_temperature_min_journaliere_haute_rang_01_date
-#     - input_text.palmares_temperature_journalier_froid_rang_01_date
-#     - input_text.palmares_pluie_journalier_rang_01_date
-#     - input_number.palmares_meteo_fraicheur_jours (fenêtre, défaut 2)
+#     - input_text.palmares_temperature_journalier_chaud_rang_01..10_date
+#     - input_text.palmares_temperature_min_journaliere_haute_rang_01..10_date
+#     - input_text.palmares_temperature_journalier_froid_rang_01..10_date
+#     - input_text.palmares_pluie_journalier_rang_01..10_date
+#     - input_number.palmares_meteo_fraicheur_jours (fenêtre partagée, défaut 2)
 # ==========================================================
 
 - sensor:
@@ -42,35 +46,41 @@
         {% set seuil = states('input_number.palmares_meteo_fraicheur_jours') | int(2) %}
         {% set today = now().date() %}
         {% set chaleur = [
-             states('input_text.palmares_temperature_journalier_chaud_rang_01_date'),
-             states('input_text.palmares_temperature_min_journaliere_haute_rang_01_date')
+             'palmares_temperature_journalier_chaud',
+             'palmares_temperature_min_journaliere_haute'
            ] %}
         {% set froidpluie = [
-             states('input_text.palmares_temperature_journalier_froid_rang_01_date'),
-             states('input_text.palmares_pluie_journalier_rang_01_date')
+             'palmares_temperature_journalier_froid',
+             'palmares_pluie_journalier'
            ] %}
         {% set ns = namespace(chaleur=false, froidpluie=false) %}
-        {% for d in chaleur %}
-          {% if d not in UNAV %}
-            {% set p = strptime(d, '%Y-%m-%d', none) %}
-            {% if p is not none %}
-              {% set age = (today - p.date()).days %}
-              {% if age >= 0 and age < seuil %}
-                {% set ns.chaleur = true %}
+        {% for fam in chaleur %}
+          {% for i in range(1, 11) %}
+            {% set d = states('input_text.' ~ fam ~ '_rang_' ~ ('%02d' | format(i)) ~ '_date') %}
+            {% if d not in UNAV %}
+              {% set p = strptime(d, '%Y-%m-%d', none) %}
+              {% if p is not none %}
+                {% set age = (today - p.date()).days %}
+                {% if age >= 0 and age < seuil %}
+                  {% set ns.chaleur = true %}
+                {% endif %}
               {% endif %}
             {% endif %}
-          {% endif %}
+          {% endfor %}
         {% endfor %}
-        {% for d in froidpluie %}
-          {% if d not in UNAV %}
-            {% set p = strptime(d, '%Y-%m-%d', none) %}
-            {% if p is not none %}
-              {% set age = (today - p.date()).days %}
-              {% if age >= 0 and age < seuil %}
-                {% set ns.froidpluie = true %}
+        {% for fam in froidpluie %}
+          {% for i in range(1, 11) %}
+            {% set d = states('input_text.' ~ fam ~ '_rang_' ~ ('%02d' | format(i)) ~ '_date') %}
+            {% if d not in UNAV %}
+              {% set p = strptime(d, '%Y-%m-%d', none) %}
+              {% if p is not none %}
+                {% set age = (today - p.date()).days %}
+                {% if age >= 0 and age < seuil %}
+                  {% set ns.froidpluie = true %}
+                {% endif %}
               {% endif %}
             {% endif %}
-          {% endif %}
+          {% endfor %}
         {% endfor %}
         {% if ns.chaleur %}
           alert

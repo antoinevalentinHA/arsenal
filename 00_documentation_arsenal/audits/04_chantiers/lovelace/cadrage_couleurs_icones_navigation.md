@@ -63,9 +63,9 @@ Automations `#F9A825` · Scripts `#D84315` · Logs HA `#8E24AA` · Journal `#5D4
 | Froid | `sensor.palmares_temperature_journalier_froid` | froid ❄️ |
 | Pluie | `sensor.palmares_pluie_journalier` | pluie 🌧️ |
 
-**Mécanisme réalisé (un seul artefact de calcul).** `sensor.etat_meteo_palmares_dashboard` (synthèse, calcul pur, lecture seule, comme les `sensor.etat_*_dashboard` existants) lit directement les quatre `input_text.palmares_*_rang_01_date`, calcule l'ancienneté du record de chaque famille, et renvoie un état mappé sur la palette NAV. La tuile est passée de `bouton_navigation` (+ `#F9A825` figé) à `bouton_navigation_dynamique` — **aucun nouveau template** (le mapping état→couleur existe déjà) ; la couleur figée hors-charte a disparu.
+**Mécanisme réalisé (un seul artefact de calcul).** `sensor.etat_meteo_palmares_dashboard` (synthèse, calcul pur, lecture seule, comme les `sensor.etat_*_dashboard` existants) lit **tous les rangs** (`input_text.palmares_*_rang_01..10_date`) des quatre familles, calcule l'ancienneté de chaque entrée, et renvoie un état mappé sur la palette NAV. La tuile est passée de `bouton_navigation` (+ `#F9A825` figé) à `bouton_navigation_dynamique` — **aucun nouveau template** (le mapping état→couleur existe déjà) ; la couleur figée hors-charte a disparu.
 
-**Fenêtre de fraîcheur : J-2 glissant, paramétrée.** Un record est « frais » si son ancienneté en jours calendaires vérifie `0 ≤ âge < seuil`, avec `seuil = input_number.palmares_meteo_fraicheur_jours` (défaut **2** = aujourd'hui + la veille). Capte l'événement sans clignoter sur une seule journée ; le seuil est ajustable sans toucher au code.
+**Fenêtre de fraîcheur : J-2 glissant, paramétrée et PARTAGÉE.** Un record est « frais » si l'ancienneté en jours calendaires d'**au moins un rang** vérifie `0 ≤ âge < seuil`, avec `seuil = input_number.palmares_meteo_fraicheur_jours` (défaut **2** = aujourd'hui + la veille). **Définition unique** : la tuile NAV **et** le badge « 🔥 récent » des cartes palmarès (`18_lovelace/includes/cartes/meteo/palmares/*`) partagent ce même critère (tous rangs + ce même seuil) — corrige une incohérence antérieure (tuile rang 1 seul / J-2 vs cartes rang 1 seul / 7 j figé). Capte l'entrée d'un record à n'importe quel rang ; seuil ajustable sans toucher au code.
 
 **Mapping couleur (réutilise `bouton_navigation_dynamique`) :**
 

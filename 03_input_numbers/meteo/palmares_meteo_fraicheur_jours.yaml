@@ -4,13 +4,18 @@
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #   Stocker la fenêtre, en jours calendaires, pendant laquelle
-#   un record de palmarès est considéré « frais » par la tuile
-#   de navigation « Rec. météo » (sensor.etat_meteo_palmares_dashboard).
+#   un record de palmarès (n'importe quel rang) est considéré
+#   « frais ». Fenêtre PARTAGÉE par les deux surfaces qui doivent
+#   rester cohérentes :
+#     - la tuile de navigation « Rec. météo »
+#       (sensor.etat_meteo_palmares_dashboard) ;
+#     - le badge « 🔥 récent » des cartes palmarès
+#       (18_lovelace/includes/cartes/meteo/palmares/*).
 #   Valeur 2 = aujourd'hui + la veille (fenêtre J-2 glissante).
 #
 # 🧩 PÉRIMÈTRE
 #   - Stockage persistant uniquement
-#   - Paramètre d'affichage NAV/HUB uniquement
+#   - Paramètre d'affichage uniquement (tuile NAV + cartes palmarès)
 #   - Valeur exprimée en jours calendaires (record du jour inclus)
 #   - Aucun calcul
 #   - Aucune logique métier locale
