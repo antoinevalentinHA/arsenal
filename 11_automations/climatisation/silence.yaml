@@ -90,12 +90,17 @@
   trigger:
 
     # 🔁 Changement de décision métier
+    #    not_to : ignore la rafale de rechargement des templates
+    #    (unavailable/unknown transitoires) — seule la valeur finale déclenche.
     - platform: state
       entity_id: binary_sensor.clim_silencieux_autorise
+      not_to: ['unavailable', 'unknown']
 
     # 🔁 Changement d’état réel du mode silencieux
+    #    not_to : idem — pas de déclenchement sur l’indisponibilité transitoire.
     - platform: state
       entity_id: sensor.clim_mode_silencieux_local
+      not_to: ['unavailable', 'unknown']
 
     # 🔁 Dérive du ventilateur vers le « auto » constructeur :
     #    en plage silencieuse, application_mode s’abstient (not override_actif)
