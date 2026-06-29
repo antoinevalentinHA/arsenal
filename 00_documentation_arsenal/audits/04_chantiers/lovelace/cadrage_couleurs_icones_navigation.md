@@ -1,9 +1,9 @@
 # 🎨 Dossier d'arbitrage — Couleurs d'icônes des tuiles de navigation
 
 > **Type :** dossier d'arbitrage Lovelace / UI (non décisionnel). **Document faisant foi** du sujet (pointé par `REGISTRE_CHANTIERS.md`).
-> **ID registre :** `D-NAV-COULEUR`. **Statut :** **À arbitrer / dormant** — constat posé, aucune action ordonnancée.
+> **ID registre :** `D-NAV-COULEUR`. **Statut :** **Option C (hybride) en exécution incrémentale** — 4 tuiles résorbées (Arrosage, Rec. météo, Volets, NAS) ; **reliquat dormant** (Prises, Santé, Imprimerie, Énergie + section Système). L'arbitrage global A/B/C reste ouvert pour le reliquat.
 > **Règle qui fait foi :** [`ui/couleurs/03_exceptions.md`](../../../ui/couleurs/03_exceptions.md) § *Exception 3 — Couleurs dynamiques d'icône en contexte NAV/HUB*.
-> **Discipline :** aucune modification UI tant qu'un arbitrage n'est pas tranché ; co-commit du registre à chaque changement d'état.
+> **Discipline :** aucune modification UI d'une tuile tant que son cas n'est pas tranché (cas par cas) ; co-commit du registre à chaque changement d'état.
 
 ---
 
@@ -40,13 +40,15 @@ Automations `#F9A825` · Scripts `#D84315` · Logs HA `#8E24AA` · Journal `#5D4
 
 > **Périmètre à étendre si l'arbitrage est promu :** balayer aussi les tuiles de navigation hors `navigation.yaml` — `18_lovelace/includes/navigation/*` et les en-têtes de retour/hub des autres dashboards.
 
-## 2. Options d'arbitrage (non tranchées)
+## 2. Options d'arbitrage
+
+> **Direction de fait : Option C (hybride), appliquée cas par cas.** Quatre tuiles ont été résorbées par dynamisation (Arrosage, Rec. météo, Volets, NAS — détail §2 bis/ter/quater). L'arbitrage **global** A/B/C reste néanmoins **ouvert pour le reliquat** (tuiles restantes + section Système) : chaque tuile est tranchée individuellement avant action.
 
 | Option | Principe | Effet | Coût |
 |---|---|---|---|
 | **A — Neutraliser** | Retirer toutes les couleurs d'icône figées → icône neutre (thème) au repos ; la couleur ne sert qu'aux tuiles dynamiques. | Conforme à l'Exception 3 **telle qu'écrite**. | Perte de l'affordance d'identité visuelle des tuiles. |
 | **B — Formaliser une exception « identité NAV »** | Ajouter à `03_exceptions.md` une exception couvrant une **couleur d'icône d'identité** (catégorielle, statique, non décisionnelle), comme l'Exception 4 le fait déjà pour le **fond**. | Conserve l'identité visuelle, charte cohérente. | Élargit la charte ; impose une palette d'identité documentée (les hex actuels sont ad hoc). |
-| **C — Hybride** | Dynamiser les domaines à état latent exploitable (cf. arrosage) ; neutraliser / identité pour les purs liens outils (Système, Énergie, NAS, Imprimerie). | Maximise la valeur sémantique. | Le plus de travail ; à arbitrer domaine par domaine. |
+| **C — Hybride** | Dynamiser les tuiles à état latent exploitable (cf. arrosage, NAS) ; neutraliser / identité pour les purs liens outils sans état latent. | Maximise la valeur sémantique. | Le plus de travail ; à arbitrer tuile par tuile. |
 
 ## 2 bis. Sous-cas instrumenté — *Rec. météo : dynamisation par fraîcheur des records*
 
@@ -126,4 +128,4 @@ Refonte de la charte couleurs, refonte du menu de navigation, ou décision expli
 
 ---
 
-*Dossier d'arbitrage dormant — non normatif. Pose le constat et les options ; ne tranche rien.*
+*Dossier d'arbitrage — non normatif. Option C (hybride) tranchée et exécutée cas par cas (4 tuiles résorbées) ; reliquat dormant, arbitrage global ouvert.*
