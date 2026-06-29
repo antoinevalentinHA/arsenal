@@ -34,7 +34,7 @@ publiées par le cerveau alarme via helpers.
 - `binary_sensor.presence_famille_securite_absence_confirmee_alarme`
   - Projection confirmée d’absence (`delay_on: 5 min`), réservée à l’armement automatique.
   - État atomique “prêt à consommer” : la temporisation est portée par le capteur lui-même, reconstructible à partir d’un seul état persistant.
-  - _Historique :_ l’ancien déterminant d’armement `binary_sensor.presence_famille_securite_absent_depuis_5_min` (timer + automatisation tierce, dépendance non atomique) a été **supprimé en phase 2** (v16.3.1).
+  - _Historique :_ l’ancien déterminant d’armement `binary_sensor.presence_famille_securite_absent_depuis_5_min` (timer + automatisation tierce, dépendance non atomique) a été **supprimé en phase 2** (commit `c4637ee`, #160).
 
 ### Blocage armement auto (verrou logique)
 

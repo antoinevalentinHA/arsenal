@@ -1462,12 +1462,6 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Recorder : historisation (lecture seule) de la chaîne décisionnelle V1 arrosage (besoin / intention / dernier effectif / maître / seuil).
 - Documentation : carve-out V1 dans les contrats arrosage (Phase 0 / P1–P7 ne bloquent plus la V1 déléguée) ; ajout du hub `navigation/domaines/arrosage.md` (21 → 22 hubs) et de C10 au registre des chantiers.
 
-## 🧠 ARSENAL HA — [v16.3.1](changelogs/v16/v16_3_1.md) — STABLE — 2026-06-29
-**Tags :** alarme, presence, runtime, nettoyage, contrats, ci
-
-**Signal net :**
-- Alarme / présence (C9 phase 2) : suppression du trio d'absence déprécié — timer `presence_famille_securite_absence` (`08_timers/presence/absence_securite_stable.yaml`), automation `presence/absence_5_min.yaml`, capteur `binary_sensor.presence_famille_securite_absent_depuis_5_min` — après validation runtime de la projection atomique d'armement. Le seul consommateur résiduel (`binary_sensor.alarme_systeme_coherent`) calcule désormais l'absence prolongée inline depuis l'âge du signal brut (seuil 480 s), comportement préservé. Contrats alarme + cadrage présence alignés ; constante morte `ENT_ABSENT_5MIN` retirée du checker présence.
-
 ==================================================
 FIN INDEX
 ==================================================
