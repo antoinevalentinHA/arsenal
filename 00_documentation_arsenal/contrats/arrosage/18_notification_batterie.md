@@ -1,12 +1,13 @@
 # CONTRAT ARSENAL — ARROSAGE
 ## 18 — Notification mobile batterie faible Rain Bird
 
-**Version contrat :** v0.1
-**Statut :** **Normatif — antérieur au runtime.** Ce document **spécifie** la future
-notification mobile « batterie faible » du contrôleur Rain Bird ESP-BAT-BT2. Il **ne
-crée aucun** template sensor, helper, script, automation ou élément d'UI, et **ne
-fige aucun `entity_id` dérivé, ID d'automation, seuil ni durée définitifs**. Aucun
-lot runtime n'est ouvert ici.
+**Version contrat :** v0.2
+**Statut :** **Normatif — runtime livré.** Ce document spécifie la notification
+mobile « batterie faible / critique » du contrôleur Rain Bird ESP-BAT-BT2 et fixe
+ses paramètres. **Runtime livré** : automation `10270000000004`
+([`batterie_faible_notification.yaml`](../../../../11_automations/arrosage/batterie_faible_notification.yaml)).
+Il **ne crée aucun** template sensor, helper, script ni élément d'UI : la détection
+de franchissement est portée **en ligne** par l'automation.
 
 > **Position dans le socle.** Ce contrat **dérive** de la classification des entités
 > du pont ([`09_classification_entites.md`](09_classification_entites.md) §4 :
@@ -43,11 +44,12 @@ mobile informative** signalant que la batterie du contrôleur Rain Bird franchit
 
 ## Périmètre
 
-- **Couche diagnostic/interprétation** (future) : un capteur dérivé qualifiant la
-  batterie « faible » à partir de la source numérique, robuste aux états
-  indéterminés.
-- **Couche notification mobile** (future) : une automation séparée, événementielle,
-  déléguant l'envoi au canal central `script.notification_envoyer`.
+- **Détection de franchissement** : portée **en ligne** par l'automation
+  `10270000000004` (gardes numériques + logique de seuils dans les conditions),
+  **sans capteur dérivé** dans ce lot. Un capteur d'interprétation reste une
+  **option future** (cf. § Entités dérivées prévues).
+- **Couche notification mobile** : l'automation, événementielle, délègue l'envoi au
+  canal central `script.notification_envoyer`.
 - **Destinataire** : `input_text.telephone_antoine_notify` (canal déjà utilisé par
   les notifications santé et arrosage existantes).
 
@@ -94,54 +96,64 @@ Disponibilité du pont (déjà utilisée par l'automation `10270000000001`,
 
 ## Entités dérivées prévues
 
-Noms **conceptuels** (chevrons), **non figés** — ratification en `entity_id` réel
-réservée au lot runtime futur :
+Le runtime V1 **ne crée aucun capteur dérivé** : la détection est inline dans
+l'automation. Les capteurs ci-dessous restent des **options futures** (noms
+**conceptuels**, non figés), p. ex. si une projection UI de l'état devenait utile :
 
 - `‹rain_bird_batterie_faible›` — capteur d'interprétation booléen (template), vrai
   lorsque `battery_level` est numérique **et** sous le seuil faible, faux sinon ;
-  rejette `unknown`/`unavailable`/`none`/chaîne vide ; conserve un comportement
-  déterministe et recalculable.
-- (optionnel, à arbitrer) `‹rain_bird_batterie_critique›` — second niveau si un seuil
-  critique est retenu.
+  rejette `unknown`/`unavailable`/`none`/chaîne vide ; déterministe et recalculable.
+- `‹rain_bird_batterie_critique›` — second niveau (seuil critique).
 
-> Tant que le lot runtime n'est pas ouvert, **aucun** de ces capteurs n'existe ; leur
-> nommage réel relève de la Phase 0 / d'un lot ultérieur ([`07_phase_0_terrain.md`](07_phase_0_terrain.md)).
+> Aucun de ces capteurs n'est créé dans ce lot ; leur éventuelle ratification en
+> `entity_id` réel relèverait d'un lot ultérieur ([`07_phase_0_terrain.md`](07_phase_0_terrain.md)).
 
 ---
 
-## Seuils et paramètres à arbitrer
+## Seuils et paramètres retenus
 
-Le dépôt **ne porte aucun seuil batterie Rain Bird**. Les valeurs ci-dessous sont des
-**paramètres à arbitrer**, **non** des valeurs imposées :
+Paramètres **validés** (opérateur) et matérialisés dans l'automation
+`10270000000004` :
 
-| Paramètre | Description | Défaut proposé | À arbitrer |
-|---|---|---|---|
-| `seuil_faible` | Seuil bas sur `battery_level` (%) | **à décider** (réf. non contraignante : `28 %` utilisé par [`batteries.md`](../batteries.md)) | ✅ |
-| `seuil_critique` | Second seuil, plus bas (optionnel) | non retenu par défaut | ✅ |
-| `duree_stabilisation` | `for:` avant déclenchement (anti-rebond) | non retenue par défaut | ✅ |
-| `seuil_retour` | Hystérésis de retour à la normale (> `seuil_faible`) | sans objet si retour non retenu | ✅ |
-| `destinataire` | Cible mobile | `input_text.telephone_antoine_notify` | — |
-| `emoji_titre` | Emoji de domaine du titre | `🔋` (alternative `💧` arrosage) | ✅ |
+| Paramètre | Description | Valeur retenue |
+|---|---|---|
+| `seuil_faible` | Bande faible sur `battery_level` (%) | **`10 < niveau <= 20`** |
+| `seuil_critique` | Bande critique sur `battery_level` (%) | **`niveau <= 10`** (prioritaire) |
+| `duree_stabilisation` | `for:` avant déclenchement | **non retenue** |
+| `seuil_retour` | Hystérésis de retour à la normale | **sans objet** (retour normal non retenu) |
+| `destinataire` | Cible mobile | `input_text.telephone_antoine_notify` |
+| `emoji_titre` | Emoji de domaine du titre | `🔋` |
+| `id_automation` | ID de l'automation runtime | **`10270000000004`** |
 
-> **Aucune valeur définitive** n'est gravée par ce contrat. Le runtime futur devra
-> matérialiser ces paramètres explicitement (helpers ou constantes documentées),
-> sans constante implicite.
+> Les seuils sont matérialisés **explicitement** dans les conditions de l'automation
+> (comparaisons `> 10` / `<= 10` / `> 20` / `<= 20`), sans constante implicite.
 
 ---
 
 ## Déclencheurs autorisés
 
-Pour la **future** automation (modèle numérique, type Option A) :
+Modèle retenu : **trigger `state`** sur `sensor.rain_bird_bat_bt_2_e9a3_battery_level`,
+gardé par des conditions de transition numérique (réutilise le modèle ScanWatch
+corrigé).
 
-- **`platform: numeric_state`** sur `sensor.rain_bird_bat_bt_2_e9a3_battery_level`,
-  avec **`below: <seuil_faible>`**.
-  - Un trigger `numeric_state below` ne se déclenche **qu'à l'entrée** dans la plage
-    (franchissement descendant) ; il ne se répète pas tant que la valeur reste sous le
-    seuil — anti-spam **intrinsèque**.
-- **Garde obligatoire** (condition) : `trigger.from_state` **existe**, sa valeur est
-  **numérique** et **supérieure ou égale au seuil** — c'est-à-dire que la batterie
-  était réellement **non faible** avant le franchissement.
-- (optionnel) **`for: <duree_stabilisation>`** si une stabilisation est retenue.
+- **`platform: state`** sur le capteur batterie (sans `to:`), pour observer **toute**
+  transition de niveau.
+  - **Pourquoi pas `numeric_state below`** : un `numeric_state below: 20` ne se
+    déclenche qu'à l'**entrée** dans la plage `< 20` ; il **manquerait** un
+    franchissement critique partant d'une valeur **déjà** sous 20 (ex. `19 → 9`).
+    Le trigger `state` + comparaisons `from`/`to` couvre ce cas et les seuils `<=`.
+- **Gardes obligatoires** (conditions) :
+  - **disponibilité** : `binary_sensor.rain_bird_pont_donnees_disponibles == 'on'` ;
+  - **`from_state` ET `to_state` présents et numériques** (`is_number`), ce qui exclut
+    `unknown`/`unavailable`/`none`/chaîne vide/non numérique et l'absence d'état.
+- **Logique de franchissement** (dans un `choose`, **critique prioritaire**) :
+  - **Critique** : `old > 10` **et** `new <= 10` ;
+  - **Faible** : `old > 20` **et** `10 < new <= 20`.
+  - L'exigence `old > seuil` garantit un franchissement **depuis une valeur non basse**
+    (anti-reload/anti-restart et anti-répétition), et `choose` n'émet qu'**une** branche
+    (chute directe `25 → 9` ⇒ **critique seul**).
+- **Pas de `for:`** (aucune stabilisation) et **pas de notification de retour à la
+  normale** (aucune branche `else`).
 
 ---
 
@@ -162,12 +174,13 @@ Pour la **future** automation (modèle numérique, type Option A) :
 
 ## Conditions anti-spam / anti-reload
 
-1. **Anti-reload / anti-restart** : la garde `from_state` numérique **≥ seuil** bloque
-   toute transition issue d'un état non numérique. Au reload/restart, l'entité passe
-   par `unavailable`/`unknown` → `from_state` non numérique → **aucune notification**.
-2. **Anti-répétition** : `numeric_state below` ne re-déclenche pas tant que la valeur
-   reste sous le seuil ; combiné à `mode: single`, aucune notification répétée tant que
-   la batterie reste faible.
+1. **Anti-reload / anti-restart** : la garde `is_number` sur `from_state` **et**
+   `to_state` bloque toute transition issue d'un état non numérique. Au reload/restart,
+   l'entité passe par `unavailable`/`unknown` → garde fausse → **aucune notification**.
+2. **Anti-répétition** : chaque branche exige `old > seuil` (franchissement depuis une
+   valeur non basse) ; tant que la batterie **reste** basse (décrue continue), `old`
+   n'est plus au-dessus du seuil → **aucune répétition**. La bande faible ne re-notifie
+   qu'après un retour réel `> 20`. `mode: single` complète la garde.
 3. **Garde de disponibilité du pont** : si `binary_sensor.rain_bird_pont_donnees_disponibles`
    est `off` (pont muet), la lecture batterie est **non exploitable** ; la notification
    ne doit pas être émise sur une valeur potentiellement périmée (diagnostic trompeur).
@@ -237,3 +250,4 @@ Le lot runtime, lorsqu'il sera ouvert, devra démontrer :
 | Version | Date | Modification |
 |---|---|---|
 | 0.1 | 2026-06-29 | Création du contrat (spécification, **aucun runtime**). Architecture en deux couches (diagnostic d'interprétation + notification mobile), sources `battery_level` (principale, %) / `battery_voltage` (diagnostic), déclencheur futur `numeric_state below` avec garde `from_state` numérique ≥ seuil, exclusions `unknown`/`unavailable`/`none`/non numérique, anti-reload/anti-restart et anti-répétition, garde de disponibilité du pont, retour à la normale non retenu par défaut. Seuils laissés en paramètres à arbitrer ; ID d'automation runtime à fournir par Antoine. |
+| 0.2 | 2026-06-29 | **Runtime livré** : automation `10270000000004` ([`batterie_faible_notification.yaml`](../../../../11_automations/arrosage/batterie_faible_notification.yaml)). Paramètres figés : faible `10 < niveau <= 20`, critique `niveau <= 10` (prioritaire), retour normal **non retenu**, `for:` **non retenu**, emoji `🔋`. Mécanisme retenu : trigger `state` + gardes numériques `from_state`/`to_state` (au lieu de `numeric_state below`, pour couvrir un franchissement critique déjà sous 20, ex. `19 → 9`) ; détection **inline** (aucun capteur dérivé créé) ; tension ajoutée au message si numérique, sans bloquer l'envoi. |
