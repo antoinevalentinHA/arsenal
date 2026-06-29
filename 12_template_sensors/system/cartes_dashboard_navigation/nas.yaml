@@ -1,0 +1,37 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – NAS
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Fournir un état visuel synthétique destiné au bouton de
+#     navigation « NAS » (lecture rapide uniquement, NAV/HUB).
+#     Surface l'état de sécurité du Synology principal (nas_valentin).
+#
+#  🎯 États possibles (volontairement réduits — variante « C-light ») :
+#     - alert → état de sécurité en défaut (alerte / intrusion)
+#     - off    → sécurisé, ou donnée indisponible (repos)
+#
+#  🎨 Couleur (Exception 3 — NAV/HUB) :
+#     alert→🔴  off→⚪
+#
+#  ⚠️ Simplification assumée (cf. dossier D-NAV-COULEUR §2 quater) :
+#     - Variante « C-light » : un seul signal, l'état de sécurité.
+#       Couverture partielle assumée (disques / volume / SMART non
+#       agrégés ici) ; extensible vers une synthèse santé complète (C).
+#     - Polarité alignée sur le template `carte_etat_securite`
+#       (off = 🟢 sécurisé, on = 🔴 défaut). Pas de vert « confort » (R4).
+#     - Donnée indisponible / inconnue → off (⚪), le gris prime.
+#
+#  🔗 Entrées :
+#     - binary_sensor.nas_valentin_etat_de_securite
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_nas_dashboard"
+      unique_id: etat_nas_dashboard
+      state: >
+        {% if is_state('binary_sensor.nas_valentin_etat_de_securite', 'on') %}
+          alert
+        {% else %}
+          off
+        {% endif %}
