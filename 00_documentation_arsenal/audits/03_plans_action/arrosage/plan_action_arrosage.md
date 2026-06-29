@@ -31,6 +31,30 @@
 - **Publié incrémentalement** : releases **v16.2** (observation v0 + pré-runtime) et **v16.3** (V1 automatique + durcissements).
 - **Domaine non encore complet** : publié **≠** complet. Les manques (§5) restent à résorber ; c'est précisément ce plan qui trace le chemin restant.
 
+### 2 bis. Trois axes à ne pas confondre
+
+L'existence d'un fichier runtime ne vaut **ni** complétude fonctionnelle **ni** arbitrage tranché. Ce plan distingue désormais explicitement :
+
+| Axe | Sens |
+|---|---|
+| **Livré techniquement** | l'entité / l'automation existe en runtime, CI verte |
+| **Exploitable opérateur** | lisible et actionnable au quotidien, sans connaissance interne |
+| **À valider / arbitrer** | comportement non confirmé terrain, ou question de conception encore ouverte |
+
+> Conséquence de méthode : on ne déclare **pas** un sujet « clos » au seul motif qu'un fichier runtime existe. Une surface peut être **livrée techniquement** tout en restant un manque sur l'un des deux autres axes.
+
+### 2 ter. Surfaces déjà présentes en runtime (recensées, non « closes »)
+
+Surfaces que les §5/§6 listaient encore comme purs manques alors qu'elles sont **livrées techniquement** — recensées ici **sans préjuger** de leur exploitabilité opérateur ni clore l'arbitrage associé :
+
+- **Diagnostic pont** : `12_template_sensors/arrosage/pont_diagnostic_resume.yaml` (résumé texte honnête Wi-Fi / BLE / batterie, jamais `unknown`).
+- **Santé pont** : `12_template_sensors/arrosage/pont_sante.yaml`.
+- **Qualité BLE / Wi-Fi** : `12_template_sensors/arrosage/pont_qualite_ble.yaml`, `…/pont_qualite_wifi.yaml`.
+- **Données disponibles / fraîches** : `12_template_sensors/arrosage/pont_donnees_disponibles.yaml`, `…/pont_donnees_fraiches.yaml`.
+- **Notification pont indisponible** : `11_automations/arrosage/pont_indisponible_notification.yaml` (indisponibilité ≥ 30 min + message de retour).
+
+> Statut de ces surfaces : **livrées techniquement**. Leur **exploitabilité opérateur** (UI) et l'**arbitrage notifications** (jeu complet signal/bruit) restent **ouverts** (§5/§6/§7). Leur présence runtime **ne les clôt pas**.
+
 ## 3. Objectif de livraison
 
 « **Livrer** » le domaine arrosage = pouvoir l'inclure dans une **release Arsenal sans ambiguïté**, c'est-à-dire :
@@ -52,25 +76,29 @@
 - **Intention explicable** par `motif` + `categorie` (attributs lecture seule, sans changer l'état).
 - **Observabilité / historisation de base** de la chaîne de décision (Recorder).
 - **UI et découvrabilité déjà amorcées** : réglages, cartes, hub de domaine et `carte_domaines` réconciliés.
+- **Diagnostic & alerte pont** : surfaces de diagnostic / santé / qualité BLE-Wi-Fi / disponibilité-fraîcheur du pont **et** notification « pont indisponible » **livrées techniquement** (détail et réserves au §2 ter — livré ≠ exploitable/arbitré).
 
 ## 5. Manques avant livraison
 
-- **UI opérateur à finaliser** : l'exploitation quotidienne doit être lisible et complète.
-- **Diagnostic explicable à compléter**, notamment la **santé du pont** (pourquoi disponible/frais ou non).
-- **Notifications utiles à arbitrer** : quoi notifier, quand, et ce qui serait du bruit.
+> Reclassés selon les trois axes du §2 bis. Une surface **livrée techniquement** (§2 ter) peut rester un manque si elle n'est pas **exploitable opérateur** ou si un **arbitrage** demeure.
+
+- **UI opérateur à finaliser** *(exploitabilité)* : l'état décisionnel et le `motif` / `categorie` ne sont pas encore surfacés de façon exploitable ; l'exploitation quotidienne doit être lisible et complète.
+- **Diagnostic pont — surface livrée, exploitabilité à confirmer** : le résumé diagnostic, la santé, la qualité BLE/Wi-Fi et la disponibilité/fraîcheur sont **livrés techniquement** (§2 ter). Reste à confirmer, côté opérateur, qu'ils répondent au « pourquoi disponible/frais ou non » — **pas à les créer**.
+- **Notifications — une notification livrée, jeu complet à arbitrer** : la notification « pont indisponible » existe (§2 ter) ; l'**arbitrage signal/bruit** du complément (quoi d'autre notifier, quand) reste ouvert (§7).
 - **Validations terrain à effectuer** : arrosage réellement déclenché, comportement sur la durée.
-- **Lisibilité du verdict d'arrosage / historique opérateur** : pouvoir relire *pourquoi* le système a arrosé ou s'est abstenu.
+- **Lisibilité du verdict d'arrosage / historique opérateur** : pouvoir relire *pourquoi* le système a arrosé ou s'est abstenu — directement lié au cadrage du `motif` (§7).
 - **Clarté sur les conditions de livraison** : savoir, à un instant donné, ce qui reste réellement bloquant.
 
 ## 6. Lots candidats priorisés (non prescriptif)
 
 Quelques **axes ordonnés**, pas un backlog. Chaque lot sera **audité avant YAML** ; l'ordre est indicatif.
 
-1. **UI d'exploitation / lisibilité de l'intention** — rendre l'état et le `motif`/`categorie` exploitables par l'opérateur.
-2. **Diagnostic pont explicable** — surface lisible de la santé/fraîcheur du pont.
-3. **Notifications** — un jeu **minimal et utile**, une fois l'arbitrage signal/bruit tranché (§7).
-4. **Validations terrain** — exécuter le minimum nécessaire (§8) et en consigner le verdict.
-5. **Complétude / clôture du chantier** — quand les critères du §3 sont réunis ; chaque lot d'ici là est **publié dans le changelog de sa release** (co-commit), pas accumulé pour un changelog final.
+1. **Cadrage de l'arbitrage §7 (seuils sol / motif)** — trancher, **après observation terrain**, entre Option A et Option B (§7). **Prérequis** au lot UI (qui s'appuie sur les codes `motif`) et à la lisibilité du verdict ; tout changement runtime sera **précédé d'un arbitrage contractuel**.
+2. **UI d'exploitation / lisibilité de l'intention** — rendre l'état et le `motif` / `categorie` exploitables par l'opérateur. **Dépend du §7** (les codes motif peuvent évoluer selon l'option retenue).
+3. **Diagnostic pont — exploitabilité** — le runtime est **livré** (§2 ter) ; le lot restant est de **confirmer la lisibilité opérateur**, pas de construire la surface.
+4. **Notifications** — partir de la notification « pont indisponible » **déjà livrée** (§2 ter) et arbitrer le **complément** minimal et utile, une fois l'arbitrage signal/bruit tranché (§7).
+5. **Validations terrain** — exécuter le minimum nécessaire (§8) et en consigner le verdict.
+6. **Complétude / clôture du chantier** — quand les critères du §3 sont réunis ; chaque lot d'ici là est **publié dans le changelog de sa release** (co-commit), pas accumulé pour un changelog final.
 
 ## 7. Questions ouvertes (à trancher avant livraison)
 
@@ -78,7 +106,18 @@ Quelques **axes ordonnés**, pas un backlog. Chaque lot sera **audité avant YAM
 - Quel **niveau d'explicabilité UI** est **suffisant** pour livrer (sans sur-ingénierie) ?
 - Quelles **validations terrain** sont **nécessaires** (vs souhaitables mais non bloquantes) ?
 - Quels **signaux** permettent d'affirmer que le domaine est **publiable** ?
-- **Couplage des seuils de fraîcheur sol (observé 2026-06-29).** Le gate « canal sol exploitable » de l'intention accepte l'état `degrade` (**2 points frais**, [`14`](../../../contrats/arrosage/14_qualite_donnees_sol.md) / [`15`](../../../contrats/arrosage/15_canal_reservoir_sol.md)), mais la **médiane** qui alimente `besoin_sol` exige **3 points frais** (`availability ≥ 3`). À 2 points frais : médiane indisponible → `besoin_sol = off` → pas d'arrosage, et le `motif` dominant affiche `sol_suffisant` au lieu d'une cause « médiane indisponible (2/3) ». Comportement **abstention-safe** (on n'arrose pas dans le doute ; le secours Rain Bird reste le filet), mais (a) la branche `degrade` ne peut **jamais** porter une intention positive et (b) le motif est **trompeur** dans ce cas. **Arbitrage** : aligner les deux seuils (médiane tolère 2 points ?) **ou** assumer 3/3 et **corriger le libellé du motif**. À observer en validation terrain (§8) avant toute décision.
+- **Couplage des seuils de fraîcheur sol — CONSTAT RUNTIME CONFIRMÉ (2026-06-29).** Ce n'est plus une hypothèse : la chaîne a été relue dans le dépôt.
+  - `sensor.jardin_reservoir_sol_etat` vaut `degrade` à **2 points frais** ([`reservoir_sol.yaml`](../../../../12_template_sensors/arrosage/reservoir_sol.yaml) ; doctrine [`14`](../../../contrats/arrosage/14_qualite_donnees_sol.md) / [`15`](../../../contrats/arrosage/15_canal_reservoir_sol.md)).
+  - `binary_sensor.arrosage_intention` **accepte** `degrade` (gate `etat ∈ {complet, degrade}`).
+  - mais `sensor.jardin_humidite_sol_mediane` n'est **disponible qu'à 3 valeurs fraîches** (`availability: vals | length >= 3`), donc `binary_sensor.arrosage_besoin_sol = off` à 2 points.
+  - **Effet observé** : à 2/3 points frais, l'arrosage reste **abstention-safe** (pas d'arrosage ; secours Rain Bird intact), mais le `motif` dominant retombe sur **`sol_suffisant`** au lieu d'exprimer une **indisponibilité / insuffisance partielle du canal sol**. Conséquences : (a) la branche `degrade` ne peut **jamais** porter une intention positive ; (b) dans ce cas le motif est **trompeur** (cause affichée fausse).
+
+  **Deux options d'arbitrage — aucune n'est tranchée ici (décision du propriétaire) :**
+
+  - **Option A — assumer réellement le mode dégradé.** Rendre la **médiane exploitable à 2 points frais** (abaisser l'exigence de disponibilité) pour que `degrade` puisse réellement porter une intention. Impacterait la cohérence agrégats/qualité côté contrats [`14`](../../../contrats/arrosage/14_qualite_donnees_sol.md) / [`15`](../../../contrats/arrosage/15_canal_reservoir_sol.md) et le runtime `reservoir_sol.yaml`. *À peser : robustesse statistique d'une médiane sur 2 points.*
+  - **Option B — maintenir l'exigence 3/3 et rendre l'abstention honnête.** Conserver la médiane à 3 points, mais **distinguer le motif** quand le canal sol est partiel (un libellé d'abstention dédié, type « canal sol partiel / médiane indisponible », **avant** `sol_suffisant`) pour ne plus afficher de cause fausse. Impacterait le vocabulaire des motifs du contrat [`17`](../../../contrats/arrosage/17_decision_v1.md) et le runtime `intention.yaml`.
+
+  > **Séquencement.** À **observer en validation terrain (§8)** avant toute décision. **Tout changement runtime (A ou B) devra être précédé d'un arbitrage contractuel** (contrats `14` / `15` / `17` selon l'option) : ce plan **n'autorise pas** à modifier le runtime — il **cadre** la décision, il ne la prend pas. Les noms de code motif cités (`sol_suffisant`, « canal sol partiel ») sont **descriptifs**, non prescriptifs (le plan reste non normatif).
 
 ## 8. Validations terrain nécessaires
 
@@ -90,7 +129,7 @@ Quelques **axes ordonnés**, pas un backlog. Chaque lot sera **audité avant YAM
 - source d'horloge = `bridge_uptime.last_reported` ;
 - âge d'uptime **cohérent** après reload HA.
 
-> **Ces acquis ne valent pas validation complète du domaine.** Restent à valider : l'**arrosage effectif**, le **comportement sur la durée**, l'**UI opérateur** et les **notifications**. Cadre des validations : Phase 0 terrain et pré-requis runtime ([`07_phase_0_terrain.md`](../../../contrats/arrosage/07_phase_0_terrain.md), [`10_prerequis_runtime.md`](../../../contrats/arrosage/10_prerequis_runtime.md)).
+> **Ces acquis ne valent pas validation complète du domaine.** Restent à valider : l'**arrosage effectif**, le **comportement sur la durée**, l'**UI opérateur**, les **notifications**, et le **cas « 2/3 points frais » du §7** (observer le `motif` en conditions réelles pour instruire l'arbitrage A/B). Cadre des validations : Phase 0 terrain et pré-requis runtime ([`07_phase_0_terrain.md`](../../../contrats/arrosage/07_phase_0_terrain.md), [`10_prerequis_runtime.md`](../../../contrats/arrosage/10_prerequis_runtime.md)).
 
 ## 9. Éléments explicitement différés
 
