@@ -150,4 +150,4 @@ La neutralisation de `clim_blocage_horaire_reel` est **globale**. HEAT et DRY ne
 
 ### Statut
 
-Doctrine **validée comme cible** (au sens de §8). **Implémentation runtime non réalisée** à ce stade : la création des entités `input_boolean.clim_mode_nuit_actif` et `binary_sensor.clim_mode_nuit_effectif`, la requalification des trois sélecteurs COOL, la neutralisation de `clim_blocage_horaire_reel` et l'exposition UI relèvent d'une **étape runtime séparée**, postérieure à la validation de la présente doctrine.
+Doctrine **validée comme cible** (au sens de §8) et **implémentée au runtime en v16.1.0** : entités `input_boolean.clim_mode_nuit_actif` et `binary_sensor.clim_mode_nuit_effectif` créées, trois sélecteurs COOL requalifiés en régime absence pendant la plage nocturne, `clim_blocage_horaire_reel` neutralisé quand le mode nuit est armé, exposition UI livrée. **Validation terrain acquise le 2026-06-29** (bascule régime absence COOL + neutralisation du blocage horaire vérifiées en plage nocturne réelle). Chantier **C8 clos** au registre des chantiers (CI verte).
