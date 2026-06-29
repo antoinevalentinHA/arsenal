@@ -44,7 +44,6 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 ENT_CONFIRMEE   = "binary_sensor.presence_famille_securite_confirmee_alarme"
 ENT_ABSENCE_CONFIRMEE = "binary_sensor.presence_famille_securite_absence_confirmee_alarme"
 ENT_BRUT        = "binary_sensor.presence_famille_securite"
-ENT_ABSENT_5MIN = "binary_sensor.presence_famille_securite_absent_depuis_5_min"
 PREFIX_PANEL    = "alarm_control_panel."
 
 # Fichiers définisseurs des projections confirmées (exclus de R2).

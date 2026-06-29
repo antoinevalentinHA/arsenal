@@ -75,7 +75,6 @@ Le capteur ne doit **jamais dépendre** de :
 
 - `alarm_control_panel.alarme_maison`
 - `binary_sensor.presence_famille_securite`
-- `binary_sensor.presence_famille_securite_absent_depuis_5_min`
 - `input_boolean.mode_test_alarme`
 - `input_boolean.mode_babysitting`
 - tout autre état métier global
