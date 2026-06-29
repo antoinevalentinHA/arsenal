@@ -42,7 +42,7 @@ views:
               - type: custom:button-card
                 template: status_72_on_off
                 entity: binary_sensor.rain_bird_pont_donnees_fraiches
-                name: Fraîches
+                name: Fraîcheur
                 icon: mdi:clock-check-outline
 
           # =========================================================
