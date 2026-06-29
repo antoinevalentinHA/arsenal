@@ -152,25 +152,30 @@ views:
                 hold_action:
                   action: more-info
 
-          # Boiler Bridge – Santé
-          - type: custom:button-card
-            template: boiler_status_health
-            entity: sensor.boiler_bridge_sante
-            name: Boiler Bridge
-            icon: mdi:lan-connect
-            tap_action:
-              action: navigate
-              navigation_path: /diagnostics-boiler-dashboard
+          # Boiler Bridge & Rain Bird – Santé (côte à côte)
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              # Boiler Bridge – Santé
+              - type: custom:button-card
+                template: boiler_status_health
+                entity: sensor.boiler_bridge_sante
+                name: Boiler Bridge
+                icon: mdi:lan-connect
+                tap_action:
+                  action: navigate
+                  navigation_path: /diagnostics-boiler-dashboard
 
-          # Rain Bird – Santé du pont
-          - type: custom:button-card
-            template: rain_bird_status_health
-            entity: sensor.rain_bird_pont_sante
-            name: Rain Bird
-            icon: mdi:lan-connect
-            tap_action:
-              action: navigate
-              navigation_path: /diagnostics-rain-bird-dashboard
+              # Rain Bird – Santé du pont
+              - type: custom:button-card
+                template: rain_bird_status_health
+                entity: sensor.rain_bird_pont_sante
+                name: Rain Bird
+                icon: mdi:lan-connect
+                tap_action:
+                  action: navigate
+                  navigation_path: /diagnostics-rain-bird-dashboard
 
           ####################################################
           # ⚠️ AUTOMATISATIONS DÉSACTIVÉES
