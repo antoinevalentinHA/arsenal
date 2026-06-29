@@ -1,7 +1,7 @@
 # 🎨 Dossier d'arbitrage — Couleurs d'icônes des tuiles de navigation
 
 > **Type :** dossier d'arbitrage Lovelace / UI (non décisionnel). **Document faisant foi** du sujet (pointé par `REGISTRE_CHANTIERS.md`).
-> **ID registre :** `D-NAV-COULEUR`. **Statut :** **Option C (hybride) en exécution incrémentale** — 4 tuiles résorbées (Arrosage, Rec. météo, Volets, NAS) ; **reliquat dormant** (Prises, Santé, Imprimerie, Énergie + section Système). L'arbitrage global A/B/C reste ouvert pour le reliquat.
+> **ID registre :** `D-NAV-COULEUR`. **Statut :** **exécution incrémentale (Option C dynamisation + Option A neutralisation)** — 5 tuiles dynamisées (Arrosage, Rec. météo, Volets, NAS, Imprimerie — cf. §2 sexies) ; **3 tuiles neutralisées** au gris de base NAV (Prises, Santé, Énergie — cf. §2 quinquies) ; **reliquat dormant** (section ⚙️ Système). L'arbitrage global A/B/C reste ouvert pour le reliquat.
 > **Règle qui fait foi :** [`ui/couleurs/03_exceptions.md`](../../../ui/couleurs/03_exceptions.md) § *Exception 3 — Couleurs dynamiques d'icône en contexte NAV/HUB*.
 > **Discipline :** aucune modification UI d'une tuile tant que son cas n'est pas tranché (cas par cas) ; co-commit du registre à chaque changement d'état.
 
@@ -28,11 +28,11 @@ Deux patterns coexistent dans [`18_lovelace/dashboards/navigation.yaml`](../../.
 |---|---|---|---|
 | ~~Rec. météo~~ | ~~`#F9A825`~~ | lien dashboard | **✅ résorbé** — dynamisé par fraîcheur des records, cf. §2 bis |
 | ~~Volets~~ | ~~`#6D4C41`~~ | domaine | **✅ résorbé** — dynamisé sur signal pluie (Option C), cf. §2 ter |
-| Prises | `#607D8B` | domaine | pas de capteur d'état de synthèse |
-| Santé | `#E91E63` | domaine | pas de capteur d'état de synthèse |
-| Imprimerie | `#1E468C` | lien dashboard | hors palette NAV |
+| ~~Prises~~ | ~~`#607D8B`~~ | domaine | **✅ résorbé** — neutralisé au gris de base NAV (pas de capteur de synthèse → Option A), cf. §2 quinquies |
+| ~~Santé~~ | ~~`#E91E63`~~ | domaine | **✅ résorbé** — neutralisé au gris de base NAV (pas de capteur de synthèse → Option A), cf. §2 quinquies |
+| ~~Imprimerie~~ | ~~`#1E468C`~~ | lien dashboard | **✅ résorbé** — bleu hors palette retiré, dynamisé sur la santé du NAS imprimerie (alert si défaut, gris au repos), cf. §2 sexies |
 | ~~NAS~~ | ~~`#1976D2`~~ | lien dashboard | **✅ résorbé** — bleu interdit retiré, dynamisé sur l'état de sécurité (C-light), cf. §2 quater |
-| Énergie | `#FBC02D` | lien natif HA | hors palette NAV |
+| ~~Énergie~~ | ~~`#FBC02D`~~ | lien natif HA | **✅ résorbé** — neutralisé au gris de base NAV (lien natif, aucun état latent → Option A), cf. §2 quinquies |
 
 ### Section ⚙️ Système (tous `bouton_navigation` figés)
 
@@ -122,10 +122,43 @@ Automations `#F9A825` · Scripts `#D84315` · Logs HA `#8E24AA` · Journal `#5D4
 
 **Décision (tranchée par l'utilisateur) : Option C-light — dynamiser sur l'état de sécurité.** Premier pas à faible risque qui résout la non-conformité de charte et apporte une valeur immédiate. Réalisation : `sensor.etat_nas_dashboard` renvoie `alert` (🔴) si `binary_sensor.nas_valentin_etat_de_securite` est `on` (défaut / alerte / intrusion), sinon `off` (⚪, y compris indisponible). **Polarité confirmée par la source faisant foi** : le template `carte_etat_securite` (`19_button_card_templates/40_dashboards/nas/`) mappe déjà `off → 🟢 sécurisé`, `on → 🔴 défaut` — pas besoin de vérification runtime supplémentaire. **Couverture partielle assumée** (disques / volume / SMART non agrégés) — extensible vers la synthèse santé complète (**C**) si besoin ultérieur. `#1976D2` retiré.
 
+## 2 quinquies. Prises, Santé, Énergie — *neutralisation au gris de base NAV*
+
+> **Statut :** **✅ implémenté (runtime)** — **Option A retenue** (neutraliser). Artefacts : bascule des trois tuiles dans `navigation.yaml` ; couleurs figées hors palette (`#607D8B`, `#E91E63`, `#FBC02D`) remplacées par le **gris de base NAV** `rgb(158, 158, 158)`.
+
+**Pourquoi la neutralisation et non la dynamisation.** Ces trois tuiles n'exposent **aucun état latent exploitable** qui justifierait l'Option C : **Prises** et **Santé** sont des domaines **sans capteur d'état de synthèse** ; **Énergie** est un **lien natif HA** (`/energy`) sans état propre. Faute de signal notable à dériver, la couleur figée n'était qu'une **identité décorative hors palette NAV** — exactement le cas que l'Option A neutralise. Le gris au repos est **conforme à l'Exception 3** (gris = état de base / neutre).
+
+**Choix du gris.** Plutôt que de retirer entièrement `styles.icon.color` (gris neutre du thème), on fixe explicitement `rgb(158, 158, 158)` — le **même gris que les tuiles dynamiques au repos** (état `off`/`standby` de `bouton_navigation_dynamique`) et l'une des **4 couleurs opaques** de la palette NAV. Cohérence visuelle directe avec le reste du menu, et la valeur reste **whitelistée par le contrôle CI** `ui_runtime_colors` (rgb opaque T2).
+
+**Suite éventuelle.** Si l'un de ces domaines se dote plus tard d'un capteur de synthèse (p. ex. une santé batteries agrégée, une consommation anormale), la tuile pourra être **promue en Option C** (dynamisation) sans dette : la bascule gris→dynamique est triviale (le mapping état→couleur existe déjà). En l'état, neutralisation assumée.
+
+## 2 sexies. Imprimerie — *bleu hors palette résorbé + dynamisation sur la santé du NAS imprimerie*
+
+> **Statut :** **✅ implémenté (runtime)** — **Option C retenue**. Artefacts : `sensor.etat_imprimerie_dashboard` (`12_template_sensors/system/cartes_dashboard_navigation/imprimerie.yaml`), bascule de la tuile dans `navigation.yaml`, **`#1E468C` (bleu hors palette) retiré**.
+
+**La non-conformité.** `#1E468C` = `rgb(30, 70, 140)`, **une nuance de bleu hors palette NAV** — prohibée par la charte (« toute autre nuance de bleu ») au même titre que l'ancien `#1976D2` du NAS, et **passant la CI** pour la même raison (le contrôle `ui_runtime_colors` ne bloque en HEX que les noirs). Non-conformité documentaire réelle, résorbée par la dynamisation.
+
+**État latent disponible.** Contrairement aux trois tuiles neutralisées (§2 quinquies), Imprimerie **dispose d'un capteur de synthèse santé** : `sensor.nas_imprimerie_sante_synthese` (enum fermé `ok / degraded / critical / offline / unknown`, agrégeant connectivité / VPN / UPS / stockage du `nas_imprimerie`). Un état latent exploitable existe donc → Option C éligible (comme Arrosage, NAS).
+
+**Articulation avec la doctrine couleur arrêtée.** La doctrine antérieure réservait le **bleu** (`normal`) à une **activité réelle observable** (impression / travail en cours, par analogie au domaine Bruit) — *pas de bleu décoratif / de simple navigation / d'existence du domaine*. **Cette doctrine est respectée** : aucun signal d'activité d'impression n'étant exposé aujourd'hui, **le bleu n'est pas utilisé** par la tuile. La dynamisation surface uniquement un **défaut de santé en rouge** (`alert`), ce que la doctrine ne proscrivait pas. Le bleu « activité » reste une **piste ouverte** si un signal d'impression/travail est exposé plus tard.
+
+**Mapping couleur (réutilise `bouton_navigation_dynamique`) :**
+
+| État renvoyé | Couleur NAV | Condition (`nas_imprimerie_sante_synthese`) |
+|---|---|---|
+| `off` | ⚪ gris (base) | `ok` (sain), `unknown` ou indisponible — repos, conforme Exception 3 |
+| `alert` | 🔴 rouge | `degraded`, `critical` ou `offline` — tout défaut santé actif du NAS imprimerie |
+| `normal` | 🔵 bleu | **non utilisé** — réservé à une activité réelle (signal absent), cf. doctrine ci-dessus |
+| `confort` | 🟢 vert | **non utilisé** — pas de vert « confort » (R4) |
+
+> **Honnêteté de repos.** Donnée incomplète → la synthèse source renvoie `unknown` (sa note v1.1 fait primer l'honnêteté sur le danger interprété) → tuile grise, comme NAS. **Couverture assumée** : tout défaut (y compris `degraded`) remonte en rouge — choix conservateur (le seul autre slot, le bleu, est doctrinalement réservé à l'activité). Collapsible vers « critical/offline seuls » si le rouge sur `degraded` s'avère trop bruyant.
+
+**Ce que ça coûte / ce que ça rapporte.** Coût : un capteur de synthèse (dérivation pure de la synthèse santé existante) + bascule d'une ligne de tuile. Gain : résorbe la non-conformité bleu **et** ajoute une vraie valeur (un défaut du NAS imprimerie → tuile rouge). Reste strictement dans la palette NAV.
+
 ## 3. Déclencheur de réveil
 
-Refonte de la charte couleurs, refonte du menu de navigation, ou décision explicite d'harmoniser l'UI NAV. En l'absence : dormant (aucun impact runtime, pur cosmétique / cohérence). *(La non-conformité de charte NAS `#1976D2`, qui constituait un déclencheur actif, est désormais résorbée — cf. §2 quater.)*
+Refonte de la charte couleurs, refonte du menu de navigation, ou décision explicite d'harmoniser l'UI NAV. En l'absence : dormant (aucun impact runtime, pur cosmétique / cohérence). *(Les non-conformités de charte « bleu hors palette » NAS `#1976D2` et Imprimerie `#1E468C`, qui constituaient des déclencheurs actifs, sont désormais résorbées — cf. §2 quater et §2 sexies.)*
 
 ---
 
-*Dossier d'arbitrage — non normatif. Option C (hybride) tranchée et exécutée cas par cas (4 tuiles résorbées) ; reliquat dormant, arbitrage global ouvert.*
+*Dossier d'arbitrage — non normatif. Exécution cas par cas : 5 tuiles dynamisées (Option C) + 3 tuiles neutralisées au gris de base NAV (Option A) ; reliquat dormant (section ⚙️ Système), arbitrage global ouvert.*

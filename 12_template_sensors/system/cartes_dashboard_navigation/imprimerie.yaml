@@ -1,0 +1,42 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – Imprimerie
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Fournir un état visuel synthétique destiné au bouton de
+#     navigation « Imprimerie » (lecture rapide uniquement, NAV/HUB).
+#     Surface la santé du NAS imprimerie (nas_imprimerie) déjà
+#     synthétisée par sensor.nas_imprimerie_sante_synthese.
+#
+#  🎯 États possibles (volontairement réduits) :
+#     - alert → santé en défaut (degraded / critical / offline)
+#     - off   → sain (ok), inconnu ou indisponible (repos)
+#
+#  🎨 Couleur (Exception 3 — NAV/HUB) :
+#     alert→🔴  off→⚪
+#
+#  ⚠️ Doctrine couleur Imprimerie (cf. dossier D-NAV-COULEUR §2 sexies) :
+#     - Le BLEU (normal) reste réservé à une ACTIVITÉ réelle observable
+#       (impression / travail en cours), par analogie au domaine Bruit.
+#       Aucun signal d'activité n'est exposé aujourd'hui → le bleu n'est
+#       PAS utilisé ici. Pas de bleu décoratif / de navigation / d'existence.
+#     - La tuile surface donc uniquement un DÉFAUT de santé (🔴) ; gris au
+#       repos. Tout défaut actif (degraded / critical / offline) → alert.
+#     - Donnée incomplète / inconnue → off (⚪), le gris prime (honnêteté,
+#       aligné sur la note v1.1 de nas_imprimerie_sante_synthese).
+#     - Pas de vert « confort » (R4). Bleu activité = piste ouverte si un
+#       signal d'impression/travail est exposé plus tard.
+#
+#  🔗 Entrées :
+#     - sensor.nas_imprimerie_sante_synthese (ok/degraded/critical/offline/unknown)
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_imprimerie_dashboard"
+      unique_id: etat_imprimerie_dashboard
+      state: >
+        {% if states('sensor.nas_imprimerie_sante_synthese') in ['degraded', 'critical', 'offline'] %}
+          alert
+        {% else %}
+          off
+        {% endif %}

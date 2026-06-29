@@ -182,7 +182,7 @@ views:
                       navigation_path: /prises-dashboard
                     styles:
                       icon:
-                        - color: "#607D8B"
+                        - color: "rgb(158, 158, 158)"
 
                   - type: custom:button-card
                     template: bouton_navigation
@@ -193,7 +193,7 @@ views:
                       navigation_path: /sante-dashboard
                     styles:
                       icon:
-                        - color: "#E91E63"
+                        - color: "rgb(158, 158, 158)"
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique
@@ -206,15 +206,14 @@ views:
                       navigation_path: /audi-dashboard
 
                   - type: custom:button-card
-                    template: bouton_navigation
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_imprimerie_dashboard
                     name: Imprimerie
                     icon: mdi:factory
                     tap_action:
                       action: navigate
                       navigation_path: /imprimerie-dashboard
-                    styles:
-                      icon:
-                        - color: "#1E468C"
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique
@@ -235,7 +234,7 @@ views:
                       navigation_path: /energy
                     styles:
                       icon:
-                        - color: "#FBC02D"
+                        - color: "rgb(158, 158, 158)"
 
               - type: custom:button-card
                 template: bouton_navigation_dynamique
