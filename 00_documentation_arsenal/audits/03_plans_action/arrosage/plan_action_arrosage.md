@@ -53,7 +53,7 @@ Surfaces que les §5/§6 listaient encore comme purs manques alors qu'elles sont
 - **Données disponibles / fraîches** : `12_template_sensors/arrosage/pont_donnees_disponibles.yaml`, `…/pont_donnees_fraiches.yaml`.
 - **Notification pont indisponible** : `11_automations/arrosage/pont_indisponible_notification.yaml` (indisponibilité ≥ 30 min + message de retour).
 
-> Statut de ces surfaces : **livrées techniquement**. Leur **exploitabilité opérateur** (UI) et l'**arbitrage notifications** (jeu complet signal/bruit) restent **ouverts** (§5/§6/§7). Leur présence runtime **ne les clôt pas**.
+> Statut de ces surfaces : **livrées techniquement**. Pour le **diagnostic pont**, l'**exploitabilité opérateur est acquise côté Système** (page dédiée `18_lovelace/dashboards/systeme/rain_bird.yaml`, navigable depuis `systeme/principal.yaml` — cf. §6.3), **pas** dans le cockpit arrosage. Seul l'**arbitrage notifications** (jeu complet signal/bruit) reste **ouvert** (§7). Leur présence runtime **ne les clôt pas** automatiquement, mais le diagnostic pont, lui, est bien surfacé au bon endroit.
 
 ## 3. Objectif de livraison
 
@@ -83,7 +83,7 @@ Surfaces que les §5/§6 listaient encore comme purs manques alors qu'elles sont
 > Reclassés selon les trois axes du §2 bis. Une surface **livrée techniquement** (§2 ter) peut rester un manque si elle n'est pas **exploitable opérateur** ou si un **arbitrage** demeure.
 
 - **UI opérateur à finaliser** *(exploitabilité)* : l'état décisionnel et le `motif` / `categorie` ne sont pas encore surfacés de façon exploitable ; l'exploitation quotidienne doit être lisible et complète.
-- **Diagnostic pont — surface livrée, exploitabilité à confirmer** : le résumé diagnostic, la santé, la qualité BLE/Wi-Fi et la disponibilité/fraîcheur sont **livrés techniquement** (§2 ter). Reste à confirmer, côté opérateur, qu'ils répondent au « pourquoi disponible/frais ou non » — **pas à les créer**.
+- **Diagnostic pont — RÉSOLU (faux manque UI)** : surface livrée **et** exploitable opérateur **côté Système** (`18_lovelace/dashboards/systeme/rain_bird.yaml`, navigable depuis `systeme/principal.yaml` → `/diagnostics-rain-bird-dashboard`). Le diagnostic pont est une information de **maintenance / infrastructure** : il vit côté Système, **pas** dans le cockpit arrosage (cf. §6.3). Rien à créer ni à ajouter au cockpit.
 - **Notifications — une notification livrée, jeu complet à arbitrer** : la notification « pont indisponible » existe (§2 ter) ; l'**arbitrage signal/bruit** du complément (quoi d'autre notifier, quand) reste ouvert (§7).
 - **Validations terrain à effectuer** : arrosage réellement déclenché, comportement sur la durée.
 - **Lisibilité du verdict d'arrosage / historique opérateur** : pouvoir relire *pourquoi* le système a arrosé ou s'est abstenu — directement lié au cadrage du `motif` (§7).
@@ -95,7 +95,11 @@ Quelques **axes ordonnés**, pas un backlog. Chaque lot sera **audité avant YAM
 
 1. **Arbitrage §7 (seuils sol / motif) — TRANCHÉ (Option A), runtime réaligné.** Lot contrat+runtime appliqué (contrats `15`/`17` clarifiés, `reservoir_sol.yaml` : médiane disponible dès 2 points frais). **Reste** : confirmer l'effet positif en validation terrain (§8). Les codes `motif` n'ont **pas** changé (Option A les rend honnêtes sans nouveau code).
 2. **UI d'exploitation / lisibilité de l'intention** — rendre l'état et le `motif` / `categorie` exploitables par l'opérateur. Le §7 étant tranché sans changement de vocabulaire motif, ce lot **n'est plus bloqué** par lui.
-3. **Diagnostic pont — exploitabilité** — le runtime est **livré** (§2 ter) ; le lot restant est de **confirmer la lisibilité opérateur**, pas de construire la surface.
+3. **Diagnostic pont — FAUX MANQUE, COUVERT (décision propriétaire).** Pas de lot UI : la surface existe déjà et est exploitable.
+   - **Couvert par** `18_lovelace/dashboards/systeme/rain_bird.yaml` (page système dédiée, enregistrée dans les dashboards, lecture seule) : santé, données disponibles/fraîches, RSSI Wi-Fi, RSSI BLE, batterie, heartbeat, station active, version, uptime, mémoire libre.
+   - **Navigable depuis** `18_lovelace/dashboards/systeme/principal.yaml` (tuile « Rain Bird – Santé du pont » → `/diagnostics-rain-bird-dashboard`).
+   - **Ajout au cockpit arrosage `principal.yaml` : REFUSÉ.** Le diagnostic détaillé est une information de maintenance / infrastructure ; il ne doit pas polluer le cockpit. Le cockpit signale déjà le blocage fonctionnel via le **motif `pont_indisponible`** de la carte « raison du verdict ».
+   - **Capteurs qualitatifs non affichés** (`pont_qualite_ble`, `pont_qualite_wifi`, `pont_diagnostic_resume`) : considérés **redondants** tant que la page système expose déjà les signaux utiles (RSSI bruts + santé) ; **non surfacés volontairement**, pas un manque.
 4. **Notifications** — partir de la notification « pont indisponible » **déjà livrée** (§2 ter) et arbitrer le **complément** minimal et utile, une fois l'arbitrage signal/bruit tranché (§7).
 5. **Validations terrain** — exécuter le minimum nécessaire (§8) et en consigner le verdict.
 6. **Complétude / clôture du chantier** — quand les critères du §3 sont réunis ; chaque lot d'ici là est **publié dans le changelog de sa release** (co-commit), pas accumulé pour un changelog final.
