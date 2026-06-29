@@ -4,30 +4,34 @@
 #  🧠 Rôle :
 #     Fournir un état visuel synthétique destiné au bouton de
 #     navigation « Imprimerie » (lecture rapide uniquement, NAV/HUB).
-#     Surface la santé du NAS imprimerie (nas_imprimerie) déjà
-#     synthétisée par sensor.nas_imprimerie_sante_synthese.
+#     Surface DEUX signaux du site imprimerie :
+#       - la santé IT du NAS (sensor.nas_imprimerie_sante_synthese) ;
+#       - l'ACTIVITÉ de l'usine (régime acoustique des presses).
 #
-#  🎯 États possibles (volontairement réduits) :
-#     - alert → santé en défaut (degraded / critical / offline)
-#     - off   → sain (ok), inconnu ou indisponible (repos)
+#  🎯 États possibles (priorité décroissante) :
+#     - alert  → défaut santé NAS (degraded / critical / offline) — PRIME
+#     - normal → usine en activité (regime_acoustique_imprimerie > bas)
+#     - off    → NAS sain/inconnu/indispo ET usine au repos (bas/indispo)
 #
 #  🎨 Couleur (Exception 3 — NAV/HUB) :
-#     alert→🔴  off→⚪
+#     alert→🔴  normal→🔵  off→⚪
 #
 #  ⚠️ Doctrine couleur Imprimerie (cf. dossier D-NAV-COULEUR §2 sexies) :
-#     - Le BLEU (normal) reste réservé à une ACTIVITÉ réelle observable
-#       (impression / travail en cours), par analogie au domaine Bruit.
-#       Aucun signal d'activité n'est exposé aujourd'hui → le bleu n'est
-#       PAS utilisé ici. Pas de bleu décoratif / de navigation / d'existence.
-#     - La tuile surface donc uniquement un DÉFAUT de santé (🔴) ; gris au
-#       repos. Tout défaut actif (degraded / critical / offline) → alert.
-#     - Donnée incomplète / inconnue → off (⚪), le gris prime (honnêteté,
-#       aligné sur la note v1.1 de nas_imprimerie_sante_synthese).
-#     - Pas de vert « confort » (R4). Bleu activité = piste ouverte si un
-#       signal d'impression/travail est exposé plus tard.
+#     - Le BLEU (normal) est réservé à une ACTIVITÉ réelle observable,
+#       par analogie au domaine Bruit. Il s'agit d'une USINE : l'activité
+#       des presses Komori/Bobst/Media est observable via le régime
+#       acoustique (sensor.regime_acoustique_imprimerie). Un régime > `bas`
+#       = production en cours → bleu. Pas de bleu décoratif / d'existence.
+#     - Le ROUGE (défaut santé NAS) PRIME sur le bleu : un défaut IT masque
+#       l'activité (on veut voir le problème d'abord).
+#     - Donnée incomplète / inconnue côté santé → off (⚪), le gris prime
+#       (honnêteté, aligné sur la note v1.1 de nas_imprimerie_sante_synthese).
+#     - Pas de vert « confort » (R4).
 #
 #  🔗 Entrées :
 #     - sensor.nas_imprimerie_sante_synthese (ok/degraded/critical/offline/unknown)
+#     - sensor.regime_acoustique_imprimerie (bas/transition/haut_modere/
+#       haut_eleve/haut_extreme/indisponible) — activité usine
 # ==========================================================
 
 - sensor:
@@ -35,8 +39,13 @@
     - name: "etat_imprimerie_dashboard"
       unique_id: etat_imprimerie_dashboard
       state: >
-        {% if states('sensor.nas_imprimerie_sante_synthese') in ['degraded', 'critical', 'offline'] %}
+        {% set sante = states('sensor.nas_imprimerie_sante_synthese') %}
+        {% set regime = states('sensor.regime_acoustique_imprimerie') %}
+        {% set actif = regime in ['transition', 'haut_modere', 'haut_eleve', 'haut_extreme'] %}
+        {% if sante in ['degraded', 'critical', 'offline'] %}
           alert
+        {% elif actif %}
+          normal
         {% else %}
           off
         {% endif %}
