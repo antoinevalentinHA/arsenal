@@ -1,0 +1,39 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Météo — Palmarès : fenêtre de fraîcheur des records (jours)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker la fenêtre, en jours calendaires, pendant laquelle
+#   un record de palmarès est considéré « frais » par la tuile
+#   de navigation « Rec. météo » (sensor.etat_meteo_palmares_dashboard).
+#   Valeur 2 = aujourd'hui + la veille (fenêtre J-2 glissante).
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre d'affichage NAV/HUB uniquement
+#   - Valeur exprimée en jours calendaires (record du jour inclus)
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Paramètre d'affichage | Paramètre transversal météo
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Piloter un équipement à partir de cette valeur
+#   - Modifier automatiquement cette valeur
+#
+# 🏷️ STATUT
+#   Socle transversal météo — Arsenal v16.x
+# ==========================================================
+
+palmares_meteo_fraicheur_jours:
+  name: "Météo — Palmarès : fenêtre de fraîcheur (jours)"
+  min: 1
+  max: 7
+  step: 1
+  unit_of_measurement: "j"
+  mode: box
+  icon: mdi:calendar-clock
+  initial: 2

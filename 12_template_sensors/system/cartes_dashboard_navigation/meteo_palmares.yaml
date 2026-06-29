@@ -1,0 +1,81 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – Rec. météo (palmarès)
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Fournir un état visuel synthétique destiné au bouton de
+#     navigation « Rec. météo » (lecture rapide uniquement,
+#     NAV/HUB). Signale qu'un record vient d'être battu.
+#
+#  🎯 États possibles (volontairement réduits) :
+#     - alert    → record de CHALEUR frais (chaud ou nuit
+#                  tropicale / min haute) dans la fenêtre
+#     - normal   → record de FROID ou de PLUIE frais dans la fenêtre
+#     - off       → aucun record frais (repos)
+#
+#  🎨 Couleur (Exception 3 — NAV/HUB) :
+#     alert→🔴  normal→🔵  off→⚪
+#
+#  ⚠️ Simplification assumée :
+#     - Pas de « confort » : la sémantique vert/favorable ne
+#       s'applique pas à un record (cohérent R4 arrosage).
+#     - Priorité chaleur 🔴 > froid/pluie 🔵 si plusieurs familles
+#       fraîches le même jour (l'extrême chaud porte le signal le
+#       plus fort).
+#     - Palmarès vierge / date absente → contribue 0 → off (⚪).
+#     - Le détail (valeurs, rangs) vit dans le dashboard palmarès ;
+#       ici, usage purement visuel NAV/HUB.
+#
+#  🔗 Entrées :
+#     - input_text.palmares_temperature_journalier_chaud_rang_01_date
+#     - input_text.palmares_temperature_min_journaliere_haute_rang_01_date
+#     - input_text.palmares_temperature_journalier_froid_rang_01_date
+#     - input_text.palmares_pluie_journalier_rang_01_date
+#     - input_number.palmares_meteo_fraicheur_jours (fenêtre, défaut 2)
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_meteo_palmares_dashboard"
+      unique_id: etat_meteo_palmares_dashboard
+      state: >
+        {% set UNAV = ['unknown', 'unavailable', 'none', 'None', ''] %}
+        {% set seuil = states('input_number.palmares_meteo_fraicheur_jours') | int(2) %}
+        {% set today = now().date() %}
+        {% set chaleur = [
+             states('input_text.palmares_temperature_journalier_chaud_rang_01_date'),
+             states('input_text.palmares_temperature_min_journaliere_haute_rang_01_date')
+           ] %}
+        {% set froidpluie = [
+             states('input_text.palmares_temperature_journalier_froid_rang_01_date'),
+             states('input_text.palmares_pluie_journalier_rang_01_date')
+           ] %}
+        {% set ns = namespace(chaleur=false, froidpluie=false) %}
+        {% for d in chaleur %}
+          {% if d not in UNAV %}
+            {% set p = strptime(d, '%Y-%m-%d', none) %}
+            {% if p is not none %}
+              {% set age = (today - p.date()).days %}
+              {% if age >= 0 and age < seuil %}
+                {% set ns.chaleur = true %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {% for d in froidpluie %}
+          {% if d not in UNAV %}
+            {% set p = strptime(d, '%Y-%m-%d', none) %}
+            {% if p is not none %}
+              {% set age = (today - p.date()).days %}
+              {% if age >= 0 and age < seuil %}
+                {% set ns.froidpluie = true %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.chaleur %}
+          alert
+        {% elif ns.froidpluie %}
+          normal
+        {% else %}
+          off
+        {% endif %}
