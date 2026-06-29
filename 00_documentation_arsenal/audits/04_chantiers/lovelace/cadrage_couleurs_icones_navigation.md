@@ -18,7 +18,7 @@ Deux patterns coexistent dans [`18_lovelace/dashboards/navigation.yaml`](../../.
 | `bouton_navigation_dynamique` (via `sensor.etat_*_dashboard`) | gris au repos, colorée selon l'état réel | ✅ |
 | `bouton_navigation` + `styles.icon.color` figé | couleur d'identité **permanente**, hors palette NAV | ❌ |
 
-**Cas déjà résorbés** (bascule en dynamique) : **Arrosage** (`sensor.etat_arrosage_dashboard`, voir C10), **Rec. météo** (`sensor.etat_meteo_palmares_dashboard`, cf. §2 bis) et **Volets** (`sensor.etat_volets_dashboard`, cf. §2 ter). Le présent dossier porte le **reliquat** : les autres tuiles à couleur figée.
+**Cas déjà résorbés** (bascule en dynamique) : **Arrosage** (`sensor.etat_arrosage_dashboard`, voir C10), **Rec. météo** (`sensor.etat_meteo_palmares_dashboard`, cf. §2 bis), **Volets** (`sensor.etat_volets_dashboard`, cf. §2 ter) et **NAS** (`sensor.etat_nas_dashboard`, cf. §2 quater). Le présent dossier porte le **reliquat** : les autres tuiles à couleur figée.
 
 ## 1. Inventaire des écarts (couleurs d'icône figées)
 
@@ -31,7 +31,7 @@ Deux patterns coexistent dans [`18_lovelace/dashboards/navigation.yaml`](../../.
 | Prises | `#607D8B` | domaine | pas de capteur d'état de synthèse |
 | Santé | `#E91E63` | domaine | pas de capteur d'état de synthèse |
 | Imprimerie | `#1E468C` | lien dashboard | hors palette NAV |
-| NAS | `#1976D2` | lien dashboard | **= `rgb(25,118,210)`, bleu explicitement interdit** — **analyse lecture seule, cf. §2 quater** |
+| ~~NAS~~ | ~~`#1976D2`~~ | lien dashboard | **✅ résorbé** — bleu interdit retiré, dynamisé sur l'état de sécurité (C-light), cf. §2 quater |
 | Énergie | `#FBC02D` | lien natif HA | hors palette NAV |
 
 ### Section ⚙️ Système (tous `bouton_navigation` figés)
@@ -100,9 +100,9 @@ Automations `#F9A825` · Scripts `#D84315` · Logs HA `#8E24AA` · Journal `#5D4
 
 **Décision (tranchée par l'utilisateur) : Option C — dynamiser sur le signal pluie.** Tuile vivante conservée, conforme au patron domaine. Réalisation : `sensor.etat_volets_dashboard` renvoie `normal` (🔵) si `binary_sensor.intention_pluie_forte` **et** `binary_sensor.autorisation_fermeture_volets_pluie_sejour` sont `on` (pluie forte **et** dispositif armé selon mode/présence), sinon `off` (⚪) ; donnée indisponible → `off`. Bleu « info » assumé (action automatique, pas alerte de sécurité). **La position reste écartée** (aucun état de position n'est anormal). C′ (anomalie de disponibilité) non retenue (précédent isolé, doublon observabilité Zigbee) — piste ouverte si besoin diagnostic ultérieur.
 
-## 2 quater. Analyse — *NAS : non-conformité bleu + dynamisation possible*
+## 2 quater. NAS — *non-conformité bleu résorbée + dynamisation sécurité*
 
-> **Statut :** **analyse en lecture seule** — constat et options posés, **aucun runtime touché**, **à arbitrer**. Tuile **NAS** (`#1976D2` figé). À la différence de Volets, NAS expose un **vrai état latent de santé** — la dynamisation est non seulement possible mais a de la valeur.
+> **Statut :** **✅ implémenté (runtime, variante C-light)** — **arbitrage tranché**. Artefacts : `sensor.etat_nas_dashboard` (`12_template_sensors/system/cartes_dashboard_navigation/nas.yaml`), bascule de la tuile dans `navigation.yaml`, **`#1976D2` (bleu interdit) retiré**. La couleur dérive de l'état de sécurité du Synology principal ; l'analyse ci-dessous (non-conformité, options) est conservée car elle **motive** le choix.
 
 **La non-conformité.** `#1976D2` = `rgb(25,118,210)`, **bleu explicitement interdit par la charte** (`ui/couleurs/02_palette.md` / `03_exceptions.md`). Nuance CI : le contrôle `ui_runtime_colors` ne whiteliste que les `rgb(...)` **opaques** (T2) et ne bloque en HEX (T3) que les noirs `#000/#222/#333` — un HEX `#1976D2` **passe donc la CI** aujourd'hui tout en violant la charte écrite. C'est une non-conformité **documentaire réelle**, à résorber quel que soit l'arbitrage couleur dynamique.
 
@@ -118,11 +118,11 @@ Automations `#F9A825` · Scripts `#D84315` · Logs HA `#8E24AA` · Journal `#5D4
 | **C — Dynamiser (synthèse santé)** | Nouveau `sensor.etat_nas_dashboard` agrégeant sécurité / volume / disques / SMART / secteurs / durée de vie → `alert` 🔴 si problème, (option `normal` 🔵 si dégradé), `off` ⚪ si sain, gris si indispo. Modèle : `nas_imprimerie_sante_synthese`. | Vraie valeur (un disque qui lâche / alerte sécurité du NAS principal → tuile rouge) ; résout aussi la charte. | Capteur de synthèse à écrire ; **domaine de valeurs Synology à vérifier d'abord** ; le plus de travail. |
 | **C-light — Signal unique** | Dynamiser sur `binary_sensor.nas_valentin_etat_de_securite` seul → `alert` 🔴 si non sûr, sinon `off` ⚪. | Faible coût, valeur immédiate, résout la charte. | Couverture partielle (ignore disques/volume/SMART). |
 
-**Recommandation (lecture seule, non tranchée).** NAS est le **meilleur candidat à dynamisation** du reliquat (état latent riche + précédent `nas_imprimerie`). Reco : **C** si l'on veut la valeur diagnostique complète (sous réserve de vérifier les valeurs Synology en runtime), **C-light** comme premier pas à faible risque, **A** comme repli immédiat pour solder la non-conformité de charte sans nouveau capteur. **La couleur figée `#1976D2` doit disparaître dans tous les cas.** Arbitrage à porter à l'utilisateur.
+**Décision (tranchée par l'utilisateur) : Option C-light — dynamiser sur l'état de sécurité.** Premier pas à faible risque qui résout la non-conformité de charte et apporte une valeur immédiate. Réalisation : `sensor.etat_nas_dashboard` renvoie `alert` (🔴) si `binary_sensor.nas_valentin_etat_de_securite` est `on` (défaut / alerte / intrusion), sinon `off` (⚪, y compris indisponible). **Polarité confirmée par la source faisant foi** : le template `carte_etat_securite` (`19_button_card_templates/40_dashboards/nas/`) mappe déjà `off → 🟢 sécurisé`, `on → 🔴 défaut` — pas besoin de vérification runtime supplémentaire. **Couverture partielle assumée** (disques / volume / SMART non agrégés) — extensible vers la synthèse santé complète (**C**) si besoin ultérieur. `#1976D2` retiré.
 
 ## 3. Déclencheur de réveil
 
-Refonte de la charte couleurs, refonte du menu de navigation, ou décision explicite d'harmoniser l'UI NAV. En l'absence : dormant (aucun impact runtime, pur cosmétique / cohérence). **Exception NAS** : la non-conformité de charte (`#1976D2`) constitue un déclencheur **actif** indépendant de l'arbitrage couleur dynamique.
+Refonte de la charte couleurs, refonte du menu de navigation, ou décision explicite d'harmoniser l'UI NAV. En l'absence : dormant (aucun impact runtime, pur cosmétique / cohérence). *(La non-conformité de charte NAS `#1976D2`, qui constituait un déclencheur actif, est désormais résorbée — cf. §2 quater.)*
 
 ---
 

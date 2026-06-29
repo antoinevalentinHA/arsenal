@@ -217,15 +217,14 @@ views:
                         - color: "#1E468C"
 
                   - type: custom:button-card
-                    template: bouton_navigation
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_nas_dashboard
                     name: NAS
                     icon: mdi:nas
                     tap_action:
                       action: navigate
                       navigation_path: /nas-dashboard
-                    styles:
-                      icon:
-                        - color: "#1976D2"
 
                   - type: custom:button-card
                     template: bouton_navigation
