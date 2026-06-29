@@ -11,7 +11,12 @@ content: |
 
   {% set total = r | count %}
   {% set ampli = (r[0].valeur | float - r[-1].valeur | float) | abs %}
-  {% set ts1 = as_timestamp(strptime(r[0].date, '%Y-%m-%d'), 0) %}
-  {% set recent = ts1 > 0 and (as_timestamp(now()) - ts1) / 86400 < 7 %}
+  {% set rns = namespace(maxts=0) %}
+  {% for it in r %}
+    {% set its = as_timestamp(strptime(it.date, '%Y-%m-%d'), 0) %}
+    {% if its > rns.maxts %}{% set rns.maxts = its %}{% endif %}
+  {% endfor %}
+  {% set seuil = states('input_number.palmares_meteo_fraicheur_jours') | float(2) %}
+  {% set recent = rns.maxts > 0 and (as_timestamp(now()) - rns.maxts) / 86400 < seuil %}
   📊 {{ total }}/10{% if total >= 2 %} · écart {{ ampli | round(1) }} mm{% endif %}{% if recent %} · 🔥 récent{% endif %}
   {% endif %}
