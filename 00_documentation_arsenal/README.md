@@ -71,7 +71,7 @@ Décrit **comment** le système est construit et **pourquoi** : doctrines transv
 (`03_doctrines/`), structure des includes (`00_structure_includes/`), recorder,
 étiquettes, et documents d'architecture par sous-système.
 👉 Référence d'implémentation. **N'introduit aucune règle métier.**
-Voir [`architecture/README.md`](architecture/README.md).
+👉 Point d'entrée : [`architecture/index.md`](architecture/index.md).
 
 ### 🔍 `audits/`
 Trace le **cycle de vie d'audit** par domaine, en étapes successives :
@@ -92,7 +92,7 @@ métier, invariants, dérives interdites. Domaines folderisés (`chauffage/`,
 `climatisation/`, `alarme/`, `ecs/`, `meteo/`, `aeration_blocage_chauffage/`,
 `boiler/`, `pannes/`…) et contrats de domaine à la racine.
 👉 Principe : **le contrat précède l'implémentation.**
-👉 Voir [`contrats/README.md`](contrats/README.md).
+👉 Point d'entrée : [`contrats/index.md`](contrats/index.md).
 
 ### 🌱 `evolutions_futures/`
 Sas de **fiches prospectives**. Une fiche y séjourne tant qu'elle n'est pas
