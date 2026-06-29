@@ -140,15 +140,15 @@ Automations `#F9A825` · Scripts `#D84315` · Logs HA `#8E24AA` · Journal `#5D4
 
 **État latent disponible.** Contrairement aux trois tuiles neutralisées (§2 quinquies), Imprimerie **dispose d'un capteur de synthèse santé** : `sensor.nas_imprimerie_sante_synthese` (enum fermé `ok / degraded / critical / offline / unknown`, agrégeant connectivité / VPN / UPS / stockage du `nas_imprimerie`). Un état latent exploitable existe donc → Option C éligible (comme Arrosage, NAS).
 
-**Articulation avec la doctrine couleur arrêtée.** La doctrine antérieure réservait le **bleu** (`normal`) à une **activité réelle observable** (impression / travail en cours, par analogie au domaine Bruit) — *pas de bleu décoratif / de simple navigation / d'existence du domaine*. **Cette doctrine est respectée** : aucun signal d'activité d'impression n'étant exposé aujourd'hui, **le bleu n'est pas utilisé** par la tuile. La dynamisation surface uniquement un **défaut de santé en rouge** (`alert`), ce que la doctrine ne proscrivait pas. Le bleu « activité » reste une **piste ouverte** si un signal d'impression/travail est exposé plus tard.
+**Articulation avec la doctrine couleur arrêtée.** La doctrine réserve le **bleu** (`normal`) à une **activité réelle observable** (par analogie au domaine Bruit) — *pas de bleu décoratif / de simple navigation / d'existence du domaine*. **Correction d'une rédaction antérieure erronée :** ce signal d'activité **existe bel et bien**. Il ne s'agit pas d'une imprimante de bureau mais d'une **usine** : `sensor.regime_acoustique_imprimerie` (`12_template_sensors/imprimerie/regime_acoustique_global.yaml`) synthétise le régime acoustique des presses **Komori / Bobst / Media** (états `bas` → `transition` → `haut_modere` → `haut_eleve` → `haut_extreme`, `indisponible`), et un régime **> `bas`** traduit une **production en cours**. Le 🔵 bleu est donc une cible **légitime et disponible** — l'ancienne mention « faute de signal d'impression » était fausse. **Cible doctrinale de la tuile :** 🔴 défaut santé NAS (priorité) · 🔵 usine en activité (`regime_acoustique_imprimerie` > `bas`) · ⚪ repos (NAS sain **et** usine au repos / indisponible). *(Réalisation runtime portée par le commit suivant de ce lot.)*
 
 **Mapping couleur (réutilise `bouton_navigation_dynamique`) :**
 
-| État renvoyé | Couleur NAV | Condition (`nas_imprimerie_sante_synthese`) |
+| État renvoyé | Couleur NAV | Condition (priorité décroissante) |
 |---|---|---|
-| `off` | ⚪ gris (base) | `ok` (sain), `unknown` ou indisponible — repos, conforme Exception 3 |
-| `alert` | 🔴 rouge | `degraded`, `critical` ou `offline` — tout défaut santé actif du NAS imprimerie |
-| `normal` | 🔵 bleu | **non utilisé** — réservé à une activité réelle (signal absent), cf. doctrine ci-dessus |
+| `alert` | 🔴 rouge | `nas_imprimerie_sante_synthese` ∈ {`degraded`, `critical`, `offline`} — tout défaut santé actif du NAS imprimerie (**prime sur l'activité**) |
+| `normal` | 🔵 bleu | NAS sain ET `regime_acoustique_imprimerie` > `bas` — **usine en activité** (production en cours) |
+| `off` | ⚪ gris (base) | NAS sain/`unknown`/indisponible ET usine au repos (`bas`/`indisponible`) — repos, conforme Exception 3 |
 | `confort` | 🟢 vert | **non utilisé** — pas de vert « confort » (R4) |
 
 > **Honnêteté de repos.** Donnée incomplète → la synthèse source renvoie `unknown` (sa note v1.1 fait primer l'honnêteté sur le danger interprété) → tuile grise, comme NAS. **Couverture assumée** : tout défaut (y compris `degraded`) remonte en rouge — choix conservateur (le seul autre slot, le bleu, est doctrinalement réservé à l'activité). Collapsible vers « critical/offline seuls » si le rouge sur `degraded` s'avère trop bruyant.
