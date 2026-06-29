@@ -90,6 +90,12 @@ views:
               color_on: 'rgba(33, 150, 243, 0.2)'
               color_off: 'rgba(158, 158, 158, 0.2)'
 
+          # Raison lisible du verdict ci-dessus (catégorie + motif dominant,
+          # déjà calculés par le runtime ; traduction portée par la carte).
+          - type: custom:button-card
+            template: carte_arrosage_intention_raison
+            entity: binary_sensor.arrosage_intention
+
           - type: custom:button-card
             template: carte_mode_binaire_interprete
             entity: binary_sensor.arrosage_besoin_sol

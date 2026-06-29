@@ -1,0 +1,95 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Arrosage — Verdict d'intention interprété (raison)
+#
+# 🗂️ COUCHE : diagnostic
+# 🧱 TYPE UI : état + contexte interprété
+# 🔍 NIVEAU DE CONFIANCE : élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Rendre lisible, en UNE carte, le verdict d'arrosage déjà
+#   décidé par le runtime :
+#     - state  → catégorie lisible (Arrosage / Suspendu / Abstention / Repos)
+#     - label  → raison dominante en clair (pourquoi ce verdict)
+#     - couleur → dérivée de la catégorie (palette arrosage existante)
+#   Complète le verdict binaire (carte_mode_binaire_interprete) en
+#   répondant à « pourquoi ça arrose / ça n'arrose pas ? ».
+#
+# 📡 SOURCE
+#   - binary_sensor.arrosage_intention
+#       attributes.categorie → arrose | suspendu | abstention | repos
+#       attributes.motif     → maitre_off | pont_indisponible |
+#                              preconditions_non_remplies |
+#                              canal_sol_indisponible | suspension_pluie |
+#                              hors_fenetre | cooldown_actif |
+#                              sol_suffisant | arrosage_requis
+#
+# ⚙️ LOGIQUE UI (traduction portée par le template, PAS le runtime)
+#   - Traduit la catégorie et le motif DOMINANT (déjà calculés par le
+#     runtime) en libellés français. Lecture seule.
+#   - NE recalcule NI le besoin sol, NI la fenêtre, NI le cooldown, NI la
+#     disponibilité du pont, NI la suspension pluie, NI l'intention :
+#     le runtime décide, l'UI explique.
+#   - Cas dégradé (attribut absent / unknown / unavailable) → "—".
+#
+# 🧱 INSPIRATION
+#   Pattern carte_arrosage_pluie_raison (traduction code → libellé
+#   portée par la carte UI).
+#
+# 🔗 SATELLITE DE : socle_status_label
+#
+# 🏷️ STATUT
+#   Diagnostic UI — Arsenal v14.x
+# ==========================================================
+
+carte_arrosage_intention_raison:
+  template: socle_status_label
+
+  show_icon: false
+  show_name: true
+  show_state: true
+  show_label: true
+
+  name: Raison du verdict
+
+  state_display: >
+    [[[
+      const c = (entity.attributes?.categorie || "").toString().trim();
+      const map = {
+        "arrose": "Arrosage",
+        "suspendu": "Suspendu",
+        "abstention": "Abstention",
+        "repos": "Repos"
+      };
+      return map[c] || "—";
+    ]]]
+
+  label: >
+    [[[
+      const m = (entity.attributes?.motif || "").toString().trim();
+      const map = {
+        "maitre_off": "automatisme désactivé (maître off)",
+        "pont_indisponible": "pont Rain Bird indisponible",
+        "preconditions_non_remplies": "préconditions runtime non remplies",
+        "canal_sol_indisponible": "canal sol non exploitable (1 point frais au plus)",
+        "suspension_pluie": "suspension pluie active",
+        "hors_fenetre": "hors fenêtre d'arrosage",
+        "cooldown_actif": "délai minimal non écoulé (cooldown)",
+        "sol_suffisant": "sol suffisamment humide",
+        "arrosage_requis": "arrosage requis"
+      };
+      return map[m] || "—";
+    ]]]
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const c = (entity.attributes?.categorie || "").toString().trim();
+            if (c === "arrose") return "rgba(33, 150, 243, 0.2)";
+            if (c === "suspendu") return "rgba(158, 158, 158, 0.2)";
+            if (c === "abstention") return "rgba(255, 152, 0, 0.2)";
+            if (c === "repos") return "rgba(76, 175, 80, 0.2)";
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]
