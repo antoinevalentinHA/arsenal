@@ -33,7 +33,15 @@
 
 - id: "10270000000003"
   alias: "Arrosage - Coexistence rain_delay (renouvellement)"
-  mode: single
+  # mode: queued — plusieurs déclencheurs peuvent arriver quasi simultanément
+  #   (start + stabilisation de la fraîcheur du pont au démarrage, ou time_pattern
+  #   /12 h tombant pendant un changement d'état maître/fraîcheur). En `single`,
+  #   le déclencheur concurrent était ABANDONNÉ (log « Already running ») pendant
+  #   l'appel réseau `number.set_value` du script → violation de la promesse
+  #   d'« application immédiate ». `queued` sérialise et honore chaque déclencheur ;
+  #   l'appel `service: script.…` bloquant garantit que le script écrivain
+  #   (mode single) n'est jamais invoqué en concurrence.
+  mode: queued
 
   trigger:
     - id: renouvellement
