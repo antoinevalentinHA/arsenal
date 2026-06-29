@@ -103,8 +103,10 @@
       to: null            # ignore les changements d'attribut seuls ; ne tire que sur changement de state/libellé
       for: "00:00:15"     # stabilisation : la reco doit tenir 15 s avant d'actionner
     # Autorisation silencieux (sortie de plage = front off)
+    # not_to : ignore la rafale de rechargement des templates (unavailable/unknown).
     - platform: state
       entity_id: binary_sensor.clim_silencieux_autorise
+      not_to: ['unavailable', 'unknown']
     # Désactivation manuelle du silencieux automatique (toggle utilisateur) :
     # le binary_sensor dérivé peut ne pas transitionner → trigger direct requis.
     - platform: state
@@ -117,8 +119,10 @@
     # Présence : absence → Fort en Auto Arsenal ; le retour en présence relâche
     # Fort (re-résolution sur la reco). Projection STABILISÉE clim (R1-b ;
     # delay_off 120 s, montée instantanée) + visiteur → aucun for: requis.
+    # not_to : ignore la rafale de rechargement des templates (unavailable/unknown).
     - platform: state
       entity_id: binary_sensor.presence_confort_thermique_stabilisee
+      not_to: ['unavailable', 'unknown']
     - platform: state
       entity_id: input_boolean.presence_visiteur
     # Boot / système stabilisé (reload, redémarrage HA)
