@@ -73,28 +73,34 @@ views:
           # Lecture seule de la chaîne de décision V1 : intention, besoin sol,
           # dernier arrosage effectif. Le maître (input_boolean.arrosage_
           # automatique_actif) reste réglable dans /reglages-arrosage-dashboard
-          # et n'est PAS exposé ici. Trois cartes pleine largeur empilées
-          # (ordre causal : besoin → intention → arrosage effectif).
+          # et n'est PAS exposé ici. Le verdict d'intention et sa raison sont
+          # groupés en grille 2 colonnes ; besoin sol et dernier arrosage
+          # restent pleine largeur dessous.
           - type: custom:button-card
             template: section_header
             name: 🤖 État de l'automatisme
 
-          - type: custom:button-card
-            template: carte_mode_binaire_interprete
-            entity: binary_sensor.arrosage_intention
-            name: Intention
-            icon: mdi:water-sync
-            variables:
-              label_on: Arrosage souhaité
-              label_off: Aucun arrosage souhaité
-              color_on: 'rgba(33, 150, 243, 0.2)'
-              color_off: 'rgba(158, 158, 158, 0.2)'
+          # Verdict d'intention + sa raison lisible (catégorie + motif dominant,
+          # déjà calculés par le runtime ; traduction portée par la carte),
+          # côte à côte en grille 2 colonnes.
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: carte_mode_binaire_interprete
+                entity: binary_sensor.arrosage_intention
+                name: Intention
+                icon: mdi:water-sync
+                variables:
+                  label_on: Arrosage souhaité
+                  label_off: Aucun arrosage souhaité
+                  color_on: 'rgba(33, 150, 243, 0.2)'
+                  color_off: 'rgba(158, 158, 158, 0.2)'
 
-          # Raison lisible du verdict ci-dessus (catégorie + motif dominant,
-          # déjà calculés par le runtime ; traduction portée par la carte).
-          - type: custom:button-card
-            template: carte_arrosage_intention_raison
-            entity: binary_sensor.arrosage_intention
+              - type: custom:button-card
+                template: carte_arrosage_intention_raison
+                entity: binary_sensor.arrosage_intention
 
           - type: custom:button-card
             template: carte_mode_binaire_interprete
