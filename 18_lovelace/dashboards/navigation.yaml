@@ -154,15 +154,14 @@ views:
                       navigation_path: /mouvements-dashboard
 
                   - type: custom:button-card
-                    template: bouton_navigation
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_volets_dashboard
                     name: Volets
                     icon: mdi:window-shutter
                     tap_action:
                       action: navigate
                       navigation_path: /volets-dashboard
-                    styles:
-                      icon:
-                        - color: "#6D4C41"
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique

@@ -18,7 +18,7 @@ Deux patterns coexistent dans [`18_lovelace/dashboards/navigation.yaml`](../../.
 | `bouton_navigation_dynamique` (via `sensor.etat_*_dashboard`) | gris au repos, colorée selon l'état réel | ✅ |
 | `bouton_navigation` + `styles.icon.color` figé | couleur d'identité **permanente**, hors palette NAV | ❌ |
 
-**Cas déjà résorbés** (bascule en dynamique) : **Arrosage** (`sensor.etat_arrosage_dashboard`, voir C10) et **Rec. météo** (`sensor.etat_meteo_palmares_dashboard`, cf. §2 bis). Le présent dossier porte le **reliquat** : les autres tuiles à couleur figée.
+**Cas déjà résorbés** (bascule en dynamique) : **Arrosage** (`sensor.etat_arrosage_dashboard`, voir C10), **Rec. météo** (`sensor.etat_meteo_palmares_dashboard`, cf. §2 bis) et **Volets** (`sensor.etat_volets_dashboard`, cf. §2 ter). Le présent dossier porte le **reliquat** : les autres tuiles à couleur figée.
 
 ## 1. Inventaire des écarts (couleurs d'icône figées)
 
@@ -27,7 +27,7 @@ Deux patterns coexistent dans [`18_lovelace/dashboards/navigation.yaml`](../../.
 | Tuile | Couleur figée | Nature | Note |
 |---|---|---|---|
 | ~~Rec. météo~~ | ~~`#F9A825`~~ | lien dashboard | **✅ résorbé** — dynamisé par fraîcheur des records, cf. §2 bis |
-| Volets | `#6D4C41` | domaine | pas de capteur d'état de synthèse — **analyse lecture seule, cf. §2 ter** |
+| ~~Volets~~ | ~~`#6D4C41`~~ | domaine | **✅ résorbé** — dynamisé sur signal pluie (Option C), cf. §2 ter |
 | Prises | `#607D8B` | domaine | pas de capteur d'état de synthèse |
 | Santé | `#E91E63` | domaine | pas de capteur d'état de synthèse |
 | Imprimerie | `#1E468C` | lien dashboard | hors palette NAV |
@@ -80,9 +80,9 @@ Automations `#F9A825` · Scripts `#D84315` · Logs HA `#8E24AA` · Journal `#5D4
 
 **Suite éventuelle.** Le sous-cas est clos côté Rec. météo. Pistes ouvertes non ordonnancées : exposer le **type** de record frais (icône `mdi:thermometer`/`mdi:weather-pouring`) plutôt que la seule couleur ; étendre la même approche aux autres liens dashboard à état latent. La promotion du **reste** de l'Option C (autres tuiles) reste sur décision explicite.
 
-## 2 ter. Analyse — *Volets : dynamisation envisageable ?*
+## 2 ter. Volets — *dynamisation sur signal pluie*
 
-> **Statut :** **analyse en lecture seule** — constat et options posés, **aucun runtime touché**, **à arbitrer**. Tuile **Volets** (`#6D4C41` figé, hors palette NAV). Contrairement à Rec. météo, le résultat n'est **pas évident** : ce sous-cas documente *pourquoi* et propose l'arbitrage.
+> **Statut :** **✅ implémenté (runtime)** — **Option C retenue** (arbitrage tranché : dynamiser sur le signal pluie). Artefacts : `sensor.etat_volets_dashboard` (`12_template_sensors/system/cartes_dashboard_navigation/volets.yaml`), bascule de la tuile dans `navigation.yaml`, `#6D4C41` retiré. L'analyse ci-dessous (verrou sémantique, options) est conservée car elle **motive** le choix.
 
 **Le domaine.** 4 volets `cover` à position (Zigbee : `cover.sejour_gauche`, `cover.sejour_droit`, `cover.chambre_arnaud`, `cover.chambre_matthieu`), pilotés en `set_cover_position` / `close_cover`. États HA : `open` / `closed` / `opening` / `closing` + `current_position`. **Aucun capteur d'état de synthèse** aujourd'hui. Logique métier existante : **fermeture automatique sur pluie forte** (`binary_sensor.intention_pluie_forte`, `binary_sensor.autorisation_fermeture_volets_pluie_sejour`, automations `11_automations/meteo/pluie/pluie_volets_*`).
 
@@ -98,7 +98,7 @@ Automations `#F9A825` · Scripts `#D84315` · Logs HA `#8E24AA` · Journal `#5D4
 | **C — Dynamiser (signal pluie)** | `sensor.etat_volets_dashboard` = `normal` 🔵 si fermeture pluie en cours, sinon `off` ⚪. Réutilise les `binary_sensor` pluie existants ; petit capteur de synthèse, pas d'agrégat de position. | Cohérent avec le patron domaine ; signale une action automatique ; gris au repos. | Signal **rare** ; valeur marginale ; le bleu « info » plutôt que rouge (pas une alerte de sécurité). |
 | **C′ — Dynamiser (anomalie dispo)** | `alert` 🔴 si un volet `unavailable`. | Vraie valeur diagnostique ; baseline nette. | Aucune autre tuile domaine ne surface la dispo → précédent isolé ; doublonne l'observabilité Zigbee. |
 
-**Recommandation (lecture seule, non tranchée).** Le rapport valeur/coût penche vers **A (neutraliser)** : aucune position n'étant anormale et le signal pluie étant rare, forcer une dynamisation apporte peu. **C (signal pluie)** reste la seule dynamisation *propre* si l'on tient à conserver une tuile vivante, à condition d'assumer un bleu « info » épisodique. **La position est écartée dans tous les cas.** Arbitrage à porter à l'utilisateur avant toute implémentation.
+**Décision (tranchée par l'utilisateur) : Option C — dynamiser sur le signal pluie.** Tuile vivante conservée, conforme au patron domaine. Réalisation : `sensor.etat_volets_dashboard` renvoie `normal` (🔵) si `binary_sensor.intention_pluie_forte` **et** `binary_sensor.autorisation_fermeture_volets_pluie_sejour` sont `on` (pluie forte **et** dispositif armé selon mode/présence), sinon `off` (⚪) ; donnée indisponible → `off`. Bleu « info » assumé (action automatique, pas alerte de sécurité). **La position reste écartée** (aucun état de position n'est anormal). C′ (anomalie de disponibilité) non retenue (précédent isolé, doublon observabilité Zigbee) — piste ouverte si besoin diagnostic ultérieur.
 
 ## 3. Déclencheur de réveil
 
