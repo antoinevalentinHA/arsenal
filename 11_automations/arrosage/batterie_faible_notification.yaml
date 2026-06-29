@@ -1,0 +1,90 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Arrosage — Batterie Rain Bird faible / critique (observation)
+#
+#  ID : 10270000000004
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Notifier, de façon purement observationnelle, le franchissement
+#   RÉEL d'un seuil bas de batterie du contrôleur Rain Bird ESP-BAT-BT2 :
+#     - FAIBLE    : passage à 10 % < niveau <= 20 % ;
+#     - CRITIQUE  : passage à niveau <= 10 % (prioritaire).
+#
+# 📡 SIGNAL
+#   sensor.rain_bird_bat_bt_2_e9a3_battery_level (pourcentage numérique).
+#   Tension (sensor…_battery_voltage) ajoutée au message si numérique,
+#   sans jamais bloquer l'envoi.
+#
+# 🛡️ GARDES (anti faux positif)
+#   - pont disponible : binary_sensor.rain_bird_pont_donnees_disponibles == on ;
+#   - from_state ET to_state présents et NUMÉRIQUES (is_number exclut
+#     unknown / unavailable / none / chaîne vide / non numérique) ;
+#   - franchissement réel depuis une valeur non basse (old > seuil) :
+#     aucune notification au reload / restart / templates reload, ni de
+#     répétition tant que la batterie reste basse.
+#
+# 🔀 PRIORITÉ
+#   CRITIQUE évalué AVANT FAIBLE (choose) : une chute directe normal →
+#   critique (ex. 25 → 9) n'émet QUE la notification critique.
+#
+# 🚫 NE FAIT PAS
+#   - aucune commande / pilotage Rain Bird, aucune action d'arrosage ;
+#   - aucune notification de retour à la normale ;
+#   - ne crée ni capteur dérivé, ni helper, ni script.
+#
+# 📘 Contrat : 00_documentation_arsenal/contrats/arrosage/18_notification_batterie.md
+# ==========================================================
+
+- id: "10270000000004"
+  alias: "Arrosage - Batterie Rain Bird faible/critique"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: sensor.rain_bird_bat_bt_2_e9a3_battery_level
+
+  condition:
+    # Garde 1 — pont disponible (pas de diagnostic sur donnée périmée)
+    - condition: state
+      entity_id: binary_sensor.rain_bird_pont_donnees_disponibles
+      state: "on"
+    # Garde 2 — from_state ET to_state présents et numériques
+    - condition: template
+      value_template: >
+        {{ trigger.from_state is not none and trigger.to_state is not none
+           and (trigger.from_state.state | is_number)
+           and (trigger.to_state.state | is_number) }}
+
+  action:
+    - choose:
+        # CRITIQUE — ancienne > 10 ET nouvelle <= 10 (prioritaire)
+        - conditions:
+            - condition: template
+              value_template: >
+                {% set old = trigger.from_state.state | float %}
+                {% set new = trigger.to_state.state | float %}
+                {{ old > 10 and new <= 10 }}
+          sequence:
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "🔋 Rain Bird — Batterie critique"
+                message: >-
+                  Le contrôleur Rain Bird est à {{ trigger.to_state.state }} %.
+                  Remplacement des piles à prioriser.{% if states('sensor.rain_bird_bat_bt_2_e9a3_battery_voltage') | is_number %} (tension {{ states('sensor.rain_bird_bat_bt_2_e9a3_battery_voltage') }} V){% endif %}
+
+        # FAIBLE — ancienne > 20 ET 10 < nouvelle <= 20
+        - conditions:
+            - condition: template
+              value_template: >
+                {% set old = trigger.from_state.state | float %}
+                {% set new = trigger.to_state.state | float %}
+                {{ old > 20 and new <= 20 and new > 10 }}
+          sequence:
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "🔋 Rain Bird — Batterie faible"
+                message: >-
+                  Le contrôleur Rain Bird est à {{ trigger.to_state.state }} %.
+                  Prévoir le remplacement des piles.{% if states('sensor.rain_bird_bat_bt_2_e9a3_battery_voltage') | is_number %} (tension {{ states('sensor.rain_bird_bat_bt_2_e9a3_battery_voltage') }} V){% endif %}
