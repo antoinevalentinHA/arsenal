@@ -31,7 +31,11 @@ arrosage_rainbird_station_1_duree_minutes:
   min: 1
   max: 60
   step: 1
-  initial: 2
+  # ⚠️ PAS de clé `initial` : elle DÉSACTIVE la restauration HA et reforcerait
+  #    la durée à une valeur fixe à CHAQUE redémarrage, écrasant le réglage
+  #    opérateur. Sans `initial`, HA restaure la dernière valeur réglée.
+  #    Au tout premier démarrage (entité inexistante) → `unknown`, sans danger :
+  #    le script Run clampe avec repli 2 (`| int(2)` puis borne [1,60]).
   unit_of_measurement: "min"
   mode: box
   icon: mdi:timer-sand
