@@ -1,0 +1,272 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+# ==========================================================
+# 🩺 ARROSAGE — DIAGNOSTIC (explication du raisonnement du domaine)
+# ----------------------------------------------------------
+# Vue 100 % LECTURE. Répond à « pourquoi le domaine Arrosage
+# arrive-t-il à ce verdict ? ». Lecture causale :
+#   Verdict → Observation → Interprétation → Exécution.
+# Le canal climatique (ET₀/VPD) est en OBSERVATION À BLANC :
+# il ne participe pas encore à la décision (entrera via C11).
+#
+# Cadrage : audits/02_conception/arrosage/cadrage_dashboard_diagnostic_arrosage.md
+# Réutilisation exclusive des socles/templates/cartes existants ;
+# aucune logique métier/graphique ici (le runtime décide, l'UI
+# explique) ; seul lien de navigation : santé du pont (Système).
+# ==========================================================
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /arrosage-dashboard
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+        name: Santé pont
+        icon: mdi:radio-tower
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-rain-bird-dashboard
+
+    cards:
+      - type: vertical-stack
+        cards:
+          # =========================================================
+          # 🧠 Pourquoi ce verdict ?  (point d'entrée)
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🧠 Pourquoi ce verdict ?
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: carte_mode_binaire_interprete
+                entity: binary_sensor.arrosage_intention
+                name: Intention
+                icon: mdi:water-sync
+                variables:
+                  label_on: Arrosage souhaité
+                  label_off: Aucun arrosage souhaité
+                  color_on: 'rgba(33, 150, 243, 0.2)'
+                  color_off: 'rgba(158, 158, 158, 0.2)'
+
+              - type: custom:button-card
+                template: carte_arrosage_intention_raison
+                entity: binary_sensor.arrosage_intention
+
+          # =========================================================
+          # 👁 Observation — Pluie (observée & prévue)
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🌧️ Observation — Pluie
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: carte_kpi_bleu
+                entity: sensor.pluie_cumul_24h
+                name: Cumul 24 h
+                icon: mdi:weather-rainy
+
+              - type: custom:button-card
+                template: carte_kpi_bleu
+                entity: sensor.pluie_cumul_48h
+                name: Cumul 48 h
+                icon: mdi:weather-rainy
+
+              - type: custom:button-card
+                template: carte_kpi_bleu
+                entity: sensor.pluie_cumul_72h
+                name: Cumul 72 h
+                icon: mdi:weather-rainy
+
+              - type: custom:button-card
+                template: carte_kpi_bleu
+                entity: sensor.pluie_prevue
+                name: Pluie prévue
+                icon: mdi:weather-pouring
+
+          # =========================================================
+          # 👁 Observation — Sol (réservoir lent)
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🌱 Observation — Sol
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: carte_kpi_bleu
+                entity: sensor.jardin_humidite_sol_mediane
+                name: Médiane
+                icon: mdi:water-percent
+
+              - type: custom:button-card
+                template: carte_kpi_bleu
+                entity: sensor.jardin_humidite_sol_points_frais
+                name: Points frais
+                icon: mdi:check-decagram
+
+          - type: custom:button-card
+            template: socle_diagnostic_compact_readonly_72
+            entity: sensor.jardin_reservoir_sol_etat
+            name: État réservoir sol
+            icon: mdi:cup-water
+
+          # =========================================================
+          # 👁 Observation — Données pont (substrat)
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🛰️ Observation — Données pont
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: status_72_on_off
+                entity: binary_sensor.rain_bird_pont_donnees_disponibles
+                name: Données disponibles
+                icon: mdi:database-check
+
+              - type: custom:button-card
+                template: status_72_on_off
+                entity: binary_sensor.rain_bird_pont_donnees_fraiches
+                name: Données fraîches
+                icon: mdi:clock-check
+
+          # =========================================================
+          # 🧩 Interprétation — Gates de décision
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🧩 Interprétation — Gates de décision
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: carte_mode_binaire_interprete
+                entity: binary_sensor.arrosage_besoin_sol
+                name: Besoin sol
+                icon: mdi:sprout
+                variables:
+                  label_on: Besoin détecté
+                  label_off: Sol suffisant
+                  color_on: 'rgba(255, 152, 0, 0.2)'
+                  color_off: 'rgba(76, 175, 80, 0.2)'
+
+              - type: custom:button-card
+                template: carte_arrosage_pluie_raison
+                entity: binary_sensor.arrosage_suspension_pluie
+
+          - type: custom:button-card
+            template: status_72_on_off
+            entity: binary_sensor.arrosage_rainbird_preconditions_runtime
+            name: Préconditions runtime
+            icon: mdi:check-network
+
+          # =========================================================
+          # ⏱️ Interprétation — Fenêtre & cooldown (entrées)
+          # Le motif du verdict (ci-dessus) indique s'ils bloquent.
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: ⏱️ Interprétation — Fenêtre & cooldown
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: socle_info_72
+                entity: input_datetime.arrosage_fenetre_debut
+                name: Fenêtre — début
+                icon: mdi:clock-start
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: input_datetime.arrosage_fenetre_fin
+                name: Fenêtre — fin
+                icon: mdi:clock-end
+
+          - type: custom:button-card
+            template: socle_info_72
+            entity: input_number.arrosage_intervalle_minimal_heures
+            name: Intervalle minimal (cooldown)
+            icon: mdi:timer-sand
+
+          # =========================================================
+          # 🛠️ Exécution
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🛠️ Exécution
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: status_72_on_off
+                entity: switch.rain_bird_bat_bt_2_e9a3_station_1
+                name: Station 1 active
+                icon: mdi:sprinkler-variant
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: sensor.arrosage_dernier_effectif
+                name: Dernier arrosage prouvé
+                icon: mdi:history
+
+          # =========================================================
+          # 🌡️ Canal climatique — observation à blanc (hors décision V1)
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🌡️ Canal climatique — observation à blanc
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🧪 Ne participe pas encore à la décision — entrera via C11 (modulation de durée)
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: carte_kpi_bleu
+                entity: sensor.arrosage_demande_climatique_et0
+                name: ET₀ journalière
+                icon: mdi:sun-thermometer-outline
+
+              - type: custom:button-card
+                template: carte_kpi_bleu
+                entity: sensor.arrosage_demande_climatique_vpd
+                name: VPD courant
+                icon: mdi:water-opacity
+
+          - type: custom:button-card
+            template: socle_diagnostic_compact_readonly_72
+            entity: sensor.arrosage_demande_climatique_etat
+            name: État du canal climatique
+            icon: mdi:weather-partly-cloudy
