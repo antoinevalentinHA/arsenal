@@ -139,6 +139,15 @@ Quelques **axes ordonnés**, pas un backlog. Chaque lot sera **audité avant YAM
 
 > **Ces acquis ne valent pas validation complète du domaine.** Restent à valider : l'**arrosage effectif**, le **comportement sur la durée**, l'**UI opérateur**, les **notifications**, et le **cas « 2/3 points frais » du §7** (observer le `motif` en conditions réelles pour instruire l'arbitrage A/B). Cadre des validations : Phase 0 terrain et pré-requis runtime ([`07_phase_0_terrain.md`](../../../contrats/arrosage/07_phase_0_terrain.md), [`10_prerequis_runtime.md`](../../../contrats/arrosage/10_prerequis_runtime.md)).
 
+> **Constat terrain complémentaire (2026-06-30) — chaîne d'action manuelle supervisée validée ; décision automatique encore en attente.** La **commande manuelle supervisée** (script Run station 1) fonctionne **parfaitement et de manière répétée** : la **chaîne d'action Rain Bird est donc validée côté runtime**. La **décision automatique**, elle, reste **en attente d'un cycle naturel favorable** — non par défaillance, mais parce que les **gardes de la V1 s'opposent légitimement** au déclenchement.
+>
+> - **chaîne d'action manuelle supervisée** : ✅ **validée** (répétable) ;
+> - **validation de la décision automatique** : ⏳ **toujours en attente** d'un cycle naturel favorable ;
+> - **cause actuelle de non-déclenchement** : **suspension pluie active** (`binary_sensor.arrosage_suspension_pluie = on`) **+ besoin sol** non avéré (sol suffisant) — soit deux conditions §3 d'intention non réunies ([`17_decision_v1.md`](../../../contrats/arrosage/17_decision_v1.md) §3) ;
+> - **prochaine validation attendue** : **déclenchement automatique réel** lorsque la **suspension pluie est inactive**, l'**humidité passe sous le seuil**, la **fenêtre horaire est OK**, le **cooldown est OK** et le **Rain Bird est disponible** (toutes les conditions §3 réunies simultanément).
+>
+> **Lecture doctrinale.** La V1 **n'est pas bloquée techniquement** : elle est **empêchée par ses propres gardes** (interrupteur maître, suspension pluie, besoin sol, fenêtre disjointe, cooldown, préconditions runtime — [`17`](../../../contrats/arrosage/17_decision_v1.md) §3/§4), ce qui est **conforme à la doctrine**. **L'absence d'arrosage automatique ne vaut donc pas panne.** Aucune action corrective induite : on **ne modifie pas les seuils**, on **ne force pas l'automatisme**, on **n'affaiblit pas la suspension pluie**. La validation de la décision automatique sera **constatée à l'occasion** d'un cycle naturel favorable (**suivi opportuniste**, §3 — aucune simulation ni déclenchement forcé).
+
 ## 9. Éléments explicitement différés
 
 Hors périmètre de la **première** livraison (différés, **non bloquants**) :
