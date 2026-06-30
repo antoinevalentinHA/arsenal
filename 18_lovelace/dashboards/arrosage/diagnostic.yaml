@@ -181,7 +181,7 @@ views:
 
           - type: custom:button-card
             template: status_72_on_off
-            entity: binary_sensor.arrosage_rainbird_preconditions_runtime
+            entity: binary_sensor.arrosage_rain_bird_preconditions_runtime
             name: Préconditions runtime
             icon: mdi:check-network
 
@@ -255,13 +255,13 @@ views:
             cards:
               - type: custom:button-card
                 template: carte_kpi_bleu
-                entity: sensor.arrosage_demande_climatique_et0
+                entity: sensor.arrosage_demande_climatique_et0_journaliere
                 name: ET₀ journalière
                 icon: mdi:sun-thermometer-outline
 
               - type: custom:button-card
                 template: carte_kpi_bleu
-                entity: sensor.arrosage_demande_climatique_vpd
+                entity: sensor.arrosage_demande_climatique_vpd_courant
                 name: VPD courant
                 icon: mdi:water-opacity
 
