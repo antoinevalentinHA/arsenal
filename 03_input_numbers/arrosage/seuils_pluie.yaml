@@ -42,7 +42,10 @@ arrosage_pluie_suspension_mm_24h:
   min: 0
   max: 50
   step: 0.5
-  initial: 5
+  # ⚠️ PAS de clé `initial` : elle désactive la restauration HA et reforcerait
+  #    ce seuil AJUSTABLE à sa valeur d'usine à CHAQUE redémarrage, écrasant le
+  #    réglage opérateur. Sans `initial`, HA restaure la dernière valeur réglée.
+  #    Défaut métier : 5 mm (cf. en-tête).
   unit_of_measurement: mm
   mode: box
 
@@ -52,7 +55,8 @@ arrosage_pluie_suspension_mm_48h:
   min: 0
   max: 50
   step: 0.5
-  initial: 10
+  # ⚠️ PAS de clé `initial` : voir arrosage_pluie_suspension_mm_24h.
+  #    Seuil AJUSTABLE — défaut métier : 10 mm (cf. en-tête).
   unit_of_measurement: mm
   mode: box
 
@@ -62,7 +66,8 @@ arrosage_pluie_suspension_mm_72h:
   min: 0
   max: 50
   step: 0.5
-  initial: 12
+  # ⚠️ PAS de clé `initial` : voir arrosage_pluie_suspension_mm_24h.
+  #    Seuil AJUSTABLE — défaut métier : 12 mm (cf. en-tête).
   unit_of_measurement: mm
   mode: box
 
@@ -72,7 +77,8 @@ arrosage_pluie_prevue_mm_seuil:
   min: 0
   max: 50
   step: 0.5
-  initial: 5
+  # ⚠️ PAS de clé `initial` : voir arrosage_pluie_suspension_mm_24h.
+  #    Seuil AJUSTABLE — défaut métier : 5 mm (cf. en-tête).
   unit_of_measurement: mm
   mode: box
 
@@ -82,6 +88,7 @@ arrosage_pluie_prevue_horizon_heures:
   min: 1
   max: 48
   step: 1
-  initial: 24
+  # ⚠️ PAS de clé `initial` : voir arrosage_pluie_suspension_mm_24h.
+  #    Horizon AJUSTABLE — défaut métier : 24 h (cf. en-tête).
   unit_of_measurement: h
   mode: box
