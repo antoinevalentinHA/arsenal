@@ -41,7 +41,10 @@
 #           (extrêmes réels du jour, plage gardée [-30,50]°C)
 #   T     : sensor.temperature_exterieur        (courante)
 #   HR    : sensor.humidite_relative_exterieur  (courante)
-#   φ     : latitude de zone.home  ·  J : quantième (date)
+#   φ     : latitude de zone.maison_securite (= !secret home_latitude,
+#           lecture d'attribut pour calcul dérivé — sanctionnée par
+#           l'invariant zones I9 ; zone.home interdit en template, T10/§7.3)
+#           ·  J : quantième (date)
 #
 # 📐 FORMULES (contrat 16 §2/§3)
 #   ET₀ = 0.0023·(Tmean + 17.8)·√(Tmax − Tmin)·Ra
@@ -78,14 +81,14 @@
         {% set tmin = states('sensor.temperature_min_jour_courant_jardin') %}
         {% set tmax = states('sensor.temperature_max_jour_courant_jardin') %}
         {% set tmean = states('sensor.temperature_exterieure_moyenne_jour') %}
-        {% set lat = state_attr('zone.home', 'latitude') %}
+        {% set lat = state_attr('zone.maison_securite', 'latitude') %}
         {{ is_number(tmin) and is_number(tmax) and is_number(tmean) and is_number(lat)
            and (tmax | float) >= (tmin | float) }}
       state: >
         {% set tmin = states('sensor.temperature_min_jour_courant_jardin') | float %}
         {% set tmax = states('sensor.temperature_max_jour_courant_jardin') | float %}
         {% set tmean = states('sensor.temperature_exterieure_moyenne_jour') | float %}
-        {% set phi = (state_attr('zone.home', 'latitude') | float) * pi / 180 %}
+        {% set phi = (state_attr('zone.maison_securite', 'latitude') | float) * pi / 180 %}
         {% set j = now().strftime('%j') | int %}
         {% set dr = 1 + 0.033 * cos(2 * pi * j / 365) %}
         {% set delta = 0.409 * sin(2 * pi * j / 365 - 1.39) %}
@@ -102,7 +105,7 @@
         tmin_c: "{{ states('sensor.temperature_min_jour_courant_jardin') }}"
         tmax_c: "{{ states('sensor.temperature_max_jour_courant_jardin') }}"
         ra_mm_jour: >
-          {% set lat = state_attr('zone.home', 'latitude') %}
+          {% set lat = state_attr('zone.maison_securite', 'latitude') %}
           {% if is_number(lat) %}
           {% set phi = (lat | float) * pi / 180 %}
           {% set j = now().strftime('%j') | int %}
