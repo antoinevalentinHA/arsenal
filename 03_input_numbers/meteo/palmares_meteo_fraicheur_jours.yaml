@@ -41,4 +41,7 @@ palmares_meteo_fraicheur_jours:
   unit_of_measurement: "j"
   mode: box
   icon: mdi:calendar-clock
-  initial: 2
+  # ⚠️ PAS de clé `initial` : elle désactive la restauration HA et reforcerait
+  #    cette fenêtre à sa valeur d'usine à CHAQUE redémarrage, écrasant le
+  #    réglage opérateur. Sans `initial`, HA restaure la dernière valeur réglée.
+  #    Défaut d'affichage : 2 j (J-2 glissant, cf. en-tête).

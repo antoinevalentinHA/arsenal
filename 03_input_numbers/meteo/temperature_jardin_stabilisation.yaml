@@ -50,7 +50,11 @@ temperature_jardin_alpha_ewma:
   step: 0.01
   mode: box
   icon: mdi:tune-variant
-  initial: 0.3
+  # ⚠️ PAS de clé `initial` : elle désactive la restauration HA et reforcerait
+  #    ce paramètre EWMA à sa valeur d'usine à chaque redémarrage, écrasant un
+  #    réglage opérateur. Sans `initial`, HA restaure la dernière valeur réglée
+  #    (l'automation garde un repli `float(0.3)` en lecture). Défaut : 0.3.
+  #    NB : distinct des sentinels -20 ci-dessous (cold-start filtre, voulus).
 
 temperature_jardin_delta_max:
   name: "Temperature Jardin - Delta Max"
@@ -60,7 +64,8 @@ temperature_jardin_delta_max:
   unit_of_measurement: "°C"
   mode: box
   icon: mdi:arrow-expand-vertical
-  initial: 0.5
+  # ⚠️ PAS de clé `initial` : voir temperature_jardin_alpha_ewma.
+  #    Paramètre EWMA — repli lecture `float(0.5)` dans l'automation. Défaut : 0.5.
 
 
 # ==========================================================
