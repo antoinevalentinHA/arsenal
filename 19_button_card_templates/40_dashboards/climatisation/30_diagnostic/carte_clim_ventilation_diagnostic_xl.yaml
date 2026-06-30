@@ -20,7 +20,8 @@
 #
 # 🎨 SEMANTIQUE (couleur lue depuis l'attribut backend `couleur`)
 #     - vert         -> conforme
-#     - repos        -> gris-bleu, clim a l'arret (fan_mode fige, non alarmant)
+#     - repos        -> gris, clim a l'arret (fan_mode fige, non alarmant ;
+#                       gris 0.2, distinct du gris indispo 0.1)
 #     - bleu         -> ecart explicable (mode manuel / silencieux auto)
 #     - orange       -> attention (auto constructeur / situation non couverte)
 #     - rouge        -> incoherence de mapping
@@ -152,7 +153,7 @@ carte_clim_ventilation_diagnostic_xl:
             const c = (entity.attributes || {}).couleur;
             const map = {
               vert: 'rgba(76, 175, 80, 0.2)',
-              repos: 'rgba(96, 125, 139, 0.18)',
+              repos: 'rgba(158, 158, 158, 0.2)',
               bleu: 'rgba(33, 150, 243, 0.2)',
               orange: 'rgba(255, 152, 0, 0.2)',
               rouge: 'rgba(244, 67, 54, 0.2)',
