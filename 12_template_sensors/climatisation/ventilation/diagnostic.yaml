@@ -63,7 +63,11 @@
 #
 # 🎨 couleur (clé sémantique, décidée backend, R6 gris prime) :
 #   - conforme                            -> vert
-#   - repos (clim à l'arrêt)              -> repos (gris, non alarmant)
+#   - repos (clim à l'arrêt)              -> repos (= Gris neutre « Inactif /
+#                                            Aucune demande », charte couleurs
+#                                            02_palette ; R5 : ne masque aucun
+#                                            problème connu — au repos il n'y a
+#                                            pas de divergence de conformité)
 #   - ecart mode_manuel / silencieux      -> bleu  (info, non alarmant ;
 #                                            respecte contrat 12 §11)
 #   - ecart recommandation_non_appliquee  -> orange (écart d'application)

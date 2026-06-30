@@ -327,6 +327,13 @@ comparaison n'a pas de sens. Il expose le verdict dédié **`repos`**
 et n'est primé que par `indisponible`. C'est l'expression observable de la
 règle ci-dessus : pas de pilotage possible ⇒ pas d'écart possible.
 
+Côté UI, `repos` est rendu avec le **Gris neutre** `rgba(158, 158, 158, 0.2)`
+(« Inactif / Aucune demande », charte couleurs
+`00_documentation_arsenal/ui/couleurs/02_palette.md`), distinct du Gris
+indisponibilité `rgba(158, 158, 158, 0.1)` qui prime (R6). La règle R5
+(« le gris neutre ne masque jamais un problème connu ») est respectée : au
+repos il n'existe aucune divergence de conformité à masquer.
+
 ---
 
 ## 8. Compatibilité des fan_modes

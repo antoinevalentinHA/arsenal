@@ -20,8 +20,9 @@
 #
 # 🎨 SEMANTIQUE (couleur lue depuis l'attribut backend `couleur`)
 #     - vert         -> conforme
-#     - repos        -> gris, clim a l'arret (fan_mode fige, non alarmant ;
-#                       gris 0.2, distinct du gris indispo 0.1)
+#     - repos        -> Gris neutre rgba(158,158,158,0.2) « Inactif / Aucune
+#                       demande » (charte couleurs 02_palette) : clim a l'arret,
+#                       fan_mode fige. Distinct du gris indispo 0.1 (R6).
 #     - bleu         -> ecart explicable (mode manuel / silencieux auto)
 #     - orange       -> attention (auto constructeur / situation non couverte)
 #     - rouge        -> incoherence de mapping
