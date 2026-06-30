@@ -1,0 +1,192 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Arrosage — Canal demande climatique (observation v0)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer, en OBSERVATION / DIAGNOSTIC pur, les grandeurs
+#   de la demande climatique du contrat 16 :
+#     - ET₀ journalière (évapotranspiration de référence,
+#       Hargreaves-Samani, mm·jour⁻¹) ;
+#     - VPD courant (déficit de pression de vapeur, kPa) ;
+#     - état qualitatif du canal (complet / degrade /
+#       indisponible).
+#   Grandeurs FACTUELLES : elles n'émettent aucune
+#   recommandation et ne pilotent rien.
+#
+# 🧩 PÉRIMÈTRE (lot P3 — cadrage C11 §5/§7)
+#   - Observation / diagnostic uniquement
+#   - ET₀ et VPD EXPOSÉS SÉPARÉMENT — jamais fondus en un
+#     score unique (contrat 16 §5, contrat 13 §1.6)
+#   - Aucune décision, aucune dose, aucune durée
+#
+# 🚫 INTERDITS (impératifs du lot)
+#   - Aucun UI, helper, automation, script
+#   - Aucun branchement Rain Bird
+#   - Aucune recommandation / modulation de durée
+#   - Aucune fusion ET₀/VPD en décision
+#   - Aucun repli inventé : sans Tmin/Tmax/Tmean fiables,
+#     l'ET₀ N'EST PAS produite (indisponible), jamais estimée
+#     (contrat 16 §2 garde de calcul, §6)
+#
+# 🔗 ENTRÉES (entity_id non figés par le contrat — §1)
+#   Tmean : sensor.temperature_exterieure_moyenne_jour
+#           Source DÉSIGNÉE par le contrat 16 §1, appliquée
+#           telle quelle (moyenne glissante 24 h de
+#           sensor.temperature_jardin, statistics `mean`).
+#           Aucune substitution (Tmin+Tmax)/2 : toute
+#           évolution de la définition de Tmean relève d'une
+#           révision documentaire ultérieure, pas de ce lot.
+#   Tmin  : sensor.temperature_min_jour_courant_jardin
+#   Tmax  : sensor.temperature_max_jour_courant_jardin
+#           (extrêmes réels du jour, plage gardée [-30,50]°C)
+#   T     : sensor.temperature_exterieur        (courante)
+#   HR    : sensor.humidite_relative_exterieur  (courante)
+#   φ     : latitude de zone.home  ·  J : quantième (date)
+#
+# 📐 FORMULES (contrat 16 §2/§3)
+#   ET₀ = 0.0023·(Tmean + 17.8)·√(Tmax − Tmin)·Ra
+#   Ra  : radiation extraterrestre FAO-56 (déterministe :
+#         latitude + quantième, aucun capteur)
+#   VPD = e°(T)·(1 − HR/100),
+#         e°(T) = 0.6108·exp[17.27·T/(T + 237.3)]
+#
+# 🛡️ FRAÎCHEUR
+#   Déléguée à l'availability amont des capteurs sources
+#   (Tmin/Tmax/T/HR passent unavailable hors plage métier ;
+#    Tmean statistics passe unknown sans échantillon).
+#   `available` ⇔ entrées numériques valides.
+#
+# 🔗 RÉFÉRENCE
+#   contrats/arrosage/16_canal_demande_climatique.md
+#   audits/02_conception/arrosage/cadrage_modulation_duree_arrosage.md (P3)
+#
+# 🏷️ STATUT
+#   Observation v0 — runtime P3 (canal demande climatique)
+# ==========================================================
+
+- sensor:
+
+    # ------------------------------------------------------
+    # ET₀ journalière — Hargreaves-Samani (mm·jour⁻¹)
+    # ------------------------------------------------------
+    - name: "Arrosage demande climatique ET0 journalière"
+      unique_id: arrosage_demande_climatique_et0
+      unit_of_measurement: "mm/d"
+      state_class: measurement
+      icon: mdi:sun-thermometer-outline
+      availability: >
+        {% set tmin = states('sensor.temperature_min_jour_courant_jardin') %}
+        {% set tmax = states('sensor.temperature_max_jour_courant_jardin') %}
+        {% set tmean = states('sensor.temperature_exterieure_moyenne_jour') %}
+        {% set lat = state_attr('zone.home', 'latitude') %}
+        {{ is_number(tmin) and is_number(tmax) and is_number(tmean) and is_number(lat)
+           and (tmax | float) >= (tmin | float) }}
+      state: >
+        {% set tmin = states('sensor.temperature_min_jour_courant_jardin') | float %}
+        {% set tmax = states('sensor.temperature_max_jour_courant_jardin') | float %}
+        {% set tmean = states('sensor.temperature_exterieure_moyenne_jour') | float %}
+        {% set phi = (state_attr('zone.home', 'latitude') | float) * pi / 180 %}
+        {% set j = now().strftime('%j') | int %}
+        {% set dr = 1 + 0.033 * cos(2 * pi * j / 365) %}
+        {% set delta = 0.409 * sin(2 * pi * j / 365 - 1.39) %}
+        {% set ws = acos(-1 * tan(phi) * tan(delta)) %}
+        {% set ra_mj = (1440 / pi) * 0.0820 * dr
+           * (ws * sin(phi) * sin(delta) + cos(phi) * cos(delta) * sin(ws)) %}
+        {% set ra_mm = 0.408 * ra_mj %}
+        {% set et0 = 0.0023 * (tmean + 17.8) * sqrt(tmax - tmin) * ra_mm %}
+        {{ et0 | round(2) }}
+      attributes:
+        modele: "Hargreaves-Samani (FAO-56) — température seule"
+        tmean_source: "sensor.temperature_exterieure_moyenne_jour (moyenne glissante 24 h)"
+        tmean_c: "{{ states('sensor.temperature_exterieure_moyenne_jour') }}"
+        tmin_c: "{{ states('sensor.temperature_min_jour_courant_jardin') }}"
+        tmax_c: "{{ states('sensor.temperature_max_jour_courant_jardin') }}"
+        ra_mm_jour: >
+          {% set lat = state_attr('zone.home', 'latitude') %}
+          {% if is_number(lat) %}
+          {% set phi = (lat | float) * pi / 180 %}
+          {% set j = now().strftime('%j') | int %}
+          {% set dr = 1 + 0.033 * cos(2 * pi * j / 365) %}
+          {% set delta = 0.409 * sin(2 * pi * j / 365 - 1.39) %}
+          {% set ws = acos(-1 * tan(phi) * tan(delta)) %}
+          {% set ra_mj = (1440 / pi) * 0.0820 * dr
+             * (ws * sin(phi) * sin(delta) + cos(phi) * cos(delta) * sin(ws)) %}
+          {{ (0.408 * ra_mj) | round(2) }}
+          {% else %}indisponible{% endif %}
+        note: "ET₀ = demande évaporative de référence, PAS une dose ni un besoin"
+
+    # ------------------------------------------------------
+    # VPD courant — déficit de pression de vapeur (kPa)
+    # ------------------------------------------------------
+    - name: "Arrosage demande climatique VPD courant"
+      unique_id: arrosage_demande_climatique_vpd
+      unit_of_measurement: "kPa"
+      state_class: measurement
+      icon: mdi:water-opacity
+      availability: >
+        {% set t = states('sensor.temperature_exterieur') %}
+        {% set hr = states('sensor.humidite_relative_exterieur') %}
+        {{ is_number(t) and is_number(hr) and 0 < (hr | float) <= 100 }}
+      state: >
+        {% set t = states('sensor.temperature_exterieur') | float %}
+        {% set hr = states('sensor.humidite_relative_exterieur') | float %}
+        {% set es = 0.6108 * (e ** (17.27 * t / (t + 237.3))) %}
+        {% set vpd = es * (1 - hr / 100) %}
+        {{ vpd | round(2) }}
+      attributes:
+        temperature_c: "{{ states('sensor.temperature_exterieur') }}"
+        humidite_relative_pct: "{{ states('sensor.humidite_relative_exterieur') }}"
+        pression_vapeur_saturante_kpa: >
+          {% set t = states('sensor.temperature_exterieur') %}
+          {% if is_number(t) %}
+          {{ (0.6108 * (e ** (17.27 * (t | float) / ((t | float) + 237.3)))) | round(3) }}
+          {% else %}indisponible{% endif %}
+        note: "VPD courant = moteur instantané de la demande, complément de l'ET₀ (jamais fondu)"
+
+    # ------------------------------------------------------
+    # État qualitatif du canal demande climatique
+    #   complet / degrade / indisponible (contrat 16 §6)
+    #   - complet      : ET₀ ET VPD calculables
+    #   - degrade      : lecture partielle (une seule grandeur)
+    #   - indisponible : aucune grandeur fiable
+    # ------------------------------------------------------
+    - name: "Arrosage demande climatique état"
+      unique_id: arrosage_demande_climatique_etat
+      icon: mdi:weather-partly-cloudy
+      state: >
+        {% set tmin = states('sensor.temperature_min_jour_courant_jardin') %}
+        {% set tmax = states('sensor.temperature_max_jour_courant_jardin') %}
+        {% set tmean = states('sensor.temperature_exterieure_moyenne_jour') %}
+        {% set t = states('sensor.temperature_exterieur') %}
+        {% set hr = states('sensor.humidite_relative_exterieur') %}
+        {% set et0_ok = is_number(tmin) and is_number(tmax) and is_number(tmean)
+           and (tmax | float) >= (tmin | float) %}
+        {% set vpd_ok = is_number(t) and is_number(hr) and 0 < (hr | float) <= 100 %}
+        {% if et0_ok and vpd_ok %}complet
+        {% elif et0_ok or vpd_ok %}degrade
+        {% else %}indisponible{% endif %}
+      attributes:
+        et0_disponible: >
+          {% set tmin = states('sensor.temperature_min_jour_courant_jardin') %}
+          {% set tmax = states('sensor.temperature_max_jour_courant_jardin') %}
+          {% set tmean = states('sensor.temperature_exterieure_moyenne_jour') %}
+          {{ is_number(tmin) and is_number(tmax) and is_number(tmean)
+             and (tmax | float) >= (tmin | float) }}
+        vpd_disponible: >
+          {% set t = states('sensor.temperature_exterieur') %}
+          {% set hr = states('sensor.humidite_relative_exterieur') %}
+          {{ is_number(t) and is_number(hr) and 0 < (hr | float) <= 100 }}
+        raison: >
+          {% set tmin = states('sensor.temperature_min_jour_courant_jardin') %}
+          {% set tmax = states('sensor.temperature_max_jour_courant_jardin') %}
+          {% set tmean = states('sensor.temperature_exterieure_moyenne_jour') %}
+          {% set t = states('sensor.temperature_exterieur') %}
+          {% set hr = states('sensor.humidite_relative_exterieur') %}
+          {% set et0_ok = is_number(tmin) and is_number(tmax) and is_number(tmean)
+             and (tmax | float) >= (tmin | float) %}
+          {% set vpd_ok = is_number(t) and is_number(hr) and 0 < (hr | float) <= 100 %}
+          {% if et0_ok and vpd_ok %}ET₀ et VPD calculés (Tmin/Tmax/Tmean + T/HR extérieures fraîches)
+          {% elif vpd_ok and not et0_ok %}Lecture partielle : VPD seul — Tmin/Tmax/Tmean indisponibles, ET₀ non produite
+          {% elif et0_ok and not vpd_ok %}Lecture partielle : ET₀ seule — T/HR courantes indisponibles, VPD non produit
+          {% else %}Aucune grandeur fiable — entrées extérieures indisponibles{% endif %}
+        note: "État de LECTURE du canal — ni « arroser » ni « ne pas arroser »"
