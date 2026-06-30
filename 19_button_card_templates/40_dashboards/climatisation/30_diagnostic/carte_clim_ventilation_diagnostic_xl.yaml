@@ -20,6 +20,9 @@
 #
 # 🎨 SEMANTIQUE (couleur lue depuis l'attribut backend `couleur`)
 #     - vert         -> conforme
+#     - repos        -> Gris neutre rgba(158,158,158,0.2) « Inactif / Aucune
+#                       demande » (charte couleurs 02_palette) : clim a l'arret,
+#                       fan_mode fige. Distinct du gris indispo 0.1 (R6).
 #     - bleu         -> ecart explicable (mode manuel / silencieux auto)
 #     - orange       -> attention (auto constructeur / situation non couverte)
 #     - rouge        -> incoherence de mapping
@@ -64,12 +67,13 @@ carte_clim_ventilation_diagnostic_xl:
       const v = entity.state;
       if (v === 'conforme') return 'mdi:fan';
       if (v === 'ecart') return 'mdi:fan-alert';
+      if (v === 'repos') return 'mdi:fan-clock';
       return 'mdi:fan-off';
     ]]]
 
   state_display: |
     [[[
-      const map = { conforme: 'Conforme', ecart: 'Écart', indisponible: 'Indisponible' };
+      const map = { conforme: 'Conforme', ecart: 'Écart', repos: 'Au repos', indisponible: 'Indisponible' };
       return map[entity.state] || 'Indisponible';
     ]]]
 
@@ -83,6 +87,7 @@ carte_clim_ventilation_diagnostic_xl:
 
       const causeFR = {
         none: '',
+        clim_au_repos: 'clim à l’arrêt — fan_mode figé, aucune cible appliquée',
         entrees_indisponibles: 'entrées de décision indisponibles',
         recommandation_indisponible: 'recommandation indisponible',
         fujitsu_non_exploitable: 'état Fujitsu non exploitable',
@@ -97,16 +102,22 @@ carte_clim_ventilation_diagnostic_xl:
       const verdict = entity.state;
       const cause = a.cause_ecart;
 
+      const repos = (verdict === 'repos');
+
       let out = '';
       out += '<b>Besoin froid :</b> ' + cap(a.niveau_besoin);
       if (!UNAV.includes(a.intensite)) out += ' (' + a.intensite + ' °C)';
       out += '<br>';
       out += '<b>Recommandé :</b> ' + (UNAV.includes(a.recommande) ? '—' : a.recommande) + '<br>';
-      out += '<b>Cible effective :</b> ' + fr(a.cible_effective) + '<br>';
-      out += '<b>Réel brut :</b> ' + fr(a.reel) + '<br>';
+      // Au repos, aucune cible n'est appliquée (l'autorité s'abstient, clim à
+      // l'arrêt) : on n'affiche pas de cible effective et on marque le réel figé.
+      if (!repos) out += '<b>Cible effective :</b> ' + fr(a.cible_effective) + '<br>';
+      out += '<b>Réel brut :</b> ' + fr(a.reel) + (repos ? ' (figé)' : '') + '<br>';
 
       if (verdict === 'conforme') {
         out += '<b>Conformité :</b> réel aligné sur la cible effective';
+      } else if (repos) {
+        out += '<b>Clim à l’arrêt :</b> fan_mode figé sur la dernière résolution — aucun pilotage en cours, l’intention sera réappliquée à la reprise';
       } else if (verdict === 'indisponible') {
         out += '<b>Diagnostic indisponible :</b> ' + (causeFR[cause] || '—');
       } else {
@@ -122,7 +133,9 @@ carte_clim_ventilation_diagnostic_xl:
         quiet_reserve_silence: 'quiet réservé au mode silencieux'
         // none : aucune ligne
       };
-      const arbitrage = arbitrageFR[a.raison_arbitrage];
+      // Au repos, l'arbitrage porte sur une cible non appliquée : on le tait
+      // pour ne pas suggérer un pilotage actif.
+      const arbitrage = repos ? null : arbitrageFR[a.raison_arbitrage];
       if (arbitrage) {
         out += '<br><b>Arbitrage :</b> ' + arbitrage;
       }
@@ -141,6 +154,7 @@ carte_clim_ventilation_diagnostic_xl:
             const c = (entity.attributes || {}).couleur;
             const map = {
               vert: 'rgba(76, 175, 80, 0.2)',
+              repos: 'rgba(158, 158, 158, 0.2)',
               bleu: 'rgba(33, 150, 243, 0.2)',
               orange: 'rgba(255, 152, 0, 0.2)',
               rouge: 'rgba(244, 67, 54, 0.2)',
