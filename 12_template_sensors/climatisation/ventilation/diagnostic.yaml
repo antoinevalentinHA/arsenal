@@ -19,7 +19,15 @@
 # 🧭 État (verdict, fini) :
 #   - conforme     : réel exploitable == cible effective
 #   - ecart        : réel exploitable ≠ cible effective
+#   - repos        : climatisation à l'arrêt (clim_actif == false) — le
+#                    fan_mode réel est FIGÉ sur la dernière résolution et
+#                    l'autorité d'application (1003000000120) s'abstient tant
+#                    que la clim ne tourne pas (contrat 12 §7). Aucune cible
+#                    n'est appliquée → comparer réel/cible n'a pas de sens :
+#                    pas de pilotage possible ⇒ pas d'écart possible.
 #   - indisponible : entrées de décision ou réel non exploitables
+#
+#   Priorité du verdict : indisponible (R6) > repos > conforme/ecart.
 #
 #   Cible effective = recommandation après les arbitrages EFFECTIFS du runtime
 #   (application_mode.yaml, 10030000000120), dans l'ordre EXACT :
@@ -34,10 +42,14 @@
 #   est ALIGNÉ avec l'application absence → Fort (livrés dans le même lot).
 #
 # 🔢 cause_ecart (fini) :
-#   none / entrees_indisponibles / recommandation_indisponible /
-#   fujitsu_non_exploitable / auto_fujitsu / silencieux_auto /
-#   recommandation_non_appliquee / mode_manuel / incoherence_mapping /
-#   non_couvert
+#   none / clim_au_repos / entrees_indisponibles /
+#   recommandation_indisponible / fujitsu_non_exploitable / auto_fujitsu /
+#   silencieux_auto / recommandation_non_appliquee / mode_manuel /
+#   incoherence_mapping / non_couvert
+#
+#   - clim_au_repos : clim à l'arrêt → fan_mode figé, aucune cible appliquée.
+#     N'est PAS un écart d'application : l'autorité s'abstient légitimement
+#     (contrat 12 §7). Sert de cause au verdict « repos ».
 #
 #   - En « Auto Arsenal », un écart réel ≠ cible effective est un écart
 #     d'APPLICATION (recommandation_non_appliquee), pas un override.
@@ -51,6 +63,7 @@
 #
 # 🎨 couleur (clé sémantique, décidée backend, R6 gris prime) :
 #   - conforme                            -> vert
+#   - repos (clim à l'arrêt)              -> repos (gris-bleu, non alarmant)
 #   - ecart mode_manuel / silencieux      -> bleu  (info, non alarmant ;
 #                                            respecte contrat 12 §11)
 #   - ecart recommandation_non_appliquee  -> orange (écart d'application)
@@ -102,6 +115,8 @@
         {% set reco_ok = reco_tech in ['quiet', 'low', 'medium', 'high'] %}
         {% if not niveau_ok or not reco_ok or reel in unav %}
           indisponible
+        {% elif not clim_actif %}
+          repos
         {% elif reel == cible_effective %}
           conforme
         {% else %}
@@ -196,14 +211,16 @@
           {% set cible_effective = 'quiet' if override
                                    else ('high' if (en_auto and absence and clim_actif)
                                          else ('low' if reco_tech == 'quiet' else reco_tech)) %}
-          {% if niveau_ok and reco_ok and reel not in unav and reel == cible_effective %}
-            none
-          {% elif not niveau_ok %}
+          {% if not niveau_ok %}
             entrees_indisponibles
           {% elif not reco_ok %}
             recommandation_indisponible
           {% elif reel in unav %}
             fujitsu_non_exploitable
+          {% elif not clim_actif %}
+            clim_au_repos
+          {% elif reel == cible_effective %}
+            none
           {% elif reel == 'auto' %}
             auto_fujitsu
           {% elif origine == 'silencieux_auto' %}
@@ -239,6 +256,8 @@
                                          else ('low' if reco_tech == 'quiet' else reco_tech)) %}
           {% if not niveau_ok or not reco_ok or reel in unav %}
             indisponible
+          {% elif not clim_actif %}
+            repos
           {% elif reel == cible_effective %}
             vert
           {% elif reel == 'auto' %}

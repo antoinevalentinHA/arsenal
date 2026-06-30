@@ -314,6 +314,19 @@ cohérent avec la section 10 du contrat climatisation).
 La ventilation est subordonnée à l'activité thermique : elle ne crée
 jamais d'activité, elle qualifie une activité existante.
 
+### Observabilité : verdict `repos`
+
+Tant que la clim est à l'arrêt, l'autorité de résolution
+(`10030000000120`) **s'abstient** (condition `clim_actif`) : le `fan_mode`
+réel reste **figé** sur la dernière résolution (p. ex. `Fort` issu d'un
+*absence → Fort* antérieur). Le diagnostic
+(`sensor.clim_ventilation_diagnostic`) NE DOIT alors **jamais** conclure à
+un écart : réel et cible ne sont ni l'un ni l'autre pilotables, donc leur
+comparaison n'a pas de sens. Il expose le verdict dédié **`repos`**
+(cause `clim_au_repos`, couleur `repos`), qui prime sur `conforme`/`ecart`
+et n'est primé que par `indisponible`. C'est l'expression observable de la
+règle ci-dessus : pas de pilotage possible ⇒ pas d'écart possible.
+
 ---
 
 ## 8. Compatibilité des fan_modes
