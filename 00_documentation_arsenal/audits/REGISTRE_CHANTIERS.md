@@ -32,6 +32,7 @@ Un **item de backlog** n'entre en *Actifs* qu'une fois **promu** (décision d'ag
 | ID | Chantier | Domaine | Prio | Statut | Source faisant foi |
 |----|----------|---------|------|--------|--------------------|
 | **C5** | Observabilité auto-ajustement courbe (lots P4–P9) | chauffage | P2 | ouvert — non ordonnancé ; aucun changement de comportement | [`04_chantiers/chauffage/ch_observabilite_auto_ajustement_courbe.md`](04_chantiers/chauffage/ch_observabilite_auto_ajustement_courbe.md) |
+| **C11** | Arrosage — modulation bornée de durée par critères physiques | arrosage | P3 | **cible doctrinale ouverte, runtime fermé.** Distingue « combien de temps arroser » (ce chantier) du « quand arroser » (Lot 4 / C10). Parqué derrière prérequis P1–P4 : validation terrain C10, capteurs sol fiabilisés + tarissement, runtime canal demande climatique (ET₀/VPD) livré, contrat dédié rédigé. **Réveil** : P1–P3 réunis ⇒ rédaction du contrat « modulation de durée », puis runtime borné/désactivable/observé à blanc. Aucun runtime, aucune UI à ce stade. | [`02_conception/arrosage/cadrage_modulation_duree_arrosage.md`](02_conception/arrosage/cadrage_modulation_duree_arrosage.md) |
 
 ---
 
