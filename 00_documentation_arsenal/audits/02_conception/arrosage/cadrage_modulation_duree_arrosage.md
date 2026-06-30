@@ -33,7 +33,7 @@
 | **Décision V1 automatique** | **Livrée** (besoin sol → intention → exécution déléguée au Run supervisé), publiée v16.3. **Validation terrain encore incomplète** (arrosage effectif, comportement sur la durée à constater). | [`17_decision_v1.md`](../../../contrats/arrosage/17_decision_v1.md) · [`plan_action_arrosage.md`](../../03_plans_action/arrosage/plan_action_arrosage.md) §8 |
 | **Durée d'arrosage** | **Paramétrable mais fixe** : une valeur opérateur unique (helper borné `[1,60]`), appliquée telle quelle à chaque cycle. **Aucune modulation**. | [`11_mode_manuel_supervise.md`](../../../contrats/arrosage/11_mode_manuel_supervise.md) · [`17`](../../../contrats/arrosage/17_decision_v1.md) §5 |
 | **Canal réservoir sol (lent)** | **Livré** (médiane / point sec / hétérogénéité / qualité). **Capteurs encore à observer/calibrer en sol réel** ; seuils d'humidité **exploratoires**, non contractuels. | [`15_canal_reservoir_sol.md`](../../../contrats/arrosage/15_canal_reservoir_sol.md) · [`12`](../../../contrats/arrosage/12_capteurs_humidite_sol.md) §9 |
-| **Canal demande climatique (rapide) — ET₀ / VPD** | **Spécifié, runtime NON livré.** Manque notamment le câblage Tmin/Tmax journaliers fiables. | [`16_canal_demande_climatique.md`](../../../contrats/arrosage/16_canal_demande_climatique.md) |
+| **Canal demande climatique (rapide) — ET₀ / VPD** | **Runtime d'observation livré (lot P3).** ET₀ (Hargreaves-Samani), VPD et état du canal exposés en **diagnostic seul** ; Tmin/Tmax (extrêmes jardin) et Tmean (`sensor.temperature_exterieure_moyenne_jour`) câblés. **Hors lot** : toute couche décision / dose / durée. | [`16_canal_demande_climatique.md`](../../../contrats/arrosage/16_canal_demande_climatique.md) · `12_template_sensors/arrosage/demande_climatique.yaml` |
 | **Plan d'observation hydrique v0** | **Encore nécessaire** : courbes de tarissement par régime météo non collectées. | [`plan_observation_hydrique_v0.md`](plan_observation_hydrique_v0.md) |
 
 > **Conséquence.** Le socle d'entrée d'une modulation de durée — un signal sol
@@ -136,8 +136,11 @@ Le chantier ne devient **lançable en runtime** qu'une fois **tous** réunis :
 - **P2 — Capteurs sol fiabilisés.** Observation suffisante du réservoir sol pour
   faire confiance au signal de déficit, avec **courbes de tarissement** collectées
   ([`plan_observation_hydrique_v0.md`](plan_observation_hydrique_v0.md)).
-- **P3 — Runtime du canal demande climatique livré.** ET₀/VPD produits et
-  qualifiés, Tmin/Tmax câblés ([`16`](../../../contrats/arrosage/16_canal_demande_climatique.md)).
+- **P3 — Runtime du canal demande climatique livré. ✅ FAIT** — ET₀/VPD/état
+  produits en **observation / diagnostic seul** (`12_template_sensors/arrosage/demande_climatique.yaml`),
+  Tmin/Tmax (extrêmes jardin) + Tmean (`sensor.temperature_exterieure_moyenne_jour`,
+  source désignée par le contrat 16 §1, appliquée telle quelle) câblés
+  ([`16`](../../../contrats/arrosage/16_canal_demande_climatique.md)).
 - **P4 — Contrat dédié « modulation de durée » rédigé et figé.** Bornes, signaux,
   priorité réservoir sol > climat, désactivabilité, dégradation, explicabilité
   — **contrat avant runtime**, sans exception.
@@ -179,7 +182,7 @@ Observation sol / tarissement      ── P2 ──┘                          
 ```
 
 1. **Fermer C10** (terrain) — priorité, déjà au plan d'action.
-2. **Livrer le canal demande climatique** — lot net, autonome, déjà spécifié.
+2. **Livrer le canal demande climatique** — **✅ fait (lot P3)** : ET₀/VPD/état en diagnostic seul.
 3. **Laisser tourner l'observation v0** — courbes de tarissement.
 4. **Rédiger le contrat « modulation de durée »** — figer bornes et garde-fous (§4).
 5. **Implémenter le facteur borné** — exposé d'abord **en diagnostic** (à blanc),
