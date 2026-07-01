@@ -387,6 +387,27 @@ include:
     - input_boolean.arrosage_automatique_actif
 
     # =====================================================
+    # ==== 💧 ARROSAGE — DURÉE DE BASE APPLIQUÉE (OBSERVATION) ====
+    # =====================================================
+    # RECORDER — Population B
+    # Rôle      : durée de base opérateur (minutes) appliquée au cycle station 1
+    #             (helper borné, contrats/arrosage 11 & 17 §5).
+    # Utilité   : observer la durée réellement RÉGLÉE au fil du temps, à corréler
+    #             avec la réponse sol / le tarissement — instrumentation du futur
+    #             chantier « durée variable » (C11, prérequis P1 : comportement
+    #             sur la durée). Complète sensor.arrosage_dernier_effectif, qui
+    #             marque l'événement d'arrosage mais PAS la durée réglée.
+    # Logbook   : acceptable — réglage opérateur durable, variation rare.
+    # Cardinalité : continue bornée — minutes, plage [1, 60], pas 1.
+    # Fréquence : ≤ 5/h — réglage manuel, change rarement.
+    # NB : contrairement aux helpers de réglage de la DÉCISION (hystérésis /
+    #      intervalle / fenêtre, exclus ci-dessus), la durée est la grandeur de
+    #      BASE que la future modulation bornée fera varier — son historisation
+    #      est donc directement utile à l'observation. Lecture seule ; aucune
+    #      logique métier ne lit cet historique (invariant d'indépendance).
+    - input_number.arrosage_rainbird_station_1_duree_minutes
+
+    # =====================================================
     # ==== 🎛️ MODES DE LA MAISON ====
     # =====================================================
     - input_select.mode_maison
