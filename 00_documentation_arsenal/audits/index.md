@@ -24,6 +24,7 @@
 ### Climatisation
 - [climatisation/audit_climatisation_arsenal.md](01_rapports/climatisation/audit_climatisation_arsenal.md)
 - [climatisation/investigation_historique_clim_30j.md](01_rapports/climatisation/investigation_historique_clim_30j.md)  _(investigation **dynamique** — audit historique Recorder 30 j ; complément empirique de l'audit statique ; court-cyclage corrigé (57 % de blips non thermiques) ; hypothèse « présence = cause » **infirmée** ; blocage horaire nocturne **probable mais non confirmé** ; aucun réglage proposé)_
+- [climatisation/diagnostic_clim_execution_echec.md](01_rapports/climatisation/diagnostic_clim_execution_echec.md)  _(diagnostic **statique** — la clim ne démarre pas, `input_boolean.clim_execution_echec` latché ; chaîne complète décision→exécution→post-condition→résilience cartographiée ; **aucun défaut de code certain** ; cause = **indisponibilité runtime Airstage** (échec `infra` by-design) ; **aucune modification fonctionnelle**, booléen non réinitialisé)_
 
 ### Météo
 - [meteo/audit_meteo_axe_temperature_rapport_final.md](01_rapports/meteo/audit_meteo_axe_temperature_rapport_final.md)
