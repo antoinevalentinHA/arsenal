@@ -95,10 +95,16 @@ views:
                 icon: mdi:check-decagram
 
           - type: custom:button-card
-            template: socle_diagnostic_compact_readonly_72
+            template: carte_etat_interprete
             entity: sensor.jardin_reservoir_sol_etat
             name: État réservoir sol
             icon: mdi:cup-water
+            variables:
+              couleurs:
+                complet: 'rgba(76, 175, 80, 0.2)'
+                degrade: 'rgba(255, 235, 59, 0.2)'
+                insuffisant: 'rgba(255, 152, 0, 0.2)'
+                indisponible: 'rgba(158, 158, 158, 0.1)'
 
           # =========================================================
           # 👁 Observation — Données pont (substrat)
@@ -202,7 +208,12 @@ views:
                 icon: mdi:water-opacity
 
           - type: custom:button-card
-            template: socle_diagnostic_compact_readonly_72
+            template: carte_etat_interprete
             entity: sensor.arrosage_demande_climatique_etat
             name: État du canal climatique
             icon: mdi:weather-partly-cloudy
+            variables:
+              couleurs:
+                complet: 'rgba(76, 175, 80, 0.2)'
+                degrade: 'rgba(255, 235, 59, 0.2)'
+                indisponible: 'rgba(158, 158, 158, 0.1)'
