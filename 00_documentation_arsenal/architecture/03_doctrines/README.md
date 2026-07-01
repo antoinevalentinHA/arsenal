@@ -24,6 +24,7 @@
 | [nommage_entites.md](./nommage_entites.md) | Convention normative de nommage des entités Home Assistant |
 | [entetes_fichiers.md](./entetes_fichiers.md) | Doctrine des en-têtes de fichiers Arsenal |
 | [id_automatisations.md](./id_automatisations.md) | Système normatif des IDs d'automatisations |
+| [redaction_changelog.md](./redaction_changelog.md) | Procédure de rédaction des changelogs de release — déclenchement, mode opératoire, règles de style |
 
 ## Doctrines système
 
