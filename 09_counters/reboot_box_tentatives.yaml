@@ -20,7 +20,7 @@
 # 📋 PARAMÈTRES
 #   initial : 0
 #   step    : 1
-#   restore : false — comportement par défaut Home Assistant
+#   restore : true — persistance explicite au redémarrage ; le défaut HA de counter.restore est déjà true ; mécanisme conçu résilient au reboot.
 #
 # 🚫 INTERDITS
 #   - Confondre comptage et décision
@@ -35,6 +35,10 @@
 
 reboot_box_tentatives:
   name: "Réseau – Cycles physiques campagne"
+  # initial VOULU — compteur
+  # Raison : valeur de reset du compteur ; persistance au reboot gouvernée par restore: true.
+  # Restauration HA volontairement conservée : oui
   initial: 0
+  restore: true
   step: 1
   icon: mdi:counter

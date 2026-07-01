@@ -19,7 +19,7 @@
 # 📋 PARAMÈTRES
 #   initial : 0
 #   step    : 1
-#   restore : false — comportement par défaut Home Assistant
+#   restore : true — persistance explicite au redémarrage ; le défaut HA de counter.restore est déjà true ; mécanisme conçu résilient au reboot.
 #
 # 🚫 INTERDITS
 #   - Confondre comptage et décision
@@ -34,7 +34,11 @@
 
 clim_execution_retry_count:
   name: "Clim – Compteur de retry"
+  # initial VOULU — compteur
+  # Raison : valeur de reset du compteur ; persistance au reboot gouvernée par restore: true.
+  # Restauration HA volontairement conservée : oui
   initial: 0
+  restore: true
   minimum: 0
   maximum: 3
   step: 1
