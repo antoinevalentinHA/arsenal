@@ -5,13 +5,13 @@
 ## 📌 Statut
 
 - Doctrine système transverse Arsenal.
-- **NORMATIF et OPPOSABLE** dès sa création.
+- **NORMATIF et OPPOSABLE**.
 - Applicabilité globale (tous domaines, toutes versions).
-- Version : **v1.0** — création 2026-07-01.
+- Version : **v1.1** — 2026-07-01 (v1.0 : création ; v1.1 : mise en cohérence
+  post-chantier — CI active et bloquante, écarts résorbés, config-seeds arbitrés).
 
-Ce contrat est opposable **tout en mentionnant des écarts connus** (cf. §Écarts
-connus) à corriger dans un lot séparé. La présence d'écarts n'affaiblit pas
-l'opposabilité de la doctrine ; elle la trace.
+Le chantier de résorption est **clos** : l'inventaire `initial` est propre
+(0 écart) et la CI est **active et bloquante** (cf. §CI active et opposable).
 
 ---
 
@@ -90,11 +90,9 @@ persistance est gouvernée par `restore`.
 ## ✅ Règles normatives obligatoires
 
 > **Lecture des règles.** Chaque règle énonce d'abord la **conformité
-> contractuelle** (obligation opposable), puis la **sévérité CI transitoire**
-> (comportement du futur checker pendant la migration). Les deux niveaux sont
-> **distincts** : une règle peut être obligatoire contractuellement alors que la
-> première CI la signale seulement en WARN le temps de la migration. La sévérité
-> CI transitoire **n'affaiblit pas** l'obligation contractuelle.
+> contractuelle** (obligation opposable), puis la **sévérité CI** appliquée par
+> le checker actif (`check_initial_key_contracts.py`). La CI est **bloquante** :
+> toute violation d'une obligation dure sort en ERROR (exit 1).
 
 ### R01 — `initial` interdit sur `input_*` *paramètre réglable*
 
@@ -102,10 +100,8 @@ persistance est gouvernée par `restore`.
 `input_select` de nature *paramètre réglable*.
 
 - **Conformité contractuelle :** obligatoire.
-- **Sévérité CI transitoire :** cette règle est obligatoire contractuellement.
-  La CI peut toutefois la signaler en **WARN** pendant la phase de migration,
-  puis basculer en **ERROR** une fois les `initial` légitimes tagués (R03) et
-  les écarts connus traités.
+- **Sévérité CI :** **ERROR** (HINIT-001) — un `initial` sur `input_*` sans
+  marqueur valide bloque la CI.
 
 ### R02 — `initial` interdit sur `input_boolean` d'intention/override/verrou
 
@@ -117,10 +113,8 @@ marqueur `initial VOULU`.
 
 - **Conformité contractuelle :** obligatoire ; interdiction **dure** (sans
   exception) sur intention/override/verrou.
-- **Sévérité CI transitoire :** cette règle est obligatoire contractuellement.
-  Aucune occurrence n'existe aujourd'hui (coût de migration nul) : la CI peut la
-  signaler en **ERROR dès la première version**. Un palier **WARN** initial reste
-  acceptable si l'on souhaite un déploiement homogène avec les autres règles.
+- **Sévérité CI :** **ERROR** (HINIT-002) — tout `initial` sur `input_boolean`
+  bloque la CI.
 
 ### R03 — Marqueur obligatoire pour tout `initial` conservé
 
@@ -128,9 +122,8 @@ Tout `initial` conservé (autorisé par exception ou régime counter) **doit** p
 le marqueur `# initial VOULU — <catégorie>` (cf. §Format de justification).
 
 - **Conformité contractuelle :** obligatoire.
-- **Sévérité CI transitoire :** cette règle est obligatoire contractuellement.
-  La CI la signale en **WARN documentaire** (elle vise la traçabilité, pas le
-  blocage).
+- **Sévérité CI :** **ERROR** — un `initial` conservé sans marqueur (HINIT-001)
+  ou avec un marqueur de catégorie invalide (HINIT-003) bloque la CI.
 
 ### R04 — Repli de lecture après retrait d'un `initial`
 
@@ -139,9 +132,8 @@ Le retrait d'un `initial` sur un paramètre réglable **doit** s'accompagner d'u
 afin qu'aucune logique ne dépende d'un état `unknown` au premier démarrage.
 
 - **Conformité contractuelle :** obligatoire.
-- **Sévérité CI transitoire :** cette règle est obligatoire contractuellement.
-  Sa vérification statique est **partielle** (elle porte sur les consommateurs,
-  hors du helper) : la CI la signale en **WARN** au mieux, la revue humaine reste
+- **Sévérité CI :** **non instrumentée** — le repli de lecture porte sur les
+  consommateurs, hors du périmètre statique du checker ; la revue humaine reste
   nécessaire.
 
 ### R05 — `counter` : `initial` autorisé, `restore` explicite
@@ -151,8 +143,8 @@ Sur `counter`, `initial` est **autorisé** en tant que valeur de reset. La clé
 pas par `initial`).
 
 - **Conformité contractuelle :** obligatoire (explicitation de `restore`).
-- **Sévérité CI transitoire :** cette règle est obligatoire contractuellement.
-  La CI la signale en **INFO** (régime distinct, danger moindre).
+- **Sévérité CI :** **INFO** si `restore` explicite ; **WARN** (non bloquant) si
+  `restore` implicite (HINIT-004 — régime distinct, danger moindre).
 
 ---
 
@@ -169,8 +161,9 @@ pas par `initial`).
 - **compteur** — `counter` (R05).
 - **booleen-technique-reset** — `input_boolean` interne réinitialisé au boot,
   sans intention/override/verrou (R02).
-- **config-seed** — **catégorie non tranchée** (cf. §Décisions ouvertes) : ne pas
-  déclarer conforme, ne pas déclarer interdit.
+- **config-seed** — amorçage de configuration **non éditable via UI** et **non
+  écrit par automation** (ex. badges/code alarme). Exception **reconnue** sous
+  marqueur `config-seed` (arbitrée, cf. §Décisions tranchées).
 
 ---
 
@@ -198,7 +191,7 @@ vocabulaire clos ci-dessous.
 
 **Vocabulaire clos des catégories :**
 `sentinelle-cold-start` | `transactionnel` | `sentinelle-jamais` | `compteur` |
-`booleen-technique-reset` | `config-seed` *(à arbitrer)*.
+`booleen-technique-reset` | `config-seed`.
 
 La catégorie `parametre-reglable` **n'existe pas** comme justification : ce cas
 est interdit (R01), pas justifiable.
@@ -218,47 +211,55 @@ est interdit (R01), pas justifiable.
 
 ---
 
-## 🧾 Écarts connus à la date de création (2026-07-01)
+## 🧾 Écarts connus — résorbés
 
-Ces occurrences sont **présumées non conformes** et **inscrites comme écarts
-connus, à traiter dans un lot séparé**. Elles ne sont **pas corrigées** par le
-présent lot. Leur existence ne remet pas en cause l'opposabilité du contrat.
+Les 3 écarts identifiés à la création (v1.0) sont **corrigés** : retrait de
+`initial` (la restauration HA préserve désormais la valeur réglée).
 
-| Entité | Fichier | Écart présumé |
+| Entité | Fichier | Résorption |
 |---|---|---|
-| `arrosage_fenetre_debut` | `07_input_datetimes/arrosage/fenetre.yaml` | `initial` sur borne « réglable par l'opérateur » (R01) |
-| `arrosage_fenetre_fin` | `07_input_datetimes/arrosage/fenetre.yaml` | `initial` sur borne « réglable par l'opérateur » (R01) |
-| `arsenal_self_audit_stale_threshold_hours` | `03_input_numbers/system/audit_stale_threshold_hours.yaml` | `initial` sur « paramètre humain modifiable depuis l'UI » (R01) |
+| `arrosage_fenetre_debut` | `07_input_datetimes/arrosage/fenetre.yaml` | `initial` retiré (PR #205) |
+| `arrosage_fenetre_fin` | `07_input_datetimes/arrosage/fenetre.yaml` | `initial` retiré (PR #205) |
+| `arsenal_self_audit_stale_threshold_hours` | `03_input_numbers/system/audit_stale_threshold_hours.yaml` | `initial` retiré (PR #205) |
+
+Le M6 `palmares_pluie_journalier_derniere_evaluation` (sentinelle de fraîcheur
+reforcée au reboot, aveuglant le watchdog `evaluation_obsolete`) a également été
+corrigé — retrait de `initial` (PR #204).
 
 ---
 
-## ❓ Décisions ouvertes
+## ✅ Décisions tranchées
 
-- **config-seed — badges / code alarme.** Les helpers
-  `04_input_texts/alarme/badges.yaml` et `04_input_texts/alarme/code.yaml`
-  (seed via valeur littérale et via `!secret`) restent en catégorie **`config-seed`
-  à arbitrer** : ils **ne sont pas déclarés conformes**, **ni interdits**. La
-  décision dépend d'un fait à établir : **ces helpers sont-ils édités via l'UI ?**
-  Si oui, `initial` réécrase l'édition au reboot (interdit R01) ; si non (pur
-  seed de configuration), tolérable sous justification. → **décision ouverte**,
-  hors périmètre de ce lot.
+- **config-seed — badges / code alarme** (PR #206). Établi : `badges_autorises`
+  et `alarm_code` **ne sont pas édités via l'UI** ni écrits par automation
+  (lecture seule ; source de vérité = configuration déclarative / `secrets.yaml`).
+  Ce sont donc des **config-seeds légitimes** : `initial` conservé, marqué
+  `initial VOULU — config-seed`. Le retrait est écarté (il casserait le
+  rechargement du code/secret et de la liste de badges au démarrage).
 
 ---
 
-## 🔗 Articulation avec la future CI
+## 🔗 CI active et opposable
 
-- La CI n'existe **pas encore** ; ce contrat ne la crée pas.
-- Checker envisagé : `scripts/arsenal_contracts/check_initial_key_contracts.py` ;
-  workflow dédié `contracts_initial_key.yml` (sur `push` + `pull_request`).
-- **La CI lit le marqueur `initial VOULU` comme source de vérité, PAS la prose
-  `NATURE`** des en-têtes. Test central : `initial` présent ⇒ marqueur valide
-  requis ⇒ sinon signalé.
-- Migration : Phase 1 CI en **WARN** (inventaire) → Phase 2 tag des `initial`
-  légitimes (R03) → Phase 3 traitement des écarts connus → Phase 4 bascule
-  **ERROR** (R02 dès v1 possible ; R01 après Phases 2–3).
-- La ligne de routage dans `00_documentation_arsenal/README.md` sera ajoutée en
-  Phase 1, **avec** le gate CI correspondant (la table de routage exige une
-  colonne « Gate » remplie).
+- **Checker** : `scripts/arsenal_contracts/check_initial_key_contracts.py`.
+- **Workflow** : `.github/workflows/contracts_initial_key.yml` (sur `push` +
+  `pull_request`), **bloquant** (le job échoue sur sortie non nulle).
+- **Routage** : ligne dédiée dans `00_documentation_arsenal/README.md`
+  (gate `check_initial_key_contracts`).
+- **Source de vérité** : le marqueur in-file `initial VOULU — <catégorie>`, **PAS**
+  la prose `NATURE`. Test central : `initial` présent ⇒ marqueur valide requis.
+- **Sévérités CI (garde-fou actif)** :
+
+  | Règle CI | Cas | Sévérité |
+  |---|---|---|
+  | HINIT-001 | `input_*` avec `initial` sans marqueur | **ERROR** |
+  | HINIT-002 | `input_boolean` avec `initial` | **ERROR** |
+  | HINIT-003 | marqueur présent mais catégorie invalide / `parametre-reglable` | **ERROR** |
+  | HINIT-004 | `counter` : `restore` explicite → INFO ; implicite → WARN | INFO / WARN |
+  | HINIT-006 | config-seed : marqueur `config-seed` valide → INFO ; sinon → ERROR | INFO / **ERROR** |
+
+- **État de l'inventaire** (post-#207) : **15 occurrences — 0 ERROR / 0 WARN /
+  15 INFO**, `✅ CONTRAT INITIAL CONFORME`.
 
 ---
 
@@ -270,8 +271,9 @@ présent lot. Leur existence ne remet pas en cause l'opposabilité du contrat.
 - Un `initial` **mal catégorisé** (ex. un réglable tagué `sentinelle-cold-start`)
   **passe la CI** : c'est un faux négatif structurel, relevant de la **revue
   humaine**, irremplaçable.
-- Faux positifs transitoires attendus : `initial` légitimes non encore tagués
-  (résorbés par R03 en Phase 2).
+- L'inventaire actuel est intégralement marqué ou résorbé : aucun faux positif
+  résiduel. Un `initial` légitime **nouvellement** ajouté sans marqueur sera
+  bloqué (ERROR) jusqu'à ce qu'il porte son marqueur `initial VOULU`.
 
 ---
 
@@ -298,8 +300,8 @@ Ce contrat est adossé à des faits opposables établis par l'audit #198 :
   globale (tous domaines).
 - Positionné dans la couche doctrinale (`architecture/03_doctrines/`), entre les
   contrats fonctionnels et les documents d'architecture domaine.
-- Opposable **malgré** les écarts connus listés, qui sont tracés et renvoyés à un
-  lot correctif ultérieur.
+- Inventaire `initial` **propre** (0 écart) et **garde-fou CI actif** contre toute
+  régression (cf. §CI active et opposable).
 - Stable, modifié uniquement lors d'évolutions doctrinales, versionné
   explicitement.
 
