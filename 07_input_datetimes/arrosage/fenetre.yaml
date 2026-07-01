@@ -38,12 +38,20 @@ arrosage_fenetre_debut:
   name: "Arrosage — Fenêtre début"
   has_date: false
   has_time: true
-  initial: "05:30:00"
+  # PAS de clé `initial` : borne réglable par l'opérateur (dashboard arrosage/reglages) ;
+  # HA restaure la dernière valeur réglée au redémarrage. L'`initial` reforçait
+  # 05:30/06:30 à chaque reboot, écrasant la calibration opérateur (correctif
+  # HINIT-005 — doctrine `restauration_etat_helpers`).
+  # NB : défaut natif HA time-only = 00:00 au tout premier boot.
   icon: mdi:clock-start
 
 arrosage_fenetre_fin:
   name: "Arrosage — Fenêtre fin"
   has_date: false
   has_time: true
-  initial: "06:30:00"
+  # PAS de clé `initial` : borne réglable par l'opérateur (dashboard arrosage/reglages) ;
+  # HA restaure la dernière valeur réglée au redémarrage. L'`initial` reforçait
+  # 05:30/06:30 à chaque reboot, écrasant la calibration opérateur (correctif
+  # HINIT-005 — doctrine `restauration_etat_helpers`).
+  # NB : défaut natif HA time-only = 00:00 au tout premier boot.
   icon: mdi:clock-end

@@ -36,7 +36,11 @@ arsenal_self_audit_stale_threshold_hours:
   min: 1
   max: 168
   step: 1
-  initial: 25
+  # PAS de clé `initial` : paramètre réglable par l'opérateur (UI) ; HA restaure la
+  # dernière valeur réglée au redémarrage. L'`initial: 25` reforçait le défaut à chaque
+  # reboot, écrasant le réglage opérateur (correctif HINIT-005).
+  # Repli `| float(25)` assuré côté consommateur (`audit_stale.yaml`).
+  # NB : défaut natif `input_number` = min (1) au premier boot.
   unit_of_measurement: "h"
   mode: box
   icon: mdi:timer-sand
