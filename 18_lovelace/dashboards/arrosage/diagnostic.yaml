@@ -191,22 +191,6 @@ views:
               participe pas encore à la décision d'arrosage**. Il entrera dans le
               raisonnement avec **C11** (modulation de durée).
 
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: sensor.arrosage_demande_climatique_et0
-                name: ET₀ journalière
-                icon: mdi:sun-thermometer-outline
-
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: sensor.arrosage_demande_climatique_vpd
-                name: VPD courant
-                icon: mdi:water-opacity
-
           # Tendances d'observation — mêmes réglages que « Humidité du sol »
           # du cockpit principal. ET₀ et VPD tracés SÉPARÉMENT : unités et
           # dynamiques distinctes (mm/j lente vs kPa instantané), jamais
