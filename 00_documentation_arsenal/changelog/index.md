@@ -1474,6 +1474,18 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Lovelace — navigation à couleurs dynamiques : tuiles Arrosage / Rec. météo / Volets / NAS passées en `bouton_navigation_dynamique` (retrait des couleurs figées) + capteurs d'état pilotant la couleur ; ouverture de l'arbitrage D-NAV-COULEUR.
 - Registres et clôtures : C8 (mode nuit clim) et C9 (absence sécurité) déplacés en « Clos récents », C10 arrosage mis à jour ; ajout des changelogs `v16_2_0` / `v16_3_0` à l'index.
 
+---
+
+## 🧠 ARSENAL HA — [v16.3.2](changelogs/v16/v16_3_2.md) — STABLE — 2026-06-30
+**Tags :** arrosage, rain_bird, clim, ventilation, sante, lovelace, navigation, ui, helpers, contrats, registres, changelog
+
+**Signal net :**
+- Arrosage — dashboard Diagnostic : ajout de `18_lovelace/dashboards/arrosage/diagnostic.yaml` (`/diagnostics-arrosage-dashboard`) + badge diagnostics sur le principal ; lecture causale (observation → interprétation → exécution + canal climatique en observation à blanc), réutilisation des socles/cartes existants.
+- Arrosage — canal demande climatique (runtime P3) : ajout de `sensor.arrosage_demande_climatique_et0_journaliere` (ET₀ Hargreaves-Samani), `sensor.arrosage_demande_climatique_vpd_courant`, `sensor.arrosage_demande_climatique_etat` (observation/diagnostic seul, contrat 16) ; notification batterie Rain Bird `10270000000004` (faible/critique) + contrat `18_notification_batterie.md` (arrosage 18 → 19 fichiers).
+- Réglages — retrait des clés `initial` sur les `input_number` réglables (arrosage décision V1 / seuils pluie / durée station 1 ; météo fraîcheur palmarès / EWMA jardin) : HA restaure la dernière valeur réglée au lieu de reforcer la valeur d'usine au redémarrage.
+- Climatisation — ventilation : ajout du verdict `repos` (clim à l'arrêt → `fan_mode` figé, autorité s'abstient ; couleur gris neutre ; priorité `indisponible` > `repos` > `conforme`/`ecart`) ; triggers `not_to: ['unavailable', 'unknown']` (silence, application_mode) ; garde `from_state` numérique sur la notification batterie ScanWatch.
+- Lovelace — navigation : Imprimerie dynamisée (`sensor.etat_imprimerie_dashboard`, `#1E468C` retiré), Prises / Santé / Énergie neutralisées au gris de base NAV ; santé Boiler Bridge / Rain Bird regroupée en grille 2 colonnes ; D-NAV-COULEUR — menu principal soldé, reliquat dormant = section ⚙️ Système.
+
 ==================================================
 FIN INDEX
 ==================================================
