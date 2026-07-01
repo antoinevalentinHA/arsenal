@@ -21,7 +21,7 @@ views:
       - type: vertical-stack
         cards:
           ########################################################
-          # 🧠 SECTION : Décision globale du système
+          # 🧠 SECTION : Décision
           ########################################################
           - !include ../../includes/section_headers/decision.yaml
 
