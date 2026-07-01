@@ -48,5 +48,9 @@ palmares_pluie_journalier_derniere_evaluation:
   name: "Palmarès pluie journalière — dernière évaluation"
   has_date: true
   has_time: true
-  initial: "1970-01-01 00:00:00"
+  # PAS de clé `initial` : la restauration HA préserve la dernière évaluation au
+  # redémarrage (watchdog `evaluation_obsolete` résilient au reboot). Le défaut natif
+  # d'un `input_datetime` non écrit est 1970-01-01 → exemption B4 au tout premier boot,
+  # sans reforcer 1970 à chaque reboot (correctif M6 — doctrine
+  # `restauration_etat_helpers`).
   icon: mdi:clock-check-outline
