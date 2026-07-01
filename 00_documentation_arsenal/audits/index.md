@@ -56,6 +56,7 @@
 - [documentation/audit_documentaire_global_2026_06_06.md](01_rapports/documentation/audit_documentaire_global_2026_06_06.md)
 
 ### Architecture
+- [architecture/audit_recorder_conformite_contrat.md](01_rapports/architecture/audit_recorder_conformite_contrat.md)  _(audit **lecture seule** de `recorder.yaml` (323 entités) contre le contrat Recorder ; fichier **fonctionnellement sain** ; constat dominant **documentaire** — déficit de justification Population B (12 blocs / 323) ; + classification énergie → Pop A, tag Pop A `temperature_max_journaliere_jardin` **non tracé** dans le dépôt, présomptions de fréquence (CPU/mémoire, bruit, écart instantané) et cardinalité `input_text`/« raison » à confirmer ; **aucun runtime/contrat modifié**, recommandations non appliquées)_
 - [architecture/audit_couverture_maturite_gouvernance_consolide.md](01_rapports/architecture/audit_couverture_maturite_gouvernance_consolide.md)
 - [architecture/plan_action_gouvernance_revise.md](01_rapports/architecture/plan_action_gouvernance_revise.md)
 - [architecture/cadrage_D1_doc_moteur_chauffage.md](01_rapports/architecture/cadrage_D1_doc_moteur_chauffage.md)
