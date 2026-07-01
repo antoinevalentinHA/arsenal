@@ -8,6 +8,12 @@ include:
     # =====================================================
     # ==== 🌡️ TEMPÉRATURES – MAISON / PIÈCES ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : sources de capteurs `platform: statistics` — sans historique de
+    #         la source, la fenêtre glissante est tronquée après purge/redémarrage.
+    # Entités : les capteurs de température vive ci-dessous.
+    # Exceptions Population B de ce bloc : temperature_exterieure_moyenne_jour
+    #   (sortie stats), temperature_max_rdc, temperature_sejour_mean_10min/30min.
     - sensor.temperature_moyenne_maison
     - sensor.temperature_exterieure_moyenne_jour
     - sensor.temperature_min_chambres
@@ -32,11 +38,14 @@ include:
     # 🌡️ TEMPÉRATURE / PALMARÈS JOURNÉES CHAUDES
     # ----------------------------------------------------------
 
-    # RECORDER — Population A — OBLIGATOIRE contrainte HA
-    # Contrainte : platform: statistics (sensor.temperature_max_journaliere_jardin
-    #              est source d'un capteur statistics ; sans historique, la fenêtre
-    #              est tronquée sans signal visible)
-    # Entité source de : sensor.temperature_max_journaliere_jardin
+    # RECORDER — Population B
+    # Rôle      : Source métier canonique du palmarès journées chaudes
+    # Utilité   : Relire les maxima journaliers clôturés exposés au palmarès
+    # Logbook   : acceptable — écriture quotidienne, faible fréquence
+    # Cardinalité : continue bornée [-10–50°C]
+    # Fréquence : ≤ 1/jour
+    # NB : reclassé A→B — aucun `platform: statistics` du dépôt ne source cette
+    #      entité (cf. audit delta Population A statistiques).
     - sensor.temperature_max_journaliere_jardin
 
     # RECORDER — Population B
@@ -188,6 +197,9 @@ include:
     # =====================================================
     # ==== 💧 HUMIDITÉ RELATIVE ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : sources de capteurs `platform: statistics` — sans historique de
+    #         la source, la fenêtre glissante est tronquée après purge/redémarrage.
     - sensor.humidite_relative_jardin
     - sensor.humidite_relative_entree
     - sensor.humidite_relative_sejour
@@ -203,6 +215,9 @@ include:
     # =====================================================
     # ==== 💦 HUMIDITÉ ABSOLUE ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : sources de capteurs `platform: statistics` — sans historique de
+    #         la source, la fenêtre glissante est tronquée après purge/redémarrage.
     - sensor.humidite_absolue_jardin
     - sensor.humidite_absolue_entree
     - sensor.humidite_absolue_sejour
@@ -218,6 +233,10 @@ include:
     # =====================================================
     # ==== 🫁 CO2 ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : sources de capteurs `platform: statistics` — sans historique de
+    #         la source, la fenêtre glissante est tronquée après purge/redémarrage.
+    # Population A dans ce bloc : co2_sejour uniquement.
     - sensor.co2_entree
     - sensor.co2_sejour
     - sensor.co2_chambre_arnaud
@@ -234,6 +253,10 @@ include:
     # =====================================================
     # ==== 🌧️ PLUIE / PRESSION ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : sources de capteurs `platform: statistics` — sans historique de
+    #         la source, la fenêtre glissante est tronquée après purge/redémarrage.
+    # Population A dans ce bloc : pluie_total_local uniquement.
     - binary_sensor.zigbee_pluie_water_leak
     - sensor.pluviometre_precipitation
     - sensor.pluie_aujourdhui_local
@@ -344,6 +367,9 @@ include:
     # =====================================================
     # ==== ❄️ CLIMATISATION ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : source de capteur `platform: statistics` (proxys/energy.yaml) — historique requis.
+    # Population A dans ce bloc : clim_consommation_estimee_energie uniquement.
     - switch.clim_power
     - sensor.clim_mode_local
     - sensor.clim_consommation_estimee_energie
@@ -374,6 +400,9 @@ include:
     # =====================================================
     #  ==== 🪟 AERATION ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : sources de `history_stats` — sans historique, le helper renvoie 0/N-A.
+    # Population A dans ce bloc : fenetre_ouverte_etage & fenetre_ouverte_rdc.
     - input_boolean.aeration_episode_en_cours
     - input_boolean.chauffage_blocage_aeration
     - input_boolean.aeration_confirmee
@@ -384,6 +413,10 @@ include:
     # =====================================================
     # ==== 🍓 SANTÉ PLATEFORME — CORE / SUPERVISOR ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : sources de capteurs `platform: statistics` — sans historique de
+    #         la source, la fenêtre glissante est tronquée après purge/redémarrage.
+    # Entités : toutes (cpu/memory core+supervisor, uptime).
     - sensor.home_assistant_supervisor_cpu_percent
     - sensor.home_assistant_supervisor_memory_percent
     - sensor.home_assistant_core_cpu_percent
@@ -393,12 +426,18 @@ include:
     # =====================================================
     # ==== 🔌 STABILITÉ RESEAU ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : sources de `history_stats` — sans historique, le helper renvoie 0/N-A.
+    # Population A dans ce bloc : internet_disponible uniquement.
     - binary_sensor.internet_disponible
     - binary_sensor.coupure_secteur
 
     # =====================================================
     # ==== 🔥 CHAUFFAGE ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : sources de `history_stats` — sans historique, le helper renvoie 0/N-A.
+    # Population A dans ce bloc : programme_chauffage uniquement.
     - sensor.programme_chauffage
     - input_boolean.chauffage_standby_force
     - input_boolean.poele_recent
@@ -410,6 +449,10 @@ include:
     # =====================================================
     # ==== 🔥 CHAUFFAGE — AUTO-AJUSTEMENT ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : sources de capteurs `platform: statistics` — sans historique de
+    #         la source, la fenêtre glissante est tronquée après purge/redémarrage.
+    # Entités : toutes (ecart_consigne_instantane / _froid / _doux).
     - sensor.ecart_consigne_instantane
     - sensor.ecart_consigne_instantane_froid
     - sensor.ecart_consigne_instantane_doux
@@ -467,6 +510,9 @@ include:
     # =====================================================
     # ==== 🛌 WITHINGS ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : sources de capteurs `platform: statistics` — sans historique de
+    #         la source, la fenêtre glissante est tronquée après purge/redémarrage.
     - sensor.withings_average_respiratory_rate_local
     - sensor.withings_steps_today_local
     - sensor.withings_distance_travelled_today_local
@@ -475,6 +521,10 @@ include:
     # =====================================================
     # ==== 🛌 SOMMEIL — SNAPSHOT ARSENAL ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : sources de capteurs `platform: statistics` — sans historique de
+    #         la source, la fenêtre glissante est tronquée après purge/redémarrage.
+    # Population A dans ce bloc : sommeil_derniere_nuit_total & sommeil_derniere_nuit_score.
     - input_number.sommeil_derniere_nuit_total
     - input_number.sommeil_derniere_nuit_profond
     - input_number.sommeil_derniere_nuit_leger
@@ -505,6 +555,9 @@ include:
     # =====================================================
     # ==== 🏭🌡️ IMPRIMERIE – TEMPÉRATURES / HUMIDITÉ ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : sources de capteurs `platform: statistics` — sans historique de
+    #         la source, la fenêtre glissante est tronquée après purge/redémarrage.
     - sensor.temperature_exterieur
     - sensor.humidite_relative_exterieur
     - sensor.humidite_absolue_exterieur
@@ -529,6 +582,10 @@ include:
     # =====================================================
     # ==== 🚗 AUTOMOBILE ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : sources de capteurs `platform: statistics` — sans historique de
+    #         la source, la fenêtre glissante est tronquée après purge/redémarrage.
+    # Population A dans ce bloc : autonomie_audi_etron_full & audi_temperature_charge.
     - sensor.autonomie_audi_e_tron_mensuelle
     - sensor.audi_e_tron_pourcentage_moteur_principal_local
     - sensor.audi_e_tron_kilometrage_local
@@ -547,6 +604,8 @@ include:
     # =====================================================
     # ==== ⚡ CONSOMMATION – PRISES ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : long-term statistics (`state_class: total_increasing`) + sources `utility_meter`.
     - sensor.prise_deshumidificateur_energy
     - sensor.prise_refrigerateur_energy
     - sensor.prise_buanderie_energy
@@ -565,6 +624,8 @@ include:
     # =====================================================
     # ==== ⚡ CONSOMMATION – CUMULUS PETITE MAISON ====
     # =====================================================
+    # RECORDER — Population A — OBLIGATOIRE — contrainte HA
+    # Route : long-term statistics (`state_class: total_increasing`) + sources `utility_meter`.
     - sensor.petite_maison_modbuslink_1_2_electric_energy_consumption
 
     # =====================================================
