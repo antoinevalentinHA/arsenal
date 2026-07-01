@@ -4,7 +4,7 @@ Arsenal — Validation contractuelle : clé `initial` dans les helpers HA (HINIT
 Contrat : architecture/03_doctrines/restauration_etat_helpers.md (v1.0, opposable)
 Audit source : audits/01_rapports/transverses/audit_initial_helpers.md (#198)
 
-CI Phase 1 — TRANSITOIRE : observe et contractualise le signal, ne remédie pas.
+CI de conformité active (durcissement Phase 4) : garde-fou opposable.
 Logique Arsenal habituelle : ERROR => exit 1 ; WARN => exit 0 ; INFO => exit 0.
 
 La source de vérité des exceptions est le marqueur IN-FILE `# initial VOULU — <cat>`,
@@ -49,14 +49,8 @@ HELPER_DIRS = {
     "09_counters": "counter",
 }
 
-# Écarts connus documentés au contrat (§Écarts connus) — NON corrigés dans ce lot.
-KNOWN_ECARTS = {
-    "arrosage_fenetre_debut",
-    "arrosage_fenetre_fin",
-    "arsenal_self_audit_stale_threshold_hours",
-}
-
-# Décision ouverte (config-seed alarme) — ni conforme, ni interdit.
+# Fichiers config-seed reconnus : exception valide UNIQUEMENT via marqueur
+# in-file `initial VOULU — config-seed`.
 CONFIG_SEED_FILES = {
     "04_input_texts/alarme/badges.yaml",
     "04_input_texts/alarme/code.yaml",
@@ -184,17 +178,8 @@ def classify() -> None:
         key = occ["key"]
         htype = occ["htype"]
 
-        # HINIT-005 — écarts connus documentés (priorité, non corrigés).
-        if key in KNOWN_ECARTS:
-            occ["rule"], occ["sev"] = "HINIT-005", "WARN"
-            WARNINGS.append(
-                f"HINIT-005 — écart connu (documenté au contrat, NON corrigé) : "
-                f"{key} = {occ['value']} ({rel}:{occ['line']})"
-            )
-            continue
-
         # HINIT-006 — config-seed alarme : résolu (INFO) si marqueur `config-seed`
-        # valide, sinon décision ouverte (WARN). La valeur n'est jamais imprimée
+        # valide, sinon INTERDIT (ERROR). La valeur n'est jamais imprimée
         # (badges = jetons d'accès, code = secret).
         if rel in CONFIG_SEED_FILES:
             occ["rule"] = "HINIT-006"
@@ -205,17 +190,17 @@ def classify() -> None:
                     f"{key} ({rel}:{occ['line']})"
                 )
             elif occ["marker"] and occ["category"] in VALID_CATEGORIES:
-                occ["sev"] = "WARN"
-                WARNINGS.append(
+                occ["sev"] = "ERROR"
+                ERRORS.append(
                     f"HINIT-006 — marqueur `initial VOULU` de catégorie "
                     f"« {occ['category']} » inadaptée à un config-seed : "
                     f"{key} ({rel}:{occ['line']})"
                 )
             else:
-                occ["sev"] = "WARN"
-                WARNINGS.append(
-                    f"HINIT-006 — config-seed à arbitrer / marqueur manquant : "
-                    f"{key} ({rel}:{occ['line']})"
+                occ["sev"] = "ERROR"
+                ERRORS.append(
+                    f"HINIT-006 — config-seed sans marqueur `config-seed` valide "
+                    f"(marqueur obligatoire) : {key} ({rel}:{occ['line']})"
                 )
             continue
 
@@ -249,14 +234,14 @@ def classify() -> None:
         if occ["marker"]:
             cat = occ["category"]
             if cat == FORBIDDEN_CATEGORY or cat not in VALID_CATEGORIES:
-                occ["rule"], occ["sev"] = "HINIT-003", "WARN"
-                WARNINGS.append(
+                occ["rule"], occ["sev"] = "HINIT-003", "ERROR"
+                ERRORS.append(
                     f"HINIT-003 — marqueur `initial VOULU` invalide "
                     f"(catégorie « {cat} » hors vocabulaire clos) : "
                     f"{key} ({rel}:{occ['line']})"
                 )
             else:
-                # Marqueur valide : justifié en Phase 1 (traçabilité assurée).
+                # Marqueur valide : initial justifié (traçabilité assurée).
                 occ["rule"], occ["sev"] = "HINIT-003", "OK"
                 INFOS.append(
                     f"HINIT-003 — initial justifié par marqueur « {cat} » : "
@@ -265,9 +250,9 @@ def classify() -> None:
             continue
 
         # Pas de marqueur -> HINIT-001.
-        occ["rule"], occ["sev"] = "HINIT-001", "WARN"
-        WARNINGS.append(
-            f"HINIT-001 — initial présent sans justification contractuelle "
+        occ["rule"], occ["sev"] = "HINIT-001", "ERROR"
+        ERRORS.append(
+            f"HINIT-001 — initial INTERDIT sans justification contractuelle "
             f"(marqueur `initial VOULU` absent) : {key} = {occ['value']} "
             f"({rel}:{occ['line']})"
         )
@@ -304,24 +289,22 @@ def print_rule_summary() -> None:
             if o.get("rule") == rule and (sev is None or o.get("sev") == sev)
         )
 
-    print("Résultats par règle (Phase 1) :\n")
+    print("Résultats par règle :\n")
     n001 = count("HINIT-001")
-    print(f"  {'△' if n001 else '✔'} HINIT-001 — input_* sans marqueur `initial VOULU` : {n001} WARN")
+    print(f"  {'❌' if n001 else '✔'} HINIT-001 — input_* sans marqueur `initial VOULU` : {n001} ERROR")
     n002 = count("HINIT-002")
     print(f"  {'❌' if n002 else '✔'} HINIT-002 — initial sur input_boolean : "
           f"{'AUCUN (OK)' if not n002 else str(n002) + ' ERROR'}")
-    n003w = count("HINIT-003", "WARN")
+    n003e = count("HINIT-003", "ERROR")
     n003ok = count("HINIT-003", "OK")
-    print(f"  {'△' if n003w else '✔'} HINIT-003 — marqueur invalide : {n003w} WARN "
+    print(f"  {'❌' if n003e else '✔'} HINIT-003 — marqueur invalide : {n003e} ERROR "
           f"({n003ok} marqueur(s) valide(s))")
     n004i = count("HINIT-004", "INFO")
     n004w = count("HINIT-004", "WARN")
     print(f"  {'△' if n004w else '•'} HINIT-004 — counter : {n004i} INFO, {n004w} WARN (restore implicite)")
-    n005 = count("HINIT-005")
-    print(f"  {'△' if n005 else '✔'} HINIT-005 — écarts connus documentés : {n005} WARN (non corrigés)")
-    n006w = count("HINIT-006", "WARN")
+    n006e = count("HINIT-006", "ERROR")
     n006i = count("HINIT-006", "INFO")
-    print(f"  {'△' if n006w else ('•' if n006i else '✔')} HINIT-006 — config-seed alarme : {n006w} WARN / {n006i} INFO")
+    print(f"  {'❌' if n006e else ('•' if n006i else '✔')} HINIT-006 — config-seed alarme : {n006e} ERROR / {n006i} INFO")
     print()
 
 
@@ -331,7 +314,7 @@ if __name__ == "__main__":
     except Exception:
         pass
 
-    print("Arsenal — Contrat clé `initial` (HINIT) — CI Phase 1 transitoire\n")
+    print("Arsenal — Contrat clé `initial` (HINIT) — garde-fou de conformité\n")
 
     scan()
     classify()
@@ -346,7 +329,7 @@ if __name__ == "__main__":
         print()
 
     if WARNINGS:
-        print("⚠️  Avertissements (transitoires — n'échouent pas la CI) :\n")
+        print("⚠️  Avertissements (non bloquants) :\n")
         for w in WARNINGS:
             print(f"  △ {w}")
         print()
@@ -363,4 +346,4 @@ if __name__ == "__main__":
             print(f"  • {err}")
         sys.exit(1)
     else:
-        print("\n✅ CONTRAT INITIAL — Phase 1 : signal contractualisé, aucun blocage.")
+        print("\n✅ CONTRAT INITIAL CONFORME")
