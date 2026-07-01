@@ -1,0 +1,68 @@
+- sensor:
+    # ==========================================================
+    # 🧠 ARSENAL — PROXY ÉNERGIE SÉCURISÉ
+    # ----------------------------------------------------------
+    # Appareil : Éclairage jardin (prise Zigbee)
+    #
+    # Rôle :
+    #   Proxy intermédiaire sécurisé pour la consommation énergie
+    #   issue d’une prise Zigbee.
+    #
+    # Problème traité :
+    #   - Prise Zigbee renvoyant unknown / unavailable
+    #   - utility_meter refusant l’état invalide (log WARNING)
+    #   - Régressions provoquant des deltas négatifs
+    #
+    # Garde-fous :
+    #   - Ignore unknown / unavailable / none
+    #   - Interdit toute valeur négative
+    #   - Interdit toute régression de compteur
+    #   - Garantit un compteur monotone croissant
+    #
+    # Comportement initial :
+    #   - Reste "unavailable" tant qu'aucune valeur source numérique
+    #     valide (≥ 0) n'a été observée : AUCUN 0 artificiel au
+    #     démarrage HA ni avant la première mesure réelle.
+    #   - Une fois une valeur valide observée, conserve la dernière
+    #     valeur valide si la source repasse à unknown/unavailable.
+    #   - utility_meter ignore proprement une source "unavailable"
+    #     (pas de WARNING "invalid new state").
+    #
+    # Usage :
+    #   Source UNIQUE des utility_meter de l’éclairage jardin
+    #
+    # ==========================================================
+
+    - name: jardin_energy_proxy
+      unique_id: jardin_energy_proxy
+      unit_of_measurement: "kWh"
+      device_class: energy
+      state_class: total_increasing
+
+      # Disponible uniquement si une valeur numérique valide existe :
+      #   - source ≥ 0, OU
+      #   - une dernière valeur valide a déjà été mémorisée.
+      availability: >
+        {% set raw = states('sensor.prise_jardin_energy') %}
+        {% set prev = states('sensor.jardin_energy_proxy') %}
+        {{ (raw not in ['unknown', 'unavailable', 'none', ''] and raw | float(-1) >= 0)
+           or prev not in ['unknown', 'unavailable', 'none', ''] }}
+
+      state: >
+        {% set raw = states('sensor.prise_jardin_energy') %}
+        {% set prev = states('sensor.jardin_energy_proxy') %}
+
+        {% if raw in ['unknown', 'unavailable', 'none', ''] %}
+          {{ prev }}
+        {% else %}
+          {% set raw_val = raw | float(0) %}
+          {% set prev_val = prev | float(0) %}
+
+          {% if raw_val < 0 %}
+            {{ prev_val }}
+          {% elif raw_val < prev_val %}
+            {{ prev_val }}
+          {% else %}
+            {{ raw_val }}
+          {% endif %}
+        {% endif %}

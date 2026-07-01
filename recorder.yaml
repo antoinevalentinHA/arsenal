@@ -620,6 +620,8 @@ include:
     - sensor.deshumidificateur_energy_proxy
     - sensor.lave_vaisselle_energy_proxy
     - sensor.refrigerateur_energy_proxy
+    - sensor.jardin_energy_proxy
+    - sensor.box_energy_proxy
 
     # =====================================================
     # ==== ⚡ CONSOMMATION – CUMULUS PETITE MAISON ====
