@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — CLIMATISATION
 ## 08 — Sécurité — Guards & Watchdog
 
-**Version contrat :** v1.4
+**Version contrat :** v1.5
 
 ---
 
@@ -117,17 +117,46 @@ Le Guard ne surveille plus aucune vérité métier. Il surveille une **relation*
 
 ### Invariants appliqués
 
-Trois invariants, tous conformes au test d'universalité (vrais pour tout mode,
+Deux invariants, tous conformes au test d'universalité (vrais pour tout mode,
 indépendants de tout paramètre) :
 
 | Réf | Condition INTERDITE | Volet a | Volet b |
 |---|---|---|---|
 | INV-1 | `climate.clim` actif **ET** `target_mode == off` | ✓ | ✓ |
 | INV-2 | `switch.clim_power == on` **ET** `target_mode == off` | ✓ | ✓ |
-| INV-3 | `climate.clim` actif **ET** `switch.clim_power == off` | ✓ | ✓ |
 
 Aucun de ces invariants ne mentionne présence, fenêtres, météo ou horaires.
 Chacun ne compare que des états internes au système.
+
+### Retrait d'INV-3 (v1.5) — application de la clause anti-dérive
+
+L'invariant historique INV-3 (« `climate.clim` actif **ET**
+`switch.clim_power == off` → INTERDIT ») est **retiré du Guard immédiat**. Il
+échoue au **volet a** du test d'universalité, révélé par un contre-exemple
+runtime :
+
+> Lors de l'établissement d'un mode **légal** (ex. `cool`), l'intégration met à
+> jour `climate.clim` (dérivé de `get_operating_mode`) **avant**
+> `switch.clim_power` (dérivé de `get_device_on_off_state`). Le Guard,
+> déclenché sur `climate.clim`, observe alors un snapshot transitoire
+> « actif + power off » et le classe à tort comme incohérence, forçant `off` —
+> ce qui **avorte le démarrage** et enclenche une bagarre
+> `apply_cool` ↔ `apply_off` (clim jamais établie, échec d'exécution latché).
+
+Le snapshot « actif + power off » n'est donc **pas** universellement une
+incohérence : c'est une **phase normale d'allumage d'un mode légal**. INV-3
+supposait une simultanéité de mise à jour des deux entités que l'intégration ne
+garantit pas pendant les transitions. Conformément à la **clause anti-dérive**,
+un invariant devenu mode/transition-dépendant est non conforme et doit sortir
+du Guard.
+
+La cohérence power/mode **persistante** (au-delà du transitoire) reste couverte
+par le **Watchdog** via `binary_sensor.clim_incoherence_decision_reel`
+(≥ 60 s) : pour `target_mode` actif, `power != on` déclenche l'incohérence, et
+le Watchdog **ré-asserte la décision** (`script.clim_execution` → rallume et
+applique le mode) au lieu de forcer `off`. Aucune protection n'est perdue : le
+cas transitoire est ignoré (correct), le cas persistant est corrigé **vers la
+décision** (meilleur que forcer `off`).
 
 ### Légitimité (notion purement référentielle)
 

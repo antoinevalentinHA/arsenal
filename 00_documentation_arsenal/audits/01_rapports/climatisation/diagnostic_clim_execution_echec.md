@@ -22,6 +22,25 @@
 
 ---
 
+> ⚠️ **ADDENDUM (réfutation runtime).** Ce diagnostic statique concluait en
+> §4/Q1 que la course du Guard était **improbable** (« les deux entités
+> proviennent du même snapshot coordinator »). Un relevé **Recorder** ultérieur
+> a **réfuté** cette hypothèse : avec `sensor.clim_target_mode = cool` stable,
+> `climate.clim` ne parvient **jamais** à `cool` tandis que `switch.clim_power`
+> clignote ON→OFF toutes les quelques secondes, le Guard appelant `apply_off`
+> (trace confirmée). Cause racine réelle = **INV-3 du Guard** (`climate.clim`
+> actif **ET** `switch.clim_power == off`) qui se déclenche sur le **snapshot
+> transitoire d'allumage** — `climate.clim` (mode) précède `switch.clim_power`
+> (alim) côté intégration — et **avorte chaque démarrage** (bagarre
+> `apply_cool` ↔ `apply_off`). L'assertion « même snapshot cohérent » est donc
+> fausse **pendant les transitions**. Correctif : retrait d'INV-3 du Guard
+> immédiat, cohérence power/mode persistante déléguée au Watchdog (voir
+> `contrats/climatisation/09_securite.md` v1.5). Les §4/Q1 et la piste
+> d'amélioration GUARD INV-3 ci-dessous sont **à lire à la lumière de cette
+> réfutation**.
+
+---
+
 ## 1. SYMPTÔME ET FAITS
 
 - La climatisation aurait dû démarrer (décision attendue = `cool` / `heat` / `dry`)
