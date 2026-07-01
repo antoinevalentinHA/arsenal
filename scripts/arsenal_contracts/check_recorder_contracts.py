@@ -436,6 +436,177 @@ def test_energy_entities_have_state_class():
 
 
 # ---------------------------------------------------------------------------
+# Segmentation en blocs (bannières commentées) — support T11–T14
+# ---------------------------------------------------------------------------
+
+_BANNER_RE = re.compile(r"={3,}|-{3,}")
+_POP_DECL_RE = re.compile(r"RECORDER\s*[—–-]\s*Population\s+([AB])")
+
+
+def parse_recorder_sections() -> list[dict]:
+    """
+    Segmente recorder.yaml en blocs délimités par les bannières commentées
+    (lignes `# ====` / `# ----`). Chaque bloc porte :
+      - population : 'A', 'B' ou None selon la déclaration `# RECORDER — Population X`
+      - comments   : lignes de commentaire du bloc (justification / tag)
+      - entities   : entités listées sous le bloc
+
+    Décision architecturale : la séparation Population A / B est réputée portée
+    par les bannières commentées existantes. La déclaration de population est
+    « collante » sur tout le bloc jusqu'à la bannière suivante. Le contrôle porte
+    sur la déclaration commentée, pas sur la vérité runtime.
+    """
+    content = read(RECORDER_FILE)
+    entity_re = re.compile(r"^\s{4}-\s+([\w.]+)\s*$")
+    comment_re = re.compile(r"^\s*#(.*)$")
+
+    sections: list[dict] = []
+    current = {"population": None, "comments": [], "entities": []}
+
+    for line in content.splitlines():
+        m_ent = entity_re.match(line)
+        if m_ent:
+            current["entities"].append(m_ent.group(1))
+            continue
+        m_com = comment_re.match(line)
+        if m_com:
+            text = m_com.group(1)
+            if _BANNER_RE.search(text):
+                # Nouvelle bannière → clôture du bloc courant, réinitialisation.
+                if current["entities"] or current["comments"]:
+                    sections.append(current)
+                current = {"population": None, "comments": [], "entities": []}
+                continue
+            current["comments"].append(text)
+            decl = _POP_DECL_RE.search(text)
+            if decl and current["population"] is None:
+                current["population"] = decl.group(1)
+            continue
+        # Ligne vide ou clé YAML (globales / include: / entities:) — ignorée.
+    if current["entities"] or current["comments"]:
+        sections.append(current)
+    return sections
+
+
+# ---------------------------------------------------------------------------
+# T11 — Population B : justification de bloc (§Exigence de justification)
+# ---------------------------------------------------------------------------
+
+def test_population_b_justification():
+    """
+    Vérifie que chaque bloc déclaré Population B porte une justification
+    structurée minimale : Rôle, Utilité, Logbook, Cardinalité, Fréquence.
+
+    Contrat §Exigence de justification · fiche §Inclusion standard.
+    Décision : justification exigée PAR BLOC (pas par entité), signalée en
+    WARN transitoire — la CI n'échoue pas.
+    """
+    required = [
+        ("Rôle", re.compile(r"R[ôo]le\s*:", re.IGNORECASE)),
+        ("Utilité", re.compile(r"Utilit[ée]\s*:", re.IGNORECASE)),
+        ("Logbook", re.compile(r"Logbook\s*:", re.IGNORECASE)),
+        ("Cardinalité", re.compile(r"Cardinalit[ée]\s*:", re.IGNORECASE)),
+        ("Fréquence", re.compile(r"Fr[ée]quence\s*:", re.IGNORECASE)),
+    ]
+    for sec in parse_recorder_sections():
+        if sec["population"] != "B" or not sec["entities"]:
+            continue
+        text = "\n".join(sec["comments"])
+        missing = [label for label, pat in required if not pat.search(text)]
+        if missing:
+            warn(
+                f"T11 — bloc Population B sans justification complète "
+                f"(bloc : {sec['entities'][0]}) — champs manquants : {', '.join(missing)}"
+            )
+    ok("T11 — justification de bloc Population B (§Exigence de justification)")
+
+
+# ---------------------------------------------------------------------------
+# T12 — Population A : tag obligatoire (§Population A)
+# ---------------------------------------------------------------------------
+
+def test_population_a_tag():
+    """
+    Vérifie que chaque bloc déclaré Population A contient la sous-chaîne
+    `OBLIGATOIRE — contrainte HA` (variantes enrichies acceptées, ex.
+    `RECORDER — Population A — OBLIGATOIRE — contrainte HA`).
+
+    Contrat §Population A (Règle). Signalé en WARN dans ce lot.
+    """
+    tag_re = re.compile(r"OBLIGATOIRE\s*[—–-]\s*contrainte\s+HA", re.IGNORECASE)
+    for sec in parse_recorder_sections():
+        if sec["population"] != "A" or not sec["entities"]:
+            continue
+        text = "\n".join(sec["comments"])
+        if not tag_re.search(text):
+            warn(
+                f"T12 — bloc Population A sans tag « OBLIGATOIRE — contrainte HA » "
+                f"(bloc : {sec['entities'][0]})"
+            )
+    ok("T12 — tag obligatoire Population A (§Population A)")
+
+
+# ---------------------------------------------------------------------------
+# T13 — Dérogation fréquence : format minimal (§Seuil de fréquence)
+# ---------------------------------------------------------------------------
+
+def test_derogation_frequence():
+    """
+    Si un bloc mentionne une dérogation fréquence, vérifie la présence des
+    informations minimales : fréquence observée, raison d'inclusion
+    (justification métier), justification contractuelle (validation / critère
+    logbook).
+
+    Contrat §Seuil de fréquence opposable · fiche §Dérogation fréquence.
+    Signalé en WARN — la CI n'échoue pas.
+    """
+    dero_re = re.compile(r"D[ÉE]ROGATION\s+FR[ÉE]QUENCE", re.IGNORECASE)
+    required = [
+        ("fréquence observée", re.compile(r"Fr[ée]quence\s+observ[ée]e", re.IGNORECASE)),
+        ("raison d'inclusion", re.compile(r"Justification\s+m[ée]tier", re.IGNORECASE)),
+        ("justification contractuelle",
+         re.compile(r"Valid[ée]\s+le|Crit[èe]re\s+d'acceptabilit[ée]", re.IGNORECASE)),
+    ]
+    for sec in parse_recorder_sections():
+        text = "\n".join(sec["comments"])
+        if not dero_re.search(text):
+            continue
+        missing = [label for label, pat in required if not pat.search(text)]
+        if missing:
+            ref = sec["entities"][0] if sec["entities"] else "(bloc sans entité)"
+            warn(
+                f"T13 — dérogation fréquence incomplète (bloc : {ref}) — "
+                f"manquant : {', '.join(missing)}"
+            )
+    ok("T13 — format des dérogations fréquence (§Seuil de fréquence)")
+
+
+# ---------------------------------------------------------------------------
+# T14 — Entités hors bannière Population A/B
+# ---------------------------------------------------------------------------
+
+def test_entities_without_banner():
+    """
+    Détecte les entités listées sous include.entities qui ne sont rattachées
+    à aucune bannière Population A ou Population B.
+
+    Signalé en WARN (par bloc, avec liste des entités) — la CI n'échoue pas.
+    Le contrôle porte sur la déclaration commentée, pas sur la vérité runtime.
+    """
+    for sec in parse_recorder_sections():
+        if not sec["entities"] or sec["population"] is not None:
+            continue
+        entities = sec["entities"]
+        preview = ", ".join(entities[:5])
+        more = f" (+{len(entities) - 5})" if len(entities) > 5 else ""
+        warn(
+            f"T14 — {len(entities)} entité(s) hors bannière Population A/B : "
+            f"{preview}{more}"
+        )
+    ok("T14 — entités rattachées à une bannière Population A/B")
+
+
+# ---------------------------------------------------------------------------
 # Registre
 # ---------------------------------------------------------------------------
 
@@ -450,6 +621,10 @@ TESTS = [
     test_no_technical_internals_recorded,
     test_retention_vs_history_stats,
     test_energy_entities_have_state_class,
+    test_population_b_justification,
+    test_population_a_tag,
+    test_derogation_frequence,
+    test_entities_without_banner,
 ]
 
 if __name__ == "__main__":
