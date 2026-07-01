@@ -33,31 +33,9 @@ views:
       - type: vertical-stack
         cards:
           # =========================================================
-          # 🧠 Pourquoi ce verdict ?  (point d'entrée)
-          # =========================================================
-          - type: custom:button-card
-            template: section_header
-            name: 🧠 Pourquoi ce verdict ?
-
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: carte_mode_binaire_interprete
-                entity: binary_sensor.arrosage_intention
-                name: Intention
-                icon: mdi:water-sync
-                variables:
-                  label_on: Arrosage souhaité
-                  label_off: Aucun arrosage souhaité
-                  color_on: 'rgba(33, 150, 243, 0.2)'
-                  color_off: 'rgba(158, 158, 158, 0.2)'
-
-              - type: custom:button-card
-                template: carte_arrosage_intention_raison
-                entity: binary_sensor.arrosage_intention
-
+          # Le VERDICT (intention + raison) vit sur le cockpit
+          # /arrosage-dashboard. Ce Diagnostic explique le POURQUOI :
+          # observations → interprétations → exécution → canal à blanc.
           # =========================================================
           # 👁 Observation — Pluie (observée & prévue)
           # =========================================================

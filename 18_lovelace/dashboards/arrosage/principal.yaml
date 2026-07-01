@@ -21,74 +21,27 @@ views:
           navigation_path: /diagnostics-arrosage-dashboard
 
     # ==========================================================
-    # 💧 ARROSAGE — VUE MÉTIER & COMMANDE MANUELLE
+    # 💧 ARROSAGE — COCKPIT D'USAGE (verdict + commande)
     # ----------------------------------------------------------
-    # 1) Contexte pluie et suspension : observation seule.
-    # 2) Commande manuelle supervisée de la station 1 (Run / Stop) :
-    #    chaque action sous confirmation, envoyée uniquement via les
-    #    scripts supervisés (gardes runtime incluses). Les seuils et la
-    #    durée modifiables vivent dans /reglages-arrosage-dashboard.
+    # Répond à « que fait le système ? » (verdict d'intention + raison)
+    # et « quelle action ? » (Run / Stop supervisés, sous confirmation).
+    # Le « POURQUOI » détaillé (observations pluie/sol, pont, ET₀/VPD,
+    # exécution) vit sur /diagnostics-arrosage-dashboard ; les réglages
+    # sur /reglages-arrosage-dashboard. Aucun recouvrement voulu.
     # ==========================================================
     cards:
       - type: vertical-stack
         cards:
           # =========================================================
-          # 🌧️ Pluie observée & prévue
+          # 🤖 Verdict (intention + raison)
           # =========================================================
-          - type: custom:button-card
-            template: section_header
-            name: 🌧️ Pluie observée & prévue
-
-          - type: custom:button-card
-            template: carte_arrosage_pluie_raison
-            entity: binary_sensor.arrosage_suspension_pluie
-          # =========================================================
-          # 🌱 Humidité du sol (réservoir lent)
-          # =========================================================
-          - type: custom:button-card
-            template: section_header
-            name: 🌱 Humidité du sol
-
-          - type: custom:mini-graph-card
-            name: 🌱 Humidité du sol
-            icon: mdi:water-percent
-            entities:
-              - entity: sensor.jardin_humidite_sol_mediane
-                name: Médiane
-            hours_to_show: 72
-            points_per_hour: 4
-            line_width: 3
-            animate: true
-            smoothing: true
-            show:
-              labels: true
-              legend: false
-              extrema: true
-              fill: fade
-              icon: false
-            font_size: 75
-            height: 160
-            align_state: center
-            decimals: 1
-            tap_action:
-              action: more-info
-
-          # =========================================================
-          # 🤖 État de l'automatisme (lecture)
-          # =========================================================
-          # Lecture seule de la chaîne de décision V1 : intention, besoin sol,
-          # dernier arrosage effectif. Le maître (input_boolean.arrosage_
-          # automatique_actif) reste réglable dans /reglages-arrosage-dashboard
-          # et n'est PAS exposé ici. Le verdict d'intention et sa raison sont
-          # groupés en grille 2 colonnes ; besoin sol et dernier arrosage
-          # restent pleine largeur dessous.
-          - type: custom:button-card
-            template: section_header
-            name: 🤖 État de l'automatisme
-
           # Verdict d'intention + sa raison lisible (catégorie + motif dominant,
           # déjà calculés par le runtime ; traduction portée par la carte),
-          # côte à côte en grille 2 colonnes.
+          # côte à côte en grille 2 colonnes. Le « pourquoi » détaillé (besoin,
+          # suspension, sol, pont, exécution, ET₀/VPD) vit sur le Diagnostic.
+          - type: custom:button-card
+            template: section_header
+            name: 🤖 Verdict
           - type: grid
             columns: 2
             square: false
@@ -107,24 +60,6 @@ views:
               - type: custom:button-card
                 template: carte_arrosage_intention_raison
                 entity: binary_sensor.arrosage_intention
-
-          - type: custom:button-card
-            template: carte_mode_binaire_interprete
-            entity: binary_sensor.arrosage_besoin_sol
-            name: Besoin sol
-            icon: mdi:sprout
-            variables:
-              label_on: Besoin détecté
-              label_off: Sol suffisant
-              color_on: 'rgba(255, 152, 0, 0.2)'
-              color_off: 'rgba(76, 175, 80, 0.2)'
-
-          - type: tile
-            entity: sensor.arrosage_dernier_effectif
-            name: Dernier arrosage
-            icon: mdi:history
-            tap_action:
-              action: more-info
 
           # =========================================================
           # 💧 Commande manuelle supervisée (station 1)
