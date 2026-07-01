@@ -1,0 +1,83 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     État — Catégoriel interprété
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : interprétative
+# 🔍 NIVEAU DE CONFIANCE : indicatif
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Affiche un état catégoriel backend (3 valeurs ou plus)
+#   sous forme lisible, avec signal coloriel local mappé
+#   depuis la palette sémantique Arsenal.
+#   Frère multi-états de `carte_mode_binaire_interprete`
+#   (qui ne couvre que le binaire on/off).
+#
+# 📡 SOURCE
+#   - entity.state (chaîne catégorielle)
+#   - variables.couleurs : map état → couleur de fond (palette)
+#   - variables.libelles : map état → libellé lisible (optionnel)
+#
+# ⚙️ LOGIQUE UI
+#   - état indisponible (unknown/unavailable) → "—" et gris indispo
+#   - état non mappé → gris indispo (valeur non exploitable)
+#   - sinon → fond variables.couleurs[state] (palette au site d'appel)
+#   - libellé : variables.libelles[state] si fourni, sinon state brut
+#   - name et state centrés
+#   - aucune interaction (tap/hold/double_tap désactivées)
+#
+# 🎨 DOCTRINE COULEURS
+#   La palette (valeurs rgba) est déclarée AU SITE D'APPEL via
+#   variables.couleurs — même convention que color_on/color_off de
+#   `carte_mode_binaire_interprete`. Le template ne porte QUE le
+#   mécanisme + le fallback gris indispo prioritaire (couleurs/05).
+#   Le backend décide l'état ; l'UI traduit, ne décide pas.
+#
+# 📐 USAGE
+#   - destinée aux états catégoriels nécessitant un code couleur
+#     sémantique (ex. qualité de lecture : complet/degrade/…)
+#   - ne doit pas être utilisée comme source de décision
+# ==========================================================
+
+carte_etat_interprete:
+  template: socle_status
+
+  show_state: true
+  show_label: false
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      const s = entity ? entity.state : null;
+      if (!s || s === 'unknown' || s === 'unavailable') return '—';
+
+      const lib = (variables && variables.libelles) || {};
+      return lib[s] || s;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const s = entity ? entity.state : null;
+            if (!s || s === 'unknown' || s === 'unavailable')
+              return 'rgba(158, 158, 158, 0.1)';
+
+            const map = (variables && variables.couleurs) || {};
+            return map[s] || 'rgba(158, 158, 158, 0.1)';
+          ]]]
+
+    name:
+      - justify-self: center
+      - text-align: center
+
+    state:
+      - justify-self: center
+      - text-align: center
