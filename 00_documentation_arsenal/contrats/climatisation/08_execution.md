@@ -112,6 +112,46 @@ Conditions de relance :
 
 ---
 
+## Réarmement après récupération
+
+La reprise différée est **volontairement bornée** (au plus deux reprises après
+la tentative initiale). Une fois la borne atteinte pendant une indisponibilité
+prolongée de l'infrastructure, plus aucun filet ne relance l'exécution : la
+reprise est neutralisée (`counter > 2`), le watchdog ne se déclenche que sur le
+**front** d'incohérence (déjà consommé), et le transit attend un **changement**
+de décision. L'exécution peut alors rester en état « échec latché » alors même
+que l'infrastructure Airstage a récupéré et que la décision réclame toujours
+une action.
+
+Une automation de réarmement lève cet angle mort :
+
+| Entité | Rôle |
+|---|---|
+| `automation.clim_rearmement_apres_recuperation` | Réarme le budget de reprise et relance `script.clim_execution` sur un **front de récupération** de l'infrastructure |
+
+Déclenchement — **fronts de récupération uniquement** (jamais en continu) :
+- retour de disponibilité d'une entité d'exécution (`climate.clim` ou
+  `switch.clim_power` quittant `unavailable`/`unknown`, stabilisé 15 s), ou
+- `binary_sensor.retour_ok_airstage` passe `on` (reload Airstage abouti).
+
+Conditions de réarmement :
+- `input_boolean.clim_execution_echec` est `on`
+- `sensor.clim_target_mode` est dans `['cool', 'dry', 'heat', 'off']`
+- `input_boolean.systeme_stable` est `on` et `binary_sensor.panne_secteur_en_cours` est `off`
+- `climate.clim` et `switch.clim_power` sont réellement disponibles
+
+Action : `counter.reset` puis relance unique de `script.clim_execution`. La
+post-condition du script re-borne aussitôt la reprise. Le réarmement reste donc
+**strictement borné** (au plus trois tentatives par front de récupération),
+sans polling ni matraquage de l'actionneur.
+
+Garantie de non-régression : un device **disponible mais qui refuse
+durablement** la commande (échec post-condition sans indisponibilité) ne
+produit aucun front de récupération — il **n'est pas** réarmé, et la borne
+d'origine tient. Seule une récupération d'infrastructure ré-ouvre un budget.
+
+---
+
 ## Script d'exécution
 
 | Entité | Rôle |
