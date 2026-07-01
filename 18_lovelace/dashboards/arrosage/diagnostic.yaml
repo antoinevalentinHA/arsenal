@@ -197,15 +197,67 @@ views:
             cards:
               - type: custom:button-card
                 template: carte_kpi_bleu
-                entity: sensor.arrosage_demande_climatique_et0_journaliere
+                entity: sensor.arrosage_demande_climatique_et0
                 name: ET₀ journalière
                 icon: mdi:sun-thermometer-outline
 
               - type: custom:button-card
                 template: carte_kpi_bleu
-                entity: sensor.arrosage_demande_climatique_vpd_courant
+                entity: sensor.arrosage_demande_climatique_vpd
                 name: VPD courant
                 icon: mdi:water-opacity
+
+          # Tendances d'observation — mêmes réglages que « Humidité du sol »
+          # du cockpit principal. ET₀ et VPD tracés SÉPARÉMENT : unités et
+          # dynamiques distinctes (mm/j lente vs kPa instantané), jamais
+          # fondus en un axe partagé (contrat 16 §5).
+          - type: custom:mini-graph-card
+            name: 🌞 ET₀ journalière
+            icon: mdi:sun-thermometer-outline
+            entities:
+              - entity: sensor.arrosage_demande_climatique_et0
+                name: ET₀
+            hours_to_show: 72
+            points_per_hour: 4
+            line_width: 3
+            animate: true
+            smoothing: true
+            show:
+              labels: true
+              legend: false
+              extrema: true
+              fill: fade
+              icon: false
+            font_size: 75
+            height: 160
+            align_state: center
+            decimals: 2
+            tap_action:
+              action: more-info
+
+          - type: custom:mini-graph-card
+            name: 💧 VPD courant
+            icon: mdi:water-opacity
+            entities:
+              - entity: sensor.arrosage_demande_climatique_vpd
+                name: VPD
+            hours_to_show: 72
+            points_per_hour: 4
+            line_width: 3
+            animate: true
+            smoothing: true
+            show:
+              labels: true
+              legend: false
+              extrema: true
+              fill: fade
+              icon: false
+            font_size: 75
+            height: 160
+            align_state: center
+            decimals: 2
+            tap_action:
+              action: more-info
 
           - type: custom:button-card
             template: carte_etat_interprete
