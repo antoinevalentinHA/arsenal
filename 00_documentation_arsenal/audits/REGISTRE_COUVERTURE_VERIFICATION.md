@@ -29,9 +29,9 @@ Les deux sont complémentaires : un domaine peut être **contractualisé** (couv
 
 | Couche | Définition | Source canonique | Volume (cf. §3) |
 |---|---|---|---|
-| **Vérité normative** | Ce que le système DOIT faire : contrats opposables + doctrines transversales. | [`../contrats/`](../contrats/), [`../architecture/03_doctrines/`](../architecture/03_doctrines/) | 267 `.md` de contrats · 10 doctrines |
-| **Couverture mécanique** | Les contrôles qui vérifient une partie de la vérité normative. | `../../scripts/arsenal_contracts/` | 68 checkers |
-| **CI exécutée** | Le sous-ensemble des contrôles effectivement lancés en intégration continue. | `../../.github/workflows/` | 72 workflows (68 contrats + 4 orchestrateurs) |
+| **Vérité normative** | Ce que le système DOIT faire : contrats opposables + doctrines transversales. | [`../contrats/`](../contrats/), [`../architecture/03_doctrines/`](../architecture/03_doctrines/) | 290 `.md` de contrats · 12 doctrines |
+| **Couverture mécanique** | Les contrôles qui vérifient une partie de la vérité normative. | `../../scripts/arsenal_contracts/` | 71 checkers |
+| **CI exécutée** | Le sous-ensemble des contrôles effectivement lancés en intégration continue. | `../../.github/workflows/` | 75 workflows (71 contrats + 4 orchestrateurs) |
 
 Relation de couverture attendue : **surface normative à vérifier ≥ surface vérifiée mécaniquement ≥ surface effectivement exécutée en CI**. L'écart entre ces surfaces est l'objet même de la mesure, **pas** un jugement de conformité.
 
@@ -39,34 +39,36 @@ Relation de couverture attendue : **surface normative à vérifier ≥ surface v
 
 ## 3. Vue d'ensemble — compteurs constatés
 
-> Compteurs observés sur `main` @ `fe3c5b7` (2026-06-20), **+ domaine présence** (`check_presence_contracts.py` + `contracts_presence.yml`, working tree). Comptages bruts, non interprétés.
+> Compteurs **recomptés** sur `main` @ `374b2bc` (2026-07-01), après clôture documentaire HINIT (#208) — rafraîchissement global remplaçant la photographie 2026-06-20 (`fe3c5b7`) qui avait dérivé. Comptages bruts (commandes ci-dessous), non interprétés.
 
 | Indicateur | Valeur | Commande de re-vérification |
 |---|---|---|
-| Contrats `.md` (récursif) | **267** | `find 00_documentation_arsenal/contrats -name '*.md' \| wc -l` |
-| Doctrines transversales | **10** | `ls 00_documentation_arsenal/architecture/03_doctrines/*.md` |
-| Checkers | **68** | `ls scripts/arsenal_contracts/check_*.py \| wc -l` |
-| Workflows (total) | **72** | `ls .github/workflows/*.yml \| wc -l` |
-| Workflows `contracts_*` | **68** | `ls .github/workflows/contracts_*.yml \| wc -l` |
+| Contrats `.md` (récursif) | **290** | `find 00_documentation_arsenal/contrats -name '*.md' \| wc -l` |
+| Doctrines transversales | **12** | `ls 00_documentation_arsenal/architecture/03_doctrines/*.md \| wc -l` |
+| Checkers | **71** | `ls scripts/arsenal_contracts/check_*.py \| wc -l` |
+| Workflows (total) | **75** | `ls .github/workflows/*.yml \| wc -l` |
+| Workflows `contracts_*` (préfixe) | **70** | `ls .github/workflows/contracts_*.yml \| wc -l` |
+| Workflow de contrat hors préfixe | **1** | `clim_ventilation_contracts.yml` → `check_climatisation_ventilation_contracts.py` (exception de nommage) |
+| Workflows de contrat (total) | **71** | 70 préfixés `contracts_*` + 1 exception de nommage |
 | Orchestrateurs | **4** | `validation` · `doctrine` · `docs` · `arsenal-ci-chauffage` |
-| Couplage checker ↔ workflow `contracts_*` | **1:1** (68 ↔ 68) | aucun checker orphelin, aucun workflow sans checker |
+| Couplage checker ↔ workflow de contrat | **1:1** (71 ↔ 71) | aucun checker orphelin, aucun workflow de contrat sans checker |
 
-**Lecture de couche CI.** Chaque `contracts_*.yml` invoque un checker `check_*.py` et **échoue le job sur sortie non nulle** (bloquant), sur déclencheurs `push` + `pull_request`. Les nuances par workflow (filtres `paths:`, déclarations « non bloquant ») sont consignées en [§5 — Angles morts](#5-angles-morts-connus) plutôt que recopiées ligne à ligne.
+**Lecture de couche CI.** Chaque workflow de contrat invoque un checker `check_*.py` et **échoue le job sur sortie non nulle** (bloquant), sur déclencheurs `push` + `pull_request`. Le nommage est `contracts_*.yml` pour 70 d'entre eux ; **une exception** subsiste — `clim_ventilation_contracts.yml` (suffixe au lieu du préfixe), qui exécute `check_climatisation_ventilation_contracts.py`. Les nuances par workflow (filtres `paths:`, déclarations « non bloquant ») sont consignées en [§5 — Angles morts](#5-angles-morts-connus) plutôt que recopiées ligne à ligne.
 
 ---
 
 ## 4. Matrice initiale — par famille
 
-> Granularité **famille** (regroupement thématique des 67 checkers), choisie comme maintenable **sans audit clause-à-clause**. La colonne « Profondeur » reste **qualitative** : elle décrit l'objet du contrôle, **jamais** un taux de clauses couvertes (non audité). Couplage = 1:1 checker ↔ workflow `contracts_*` sauf mention en §5.
+> Granularité **famille** (regroupement thématique des 71 checkers), choisie comme maintenable **sans audit clause-à-clause**. La colonne « Profondeur » reste **qualitative** : elle décrit l'objet du contrôle, **jamais** un taux de clauses couvertes (non audité). Couplage = 1:1 checker ↔ workflow `contracts_*` sauf mention en §5.
 
 | Famille | Checkers | Contrats source | Profondeur (qualitative, non auditée) |
 |---|---:|---|---|
 | Aération (blocage chauffage) | 8 | `../contrats/aeration_blocage_chauffage/`, `aeration_recommandation.md` | Machine d'état `m0→m6` + recommandation ; un checker par module. |
-| Climatisation | 2 | `../contrats/climatisation/` | Admissibilité + seuils COOL. |
+| Climatisation | 3 | `../contrats/climatisation/` | Admissibilité + seuils COOL + ventilation. |
 | ECS & Bouclage | 4 | `../contrats/ecs/`, `bouclage.md` | Cycle, fondations, sécurité ECS + bouclage. |
 | Boiler | 1 | `../contrats/boiler/` | Transactionnel. |
 | Humidité & déshumidification | 6 | `../contrats/deshumidificateur/`, `meteo/` (HR) | Guard, transaction, métier déshum ; consolidation/stabilisation HR ; HR jardin. |
-| Météo & température jardin | 4 | `../contrats/meteo/` | Température jardin, palmarès chaud/froid, diagnostic Netatmo. |
+| Météo & température jardin | 5 | `../contrats/meteo/` | Température jardin, palmarès chaud/froid, palmarès min journalière haute, diagnostic Netatmo. |
 | Éclairage & volets | 4 | `../contrats/eclairage/`, `volets_pluie.md` | Entrée, jardin, séjour ; volets pluie. |
 | Présence, sécurité & absence | 8 | `../contrats/alarme/`, `simulation_presence.md`, `vacances.md`, `visite.md`, `sante/`, `babysitting.md`, `mobile.high_accuracy.*`, `bssid.md` | Alarme, simulation présence, vacances, visite, sommeil, babysitting, haute précision mobile, BSSID. |
 | UI / Lovelace | 5 | `../contrats/ressources_lovelace.md`, `ui/` | Includes, navigation, en-têtes de section ; couleurs UI + couleurs runtime. |
@@ -75,7 +77,7 @@ Relation de couverture attendue : **surface normative à vérifier ≥ surface v
 | Système, infra & gouvernance | 14 | `arsenal_self`, `recorder`, `redondance`, `resilience_integrations`, `ups_arret_ha`, `batteries`, `parametres_invalides`, `registre_chantiers`, etc. | Self-checks Arsenal, recorder, résilience, UPS, batteries, paramètres invalides, lien registre chantiers, garage, voiture, switchbot, consolidation, stabilisation. |
 | Présence (séparation/confinement) | 1 | `../contrats/alarme/30_decision_centrale.md`, `presence.md`, `architecture/presence/` | `presence` — invariants **déjà vrais** (anti-régression) : séparation confort↔sûreté (R1), confinement de `presence_famille_securite_confirmee_alarme` (R2), voies armement/désarmement alarme (R3). Workflow **non filtré**. |
 | Doctrine `initial` (restauration d'état) | 1 | [`../architecture/03_doctrines/restauration_etat_helpers.md`](../architecture/03_doctrines/restauration_etat_helpers.md) | `check_initial_key_contracts` — garde-fou de la clé `initial` (source de vérité : marqueur `initial VOULU`) ; **bloquant** ; workflow `contracts_initial_key.yml` (non filtré). État post-#207 : 15 occurrences, **0 ERROR / 0 WARN / 15 INFO**. Doctrine transversale **réellement instrumentée** (cf. §5.2). |
-| **Total** | **69** | | |
+| **Total** | **71** | | |
 
 > Le détail checker-par-checker (clé stable = nom du checker) pourra être déplié ultérieurement sous chaque famille, sans audit de clauses, si le besoin de traçabilité fine apparaît (cf. §6).
 
@@ -85,11 +87,11 @@ Relation de couverture attendue : **surface normative à vérifier ≥ surface v
 
 Écarts **constatés** entre couches, sans jugement de conformité globale :
 
-1. **Densité normative ≫ densité mécanique.** 267 fichiers de contrats Markdown (+ 10 doctrines) pour 67 checkers : plusieurs pages normatives (p. ex. sous-modules d'un même domaine) se projettent sur un nombre réduit de contrôles. La couverture mécanique est **partielle par construction**.
-2. **Doctrines faiblement instrumentées.** Sur les 10 doctrines de `../architecture/03_doctrines/`, seules quelques règles transversales explicites font l'objet d'un contrôle CI, via `doctrine.yml` (anti-`platform: template` legacy, présence de `mode:` sur automations). Par ailleurs, certains checkers de domaine vérifient des identifiants ou noms **locaux** (p. ex. `unique_id` / `default_entity_id` d'un capteur contractualisé), mais **il n'existe pas, à ce stade, de checker transversal complet pour le nommage des entités ni pour les IDs d'automatisations**. La majorité des doctrines n'a pas de checker dédié. **Exception** : la doctrine `restauration_etat_helpers.md` (clé `initial`) est désormais instrumentée par `check_initial_key_contracts.py` (bloquant, cf. §4).
+1. **Densité normative ≫ densité mécanique.** 290 fichiers de contrats Markdown (+ 12 doctrines) pour 71 checkers : plusieurs pages normatives (p. ex. sous-modules d'un même domaine) se projettent sur un nombre réduit de contrôles. La couverture mécanique est **partielle par construction**.
+2. **Doctrines faiblement instrumentées.** Sur les 12 doctrines de `../architecture/03_doctrines/`, seules quelques règles transversales explicites font l'objet d'un contrôle CI, via `doctrine.yml` (anti-`platform: template` legacy, présence de `mode:` sur automations). Par ailleurs, certains checkers de domaine vérifient des identifiants ou noms **locaux** (p. ex. `unique_id` / `default_entity_id` d'un capteur contractualisé), mais **il n'existe pas, à ce stade, de checker transversal complet pour le nommage des entités ni pour les IDs d'automatisations**. La majorité des doctrines n'a pas de checker dédié. **Exception** : la doctrine `restauration_etat_helpers.md` (clé `initial`) est désormais instrumentée par `check_initial_key_contracts.py` (bloquant, cf. §4).
 3. **Moteur de raisonnement limité à un domaine.** Le moteur 3 étages (`lint` / `decision` / `execution`) de [`../../tools/arsenal_ci/`](../../tools/arsenal_ci/) n'est câblé en CI **que pour le chauffage** (`arsenal-ci-chauffage.yml`, filtré par `paths:`). Les autres domaines n'ont en CI que leur checker contractuel, pas les étages décision/exécution.
 4. **Contrôles non bloquants / désactivés.** `validation.yml` exécute `yamllint` en **non bloquant** (`|| true`) ; `doctrine.yml` contient une vérification **désactivée** (migration `default_entity_id` non terminée, commentée). À distinguer des `contracts_*` qui, eux, bloquent.
-5. **Déclencheurs hétérogènes.** Vérifié sur `main` @ `fe3c5b7` : **58/67** workflows `contracts_*` se déclenchent sur `push` + `pull_request` **sans filtre `paths:`** ; **9/67** sont **filtrés par `paths:`** (`19_button_card_templates`, `climatisation_admissibilite`, `climatisation_seuils`, `lovelace_includes`, `lovelace_navigation`, `lovelace_section_headers`, `palmares_temperature_journalier_chaud`, `palmares_temperature_journalier_froid`, `registre_chantiers`) et ne s'exécutent que sur changement de leur périmètre.
+5. **Déclencheurs hétérogènes.** Re-vérifié sur `main` @ `374b2bc` (2026-07-01) : **60/71** workflows de contrat se déclenchent sur `push` + `pull_request` **sans filtre `paths:`** ; **11/71** sont **filtrés par `paths:`** (`19_button_card_templates`, `climatisation_admissibilite`, `climatisation_seuils`, `climatisation_ventilation`, `lovelace_includes`, `lovelace_navigation`, `lovelace_section_headers`, `palmares_temperature_journalier_chaud`, `palmares_temperature_journalier_froid`, `palmares_temperature_min_journaliere_haute`, `registre_chantiers`) et ne s'exécutent que sur changement de leur périmètre.
 6. **Écarts d'étiquette à vérifier.** Le contrat `REGISTRE_CHANTIERS.md` qualifie son contrôle de « non bloquant », alors que `check_registre_chantiers.py` peut sortir en code 1 (bloquant en CI). Divergence **d'étiquette** à arbitrer à la source — non tranchée ici.
 7. **Profondeur intra-checker non mesurée.** Un checker peut vérifier une clause unique ou l'intégralité d'un contrat. Ce registre **ne mesure pas** le taux de clauses couvertes (aucun audit clause-à-clause réalisé).
 
@@ -126,3 +128,4 @@ Relation de couverture attendue : **surface normative à vérifier ≥ surface v
 | 2026-06-20 | `main` @ `fe3c5b7` | Création initiale. Compteurs : 267 contrats · 10 doctrines · 67 checkers · 71 workflows (67 contrats, 1:1) · 4 orchestrateurs. Matrice par famille (12 familles, 67 checkers). |
 | 2026-06-20 | working tree | Ajout domaine **présence** : `check_presence_contracts.py` + `contracts_presence.yml` (non filtré). Compteurs → 68 checkers · 72 workflows (68 contrats, 1:1). Couvre des invariants déjà vrais (séparation/confinement/voies armement-désarmement). |
 | 2026-07-01 | `main` @ `a5a7566` | Ajout de l'axe **HINIT** (doctrine `initial`) : `check_initial_key_contracts.py` + `contracts_initial_key.yml` (bloquant), doctrine `restauration_etat_helpers.md` v1.1. État : 15 occurrences · 0 ERROR / 0 WARN / 15 INFO. Matrice §4 : +1 famille (Total 68→69). **NB** : les compteurs §3 (photographie 2026-06-20) ont dérivé au-delà de HINIT (checkers 68→**71**, contrats 267→**290**, doctrines 10→**12**, workflows 72→**75**) — un **rafraîchissement global** de §3 reste à mener séparément (non réalisé ici pour éviter un re-binnage à l'aveugle). |
+| 2026-07-01 | `main` @ `374b2bc` | **Rafraîchissement global des compteurs §3** (chantier C12 du registre des chantiers, clôturé au même commit). Recompte fiable post-HINIT remplaçant la photographie 2026-06-20 : contrats 267→**290**, doctrines 10→**12**, checkers 68→**71**, workflows total 72→**75**. **Réconciliation** : **71 checkers ↔ 71 workflows de contrat** (70 `contracts_*` + 1 exception de nommage `clim_ventilation_contracts.yml` → `check_climatisation_ventilation_contracts.py`) + 4 orchestrateurs = 75 ; couplage **1:1 rétabli**, 0 orphelin des deux côtés. Matrice §4 alignée (Total 69→**71** : Climatisation 2→3 « +ventilation », Météo 4→5 « +palmarès min journalière haute » ; `vmc`/`redondance` déjà comptés en « Système, infra & gouvernance »). §5 re-mesuré : **60/71** non filtrés, **11/71** filtrés `paths:` (les 9 antérieurs + `climatisation_ventilation` + `palmares_temperature_min_journaliere_haute`). Cohérence §2/§3/§4/§5/§8 rétablie. Aucun runtime, checker, workflow ou contrat modifié — mesure documentaire seule. |
