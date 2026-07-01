@@ -62,6 +62,37 @@ views:
                 entity: binary_sensor.arrosage_intention
 
           # =========================================================
+          # 🌱 Humidité du sol (tendance 72 h) — repère d'usage
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🌱 Humidité du sol
+
+          - type: custom:mini-graph-card
+            name: 🌱 Humidité du sol
+            icon: mdi:water-percent
+            entities:
+              - entity: sensor.jardin_humidite_sol_mediane
+                name: Médiane
+            hours_to_show: 72
+            points_per_hour: 4
+            line_width: 3
+            animate: true
+            smoothing: true
+            show:
+              labels: true
+              legend: false
+              extrema: true
+              fill: fade
+              icon: false
+            font_size: 75
+            height: 160
+            align_state: center
+            decimals: 1
+            tap_action:
+              action: more-info
+
+          # =========================================================
           # 💧 Commande manuelle supervisée (station 1)
           # =========================================================
           - type: custom:button-card
