@@ -29,14 +29,6 @@ views:
           action: navigate
           navigation_path: /arrosage-dashboard
 
-      - type: custom:button-card
-        template: bouton_navigation_badge_carre
-        name: Santé pont
-        icon: mdi:radio-tower
-        tap_action:
-          action: navigate
-          navigation_path: /diagnostics-rain-bird-dashboard
-
     cards:
       - type: vertical-stack
         cards:
@@ -154,11 +146,11 @@ views:
                 icon: mdi:clock-check
 
           # =========================================================
-          # 🧩 Interprétation — Gates de décision
+          # 🧩 Interprétation — états métier réels
           # =========================================================
           - type: custom:button-card
             template: section_header
-            name: 🧩 Interprétation — Gates de décision
+            name: 🧩 Interprétation
 
           - type: grid
             columns: 2
@@ -178,42 +170,6 @@ views:
               - type: custom:button-card
                 template: carte_arrosage_pluie_raison
                 entity: binary_sensor.arrosage_suspension_pluie
-
-          - type: custom:button-card
-            template: status_72_on_off
-            entity: binary_sensor.arrosage_rain_bird_preconditions_runtime
-            name: Préconditions runtime
-            icon: mdi:check-network
-
-          # =========================================================
-          # ⏱️ Interprétation — Fenêtre & cooldown (entrées)
-          # Le motif du verdict (ci-dessus) indique s'ils bloquent.
-          # =========================================================
-          - type: custom:button-card
-            template: section_header
-            name: ⏱️ Interprétation — Fenêtre & cooldown
-
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: socle_info_72
-                entity: input_datetime.arrosage_fenetre_debut
-                name: Fenêtre — début
-                icon: mdi:clock-start
-
-              - type: custom:button-card
-                template: socle_info_72
-                entity: input_datetime.arrosage_fenetre_fin
-                name: Fenêtre — fin
-                icon: mdi:clock-end
-
-          - type: custom:button-card
-            template: socle_info_72
-            entity: input_number.arrosage_intervalle_minimal_heures
-            name: Intervalle minimal (cooldown)
-            icon: mdi:timer-sand
 
           # =========================================================
           # 🛠️ Exécution
