@@ -14,8 +14,8 @@
 #
 # Exceptions (sidecar, optionnel) — une entrée par ligne, '#' = commentaire :
 #   REGLE:glob_relatif_au_perimetre
-#   ex.  R-DOC-H1-1:changelog/prompt_changelog.md
-#        R-DOC-H1-1:contrats/**/registres_*.md
+#   ex.  R-DOC-H1-1:contrats/**/registres_*.md
+#        R-DOC-FNAME-1:**/fichier avec espace.md
 # ==========================================================
 from __future__ import annotations
 
