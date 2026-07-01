@@ -8,6 +8,8 @@ Index chronologique des versions/époques Arsenal.
   - les **TRANSITIONS pré-V6** (snapshots `arsenal_v*` + digests),
   - les **VERSIONS ARSENAL HA v6+** (STABLE/CLOSE/CONSOLIDATION).
 
+> ✍️ Pour **produire** une entrée : voir la procédure [redaction_changelog.md](../architecture/03_doctrines/redaction_changelog.md).
+
 # 🧾 Légende
 - **DIGEST** : transition (diff) entre snapshots, orientée gouvernance/architecture.
 - **STABLE** : consolidation validée (système mature, restaurable).
