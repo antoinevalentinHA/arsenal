@@ -40,4 +40,9 @@ badges_autorises:
   name: Badges autorises
   mode: text
   max: 255
+  # initial VOULU — config-seed
+  # Raison : liste déclarative de badges autorisés (configuration) re-seedée à chaque
+  # démarrage ; non éditable via UI, non écrite par automation ; lecture seule fail-safe
+  # (`split(',')` côté `desarmement_badge`).
+  # Restauration HA volontairement désactivée : oui
   initial: "+CA86273E,+2492263E,+F3D5273E"

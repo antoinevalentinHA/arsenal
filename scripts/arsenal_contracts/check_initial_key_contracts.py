@@ -193,13 +193,30 @@ def classify() -> None:
             )
             continue
 
-        # HINIT-006 — config-seed alarme : décision ouverte (ni conforme, ni interdit).
+        # HINIT-006 — config-seed alarme : résolu (INFO) si marqueur `config-seed`
+        # valide, sinon décision ouverte (WARN). La valeur n'est jamais imprimée
+        # (badges = jetons d'accès, code = secret).
         if rel in CONFIG_SEED_FILES:
-            occ["rule"], occ["sev"] = "HINIT-006", "WARN"
-            WARNINGS.append(
-                f"HINIT-006 — config-seed alarme, DÉCISION OUVERTE (ni conforme, "
-                f"ni interdit) : {key} = {occ['value']} ({rel}:{occ['line']})"
-            )
+            occ["rule"] = "HINIT-006"
+            if occ["marker"] and occ["category"] == "config-seed":
+                occ["sev"] = "INFO"
+                INFOS.append(
+                    f"HINIT-006 — config-seed justifié par marqueur « config-seed » : "
+                    f"{key} ({rel}:{occ['line']})"
+                )
+            elif occ["marker"] and occ["category"] in VALID_CATEGORIES:
+                occ["sev"] = "WARN"
+                WARNINGS.append(
+                    f"HINIT-006 — marqueur `initial VOULU` de catégorie "
+                    f"« {occ['category']} » inadaptée à un config-seed : "
+                    f"{key} ({rel}:{occ['line']})"
+                )
+            else:
+                occ["sev"] = "WARN"
+                WARNINGS.append(
+                    f"HINIT-006 — config-seed à arbitrer / marqueur manquant : "
+                    f"{key} ({rel}:{occ['line']})"
+                )
             continue
 
         # HINIT-004 — counter : régime distinct (INFO), WARN si restore implicite.
@@ -267,7 +284,11 @@ def print_inventory() -> None:
     print("  " + "-" * (len(header) - 2))
     for occ in sorted(INVENTORY, key=lambda o: (o["htype"] or "", o["rel"], o["line"])):
         marker = occ["category"] if occ["marker"] else "absent"
-        val = occ["value"] if len(occ["value"]) <= 24 else occ["value"][:23] + "…"
+        if occ["rel"] in CONFIG_SEED_FILES:
+            # Valeur sensible (jetons de badges / secret) — jamais imprimée en clair.
+            val = "<config-seed masqué>"
+        else:
+            val = occ["value"] if len(occ["value"]) <= 24 else occ["value"][:23] + "…"
         key = occ["key"] if len(occ["key"]) <= 50 else occ["key"][:49] + "…"
         print(
             f"  {occ['htype']:<15} {key:<52} {val:<26} "
@@ -298,8 +319,9 @@ def print_rule_summary() -> None:
     print(f"  {'△' if n004w else '•'} HINIT-004 — counter : {n004i} INFO, {n004w} WARN (restore implicite)")
     n005 = count("HINIT-005")
     print(f"  {'△' if n005 else '✔'} HINIT-005 — écarts connus documentés : {n005} WARN (non corrigés)")
-    n006 = count("HINIT-006")
-    print(f"  {'△' if n006 else '✔'} HINIT-006 — config-seed alarme : {n006} WARN (décision ouverte)")
+    n006w = count("HINIT-006", "WARN")
+    n006i = count("HINIT-006", "INFO")
+    print(f"  {'△' if n006w else ('•' if n006i else '✔')} HINIT-006 — config-seed alarme : {n006w} WARN / {n006i} INFO")
     print()
 
 

@@ -41,6 +41,11 @@
 
 alarm_code:
   name: Code Alarme
+  # initial VOULU — config-seed
+  # Raison : code de désarmement chargé depuis `secrets.yaml` (source de vérité config),
+  # re-seedé à chaque démarrage pour rester synchronisé ; non éditable via UI, non écrit
+  # par automation ; lecture seule fail-safe (`default('')` côté clavier).
+  # Restauration HA volontairement désactivée : oui
   initial: !secret code_alarme
   mode: password
   min: 4
