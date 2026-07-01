@@ -6,6 +6,9 @@
 cardio_nuit_raison_invalidite:
   name: Cardio nuit raison invalidite
   max: 64
+  # initial VOULU — sentinelle-cold-start
+  # Raison : attribut diagnostic ; valeur neutre "source_indisponible" au démarrage tant qu'aucune évaluation cardio n'a été produite ; réécrit à chaque run nocturne ("aucune" ou raison calculée).
+  # Restauration HA volontairement désactivée : oui
   initial: source_indisponible
   icon: mdi:alert-circle-outline
 
