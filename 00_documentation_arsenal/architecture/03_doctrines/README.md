@@ -32,6 +32,7 @@
 |---|---|
 | [gestion_du_temps.md](./gestion_du_temps.md) | Doctrine officielle gestion du temps (interdits, autorisé, sobriété) |
 | [git.md](./git.md) | Frontière patrimoine / runtime |
+| [restauration_etat_helpers.md](./restauration_etat_helpers.md) | Restauration d'état des helpers et usage de la clé `initial` — interdits, exceptions, marqueur `initial VOULU` (normatif, écarts connus tracés) |
 
 ---
 
