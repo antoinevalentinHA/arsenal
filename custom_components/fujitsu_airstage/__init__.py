@@ -68,8 +68,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             try:
                 return await apiCloud.get_devices()
             except airstage_api.ApiError as err:
+                raise UpdateFailed(f"Airstage cloud API not reachable: {err}") from err
+            except (KeyError, ValueError, TypeError, OSError) as err:
+                # pyairstage can leak non-ApiError failures on the auth path
+                # (token refresh returning an unexpected body, a corrupt
+                # token file, malformed JSON). Treat them as a transient
+                # update failure so the coordinator keeps retrying and the
+                # entities recover on the next successful poll instead of
+                # surfacing as an unhandled error.
                 raise UpdateFailed(
-                    f"Airstage cloud API not reachable: {err}"
+                    f"Airstage cloud API returned an unexpected response: {err}"
                 ) from err
 
         coordinator = DataUpdateCoordinator(
@@ -108,6 +116,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 raise UpdateFailed(
                     f"Local Airstage device {entry.data[CONF_DEVICE_ID]} "
                     f"at {entry.data[CONF_IP_ADDRESS]} not reachable: {err}"
+                ) from err
+            except (KeyError, ValueError, TypeError) as err:
+                # A malformed / partial device response should be treated as a
+                # transient update failure (coordinator keeps retrying and
+                # recovers on the next poll) rather than an unhandled error.
+                raise UpdateFailed(
+                    f"Local Airstage device {entry.data[CONF_DEVICE_ID]} "
+                    f"at {entry.data[CONF_IP_ADDRESS]} returned an "
+                    f"unexpected response: {err}"
                 ) from err
 
         coordinator = DataUpdateCoordinator(

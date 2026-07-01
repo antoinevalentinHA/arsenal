@@ -232,7 +232,10 @@ class AirstageAC(AirstageAcEntity, ClimateEntity):
         try:
             om = self._ac.get_operating_mode()
         except (TypeError, ValueError):
-            return HVACMode.OFF
+            # Cached parameters are missing/None (e.g. a partial poll):
+            # report "unknown" rather than a fake OFF, otherwise an
+            # automation could believe the unit is off while it is running.
+            return None
 
         if om:
             return FUJITSU_TO_HA_STATE.get(om, HVACMode.OFF)
