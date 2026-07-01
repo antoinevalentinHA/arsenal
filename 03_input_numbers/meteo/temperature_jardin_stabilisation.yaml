@@ -81,6 +81,9 @@ temperature_jardin_etat_publie:
   unit_of_measurement: "°C"
   mode: box
   icon: mdi:thermometer
+  # initial VOULU — sentinelle-cold-start
+  # Raison : mémoire filtre S(t-1), démarrage déterministe à -20 au cold-start du pipeline EWMA.
+  # Restauration HA volontairement désactivée : oui
   initial: -20
 
 temperature_jardin_cible_brute_derniere:
@@ -91,4 +94,7 @@ temperature_jardin_cible_brute_derniere:
   unit_of_measurement: "°C"
   mode: box
   icon: mdi:thermometer-lines
+  # initial VOULU — sentinelle-cold-start
+  # Raison : mémoire filtre, cold-start déterministe à -20.
+  # Restauration HA volontairement désactivée : oui
   initial: -20

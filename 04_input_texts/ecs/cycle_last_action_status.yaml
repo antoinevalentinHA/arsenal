@@ -37,4 +37,7 @@
 ecs_cycle_last_action_status:
   name: "ECS - Dernier statut action"
   max: 20
+  # initial VOULU — transactionnel
+  # Raison : statut du dernier appel exécuteur, reset en entrée d'appel, neutre au démarrage.
+  # Restauration HA volontairement désactivée : oui
   initial: ""

@@ -47,19 +47,31 @@
 boiler_req_heating_set_temperature:
   name: "Boiler req heating set temperature"
   max: 36
+  # initial VOULU — transactionnel
+  # Raison : registre de corrélation MQTT, repart vide à chaque cycle/reboot (aucun request_id périmé).
+  # Restauration HA volontairement désactivée : oui
   initial: ""
 
 boiler_req_heating_set_curve_shift:
   name: "Boiler req heating set curve shift"
   max: 36
+  # initial VOULU — transactionnel
+  # Raison : registre de corrélation MQTT, repart vide à chaque cycle/reboot (aucun request_id périmé).
+  # Restauration HA volontairement désactivée : oui
   initial: ""
 
 boiler_req_heating_set_curve_slope:
   name: "Boiler req heating set curve slope"
   max: 36
+  # initial VOULU — transactionnel
+  # Raison : registre de corrélation MQTT, repart vide à chaque cycle/reboot (aucun request_id périmé).
+  # Restauration HA volontairement désactivée : oui
   initial: ""
 
 boiler_req_dhw_set_setpoint:
   name: Boiler req dhw set setpoint
   max: 64
+  # initial VOULU — transactionnel
+  # Raison : registre de corrélation MQTT, repart vide à chaque cycle/reboot (aucun request_id périmé).
+  # Restauration HA volontairement désactivée : oui
   initial: ""
