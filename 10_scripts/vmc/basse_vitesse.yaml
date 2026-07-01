@@ -20,6 +20,8 @@
 #   - ordre d'action compatible Bloc 10
 #   - sequence non interrompue par un nouvel appel
 #   - delai inter-commandes defensif de 200 ms
+#   - garde de disponibilite des relais avant tout pilotage
+#     (aucun switch.turn_* vers un relais unavailable / unknown)
 # ==========================================================
 
 vmc_basse_vitesse:
@@ -29,6 +31,24 @@ vmc_basse_vitesse:
 
   sequence:
     - choose:
+
+        # --------------------------------------------------
+        # Relais indisponibles : AUCUNE action physique.
+        # Cas typiques : demarrage HA (integration relais non
+        # encore chargee), panne materielle, indisponibilite
+        # transitoire. On ne pilote jamais un relais absent :
+        # l'appel echouerait (helpers/target.py) sans effet.
+        # L'etat reel reste observe par
+        # binary_sensor.vmc_coherence_physique et le capteur de
+        # conformite ; la convergence sera retentee au prochain
+        # declenchement une fois les relais disponibles.
+        # --------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('switch.vmc_l1') in ['unavailable', 'unknown']
+                   or states('switch.vmc_l2') in ['unavailable', 'unknown'] }}
+          sequence: []
 
         # --------------------------------------------------
         # Etat deja conforme : LOW
