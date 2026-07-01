@@ -173,15 +173,17 @@ views:
                 icon: mdi:history
 
           # =========================================================
-          # 🌡️ Canal climatique — observation à blanc (hors décision V1)
+          # 🌡️ Canal climatique (observation à blanc, hors décision V1)
           # =========================================================
           - type: custom:button-card
             template: section_header
-            name: 🌡️ Canal climatique — observation à blanc
+            name: 🌡️ Canal climatique
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🧪 Ne participe pas encore à la décision — entrera via C11 (modulation de durée)
+          - type: markdown
+            content: >-
+              **Observation à blanc.** Ce canal (ET₀ / VPD) est observé mais **ne
+              participe pas encore à la décision d'arrosage**. Il entrera dans le
+              raisonnement avec **C11** (modulation de durée).
 
           - type: grid
             columns: 2
