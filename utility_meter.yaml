@@ -118,17 +118,17 @@ lampe_sejour_annuel:
 # Éclairage jardin
 
 eclairage_jardin_journalier:
-  source: sensor.prise_jardin_energy
+  source: sensor.jardin_energy_proxy
   name: Eclairage jardin aujourd'hui
   cycle: daily
 
 eclairage_jardin_mensuel:
-  source: sensor.prise_jardin_energy
+  source: sensor.jardin_energy_proxy
   name: Eclairage jardin ce mois-ci
   cycle: monthly
 
 eclairage_jardin_annuel:
-  source: sensor.prise_jardin_energy
+  source: sensor.jardin_energy_proxy
   name: Eclairage jardin cette année
   cycle: yearly
 
@@ -157,19 +157,19 @@ prise_sdb_enfants_yearly_energy:
 # Box Internet
 
 box_daily_energy:
-  source: sensor.prise_box_energy
+  source: sensor.box_energy_proxy
   cycle: daily
 
 box_weekly_energy:
-  source: sensor.prise_box_energy
+  source: sensor.box_energy_proxy
   cycle: weekly
 
 box_monthly_energy:
-  source: sensor.prise_box_energy
+  source: sensor.box_energy_proxy
   cycle: monthly
 
 box_yearly_energy:
-  source: sensor.prise_box_energy
+  source: sensor.box_energy_proxy
   cycle: yearly
 
 # Prise onduleur (NAS / réseau)
