@@ -33,15 +33,14 @@ views:
       - type: vertical-stack
         cards:
           # =========================================================
-          # 🤖 Verdict (intention + raison)
+          # ⚖️ Décision (intention + raison)
           # =========================================================
-          # Verdict d'intention + sa raison lisible (catégorie + motif dominant,
+          # Décision d'intention + sa raison lisible (catégorie + motif dominant,
           # déjà calculés par le runtime ; traduction portée par la carte),
           # côte à côte en grille 2 colonnes. Le « pourquoi » détaillé (besoin,
           # suspension, sol, pont, exécution, ET₀/VPD) vit sur le Diagnostic.
-          - type: custom:button-card
-            template: section_header
-            name: 🤖 Verdict
+          # En-tête via l'include partagé (idiome Arsenal).
+          - !include ../../includes/section_headers/decision.yaml
           - type: grid
             columns: 2
             square: false
