@@ -28,4 +28,7 @@ bot_tx_last_proof_level:
     - none
     - A
     - B
+  # initial VOULU — transactionnel
+  # Raison : niveau de preuve transactionnel, état neutre « none » imposé par le registre au démarrage.
+  # Restauration HA volontairement désactivée : oui
   initial: none
