@@ -1,0 +1,121 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Clim – Réarmement de l'exécution après récupération infra
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Sortir l'exécution climatisation d'un état « échec mort » :
+#   un échec d'exécution reste latché (input_boolean.clim_execution_echec = on)
+#   et le budget de reprise est épuisé (counter > 2), donc plus AUCUN
+#   chemin ne relance l'exécution — alors même que l'infrastructure
+#   Airstage a récupéré et que la décision réclame toujours une action.
+#
+#   Cette automation détecte le FRONT de récupération de l'infrastructure
+#   d'exécution, réarme le budget de reprise borné et relance une tentative
+#   unique. Le script d'exécution rejoue l'action réelle et re-borne la
+#   reprise via sa post-condition : le réarmement reste donc strictement
+#   borné (3 tentatives par front de récupération), sans polling ni
+#   matraquage de l'actionneur.
+#
+# 🧱 PRINCIPE
+#   - Pas de décision thermique
+#   - Ne s'active QUE si un échec est encore latché (sinon inerte)
+#   - Déclenchement sur FRONT de récupération uniquement
+#     (entité d'exécution qui revient de unavailable/unknown,
+#      ou retour_ok canonique Airstage), jamais en continu
+#   - Un device disponible mais qui refuse durablement la commande
+#     (échec post-condition sans indisponibilité) N'EST PAS réarmé :
+#     il n'y a pas de front de récupération → la borne d'origine tient
+#   - Réarmement = reset du compteur + relance unique du script
+#
+# 🔁 RELATION AVEC LES AUTRES FILETS
+#   - reprise_apres_echec  : reprise différée bornée PENDANT l'incident
+#   - watchdog             : ré-assertion sur front d'incohérence
+#   - réarmement (ce fichier) : reprise APRÈS récupération, quand la
+#     borne d'origine a déjà été atteinte et qu'aucun autre front
+#     ne se produit
+#
+# 🔌 DÉPENDANCES
+#   - climate.clim
+#   - switch.clim_power
+#   - binary_sensor.retour_ok_airstage
+#   - input_boolean.clim_execution_echec
+#   - sensor.clim_target_mode
+#   - input_boolean.systeme_stable
+#   - binary_sensor.panne_secteur_en_cours
+#   - counter.clim_execution_retry_count
+#   - script.clim_execution
+# ==========================================================
+
+- id: "10030000000111"
+  alias: "Clim - Réarmement après récupération"
+  description: >
+    Réarme l'exécution climatisation sur front de récupération de
+    l'infrastructure lorsqu'un échec est encore latché et la borne de
+    reprise épuisée. Reset du compteur + relance unique. Aucun polling,
+    aucun matraquage : borné à 3 tentatives par front de récupération.
+  mode: single
+  max_exceeded: silent
+
+  # ======================================================
+  # 🔔 Déclencheurs — FRONTS de récupération uniquement
+  # ======================================================
+  trigger:
+    # Retour de disponibilité des entités d'exécution
+    # (from unavailable/unknown → valeur réelle stabilisée 15 s).
+    - platform: state
+      entity_id: climate.clim
+      from: ["unavailable", "unknown"]
+      not_to: ["unavailable", "unknown"]
+      for: "00:00:15"
+
+    - platform: state
+      entity_id: switch.clim_power
+      from: ["unavailable", "unknown"]
+      not_to: ["unavailable", "unknown"]
+      for: "00:00:15"
+
+    # Signal de récupération canonique Airstage (procédure de reload aboutie).
+    - platform: state
+      entity_id: binary_sensor.retour_ok_airstage
+      to: "on"
+
+  # ======================================================
+  # 🛑 Conditions — uniquement si réellement bloqué et exécutable
+  # ======================================================
+  condition:
+    # Un échec d'exécution est encore latché
+    - condition: state
+      entity_id: input_boolean.clim_execution_echec
+      state: "on"
+
+    # La décision réclame toujours une action (cible sous contrat)
+    - condition: template
+      value_template: >
+        {{ states('sensor.clim_target_mode') in ['cool', 'dry', 'heat', 'off'] }}
+
+    # Système stable et hors panne secteur
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+    - condition: state
+      entity_id: binary_sensor.panne_secteur_en_cours
+      state: "off"
+
+    # Entités d'exécution réellement disponibles au moment du réarmement
+    - condition: template
+      value_template: >
+        {{ states('climate.clim') not in ['unavailable', 'unknown']
+           and states('switch.clim_power') not in ['unavailable', 'unknown'] }}
+
+  # ======================================================
+  # ▶️ Action — réarme la borne puis relance une tentative unique
+  # ======================================================
+  action:
+    - service: counter.reset
+      target:
+        entity_id: counter.clim_execution_retry_count
+
+    - service: script.turn_on
+      target:
+        entity_id: script.clim_execution
