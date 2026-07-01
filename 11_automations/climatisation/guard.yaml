@@ -60,17 +60,28 @@
 #       jamais la décision centrale
 #
 # ----------------------------------------------------------
-#  📦 INVARIANTS APPLIQUÉS  (contrat 08_securite.md v1.4)
+#  📦 INVARIANTS APPLIQUÉS  (contrat 09_securite.md v1.5)
 #
-#     Tous conformes au test d'universalité (deux volets) :
+#     Conformes au test d'universalité (deux volets) :
 #     vrais pour tout mode légal, sans seuil ni délai.
 #
 #     INV-1  clim active   ET target_mode == off  → INTERDIT
 #     INV-2  power actif    ET target_mode == off  → INTERDIT
-#     INV-3  clim active    ET power == off          → INTERDIT
 #
 #     Légitimité (référentielle, source unique) :
 #         power actif légitime ⟺ target_mode ≠ off
+#
+#     ⚠️ INV-3 RETIRÉ (v1.5) — « clim active ET power == off »
+#     N'est PAS universel : lors de l'établissement d'un mode LÉGAL,
+#     climate.clim (get_operating_mode) devient actif AVANT que
+#     switch.clim_power (get_device_on_off_state) ne reflète 'on'
+#     (mises à jour d'entités non simultanées côté intégration).
+#     Le snapshot transitoire « actif + power off » n'est donc pas une
+#     incohérence à corriger mais une phase normale d'allumage : le
+#     forcer à 'off' SABOTE le démarrage (course observée au runtime).
+#     La cohérence power/mode PERSISTANTE reste couverte par le
+#     Watchdog (binary_sensor.clim_incoherence_decision_reel ≥ 60 s),
+#     qui ré-asserte la DÉCISION au lieu de forcer 'off'.
 #
 # ----------------------------------------------------------
 #  ⚙️ MODE D'EXÉCUTION
@@ -132,8 +143,6 @@
           (clim_active and target_off)
           or
           (clim_power == 'on' and target_off)
-          or
-          (clim_active and clim_power == 'off')
         }}
 
   action:
