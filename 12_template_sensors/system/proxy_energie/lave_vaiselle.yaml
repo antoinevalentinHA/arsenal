@@ -30,12 +30,23 @@
       device_class: energy
       state_class: total_increasing
 
+      # Disponible uniquement si une valeur numérique valide existe :
+      #   - source ≥ 0, OU
+      #   - une dernière valeur valide a déjà été mémorisée.
+      # Reste "unavailable" tant qu'aucune valeur source valide n'a été
+      # observée : AUCUN 0 artificiel au démarrage / avant 1re mesure.
+      availability: >
+        {% set raw = states('sensor.prise_lave_vaisselle_energy') %}
+        {% set prev = states('sensor.lave_vaisselle_energy_proxy') %}
+        {{ (raw not in ['unknown', 'unavailable', 'none', ''] and raw | float(-1) >= 0)
+           or prev not in ['unknown', 'unavailable', 'none', ''] }}
+
       state: >
         {% set raw = states('sensor.prise_lave_vaisselle_energy') %}
         {% set prev = states('sensor.lave_vaisselle_energy_proxy') %}
 
         {% if raw in ['unknown', 'unavailable', 'none', ''] %}
-          {{ prev if prev not in ['unknown', 'unavailable', 'none', ''] else 0 }}
+          {{ prev }}
         {% else %}
           {% set raw_val = raw | float(0) %}
           {% set prev_val = prev | float(0) %}
