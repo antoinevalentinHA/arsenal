@@ -74,6 +74,7 @@
     # ------------------------------------------------------
     - name: "Arrosage demande climatique ET0 journalière"
       unique_id: arrosage_demande_climatique_et0
+      default_entity_id: sensor.arrosage_demande_climatique_et0
       unit_of_measurement: "mm/d"
       state_class: measurement
       icon: mdi:sun-thermometer-outline
@@ -123,6 +124,7 @@
     # ------------------------------------------------------
     - name: "Arrosage demande climatique VPD courant"
       unique_id: arrosage_demande_climatique_vpd
+      default_entity_id: sensor.arrosage_demande_climatique_vpd
       unit_of_measurement: "kPa"
       state_class: measurement
       icon: mdi:water-opacity
@@ -155,6 +157,7 @@
     # ------------------------------------------------------
     - name: "Arrosage demande climatique état"
       unique_id: arrosage_demande_climatique_etat
+      default_entity_id: sensor.arrosage_demande_climatique_etat
       icon: mdi:weather-partly-cloudy
       state: >
         {% set tmin = states('sensor.temperature_min_jour_courant_jardin') %}

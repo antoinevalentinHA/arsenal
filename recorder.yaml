@@ -332,6 +332,46 @@ include:
     - input_number.arrosage_seuil_humidite_declenchement
 
     # =====================================================
+    # ==== 🌤️ ARROSAGE — CANAL DEMANDE CLIMATIQUE (OBSERVATION v0) ====
+    # =====================================================
+    # Observabilité lecture seule. Historise ET₀ journalière, VPD courant et
+    # état du canal pour l'observation v0 : corrélation demande climatique ↔
+    # tarissement sol, comportement « après pluie puis chaleur » — cf.
+    # contrats/arrosage/16_canal_demande_climatique.md et
+    # audits/02_conception/arrosage/plan_observation_hydrique_v0.
+    # Observation / diagnostic uniquement — aucune recommandation, aucune
+    # action ; aucune logique métier ne lit cet historique (§Indépendance).
+    #
+    # RECORDER — Population B
+    # Rôle      : ET₀ de référence journalière (Hargreaves-Samani, contrat 16 §2)
+    #             + état qualitatif du canal (contrat 16 §6)
+    # Utilité   : courbe de la demande évaporative + fenêtres de disponibilité
+    # Logbook   : acceptable — ET₀ journalière (lente), état à bascule rare
+    # Cardinalité : ET₀ continue bornée (mm·jour⁻¹) ; état fini (complet /
+    #               degrade / indisponible)
+    # Fréquence : ≤ 5/h — ET₀ recalculée sur Tmin/Tmax/Tmean journaliers ;
+    #             état ne bascule qu'à la perte/retour d'une entrée
+    - sensor.arrosage_demande_climatique_et0
+    - sensor.arrosage_demande_climatique_etat
+
+    # -----------------------------------------------------
+    # RECORDER — Population B — DÉROGATION FRÉQUENCE
+    # Rôle      : VPD courant — moteur instantané de la demande (contrat 16 §3)
+    # Utilité   : croiser la demande instantanée avec le tarissement sol
+    # Logbook   : acceptable — grandeur physique interprétable (kPa)
+    # Cardinalité : continue bornée (physique, kPa)
+    # Fréquence : > 5/h — grandeur « courante », recalcul à chaque MAJ T/HR
+    # Fréquence observée : instantanée par conception — recalcul à chaque
+    #   rafraîchissement de sensor.temperature_exterieur /
+    #   sensor.humidite_relative_exterieur (dépasse le seuil de 5/h)
+    # Justification métier : l'observation v0 vise le croisement demande
+    #   instantanée ↔ réponse sol ; la grandeur courante n'a de valeur
+    #   d'analyse qu'historisée. Portée bornée par la purge 90 j.
+    # Critère d'acceptabilité logbook confirmé : oui
+    # Validé le : 2026-07-01
+    - sensor.arrosage_demande_climatique_vpd
+
+    # =====================================================
     # ==== 💧 ARROSAGE — OBSERVABILITÉ CHAÎNE DÉCISIONNELLE V1 ====
     # =====================================================
     # Permet aux audits de LIRE la décision V1 (besoin → intention → effectif)
