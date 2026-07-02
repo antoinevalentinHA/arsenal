@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — CLIMATISATION
 ## 07 — Exécution — Application idempotente
 
-**Version contrat :** v1.3
+**Version contrat :** v1.4
 
 ---
 
@@ -93,9 +93,58 @@ La ré-émission en cas d'échec :
 La couche Exécution reste pure : elle applique, constate et délègue la reprise. Elle ne décide pas de la stratégie thermique.
 
 Les post-conditions ne sont pas évaluées immédiatement après émission
-des commandes physiques. Une garde de stabilisation explicite est
-appliquée avant qualification du résultat afin de tenir compte des
-latences de propagation des intégrations climatisation.
+des commandes physiques (voir « Stabilisation post-allumage » ci-dessous).
+
+---
+
+## Stabilisation post-allumage
+
+Après un allumage physique — et **uniquement dans ce cas** — la couche
+Exécution observe un **délai de stabilisation** avant de relire l'état HVAC et
+de qualifier le résultat.
+
+### Ce que la stabilisation protège
+
+- La **lecture fraîche** de `climate.clim` sur laquelle reposent la **garde
+  d'idempotence** (ne pas ré-émettre une commande déjà satisfaite) et la
+  **qualification de la post-condition** (succès / échec / reprise).
+- L'absorption de la **latence de propagation** de l'intégration
+  climatisation : ses états dérivés ne sont garantis ni simultanés ni immédiats
+  pendant une transition (cf. [`09_securite.md`](09_securite.md), « phase
+  normale d'allumage »).
+
+### Ce que la stabilisation ne fait pas
+
+- Elle **n'existe pas pour allumer l'unité**. L'allumage n'en dépend pas :
+  l'intégration climatisation **rallume automatiquement** l'unité éteinte
+  lorsqu'un mode lui est demandé. La temporisation est **postérieure** à
+  l'allumage, jamais sa condition.
+- Elle **n'est ni une reprise (retry) ni une correction de décision** : elle ne
+  ré-émet rien et ne requalifie jamais `sensor.clim_target_mode`.
+- Elle **ne garantit pas la cinétique interne** de l'unité (délai réel de
+  bascule du mode) ; elle borne seulement la fenêtre d'observation avant
+  qualification.
+
+> Le **principe** de stabilisation est contractuel. Son **dimensionnement** est
+> **empirique** et révisable : il n'est adossé à aucune mesure instrumentée à ce
+> jour. Origine, historique et limites sont consignés dans l'investigation
+> [`investigation_temporisation_allumage_hvac.md`](../../audits/01_rapports/climatisation/investigation_temporisation_allumage_hvac.md).
+
+### Phénomène transitoire d'allumage (connu, non-bug)
+
+La séquence d'allumage — mise sous tension puis application du mode demandé —
+combinée à la propagation des états peut faire apparaître **brièvement** le mode
+précédemment retenu par l'unité avant le mode demandé :
+
+```text
+off → (mise sous tension) → mode retenu momentané (ex. dry) → mode demandé (ex. cool)
+```
+
+Ce passage est **transitoire** et relève de la **phase normale d'allumage** : il
+provient de la séquence d'allumage et de la propagation des états, **non** d'une
+incohérence décisionnelle Arsenal — `sensor.clim_target_mode` ne prend jamais
+cette valeur intermédiaire. La cohérence **persistante** (au-delà du transitoire)
+reste couverte par le Watchdog (cf. [`09_securite.md`](09_securite.md)).
 
 ---
 
