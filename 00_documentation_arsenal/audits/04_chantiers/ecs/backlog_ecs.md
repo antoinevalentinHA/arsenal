@@ -62,10 +62,12 @@
 
 ### ECS-CI — Hygiène des validateurs et workflows
 
-- **ECS-CI-1** : aligner `check_ecs_cycle.py` T04 sur les 7 entités du contrat `§026` + corriger la docstring.
-- **ECS-CI-2** : supprimer la continuation antislash de `check_ecs_securite.py` (`yaml_files()`).
-- **ECS-CI-3** : uniformiser les workflows (`python3` + `setup-python` épinglé).
-- **ECS-OFF-5** *(audit Offsets)* : verrouiller en CI les paramètres contractuels `11` §10 (alpha, zone morte, buckets, plage durée) et le format du résumé figé — aujourd'hui déclarés « rupture de contrat » mais non testés.
+> **Trilogie hygiène (CI-1/2/3) : ✅ traitée (2026-07-02).**
+
+- **ECS-CI-1** *(traité — #230)* : `check_ecs_cycle.py` T04 aligné sur les **7 entités** du contrat `§026` §6 (ajout de `ecs_duree_chauffe_reel_backup` et `ecs_fin_cycle_signal`) + docstring corrigée. Détection prouvée par mutation-testing.
+- **ECS-CI-2** *(traité — #229)* : continuation antislash parasite retirée de `check_ecs_securite.py` (`yaml_files()`).
+- **ECS-CI-3** *(traité — #231)* : 4 workflows `contracts_ecs_*` uniformisés — étape `actions/setup-python@v5` épinglée (`3.11`) + `python3`.
+- **ECS-OFF-5** *(audit Offsets — reste à traiter)* : verrouiller en CI les paramètres contractuels `11` §10 (alpha, zone morte, buckets, plage durée) et le format du résumé figé — aujourd'hui déclarés « rupture de contrat » mais non testés.
 - **Bénéfice attendu** : **moyen** — robustesse et lisibilité de la chaîne de validation ; protection des invariants d'apprentissage.
 - **Risque de régression** : **faible**.
 - **Effort relatif** : **faible**.
@@ -96,8 +98,8 @@
 1. **ECS-DOC** — ✅ traité (lot de clôture doctrinale).
 2. **ECS-WD** — ✅ résolu par arbitrage (doctrine (a)) ; `ECS-WD-2` clos (comportement assumé), `ECS-WD-2b` caduc.
 3. **ECS-DESINF-1** (fort levier de protection, faible risque) — ✅ **traité** (validateur dédié + workflow, 2026-07-02).
-4. **ECS-CI** + **ECS-OFF-5** (hygiène de chaîne + verrouillage des paramètres d'apprentissage `11` §10) — chantier CI.
-5. **ECS-DESINF-2** *(variante garde CI uniquement)* — préventif, dans le chantier CI.
+4. **ECS-CI-1/2/3** — ✅ **traités** (#230, #229, #231) ; **ECS-OFF-5** (verrouillage des paramètres d'apprentissage `11` §10) — reste à traiter dans le chantier CI.
+5. **ECS-DESINF-2** *(variante garde CI uniquement)* — préventif, reste à traiter dans le chantier CI.
 6. **ECS-OFF-1** (observabilité de l'apprentissage) — ✅ **réalisé** (recorder + cartes + section diagnostics).
 
 > Reliquat actionnable = **un seul chantier**, distinct et ultérieur, sans item runtime ouvert :
