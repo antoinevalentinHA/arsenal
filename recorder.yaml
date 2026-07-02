@@ -322,6 +322,12 @@ include:
     # fenêtres de fraîcheur, comportement du Point 2) — cf. contrats/arrosage
     # 13/14/15 et audits/02_conception/arrosage/plan_observation_hydrique_v0.
     # Observation / diagnostic uniquement — aucune recommandation, aucune action.
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : Arrosage — plan d'observation hydrique v0, canal réservoir sol (contrats/arrosage 13/14/15)
+    # Ajouté     : à confirmer
+    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
+    #              (rester en observabilité permanente OU retirer le microscope).
+    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
     - sensor.jardin_humidite_sol_mediane
     - sensor.jardin_humidite_sol_minimum
     - sensor.jardin_humidite_sol_heterogeneite
@@ -341,6 +347,12 @@ include:
     # audits/02_conception/arrosage/plan_observation_hydrique_v0.
     # Observation / diagnostic uniquement — aucune recommandation, aucune
     # action ; aucune logique métier ne lit cet historique (§Indépendance).
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : Arrosage — plan d'observation hydrique v0, canal demande climatique (contrat arrosage 16)
+    # Ajouté     : VPD #215, 2026-07-01 (ET₀ / état : même chantier)
+    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
+    #              (rester en observabilité permanente OU retirer le microscope).
+    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
     #
     # RECORDER — Population B
     # Rôle      : ET₀ de référence journalière (Hargreaves-Samani, contrat 16 §2)
@@ -381,6 +393,12 @@ include:
     # Entités existantes, lecture seule, faible volume. Aucun seuil ni logique
     # modifié. Les helpers de réglage (hystérésis / intervalle / fenêtre) sont
     # volontairement EXCLUS (variation rare, faible valeur d'historisation).
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : Arrosage — observabilité chaîne décisionnelle V1 (besoin → intention → effectif)
+    # Ajouté     : à confirmer
+    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
+    #              (rester en observabilité permanente OU retirer le microscope).
+    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
     - binary_sensor.arrosage_besoin_sol
     - binary_sensor.arrosage_intention
     - sensor.arrosage_dernier_effectif
@@ -405,6 +423,12 @@ include:
     #      BASE que la future modulation bornée fera varier — son historisation
     #      est donc directement utile à l'observation. Lecture seule ; aucune
     #      logique métier ne lit cet historique (invariant d'indépendance).
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : Arrosage — durée de base appliquée, prérequis futur chantier « durée variable » (C11, prérequis P1)
+    # Ajouté     : #218, 2026-07-01
+    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
+    #              (rester en observabilité permanente OU retirer le microscope).
+    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
     - input_number.arrosage_rainbird_station_1_duree_minutes
 
     # =====================================================
@@ -448,11 +472,23 @@ include:
     # ---- Intensité du besoin de froid (couche perception, contrat 13) ----
     # Observationnel : caler les bandes et vérifier l'effet nuit (C2) avant
     # tout câblage. Lecture seule, aucun pilotage.
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : Clim — perception besoin de froid (contrat 13), calage des bandes avant câblage (C2)
+    # Ajouté     : à confirmer
+    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
+    #              (rester en observabilité permanente OU retirer le microscope).
+    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
     - sensor.clim_intensite_besoin_froid
     - sensor.clim_intensite_besoin_froid_niveau
     # ---- Recommandation diagnostique ventilation (contrat 14) ----
     # Observationnel : observer ce que ferait une logique automatique
     # future (besoin → vitesse). Lecture seule, aucun pilotage.
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : Clim — recommandation diagnostique ventilation (contrat 14), logique automatique future
+    # Ajouté     : à confirmer
+    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
+    #              (rester en observabilité permanente OU retirer le microscope).
+    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
     - sensor.clim_fan_mode_recommande
     # ---- Diagnostic ventilation (synthèse conformité réel/recommandé) ----
     # Observabilité dashboard : verdict + cause d'écart. Lecture seule.
@@ -698,6 +734,12 @@ include:
     #   reconstitution de l'incident a dû passer par la table `events` SQLite,
     #   faute d'historisation des termes de décision. Concrétise la phase P3
     #   (Persistance) du plan d'action observabilité — contrat 76.
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : Chauffage — auto-ajustement courbe, phase P3 (persistance des termes de décision), contrat 76 — origine incident D-CRIT-1 (16/06/2026)
+    # Ajouté     : à confirmer
+    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
+    #              (rester en observabilité permanente OU retirer le microscope).
+    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
     #
     # RECORDER — Population B (registre de décision, faible fréquence)
     # Principe : on historise les ENTRÉES de garde et le RÉSULTAT appliqué.
@@ -742,6 +784,12 @@ include:
     #   Étanchéité (INV-2) : sorties d'observabilité pures, jamais relues
     #     par la décision. Écrites par l'automation consommatrice
     #     `chauffage_observabilite_courbe_completude_apprentissage`.
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : Chauffage — auto-ajustement courbe, phase P4 (complétude & statut apprenant), contrat 76 §4/§8
+    # Ajouté     : #227, 2026-07-02
+    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
+    #              (rester en observabilité permanente OU retirer le microscope).
+    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
     #
     # Marqueur du dernier cycle évalué — socle de la complétude (§8)
     - input_datetime.chauffage_courbe_dernier_cycle
@@ -776,6 +824,12 @@ include:
     #     décision (garde `check_chauffage_courbe_etancheite_contracts.py`). Les
     #     grandeurs intermédiaires perdables (dernier_sens_*, refus_consecutifs)
     #     ne sont volontairement PAS historisées (CR-8).
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : Chauffage — auto-ajustement courbe, phase P5 (dérivation diagnostic), contrat 76 §3 Q6/Q8
+    # Ajouté     : #236, 2026-07-02
+    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
+    #              (rester en observabilité permanente OU retirer le microscope).
+    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
     #
     # Dérive nette confirmée pente / parallèle sur fenêtre saison (Q6, INV-6)
     - sensor.chauffage_courbe_derive_pente
@@ -806,6 +860,12 @@ include:
     #     liste fermée étendue). Les métriques de régulation restent RÉFÉRENCÉES
     #     EN PLACE (déjà historisées) ; les tendances intermédiaires
     #     (abs_ecart_*, err_delta/niveau_*) ne sont PAS historisées (CR-3/CR-8).
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : Chauffage — auto-ajustement courbe, phase P6 (effet / fenêtre régime), contrat 76 §3 Q5
+    # Ajouté     : #237, 2026-07-02
+    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
+    #              (rester en observabilité permanente OU retirer le microscope).
+    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
     #
     # Effet borné par régime (Q5, INV-4) — corrélation de fenêtre, jamais causal
     - sensor.chauffage_courbe_effet_pente
