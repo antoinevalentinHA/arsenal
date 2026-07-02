@@ -4,8 +4,9 @@ button_card_templates: !include_dir_merge_named /config/19_button_card_templates
 # 🩺 ARROSAGE — DIAGNOSTIC (explication du raisonnement du domaine)
 # ----------------------------------------------------------
 # Vue 100 % LECTURE. Répond à « pourquoi le domaine Arrosage
-# arrive-t-il à ce verdict ? ». Lecture causale :
-#   Verdict → Observation → Interprétation → Exécution.
+# arrive-t-il à ce verdict ? ». Lecture par DOMAINE (précipitations,
+# sol, climat, exécution) ; à l'intérieur de chaque domaine la
+# micro-causalité est conservée : faits observés → conclusion métier.
 # Le canal climatique (ET₀/VPD) est en OBSERVATION À BLANC :
 # il ne participe pas encore à la décision (entrera via C11).
 #
@@ -34,14 +35,14 @@ views:
         cards:
           # =========================================================
           # Le VERDICT (intention + raison) vit sur le cockpit
-          # /arrosage-dashboard. Ce Diagnostic explique le POURQUOI :
-          # observations → interprétations → exécution → canal à blanc.
+          # /arrosage-dashboard. Ce Diagnostic explique le POURQUOI,
+          # rangé PAR DOMAINE ; dans chaque domaine : faits → conclusion.
           # =========================================================
-          # 👁 Observation — Pluie (observée & prévue)
+          # 🌧️ Précipitations — faits pluie → conclusion (suspension)
           # =========================================================
           - type: custom:button-card
             template: section_header
-            name: 🌧️ Observation — Pluie
+            name: 🌧️ Précipitations
 
           - type: grid
             columns: 2
@@ -71,12 +72,17 @@ views:
                 name: Pluie prévue
                 icon: mdi:weather-pouring
 
+          # Conclusion métier du domaine précipitations.
+          - type: custom:button-card
+            template: carte_arrosage_pluie_raison
+            entity: binary_sensor.arrosage_suspension_pluie
+
           # =========================================================
-          # 👁 Observation — Sol (réservoir lent)
+          # 🌱 Sol — faits réservoir lent → conclusion (besoin sol)
           # =========================================================
           - type: custom:button-card
             template: section_header
-            name: 🌱 Observation — Sol
+            name: 🌱 Sol
 
           - type: grid
             columns: 2
@@ -100,61 +106,24 @@ views:
                 name: Points frais
                 icon: mdi:check-decagram
 
+          # Conclusion métier du domaine sol.
+          - type: custom:button-card
+            template: carte_mode_binaire_interprete
+            entity: binary_sensor.arrosage_besoin_sol
+            name: Besoin sol
+            icon: mdi:sprout
+            variables:
+              label_on: Besoin détecté
+              label_off: Sol suffisant
+              color_on: 'rgba(255, 152, 0, 0.2)'
+              color_off: 'rgba(76, 175, 80, 0.2)'
+
           # =========================================================
-          # 🧩 Interprétation — états métier réels
+          # 🌡️ Climat (observation à blanc, hors décision V1)
           # =========================================================
           - type: custom:button-card
             template: section_header
-            name: 🧩 Interprétation
-
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: carte_mode_binaire_interprete
-                entity: binary_sensor.arrosage_besoin_sol
-                name: Besoin sol
-                icon: mdi:sprout
-                variables:
-                  label_on: Besoin détecté
-                  label_off: Sol suffisant
-                  color_on: 'rgba(255, 152, 0, 0.2)'
-                  color_off: 'rgba(76, 175, 80, 0.2)'
-
-              - type: custom:button-card
-                template: carte_arrosage_pluie_raison
-                entity: binary_sensor.arrosage_suspension_pluie
-
-          # =========================================================
-          # 🛠️ Exécution
-          # =========================================================
-          - type: custom:button-card
-            template: section_header
-            name: 🛠️ Exécution
-
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: status_72_on_off
-                entity: switch.rain_bird_bat_bt_2_e9a3_station_1
-                name: Station 1 active
-                icon: mdi:sprinkler-variant
-
-              - type: custom:button-card
-                template: socle_info_72
-                entity: sensor.arrosage_dernier_effectif
-                name: Dernier arrosage prouvé
-                icon: mdi:history
-
-          # =========================================================
-          # 🌡️ Canal climatique (observation à blanc, hors décision V1)
-          # =========================================================
-          - type: custom:button-card
-            template: section_header
-            name: 🌡️ Canal climatique
+            name: 🌡️ Climat
 
           - type: markdown
             content: >-
@@ -224,3 +193,26 @@ views:
                 complet: 'rgba(76, 175, 80, 0.2)'
                 degrade: 'rgba(255, 235, 59, 0.2)'
                 indisponible: 'rgba(158, 158, 158, 0.1)'
+
+          # =========================================================
+          # 🛠️ Exécution — l'acte et sa preuve
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🛠️ Exécution
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: status_72_on_off
+                entity: switch.rain_bird_bat_bt_2_e9a3_station_1
+                name: Station 1 active
+                icon: mdi:sprinkler-variant
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: sensor.arrosage_dernier_effectif
+                name: Dernier arrosage prouvé
+                icon: mdi:history
