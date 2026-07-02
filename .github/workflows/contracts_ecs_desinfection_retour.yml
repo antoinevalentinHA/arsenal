@@ -1,0 +1,13 @@
+name: Arsenal Contracts — ECS Desinfection retour
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract-ecs-desinfection-retour:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate contract — ECS Désinfection au retour de vacances
+        run: python scripts/arsenal_contracts/check_ecs_desinfection_retour_contracts.py
