@@ -161,9 +161,12 @@ views:
             template: section_header
             name: 🔧 Appliqué & confirmé
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: ℹ️ Intentionnel-confirmé — changement externe boiler invisible
+          # Réserve de lecture doctrinale (pas un sous-titre) : markdown justifié.
+          - type: markdown
+            content: >
+              ℹ️ **Intentionnel-confirmé.** La valeur affichée correspond à la
+              consigne confirmée par le chemin Arsenal ; un changement externe au
+              boiler peut rester invisible faute de relecture dédiée.
 
           - type: grid
             columns: 2
