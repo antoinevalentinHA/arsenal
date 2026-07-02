@@ -67,7 +67,12 @@
 - **ECS-CI-1** *(traité — #230)* : `check_ecs_cycle.py` T04 aligné sur les **7 entités** du contrat `§026` §6 (ajout de `ecs_duree_chauffe_reel_backup` et `ecs_fin_cycle_signal`) + docstring corrigée. Détection prouvée par mutation-testing.
 - **ECS-CI-2** *(traité — #229)* : continuation antislash parasite retirée de `check_ecs_securite.py` (`yaml_files()`).
 - **ECS-CI-3** *(traité — #231)* : 4 workflows `contracts_ecs_*` uniformisés — étape `actions/setup-python@v5` épinglée (`3.11`) + `python3`.
-- **ECS-OFF-5** *(audit Offsets — reste à traiter)* : verrouiller en CI les paramètres contractuels `11` §10 (alpha, zone morte, buckets, plage durée) et le format du résumé figé — aujourd'hui déclarés « rupture de contrat » mais non testés.
+- **ECS-OFF-5** *(audit Offsets — traité)* : verrouillés en CI par le validateur dédié
+  `check_ecs_offsets_params_contracts.py` (7 tests) + workflow `contracts_ecs_offsets_params.yml` —
+  `alpha=0.25` (§7.1), zone morte `-0.3/+0.5` (§6.1), seuils buckets `delta_init<2.5/<7.0` + 4 buckets
+  (§6.2), plage durée `0<duree<120` (§10), et le format du résumé figé `date|mode|consigne|t0|boost|valide`
+  (producteur, consommateur 6 champs + mapping d'index, validation `valide` au gel — §3.2/§10, « rupture
+  de contrat »). Runtime conforme ; détection prouvée par mutation-testing.
 - **Bénéfice attendu** : **moyen** — robustesse et lisibilité de la chaîne de validation ; protection des invariants d'apprentissage.
 - **Risque de régression** : **faible**.
 - **Effort relatif** : **faible**.

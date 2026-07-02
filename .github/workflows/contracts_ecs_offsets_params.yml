@@ -1,0 +1,17 @@
+name: Arsenal Contracts — ECS Offsets parametres
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract-ecs-offsets-params:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate contract — ECS Offsets (paramètres §10)
+        run: python3 scripts/arsenal_contracts/check_ecs_offsets_params_contracts.py
