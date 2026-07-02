@@ -18,8 +18,13 @@
 > et [`spec`](../../03_plans_action/chauffage/spec_persistance_termes_decision_courbe.md). Le **« quoi/quand »**
 > (valeurs appliquées + horodatage) est désormais requêtable dans l'historique HA sans SQLite.
 > Le **« pourquoi »** d'une **abstention** reste porté par les événements (verdict event-only,
-> cf. spec §3.4). **Chantier toujours ouvert** : P4–P9 (complétude, dérivation, effet, supervision)
-> non démarrées.
+> cf. spec §3.4).
+>
+> **Avancement (2026-07-02). P4 (Complétude & statut apprenant) — implémentée** (lot L4). La
+> complétude (trou de trace ≠ silence légitime, §8), le statut apprenant/gelé par cycle (§4) et les
+> épisodes de gel (§5 #8) sont désormais dérivés en lecture seule depuis l'événement de cycle, sans
+> rouvrir le chemin décisionnel. Contrats et CI chauffage CONFORMES en local ; validation runtime au
+> fil des cycles. **Chantier toujours ouvert** : P5–P9 (dérivation, effet, supervision) non démarrées.
 
 ## 1. Objectif
 

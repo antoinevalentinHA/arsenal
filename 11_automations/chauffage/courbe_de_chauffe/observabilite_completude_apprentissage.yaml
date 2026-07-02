@@ -1,0 +1,132 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Observabilité courbe : complétude & apprentissage
+#
+#  ID : 10240000000012
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Consommer l'événement de cycle universel
+#     `chauffage_courbe_cycle_evalue` (émis par L1) et en
+#     dériver, EN LECTURE SEULE, la couche P4 du contrat 76 :
+#       1. Marqueur durable du dernier cycle évalué (complétude,
+#          §8) — écrit sur TOUS les cycles réels, y compris non
+#          actionnables (c'est ce qui distingue un silence
+#          légitime d'un trou de trace).
+#       2. Statut apprenant / gelé du cycle (§4) + cause de gel.
+#       3. Épisodes de gel (§5 #8) : émission d'un événement
+#          `chauffage_courbe_gel_episode` (début / fin) sur front.
+#
+#  🧱 PRINCIPE ARSENAL — OBSERVABILITÉ PURE
+#     - Consommateur d'événement, en miroir de
+#       `log_auto_ajustement.yaml`. NE ROUVRE PAS le chemin
+#       décisionnel (`auto_ajustement.yaml` intact — INV-1).
+#     - N'écrit QUE des sorties d'observabilité ; aucune entité
+#       lue par la décision. Rien ne réentre dans la cascade
+#       (INV-2, étanchéité).
+#     - Sens unique : capture (L1) → persistance / dérivation (L4).
+#
+#  🧩 DÉRIVATION DU STATUT (depuis `cycle_reason`, §3.2 conception L4)
+#     - apprenant = porte d'éligibilité §7/§8 ouverte, soit
+#       cycle_reason ∉ { non_representatif, auto_desactive,
+#       hors_mode_normal }.
+#     - gel       = porte fermée ; la cause est ce cycle_reason
+#       (toutes nominales). `suggestion_indisponible` reste
+#       apprenant (porte ouverte, cycle stérile) — jamais gelé.
+#
+#  🚫 NE FAIT PAS
+#     - Ne décide, n'applique, ne pilote rien.
+#     - Ne traite PAS les cycles de simulation (CR-9 : tronqués,
+#       exclus de la complétude des cycles réels et du gel).
+#
+#  ✅ CONTRAINTES
+#     - Déterministe ; tolérant aux champs d'événement absents.
+# ==========================================================
+
+- id: "10240000000012"
+  alias: "Chauffage – Observabilité courbe : complétude & apprentissage"
+  description: >
+    Dérive la complétude, le statut apprenant/gelé et les épisodes
+    de gel à partir de l'événement de cycle courbe (lecture seule,
+    contrat 76 phase P4). Aucune action sur la décision.
+  mode: queued
+  max: 5
+
+  trigger:
+    - platform: event
+      event_type: chauffage_courbe_cycle_evalue
+
+  condition:
+    - condition: template
+      alias: "Cycle réel uniquement (simulation exclue — CR-9)"
+      value_template: >
+        {{ (trigger.event.data.mode | default('real')) == 'real' }}
+
+  action:
+
+    - variables:
+        cycle_reason: "{{ trigger.event.data.cycle_reason | default('inconnu') }}"
+        decision_id: "{{ trigger.event.data.decision_id | default('') }}"
+        # Porte d'éligibilité §7/§8 : apprenant ssi cycle_reason hors causes de gel
+        apprenant: >
+          {{ (trigger.event.data.cycle_reason | default('inconnu'))
+             not in ['non_representatif', 'auto_desactive', 'hors_mode_normal'] }}
+        statut_cible: >
+          {{ 'apprenant' if (trigger.event.data.cycle_reason | default('inconnu'))
+             not in ['non_representatif', 'auto_desactive', 'hors_mode_normal'] else 'gel' }}
+        statut_precedent: "{{ states('input_select.chauffage_courbe_apprentissage_statut') }}"
+
+    # ------------------------------------------------------------
+    # 1) COMPLÉTUDE — marqueur du dernier cycle évalué
+    #    Écrit sur TOUS les cycles réels (V5) : sans cela, un
+    #    silence légitime deviendrait un faux trou.
+    # ------------------------------------------------------------
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.chauffage_courbe_dernier_cycle
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+    # ------------------------------------------------------------
+    # 2) STATUT APPRENANT / GELÉ + cause lisible
+    # ------------------------------------------------------------
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.chauffage_courbe_apprentissage_statut
+      data:
+        option: "{{ statut_cible }}"
+
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.chauffage_courbe_gel_cause
+      data:
+        value: "{{ '-' if apprenant else cycle_reason }}"
+
+    # ------------------------------------------------------------
+    # 3) ÉPISODE DE GEL — détection de front, émission début/fin
+    #    (statut_precedent capté AVANT l'écriture ci-dessus)
+    # ------------------------------------------------------------
+    - choose:
+        - conditions:
+            - condition: template
+              alias: "Front → gel (début d'épisode)"
+              value_template: "{{ not apprenant and statut_precedent != 'gel' }}"
+          sequence:
+            - event: chauffage_courbe_gel_episode
+              event_data:
+                phase: "debut"
+                cause: "{{ cycle_reason }}"
+                cause_type: "nominal"
+                decision_id: "{{ decision_id }}"
+                timestamp: "{{ now().strftime('%d/%m %H:%M') }}"
+
+        - conditions:
+            - condition: template
+              alias: "Front gel → apprenant (fin d'épisode)"
+              value_template: "{{ apprenant and statut_precedent == 'gel' }}"
+          sequence:
+            - event: chauffage_courbe_gel_episode
+              event_data:
+                phase: "fin"
+                cause: "{{ cycle_reason }}"
+                decision_id: "{{ decision_id }}"
+                timestamp: "{{ now().strftime('%d/%m %H:%M') }}"

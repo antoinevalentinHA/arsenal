@@ -1,0 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — STATISTICS SENSOR :
+#     Chauffage – Courbe – Taux de jours apprenants (observabilité L4)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer la MOYENNE glissante 30 jours de la projection
+#   numérique du statut apprenant (1 = apprenant, 0 = gel),
+#   soit le TAUX DE JOURS APPRENANTS du cycle d'auto-ajustement
+#   de la courbe (budget d'observabilité 76 §6 — indispensable).
+#
+# 🧩 PÉRIMÈTRE / NATURE
+#   - Statistique dérivée sur série temporelle uniquement.
+#   - Forme MINIMALE (contrat 76, conception L4 §5.4) : la
+#     capacité est livrée ; la significativité statistique MÛRIT
+#     par accumulation. Indicateur approché, jamais un score.
+#   - Aucune logique métier, aucune autorité causale, aucun
+#     pilotage. JAMAIS relu par la décision (INV-2).
+#
+# 📋 PARAMÈTRES
+#   state_characteristic : mean (fraction de cycles apprenants)
+#   max_age              : 30 j
+#                          justification : fenêtre saisonnière
+#                          courte ; ≤ purge_keep_days (30 j) donc
+#                          AUCUNE dépendance recorder structurelle
+#                          de la source (contrat Recorder T06).
+#   sampling_size        : 60
+#                          justification : borne haute couvrant
+#                          largement ~1 échantillon/jour sur 30 j.
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.chauffage_courbe_apprenant_num
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier / un pilotage.
+#   - Constituer une autorité décisionnelle.
+#   - Réentrer dans la cascade de décision (étanchéité).
+# ==========================================================
+
+- platform: statistics
+  name: "Chauffage courbe taux jours apprenants"
+  entity_id: sensor.chauffage_courbe_apprenant_num
+  state_characteristic: mean
+  max_age:
+    days: 30
+  sampling_size: 60

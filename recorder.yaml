@@ -719,3 +719,37 @@ include:
     - input_number.chauffage_parallele_consigne
     # Trace lisible de la dernière décision appliquée (avant→après, mode) — ≤ 1/jour
     - input_text.chauffage_last_adjustment
+
+    # =====================================================
+    # ==== 🔥 CHAUFFAGE – AUTO-AJUSTEMENT COURBE (COMPLÉTUDE & APPRENTISSAGE) ====
+    # =====================================================
+    # RECORDER — Population B (observabilité de décision, faible fréquence)
+    # Concrétise la phase P4 (Complétude & statut apprenant) du plan
+    #   d'action observabilité — contrat 76 §4/§8, INV-8. Miroir faible
+    #   cadence du bloc P3 ci-dessus.
+    #
+    #   Rôle : historiser les projections de complétude et d'apprentissage
+    #     du cycle d'auto-ajustement pour rendre la question opposable Q7
+    #     (« trace complète ? cycles gelés / non apprenants ? ») répondable
+    #     A POSTERIORI, sans dépendre de la table `events`.
+    #   Utilité : reconstituer, sur une période passée, les trous de trace,
+    #     les cycles gelés et le taux de jours apprenants.
+    #   Logbook : bruyance nulle (entités à cadence cycle ~1/jour).
+    #   Cardinalité : bornée — datetime (1 valeur/jour), select (3 options),
+    #     texte (vocabulaire fermé §6), verdict (3 états), taux (moyenne).
+    #   Fréquence : ≤ 1 changement / jour (cadence du cycle quotidien 10:00).
+    #
+    #   Étanchéité (INV-2) : sorties d'observabilité pures, jamais relues
+    #     par la décision. Écrites par l'automation consommatrice
+    #     `chauffage_observabilite_courbe_completude_apprentissage`.
+    #
+    # Marqueur du dernier cycle évalué — socle de la complétude (§8)
+    - input_datetime.chauffage_courbe_dernier_cycle
+    # Statut apprenant / gelé du dernier cycle (§4) + mémoire de front d'épisode
+    - input_select.chauffage_courbe_apprentissage_statut
+    # Cause de gel lisible (vocabulaire fermé §6)
+    - input_text.chauffage_courbe_gel_cause
+    # Verdict de complétude dérivé (a_jour / trou_detecte / inconnu)
+    - sensor.chauffage_courbe_completude
+    # Taux de jours apprenants glissant 30 j (forme minimale, mûrit avec la donnée)
+    - sensor.chauffage_courbe_taux_jours_apprenants
