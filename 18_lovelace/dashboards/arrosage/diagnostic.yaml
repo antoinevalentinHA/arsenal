@@ -107,29 +107,6 @@ views:
                 indisponible: 'rgba(158, 158, 158, 0.1)'
 
           # =========================================================
-          # 👁 Observation — Données pont (substrat)
-          # =========================================================
-          - type: custom:button-card
-            template: section_header
-            name: 🛰️ Observation — Données pont
-
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: status_72_on_off
-                entity: binary_sensor.rain_bird_pont_donnees_disponibles
-                name: Données disponibles
-                icon: mdi:database-check
-
-              - type: custom:button-card
-                template: status_72_on_off
-                entity: binary_sensor.rain_bird_pont_donnees_fraiches
-                name: Données fraîches
-                icon: mdi:clock-check
-
-          # =========================================================
           # 🧩 Interprétation — états métier réels
           # =========================================================
           - type: custom:button-card
