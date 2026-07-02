@@ -30,8 +30,19 @@
 > verdict de complétude et taux de jours apprenants (dérivés), événement d'épisode de gel
 > (`chauffage_courbe_gel_episode`), sous-bloc `recorder.yaml` Population B. Vérifs locales : contrats
 > Recorder / initial / helpers CONFORMES ; CI chauffage étages 1-3 CONFORMES ; yamllint clean.
-> **Validation runtime (V1–V8) à confirmer au fil des cycles.** **P5–P9 non démarrées.** Le chantier
-> reste **ouvert**.
+> **Validation runtime (V1–V8) à confirmer au fil des cycles.**
+>
+> **Avancement (2026-07-02). P5 (Dérivation diagnostic) — implémentée.** Lot **L5** livré en deux PR
+> (dossier `02_conception/chauffage/dossier_conception_lot_L5_…md`). **PR 1** — garde d'étanchéité
+> INV-2 rendue opposable/bloquante : validateur `check_chauffage_courbe_etancheite_contracts.py`
+> (la décision ne lit aucune grandeur d'observabilité courbe) + workflow. **PR 2** — dérivés : dérive
+> nette pente/parallèle (`statistics change` sur les consignes confirmées, INV-6), réversions
+> (`counter` + mémoire de sens, sur `chauffage_adjustment`), refus consécutifs (`counter`) et drapeau
+> de persistance `{ras, gel_persistant, refus_recurrent}` (Q8, **signal « à surveiller », jamais
+> anomalique** — CR-7), sous-bloc `recorder.yaml` Population B. Frontière **P5 (trajectoire propre
+> de la courbe) vs P6 (effet régulation)** tranchée. Vérifs locales : contrats CONFORMES, étanchéité
+> mutation-testée, CI chauffage étages 1-3 CONFORMES. **P6–P9 non démarrées.** Le chantier reste
+> **ouvert**.
 
 ---
 

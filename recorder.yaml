@@ -753,3 +753,34 @@ include:
     - sensor.chauffage_courbe_completude
     # Taux de jours apprenants glissant 30 j (forme minimale, mûrit avec la donnée)
     - sensor.chauffage_courbe_taux_jours_apprenants
+
+    # =====================================================
+    # ==== 🔥 CHAUFFAGE – AUTO-AJUSTEMENT COURBE (DÉRIVATION DIAGNOSTIC) ====
+    # =====================================================
+    # RECORDER — Population B (observabilité de décision, faible fréquence)
+    # Concrétise la phase P5 (Dérivation diagnostic) du plan d'action
+    #   observabilité — contrat 76 §3 Q6/Q8, §4, INV-6/INV-8. Miroir faible
+    #   cadence des blocs P3/P4 ci-dessus.
+    #
+    #   Rôle : historiser les dérivés répondant a posteriori à Q6 (la courbe
+    #     a-t-elle dérivé / oscillé ?) et Q8 (un état nominal s'est-il installé
+    #     durablement ?), sans dépendre de la table `events`.
+    #   Utilité : reconstituer la trajectoire (dérive nette), le compte de
+    #     réversions et le drapeau de persistance sur une période passée.
+    #   Logbook : bruyance nulle (dérivés à cadence cycle / statistiques 1/jour).
+    #   Cardinalité : bornée — dérive (float), réversions (compteur monotone),
+    #     persistance (3 états ras/gel_persistant/refus_recurrent).
+    #   Fréquence : ≤ 1 changement / jour (cadence du cycle quotidien 10:00).
+    #
+    #   Étanchéité (INV-2) : sorties d'observabilité pures, jamais relues par la
+    #     décision (garde `check_chauffage_courbe_etancheite_contracts.py`). Les
+    #     grandeurs intermédiaires perdables (dernier_sens_*, refus_consecutifs)
+    #     ne sont volontairement PAS historisées (CR-8).
+    #
+    # Dérive nette confirmée pente / parallèle sur fenêtre saison (Q6, INV-6)
+    - sensor.chauffage_courbe_derive_pente
+    - sensor.chauffage_courbe_derive_parallele
+    # Réversions cumulées — oscillation de la courbe (Q6)
+    - counter.chauffage_courbe_reversions
+    # Drapeau « nominal persistant » — à surveiller (Q8, INV-8)
+    - sensor.chauffage_courbe_persistance

@@ -1,0 +1,35 @@
+# ==========================================================
+# 🧠 ARSENAL — COUNTER :
+#     Chauffage – Courbe – Refus consécutifs (observabilité L5)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Compter les cycles `suggestion_identique` CONSÉCUTIFS de
+#   l'auto-ajustement de la courbe (remis à zéro dès qu'une
+#   application a lieu). Alimente le drapeau « nominal persistant »
+#   facette « refus récurrent » (question opposable Q8, INV-8).
+#
+# ⚠️ SÉMANTIQUE (réserve L5)
+#   `suggestion_identique` est NOMINAL : une courbe stable peut
+#   produire des suggestions identiques sans aucun défaut. Ce
+#   compteur, et le drapeau qu'il alimente, sont un signal
+#   « À SURVEILLER », JAMAIS une qualification anomalique. Le fait
+#   par cycle n'est jamais re-typé (CR-7).
+#
+# 🔖 NATURE
+#   Compteur intermédiaire d'observabilité (perdable, court terme).
+#   Sortie pure : JAMAIS relue par la décision (INV-2).
+#
+# 🔄 ÉCRITURE
+#   Automation `chauffage_observabilite_derivation_courbe` :
+#   +1 sur `suggestion_identique`, reset sur toute application.
+# ==========================================================
+
+chauffage_courbe_refus_consecutifs:
+  name: "Chauffage courbe refus consécutifs"
+  # initial VOULU — compteur
+  # Raison : valeur de reset du compteur ; persistance au reboot gouvernée par restore: true.
+  initial: 0
+  restore: true
+  minimum: 0
+  step: 1
+  icon: mdi:counter

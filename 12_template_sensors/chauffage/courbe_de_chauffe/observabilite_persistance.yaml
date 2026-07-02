@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR :
+#     Chauffage – Courbe – Drapeau de persistance (observabilité L5)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Signaler qu'un état NOMINAL s'installe DURABLEMENT (question
+#   opposable Q8, contrat 76 §10 INV-8), en deux facettes :
+#     - gel_persistant : statut d'apprentissage = gel depuis plus
+#                        d'un seuil de durée (défaut 14 j) ;
+#     - refus_recurrent : `suggestion_identique` consécutifs au-delà
+#                        d'un seuil de récurrence (défaut 10) ;
+#     - ras            : rien à signaler.
+#   Priorité d'affichage : gel_persistant ≻ refus_recurrent ≻ ras.
+#
+# ⚠️ SÉMANTIQUE (réserve L5 — cardinale)
+#   Ceci est un signal « À SURVEILLER », **jamais** une qualification
+#   anomalique. `suggestion_identique` est NOMINAL (CR-7) : une courbe
+#   STABLE peut produire des suggestions identiques sans aucun défaut.
+#   Le drapeau ne re-type JAMAIS le fait par cycle (les statuts/causes
+#   L4 restent inchangés) ; il ajoute une DIMENSION de persistance,
+#   dérivée et séparée. L'état `refus_recurrent` ne vaut pas « anomal ».
+#   Le jugement (sain vs bloqué) revient au superviseur, avec l'effet
+#   sur la régulation (L6) — hors de ce capteur.
+#
+# 🧱 NATURE / GARANTIES
+#   Dérivé d'observabilité PUR (registre diagnostic). Aucune autorité
+#   causale, aucun trigger. JAMAIS relu par la décision (INV-2).
+#   Seuils = paramètres à défaut conservateur, recalibrables (P8),
+#   sans rouvrir le contrat 76.
+#
+# 🔗 DÉPENDANCES (lectures)
+#   - input_select.chauffage_courbe_apprentissage_statut (+ last_changed)
+#   - counter.chauffage_courbe_refus_consecutifs
+#
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- sensor:
+    - name: "Chauffage courbe persistance"
+      unique_id: chauffage_courbe_persistance
+      icon: mdi:eye-check-outline
+      state: >
+        {% set statut = states('input_select.chauffage_courbe_apprentissage_statut') %}
+        {% set refus = states('counter.chauffage_courbe_refus_consecutifs') | int(0) %}
+        {% set seuil_gel_j = 14 %}
+        {% set seuil_refus = 10 %}
+        {% set lc = states.input_select.chauffage_courbe_apprentissage_statut.last_changed %}
+        {% set gel_age_j = ((now() - lc).total_seconds() / 86400) if lc is not none else 0 %}
+        {% if statut == 'gel' and gel_age_j > seuil_gel_j %}
+          gel_persistant
+        {% elif refus >= seuil_refus %}
+          refus_recurrent
+        {% else %}
+          ras
+        {% endif %}
+      attributes:
+        nature: "a_surveiller"
+        seuil_gel_j: "14"
+        seuil_refus: "10"
+        refus_consecutifs: >
+          {{ states('counter.chauffage_courbe_refus_consecutifs') | int(0) }}
+        gel_age_j: >
+          {% set lc = states.input_select.chauffage_courbe_apprentissage_statut.last_changed %}
+          {% set statut = states('input_select.chauffage_courbe_apprentissage_statut') %}
+          {{ (((now() - lc).total_seconds() / 86400) | round(1)) if (lc is not none and statut == 'gel') else 0 }}

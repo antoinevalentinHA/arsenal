@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — STATISTICS SENSORS :
+#     Chauffage – Courbe – Dérive nette pente / parallèle (observabilité L5)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer la VARIATION NETTE (dernier − premier sur la fenêtre)
+#   des valeurs de courbe RÉELLEMENT APPLIQUÉES — soit la DÉRIVE
+#   de la pente et du parallèle sur une fenêtre à l'échelle saison
+#   (question opposable Q6 : « la courbe a-t-elle dérivé ? »).
+#
+# 🧩 BASE DE TRAJECTOIRE (INV-6)
+#   La trajectoire opposable repose EXCLUSIVEMENT sur des valeurs
+#   confirmées appliquées : les consignes `…_consigne` (écrites par
+#   la décision, historisées en P3) — jamais des suggérées/rejetées.
+#   Chemin « intentionnel-confirmé » (CR-2) : un changement de courbe
+#   EXTERNE au boiler resterait invisible faute de relecture (limite
+#   assumée, P0 non tranché).
+#
+# 📋 PARAMÈTRES
+#   state_characteristic : change (net = dernier − premier)
+#   max_age              : 180 j (échelle saison)
+#                          source historisée (P3) donc conforme au
+#                          contrat Recorder T06 (max_age > purge).
+#                          La fenêtre initiale vient de Recorder puis
+#                          se densifie en mémoire (capacité livrée,
+#                          donnée qui mûrit — plan §6).
+#   sampling_size        : 400 (large : ~1 changement/jour sur 180 j)
+#
+# 🚫 INTERDITS
+#   - Réentrer dans la cascade de décision (INV-2, étanchéité).
+#   - Constituer une autorité décisionnelle.
+# ==========================================================
+
+- platform: statistics
+  name: "Chauffage courbe derive pente"
+  entity_id: input_number.chauffage_pente_consigne
+  state_characteristic: change
+  max_age:
+    days: 180
+  sampling_size: 400
+
+- platform: statistics
+  name: "Chauffage courbe derive parallele"
+  entity_id: input_number.chauffage_parallele_consigne
+  state_characteristic: change
+  max_age:
+    days: 180
+  sampling_size: 400

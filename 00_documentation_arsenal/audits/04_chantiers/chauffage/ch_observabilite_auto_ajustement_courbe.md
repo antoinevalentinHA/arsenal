@@ -24,7 +24,15 @@
 > complétude (trou de trace ≠ silence légitime, §8), le statut apprenant/gelé par cycle (§4) et les
 > épisodes de gel (§5 #8) sont désormais dérivés en lecture seule depuis l'événement de cycle, sans
 > rouvrir le chemin décisionnel. Contrats et CI chauffage CONFORMES en local ; validation runtime au
-> fil des cycles. **Chantier toujours ouvert** : P5–P9 (dérivation, effet, supervision) non démarrées.
+> fil des cycles.
+>
+> **Avancement (2026-07-02). P5 (Dérivation diagnostic) — implémentée** (lot L5, 2 PR). Étanchéité
+> INV-2 rendue **opposable et bloquante** (validateur dédié : la décision ne lit aucun dérivé
+> d'observabilité). Dérivés livrés : dérive nette pente/parallèle (Q6, sur valeurs confirmées),
+> réversions (Q6), refus consécutifs et **drapeau de persistance** `{ras, gel_persistant,
+> refus_recurrent}` (Q8) — ce dernier **signal « à surveiller », jamais une qualification anomalique**
+> (une courbe stable peut produire des suggestions identiques). Contrats CONFORMES ; étanchéité
+> mutation-testée. **Chantier toujours ouvert** : P6–P9 (effet, supervision, validation, clôture).
 
 ## 1. Objectif
 

@@ -1,0 +1,40 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT :
+#     Chauffage – Courbe – Dernier sens d'ajustement (observabilité L5)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Mémoriser, par paramètre (pente / parallèle), le SENS de la
+#   dernière application de l'auto-ajustement (hausse / baisse) —
+#   mémoire de front nécessaire à la détection des réversions
+#   (Q6, contrat 76).
+#
+#     - inconnu : aucune application encore mémorisée
+#     - hausse  : dernière application vers le haut
+#     - baisse  : dernière application vers le bas
+#
+# 🧱 AUTORITÉ / NATURE
+#   Écriture exclusive par l'automation
+#   `chauffage_observabilite_derivation_courbe`. Sortie
+#   d'observabilité pure : JAMAIS relue par la décision (INV-2).
+#
+# 🔒 ÉTAT INITIAL
+#   Aucun `initial` (contrat HINIT) : restauration d'état (la
+#   mémoire de sens survit au redémarrage — évite une fausse
+#   réversion au boot). Première option = inconnu.
+# ==========================================================
+
+chauffage_courbe_dernier_sens_pente:
+  name: Chauffage courbe dernier sens pente
+  icon: mdi:slope-uphill
+  options:
+    - inconnu
+    - hausse
+    - baisse
+
+chauffage_courbe_dernier_sens_parallele:
+  name: Chauffage courbe dernier sens parallèle
+  icon: mdi:arrow-up-down
+  options:
+    - inconnu
+    - hausse
+    - baisse

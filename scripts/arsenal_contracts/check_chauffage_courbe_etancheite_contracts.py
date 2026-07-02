@@ -74,6 +74,7 @@ SCAN_DIRS = [ROOT / "10_scripts/chauffage", ROOT / "11_automations/chauffage"]
 # grandeurs d'observabilité courbe dans la surface logique (allowlist).
 OBSERVABILITY_FILES = {
     "11_automations/chauffage/courbe_de_chauffe/observabilite_completude_apprentissage.yaml",  # L4
+    "11_automations/chauffage/courbe_de_chauffe/observabilite_derivation_courbe.yaml",         # L5
 }
 
 # Liste FERMÉE des grandeurs d'observabilité courbe (entités d'état / compteurs).
