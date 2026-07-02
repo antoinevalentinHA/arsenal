@@ -9,5 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
       - name: Validate contract — ECS Désinfection au retour de vacances
-        run: python scripts/arsenal_contracts/check_ecs_desinfection_retour_contracts.py
+        run: python3 scripts/arsenal_contracts/check_ecs_desinfection_retour_contracts.py
