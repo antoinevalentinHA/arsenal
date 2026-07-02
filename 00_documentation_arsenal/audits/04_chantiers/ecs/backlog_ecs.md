@@ -43,9 +43,14 @@
 - **Prérequis** : aucun.
 - **ROI** : **élevé** — faible effort, fort levier de protection.
 
-### ECS-DESINF-2 — Robustesse du couplage à `mode_maison` *(latent)*
+### ECS-DESINF-2 — Robustesse du couplage à `mode_maison` *(TRAITÉ — variante garde CI)*
 
-- **Constat** : consommateur `10250000000021` couplé au trigger `Vacances → Normal` ; sûr à 2 modes, fragile à l'ajout d'un 3ᵉ.
+- **Statut** : **traité (2026-07-02)** — garde de cardinalité ajoutée au validateur
+  `check_ecs_desinfection_retour_contracts.py` (T10) : `input_select.mode_maison` verrouillé à
+  `{Normal, Vacances}`. Toute extension (3ᵉ mode) fait échouer la CI et force une revue du couplage
+  `Vacances → Normal` de la désinfection-retour. Détection ajout/retrait prouvée par mutation-testing.
+  Variante « garde CI uniquement » retenue (pas de modification du trigger runtime).
+- **Constat** *(d'origine)* : consommateur `10250000000021` couplé au trigger `Vacances → Normal` ; sûr à 2 modes, fragile à l'ajout d'un 3ᵉ.
 - **Bénéfice attendu** : **faible aujourd'hui**, préventif.
 - **Risque de régression** : **faible**.
 - **Effort relatif** : **faible** — garde CI sur la cardinalité du select, ou trigger plus robuste.
@@ -103,14 +108,15 @@
 1. **ECS-DOC** — ✅ traité (lot de clôture doctrinale).
 2. **ECS-WD** — ✅ résolu par arbitrage (doctrine (a)) ; `ECS-WD-2` clos (comportement assumé), `ECS-WD-2b` caduc.
 3. **ECS-DESINF-1** (fort levier de protection, faible risque) — ✅ **traité** (validateur dédié + workflow, 2026-07-02).
-4. **ECS-CI-1/2/3** — ✅ **traités** (#230, #229, #231) ; **ECS-OFF-5** (verrouillage des paramètres d'apprentissage `11` §10) — reste à traiter dans le chantier CI.
-5. **ECS-DESINF-2** *(variante garde CI uniquement)* — préventif, reste à traiter dans le chantier CI.
+4. **ECS-CI-1/2/3** — ✅ **traités** (#230, #229, #231) ; **ECS-OFF-5** — ✅ **traité** (#233, verrouillage des paramètres d'apprentissage `11` §10).
+5. **ECS-DESINF-2** *(variante garde CI uniquement)* — ✅ **traité** (garde de cardinalité `mode_maison`, T10).
 6. **ECS-OFF-1** (observabilité de l'apprentissage) — ✅ **réalisé** (recorder + cartes + section diagnostics).
 
-> Reliquat actionnable = **un seul chantier**, distinct et ultérieur, sans item runtime ouvert :
-> - **Chantier « Durcissement CI ECS »** : `ECS-DESINF-1`, `ECS-DESINF-2` (garde), `ECS-CI-1/2/3`, **+ `ECS-OFF-5`**.
+> **Chantier « Durcissement CI ECS » — ✅ CLOS (2026-07-02).** Tous les items livrés :
+> `ECS-DESINF-1` (#228), `ECS-CI-2` (#229), `ECS-CI-1` (#230), `ECS-CI-3` (#231), `ECS-OFF-5` (#233),
+> `ECS-DESINF-2` (garde T10). Plus aucun item actionnable ouvert dans le backlog ECS.
 >
-> Réalisés : observabilité `ECS-OFF-1`, hygiène doc `ECS-DOC-1/2`, watchdog (arbitrage).
-> Risques assumés (`ECS-OFF-3`, `ECS-OFF-7`, `ECS-WD-2`) et dettes documentaires (`ECS-OFF-2/4/6/8`) : voir ci-dessus et contrat `11` §11.
+> Réalisés antérieurement : observabilité `ECS-OFF-1`, hygiène doc `ECS-DOC-1/2`, watchdog (arbitrage).
+> Risques assumés (`ECS-OFF-3`, `ECS-OFF-7`, `ECS-WD-2`) et dettes documentaires (`ECS-OFF-2/4/6/8`) : voir ci-dessus et contrat `11` §11 — hors backlog actionnable.
 
-*Backlog ECS. Acte documentaire — aucun patch, aucune correction. Domaine ECS non clôturé.*
+*Backlog ECS. Acte documentaire — aucun patch, aucune correction. Chantier CI clos ; reliquat = risques assumés et arbitrages, sans item actionnable.*

@@ -13,6 +13,10 @@ désinfection-retour, jusqu'ici non instrumentés :
   - état souverain PERSISTANT — aucun `initial` (§2) ;
   - décision NE lit JAMAIS l'attribut `remaining` / `finishes_at` (§3).
 
+Couvre aussi (ECS-DESINF-2) la garde préventive de cardinalité de
+`input_select.mode_maison` : le couplage `Vacances → Normal` du consommateur
+n'est sûr qu'à 2 modes — toute extension doit trip la CI (T10).
+
 Logique Arsenal habituelle : ERROR => exit 1 ; conforme => exit 0.
 """
 
@@ -67,6 +71,10 @@ SCAN_DIRS = [ROOT / "11_automations", ROOT / "10_scripts"]
 SOVEREIGN = "ecs_desinfection_retour_due"          # input_boolean (clé + suffixe)
 TIMER_ENTITY = "timer.vacances_longues_ecs"
 TIMER_KEY = "vacances_longues_ecs"
+
+# ECS-DESINF-2 — garde de cardinalité du contexte de retour
+MODE_MAISON_FILE = ROOT / "06_input_selects/modes/mode_maison.yaml"
+MODE_MAISON_MODES = {"Normal", "Vacances"}         # cardinalité verrouillée (2 modes)
 
 
 def files_calling_service_on_target(service: str, target: str) -> set[Path]:
@@ -310,6 +318,36 @@ def test_timer_souverain_declare():
 
 
 # ---------------------------------------------------------------------------
+# T10 — Garde de cardinalité de mode_maison (ECS-DESINF-2)
+# ---------------------------------------------------------------------------
+
+def test_mode_maison_cardinalite():
+    """
+    ECS-DESINF-2 — Robustesse du couplage à `mode_maison`.
+
+    Le consommateur (10250000000021) se déclenche sur la transition
+    `Vacances → Normal`. Ce couplage n'est sûr que tant que `mode_maison`
+    possède exactement 2 modes {Normal, Vacances} : l'ajout d'un 3ᵉ mode le
+    fragilise (un retour de Vacances pourrait aboutir ailleurs que `Normal`,
+    et la désinfection-retour ne se déclencherait pas).
+
+    Garde préventive : toute extension de `mode_maison` doit trip la CI et
+    forcer une revue explicite du trigger de la désinfection-retour (trigger
+    plus robuste, ou mise à jour coordonnée assumée).
+    """
+    body = strip_comments(read(MODE_MAISON_FILE))
+    m = re.search(r"options\s*:\s*(.*)$", body, re.DOTALL)
+    options = set(re.findall(r"-\s+([A-Za-z0-9_]+)", m.group(1))) if m else set()
+    check(
+        options == MODE_MAISON_MODES,
+        f"T10 — cardinalité de mode_maison modifiée : {sorted(options)} "
+        f"≠ {sorted(MODE_MAISON_MODES)} — revoir le couplage Vacances→Normal "
+        f"de la désinfection-retour (ECS-DESINF-2)",
+    )
+    ok("T10 — cardinalité mode_maison verrouillée {Normal, Vacances} (ECS-DESINF-2)")
+
+
+# ---------------------------------------------------------------------------
 # Registre
 # ---------------------------------------------------------------------------
 
@@ -323,6 +361,7 @@ TESTS = [
     test_souverain_sans_initial,
     test_pas_de_lecture_remaining,
     test_timer_souverain_declare,
+    test_mode_maison_cardinalite,
 ]
 
 if __name__ == "__main__":
