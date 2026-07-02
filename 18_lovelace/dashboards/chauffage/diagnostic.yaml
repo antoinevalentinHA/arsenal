@@ -30,6 +30,14 @@ views:
           action: navigate
           navigation_path: /diagnostics-thermiques-dashboard
 
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+        name: Auto-ajustement courbe
+        icon: mdi:chart-bell-curve-cumulative
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-courbe-dashboard
+
     ########################################################
     # ♨️ VERTICAL STACK PRINCIPAL
     ########################################################
@@ -151,8 +159,44 @@ views:
             template: section_header
             name: 🔁 Auto-ajustement courbe de chauffe
 
+          # Teaser compact (statut + complétude + accès) — la SUPERVISION
+          # complète (Q1–Q8) vit dans le sous-dashboard dédié. Ne pas
+          # enrichir ici : éviter une seconde supervision / double maintenance.
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: carte_etat_interprete
+                entity: input_select.chauffage_courbe_apprentissage_statut
+                name: Apprentissage
+                variables:
+                  couleurs:
+                    apprenant: 'rgba(76, 175, 80, 0.2)'
+                    gel: 'rgba(158, 158, 158, 0.2)'
+                    inconnu: 'rgba(158, 158, 158, 0.2)'
+                  libelles:
+                    apprenant: Apprenant
+                    gel: Gelé
+                    inconnu: Inconnu
+              - type: custom:button-card
+                template: carte_etat_interprete
+                entity: sensor.chauffage_courbe_completude
+                name: Complétude
+                variables:
+                  couleurs:
+                    a_jour: 'rgba(76, 175, 80, 0.2)'
+                    trou_detecte: 'rgba(255, 152, 0, 0.2)'
+                    inconnu: 'rgba(158, 158, 158, 0.2)'
+                  libelles:
+                    a_jour: À jour
+                    trou_detecte: Trou détecté
+                    inconnu: Inconnu
+
           - type: custom:button-card
-            template: chauffage_auto_courbe_status_72
-            name: Dernier ajustement
-            variables:
-              kind: last
+            template: bouton_navigation
+            name: Ouvrir la supervision
+            icon: mdi:chart-bell-curve-cumulative
+            tap_action:
+              action: navigate
+              navigation_path: /diagnostics-courbe-dashboard

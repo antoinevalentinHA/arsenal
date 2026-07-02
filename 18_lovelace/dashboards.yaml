@@ -502,6 +502,13 @@ diagnostics-thermiques-dashboard:
   show_in_sidebar: false
   filename: 18_lovelace/dashboards/chauffage/diagnostic_thermique.yaml
 
+diagnostics-courbe-dashboard:
+  mode: yaml
+  title: Auto-ajustement courbe
+  icon: mdi:chart-bell-curve-cumulative
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/chauffage/courbe_auto.yaml
+
 diagnostics-ecs-dashboard:
   mode: yaml
   title: ECS

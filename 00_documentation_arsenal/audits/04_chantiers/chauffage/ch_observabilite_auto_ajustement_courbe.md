@@ -5,7 +5,7 @@
 |---|---|
 | **Type** | Chantier |
 | **Domaine** | Chauffage / Auto-ajustement courbe |
-| **Statut** | Ouvert — P1–P6 réalisées ; P7–P9 restantes |
+| **Statut** | Ouvert — P1–P7 réalisées ; P8–P9 restantes |
 | **Origine** | Audit `01_rapports/chauffage/audit_auto_ajustement_courbe.md` (clôturé 2026-06-03) |
 | **Priorité** | 1 (unique chantier issu de l'audit) |
 | **Nature** | Observabilité — **aucun changement de comportement** |
@@ -41,7 +41,15 @@
 > signal indisponible, fenêtre non stabilisée, niveau déjà proche de zéro, ou variation dans le bruit
 > (**pas de faux zéro**). Métriques de régulation **référencées en place** (CR-3) ; attributs
 > `niveau=fenetre_regime` / `nature=correlation` / `confiance`. Garde d'étanchéité **étendue**.
-> **Chantier toujours ouvert** : P7–P9 (supervision, validation, clôture).
+>
+> **Avancement (2026-07-02). P7 (Supervision) — implémentée** (lot L7, PR unique). Sous-dashboard
+> dédié `diagnostics-courbe-dashboard` rattaché au hub Diagnostics Chauffage (scénario B de l'audit
+> d'implantation), badge d'accès + badge retour (R-LL-NAV-1), teaser hub réduit (statut + complétude
+> + accès). Vue de **supervision lecture seule** assemblant les 8 réponses Q1–Q8 depuis L1–L6 (aucune
+> création) : bandeau complétude, effet **borné** (fenêtre régime / corrélation / confiance,
+> `indetermine` visible), persistance rendue **« à surveiller »**. Extension `logbook.yaml` aux
+> entités structurantes. Contrats Lovelace/UI CONFORMES. **Chantier toujours ouvert** : P8 (validation
+> `76` §11 + calibration), P9 (clôture).
 
 ## 1. Objectif
 
