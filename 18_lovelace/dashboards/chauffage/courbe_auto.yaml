@@ -141,10 +141,11 @@ views:
                 entity: sensor.chauffage_parallele_suggeree
                 name: Parallèle suggéré
 
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: sensor.ecart_consigne_instantane
-                name: Écart (erreur)
+          # Pleine largeur (évite une carte isolée en grille 2 colonnes)
+          - type: custom:button-card
+            template: carte_kpi_bleu
+            entity: sensor.ecart_consigne_instantane
+            name: Écart (erreur)
 
           - type: custom:button-card
             template: chauffage_auto_courbe_status_72
@@ -200,10 +201,11 @@ views:
                 entity: sensor.chauffage_courbe_derive_parallele
                 name: Dérive parallèle
 
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: counter.chauffage_courbe_reversions
-                name: Réversions
+          # Pleine largeur sous les deux dérives (évite une carte isolée)
+          - type: custom:button-card
+            template: carte_kpi_bleu
+            entity: counter.chauffage_courbe_reversions
+            name: Réversions
 
           ########################################################
           # 👁 À surveiller — persistance (Q8)
@@ -213,9 +215,12 @@ views:
             template: section_header
             name: 👁 À surveiller — persistance
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: ⚠️ À surveiller — pas une anomalie
+          # Réserve de lecture doctrinale (pas un sous-titre) : markdown justifié.
+          - type: markdown
+            content: >
+              ⚠️ À surveiller, pas une anomalie. La persistance signale un état
+              nominal durable (`gel_persistant` ou `refus_recurrent`) ; elle ne
+              requalifie pas le cycle en anomalie.
 
           - type: custom:button-card
             template: carte_etat_interprete
