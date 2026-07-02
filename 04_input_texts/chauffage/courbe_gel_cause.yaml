@@ -1,0 +1,26 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT :
+#     Chauffage – Courbe – Cause de gel courante (observabilité L4)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#     Exposer, de façon lisible, la CAUSE DE GEL du dernier
+#     cycle non apprenant de l'auto-ajustement de la courbe,
+#     issue du vocabulaire fermé du contrat 76 §6 :
+#       non_representatif | auto_desactive | hors_mode_normal
+#     Vaut « - » lorsque le dernier cycle était apprenant.
+#
+# 🧱 AUTORITÉ / NATURE
+#     - Écriture exclusive par l'automation
+#       `chauffage_observabilite_courbe_completude_apprentissage`.
+#     - Trace lisible d'observabilité (Q7). Sortie pure :
+#       JAMAIS relue par la décision (INV-2).
+#     - Aucune logique locale (helper de mémoire uniquement).
+#
+# 🔒 ÉTAT INITIAL
+#     - Aucun `initial:` (contrat HINIT) : restauration d'état.
+# ==========================================================
+
+chauffage_courbe_gel_cause:
+  name: Chauffage courbe cause de gel
+  icon: mdi:snowflake-alert
+  max: 64

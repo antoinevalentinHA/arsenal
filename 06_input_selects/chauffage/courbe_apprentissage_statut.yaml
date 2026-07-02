@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT :
+#     Chauffage – Courbe – Statut d'apprentissage (observabilité L4)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#     Porter le STATUT APPRENANT / GELÉ du dernier cycle
+#     d'auto-ajustement de la courbe (contrat 76 §4).
+#
+#     - apprenant : la porte d'éligibilité §7/§8 était ouverte
+#                   (REPRESENTATIF ∧ auto ∧ mode Normal) — le
+#                   cycle pouvait apprendre.
+#     - gel       : porte fermée — cycle non apprenant.
+#     - inconnu   : aucun cycle réel encore observé.
+#
+#     Sa VALEUR PERSISTÉE sert aussi de mémoire de front pour
+#     la détection des ÉPISODES DE GEL (début / fin) par
+#     l'automation d'observabilité.
+#
+# 🧱 AUTORITÉ
+#     - Écriture exclusive par l'automation
+#       `chauffage_observabilite_courbe_completude_apprentissage`.
+#     - Sortie d'observabilité pure : JAMAIS relue par la
+#       décision (INV-2, étanchéité).
+#
+# 🔒 ÉTAT INITIAL
+#     - Aucun `initial:` (contrat HINIT) : restauration d'état
+#       (le statut de gel survit au redémarrage — évite un faux
+#       front d'épisode au boot). Première option = inconnu.
+# ==========================================================
+
+chauffage_courbe_apprentissage_statut:
+  name: Chauffage courbe statut apprentissage
+  icon: mdi:school-outline
+  options:
+    - inconnu
+    - apprenant
+    - gel

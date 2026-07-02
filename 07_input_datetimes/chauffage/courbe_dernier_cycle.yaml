@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME :
+#     Chauffage – Courbe – Dernier cycle évalué (observabilité L4)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#     Mémoriser l'HORODATAGE (date + heure) du dernier
+#     cycle d'auto-ajustement de la courbe RÉELLEMENT ÉVALUÉ
+#     (toute issue confondue : appliqué, refusé, abstenu,
+#     silence nominal).
+#
+#     Ce marqueur est le SOCLE DE LA COMPLÉTUDE (contrat 76
+#     §8) : il permet de distinguer un TROU DE TRACE (le cycle
+#     quotidien n'a pas été évalué du tout) d'une ABSENCE
+#     LÉGITIME d'ajustement (cycle évalué, non actionnable).
+#
+# 🧩 NATURE
+#     Mémoire PERSISTANTE — source de vérité temporelle de
+#     l'observabilité. Faible cadence (≤ 1 écriture / jour).
+#
+# 🔄 FONCTIONNEMENT
+#     - Écrit par l'automation d'observabilité
+#       `chauffage_observabilite_courbe_completude_apprentissage`
+#       à chaque événement `chauffage_courbe_cycle_evalue` RÉEL.
+#     - Lu par `sensor.chauffage_courbe_completude` (verdict
+#       de fraîcheur a_jour / trou_detecte).
+#
+# 🚫 NE FAIT PAS
+#     - Ne déclenche aucun cycle, ne pilote aucun équipement.
+#     - N'est JAMAIS relu par la décision (INV-2, étanchéité).
+#     - Ne doit JAMAIS être modifié manuellement.
+#
+# 🔒 ÉTAT INITIAL
+#     - Aucun `initial:` (contrat HINIT) : restauration d'état.
+#       Tant qu'aucun cycle n'a été évalué, la complétude vaut
+#       « inconnu » (conservatoire).
+# ==========================================================
+
+chauffage_courbe_dernier_cycle:
+  name: Chauffage courbe dernier cycle évalué
+  has_date: true
+  has_time: true
+  icon: mdi:clock-check-outline

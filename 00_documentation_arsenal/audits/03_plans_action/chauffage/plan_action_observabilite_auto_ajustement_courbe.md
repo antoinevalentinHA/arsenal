@@ -20,7 +20,18 @@
 > des entrées de garde et du résultat appliqué (6 entités faible-fréquence), cf.
 > [`spec_persistance_termes_decision_courbe.md`](spec_persistance_termes_decision_courbe.md) §3.1
 > et le bloc dédié de `recorder.yaml` ; contrat Recorder CONFORME. Exclusions assumées : ACK (T08),
-> capteurs `statistics`/suggestions (volume). **P4–P9 non démarrées.** Le chantier reste **ouvert**.
+> capteurs `statistics`/suggestions (volume).
+>
+> **Avancement (2026-07-02). P4 (Complétude & statut apprenant) — implémentée.** Lot **L4** livré
+> (dossier de conception `02_conception/chauffage/dossier_conception_lot_L4_…md`) : automation
+> consommatrice `chauffage_observabilite_courbe_completude_apprentissage` (miroir de
+> `log_auto_ajustement.yaml`, `auto_ajustement.yaml` **non rouvert**), marqueur de dernier cycle
+> (`input_datetime`), statut apprenant/gelé persisté (`input_select`) + cause (`input_text`),
+> verdict de complétude et taux de jours apprenants (dérivés), événement d'épisode de gel
+> (`chauffage_courbe_gel_episode`), sous-bloc `recorder.yaml` Population B. Vérifs locales : contrats
+> Recorder / initial / helpers CONFORMES ; CI chauffage étages 1-3 CONFORMES ; yamllint clean.
+> **Validation runtime (V1–V8) à confirmer au fil des cycles.** **P5–P9 non démarrées.** Le chantier
+> reste **ouvert**.
 
 ---
 

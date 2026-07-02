@@ -1,0 +1,63 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS :
+#     Chauffage – Courbe – Observabilité complétude & apprentissage (L4)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#     Dériver, en LECTURE SEULE, deux projections d'observabilité
+#     de l'auto-ajustement de la courbe (contrat 76, phase P4) :
+#
+#     1. sensor.chauffage_courbe_completude
+#        Verdict de fraîcheur du flux périodique (76 §8) :
+#          • a_jour        : un cycle a été évalué récemment
+#          • trou_detecte  : aucun cycle depuis > seuil (défaut 26 h)
+#          • inconnu       : aucun cycle réel encore observé
+#        Distingue un TROU DE TRACE d'une absence légitime
+#        d'ajustement (un silence légitime met à jour le marqueur ;
+#        un trou ne le met pas → la fraîcheur expire).
+#
+#     2. sensor.chauffage_courbe_apprenant_num
+#        Projection numérique 1/0 du statut apprenant courant,
+#        source du taux de jours apprenants (statistics).
+#
+# 🧱 NATURE / GARANTIES
+#     - Dérivés d'observabilité PURS (registre diagnostic).
+#     - Aucune autorité causale, aucun pilotage, aucun trigger.
+#     - JAMAIS relus par la décision (INV-2, étanchéité).
+#     - Le seuil de fraîcheur (26 h) est un PARAMÈTRE à défaut
+#       conservateur (> 24 h : marge anti-jitter d'ordonnancement),
+#       recalibrable en phase de validation (P8) sans rouvrir le
+#       contrat 76.
+#
+# 🔗 DÉPENDANCES (lectures)
+#     - input_datetime.chauffage_courbe_dernier_cycle (attribut timestamp)
+#     - input_select.chauffage_courbe_apprentissage_statut
+#
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- sensor:
+    - name: "Chauffage courbe completude"
+      unique_id: chauffage_courbe_completude
+      icon: mdi:timeline-check-outline
+      state: >
+        {% set ts = state_attr('input_datetime.chauffage_courbe_dernier_cycle', 'timestamp') %}
+        {% if ts is none %}
+          inconnu
+        {% else %}
+          {% set age_h = (now().timestamp() - ts) / 3600 %}
+          {{ 'trou_detecte' if age_h > 26 else 'a_jour' }}
+        {% endif %}
+      attributes:
+        seuil_fraicheur_h: "26"
+        age_heures: >
+          {% set ts = state_attr('input_datetime.chauffage_courbe_dernier_cycle', 'timestamp') %}
+          {{ '?' if ts is none else ((now().timestamp() - ts) / 3600) | round(1) }}
+        dernier_cycle: >
+          {{ states('input_datetime.chauffage_courbe_dernier_cycle') }}
+
+- sensor:
+    - name: "Chauffage courbe apprenant num"
+      unique_id: chauffage_courbe_apprenant_num
+      icon: mdi:school-outline
+      state: >
+        {{ 1 if is_state('input_select.chauffage_courbe_apprentissage_statut', 'apprenant') else 0 }}
