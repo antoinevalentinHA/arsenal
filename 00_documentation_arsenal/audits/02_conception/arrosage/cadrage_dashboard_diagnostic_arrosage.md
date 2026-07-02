@@ -70,7 +70,7 @@ Exemple :
 
 ## 3. Principe directeur n°2 — structure par **domaine**, micro-causalité interne
 
-> **Révision d'implémentation ([PR bascule par domaine](https://github.com/antoinevalentinHA/arsenal/pull/DIAG_DOMAINE_PR), 2026-07-02).**
+> **Révision d'implémentation ([#225](https://github.com/antoinevalentinHA/arsenal/pull/225), 2026-07-02).**
 > La cible initiale ordonnait le dashboard par **étapes de causalité**
 > (Observation → Interprétation → Exécution). À l'usage, un classement **par
 > domaine** (précipitations, sol, climat, exécution) s'est révélé plus lisible :
