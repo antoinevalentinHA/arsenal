@@ -137,30 +137,41 @@ def test_gel_emet_signal():
 
 
 # ---------------------------------------------------------------------------
-# T04 — gel.yaml écrit les entités figées canoniques (§026 §6)
+# T04 — gel.yaml écrit les 7 entités du §026 §6 (données écrites)
 # ---------------------------------------------------------------------------
 
 def test_gel_ecrit_entites_figees():
     """
-    Vérifie que gel.yaml référence les helpers figés contractuels.
-    Contrat §026 §6 : 7 entités doivent être écrites.
-    Test de présence (non d'écriture réelle) pour rester robuste
-    face aux variations de style YAML.
+    Vérifie que gel.yaml référence les 7 entités que le contrat §026 §6
+    (« Données écrites ») énumère comme écrites — et exactement elles :
+    6 données figées + le signal canonique.
+      1. input_number.ecs_duree_dernier_cycle_figee   (durée figée)
+      2. input_number.ecs_duree_chauffe_reel_backup   (backup persistant de durée)
+      3. input_number.ecs_temperature_max_figee       (Tmax cycle pur)
+      4. input_number.ecs_temperature_max_reelle_figee (Tmax réelle cycle + inertie)
+      5. input_text.ecs_resume_dernier_cycle_fige     (résumé validé figé)
+      6. input_text.ecs_dernier_cycle_resume          (miroir du résumé)
+      7. input_boolean.ecs_fin_cycle_signal           (signal canonique)
+    Test de présence (non d'écriture réelle) pour rester robuste face aux
+    variations de style YAML. La mécanique d'émission du signal (7) est
+    contrôlée en propre par T03 ; T04 garantit la complétude du §6.
     """
     content = read(GEL_AUTO)
     required = [
         "ecs_duree_dernier_cycle_figee",
+        "ecs_duree_chauffe_reel_backup",
         "ecs_temperature_max_figee",
         "ecs_temperature_max_reelle_figee",
         "ecs_resume_dernier_cycle_fige",
         "ecs_dernier_cycle_resume",
+        "ecs_fin_cycle_signal",
     ]
     for entity in required:
         check(
             entity in content,
             f"T04 — gel.yaml ne référence pas {entity} (§026 §6)",
         )
-    ok("T04 — gel.yaml référence les entités figées canoniques (§026 §6)")
+    ok("T04 — gel.yaml écrit les 7 entités du §026 §6 (données écrites)")
 
 
 # ---------------------------------------------------------------------------
