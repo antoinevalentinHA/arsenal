@@ -68,17 +68,28 @@ Exemple :
 
 ---
 
-## 3. Principe directeur n°2 — structure par **causalité**, jamais par familles
+## 3. Principe directeur n°2 — structure par **domaine**, micro-causalité interne
 
-Le dashboard n'est **jamais** organisé par familles d'entités ni par technologies.
-Il suit l'**ordre de causalité** du raisonnement du domaine :
+> **Révision d'implémentation ([PR bascule par domaine](https://github.com/antoinevalentinHA/arsenal/pull/DIAG_DOMAINE_PR), 2026-07-02).**
+> La cible initiale ordonnait le dashboard par **étapes de causalité**
+> (Observation → Interprétation → Exécution). À l'usage, un classement **par
+> domaine** (précipitations, sol, climat, exécution) s'est révélé plus lisible :
+> l'utilisateur retrouve « tout ce qui concerne la pluie » au même endroit. Le
+> principe causal n'est **pas abandonné**, il est **descendu d'un cran** : l'ordre
+> macro est thématique, mais **à l'intérieur de chaque domaine** la lecture reste
+> causale (faits observés → conclusion métier). L'interdit **par familles
+> techniques / technologies** demeure entier.
+
+Le dashboard est organisé **par domaine** du raisonnement (précipitations, sol,
+canal climatique, exécution), **jamais** par familles d'entités ni par
+technologies. À l'intérieur de chaque domaine, l'ordre suit la **causalité** :
 
 ```
-Observation  →  Interprétation  →  Décision  →  Exécution  →  Conséquence
+[Domaine]  :  faits observés  →  interprétation / conclusion métier
 ```
 
-L'utilisateur lit une **histoire logique**, pas une succession de capteurs. Chaque
-information n'a sa place que si elle répond à :
+L'utilisateur lit une **histoire logique par sujet**, pas une succession de
+capteurs. Chaque information n'a sa place que si elle répond à :
 
 > **Test d'admission.** « Cela aide-t-il à comprendre le **raisonnement** suivi
 > **et** le **fonctionnement** du domaine — tel qu'il est aujourd'hui, et tel qu'il
