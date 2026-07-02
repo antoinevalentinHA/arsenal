@@ -127,7 +127,8 @@ Le contenu est posé **le long de la causalité**, chaque canal portant son **st
 - **Canal demande climatique : ET₀, VPD, état du canal — explicitement marqués
   « observation à blanc, ne participe pas encore à la décision ; entrera via C11 ».
   (B)**
-- Disponibilité / fraîcheur des données pont (substrat d'observation). **(A)**
+- ~~Disponibilité / fraîcheur des données pont (substrat d'observation).~~ **(A)**
+  > **Décision d'implémentation ([#222](https://github.com/antoinevalentinHA/arsenal/pull/222), 2026-07-02).** Écarté du dashboard livré : `binary_sensor.rain_bird_pont_donnees_disponibles` / `..._fraiches` étaient déjà exposés **à l'identique** sur le cockpit Système Rain Bird (`systeme/rain_bird.yaml`). Pour éviter la duplication (« pont non recopié → lien Système », §2/§7), la section « Observation — Données pont » a été **retirée** : le substrat technique du pont vit uniquement côté Système ; le Diagnostic ne porte que le raisonnement métier. Ce cadrage étant non normatif, la cible §5 est conservée pour mémoire.
 
 ### Interprétation — *les observations transformées en états métier*
 - `besoin_sol` (médiane < seuil + hystérésis). **(A)**
