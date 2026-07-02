@@ -29,7 +29,7 @@ def strip_comments(content: str) -> str:
 
 
 def yaml_files(folder: Path) -> list[Path]:
-    if not folder.exists():\
+    if not folder.exists():
         return []
     return [p for p in folder.rglob("*.yaml") if p.is_file()]
 
