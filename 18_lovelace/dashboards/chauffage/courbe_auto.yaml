@@ -11,20 +11,27 @@ button_card_templates: !include_dir_merge_named /config/19_button_card_templates
 #   (lots L1–L6). Sous-diagnostic rattaché au hub Diagnostics
 #   Chauffage (scénario B de l'audit d'implantation UI).
 #
-# 🚫 SUPERVISION UNIQUEMENT
-#   Aucune action, aucun service, aucun toggle, aucun contrôle.
-#   Le pilotage reste dans le dashboard Réglages Chauffage ;
-#   l'état courant reste au hub. Cette page OBSERVE (INV-1).
+# 🧱 GRAMMAIRE UI ARSENAL (diagnostics)
+#   - États catégoriels : `carte_etat_interprete` (couleurs palette
+#     au site d'appel, gris indispo prioritaire, tap désactivé).
+#   - Valeurs : `carte_kpi_bleu` (socle_kpi_72 — tap désactivé).
+#   - Dernière décision / statut auto : `chauffage_auto_courbe_status_72`.
+#   - En-têtes : `section_header` / `sub_section_header` (emoji).
+#   AUCUNE tile native, markdown réduit au strict nécessaire.
 #
-# 🧱 GARANTIES
-#   - Ne crée aucune grandeur : présente L1–L6 (INV-7, liste
-#     fermée aux 8 questions).
-#   - Effet borné (INV-4) : tendance de fenêtre régime, jamais
-#     causale ; limites (fenêtre, corrélation, confiance,
-#     stabilisation) affichées.
-#   - `indetermine` / indisponible / non stabilisé / `trou_detecte`
-#     / confiance faible restent visibles.
-#   - Persistance rendue « à surveiller », jamais « anomalie ».
+# 🚫 SUPERVISION UNIQUEMENT (INV-1)
+#   Aucune action, aucun service, aucun toggle, aucun contrôle.
+#   Toutes les cartes ont l'interaction désactivée : aucun helper
+#   commandable (input_number / input_select / input_text / counter)
+#   n'est modifiable via more-info. Le pilotage reste dans Réglages
+#   Chauffage ; l'état courant reste au hub.
+#
+# 🧭 GARANTIES
+#   - Ne crée aucune grandeur : présente L1–L6 (INV-7).
+#   - Effet borné (INV-4) : corrélation de fenêtre régime, jamais
+#     causale ; `indetermine` visible (gris indispo), confiance
+#     affichée. Persistance rendue « à surveiller » (jaune vigilance),
+#     jamais « anomalie » (ni rouge, ni orange).
 # ==========================================================
 
 views:
@@ -57,18 +64,54 @@ views:
             columns: 2
             square: false
             cards:
-              - type: tile
+              - type: custom:button-card
+                template: carte_etat_interprete
                 entity: sensor.chauffage_courbe_completude
                 name: Complétude
-              - type: tile
+                variables:
+                  couleurs:
+                    a_jour: 'rgba(76, 175, 80, 0.2)'
+                    trou_detecte: 'rgba(255, 152, 0, 0.2)'
+                    inconnu: 'rgba(158, 158, 158, 0.2)'
+                  libelles:
+                    a_jour: À jour
+                    trou_detecte: Trou détecté
+                    inconnu: Inconnu
+
+              - type: custom:button-card
+                template: carte_etat_interprete
                 entity: input_select.chauffage_courbe_apprentissage_statut
                 name: Apprentissage
-              - type: tile
+                variables:
+                  couleurs:
+                    apprenant: 'rgba(76, 175, 80, 0.2)'
+                    gel: 'rgba(158, 158, 158, 0.2)'
+                    inconnu: 'rgba(158, 158, 158, 0.2)'
+                  libelles:
+                    apprenant: Apprenant
+                    gel: Gelé
+                    inconnu: Inconnu
+
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: sensor.chauffage_courbe_taux_jours_apprenants
                 name: Jours apprenants
-              - type: tile
+
+              - type: custom:button-card
+                template: carte_etat_interprete
                 entity: input_text.chauffage_courbe_gel_cause
                 name: Cause de gel
+                variables:
+                  couleurs:
+                    "-": 'rgba(158, 158, 158, 0.2)'
+                    non_representatif: 'rgba(33, 150, 243, 0.2)'
+                    auto_desactive: 'rgba(33, 150, 243, 0.2)'
+                    hors_mode_normal: 'rgba(33, 150, 243, 0.2)'
+                  libelles:
+                    "-": "—"
+                    non_representatif: Non représentatif
+                    auto_desactive: Auto désactivé
+                    hors_mode_normal: Hors mode normal
 
           ########################################################
           # 🎯 Proposé & décidé (Q1 · Q2 · Q3)
@@ -78,22 +121,36 @@ views:
             template: section_header
             name: 🎯 Proposé & décidé
 
+          - type: custom:button-card
+            template: chauffage_auto_courbe_status_72
+            name: Auto-ajustement
+            variables:
+              kind: auto
+
           - type: grid
             columns: 2
             square: false
             cards:
-              - type: tile
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: sensor.chauffage_pente_suggeree
                 name: Pente suggérée
-              - type: tile
+
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: sensor.chauffage_parallele_suggeree
                 name: Parallèle suggéré
-              - type: tile
+
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: sensor.ecart_consigne_instantane
-                name: Écart consigne (erreur)
-              - type: tile
-                entity: input_text.chauffage_last_adjustment
-                name: Dernière décision
+                name: Écart (erreur)
+
+          - type: custom:button-card
+            template: chauffage_auto_courbe_status_72
+            name: Dernière décision
+            variables:
+              kind: last
 
           ########################################################
           # 🔧 Appliqué & confirmé (Q4)
@@ -103,22 +160,23 @@ views:
             template: section_header
             name: 🔧 Appliqué & confirmé
 
+          - type: custom:button-card
+            template: sub_section_header
+            name: ℹ️ Intentionnel-confirmé — changement externe boiler invisible
+
           - type: grid
             columns: 2
             square: false
             cards:
-              - type: tile
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: input_number.chauffage_pente_consigne
                 name: Pente appliquée
-              - type: tile
+
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: input_number.chauffage_parallele_consigne
                 name: Parallèle appliqué
-
-          - type: markdown
-            content: >
-              Valeurs **intentionnel-confirmé** (écrites et acquittées côté
-              boiler). Un changement de courbe **externe** au boiler resterait
-              invisible faute de relecture — limite assumée.
 
           ########################################################
           # 📈 Trajectoire & oscillation (Q6)
@@ -132,13 +190,18 @@ views:
             columns: 2
             square: false
             cards:
-              - type: tile
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: sensor.chauffage_courbe_derive_pente
-                name: Dérive pente (saison)
-              - type: tile
+                name: Dérive pente
+
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: sensor.chauffage_courbe_derive_parallele
-                name: Dérive parallèle (saison)
-              - type: tile
+                name: Dérive parallèle
+
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: counter.chauffage_courbe_reversions
                 name: Réversions
 
@@ -150,51 +213,75 @@ views:
             template: section_header
             name: 👁 À surveiller — persistance
 
-          - type: tile
+          - type: custom:button-card
+            template: sub_section_header
+            name: ⚠️ À surveiller — pas une anomalie
+
+          - type: custom:button-card
+            template: carte_etat_interprete
             entity: sensor.chauffage_courbe_persistance
             name: Persistance
+            variables:
+              couleurs:
+                ras: 'rgba(76, 175, 80, 0.2)'
+                gel_persistant: 'rgba(255, 235, 59, 0.2)'
+                refus_recurrent: 'rgba(255, 235, 59, 0.2)'
+              libelles:
+                ras: RAS
+                gel_persistant: Gel persistant
+                refus_recurrent: Refus récurrent
 
-          - type: markdown
-            content: >
-              **À surveiller — pas une anomalie.** Un état nominal installé
-              durablement est signalé **sans re-typer** le fait : une courbe
-              stable peut produire des suggestions identiques sans défaut.
-
-              - Persistance : {{ states('sensor.chauffage_courbe_persistance') }}
-              - Refus consécutifs : {{ states('counter.chauffage_courbe_refus_consecutifs') }}
+          - type: custom:button-card
+            template: carte_kpi_bleu
+            entity: counter.chauffage_courbe_refus_consecutifs
+            name: Refus consécutifs
 
           ########################################################
-          # 🧪 Effet — lecture bornée (Q5)
+          # 🧪 Effet — corrélation de fenêtre régime (Q5)
           ########################################################
 
           - type: custom:button-card
             template: section_header
-            name: 🧪 Effet — lecture bornée
+            name: 🧪 Effet — corrélation de fenêtre régime (jamais causal)
 
           - type: grid
             columns: 2
             square: false
             cards:
-              - type: tile
+              - type: custom:button-card
+                template: carte_etat_interprete
                 entity: sensor.chauffage_courbe_effet_pente
                 name: Effet pente (froid)
-              - type: tile
+                variables:
+                  couleurs:
+                    amelioration: 'rgba(76, 175, 80, 0.2)'
+                    degradation: 'rgba(255, 152, 0, 0.2)'
+                    indetermine: 'rgba(158, 158, 158, 0.1)'
+                  libelles:
+                    amelioration: Amélioration
+                    degradation: Dégradation
+                    indetermine: Indéterminé
+
+              - type: custom:button-card
+                template: carte_etat_interprete
                 entity: sensor.chauffage_courbe_effet_parallele
                 name: Effet parallèle (global)
+                variables:
+                  couleurs:
+                    amelioration: 'rgba(76, 175, 80, 0.2)'
+                    degradation: 'rgba(255, 152, 0, 0.2)'
+                    indetermine: 'rgba(158, 158, 158, 0.1)'
+                  libelles:
+                    amelioration: Amélioration
+                    degradation: Dégradation
+                    indetermine: Indéterminé
 
+          # Markdown STRICT NÉCESSAIRE : attributs dynamiques (confiance /
+          # conditions d'indétermination) non portables par une carte
+          # structurée générique.
           - type: markdown
             content: >
-              **Effet — tendance de fenêtre régime, jamais causale.**
-              Corrélation directionnelle (pas de causalité), jamais attribuée à
-              un ajustement isolé (INV-4).
-
-              - **Pente / froid** : {{ states('sensor.chauffage_courbe_effet_pente') }}
-                — confiance {{ state_attr('sensor.chauffage_courbe_effet_pente', 'confiance') }},
-                stabilisé {{ state_attr('sensor.chauffage_courbe_effet_pente', 'stabilise') }}
-              - **Parallèle / global** : {{ states('sensor.chauffage_courbe_effet_parallele') }}
-                — confiance {{ state_attr('sensor.chauffage_courbe_effet_parallele', 'confiance') }},
-                stabilisé {{ state_attr('sensor.chauffage_courbe_effet_parallele', 'stabilise') }}
-
-              `indetermine` si signal **indisponible**, fenêtre **non stabilisée**,
-              écart déjà **proche de zéro**, ou variation **dans le bruit** —
-              jamais masqué.
+              Confiance — pente : {{ state_attr('sensor.chauffage_courbe_effet_pente', 'confiance') }},
+              parallèle : {{ state_attr('sensor.chauffage_courbe_effet_parallele', 'confiance') }}.
+              `indetermine` tant que le signal est indisponible, la fenêtre non
+              stabilisée, l'écart déjà proche de zéro, ou la variation dans le bruit.

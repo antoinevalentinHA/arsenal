@@ -166,14 +166,35 @@ views:
             columns: 2
             square: false
             cards:
-              - type: tile
+              - type: custom:button-card
+                template: carte_etat_interprete
                 entity: input_select.chauffage_courbe_apprentissage_statut
                 name: Apprentissage
-              - type: tile
+                variables:
+                  couleurs:
+                    apprenant: 'rgba(76, 175, 80, 0.2)'
+                    gel: 'rgba(158, 158, 158, 0.2)'
+                    inconnu: 'rgba(158, 158, 158, 0.2)'
+                  libelles:
+                    apprenant: Apprenant
+                    gel: Gelé
+                    inconnu: Inconnu
+              - type: custom:button-card
+                template: carte_etat_interprete
                 entity: sensor.chauffage_courbe_completude
                 name: Complétude
+                variables:
+                  couleurs:
+                    a_jour: 'rgba(76, 175, 80, 0.2)'
+                    trou_detecte: 'rgba(255, 152, 0, 0.2)'
+                    inconnu: 'rgba(158, 158, 158, 0.2)'
+                  libelles:
+                    a_jour: À jour
+                    trou_detecte: Trou détecté
+                    inconnu: Inconnu
 
-          - type: button
+          - type: custom:button-card
+            template: bouton_navigation
             name: Ouvrir la supervision
             icon: mdi:chart-bell-curve-cumulative
             tap_action:
