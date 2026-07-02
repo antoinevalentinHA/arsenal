@@ -50,7 +50,15 @@
 > zéro de l'écart absolu** (`Δ|erreur| < 0`, seuil de bruit) — `statistics change/mean` sur `|erreur|`
 > régime, métriques de régulation **référencées en place** (CR-3), délai de stabilisation +
 > **pas de faux zéro** + attributs `niveau/nature/confiance`. Garde d'étanchéité étendue. Contrats
-> CONFORMES ; étanchéité mutation-testée. **P7–P9 non démarrées.** Le chantier reste **ouvert**.
+> CONFORMES ; étanchéité mutation-testée.
+>
+> **Avancement (2026-07-02). P7 (Supervision) — implémentée.** Lot **L7** livré (audit d'implantation
+> UI → scénario B ; dossier `02_conception/chauffage/dossier_conception_lot_L7_…md`) : sous-dashboard
+> `diagnostics-courbe-dashboard` rattaché au hub (badge accès + retour, `R-LL-NAV-1`), teaser hub
+> réduit, vue de **supervision lecture seule** assemblant Q1–Q8 depuis L1–L6 (bandeau complétude,
+> effet borné avec `indetermine` visible, persistance « à surveiller »), extension `logbook.yaml`
+> aux entités structurantes. Contrats Lovelace/UI CONFORMES. **P8–P9 non démarrées.** Le chantier
+> reste **ouvert**.
 
 ---
 

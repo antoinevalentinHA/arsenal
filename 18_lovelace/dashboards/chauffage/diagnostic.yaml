@@ -30,6 +30,14 @@ views:
           action: navigate
           navigation_path: /diagnostics-thermiques-dashboard
 
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+        name: Auto-ajustement courbe
+        icon: mdi:chart-bell-curve-cumulative
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-courbe-dashboard
+
     ########################################################
     # ♨️ VERTICAL STACK PRINCIPAL
     ########################################################
@@ -151,8 +159,23 @@ views:
             template: section_header
             name: 🔁 Auto-ajustement courbe de chauffe
 
-          - type: custom:button-card
-            template: chauffage_auto_courbe_status_72
-            name: Dernier ajustement
-            variables:
-              kind: last
+          # Teaser compact (statut + complétude + accès) — la SUPERVISION
+          # complète (Q1–Q8) vit dans le sous-dashboard dédié. Ne pas
+          # enrichir ici : éviter une seconde supervision / double maintenance.
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: input_select.chauffage_courbe_apprentissage_statut
+                name: Apprentissage
+              - type: tile
+                entity: sensor.chauffage_courbe_completude
+                name: Complétude
+
+          - type: button
+            name: Ouvrir la supervision
+            icon: mdi:chart-bell-curve-cumulative
+            tap_action:
+              action: navigate
+              navigation_path: /diagnostics-courbe-dashboard

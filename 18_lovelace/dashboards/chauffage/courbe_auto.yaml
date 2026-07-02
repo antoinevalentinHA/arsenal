@@ -1,0 +1,200 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+# ==========================================================
+# 🧠 ARSENAL — DASHBOARD :
+#     Chauffage – Diagnostics – Auto-ajustement courbe (SUPERVISION)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Vue de SUPERVISION (lecture seule) de l'auto-ajustement de
+#   la courbe de chauffe. Assemble les 8 réponses opposables du
+#   contrat 76 (§3 Q1–Q8) à partir des grandeurs déjà dérivées
+#   (lots L1–L6). Sous-diagnostic rattaché au hub Diagnostics
+#   Chauffage (scénario B de l'audit d'implantation UI).
+#
+# 🚫 SUPERVISION UNIQUEMENT
+#   Aucune action, aucun service, aucun toggle, aucun contrôle.
+#   Le pilotage reste dans le dashboard Réglages Chauffage ;
+#   l'état courant reste au hub. Cette page OBSERVE (INV-1).
+#
+# 🧱 GARANTIES
+#   - Ne crée aucune grandeur : présente L1–L6 (INV-7, liste
+#     fermée aux 8 questions).
+#   - Effet borné (INV-4) : tendance de fenêtre régime, jamais
+#     causale ; limites (fenêtre, corrélation, confiance,
+#     stabilisation) affichées.
+#   - `indetermine` / indisponible / non stabilisé / `trou_detecte`
+#     / confiance faible restent visibles.
+#   - Persistance rendue « à surveiller », jamais « anomalie ».
+# ==========================================================
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-chauffage-dashboard
+
+    cards:
+      - type: vertical-stack
+        cards:
+
+          ########################################################
+          # 📋 Bandeau — Complétude & apprentissage (Q7)
+          ########################################################
+
+          - type: custom:button-card
+            template: section_header
+            name: 📋 Complétude & apprentissage
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: sensor.chauffage_courbe_completude
+                name: Complétude
+              - type: tile
+                entity: input_select.chauffage_courbe_apprentissage_statut
+                name: Apprentissage
+              - type: tile
+                entity: sensor.chauffage_courbe_taux_jours_apprenants
+                name: Jours apprenants
+              - type: tile
+                entity: input_text.chauffage_courbe_gel_cause
+                name: Cause de gel
+
+          ########################################################
+          # 🎯 Proposé & décidé (Q1 · Q2 · Q3)
+          ########################################################
+
+          - type: custom:button-card
+            template: section_header
+            name: 🎯 Proposé & décidé
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: sensor.chauffage_pente_suggeree
+                name: Pente suggérée
+              - type: tile
+                entity: sensor.chauffage_parallele_suggeree
+                name: Parallèle suggéré
+              - type: tile
+                entity: sensor.ecart_consigne_instantane
+                name: Écart consigne (erreur)
+              - type: tile
+                entity: input_text.chauffage_last_adjustment
+                name: Dernière décision
+
+          ########################################################
+          # 🔧 Appliqué & confirmé (Q4)
+          ########################################################
+
+          - type: custom:button-card
+            template: section_header
+            name: 🔧 Appliqué & confirmé
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: input_number.chauffage_pente_consigne
+                name: Pente appliquée
+              - type: tile
+                entity: input_number.chauffage_parallele_consigne
+                name: Parallèle appliqué
+
+          - type: markdown
+            content: >
+              Valeurs **intentionnel-confirmé** (écrites et acquittées côté
+              boiler). Un changement de courbe **externe** au boiler resterait
+              invisible faute de relecture — limite assumée.
+
+          ########################################################
+          # 📈 Trajectoire & oscillation (Q6)
+          ########################################################
+
+          - type: custom:button-card
+            template: section_header
+            name: 📈 Trajectoire & oscillation
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: sensor.chauffage_courbe_derive_pente
+                name: Dérive pente (saison)
+              - type: tile
+                entity: sensor.chauffage_courbe_derive_parallele
+                name: Dérive parallèle (saison)
+              - type: tile
+                entity: counter.chauffage_courbe_reversions
+                name: Réversions
+
+          ########################################################
+          # 👁 À surveiller — persistance (Q8)
+          ########################################################
+
+          - type: custom:button-card
+            template: section_header
+            name: 👁 À surveiller — persistance
+
+          - type: tile
+            entity: sensor.chauffage_courbe_persistance
+            name: Persistance
+
+          - type: markdown
+            content: >
+              **À surveiller — pas une anomalie.** Un état nominal installé
+              durablement est signalé **sans re-typer** le fait : une courbe
+              stable peut produire des suggestions identiques sans défaut.
+
+              - Persistance : {{ states('sensor.chauffage_courbe_persistance') }}
+              - Refus consécutifs : {{ states('counter.chauffage_courbe_refus_consecutifs') }}
+
+          ########################################################
+          # 🧪 Effet — lecture bornée (Q5)
+          ########################################################
+
+          - type: custom:button-card
+            template: section_header
+            name: 🧪 Effet — lecture bornée
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: sensor.chauffage_courbe_effet_pente
+                name: Effet pente (froid)
+              - type: tile
+                entity: sensor.chauffage_courbe_effet_parallele
+                name: Effet parallèle (global)
+
+          - type: markdown
+            content: >
+              **Effet — tendance de fenêtre régime, jamais causale.**
+              Corrélation directionnelle (pas de causalité), jamais attribuée à
+              un ajustement isolé (INV-4).
+
+              - **Pente / froid** : {{ states('sensor.chauffage_courbe_effet_pente') }}
+                — confiance {{ state_attr('sensor.chauffage_courbe_effet_pente', 'confiance') }},
+                stabilisé {{ state_attr('sensor.chauffage_courbe_effet_pente', 'stabilise') }}
+              - **Parallèle / global** : {{ states('sensor.chauffage_courbe_effet_parallele') }}
+                — confiance {{ state_attr('sensor.chauffage_courbe_effet_parallele', 'confiance') }},
+                stabilisé {{ state_attr('sensor.chauffage_courbe_effet_parallele', 'stabilise') }}
+
+              `indetermine` si signal **indisponible**, fenêtre **non stabilisée**,
+              écart déjà **proche de zéro**, ou variation **dans le bruit** —
+              jamais masqué.

@@ -6,6 +6,13 @@ include:
     # =====================================================
     - sensor.programme_chauffage
 
+    # --- Auto-ajustement courbe : événements STRUCTURANTS (pas de télémétrie) ---
+    # Transitions apprenant/gel (= épisodes de gel), drapeau de persistance
+    # « à surveiller », trou de trace de complétude. Cadence faible.
+    - input_select.chauffage_courbe_apprentissage_statut
+    - sensor.chauffage_courbe_persistance
+    - sensor.chauffage_courbe_completude
+
     # =====================================================
     # ❄️ CLIMATISATION
     # =====================================================
