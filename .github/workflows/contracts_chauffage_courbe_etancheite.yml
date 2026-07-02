@@ -1,0 +1,17 @@
+name: Arsenal Contracts — Chauffage courbe etancheite
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract-chauffage-courbe-etancheite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate contract — Chauffage étanchéité observabilité courbe (INV-2)
+        run: python3 scripts/arsenal_contracts/check_chauffage_courbe_etancheite_contracts.py
