@@ -1,0 +1,150 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Observabilité courbe : dérivation (réversions & refus)
+#
+#  ID : 10240000000013
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Alimenter, EN LECTURE SEULE, deux dérivés de la couche P5 :
+#       1. Réversions (Q6) — sur `chauffage_adjustment` réel :
+#          détecte l'inversion de sens d'une application vs la
+#          dernière du même paramètre (mémoire de sens persistée),
+#          et incrémente le compteur de réversions.
+#       2. Refus consécutifs (Q8, facette « refus récurrent ») —
+#          sur `chauffage_courbe_cycle_evalue` réel : +1 sur
+#          `suggestion_identique`, remise à zéro sur toute
+#          application.
+#
+#  🧱 PRINCIPE ARSENAL — OBSERVABILITÉ PURE
+#     - Consommateur d'événements (miroir de log_auto_ajustement.yaml
+#       et de observabilite_completude_apprentissage.yaml).
+#     - NE ROUVRE PAS le chemin décisionnel (auto_ajustement.yaml
+#       intact — INV-1). N'écrit QUE des sorties d'observabilité ;
+#       rien ne réentre dans la décision (INV-2, étanchéité).
+#
+#  ⚠️ SÉMANTIQUE (réserve L5)
+#     `suggestion_identique` est NOMINAL : le compteur de refus, et le
+#     drapeau de persistance qu'il alimente, sont un signal
+#     « à surveiller », jamais une qualification anomalique. Aucun
+#     re-typage du fait par cycle (CR-7).
+#
+#  🚫 NE FAIT PAS
+#     - Ne décide, n'applique, ne pilote rien.
+#     - Ne traite PAS les cycles de simulation (CR-9).
+# ==========================================================
+
+- id: "10240000000013"
+  alias: "Chauffage – Observabilité courbe : dérivation (réversions & refus)"
+  description: >
+    Dérive les réversions d'ajustement et les refus consécutifs à partir
+    des événements courbe (lecture seule, contrat 76 phase P5). Aucune
+    action sur la décision.
+  mode: queued
+  max: 10
+
+  trigger:
+    - platform: event
+      event_type: chauffage_adjustment
+      id: adjustment
+    - platform: event
+      event_type: chauffage_courbe_cycle_evalue
+      id: cycle
+
+  condition:
+    - condition: template
+      alias: "Cycle réel uniquement (simulation exclue — CR-9)"
+      value_template: >
+        {{ (trigger.event.data.mode | default('real')) == 'real' }}
+
+  action:
+    - choose:
+
+        # ==================================================
+        # 1) RÉVERSIONS — sur application réelle (chauffage_adjustment)
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.id == 'adjustment' }}"
+          sequence:
+            - variables:
+                pente_appl: "{{ (trigger.event.data.pente_applied | string | lower) == 'true' }}"
+                para_appl: "{{ (trigger.event.data.para_applied | string | lower) == 'true' }}"
+                pb: "{{ trigger.event.data.pente_before | float(none) }}"
+                pa: "{{ trigger.event.data.pente_after | float(none) }}"
+                qb: "{{ trigger.event.data.para_before | float(none) }}"
+                qa: "{{ trigger.event.data.para_after | float(none) }}"
+
+            # --- Pente ---
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ pente_appl and pb is not none and pa is not none and pa != pb }}"
+                  sequence:
+                    - variables:
+                        sens_p: "{{ 'hausse' if pa > pb else 'baisse' }}"
+                        prev_p: "{{ states('input_select.chauffage_courbe_dernier_sens_pente') }}"
+                    - choose:
+                        - conditions:
+                            - condition: template
+                              value_template: "{{ prev_p in ['hausse','baisse'] and prev_p != sens_p }}"
+                          sequence:
+                            - service: counter.increment
+                              target:
+                                entity_id: counter.chauffage_courbe_reversions
+                    - service: input_select.select_option
+                      target:
+                        entity_id: input_select.chauffage_courbe_dernier_sens_pente
+                      data:
+                        option: "{{ sens_p }}"
+
+            # --- Parallèle ---
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ para_appl and qb is not none and qa is not none and qa != qb }}"
+                  sequence:
+                    - variables:
+                        sens_q: "{{ 'hausse' if qa > qb else 'baisse' }}"
+                        prev_q: "{{ states('input_select.chauffage_courbe_dernier_sens_parallele') }}"
+                    - choose:
+                        - conditions:
+                            - condition: template
+                              value_template: "{{ prev_q in ['hausse','baisse'] and prev_q != sens_q }}"
+                          sequence:
+                            - service: counter.increment
+                              target:
+                                entity_id: counter.chauffage_courbe_reversions
+                    - service: input_select.select_option
+                      target:
+                        entity_id: input_select.chauffage_courbe_dernier_sens_parallele
+                      data:
+                        option: "{{ sens_q }}"
+
+        # ==================================================
+        # 2) REFUS CONSÉCUTIFS — sur cycle évalué (chauffage_courbe_cycle_evalue)
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.id == 'cycle' }}"
+          sequence:
+            - variables:
+                reason: "{{ trigger.event.data.cycle_reason | default('') }}"
+                pi: "{{ trigger.event.data.pente_issue | default('') }}"
+                qi: "{{ trigger.event.data.parallele_issue | default('') }}"
+            - choose:
+                # Une application a eu lieu → la série de refus est rompue
+                - conditions:
+                    - condition: template
+                      value_template: "{{ pi == 'applied' or qi == 'applied' }}"
+                  sequence:
+                    - service: counter.reset
+                      target:
+                        entity_id: counter.chauffage_courbe_refus_consecutifs
+                # Refus nominal « suggestion identique » → +1 (à surveiller, pas anomal)
+                - conditions:
+                    - condition: template
+                      value_template: "{{ reason == 'suggestion_identique' }}"
+                  sequence:
+                    - service: counter.increment
+                      target:
+                        entity_id: counter.chauffage_courbe_refus_consecutifs

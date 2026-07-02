@@ -1,0 +1,35 @@
+# ==========================================================
+# 🧠 ARSENAL — COUNTER :
+#     Chauffage – Courbe – Réversions d'ajustement (observabilité L5)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Comptabiliser les RÉVERSIONS de l'auto-ajustement de la
+#   courbe : une application dont le sens (hausse/baisse) est
+#   opposé à la précédente du même paramètre. Beaucoup de
+#   réversions = courbe qui oscille ; peu = courbe qui converge
+#   (question opposable Q6, contrat 76).
+#
+# 🔖 NATURE
+#   Accumulateur de diagnostic (observabilité). Sortie pure :
+#   JAMAIS relue par la décision (INV-2, étanchéité).
+#
+# 🔄 ÉCRITURE
+#   Incrémenté par l'automation
+#   `chauffage_observabilite_derivation_courbe` sur inversion de
+#   sens d'une application réelle. Aucune remise à zéro nominale
+#   (cumul long terme ; la lecture se fait en tendance).
+#
+# 🚫 INTERDITS
+#   - Constituer une autorité décisionnelle.
+#   - Réentrer dans la cascade de décision.
+# ==========================================================
+
+chauffage_courbe_reversions:
+  name: "Chauffage courbe réversions"
+  # initial VOULU — compteur
+  # Raison : valeur de reset du compteur ; persistance au reboot gouvernée par restore: true.
+  initial: 0
+  restore: true
+  minimum: 0
+  step: 1
+  icon: mdi:swap-vertical-bold
