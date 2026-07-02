@@ -27,9 +27,16 @@
 - **Volet runtime (`ECS-WD-2b`)** : **CADUC** — doctrine (b) rejetée, aucun chantier runtime autorisé.
 - **Réouverture** : conditionnée à une **preuve forte** (occurrence réelle observée d'une désinfection > 30 min produisant l'effet), non à une hypothèse théorique. Tracé pour éviter une ré-ouverture en audit.
 
-### ECS-DESINF-1 — Couverture CI du sous-système désinfection-retour
+### ECS-DESINF-1 — Couverture CI du sous-système désinfection-retour *(TRAITÉ)*
 
-- **Constat** : invariants les plus critiques du corpus (`09` §2/§3) **non couverts** par les validateurs ; implémentation pourtant conforme.
+- **Statut** : **traité (2026-07-02)** — validateur dédié
+  `scripts/arsenal_contracts/check_ecs_desinfection_retour_contracts.py` (9 tests, T01–T09)
+  + workflow `contracts_ecs_desinfection_retour.yml`. Couvre les 5 invariants opposables
+  `09` §2/§3 : légitimité par `timer.finished` (jamais `timer.cancel`), écrivain souverain
+  unique par transition (ON/OFF), idempotence (garde état ON + consommation), état persistant
+  sans `initial`, non-lecture de `remaining`/`finishes_at`. Runtime constaté **conforme** ;
+  détection prouvée par mutation-testing (chaque test voit sa violation). Aucun impact runtime.
+- **Constat** *(d'origine)* : invariants les plus critiques du corpus (`09` §2/§3) **non couverts** par les validateurs ; implémentation pourtant conforme.
 - **Bénéfice attendu** : **élevé** — barrière anti-régression sur la fonction sanitaire (légitimité `timer.finished`, écrivain souverain unique, absence de `initial`, non-lecture de `remaining`).
 - **Risque de régression** : **faible** — ajout de tests CI ; aucun impact runtime.
 - **Effort relatif** : **faible à moyen** — nouveaux tests dans un validateur dédié ou existant.
@@ -88,7 +95,7 @@
 
 1. **ECS-DOC** — ✅ traité (lot de clôture doctrinale).
 2. **ECS-WD** — ✅ résolu par arbitrage (doctrine (a)) ; `ECS-WD-2` clos (comportement assumé), `ECS-WD-2b` caduc.
-3. **ECS-DESINF-1** (fort levier de protection, faible risque) — reste à traiter via le chantier CI.
+3. **ECS-DESINF-1** (fort levier de protection, faible risque) — ✅ **traité** (validateur dédié + workflow, 2026-07-02).
 4. **ECS-CI** + **ECS-OFF-5** (hygiène de chaîne + verrouillage des paramètres d'apprentissage `11` §10) — chantier CI.
 5. **ECS-DESINF-2** *(variante garde CI uniquement)* — préventif, dans le chantier CI.
 6. **ECS-OFF-1** (observabilité de l'apprentissage) — ✅ **réalisé** (recorder + cartes + section diagnostics).
