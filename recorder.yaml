@@ -784,3 +784,29 @@ include:
     - counter.chauffage_courbe_reversions
     # Drapeau « nominal persistant » — à surveiller (Q8, INV-8)
     - sensor.chauffage_courbe_persistance
+
+    # =====================================================
+    # ==== 🔥 CHAUFFAGE – AUTO-AJUSTEMENT COURBE (EFFET / FENÊTRE RÉGIME) ====
+    # =====================================================
+    # RECORDER — Population B (observabilité de décision, faible fréquence)
+    # Concrétise la phase P6 (Couche effet) du plan d'action observabilité —
+    #   contrat 76 §3 Q5, §10 INV-4. Miroir faible cadence des blocs P3/P4/P5.
+    #
+    #   Rôle : historiser l'EFFET par fenêtre régime (corrélation
+    #     directionnelle amelioration/degradation/indetermine), pour répondre
+    #     a posteriori à Q5 sans dépendre de la table `events`.
+    #   Utilité : relire la tendance d'effet appariée au régime (pente↔froid,
+    #     parallèle↔global) sur une période passée, avec ses limites.
+    #   Logbook : bruyance nulle (état de fenêtre, change rarement).
+    #   Cardinalité : bornée — 3 états {amelioration, degradation, indetermine}.
+    #   Fréquence : cadence de fenêtre (rare).
+    #
+    #   Étanchéité (INV-2) : sorties d'observabilité pures, jamais relues par la
+    #     décision (garde `check_chauffage_courbe_etancheite_contracts.py`,
+    #     liste fermée étendue). Les métriques de régulation restent RÉFÉRENCÉES
+    #     EN PLACE (déjà historisées) ; les tendances intermédiaires
+    #     (abs_ecart_*, err_delta/niveau_*) ne sont PAS historisées (CR-3/CR-8).
+    #
+    # Effet borné par régime (Q5, INV-4) — corrélation de fenêtre, jamais causal
+    - sensor.chauffage_courbe_effet_pente
+    - sensor.chauffage_courbe_effet_parallele

@@ -41,8 +41,16 @@
 > de persistance `{ras, gel_persistant, refus_recurrent}` (Q8, **signal « à surveiller », jamais
 > anomalique** — CR-7), sous-bloc `recorder.yaml` Population B. Frontière **P5 (trajectoire propre
 > de la courbe) vs P6 (effet régulation)** tranchée. Vérifs locales : contrats CONFORMES, étanchéité
-> mutation-testée, CI chauffage étages 1-3 CONFORMES. **P6–P9 non démarrées.** Le chantier reste
-> **ouvert**.
+> mutation-testée, CI chauffage étages 1-3 CONFORMES.
+>
+> **Avancement (2026-07-02). P6 (Couche effet) — implémentée.** Lot **L6** livré (dossier
+> `02_conception/chauffage/dossier_conception_lot_L6_…md`) : effet **au seul niveau fenêtre régime**
+> (pente↔froid / parallèle↔global, CR-4), **corrélation directionnelle** {amelioration, degradation,
+> indetermine} jamais causale par ajustement (INV-4). `amelioration` verrouillée comme **tendance vers
+> zéro de l'écart absolu** (`Δ|erreur| < 0`, seuil de bruit) — `statistics change/mean` sur `|erreur|`
+> régime, métriques de régulation **référencées en place** (CR-3), délai de stabilisation +
+> **pas de faux zéro** + attributs `niveau/nature/confiance`. Garde d'étanchéité étendue. Contrats
+> CONFORMES ; étanchéité mutation-testée. **P7–P9 non démarrées.** Le chantier reste **ouvert**.
 
 ---
 

@@ -97,6 +97,15 @@ OBSERVABILITY_ENTITIES = [
     "chauffage_courbe_persistance",
     "chauffage_courbe_dernier_sens_pente",
     "chauffage_courbe_dernier_sens_parallele",
+    # L6 — couche effet (fenêtre régime)
+    "chauffage_courbe_abs_ecart_froid",
+    "chauffage_courbe_abs_ecart_global",
+    "chauffage_courbe_err_delta_pente",
+    "chauffage_courbe_err_niveau_pente",
+    "chauffage_courbe_err_delta_parallele",
+    "chauffage_courbe_err_niveau_parallele",
+    "chauffage_courbe_effet_pente",
+    "chauffage_courbe_effet_parallele",
 ]
 
 
