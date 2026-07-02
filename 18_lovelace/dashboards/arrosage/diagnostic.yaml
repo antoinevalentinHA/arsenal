@@ -83,28 +83,22 @@ views:
             square: false
             cards:
               - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: sensor.jardin_humidite_sol_mediane
-                name: Médiane
-                icon: mdi:water-percent
+                template: carte_etat_interprete
+                entity: sensor.jardin_reservoir_sol_etat
+                name: État réservoir sol
+                icon: mdi:cup-water
+                variables:
+                  couleurs:
+                    complet: 'rgba(76, 175, 80, 0.2)'
+                    degrade: 'rgba(255, 235, 59, 0.2)'
+                    insuffisant: 'rgba(255, 152, 0, 0.2)'
+                    indisponible: 'rgba(158, 158, 158, 0.1)'
 
               - type: custom:button-card
                 template: carte_kpi_bleu
                 entity: sensor.jardin_humidite_sol_points_frais
                 name: Points frais
                 icon: mdi:check-decagram
-
-          - type: custom:button-card
-            template: carte_etat_interprete
-            entity: sensor.jardin_reservoir_sol_etat
-            name: État réservoir sol
-            icon: mdi:cup-water
-            variables:
-              couleurs:
-                complet: 'rgba(76, 175, 80, 0.2)'
-                degrade: 'rgba(255, 235, 59, 0.2)'
-                insuffisant: 'rgba(255, 152, 0, 0.2)'
-                indisponible: 'rgba(158, 158, 158, 0.1)'
 
           # =========================================================
           # 🧩 Interprétation — états métier réels
