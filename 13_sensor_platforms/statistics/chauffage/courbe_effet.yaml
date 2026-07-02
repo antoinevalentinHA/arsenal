@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — STATISTICS SENSORS :
+#     Chauffage – Courbe – Tendances d'effet par régime (observabilité L6)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Fournir, par régime, les deux tendances de fenêtre nécessaires
+#   au classement de l'effet (contrat 76 Q5, INV-4) :
+#     - `change` de l'ÉCART ABSOLU  → Δ|erreur| (net sur la fenêtre) :
+#         < 0 ⇒ |erreur| a tendu vers 0 (candidat « amelioration ») ;
+#     - `mean`   de l'écart absolu  → niveau |erreur| moyen (garde
+#         « déjà proche de zéro » + confiance).
+#   Le CLASSEMENT (amelioration/degradation/indetermine, seuil de
+#   bruit, stabilisation, faux-zéro) est porté par les capteurs
+#   template `chauffage_courbe_effet_*` (fichier observabilite_effet).
+#
+# 🧩 PÉRIMÈTRE / NATURE
+#   Statistiques dérivées sur série temporelle uniquement (les
+#   métriques d'erreur sont RÉFÉRENCÉES EN PLACE, jamais recalculées —
+#   CR-3). Aucune logique métier, aucune autorité causale, aucun
+#   pilotage. JAMAIS relues par la décision (INV-2).
+#
+# 📋 PARAMÈTRES
+#   max_age       : 7 j (fenêtre régime multi-jours ; ≤ purge_keep_days
+#                   (30 j) ⇒ aucune dépendance Recorder de la source,
+#                   contrat Recorder T06). Tendance bornée qui mûrit.
+#   sampling_size : 2000 (couvre ~7 j à cadence usuelle de l'erreur)
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.chauffage_courbe_abs_ecart_froid   (pente / régime froid)
+#         sensor.chauffage_courbe_abs_ecart_global  (parallèle / global)
+# ==========================================================
+
+# --- PENTE ↔ régime froid ---
+- platform: statistics
+  name: "Chauffage courbe err delta pente"
+  entity_id: sensor.chauffage_courbe_abs_ecart_froid
+  state_characteristic: change
+  max_age:
+    days: 7
+  sampling_size: 2000
+
+- platform: statistics
+  name: "Chauffage courbe err niveau pente"
+  entity_id: sensor.chauffage_courbe_abs_ecart_froid
+  state_characteristic: mean
+  max_age:
+    days: 7
+  sampling_size: 2000
+
+# --- PARALLÈLE ↔ régime global ---
+- platform: statistics
+  name: "Chauffage courbe err delta parallele"
+  entity_id: sensor.chauffage_courbe_abs_ecart_global
+  state_characteristic: change
+  max_age:
+    days: 7
+  sampling_size: 2000
+
+- platform: statistics
+  name: "Chauffage courbe err niveau parallele"
+  entity_id: sensor.chauffage_courbe_abs_ecart_global
+  state_characteristic: mean
+  max_age:
+    days: 7
+  sampling_size: 2000

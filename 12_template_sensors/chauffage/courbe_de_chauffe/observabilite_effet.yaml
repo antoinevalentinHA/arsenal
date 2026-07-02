@@ -1,0 +1,169 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS :
+#     Chauffage – Courbe – Couche effet (fenêtre régime) — observabilité L6
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Répondre à la question opposable Q5 (« comment la régulation
+#   a-t-elle évolué après les ajustements ? ») AU SEUL NIVEAU
+#   FENÊTRE RÉGIME, en TENDANCE BORNÉE (contrat 76 §3 Q5, INV-4).
+#
+#   Deux effets appariés au régime (CR-4) :
+#     - effet PENTE      ↔ régime FROID  (erreur `…_froid`)
+#     - effet PARALLÈLE  ↔ régime GLOBAL (erreur globale)
+#   État fermé : { amelioration | degradation | indetermine }.
+#
+# 🧭 SÉMANTIQUE VERROUILLÉE (réserve L6 — cardinale)
+#   `amelioration` mesure une TENDANCE VERS ZÉRO de l'ÉCART ABSOLU
+#   à la consigne (réduction de |erreur|), JAMAIS une simple baisse
+#   numérique de l'erreur signée. On reste `indetermine` si le
+#   signal est indisponible, la fenêtre non stabilisée, le niveau
+#   |erreur| déjà sous le seuil (ambigu autour de zéro), ou la
+#   variation dans la bande de bruit. PAS DE FAUX ZÉRO : une absence
+#   de données n'est jamais « 0 » ni « amelioration ».
+#
+# 🚧 BORNAGE (INV-4)
+#   - `niveau = fenetre_regime` (jamais par ajustement isolé) ;
+#   - `nature = correlation` (jamais causalité) ;
+#   - `confiance` réduite si fenêtre courte / peu de jours apprenants
+#     / stabilisation incomplète.
+#   Paramètres (seuils, délai, fenêtre) = défauts CONSERVATEURS,
+#   recalibrables (P8) sans rouvrir le contrat 76.
+#
+# 🧱 NATURE / ÉTANCHÉITÉ
+#   Dérivés d'observabilité PURS (registre diagnostic) ; métriques
+#   de régulation RÉFÉRENCÉES EN PLACE (CR-3), jamais recalculées.
+#   JAMAIS relus par la décision (INV-2 ; garde d'étanchéité).
+#
+# 🔗 DÉPENDANCES (lectures)
+#   - sensor.ecart_consigne_instantane(_froid)     (erreur, en place)
+#   - sensor.chauffage_courbe_err_delta/niveau_*    (tendances, statistics)
+#   - input_number.chauffage_{pente,parallele}_consigne (last_changed → stabilisation)
+#   - sensor.chauffage_courbe_taux_jours_apprenants (L4 → confiance)
+#   - sensor.chauffage_courbe_derive_{pente,parallele} (L5 → contexte)
+#
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+# --- Écart absolu à zéro par régime (source des tendances) ---
+- sensor:
+    - name: "Chauffage courbe abs ecart froid"
+      unique_id: chauffage_courbe_abs_ecart_froid
+      unit_of_measurement: "°C"
+      availability: >
+        {{ states('sensor.ecart_consigne_instantane_froid')
+           not in ['unknown','unavailable','none',''] }}
+      state: >
+        {{ (states('sensor.ecart_consigne_instantane_froid') | float | abs) | round(3) }}
+
+    - name: "Chauffage courbe abs ecart global"
+      unique_id: chauffage_courbe_abs_ecart_global
+      unit_of_measurement: "°C"
+      availability: >
+        {{ states('sensor.ecart_consigne_instantane')
+           not in ['unknown','unavailable','none',''] }}
+      state: >
+        {{ (states('sensor.ecart_consigne_instantane') | float | abs) | round(3) }}
+
+# --- Effet PENTE (régime froid) ---
+- sensor:
+    - name: "Chauffage courbe effet pente"
+      unique_id: chauffage_courbe_effet_pente
+      icon: mdi:chart-bell-curve-cumulative
+      state: >
+        {% set seuil_bruit = 0.15 %}
+        {% set seuil_zero = 0.2 %}
+        {% set stab_delay_h = 72 %}
+        {% set d = states('sensor.chauffage_courbe_err_delta_pente') | float(none) %}
+        {% set niveau = states('sensor.chauffage_courbe_err_niveau_pente') | float(none) %}
+        {% set lc = states.input_number.chauffage_pente_consigne.last_changed %}
+        {% set stab_ok = (lc is not none)
+                         and ((now() - lc).total_seconds() / 3600 >= stab_delay_h) %}
+        {% if d is none or niveau is none %}
+          indetermine
+        {% elif not stab_ok %}
+          indetermine
+        {% elif niveau < seuil_zero %}
+          indetermine
+        {% elif d <= (-1 * seuil_bruit) %}
+          amelioration
+        {% elif d >= seuil_bruit %}
+          degradation
+        {% else %}
+          indetermine
+        {% endif %}
+      attributes:
+        niveau: "fenetre_regime"
+        nature: "correlation"
+        regime: "froid"
+        parametre: "pente"
+        fenetre_j: "7"
+        seuil_bruit_c: "0.15"
+        seuil_zero_c: "0.2"
+        stab_delay_h: "72"
+        delta_abs_err: >
+          {{ states('sensor.chauffage_courbe_err_delta_pente') }}
+        niveau_abs_err: >
+          {{ states('sensor.chauffage_courbe_err_niveau_pente') }}
+        stabilise: >
+          {% set lc = states.input_number.chauffage_pente_consigne.last_changed %}
+          {{ (lc is not none) and ((now() - lc).total_seconds() / 3600 >= 72) }}
+        derive_courbe: >
+          {{ states('sensor.chauffage_courbe_derive_pente') }}
+        confiance: >
+          {% set taux = states('sensor.chauffage_courbe_taux_jours_apprenants') | float(none) %}
+          {% set lc = states.input_number.chauffage_pente_consigne.last_changed %}
+          {% set stab_ok = (lc is not none)
+                           and ((now() - lc).total_seconds() / 3600 >= 72) %}
+          {{ 'reduite' if (taux is none or taux < 0.5 or not stab_ok) else 'nominale' }}
+
+# --- Effet PARALLÈLE (régime global) ---
+- sensor:
+    - name: "Chauffage courbe effet parallele"
+      unique_id: chauffage_courbe_effet_parallele
+      icon: mdi:chart-bell-curve-cumulative
+      state: >
+        {% set seuil_bruit = 0.15 %}
+        {% set seuil_zero = 0.2 %}
+        {% set stab_delay_h = 72 %}
+        {% set d = states('sensor.chauffage_courbe_err_delta_parallele') | float(none) %}
+        {% set niveau = states('sensor.chauffage_courbe_err_niveau_parallele') | float(none) %}
+        {% set lc = states.input_number.chauffage_parallele_consigne.last_changed %}
+        {% set stab_ok = (lc is not none)
+                         and ((now() - lc).total_seconds() / 3600 >= stab_delay_h) %}
+        {% if d is none or niveau is none %}
+          indetermine
+        {% elif not stab_ok %}
+          indetermine
+        {% elif niveau < seuil_zero %}
+          indetermine
+        {% elif d <= (-1 * seuil_bruit) %}
+          amelioration
+        {% elif d >= seuil_bruit %}
+          degradation
+        {% else %}
+          indetermine
+        {% endif %}
+      attributes:
+        niveau: "fenetre_regime"
+        nature: "correlation"
+        regime: "global"
+        parametre: "parallele"
+        fenetre_j: "7"
+        seuil_bruit_c: "0.15"
+        seuil_zero_c: "0.2"
+        stab_delay_h: "72"
+        delta_abs_err: >
+          {{ states('sensor.chauffage_courbe_err_delta_parallele') }}
+        niveau_abs_err: >
+          {{ states('sensor.chauffage_courbe_err_niveau_parallele') }}
+        stabilise: >
+          {% set lc = states.input_number.chauffage_parallele_consigne.last_changed %}
+          {{ (lc is not none) and ((now() - lc).total_seconds() / 3600 >= 72) }}
+        derive_courbe: >
+          {{ states('sensor.chauffage_courbe_derive_parallele') }}
+        confiance: >
+          {% set taux = states('sensor.chauffage_courbe_taux_jours_apprenants') | float(none) %}
+          {% set lc = states.input_number.chauffage_parallele_consigne.last_changed %}
+          {% set stab_ok = (lc is not none)
+                           and ((now() - lc).total_seconds() / 3600 >= 72) %}
+          {{ 'reduite' if (taux is none or taux < 0.5 or not stab_ok) else 'nominale' }}

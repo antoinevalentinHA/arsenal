@@ -5,7 +5,7 @@
 |---|---|
 | **Type** | Chantier |
 | **Domaine** | Chauffage / Auto-ajustement courbe |
-| **Statut** | Ouvert — non ordonnancé |
+| **Statut** | Ouvert — P1–P6 réalisées ; P7–P9 restantes |
 | **Origine** | Audit `01_rapports/chauffage/audit_auto_ajustement_courbe.md` (clôturé 2026-06-03) |
 | **Priorité** | 1 (unique chantier issu de l'audit) |
 | **Nature** | Observabilité — **aucun changement de comportement** |
@@ -32,7 +32,16 @@
 > réversions (Q6), refus consécutifs et **drapeau de persistance** `{ras, gel_persistant,
 > refus_recurrent}` (Q8) — ce dernier **signal « à surveiller », jamais une qualification anomalique**
 > (une courbe stable peut produire des suggestions identiques). Contrats CONFORMES ; étanchéité
-> mutation-testée. **Chantier toujours ouvert** : P6–P9 (effet, supervision, validation, clôture).
+> mutation-testée.
+>
+> **Avancement (2026-07-02). P6 (Couche effet) — implémentée** (lot L6, PR unique). Effet **au seul
+> niveau fenêtre régime** (pente↔froid, parallèle↔global — CR-4), en **tendance bornée** jamais
+> causale par ajustement (INV-4). `amelioration` = **tendance vers zéro de l'écart absolu**
+> (`Δ|erreur| < 0`, seuil de bruit), **jamais** une baisse de l'erreur signée ; `indetermine` si
+> signal indisponible, fenêtre non stabilisée, niveau déjà proche de zéro, ou variation dans le bruit
+> (**pas de faux zéro**). Métriques de régulation **référencées en place** (CR-3) ; attributs
+> `niveau=fenetre_regime` / `nature=correlation` / `confiance`. Garde d'étanchéité **étendue**.
+> **Chantier toujours ouvert** : P7–P9 (supervision, validation, clôture).
 
 ## 1. Objectif
 
