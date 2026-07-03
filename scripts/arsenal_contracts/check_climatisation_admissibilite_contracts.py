@@ -98,6 +98,12 @@ SENSOR_CLIM_ACTION_EN_COURS = (
     ROOT / "12_template_sensors" / "climatisation" / "decision" / "action_en_cours.yaml"
 )
 
+# Notification d'échec d'exécution persistant (C13 — D5)
+AUTOMATION_NOTIF_ECHEC = (
+    ROOT / "11_automations" / "climatisation" / "notification_echec_execution.yaml"
+)
+AUTOMATION_NOTIF_ECHEC_ID = "10030000000121"
+
 # Sources de blocage STRUCTUREL figées de clim_bloquee (voyant de survol F2/D3)
 CLIM_BLOQUEE_SOURCES = [
     "input_boolean.blocage_clim_poele",
@@ -998,6 +1004,127 @@ def test_clim_action_en_cours_survol_fige():
 
 
 # ---------------------------------------------------------------------------
+# Tests — Résilience : notification d'échec persistant (C13 — D5)
+# ---------------------------------------------------------------------------
+
+def test_notification_echec_execution_persistant():
+    """
+    Contrat C13/D5 — automation.clim_notification_echec_execution :
+    projection UI observable de l'échec d'exécution persistant (contrat 08,
+    « Notification d'échec persistant »). Non-régression figée :
+    - déclenchée par la source de vérité (clim_execution_echec), la borne
+      de reprise (retry_count) et la reconstruction boot (systeme_stable) ;
+    - crée ET retire une notification persistante à notification_id dédié ;
+    - persistance = budget épuisé (garde « > 2 », même borne que le
+      réarmement) ;
+    - couche strictement observable : n'écrit jamais la source de vérité,
+      n'émet aucune commande matérielle, n'appelle aucun script.
+    """
+    if not AUTOMATION_NOTIF_ECHEC.is_file():
+        fail(
+            f"notification échec : fichier absent : "
+            f"{AUTOMATION_NOTIF_ECHEC.relative_to(ROOT)} (contrat C13/D5)"
+        )
+        return
+    # Toutes les assertions portent sur le code YAML hors commentaires :
+    # un en-tête documentaire ne doit ni satisfaire une présence attendue
+    # ni déclencher une interdiction.
+    content = "\n".join(
+        line
+        for line in read(AUTOMATION_NOTIF_ECHEC).splitlines()
+        if not line.lstrip().startswith("#")
+    )
+    rel = AUTOMATION_NOTIF_ECHEC.relative_to(ROOT)
+
+    if not pattern_automation_id(AUTOMATION_NOTIF_ECHEC_ID).search(content):
+        fail(
+            f"notification échec : ID {AUTOMATION_NOTIF_ECHEC_ID} absent "
+            f"(contrat C13/D5). Fichier : {rel}"
+        )
+    else:
+        print(f"  ✔ notification échec : ID {AUTOMATION_NOTIF_ECHEC_ID} présent (C13)")
+
+    # Déclencheurs : source de vérité + borne de reprise + reconstruction boot.
+    # Exigés en position de TRIGGER (entity_id:) — une simple lecture dans les
+    # variables ne suffit pas : sans trigger sur le compteur, le passage du
+    # budget à « épuisé » (booléen déjà latché, sans front) resterait muet.
+    for src in (
+        "input_boolean.clim_execution_echec",
+        "counter.clim_execution_retry_count",
+        "input_boolean.systeme_stable",
+    ):
+        if not re.search(r"entity_id\s*:\s*" + re.escape(src) + r"\b", content):
+            fail(
+                f"notification échec : déclencheur manquant « {src} » "
+                f"(position trigger entity_id — contrat C13/D5). Fichier : {rel}"
+            )
+        else:
+            print(f"  ✔ notification échec : trigger {src} (C13)")
+
+    # Cycle complet : création ET retrait de la notification persistante
+    if "persistent_notification.create" not in content:
+        fail(
+            f"notification échec : persistent_notification.create absent "
+            f"(création — C13/D5). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ notification échec : création présente (C13)")
+
+    if "persistent_notification.dismiss" not in content:
+        fail(
+            f"notification échec : persistent_notification.dismiss absent "
+            f"(retrait sur disparition de l'échec — C13/D5). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ notification échec : retrait présent (C13)")
+
+    # notification_id dédié, distinct de la notification de mode actif
+    if not re.search(r"notification_id\s*:\s*clim_execution_echec\b", content):
+        fail(
+            f"notification échec : notification_id dédié « clim_execution_echec » "
+            f"absent (contrat C13/D5). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ notification échec : notification_id dédié (C13)")
+
+    if re.search(r"notification_id\s*:\s*clim_mode_actif\b", content):
+        fail(
+            f"notification échec : écriture sur le canal « clim_mode_actif » "
+            f"interdite (isolement du canal de notification — C13/D5). "
+            f"Fichier : {rel}"
+        )
+    else:
+        print("  ✔ notification échec : canal isolé de clim_mode_actif (C13)")
+
+    # Persistance = budget de reprise épuisé (même borne que le réarmement)
+    if not re.search(r">\s*2", content):
+        fail(
+            f"notification échec : garde de persistance « > 2 » absente "
+            f"(budget de reprise épuisé — C13/D5). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ notification échec : garde de persistance > 2 (C13)")
+
+    # Couche strictement observable : aucune écriture, aucune commande
+    for interdit, motif in (
+        ("service: input_boolean.turn_on", "écrit la source de vérité"),
+        ("service: input_boolean.turn_off", "écrit la source de vérité"),
+        ("service: climate.", "commande matérielle"),
+        ("service: switch.", "commande matérielle"),
+        ("service: script.", "relance d'exécution hors périmètre"),
+        ("service: counter.", "écrit la borne de reprise"),
+        ("service: timer.", "pilote la reprise différée"),
+    ):
+        if interdit in content:
+            fail(
+                f"notification échec : « {interdit} » interdit — {motif} "
+                f"(couche observable pure, C13/D5). Fichier : {rel}"
+            )
+        else:
+            print(f"  ✔ notification échec sans « {interdit} » (C13)")
+
+
+# ---------------------------------------------------------------------------
 # Tests — Documentation
 # ---------------------------------------------------------------------------
 
@@ -1048,6 +1175,8 @@ TESTS = [
     # Observabilité de survol (D13 — F2 / F3)
     test_clim_bloquee_survol_fige,
     test_clim_action_en_cours_survol_fige,
+    # Résilience — notification d'échec persistant (C13 — D5)
+    test_notification_echec_execution_persistant,
     # Documentation
     test_doc_admissibilite_presente,
 ]

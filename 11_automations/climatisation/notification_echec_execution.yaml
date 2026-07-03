@@ -1,0 +1,113 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Clim – Notification d'échec d'exécution persistant
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Projection UI STRICTEMENT observable de l'échec d'exécution
+#   persistant de la climatisation (chantier C13 — dette D5).
+#
+#   Matérialise la promesse du contrat 08 (Résilience) :
+#   « la ré-émission s'arrête en cas d'échec persistant avec
+#   émission d'une notification persistante ».
+#
+#   - Création : échec latché ET budget de reprise épuisé
+#     (input_boolean.clim_execution_echec = on
+#      ET counter.clim_execution_retry_count > 2 — même
+#      sémantique de borne que le réarmement après récupération).
+#   - Maintien : tant que l'échec reste latché, y compris pendant
+#     un réarmement (compteur remis à zéro, booléen inchangé) —
+#     l'échec n'a pas disparu, la notification non plus.
+#   - Suppression : disparition de l'échec (booléen off), quelle
+#     qu'en soit la cause (exécution validée ou purge).
+#   - Reconstruction au démarrage : entièrement recalculable à
+#     partir du seul état courant (garde systeme_stable).
+#
+#   Cette automation :
+#     - ne decide rien
+#     - ne corrige rien
+#     - ne memorise rien
+#     - n'écrit JAMAIS input_boolean.clim_execution_echec
+#       (source de vérité, propriété du script d'exécution)
+#     - n'émet aucune commande matérielle
+#
+# 🧭 CAS SILENCIEUX (volontaire)
+#   Échec latché mais reprise différée encore en cours
+#   (compteur <= 2) : ni création (l'échec n'est pas encore
+#   persistant), ni retrait (l'échec n'a pas disparu).
+#
+# 🔌 DÉPENDANCES
+#   - input_boolean.clim_execution_echec   (source de vérité)
+#   - counter.clim_execution_retry_count   (borne de reprise)
+#   - sensor.clim_target_mode              (contexte, lecture seule)
+#   - input_boolean.systeme_stable         (reconstruction boot)
+#
+# 🚫 NE FAIT PAS
+#   - Aucune logique metier
+#   - Aucune action sur la clim
+#   - Aucune notification de mode actif
+#     (notification_id dédié, distinct de clim_mode_actif)
+# ==========================================================
+
+- id: "10030000000121"
+  alias: "Clim - Notification échec exécution"
+  description: >
+    Affiche une notification persistante lorsque l'exécution de la
+    climatisation est en échec persistant (échec latché et budget de
+    reprise épuisé), et la retire dès que l'échec disparaît.
+
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.clim_execution_echec
+
+    - platform: state
+      entity_id: counter.clim_execution_retry_count
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  condition: []
+
+  variables:
+    echec_latche: "{{ is_state('input_boolean.clim_execution_echec', 'on') }}"
+    budget_epuise: "{{ (states('counter.clim_execution_retry_count') | int(0)) > 2 }}"
+
+  action:
+    - choose:
+        # --------------------------------------------------
+        # ÉCHEC PERSISTANT — création / ré-assertion
+        # --------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: "{{ echec_latche and budget_epuise }}"
+          sequence:
+            - service: persistent_notification.create
+              data:
+                notification_id: clim_execution_echec
+                title: "⚠️ Clim – Échec d'exécution persistant"
+                message: >
+                  L'exécution de la climatisation a échoué de manière
+                  persistante : le budget de reprise différée est épuisé
+                  (cible : {{ states('sensor.clim_target_mode') }}).
+                  Plus aucune reprise automatique n'aura lieu avant un
+                  front de récupération de l'infrastructure Airstage.
+                  Cette notification disparaîtra d'elle-même dès que
+                  l'échec sera purgé.
+
+        # --------------------------------------------------
+        # ÉCHEC DISPARU — retrait propre
+        # --------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: "{{ not echec_latche }}"
+          sequence:
+            - service: persistent_notification.dismiss
+              data:
+                notification_id: clim_execution_echec
+
+      # ----------------------------------------------------
+      # ÉCHEC LATCHÉ, REPRISE EN COURS — silence volontaire
+      # ----------------------------------------------------
+      default: []
