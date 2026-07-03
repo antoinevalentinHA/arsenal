@@ -60,6 +60,13 @@
 | [mouvements.md](./mouvements.md) | Mouvements |
 | [voiture.md](./voiture.md) | Voiture — Audi A3 e-tron |
 
+> **Note terminologique.** Le qualificatif « (transversal) » employé dans cet
+> index signifie « à impact inter-domaines » ; il ne désigne **pas** le domaine
+> d'ID `transversal` défini par
+> [`prefixe_domaine_automatisations.md`](../architecture/03_doctrines/prefixe_domaine_automatisations.md)
+> (domaine de préfixe **non créé** à ce jour). Ces contrats ont chacun un
+> domaine propriétaire unique.
+
 ---
 
 ## Domaines (sous-dossiers)

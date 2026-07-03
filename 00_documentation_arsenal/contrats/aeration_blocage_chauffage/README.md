@@ -46,6 +46,12 @@ Hors périmètre du présent domaine :
   - cohérence end-to-end (détection → signal → exécution → ack)
   - garde-fous (post-boot, anti-zombie, invalidation tentative)
 
+> « Transversal » s'entend ici **au sein du domaine** : socle commun aux
+> états m0→m6 de la machine. Sans lien avec le domaine d'ID `transversal`
+> de la doctrine
+> [`prefixe_domaine_automatisations.md`](../../architecture/03_doctrines/prefixe_domaine_automatisations.md)
+> (non créé) — les automations du socle relèvent du préfixe `1001 - aeration`.
+
 ### Machine à états
 - `m0_recover_normatif/` : remédiation incohérences (recover demandé)
 - `m1_debut_episode/` : démarrage épisode + snapshots T_REF
