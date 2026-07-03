@@ -258,10 +258,13 @@ l'audit et les éventuels alignements. Elle devra :
 
 - prendre pour source de vérité des préfixes :
   `06_input_selects/system/prefix_id.yaml` ;
-- s'appuyer sur un **registre d'exceptions opposable** (divergences
-  dossier ↔ préfixe documentées, rattachements `transversal`) — son
-  emplacement exact est fixé à la création de la CI, ses propriétés sont
-  contractuelles : explicite, justifié cas par cas, versionné, opposable ;
+- s'appuyer sur le **registre d'exceptions opposable** (divergences
+  dossier ↔ préfixe documentées, rattachements `transversal`), dont
+  l'emplacement normatif est :
+  `scripts/arsenal_contracts/prefix_domain_exceptions.yaml` —
+  ses propriétés sont contractuelles : explicite, justifié cas par cas,
+  versionné, opposable ; toute entrée exige une décision propriétaire
+  explicite et tracée ;
 - ne PAS implémenter de règle naïve dossier → préfixe : le dossier n'y a
   valeur que de **présomption réfutable**, levée par le registre
   d'exceptions ;
