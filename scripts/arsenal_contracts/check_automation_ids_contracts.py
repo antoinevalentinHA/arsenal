@@ -15,14 +15,18 @@ Règles :
   AID-001  Toute automation possède un `id` explicite (ERROR).
   AID-002  `id` est une CHAÎNE — un entier non quoté est interdit (ERROR).
            Motif : Home Assistant impose `str`; un entier désactive l'automation.
-  AID-003  `id` numérique = préfixe(4 chiffres) + suffixe, longueur 13 ou 14 (ERROR).
+  AID-003  `id` numérique = préfixe(4 chiffres) + suffixe(10 chiffres), longueur
+           EXACTE 14 (gabarit canonique de generate_next_id_from_prefix) (ERROR).
   AID-004  Le préfixe (4 premiers chiffres) est déclaré dans
            input_select.prefix_id_select (ERROR).
   AID-005  Unicité globale des `id` — aucun ID réutilisé (ERROR).
-  AID-006  `id` legacy à 13 chiffres (suffixe 9) au lieu du gabarit canonique 14
-           (préfixe + suffixe 10, cf. script generate_next_id_from_prefix) (INFO).
 
-Logique Arsenal habituelle : ERROR => exit 1 ; INFO => exit 0.
+  AID-006 (retiré) : la tolérance legacy 13 chiffres (INFO) a été supprimée après la
+  migration du 2026-07-03 (cf. audits/01_rapports/transverses/
+  migration_ids_automatisations_13_vers_14.md). La longueur canonique 14 est
+  désormais imposée strictement par AID-003.
+
+Logique Arsenal habituelle : ERROR => exit 1.
 """
 
 import re
@@ -38,11 +42,9 @@ PREFIX_FILE = ROOT / "06_input_selects" / "system" / "prefix_id.yaml"
 
 PREFIX_LEN = 4
 CANONICAL_LEN = 14  # préfixe(4) + suffixe(10) — gabarit du générateur d'ID
-LEGACY_LEN = 13     # préfixe(4) + suffixe(9)  — dette historique tolérée
-FORMAT_RE = re.compile(r"^\d{13,14}$")
+FORMAT_RE = re.compile(r"^\d{14}$")  # longueur canonique stricte (durci post-migration AID-006)
 
 ERRORS: list[str] = []
-INFOS: list[str] = []
 INVENTORY: list[dict] = []
 
 
@@ -145,7 +147,7 @@ def scan(prefixes: dict[str, str]) -> None:
             # AID-003 — format
             if not FORMAT_RE.match(aid):
                 ERRORS.append(
-                    f"AID-003 — `id` de format invalide (attendu 13/14 chiffres) : "
+                    f"AID-003 — `id` de format invalide (attendu 14 chiffres : préfixe 4 + suffixe 10) : "
                     f"« {aid} » — {label} ({loc})"
                 )
                 INVENTORY.append({"rel": rel, "id": aid, "sev": "ERROR"})
@@ -159,10 +161,6 @@ def scan(prefixes: dict[str, str]) -> None:
                     f"AID-004 — préfixe « {prefix} » non déclaré dans "
                     f"input_select.prefix_id_select : « {aid} » — {label} ({loc})"
                 )
-
-            # AID-006 — dette legacy 13 chiffres
-            if len(aid) == LEGACY_LEN:
-                INFOS.append(f"« {aid} » ({loc})")
 
             seen[aid].append(loc)
             INVENTORY.append({
@@ -197,8 +195,7 @@ def print_summary(prefixes: dict[str, str]) -> None:
     )
     print("Longueurs d'id (conformes) :")
     for length in sorted(by_len):
-        tag = "canonique" if length == CANONICAL_LEN else "legacy"
-        print(f"  • {length} chiffres : {by_len[length]}  ({tag})")
+        print(f"  • {length} chiffres : {by_len[length]}")
     print()
 
 
@@ -218,17 +215,7 @@ if __name__ == "__main__":
     scan(prefixes)
     print_summary(prefixes)
 
-    if INFOS:
-        print(
-            f"ℹ️  AID-006 — {len(INFOS)} id legacy à 13 chiffres "
-            f"(gabarit canonique = 14, préfixe + suffixe 10). "
-            f"Dette historique, non bloquante :\n"
-        )
-        for info in INFOS:
-            print(f"  • {info}")
-        print()
-
-    print(f"Synthèse : {len(ERRORS)} ERROR / {len(INFOS)} INFO.")
+    print(f"Synthèse : {len(ERRORS)} ERROR.")
 
     if ERRORS:
         print("\n❌ CONTRAT IDs AUTOMATISATIONS NON CONFORME\n")

@@ -237,7 +237,7 @@ La règle générale ci-dessus — **« un ID ne change jamais après création 
 - **Ce que l'exception N'autorise PAS** : aucune réattribution métier, aucun changement de préfixe, aucune invention ni incrémentation d'ID, aucune modification d'un ID pour toute autre raison (notamment pas « pour lisibilité »).
 - **Justification** : dette identifiée par le garde-fou CI `AID-006` ; mapping **sans collision** (vérifié) ; opération **atomique et tracée**.
 - **Traçabilité** : rapport d'opération — [`audits/01_rapports/transverses/migration_ids_automatisations_13_vers_14.md`](../../audits/01_rapports/transverses/migration_ids_automatisations_13_vers_14.md).
-- **Suite** : après validation runtime, le contrat `AID-006` sera **durci en ERROR** (longueur 14 exigée) pour verrouiller l'acquis et interdire toute régression 13 chiffres.
+- **Durcissement acté (2026-07-03)** : après validation runtime (Git + CI + Home Assistant), le contrat a été **durci** — la longueur canonique **14 est exigée strictement par `AID-003` (ERROR)** et la tolérance `AID-006` (INFO) a été **retirée**. Toute régression vers un ID à 13 chiffres est désormais **bloquée en CI**.
 
 Cette exception est **unique et close** : elle ne crée **aucun précédent** pour une modification d'ID hors de ce périmètre.
 

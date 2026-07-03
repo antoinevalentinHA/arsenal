@@ -87,6 +87,6 @@ Migration appliquée dans un `git worktree` jetable puis contrôlée :
 - Après merge, CI rouge : `git revert` du commit atomique.
 - Runtime : si nettoyage UI insuffisant → redéployer l'état complet migré + reload (renommer d'éventuels `_2`) ; snapshot HA en dernier recours.
 
-## 🔜 Suite
+## ✅ Suite — réalisée (2026-07-03)
 
-Après validation runtime, **second lot séparé** : durcissement du contrat `AID-006` en **ERROR** (longueur 14 exigée) pour interdire toute régression 13 chiffres.
+Durcissement effectué dans un **second lot séparé**, après validation runtime (Git + CI + Home Assistant) : le contrat impose désormais **strictement la longueur 14** (`AID-003` en ERROR) ; la tolérance `AID-006` (INFO) est **retirée**. Toute régression vers un ID à 13 chiffres est **bloquée en CI**.
