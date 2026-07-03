@@ -164,7 +164,7 @@ sur un fichier voisin ou une intuition.** Selon ce qu'on modifie, lire d'abord :
 | Runtime YAML (tout include) | [`structure_includes/index.md`](architecture/00_structure_includes/index.md) — carte dossier → document | `docs_lint` + checker de domaine |
 | Helpers `input_*` / `counter` (clé `initial`) | [`restauration_etat_helpers.md`](architecture/03_doctrines/restauration_etat_helpers.md) — restauration d'état, marqueur `initial VOULU` | `check_initial_key_contracts` (`contracts_initial_key.yml`) |
 | Template sensors (`12_`) | [`12_template_sensors.md`](architecture/00_structure_includes/12_template_sensors.md) | `docs_lint` + checker de domaine |
-| Automations (`11_`) | [`11_automations.md`](architecture/00_structure_includes/11_automations.md) + [`id_automatisations.md`](architecture/03_doctrines/id_automatisations.md) | `docs_lint` + checker de domaine |
+| Automations (`11_`) | [`11_automations.md`](architecture/00_structure_includes/11_automations.md) + [`id_automatisations.md`](architecture/03_doctrines/id_automatisations.md) + [`prefixe_domaine_automatisations.md`](architecture/03_doctrines/prefixe_domaine_automatisations.md) | `docs_lint` + checker de domaine |
 | Scripts (`10_`) | [`10_scripts.md`](architecture/00_structure_includes/10_scripts.md) + [`separation_decision_action.md`](architecture/03_doctrines/separation_decision_action.md) | `docs_lint` + checker de domaine |
 | Customize (`01_`) | [`01_customize.md`](architecture/00_structure_includes/01_customize.md) | `check_01_customize_contracts` |
 | Lovelace (`18_`) | [`18_lovelace.md`](architecture/00_structure_includes/18_lovelace.md) | `check_lovelace_includes_contracts` |
