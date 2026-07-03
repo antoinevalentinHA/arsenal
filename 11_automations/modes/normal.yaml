@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Normal – Restauration du contexte global
 #
-#  ID : 1009000000007
+#  ID : 10090000000007
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -70,7 +70,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: '1009000000007'
+- id: '10090000000007'
   alias: "Modes - Normal - Sortie vacances"
   description: >
     Remet en service toutes les fonctions désactivées durant le

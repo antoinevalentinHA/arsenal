@@ -22,14 +22,14 @@
 #   garanti par la condition existante not override_actif (silence prioritaire).
 #   N'émet JAMAIS fan_mode: auto dans la voie normale. Converge sur événements.
 #   N'émet JAMAIS non plus fan_mode: quiet : le quiet appartient au domaine
-#   silence (switch.clim_quiet_fan / automation 1003000000020). Hors plage
+#   silence (switch.clim_quiet_fan / automation 10030000000020). Hors plage
 #   silencieuse, une cible résolue à quiet est bornée à low (Faible) pour ne
 #   pas entrer en conflit avec l'automation silence (boucle quiet↔auto).
 #
 # 🧩 PÉRIMÈTRE
 #   - Couvre : résolution intention → mode effectif → script.clim_set_fan_mode
 #   - Exclut : pilotage du quiet (réalisé par switch.clim_quiet_fan via
-#              l'automation silence 1003000000020), toute décision thermique,
+#              l'automation silence 10030000000020), toute décision thermique,
 #              tout allumage de la climatisation
 #
 # 🔖 NATURE
@@ -154,7 +154,7 @@
     # (FAN_AUTO HA = minuscule, présent dans fan_modes Airstage). NON bouclant :
     # la résolution réémet low/medium/high (jamais auto). Hors plage silencieuse
     # seulement (condition not override_actif) ; en plage, le quiet est restauré
-    # par l'automation silence 1003000000020.
+    # par l'automation silence 10030000000020.
     - platform: state
       entity_id: climate.clim
       attribute: fan_mode
@@ -166,7 +166,7 @@
     # Aucune branche n'émet « auto » : la voie normale ne délègue jamais à Fujitsu.
     #
     # quiet = PROPRIÉTÉ DU DOMAINE SILENCE (switch.clim_quiet_fan, piloté par
-    # l'automation silence 1003000000020). Cette voie n'agissant qu'hors plage
+    # l'automation silence 10030000000020). Cette voie n'agissant qu'hors plage
     # silencieuse (condition not override_actif), elle ne doit JAMAIS appliquer
     # quiet via fan_mode : sinon elle bascule le switch quiet, que l'automation
     # silence rebascule aussitôt → boucle quiet↔auto. On borne donc quiet → low

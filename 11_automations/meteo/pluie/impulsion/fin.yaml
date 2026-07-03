@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Pluie – Réarmement temporisé de l’impulsion logique
 #
-#  ID : 1016000000006
+#  ID : 10160000000006
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -48,7 +48,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: "1016000000006"
+- id: "10160000000006"
   alias: "Météo - Pluie - Réarmement"
   description: >
     Réarme le booléen virtuel utilisé pour simuler une impulsion pluie,

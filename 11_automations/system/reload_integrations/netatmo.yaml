@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Netatmo – Relance intégration (auto) sur gel données
 #
-#  ID : 1012000000008
+#  ID : 10120000000008
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #     Détection + orchestration minimale :
@@ -23,7 +23,7 @@
 #     - Exécution uniquement si systeme_stable = on
 # ==========================================================
 
-- id: "1012000000008"
+- id: "10120000000008"
   alias: "Système - Relance Netatmo"
   description: >
     Orchestration légère : déclenche la procédure de résilience Netatmo

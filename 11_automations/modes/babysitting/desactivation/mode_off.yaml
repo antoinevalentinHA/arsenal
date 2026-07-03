@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Babysitting – Garde-fou horaire de sortie du mode
 #
-#  ID : 1009000000001
+#  ID : 10090000000001
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -56,7 +56,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: '1009000000001'
+- id: '10090000000001'
   alias: "Modes - Babysitting - Sortie quotidienne"
 
   trigger:

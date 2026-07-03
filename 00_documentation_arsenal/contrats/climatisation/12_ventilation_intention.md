@@ -72,7 +72,7 @@ l'intention et la commande matérielle.
 >
 > **`quiet` borné hors plage silencieuse.** `Silencieux` est propriété
 > **exclusive** du domaine silence (`switch.clim_quiet_fan`,
-> `1003000000020`). Hors plage, une cible résolue à `quiet` est **bornée à
+> `10030000000020`). Hors plage, une cible résolue à `quiet` est **bornée à
 > `low`** (Faible) par la résolution, pour ne pas entrer en conflit (boucle
 > `quiet ↔ auto`) avec l'automation silence.
 
@@ -174,7 +174,7 @@ les comportements fantômes.
 
 **Implémentation :** l'autorité de résolution est l'automation
 `10030000000120`. Le `quiet` de l'override reste réalisé par
-`switch.clim_quiet_fan` (automation silence `1003000000020`) — actionneur
+`switch.clim_quiet_fan` (automation silence `10030000000020`) — actionneur
 distinct de `climate.set_fan_mode`, conformément à la liste des deux
 actionneurs (§ Rôle des entités).
 
@@ -445,7 +445,7 @@ ex-ID `10030000000121`, retiré) : plus aucune perception n'écrit l'intention.
   ET clim active → `high`. Présence stabilisée (R1-b), jamais le brut sécurité ;
 - **`quiet` borné à `low` hors plage** (silence prioritaire) ; le vrai `quiet`
   reste appliqué exclusivement par l'automation silence (`switch.clim_quiet_fan`,
-  `1003000000020`) ;
+  `10030000000020`) ;
 - origine de pilotage : `sensor.clim_origine_ventilation`
   (`origine.yaml`, §4) ;
 - diagnostic d'écart : `sensor.clim_fan_mode_recommande` (attributs) et

@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Alarme – Notification persistante d’état
 #
-#  ID : 1002000000021
+#  ID : 10020000000021
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -33,7 +33,7 @@
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-- id: '1002000000021'
+- id: '10020000000021'
   alias: Alarme - Notification
   description: >
     Affiche une notification persistante lors de l’armement de l’alarme

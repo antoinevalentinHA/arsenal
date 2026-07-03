@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Pluie – Décision de début d’épisode météo
 #
-#  ID : 1016000000002
+#  ID : 10160000000002
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -59,7 +59,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: "1016000000002"
+- id: "10160000000002"
   alias: "Météo - Pluie - Début épisode"
   description: >
     Active le suivi pluie (`pluie_en_cours`) dès qu’une pluie est détectée

@@ -93,8 +93,8 @@ def test_helpers_declared() -> None:
 def test_automations_declared() -> None:
     """T02 — Les trois automations canoniques présentes dans 11_automations/voiture/"""
     for filepath, auto_id, label in [
-        (FILE_AUTONOMIE_AUTO, "1015000000001", "consolidation pleine charge"),
-        (FILE_ARCHIVE_AUTO,   "1015000000004", "archivage mensuel"),
+        (FILE_AUTONOMIE_AUTO, "10150000000001", "consolidation pleine charge"),
+        (FILE_ARCHIVE_AUTO,   "10150000000004", "archivage mensuel"),
         (FILE_NOTIF_AUTO,     "10150000000005", "notification état charge"),
     ]:
         if not filepath.is_file():

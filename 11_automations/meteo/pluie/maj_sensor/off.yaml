@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Pluie – Décision de fin d’épisode météo
 #
-#  ID : 1016000000003
+#  ID : 10160000000003
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -57,7 +57,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: "1016000000003"
+- id: "10160000000003"
   alias: "Météo - Pluie - Fin épisode"
   description: >
     Désactive `pluie_en_cours` si Netatmo ne détecte plus de pluie

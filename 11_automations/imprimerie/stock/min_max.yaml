@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Stock – Maintien temps réel des mémoires min/max
 #
-#  ID : 1018000000001
+#  ID : 10180000000001
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -51,7 +51,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: "1018000000001"
+- id: "10180000000001"
   alias: "Imprimerie - Stock - Mémoire min/max"
   description: >
     Met à jour dynamiquement les extrêmes de température et d’humidité

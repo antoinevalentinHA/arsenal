@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Bouton SDB – Déclenchement manuel bouclage ECS
 #
-#  ID : 1014000000001
+#  ID : 10140000000001
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -47,7 +47,7 @@
 #     dans les scripts et pipelines dédiés.
 # ==========================================================
 
-- id: '1014000000001'
+- id: '10140000000001'
   alias: Boutons - SDB - Bouclage ECS
   mode: restart
 

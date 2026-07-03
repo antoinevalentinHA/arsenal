@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     NAS – Alerte surchauffe disque persistante
 #
-#  ID : 1012000000005
+#  ID : 10120000000005
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #     Surveiller la température moyenne du disque du NAS
@@ -32,7 +32,7 @@
 #     - Notification unique par dépassement durable
 # ==========================================================
 
-- id: '1012000000005'
+- id: '10120000000005'
   alias: "Système - Alerte NAS"
   description: >
     Notifie le téléphone si la température du disque NAS dépasse 40°C

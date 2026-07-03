@@ -83,6 +83,7 @@
 
 ### Transverses
 - [transverses/audit_initial_helpers.md](01_rapports/transverses/audit_initial_helpers.md)  _(audit préparatoire **non opposable** — usage de la clé `initial` dans les helpers HA ; **19 occurrences** recensées ; sur `input_*`, `initial` désactive la restauration HA et écrase le réglage opérateur au reboot (3 correctifs 30/06 arrosage/météo + deshum 17/06) ; 2 résiduels suspects (`arrosage_fenetre_*`, `arsenal_self_audit_stale_threshold_hours`) ; **propose** une doctrine (statut projet) + une CI (WARN puis ERROR, partiellement fiable) ; aucun contrat/CI créé, aucun runtime modifié)_
+- [transverses/migration_ids_automatisations_13_vers_14.md](01_rapports/transverses/migration_ids_automatisations_13_vers_14.md)  _(migration exceptionnelle **AID-006** — 58 IDs legacy 13→14 chiffres, mapping déterministe `PPPP+s9→PPPP+0+s9`, **0 collision** ; références vivantes migrées, historiques préservés ; risque HA `id`=`unique_id` traité par **fenêtre transitoire** UI ; **exécution runtime en attente**)_
 
 ## Arbitrages
 

@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Bouton Cuisine – Jardin / Vaisselle
 #
-#  ID : 1014000000002
+#  ID : 10140000000002
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -60,7 +60,7 @@
 #     interface ≠ décision ≠ stratégie.
 # ==========================================================
 
-- id: '1014000000002'
+- id: '10140000000002'
   alias: Boutons - Cuisine - Actions multiples
   mode: queued
 

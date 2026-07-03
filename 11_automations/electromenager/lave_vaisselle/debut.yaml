@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Lave-vaisselle – Détection de début de cycle
 #
-#  ID : 1008000000001
+#  ID : 10080000000001
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -46,7 +46,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: "1008000000001"
+- id: "10080000000001"
   alias: "Électroménager - Lave-vaisselle - Début cycle"
   description: >
     Détecte le début de cycle du lave-vaisselle via seuil

@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Vacances – Projection auto du mode global
 #
-#  ID : 1009000000004
+#  ID : 10090000000004
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -44,7 +44,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: "1009000000004"
+- id: "10090000000004"
   alias: "Modes - Vacances - Projection auto"
   description: >
     Projette le contexte global en mode Vacances lorsque

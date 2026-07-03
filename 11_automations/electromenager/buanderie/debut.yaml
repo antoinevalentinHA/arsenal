@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Buanderie – Détection de début de cycle électroménager
 #
-#  ID : 1008000000003
+#  ID : 10080000000003
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -46,7 +46,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: "1008000000003"
+- id: "10080000000003"
   alias: "Électroménager - Buanderie - Début cycle"
   description: >
     Détecte le début de cycle électroménager (puissance > 50 W pendant 3 minutes),

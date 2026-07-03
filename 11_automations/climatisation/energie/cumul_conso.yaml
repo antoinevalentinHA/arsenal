@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Clim – Clôture journalière consommation estimée
 #
-#  ID : 1003000000019
+#  ID : 10030000000019
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -73,7 +73,7 @@
 #     sans prétention de vérité physique.
 # ==========================================================
 
-- id: '1003000000019'
+- id: '10030000000019'
   alias: Clim - Consommation journalière
   description: >
     À 23:55, ajoute au cumul la conso du jour calculée

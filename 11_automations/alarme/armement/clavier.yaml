@@ -15,11 +15,11 @@
 #     - Filtrage : uniquement les valeurs 0–9 (code PIN)
 #     - Appel du script `traitement_code_clavier`
 #
-#  🏷️ ID : 1002000000005
+#  🏷️ ID : 10020000000005
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-- id: "1002000000005"
+- id: "10020000000005"
   alias: "Alarme - Armement clavier"
   description: >
     Déclenche le script central `traitement_code_clavier` à chaque

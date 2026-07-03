@@ -26,14 +26,14 @@
 #   - estimation entre deux charges
 #   - écriture hors pleine charge
 #
-# CHANGELOG 1015000000001
+# CHANGELOG 10150000000001
 # v1.0 — création : snapshot autonomie_full
 # v1.1 — extension : ajout sous-bloc corrélation thermique
 #         (température snapshot + autonomie corrigée 20°C)
 #         atomicité préservée, autorité inchangée
 # ==========================================================
 
-- id: "1015000000001"
+- id: "10150000000001"
   alias: Voiture - Audi - Snapshot pleine charge
   description: >
     Consolide l'autonomie pleine charge de l'Audi A3 e-tron et écrit

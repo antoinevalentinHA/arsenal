@@ -196,7 +196,7 @@ ordre des caps (sur la grille §5) :
 **`Silencieux` / `quiet` = propriété EXCLUSIVE du domaine silence.** La
 recommandation **n'émet jamais `Silencieux`** : elle plafonne à `Moyen` en plage
 silencieuse, mais le **vrai `quiet`** est appliqué exclusivement par l'automation
-silence (`switch.clim_quiet_fan`, `1003000000020`), jamais par cette voie ni par
+silence (`switch.clim_quiet_fan`, `10030000000020`), jamais par cette voie ni par
 la résolution. Le **silence est prioritaire** : pendant la plage, la résolution
 (`application_mode.yaml`) s'abstient (`not override_actif`).
 

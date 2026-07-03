@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Pluie – Adaptation Zigbee en impulsion logique sécurisée
 #
-#  ID : 1016000000005
+#  ID : 10160000000005
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -55,7 +55,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: "1016000000005"
+- id: "10160000000005"
   alias: "Météo - Pluie - Normalisation capteur"
   description: >
     Transforme le capteur Zigbee pluie en impulsion unique :

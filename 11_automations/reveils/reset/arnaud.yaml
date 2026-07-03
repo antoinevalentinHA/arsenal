@@ -35,7 +35,7 @@
 #     Arsenal
 # ==========================================================
 
-- id: '1011000000003'
+- id: '10110000000003'
   alias: "Réveils - Reset Arnaud"
   description: >
     Réinitialise le compteur et l'historique des réveils d'Arnaud à l'heure définie.

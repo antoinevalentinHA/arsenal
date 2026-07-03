@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Système – Mise à jour automatique de la saison
 #
-#  ID : 1012000000007
+#  ID : 10120000000007
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #     Déterminer automatiquement la saison courante à partir
@@ -29,7 +29,7 @@
 #     - Comportement déterministe et stable dans le temps
 # ==========================================================
 
-- id: '1012000000007'
+- id: '10120000000007'
   alias: "Système - Saison"
   mode: single
 

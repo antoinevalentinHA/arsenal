@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Jardin – Désactivation éclairage (cycle matin)
 #
-#  ID : 1007000000002
+#  ID : 10070000000002
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -43,7 +43,7 @@
 #
 # ==========================================================
 
-- id: '1007000000002'
+- id: '10070000000002'
   alias: "Éclairage - Jardin - Désactivation matin"
   description: >
     Éteint systématiquement l'éclairage du jardin à la fin

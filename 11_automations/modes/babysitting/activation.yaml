@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Babysitting – Entrée en mode et application du contexte
 #
-#  ID : 1009000000003
+#  ID : 10090000000003
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -55,7 +55,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: '1009000000003'
+- id: '10090000000003'
   alias: "Modes - Babysitting - Activation"
 
   mode: single

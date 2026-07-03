@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Babysitting – Sortie automatique du mode (fin de timer)
 #
-#  ID : 1009000000008
+#  ID : 10090000000008
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -55,7 +55,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: '1009000000008'
+- id: '10090000000008'
   alias: "Modes - Babysitting - Sortie auto"
 
   trigger:

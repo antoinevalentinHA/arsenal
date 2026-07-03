@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Vacances – Application du contexte global
 #
-#  ID : 1009000000006
+#  ID : 10090000000006
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -51,7 +51,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: "1009000000006"
+- id: "10090000000006"
   alias: "Modes - Vacances - Application"
   description: >
     Applique les mesures transverses du contexte Vacances

@@ -35,7 +35,7 @@
 #     Arsenal
 # ==========================================================
 
-- id: '1011000000004'
+- id: '10110000000004'
   alias: "Réveils - Reset Matthieu"
   description: >
     Réinitialise le compteur et l'historique des réveils de Matthieu à l'heure définie.

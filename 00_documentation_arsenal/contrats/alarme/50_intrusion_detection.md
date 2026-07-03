@@ -55,7 +55,7 @@ Les automations de détection :
 - **Mode** : `single`
 - **⚠️ Dette architecturale documentée** : court-circuite le pipeline canonique (voir §9).
 
-### `1002000000009` — Intrusion mouvement
+### `10020000000009` — Intrusion mouvement
 
 - **Rôle** : déclencher l'alarme sur détection de mouvement dans une zone sensible.
 - **Triggers** : `binary_sensor.mouvement_sejour`, `binary_sensor.mouvement_entree`, `binary_sensor.mouvement_garage` — front `off → on`, **débounce `for: 2 s`** (anti-course, voir I4 — **ALM-A2-3**)
@@ -66,7 +66,7 @@ Les automations de détection :
 - **Action** : `alarm_control_panel.alarm_trigger` + notification (réel) ou notification test uniquement (mode test)
 - **Mode** : `single`
 
-### `1002000000007` — Intrusion ouverture (autres capteurs)
+### `10020000000007` — Intrusion ouverture (autres capteurs)
 
 - **Rôle** : déclencher l'alarme sur ouverture d'un capteur de contact surveillé (hors ouvrants d'entrée).
 - **Triggers** : liste de `binary_sensor.contact_*` — transition vers `on`
@@ -155,7 +155,7 @@ Jamais sur un simple feedback d'armement/désarmement.
 
 ## ⚠️ §9 — Dette architecturale documentée
 
-Les automations `10020000000032` (délai fin) et `1002000000009` (mouvement) et `1002000000007` (ouverture) court-circuitent le pipeline canonique Arsenal (Décision → Helpers → Application) en appelant directement :
+Les automations `10020000000032` (délai fin) et `10020000000009` (mouvement) et `10020000000007` (ouverture) court-circuitent le pipeline canonique Arsenal (Décision → Helpers → Application) en appelant directement :
 
 - `alarm_control_panel.alarm_trigger`
 - `script.sirene_brutale`

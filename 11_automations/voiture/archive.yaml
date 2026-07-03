@@ -17,7 +17,7 @@
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-- id: '1015000000004'
+- id: '10150000000004'
   alias: Voiture - Archive autonomie
   description: Archive la moyenne mensuelle à chaque nouvelle mesure complète
   mode: single

@@ -62,7 +62,7 @@ Ce document ne décrit **pas l’intention utilisateur**
 ### ⚙️ Activation matérielle
 
 **Automation :**
-- `1007000000001` — Activation éclairage (matin)
+- `10070000000001` — Activation éclairage (matin)
 
 **Déclenchement :**
 - entrée dans la fenêtre MATIN
@@ -78,7 +78,7 @@ Ce document ne décrit **pas l’intention utilisateur**
 ### 🔌 Extinction
 
 **Automation :**
-- `1007000000002` — Désactivation éclairage (matin)
+- `10070000000002` — Désactivation éclairage (matin)
 
 **Principe :**
 - extinction immédiate à la sortie de la fenêtre
@@ -111,7 +111,7 @@ Ce document ne décrit **pas l’intention utilisateur**
 ### ⚙️ Activation matérielle
 
 **Automation :**
-- `1007000000003` — Activation éclairage (soir)
+- `10070000000003` — Activation éclairage (soir)
 
 **Déclenchement :**
 - ouverture du cycle soir
@@ -147,7 +147,7 @@ Ce document ne décrit **pas l’intention utilisateur**
 ### 🔌 Extinction
 
 **Automation :**
-- `1007000000004` — Extinction automatique (soir)
+- `10070000000004` — Extinction automatique (soir)
 
 **Principe :**
 - déclenchement unique

@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Zigbee2MQTT – Relance bridge (auto) sur hors-ligne persistant
 #
-#  ID : 1012000000010
+#  ID : 10120000000010
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #     Surveiller l’état du bridge Zigbee2MQTT et redémarrer
@@ -30,7 +30,7 @@
 #     - Exécution uniquement si systeme_stable = on
 # ==========================================================
 
-- id: "1012000000010"
+- id: "10120000000010"
   alias: "Système - Relance Zigbee2MQTT"
   description: >
     Redémarre automatiquement l'add-on Zigbee2MQTT si le bridge reste

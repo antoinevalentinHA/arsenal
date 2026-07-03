@@ -26,7 +26,7 @@
 #   Valeur : derniere_activite + 1 heure.
 #
 # 📖 CONSOMMATEURS
-#   Automation 1007000000004 — Éclairage - Jardin - Extinction soir
+#   Automation 10070000000004 — Éclairage - Jardin - Extinction soir
 #   → trigger: platform: time at: input_datetime.jardin_sejour_inactivite_deadline
 #   → condition: template now() >= as_local(as_datetime(...))
 #
