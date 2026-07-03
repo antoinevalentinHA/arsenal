@@ -117,6 +117,9 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 
 ## Plans d'action
 
+### Climatisation
+- [climatisation/plan_action_post_revalidation_climatisation.md](03_plans_action/climatisation/plan_action_post_revalidation_climatisation.md)  _(plan d'action issu de l'audit de revalidation 2026-07 — **cadrage seul, aucune correction implémentée** ; intègre les 4 arbitrages propriétaire du 2026-07-03 : **Lot A = chantier C13 (P1)** notification d'échec persistant (D5), **Lot B (P2)** explicabilité contextualisée des blocages (N5 requalifiée métier — recommandation d'architecture « inventaire vs pertinence » incluse, gel F2 préservé en option additive), **Lot C (P3)** réalignement documentaire opportuniste (statut contrat v15.x, contrat 05, hygiène backlog) ; **D-tuile clôturée** (aucune preuve contraire) ; D10/D11/D12/DRY/H2/H3 reportés)_
+
 ### Météo
 - [meteo/plan_action_meteo_axe_temperature.md](03_plans_action/meteo/plan_action_meteo_axe_temperature.md)
 
