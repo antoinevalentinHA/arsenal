@@ -92,7 +92,7 @@
 
 | Dossier | Fichiers | Contenu |
 |---|:--:|---|
-| [03_doctrines/](./03_doctrines/) | 8 | **Bibliothèque doctrinale fondamentale** : nommage, causalité, gestion du temps, séparation décision/action, git, principes généraux (voir note) |
+| [03_doctrines/](./03_doctrines/) | 12 | **Bibliothèque doctrinale fondamentale** : nommage, causalité, gestion du temps, séparation décision/action, git, principes généraux, IDs d'automatisations et contrat préfixe ↔ domaine (voir note) |
 
 > Note : `03_doctrines/` contient les documents les plus structurants du
 > système Arsenal — `principes_generaux.md`, `gestion_du_temps.md`, etc. y

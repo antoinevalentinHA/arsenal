@@ -101,6 +101,11 @@ Le lien domaine ↔ préfixe :
 - est piloté par des helpers Home Assistant  
 - n’est jamais déduit automatiquement par un outil externe  
 
+La **sémantique** de ce lien — domaine fonctionnel propriétaire,
+distinction dossier physique / domaine d’identité, domaine `transversal`,
+interdictions et exigences d’audit/CI — est contractualisée dans :
+[`prefixe_domaine_automatisations.md`](./prefixe_domaine_automatisations.md)
+
 ---
 
 ## 🆕 CRÉATION D’UN NOUVEAU DOMAINE FONCTIONNEL
