@@ -1,6 +1,6 @@
 # 🔧 ARSENAL — MIGRATION : ID automation « Aération - Invalidation tentative non confirmée » (correction de préfixe fautif)
 
-> **Statut** : opération préparée, exécution runtime Home Assistant **en attente**.
+> **Statut** : opération **close** — Git mergé (PR #257) et exécution runtime Home Assistant **réalisée et validée** (2026-07-03, cf. § Exécution runtime).
 > **Date de préparation** : 2026-07-03.
 > **Nature** : correction exceptionnelle d'identité fonctionnelle, unique, décidée, tracée, atomique.
 > **Non opposable en soi** : les normes restent le contrat [`architecture/03_doctrines/prefixe_domaine_automatisations.md`](../../../architecture/03_doctrines/prefixe_domaine_automatisations.md) et la doctrine [`architecture/03_doctrines/id_automatisations.md`](../../../architecture/03_doctrines/id_automatisations.md). Ce document trace *l'opération*, pas la règle.
@@ -56,6 +56,29 @@ Pour une automation YAML, **`id` = `unique_id`** d'entité : le changement crée
 4. Vérifications : aucune `automation.*_2`, entité active sous slug propre, aucun résidu indisponible.
 
 Conditions : fenêtre calme, `aeration_episode_en_cours` off, sauvegarde HA disponible.
+
+## ✅ Exécution runtime — réalisée et validée (2026-07-03)
+
+Procédure exécutée sur la machine Home Assistant (`/config`, déploiement `git pull`), conformément au plan ci-dessus :
+
+1. branche locale transitoire `ops/aeration-invalidation-id-transient` (jamais poussée, jamais mergée) sans `11_automations/aeration/invalidation.yaml` ;
+2. reload des automatisations → ancienne entité orpheline ;
+3. suppression **via l'UI** de l'ancienne entité (`.storage` non touché) ;
+4. retour sur `main` (nouvel ID) ;
+5. reload des automatisations.
+
+**Résultats consignés** (vérifications Jinja, Outils de développement) :
+
+| Vérification | Résultat |
+|---|---|
+| `automation.aeration_invalidation_tentative_non_confirmee` | `on` (slug propre recréé) |
+| attribut `id` | `10010000000031` |
+| entités `automation.*_2` liées | aucune (`[]`) |
+| automations indisponibles | aucune (`[]`) |
+| branche `ops/aeration-invalidation-id-transient` | supprimée |
+| état Git HA | `main` à jour, working tree clean, aucune branche `ops/` résiduelle |
+
+Le seul coût attendu — remise à zéro de `last_triggered`/traces de cette unique automation — est constaté et **assumé**. Opération close, sans précédent créé.
 
 ## ↩️ Rollback
 
