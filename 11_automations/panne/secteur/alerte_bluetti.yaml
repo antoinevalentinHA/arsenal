@@ -1,7 +1,10 @@
 # ============================================================
 # ARSENAL — ENERGIE CHAUDIERE — ALERTE BLUETTI
 #
-# Domaine : energie_chaudiere
+# Sous-systeme concerne : energie_chaudiere (contexte technique,
+#   PAS un domaine d'ID — aucun prefixe declare)
+# Domaine d'ID proprietaire : panne (1004) — exception documentee :
+#   scripts/arsenal_contracts/prefix_domain_exceptions.yaml
 # Contrat : energie_chaudiere v1.3
 # ID : 10040000000003
 #

@@ -1,0 +1,104 @@
+# ==========================================================
+# 🧠 ARSENAL — REGISTRE : Exceptions préfixe d'ID ↔ domaine fonctionnel
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Registre OPPOSABLE des divergences assumées entre le domaine
+#   d'identité (préfixe d'ID) d'une automatisation et son contexte
+#   apparent (dossier physique, sous-système concerné).
+#
+# 📜 Norme :
+#   00_documentation_arsenal/architecture/03_doctrines/
+#     prefixe_domaine_automatisations.md  (contrat, opposable)
+#   Chaque entrée est explicite, justifiée cas par cas, versionnée
+#   et opposable — propriétés exigées par le contrat.
+#
+# 🔍 Origine des décisions :
+#   Audit 2026-07-03 (00_documentation_arsenal/audits/01_rapports/
+#     transverses/audit_prefixes_domaines_automatisations.md)
+#   + arbitrages explicites du propriétaire (2026-07-03).
+#
+# 🤖 Consommation :
+#   Ce registre servira de source de vérité des exceptions pour la
+#   future CI de cohérence préfixe / domaine (étape 4 du chantier).
+#   Toute divergence NON inscrite ici a vocation à être une ERROR.
+#
+# ❌ Ce registre n'est PAS :
+#   - un droit d'entrée automatique (chaque ajout exige une décision
+#     explicite du propriétaire, tracée) ;
+#   - une zone de confort (cf. interdits du contrat : pas de préfixe
+#     opportuniste, pas d'exception de commodité) ;
+#   - un substitut à la correction d'un préfixe réellement fautif.
+#
+# 🧩 Schéma d'une entrée :
+#   id              : ID complet de l'automatisation (chaîne, 14 chiffres)
+#   fichier         : chemin repo du fichier porteur
+#   alias           : alias déclaré (information, non normatif)
+#   prefixe         : 4 premiers chiffres de l'ID
+#   domaine_prefixe : domaine déclaré par le préfixe (prefix_id_select)
+#   justification   : pourquoi le préfixe est LE bon malgré l'apparence
+#   decision        : décision propriétaire (avec date)
+# ==========================================================
+
+prefix_domain_exceptions:
+
+  # --- Remédiation panne Internet — préfixe system assumé -------------
+  # Le domaine fonctionnel propriétaire de la remédiation réseau est
+  # l'infrastructure système (gouvernance contractuelle
+  # contrats/pannes/internet/00_panne_internet_gouvernance.md :
+  # « Domaine : Infrastructure / Réseau »). Le dossier panne/internet/
+  # est un classement opérationnel, pas le propriétaire fonctionnel.
+
+  - id: "10120000000022"
+    fichier: 11_automations/panne/internet/remediation_ouverture.yaml
+    alias: "Réseau – Ouverture campagne remédiation"
+    prefixe: "1012"
+    domaine_prefixe: system
+    justification: >-
+      Remédiation infrastructure / réseau ; le dossier panne/internet
+      est un classement opérationnel, pas le propriétaire fonctionnel.
+    decision: "Exception assumée — arbitrage propriétaire 2026-07-03"
+
+  - id: "10120000000023"
+    fichier: 11_automations/panne/internet/remediation_fermeture.yaml
+    alias: "Réseau – Fermeture campagne remédiation"
+    prefixe: "1012"
+    domaine_prefixe: system
+    justification: >-
+      Remédiation infrastructure / réseau ; le dossier panne/internet
+      est un classement opérationnel, pas le propriétaire fonctionnel.
+    decision: "Exception assumée — arbitrage propriétaire 2026-07-03"
+
+  - id: "10120000000024"
+    fichier: 11_automations/panne/internet/remediation_cadence.yaml
+    alias: "Réseau – Cadence remédiation Internet"
+    prefixe: "1012"
+    domaine_prefixe: system
+    justification: >-
+      Remédiation infrastructure / réseau ; le dossier panne/internet
+      est un classement opérationnel, pas le propriétaire fonctionnel.
+    decision: "Exception assumée — arbitrage propriétaire 2026-07-03"
+
+  - id: "10120000000025"
+    fichier: 11_automations/panne/internet/reconciliation_demarrage.yaml
+    alias: "Réseau – Réconciliation démarrage HA"
+    prefixe: "1012"
+    domaine_prefixe: system
+    justification: >-
+      Remédiation infrastructure / réseau ; le dossier panne/internet
+      est un classement opérationnel, pas le propriétaire fonctionnel.
+    decision: "Exception assumée — arbitrage propriétaire 2026-07-03"
+
+  # --- Alerte Bluetti — préfixe panne conservé ------------------------
+  # energie_chaudiere est un SOUS-SYSTÈME concerné (contexte technique),
+  # pas un domaine d'ID propriétaire : aucun préfixe ne lui est déclaré
+  # et il n'y a pas lieu d'en créer un pour ce seul cas.
+
+  - id: "10040000000003"
+    fichier: 11_automations/panne/secteur/alerte_bluetti.yaml
+    alias: "Energie chaudiere - Alerte Bluetti"
+    prefixe: "1004"
+    domaine_prefixe: panne
+    justification: >-
+      Contexte panne secteur ; energie_chaudiere est un sous-système
+      concerné, pas un domaine d'ID propriétaire.
+    decision: "Préfixe panne conservé — arbitrage propriétaire 2026-07-03"
