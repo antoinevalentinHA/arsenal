@@ -174,7 +174,7 @@ Arsenal le consomme**. Elle ne redéfinit ni le protocole, ni l'API du satellite
 | **Propriétaire** | `antoinevalentinHA` — **fork de `Patrick762/hassio-bluetti-bt`**. |
 | **Type** | Intégration Home Assistant (custom component, HACS), domaine `bluetti_bt`. |
 | **Domaine Arsenal** | `energie_chaudiere`. |
-| **Méthode d'intégration** | *Vendored* dans Arsenal sous [`custom_components/bluetti_bt/`](../../custom_components/bluetti_bt/). `config_flow`, `iot_class: local_polling`, `dependencies: bluetooth_adapters`, appariement BLE par préfixes de nom (`AC1*`…`PBOX*`). |
+| **Méthode d'intégration** | *Vendored* dans Arsenal sous `custom_components/bluetti_bt/` (chemin runtime). `config_flow`, `iot_class: local_polling`, `dependencies: bluetooth_adapters`, appariement BLE par préfixes de nom (`AC1*`…`PBOX*`). |
 | **Stratégie de version** | `version` du manifeste = `0.2.1` (indépendante de la lib). Épingle `bluetti-bt-lib` en `v1.0.0`. |
 | **Dépendances** | `bluetti-bt-lib` (satellite) ; pile Bluetooth de HA. |
 | **Interfaces exposées** | Entités `sensor.bluetti_*` / `binary_sensor.bluetti_*` (SOC, tensions entrée/sortie, puissances, etc.). |
@@ -189,7 +189,7 @@ Arsenal le consomme**. Elle ne redéfinit ni le protocole, ni l'API du satellite
 | **Propriétaire** | `antoinevalentinHA` — **fork de `danielkaldheim/ha_airstage`**. |
 | **Type** | Intégration Home Assistant (custom component, HACS), domaine `fujitsu_airstage`. |
 | **Domaine Arsenal** | `climatisation`. |
-| **Méthode d'intégration** | *Vendored* sous [`custom_components/fujitsu_airstage/`](../../custom_components/fujitsu_airstage/). `config_flow`, `iot_class: local_polling`. Classée **`local_lan`** par [`resilience_integrations.md`](../contrats/resilience_integrations.md) (jamais inhibée par une panne WAN). |
+| **Méthode d'intégration** | *Vendored* sous `custom_components/fujitsu_airstage/` (chemin runtime). `config_flow`, `iot_class: local_polling`. Classée **`local_lan`** par [`resilience_integrations.md`](../contrats/resilience_integrations.md) (jamais inhibée par une panne WAN). |
 | **Stratégie de version** | `version` du manifeste = `1.7.1`. Branche par défaut du fork : `arsenal-stable`. |
 | **Dépendances** | `pyairstage>=2.4.1,<3` (bibliothèque **upstream**, non forkée — hors périmètre gouverné). |
 | **Interfaces exposées** | Entités `climate.*` Fujitsu ; loggers `pyairstage`. |
