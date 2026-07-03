@@ -27,6 +27,9 @@ Entrée : [`contrats/climatisation/`](../../contrats/climatisation/) — atterri
 
 - Rapport — [`audit_climatisation_arsenal.md`](../../audits/01_rapports/climatisation/audit_climatisation_arsenal.md)
 - Investigation dynamique (audit historique Recorder 30 j) — [`investigation_historique_clim_30j.md`](../../audits/01_rapports/climatisation/investigation_historique_clim_30j.md)
+- Diagnostic statique — clim ne démarre pas, `clim_execution_echec` latché (**aucun défaut de code certain**, cause infra Airstage) — [`diagnostic_clim_execution_echec.md`](../../audits/01_rapports/climatisation/diagnostic_clim_execution_echec.md)
+- Investigation statique — origine du délai de stabilisation post-allumage HVAC (**catégorie A**, valeur 10 s empirique) — [`investigation_temporisation_allumage_hvac.md`](../../audits/01_rapports/climatisation/investigation_temporisation_allumage_hvac.md)
+- Audit de revalidation (2026-07) — **9 résolutions D1–D13 confirmées runtime + CI ; dettes ouvertes confirmées ; 5 constats documentaires N1–N5** — [`audit_revalidation_domaine_climatisation_2026_07.md`](../../audits/01_rapports/climatisation/audit_revalidation_domaine_climatisation_2026_07.md)
 - Chantier COOL (**LIVRÉ v15.8.4**, trace as-built) — [`chantier_observabilite_cool.md`](../../audits/04_chantiers/climatisation/chantier_observabilite_cool.md)
 - Backlog hysteresis (**ouvert**) — [`backlog_climatisation_hysteresis.md`](../../audits/04_chantiers/climatisation/backlog_climatisation_hysteresis.md)
 - Protocole d'observation (**expérimental, en cours, non normatif**) — [`protocole_observation_seuils_cool.md`](../../audits/04_chantiers/climatisation/protocole_observation_seuils_cool.md)
@@ -38,7 +41,7 @@ Entrée : [`contrats/climatisation/`](../../contrats/climatisation/) — atterri
 
 ## Changelog
 
-Thread COOL : livraison principale [`v15_8_4.md`](../../changelog/changelogs/v15/v15_8_4.md) · réconciliation documentaire [`v15_8_6.md`](../../changelog/changelogs/v15/v15_8_6.md) (mentions contextuelles dans `v15_8_3`, `v15_8_5`, `v15_8_7`).
+Thread COOL : livraison principale [`v15_8_4.md`](../../changelog/changelogs/v15/v15_8_4.md) · réconciliation documentaire [`v15_8_6.md`](../../changelog/changelogs/v15/v15_8_6.md) (mentions contextuelles dans `v15_8_3`, `v15_8_5`, `v15_8_7`). Mode nuit (C8, validé terrain 2026-06-29) : [`v16_1_0.md`](../../changelog/changelogs/v16/v16_1_0.md).
 
 > ⚠️ [`changelog/chantiers/climatisation/`](../../changelog/chantiers/climatisation/) héberge des **CH-x Chauffage-CI**, pas des chantiers climatisation — voir pivot [`registre_ch`](../pivots/registre_ch.md).
 

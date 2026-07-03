@@ -51,7 +51,7 @@ Un **item de backlog** n'entre en *Actifs* qu'une fois **promu** (décision d'ag
 
 | Backlog | Périmètre | Source faisant foi |
 |---------|-----------|--------------------|
-| **Climatisation / hystérésis** | H2 (VMC seuils OFF morts), H3a/H3b (aération), D5, D13, D-tuile, D10 (H1 clos, cf. ⑤) | [`04_chantiers/climatisation/backlog_climatisation_hysteresis.md`](04_chantiers/climatisation/backlog_climatisation_hysteresis.md) |
+| **Climatisation / hystérésis** | H2 (VMC seuils OFF morts), H3a/H3b (aération), D5, D-tuile (à requalifier — objet probablement disparu, cf. audit revalidation 2026-07 N1), D10 (H1 clos, cf. ⑤ ; D13 traité 2026-07-03, gardes F2/F3 en CI) | [`04_chantiers/climatisation/backlog_climatisation_hysteresis.md`](04_chantiers/climatisation/backlog_climatisation_hysteresis.md) |
 | **ECS** | Durcissement CI (DESINF-1/2, CI-1/2/3, OFF-5) ; bucket Medium (collecte avant décision) | [`04_chantiers/ecs/backlog_ecs.md`](04_chantiers/ecs/backlog_ecs.md) |
 | **Aération** | Résiduels de clôture : factorisation décision, `unique_id` étage, dashboard diagnostic | [`05_clotures/aeration/cloture_aeration_recommandation.md`](05_clotures/aeration/cloture_aeration_recommandation.md) (§5) |
 
