@@ -90,6 +90,26 @@ UI_CARTE_CLIM_DECISION = (
 
 UI_DASHBOARD_CLIM = ROOT / "18_lovelace" / "dashboards" / "climatisation" / "principal.yaml"
 
+# Artefacts d'observabilité de survol (D13 — F2 / F3)
+BS_CLIM_BLOQUEE = (
+    ROOT / "12_template_sensors" / "climatisation" / "blocages" / "diagnotic.yaml"
+)
+SENSOR_CLIM_ACTION_EN_COURS = (
+    ROOT / "12_template_sensors" / "climatisation" / "decision" / "action_en_cours.yaml"
+)
+
+# Sources de blocage STRUCTUREL figées de clim_bloquee (voyant de survol F2/D3)
+CLIM_BLOQUEE_SOURCES = [
+    "input_boolean.blocage_clim_poele",
+    "input_boolean.chauffage_blocage_aeration",
+    "binary_sensor.clim_blocage_horaire_reel",
+    "binary_sensor.clim_blocage_aeration_etage_reel",
+    "binary_sensor.fenetre_ouverte_maison_avec_delai",
+]
+
+# Vocabulaire fermé figé de clim_action_en_cours (survol F3/D7)
+CLIM_ACTION_VOCAB = ["cool_actif", "dry_actif", "heat_actif", "bloquee", "arret"]
+
 # Documentation
 DOC_ADMISSIBILITE = (
     ROOT
@@ -898,6 +918,86 @@ def test_ui_carte_clim_decision_delegue_coherence():
 
 
 # ---------------------------------------------------------------------------
+# Tests — Observabilité de survol (D13 — F2 / F3)
+# ---------------------------------------------------------------------------
+
+def test_clim_bloquee_survol_fige():
+    """
+    Contrat F2/D3 — binary_sensor.clim_bloquee : voyant de survol des blocages
+    STRUCTURELS. Non-régression : composition figée sur exactement les cinq
+    causes de blocage canoniques (fiabilité > exhaustivité), sans raisonnement
+    thermique fin. Toute source retirée/renommée doit faire échouer la CI.
+    """
+    if not BS_CLIM_BLOQUEE.is_file():
+        fail(f"clim_bloquee : fichier absent : {BS_CLIM_BLOQUEE.relative_to(ROOT)}")
+        return
+    content = read(BS_CLIM_BLOQUEE)
+    rel = BS_CLIM_BLOQUEE.relative_to(ROOT)
+
+    if not pattern_unique_id("clim_bloquee").search(content):
+        fail(f"clim_bloquee : unique_id absent (contrat F2). Fichier : {rel}")
+    else:
+        print("  ✔ clim_bloquee : unique_id présent (F2)")
+
+    for src in CLIM_BLOQUEE_SOURCES:
+        if src not in content:
+            fail(
+                f"clim_bloquee : source de blocage figée manquante « {src} » "
+                f"(composition F2/D3). Fichier : {rel}"
+            )
+        else:
+            print(f"  ✔ clim_bloquee compose {src} (F2)")
+
+
+def test_clim_action_en_cours_survol_fige():
+    """
+    Contrat F3/D7 — sensor.clim_action_en_cours : survol de l'action réelle,
+    basé sur l'état HVAC RÉEL (climate.clim) + blocage poêle. Non-régression :
+    base « état réel » et vocabulaire fermé figés, aucune logique de décision.
+    """
+    if not SENSOR_CLIM_ACTION_EN_COURS.is_file():
+        fail(
+            f"clim_action_en_cours : fichier absent : "
+            f"{SENSOR_CLIM_ACTION_EN_COURS.relative_to(ROOT)}"
+        )
+        return
+    content = read(SENSOR_CLIM_ACTION_EN_COURS)
+    rel = SENSOR_CLIM_ACTION_EN_COURS.relative_to(ROOT)
+
+    if not pattern_unique_id("clim_action_en_cours").search(content):
+        fail(f"clim_action_en_cours : unique_id absent (contrat F3). Fichier : {rel}")
+    else:
+        print("  ✔ clim_action_en_cours : unique_id présent (F3)")
+
+    # Base « état réel » : HVAC réel prioritaire + blocage poêle
+    if "climate.clim" not in content:
+        fail(
+            f"clim_action_en_cours : ne lit pas l'état HVAC réel climate.clim "
+            f"(survol non basé sur l'état réel — F3). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ clim_action_en_cours : basé sur l'état HVAC réel (F3)")
+
+    if "input_boolean.blocage_clim_poele" not in content:
+        fail(
+            f"clim_action_en_cours : ne consomme pas le blocage poêle "
+            f"(input_boolean.blocage_clim_poele — F3). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ clim_action_en_cours : blocage poêle consommé (F3)")
+
+    # Vocabulaire fermé figé
+    for v in CLIM_ACTION_VOCAB:
+        if v not in content:
+            fail(
+                f"clim_action_en_cours : valeur figée « {v} » manquante "
+                f"(vocabulaire fermé F3/D7). Fichier : {rel}"
+            )
+        else:
+            print(f"  ✔ clim_action_en_cours porte « {v} » (F3)")
+
+
+# ---------------------------------------------------------------------------
 # Tests — Documentation
 # ---------------------------------------------------------------------------
 
@@ -945,6 +1045,9 @@ TESTS = [
     # UI (chantier)
     test_ui_decision_synthetique_lit_raison_decision,
     test_ui_carte_clim_decision_delegue_coherence,
+    # Observabilité de survol (D13 — F2 / F3)
+    test_clim_bloquee_survol_fige,
+    test_clim_action_en_cours_survol_fige,
     # Documentation
     test_doc_admissibilite_presente,
 ]
