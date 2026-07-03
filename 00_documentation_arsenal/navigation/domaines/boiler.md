@@ -32,6 +32,7 @@ Interface physique HA↔chaudière via Boiler Pi (Raspberry Pi exécutant le boi
 
 - **Chauffage** — [`contrats/chauffage/`](../../contrats/chauffage/) ; consomme le pont HA↔chaudière pour l'exécution thermique (aval).
 - **ECS** — [`contrats/ecs/`](../../contrats/ecs/) ; consomme le boiler comme source thermique eau chaude sanitaire (aval).
+- **Dépôt satellite (amont, gouverné)** — [`architecture/ecosysteme_depots_satellites.md`](../../architecture/ecosysteme_depots_satellites.md) §4.6 ; le bus MQTT chaudière est produit par le dépôt `boiler-bridge` (pont Raspberry Pi Optolink↔MQTT), dont HA est l'adaptateur.
 
 ## Points de vigilance (non normatif)
 

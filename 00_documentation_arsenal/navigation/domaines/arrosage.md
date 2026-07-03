@@ -31,6 +31,7 @@ Arrosage automatique du jardin, en **coexistence gouvernée** avec le contrôleu
 - **Batteries** — [`contrats/batteries.md`](../../contrats/batteries.md) ; les sondes sol alimentent le périmètre canonique de supervision batteries (aval : produit par le domaine, consommé par la maintenance).
 - **Connectivité Zigbee (LQI)** — [`carte_domaines.md`](../carte_domaines.md) (supervision transverse) ; les liens radio des sondes sont agrégés par la supervision LQI (aval).
 - **Météo / pluie** — [`contrats/meteo/`](../../contrats/meteo/), [`volets_pluie.md`](../../contrats/volets_pluie.md) ; signaux pluie / climat **pressentis** comme modulateurs futurs (amont, hors v0).
+- **Dépôt satellite (amont, gouverné)** — [`architecture/ecosysteme_depots_satellites.md`](../../architecture/ecosysteme_depots_satellites.md) §4.5 ; le pont Rain Bird est le firmware `rainbird-esp32-elegoo` (BLE⇄MQTT auto-discovery), relevé côté runtime par [`08_inventaire_pont_runtime.md`](../../contrats/arrosage/08_inventaire_pont_runtime.md).
 
 ## Points de vigilance (non normatif)
 
