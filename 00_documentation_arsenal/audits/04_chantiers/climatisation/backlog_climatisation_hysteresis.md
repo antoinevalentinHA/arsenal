@@ -30,7 +30,13 @@ Tout le reste relève de gouvernance, d'explicabilité ou de maintenabilité —
   prolongé). Impact : un échec d'exécution reste silencieux. Complexité faible (notif,
   ou corriger le contrat). Régression faible. **P2.**
 
-**D13 — Couverture CI partielle** (reliquat étroit)
+**D13 — Couverture CI partielle** (reliquat étroit) *(TRAITÉ — 2026-07-03)*
+- **Statut** : **traité** — deux gardes de non-régression ajoutées à
+  `check_climatisation_admissibilite_contracts.py` : **F2** (`clim_bloquee` — composition
+  figée sur les 5 sources de blocage structurel + `unique_id`) et **F3** (`clim_action_en_cours`
+  — base « état HVAC réel » `climate.clim` + blocage poêle + vocabulaire fermé
+  {cool_actif, dry_actif, heat_actif, bloquee, arret}). Runtime conforme ; détection prouvée
+  par mutation-testing. Filet CI complété ; plus aucun artefact d'observabilité clim non couvert.
 - Type : gouvernance. La CI fige **déjà** l'admissibilité (portes 1/2), l'extinction COOL
   (sens `<=`), la consommation des admissibles par `clim_raison_decision`, la carte
   `status_72` (F5) et la délégation de cohérence de `carte_clim_decision` (F6) — protections
