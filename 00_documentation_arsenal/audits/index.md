@@ -56,6 +56,7 @@
 - [documentation/candidats_verification_runtime_priorisation.md](01_rapports/documentation/candidats_verification_runtime_priorisation.md)
 - [documentation/triage_recalibre_post_bluetti.md](01_rapports/documentation/triage_recalibre_post_bluetti.md)
 - [documentation/audit_documentaire_global_2026_06_06.md](01_rapports/documentation/audit_documentaire_global_2026_06_06.md)
+- [documentation/rapport_ecosysteme_depots_satellites.md](01_rapports/documentation/rapport_ecosysteme_depots_satellites.md)
 
 ### Architecture
 - [architecture/audit_recorder_instrumentation_temporaire.md](01_rapports/architecture/audit_recorder_instrumentation_temporaire.md)  _(audit **lecture seule** de `recorder.yaml` (340 entités) sous angle **temporel** — frontière microscope de chantier / instrumentation permanente ; classe chaque bloc en `PERMANENT_CONTRACTUEL` / `TEMPORAIRE_CHANTIER` / `DIAGNOSTIC_LONG` / `BRUIT_PROBABLE` / `INDETERMINE` ; périmètre **sain et gouverné**, croissance backup = coût assumé de chantiers actifs (courbe chauffage P4/P5/P6 committés le jour même) ; **aucun retrait justifiable**, patch de gouvernance temporelle **proposé non appliqué** ; **aucun runtime/recorder/contrat modifié**)_

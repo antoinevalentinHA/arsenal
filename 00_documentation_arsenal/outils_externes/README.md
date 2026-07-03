@@ -35,6 +35,10 @@ Imprimerie.
 | [`nas_imprimerie/stockage.md`](nas_imprimerie/stockage.md) | Décision de niveau de stockage |
 | [`nas_imprimerie/synthese_sante.md`](nas_imprimerie/synthese_sante.md) | Synthèse santé NAS Imprimerie |
 
+## Voir aussi
+
+- [`architecture/ecosysteme_depots_satellites.md`](../architecture/ecosysteme_depots_satellites.md) — référence canonique des **dépôts satellites gouvernés** par Arsenal. Le pont chaudière documenté ici correspond au dépôt `boiler-bridge` (patron « pont matériel externe sur bus MQTT »).
+
 ## Navigation
 
 - [Retour à la documentation Arsenal](../README.md)

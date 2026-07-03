@@ -30,6 +30,7 @@ Supervision du Bluetti AC180 comme alimentation tampon locale de la chaîne ther
 - **Boiler** — [`contrats/boiler/`](../../contrats/boiler/) ; alimentation de la chaîne boiler (aval direct).
 - **Chauffage** — [`contrats/chauffage/`](../../contrats/chauffage/) ; continuité thermique assurée (aval indirect).
 - **Pannes secteur** — [`contrats/pannes/secteur/`](../../contrats/pannes/secteur/) ; contexte de défaillance électrique dans lequel le Bluetti intervient.
+- **Dépôt satellite (amont, gouverné)** — [`architecture/ecosysteme_depots_satellites.md`](../../architecture/ecosysteme_depots_satellites.md) §4.1–4.2 ; les capteurs Bluetti sont produits par les dépôts `hassio-bluetti-bt` (intégration) + `bluetti-bt-lib` (lib BLE), consommés par Arsenal.
 
 ## Points de vigilance (non normatif)
 

@@ -54,6 +54,14 @@
 
 ---
 
+## Racine — Écosystème / dépôts gouvernés
+
+| Fichier | Contenu |
+|---|---|
+| [ecosysteme_depots_satellites.md](./ecosysteme_depots_satellites.md) | **Référence canonique** de la couche « composants gouvernés » : les 6 dépôts satellites (`bluetti-bt-lib`, `hassio-bluetti-bt`, `ha_airstage`, `ha-linky`, `rainbird-esp32-elegoo`, `boiler-bridge`), leurs patrons d'intégration, criticités et frontières de responsabilité. Descriptif, non normatif (règles métier). |
+
+---
+
 ## Racine — Sous-systèmes domaines
 
 | Fichier | Domaine |

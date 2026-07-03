@@ -50,6 +50,8 @@ Thread COOL : livraison principale [`v15_8_4.md`](../../changelog/changelogs/v15
 - **Vacances** (mode absence prolongée → extinction clim) — propriétaire : [`contrats/vacances.md`](../../contrats/vacances.md) ; interface avec la politique clim (amont).
 - **Chauffage** — propriétaire : [`contrats/chauffage/`](../../contrats/chauffage/) ; la clim **consomme** le chauffage (amont) via deux couplages critiques : `chauffage_blocage_aeration` (entrée d'autorisation clim) et `temperature_consigne_appliquee_locale` (seuils on/off mode chaud). **Couplage unidirectionnel** : le chauffage ne lit aucune entité clim. Référence : [`dependances_inter_domaines.md`](../../contrats/chauffage/dependances_inter_domaines.md).
 
+- **Dépôt satellite (amont, gouverné)** — [`architecture/ecosysteme_depots_satellites.md`](../../architecture/ecosysteme_depots_satellites.md) §4.3 ; les entités `climate.*` Fujitsu sont produites par le dépôt `ha_airstage` (custom component `fujitsu_airstage`, classé `local_lan`).
+
 ## Points de vigilance (non normatif)
 
 - **CH-x misfiling** : `changelog/chantiers/climatisation/` héberge les CH-x **Chauffage-CI** — voir [`registre_ch`](../pivots/registre_ch.md).

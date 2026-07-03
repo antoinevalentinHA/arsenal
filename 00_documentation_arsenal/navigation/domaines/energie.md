@@ -28,6 +28,7 @@ Entrée : [`contrats/energie.md`](../../contrats/energie.md) (mono-fichier — s
 - **energie_chaudiere** (Bluetti AC180) — [`contrats/bluetti.md`](../../contrats/bluetti.md) ; ses capteurs (tension secteur entrée) alimentent potentiellement le pipeline énergie (amont).
 - **Batteries** — [`contrats/batteries.md`](../../contrats/batteries.md) ; capteurs d'état batterie admissibles comme sources énergie (amont).
 - **Pannes** — [`contrats/pannes/`](../../contrats/pannes/) ; domaine adjacent : surveille la défaillance secteur que le dashboard énergie rend visible (pair).
+- **Dépôt satellite (amont, gouverné)** — [`architecture/ecosysteme_depots_satellites.md`](../../architecture/ecosysteme_depots_satellites.md) §4.4 ; l'add-on `ha-linky` importe la consommation Enedis/Linky comme statistiques long-terme (source candidate du dashboard). **Actuellement non maillé au contrat `energie.md`** — cf. §6.1 du document écosystème (incohérence documentaire relevée).
 
 > Hors périmètre de ce hub : résilience d'alimentation (`architecture/infrastructure_puissance.md`) — disponibilité vs consommation, concern distinct.
 
