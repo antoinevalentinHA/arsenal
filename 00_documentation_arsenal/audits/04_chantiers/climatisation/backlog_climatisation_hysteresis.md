@@ -99,7 +99,7 @@ s'applique pas. Laisser tel quel.
 | Priorité | Dette | Type | Risque | Bénéfice | Effort |
 |---|---|---|---|---|---|
 | P2 | D5 — notif échec persistant | Gouvernance | Échec exécution silencieux | Visibilité des pannes | Faible |
-| P2 | D13 — CI partielle | Gouvernance | Filet incomplet (`clim_bloquee` F2, `clim_action_en_cours` F3) | Fige les 2 derniers artefacts | Faible |
+| ✅ | D13 — CI partielle *(traité)* | Gouvernance | ~~Filet incomplet (`clim_bloquee` F2, `clim_action_en_cours` F3)~~ | F2/F3 figés en CI (2026-07-03) | Faible |
 | P2 | H2 — VMC seuils OFF morts | Gouvernance | Réglage UI sans effet | Contrôle réel ou param supprimé | Faible |
 | P2 | H3a — aération sans deadband | Bug potentiel | Oscillation recommandation | Stabilité du conseil | Moyen |
 | P2 | D-tuile — polarité status_72 | Explicabilité | Tuile diagnostic inversée | Diagnostic COOL/HEAT correct | Moyen |
@@ -115,9 +115,9 @@ s'applique pas. Laisser tel quel.
 
 ## Lecture stratégique
 
-- **Dernier filet à compléter : D13** — la CI couvre déjà admissibilité, extinction COOL,
-  raison, `status_72` et cohérence ; il ne reste qu'à couvrir `clim_bloquee` et
-  `clim_action_en_cours`.
+- **Filet CI complété : D13 ✅ traité (2026-07-03)** — la CI couvre l'admissibilité, l'extinction
+  COOL, la raison, `status_72`, la cohérence, **et désormais `clim_bloquee` (F2) et
+  `clim_action_en_cours` (F3)**. Plus aucun artefact d'observabilité clim non couvert.
 - **Tout le reste (P3) peut rester tel quel** sans dette opérationnelle : à nettoyer
   seulement de façon opportuniste, jamais comme chantier dédié.
 - **Pré-vérifications avant tout chantier P2** (sans en faire un audit) : l'amortissement
