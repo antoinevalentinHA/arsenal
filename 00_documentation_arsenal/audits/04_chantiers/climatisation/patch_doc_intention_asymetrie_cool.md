@@ -1,5 +1,11 @@
 # PATCH DOCUMENTAIRE (SÉPARÉ) — Correction de l'intention « asymétrie max/min COOL »
 
+> **✅ Statut : APPLIQUÉ** (commit `2efb563` — `docs(clim): audit topologie mono-zone COOL`).
+> Le remplacement décrit ci-dessous est **en place** dans `90_observations.md` : l'ancienne
+> formulation trompeuse (« l'ensemble des zones redescendent ») a disparu, la nouvelle intention
+> (topologie mono-zone / atteignabilité de OFF / compromis assumé) est présente. Ce document est
+> conservé comme **trace** du raisonnement ; il n'y a plus rien à appliquer.
+
 > **Version : v2** (révise la v1 de ce patch).
 > **Nature :** correction **éditoriale simple**, **non normative**.
 > Ne modifie **aucun runtime**, **aucun contrat exécutable**, **aucun capteur**,
