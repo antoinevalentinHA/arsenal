@@ -251,10 +251,12 @@ décision explicite postérieure à l'audit.
 
 ---
 
-## 🤖 CONSÉQUENCES — CI FUTURE
+## 🤖 CONSÉQUENCES — CI DE COHÉRENCE
 
-Une CI de cohérence préfixe ↔ domaine est attendue **après** le contrat,
-l'audit et les éventuels alignements. Elle devra :
+Une CI de cohérence préfixe ↔ domaine est exigée **après** le contrat,
+l'audit et les éventuels alignements. Elle est réalisée par
+`scripts/arsenal_contracts/check_automation_prefix_domain_contracts.py`
+(workflow `contracts_automation_prefix_domain.yml`) et doit en permanence :
 
 - prendre pour source de vérité des préfixes :
   `06_input_selects/system/prefix_id.yaml` ;
@@ -278,6 +280,10 @@ l'audit et les éventuels alignements. Elle devra :
   - **ERROR** — automatisation sans domaine fonctionnel résolu ;
   - **INFO/WARN** — uniquement transitoire, pour des cas à documenter ;
     aucune tolérance permanente ;
+- contrôler l'**hygiène du registre lui-même** (ERROR) : fichier référencé
+  inexistant, ID ne correspondant à aucune automatisation réelle, entrée
+  incohérente (préfixe, domaine), exception périmée à supprimer, doublon —
+  une exception invérifiable n'est pas opposable ;
 - ne produire **aucun faux positif connu** sur le corpus aligné.
 
 La CI vérifie la **conformité au présent contrat**, pas une approximation :
