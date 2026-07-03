@@ -2,7 +2,7 @@
 # 🧠 ARSENAL — AUTOMATION :
 #     Jardin – Activation éclairage (matin)
 #
-#  ID : 1007000000001
+#  ID : 10070000000001
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #
@@ -31,7 +31,7 @@
 #
 # ==========================================================
 
-- id: '1007000000001'
+- id: '10070000000001'
   alias: "Éclairage - Jardin - Activation matin"
   description: >
     Allume l’éclairage du jardin le matin lorsque

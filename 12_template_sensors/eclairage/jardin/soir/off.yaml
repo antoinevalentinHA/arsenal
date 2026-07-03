@@ -34,7 +34,7 @@
 #     - les attributs de diagnostic
 #     - la cohérence documentaire
 #   Il n'est PAS consommé par les automations d'extinction.
-#   L'autorité causale appartient à l'automation 1007000000004
+#   L'autorité causale appartient à l'automation 10070000000004
 #   qui lit les helpers directement.
 #
 # ⚠️ RÉÉVALUATION TEMPORELLE IMPLICITE
@@ -45,7 +45,7 @@
 #   référencées. Son affichage est donc approximativement à jour
 #   sans trigger explicite ni time_pattern.
 #   Cette caractéristique est ACCEPTABLE ici car ce sensor n'a
-#   aucun rôle causal. L'extinction est garantie par 1007000000004,
+#   aucun rôle causal. L'extinction est garantie par 10070000000004,
 #   indépendamment de l'état affiché. La réévaluation périodique
 #   implicite ne doit pas être confondue avec une autorité système.
 #

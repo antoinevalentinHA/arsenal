@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Alarme – Sirène forte sur état triggered
 #
-#  ID : 1002000000011
+#  ID : 10020000000011
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -33,7 +33,7 @@
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-- id: '1002000000011'
+- id: '10020000000011'
   alias: "Alarme - Sirène alarme"
   description: >
     Déclenche automatiquement la sirène forte si l’alarme passe à `triggered`,

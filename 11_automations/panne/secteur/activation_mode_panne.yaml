@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Sécurité – Entrée en mode panne (coupure secteur)
 #
-#  ID : 1004000000001
+#  ID : 10040000000001
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -76,7 +76,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: '1004000000001'
+- id: '10040000000001'
   alias: "Panne - Détection coupure secteur"
   description: >
     Entre en mode panne secteur, active l’état système

@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Stock – Maintenance hebdomadaire des mémoires hygrométriques
 #
-#  ID : 1018000000002
+#  ID : 10180000000002
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -52,7 +52,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: "1018000000002"
+- id: "10180000000002"
   alias: "Imprimerie - Stock - Archivage hebdo"
   description: >
     Chaque lundi à 00:00, archive les conditions de la semaine

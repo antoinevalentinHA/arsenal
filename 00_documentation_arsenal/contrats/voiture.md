@@ -164,12 +164,12 @@ input_number.audi_autonomie_corrigee_temperature              [autonomie normali
 
 ```
 Fichier : /11_automations/voiture/autonomie.yaml
-ID      : 1015000000001
+ID      : 10150000000001
 ```
 
 **Rôle étendu :**
 
-> `1015000000001` est l'**automation de consolidation pleine charge**.
+> `10150000000001` est l'**automation de consolidation pleine charge**.
 > Elle est l'**unique autorité normative** sur l'instant de vérité "batterie ≥ 99 %".
 
 **Séquence d'écriture canonique (ordre normatif) :**
@@ -205,7 +205,7 @@ Avec :
 **Changelog de l'automation :**
 
 ```yaml
-# CHANGELOG 1015000000001
+# CHANGELOG 10150000000001
 # v1.0 — création : snapshot autonomie_full
 # v1.1 — extension : ajout sous-bloc corrélation thermique
 #         (température snapshot + autonomie corrigée 20°C)
@@ -223,7 +223,7 @@ Avec :
 
 ```
 Fichier : /11_automations/voiture/archive.yaml
-ID      : 1015000000004
+ID      : 10150000000004
 ```
 
 Règles :

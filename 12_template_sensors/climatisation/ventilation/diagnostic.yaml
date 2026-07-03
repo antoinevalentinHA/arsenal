@@ -32,7 +32,7 @@
 #   Cible effective = recommandation après les arbitrages EFFECTIFS du runtime
 #   (application_mode.yaml, 10030000000120), dans l'ordre EXACT :
 #     1. plage silencieuse (binary_sensor.clim_silencieux_autorise == on)
-#        → quiet (domaine silence, automation 1003000000020) ;
+#        → quiet (domaine silence, automation 10030000000020) ;
 #     2. ABSENCE (Auto Arsenal + clim active + maison absente) → high (Fort).
 #        « Absence » = projection présence STABILISÉE du clim (R1-b) + visiteur :
 #        presence_confort_thermique_stabilisee == off ET presence_visiteur == off ;

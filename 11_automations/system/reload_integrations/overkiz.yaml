@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Overkiz – Relance intégration (auto) sur gel données
 #
-#  ID : 1012000000012
+#  ID : 10120000000012
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #     Détection + orchestration minimale :
@@ -23,7 +23,7 @@
 #     - Exécution uniquement si systeme_stable = on
 # ==========================================================
 
-- id: '1012000000012'
+- id: '10120000000012'
   alias: "Système - Relance Overkiz"
   description: >
     Orchestration légère : déclenche la procédure de résilience Overkiz

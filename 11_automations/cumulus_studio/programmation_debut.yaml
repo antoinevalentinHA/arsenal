@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     ECS Petite Maison – Synchronisation début de séjour
 #
-#  ID : 1005000000001
+#  ID : 10050000000001
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -61,7 +61,7 @@
 #     avec une logique ECS centralisée.
 # ==========================================================
 
-- id: "1005000000001"
+- id: "10050000000001"
   alias: "ECS Petite Maison - Début séjour"
   description: >
     Passe le chauffe-eau en mode Éco à 00:05 le jour de début programmé,

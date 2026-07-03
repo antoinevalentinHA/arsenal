@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     ECS Petite Maison – Clôture calendaire de fin de séjour
 #
-#  ID : 1005000000002
+#  ID : 10050000000002
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -63,7 +63,7 @@
 #     en s’appuyant sur une logique métier centralisée.
 # ==========================================================
 
-- id: "1005000000002"
+- id: "10050000000002"
   alias: "ECS Petite Maison - Fin séjour"
   description: >
     Passe le chauffe-eau en OFF et réactive le mode absence

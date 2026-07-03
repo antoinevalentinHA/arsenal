@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Alarme – Intrusion (mouvements)
 #
-#  ID : 1002000000009
+#  ID : 10020000000009
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -31,7 +31,7 @@
 #     - Lecture métier claire par zone
 # ==========================================================
 
-- id: '1002000000009'
+- id: '10020000000009'
   alias: "Alarme - Intrusion mouvement"
   description: >
     Déclenche l’alarme en cas de mouvement détecté dans des zones sensibles

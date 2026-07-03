@@ -54,5 +54,5 @@ Toute durée de confirmation non issue de ce document est invalide.
 ## 🔗 Références
 
 - Contrat socle : [`10_socle.md`](10_socle.md)
-- Automation d'entrée : `ID 1004000000001`
-- Automation de sortie : `ID 1004000000002`
+- Automation d'entrée : `ID 10040000000001`
+- Automation de sortie : `ID 10040000000002`

@@ -42,7 +42,7 @@ integrations:
     binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_netatmo }
     binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_netatmo }
     binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_netatmo }
-    automation:              { statut: present, id: "1012000000008", alias: "Système - Relance Netatmo", fichier: 11_automations/system/reload_integrations/netatmo.yaml }
+    automation:              { statut: present, id: "10120000000008", alias: "Système - Relance Netatmo", fichier: 11_automations/system/reload_integrations/netatmo.yaml }
     timer_backoff:           { statut: present, entity_id: timer.netatmo_reload_backoff }
     compteur_tentatives:     { statut: present, entity_id: input_number.netatmo_reload_tentatives }
     action_recovery:         { statut: present, type: reload_entry, via: canon }
@@ -61,7 +61,7 @@ integrations:
     binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_airstage }
     binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_airstage }
     binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_airstage }
-    automation:              { statut: present, id: "1012000000013", alias: "Système - Relance Airstage", fichier: 11_automations/system/reload_integrations/fujitsu.yaml }
+    automation:              { statut: present, id: "10120000000013", alias: "Système - Relance Airstage", fichier: 11_automations/system/reload_integrations/fujitsu.yaml }
     timer_backoff:           { statut: present, entity_id: timer.airstage_reload_backoff }
     compteur_tentatives:     { statut: present, entity_id: input_number.airstage_reload_tentatives }
     action_recovery:         { statut: present, type: reload_entry, via: canon }
@@ -99,7 +99,7 @@ integrations:
     binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_overkiz }
     binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_overkiz }
     binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_overkiz }
-    automation:              { statut: present, id: "1012000000012", alias: "Système - Relance Overkiz", fichier: 11_automations/system/reload_integrations/overkiz.yaml }
+    automation:              { statut: present, id: "10120000000012", alias: "Système - Relance Overkiz", fichier: 11_automations/system/reload_integrations/overkiz.yaml }
     timer_backoff:           { statut: present, entity_id: timer.overkiz_reload_backoff }
     compteur_tentatives:     { statut: present, entity_id: input_number.overkiz_reload_tentatives }
     action_recovery:         { statut: present, type: reload_entry, via: canon }
@@ -119,7 +119,7 @@ integrations:
     binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_switchbot }
     binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_switchbot }
     binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_switchbot }
-    automation:              { statut: present, id: "1012000000011", alias: "Système - Relance SwitchBot", fichier: 11_automations/system/reload_integrations/switchbot.yaml }
+    automation:              { statut: present, id: "10120000000011", alias: "Système - Relance SwitchBot", fichier: 11_automations/system/reload_integrations/switchbot.yaml }
     timer_backoff:           { statut: present, entity_id: timer.switchbot_reload_backoff }
     compteur_tentatives:     { statut: present, entity_id: input_number.switchbot_reload_tentatives }
     action_recovery:         { statut: present, type: reload_entry, via: canon }
@@ -162,7 +162,7 @@ integrations:
     binaire_indisponibilite: { statut: present, entity_id: binary_sensor.zigbee2mqtt_bridge_connection_state, fourni_par: integration_native }
     binaire_retour_ok:       { statut: non_applicable, entity_id: null, note: "retour OK = transition to:'on' for 2min du bridge, pas un binaire dédié" }
     binaire_recovery:        { statut: non_applicable, entity_id: null, note: "recovery porté par le timer de backoff, pas un binaire dédié" }
-    automation:              { statut: present, id: "1012000000010", alias: "Système - Relance Zigbee2MQTT", fichier: 11_automations/system/reload_integrations/zigbee.yaml }
+    automation:              { statut: present, id: "10120000000010", alias: "Système - Relance Zigbee2MQTT", fichier: 11_automations/system/reload_integrations/zigbee.yaml }
     timer_backoff:           { statut: present, entity_id: timer.zigbee2mqtt_reload_backoff }
     compteur_tentatives:     { statut: present, entity_id: input_number.zigbee_reload_tentatives }
     action_recovery:         { statut: present, type: addon_restart, via: inline, cible: a0d7b954_zigbee2mqtt }

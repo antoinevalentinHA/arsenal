@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Sécurité – Sortie du mode panne secteur
 #
-#  ID : 1004000000002
+#  ID : 10040000000002
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -72,7 +72,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: '1004000000002'
+- id: '10040000000002'
   alias: "Panne - Sortie mode panne"
   description: >
     Clôt l’épisode de panne secteur après retour du courant,

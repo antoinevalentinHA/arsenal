@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Jardin – Calcul horaire allumage soir
 #
-#  ID : 1007000000005
+#  ID : 10070000000005
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -57,7 +57,7 @@
 #     sans jamais piloter le matériel.
 # ==========================================================
 
-- id: '1007000000005'
+- id: '10070000000005'
   alias: "Éclairage - Jardin - Mise à jour heure soir"
   description: >
     Met à jour automatiquement l’heure d’allumage du jardin le soir

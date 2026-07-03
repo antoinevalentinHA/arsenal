@@ -19,12 +19,12 @@
 #   has_date: true — has_time: true
 #
 # ✍️ AUTEUR DES ÉCRITURES
-#   Automation 1007000000003 — Éclairage - Jardin - Activation soir
+#   Automation 10070000000003 — Éclairage - Jardin - Activation soir
 #   Écrit immédiatement après script.jardin_on, si et seulement si
 #   l'allumage effectif a eu lieu (condition idempotence validée).
 #
 # 📖 CONSOMMATEURS
-#   Automation 1007000000004 — Éclairage - Jardin - Extinction soir
+#   Automation 10070000000004 — Éclairage - Jardin - Extinction soir
 #   → utilisé pour calculer input_datetime.jardin_soir_extinction_deadline
 #     (non consommé directement comme déclencheur)
 #

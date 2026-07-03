@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Alarme – Intrusion (capteurs d’ouverture)
 #
-#  ID : 1002000000007
+#  ID : 10020000000007
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -39,7 +39,7 @@
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-- id: '1002000000007'
+- id: '10020000000007'
   alias: "Alarme - Intrusion ouverture"
   description: >
     Déclenche une alarme ou une notification de test si un capteur d’ouverture

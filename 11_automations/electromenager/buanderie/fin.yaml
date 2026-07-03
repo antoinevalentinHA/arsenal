@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Buanderie – Détection de fin de cycle électroménager
 #
-#  ID : 1008000000004
+#  ID : 10080000000004
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -50,7 +50,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: "1008000000004"
+- id: "10080000000004"
   alias: "Électroménager - Buanderie - Fin cycle"
   description: >
     Détecte la fin d’un cycle de lavage via seuil bas prolongé,

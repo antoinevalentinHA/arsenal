@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Airstage – Relance intégration (auto) sur gel données
 #
-#  ID : 1012000000013
+#  ID : 10120000000013
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #     Détection + orchestration minimale :
@@ -23,7 +23,7 @@
 #     - Exécution uniquement si systeme_stable = on
 # ==========================================================
 
-- id: '1012000000013'
+- id: '10120000000013'
   alias: "Système - Relance Airstage"
   description: >
     Orchestration légère : déclenche la procédure de résilience Airstage

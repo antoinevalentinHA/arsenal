@@ -3,7 +3,7 @@
 #     Éclairage jardin — Activation soir
 # ----------------------------------------------------------
 # 🆔 IDENTIFIANT
-#   '1007000000003'
+#   '10070000000003'
 #
 # 🎯 RÔLE
 #   Allumer l'éclairage du jardin le soir dès que le cycle
@@ -16,7 +16,7 @@
 #              deadline extinction, rattrapage post-redémarrage
 #   - Exclut : décision d'existence du cycle soir (portée par
 #              binary_sensor.jardin_cycle_eclairage_soir_actif),
-#              extinction (portée par 1007000000004)
+#              extinction (portée par 10070000000004)
 #
 # 🔖 NATURE
 #   Application
@@ -78,7 +78,7 @@
 #   Réactive — Arsenal v14.x
 # ==========================================================
 
-- id: '1007000000003'
+- id: '10070000000003'
   alias: "Éclairage - Jardin - Activation soir"
   description: >
     Allume l'éclairage du jardin lorsque le cycle soir existe

@@ -31,8 +31,8 @@ Automations (préfixe d'identifiant `1008` — registre `prefix_id.yaml`) :
 
 | Appareil | Début | Fin |
 |---|---|---|
-| Lave-vaisselle | `1008000000001` | `1008000000002` |
-| Buanderie | `1008000000003` | `1008000000004` |
+| Lave-vaisselle | `10080000000001` | `10080000000002` |
+| Buanderie | `10080000000003` | `10080000000004` |
 
 Canal de notification mobile : `script.notification_envoyer` vers
 `input_text.telephone_antoine_notify`.

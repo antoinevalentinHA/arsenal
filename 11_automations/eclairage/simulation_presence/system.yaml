@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Simulation de présence – Orchestration temporelle (génération horaires)
 #
-#  ID : 1007000000008
+#  ID : 10070000000008
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -69,7 +69,7 @@
 #     pas un décideur.
 # ==========================================================
 
-- id: "1007000000008"
+- id: "10070000000008"
   alias: "Éclairage - Simulation présence - Génération horaires"
   description: >
     Génère chaque jour les horaires de simulation de présence

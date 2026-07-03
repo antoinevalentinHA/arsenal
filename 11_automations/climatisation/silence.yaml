@@ -2,7 +2,7 @@
 # 🧠 ARSENAL — AUTOMATION :
 #     Clim – Modulation acoustique (exécution mode silencieux)
 #
-# ID : 1003000000020
+# ID : 10030000000020
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #
@@ -78,7 +78,7 @@
 #     aux pertes d’état transitoires.
 # ==========================================================
 
-- id: '1003000000020'
+- id: '10030000000020'
   alias: Clim - Mode silencieux
   description: >
     Applique l’état du mode silencieux de la climatisation

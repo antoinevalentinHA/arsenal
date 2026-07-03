@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Lave-vaisselle – Détection de fin de cycle
 #
-#  ID : 1008000000002
+#  ID : 10080000000002
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -54,7 +54,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: "1008000000002"
+- id: "10080000000002"
   alias: "Électroménager - Lave-vaisselle - Fin cycle"
   description: >
     Détecte la fin du cycle du lave-vaisselle si la puissance reste basse

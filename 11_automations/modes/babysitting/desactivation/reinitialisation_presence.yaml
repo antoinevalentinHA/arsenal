@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Présence enfants – Remise à zéro quotidienne des mémoires
 #
-#  ID : 1009000000002
+#  ID : 10090000000002
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -49,7 +49,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: '1009000000002'
+- id: '10090000000002'
   alias: "Modes - Babysitting - Reset quotidien présence enfants"
   description: >
     Réinitialise chaque jour les indicateurs de présence

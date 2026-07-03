@@ -228,6 +228,21 @@ sans ID explicite est **INVALIDE**.
 
 ---
 
+## 🧯 EXCEPTION TRACÉE — Reprise AID-006 (unique, datée : 2026-07-03)
+
+La règle générale ci-dessus — **« un ID ne change jamais après création »** — **demeure pleinement en vigueur**. Une **exception unique**, explicitement décidée et documentée, est actée pour une **reprise de dette historique de format** :
+
+- **Objet** : migration des **58 identifiants legacy à 13 chiffres** (suffixe 9) vers le format **canonique à 14 chiffres** (préfixe + suffixe 10), tel que produit par `script.generate_next_id_from_prefix`.
+- **Mapping** : strictement déterministe — `PPPP + s9 → PPPP + 0 + s9` (insertion d'un `0` après le préfixe de 4 chiffres). Exemple : `1015000000001 → 10150000000001`.
+- **Ce que l'exception N'autorise PAS** : aucune réattribution métier, aucun changement de préfixe, aucune invention ni incrémentation d'ID, aucune modification d'un ID pour toute autre raison (notamment pas « pour lisibilité »).
+- **Justification** : dette identifiée par le garde-fou CI `AID-006` ; mapping **sans collision** (vérifié) ; opération **atomique et tracée**.
+- **Traçabilité** : rapport d'opération — [`audits/01_rapports/transverses/migration_ids_automatisations_13_vers_14.md`](../../audits/01_rapports/transverses/migration_ids_automatisations_13_vers_14.md).
+- **Suite** : après validation runtime, le contrat `AID-006` sera **durci en ERROR** (longueur 14 exigée) pour verrouiller l'acquis et interdire toute régression 13 chiffres.
+
+Cette exception est **unique et close** : elle ne crée **aucun précédent** pour une modification d'ID hors de ce périmètre.
+
+---
+
 ## 📌 STATUT
 
 Document d’architecture Arsenal  

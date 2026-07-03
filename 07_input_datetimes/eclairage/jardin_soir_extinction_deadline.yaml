@@ -20,12 +20,12 @@
 #   has_date: true — has_time: true
 #
 # ✍️ AUTEUR DES ÉCRITURES
-#   Automation 1007000000003 — Éclairage - Jardin - Activation soir
+#   Automation 10070000000003 — Éclairage - Jardin - Activation soir
 #   Écrit immédiatement après l'écriture de jardin_soir_allumage_effectif.
 #   Valeur : allumage_effectif + input_number.duree_lumiere_jardin_soir (minutes).
 #
 # 📖 CONSOMMATEURS
-#   Automation 1007000000004 — Éclairage - Jardin - Extinction soir
+#   Automation 10070000000004 — Éclairage - Jardin - Extinction soir
 #   → trigger: platform: time at: input_datetime.jardin_soir_extinction_deadline
 #   → condition: template now() >= as_local(as_datetime(...))
 #

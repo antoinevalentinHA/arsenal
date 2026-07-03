@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Réglages – Clim consigne présence
 #
-#  ID : 1003000000010
+#  ID : 10030000000010
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -58,7 +58,7 @@
 #     est portée par les pipelines de décision.
 # ==========================================================
 
-- id: '1003000000010'
+- id: '10030000000010'
   alias: "Clim - Consigne présence"
   mode: single
 

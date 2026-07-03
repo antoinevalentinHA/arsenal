@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Mode Maison – Gouvernance chauffage clim (hiver)
 #
-#  ID : 1003000000015
+#  ID : 10030000000015
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -77,7 +77,7 @@
 #     Événement = changement réel uniquement.
 # ==========================================================
 
-- id: '1003000000015'
+- id: '10030000000015'
   alias: Mode Maison - Gestion chauffage clim hiver
 
   trigger:

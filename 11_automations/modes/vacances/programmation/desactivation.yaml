@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Vacances – Fin de projection auto
 #
-#  ID : 1009000000005
+#  ID : 10090000000005
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -43,7 +43,7 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-- id: "1009000000005"
+- id: "10090000000005"
   alias: "Modes - Vacances - Fin projection auto"
   description: >
     Repasse en mode Normal lorsque la demande consolidee

@@ -13,7 +13,7 @@
 # 🧩 PÉRIMÈTRE
 #   - Couvre : écriture de jardin_sejour_derniere_activite,
 #              calcul et écriture de jardin_sejour_inactivite_deadline
-#   - Exclut : décision d'extinction (portée par 1007000000004),
+#   - Exclut : décision d'extinction (portée par 10070000000004),
 #              pilotage matériel,
 #              toute logique propre au cycle soir jardin
 #

@@ -3,7 +3,7 @@
 #     Éclairage jardin — Extinction soir
 # ----------------------------------------------------------
 # 🆔 IDENTIFIANT
-#   '1007000000004'
+#   '10070000000004'
 #
 # 🎯 RÔLE
 #   Éteindre automatiquement l'éclairage du jardin le soir,
@@ -15,7 +15,7 @@
 # 🧩 PÉRIMÈTRE
 #   - Couvre : extinction matérielle, rattrapage post-redémarrage,
 #              rattrapage post-rechargement automations
-#   - Exclut : calcul des deadlines (porté par 1007000000003 et
+#   - Exclut : calcul des deadlines (porté par 10070000000003 et
 #              10070000000029), notification persistante
 #
 # 🔖 NATURE
@@ -93,7 +93,7 @@
 #   Réactive — Arsenal v14.x
 # ==========================================================
 
-- id: '1007000000004'
+- id: '10070000000004'
   alias: "Éclairage - Jardin - Extinction soir"
   description: >
     Éteint l'éclairage du jardin le soir dès que la durée
