@@ -20,6 +20,7 @@
 - [ecs/audit_offsets_ecs_bucket_desinfection.md](01_rapports/ecs/audit_offsets_ecs_bucket_desinfection.md)  _(audit ciblé bornes du bucket Désinfection ; saturation silencieuse confirmée runtime ; constats proposés ECS-OFF-9…13)_
 - [ecs/audit_borne_desinfection_3_vers_4.md](01_rapports/ecs/audit_borne_desinfection_3_vers_4.md)  _(analyse d'impact borne max 3.0 → 4.0 ; conclusion B — passage recommandé ; ]3.0 ; 4.0] iso-consigne par quantification entière)_
 - [ecs/audit_bucket_medium_saturation.md](01_rapports/ecs/audit_bucket_medium_saturation.md)  _(audit ciblé bucket Medium ; saturation non prouvée ; interaction plancher × apprentissage ; décision différée ; constats ECS-OFF-14…16)_
+- [ecs/audit_auto_ajustement_consigne_souhaitee.md](01_rapports/ecs/audit_auto_ajustement_consigne_souhaitee.md)  _(étude d'opportunité, lecture seule — auto-ajustement de la consigne ECS **souhaitée** (distinct des offsets) ; faisabilité **partielle** (pas de mesure de tirage/énergie, sonde unique) ; conclusion : pertinent **uniquement en observabilité/conseil** ; à lire avec sa contre-expertise)_
 
 ### Climatisation
 - [climatisation/audit_climatisation_arsenal.md](01_rapports/climatisation/audit_climatisation_arsenal.md)
@@ -111,6 +112,7 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 
 ### ECS
 - [ecs/contre_expertise_watchdog_ecs.md](02_contre_expertises/ecs/contre_expertise_watchdog_ecs.md)  _(ECS-WD-1 INFIRMÉ comme violation ; doctrine watchdog = filet de sûreté terminal — tranché par arbitrage)_
+- [ecs/contre_expertise_auto_ajustement_consigne_souhaitee.md](02_contre_expertises/ecs/contre_expertise_auto_ajustement_consigne_souhaitee.md)  _(contre-audit adversarial — idée jugée **prématurée et partiellement en rupture** (frontière offset-only `11` §2.2 ; asymétrie « disponibilité » `11` §6.1) ; **écartée en l'état** ; tempère l'audit d'opportunité associé)_
 
 ### Vacances
 - [vacances/contre_expertise_audit_vacances.md](02_contre_expertises/vacances/contre_expertise_audit_vacances.md)
