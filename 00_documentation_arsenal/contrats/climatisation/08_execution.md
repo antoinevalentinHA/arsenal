@@ -89,6 +89,7 @@ La ré-émission en cas d'échec :
 - est différée (pas de retry immédiat) : +30 s au premier échec, +90 s au deuxième
 - est strictement bornée à deux reprises après la tentative initiale
 - s'arrête en cas d'échec persistant avec émission d'une notification persistante
+  (mécanisme : voir « Notification d'échec persistant » ci-dessous)
 
 La couche Exécution reste pure : elle applique, constate et délègue la reprise. Elle ne décide pas de la stratégie thermique.
 
@@ -198,6 +199,38 @@ Garantie de non-régression : un device **disponible mais qui refuse
 durablement** la commande (échec post-condition sans indisponibilité) ne
 produit aucun front de récupération — il **n'est pas** réarmé, et la borne
 d'origine tient. Seule une récupération d'infrastructure ré-ouvre un budget.
+
+---
+
+## Notification d'échec persistant
+
+L'échec persistant est **matérialisé pour l'opérateur** par une notification
+persistante, portée par une couche d'observabilité dédiée — jamais par le
+script d'exécution lui-même, qui se contente de constater l'état.
+
+| Entité | Rôle |
+|---|---|
+| `automation.clim_notification_echec_execution` | Projection UI strictement observable de l'échec d'exécution persistant |
+
+Doctrine :
+
+- **Source de vérité unique** : `input_boolean.clim_execution_echec`.
+  L'automation de notification **ne l'écrit jamais** ; seule la conclusion du
+  script d'exécution le pilote.
+- **Création** : échec latché **et** budget de reprise épuisé
+  (`counter.clim_execution_retry_count` > 2 — même sémantique de borne que le
+  réarmement après récupération). Un échec transitoire encore couvert par la
+  reprise différée reste silencieux.
+- **Maintien** : la notification demeure tant que l'échec reste latché — y
+  compris pendant un réarmement après récupération (compteur remis à zéro,
+  booléen inchangé) : l'échec n'a pas disparu, la notification non plus.
+- **Suppression** : la disparition de l'échec (booléen `off`, quelle qu'en
+  soit la cause — exécution validée ou purge) retire la notification.
+- **Reconstruction** : entièrement recalculable depuis le seul état courant ;
+  ré-évaluée au démarrage sur `input_boolean.systeme_stable`.
+- **Isolement** : `notification_id` dédié (`clim_execution_echec`), distinct
+  de la notification de mode actif (`clim_mode_actif`) ; aucune commande
+  matérielle, aucune décision, aucun accès aux entités d'exécution.
 
 ---
 
