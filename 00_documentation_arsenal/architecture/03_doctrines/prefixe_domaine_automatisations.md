@@ -267,7 +267,10 @@ l'audit et les éventuels alignements. Elle devra :
   explicite et tracée ;
 - ne PAS implémenter de règle naïve dossier → préfixe : le dossier n'y a
   valeur que de **présomption réfutable**, levée par le registre
-  d'exceptions ;
+  d'exceptions. Mécanique exacte de résolution : la présomption s'attache
+  au **dossier racine** sous `11_automations/` uniquement (les sous-dossiers
+  n'ont aucune autorité) ; seule une entrée valide du registre
+  (id + fichier concordants) lève la présomption ;
 - distinguer :
   - **ERROR** — préfixe incohérent non couvert par une exception déclarée ;
   - **ERROR** — exception déclarée vers un préfixe inexistant dans

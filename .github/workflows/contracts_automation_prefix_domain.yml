@@ -1,0 +1,18 @@
+name: Arsenal Contracts — Préfixe/Domaine Automatisations
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-automation-prefix-domain-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Validate automation prefix/domain contracts
+        run: python scripts/arsenal_contracts/check_automation_prefix_domain_contracts.py

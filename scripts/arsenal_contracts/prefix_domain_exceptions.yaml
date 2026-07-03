@@ -37,6 +37,14 @@
 #   domaine_prefixe : domaine déclaré par le préfixe (prefix_id_select)
 #   justification   : pourquoi le préfixe est LE bon malgré l'apparence
 #   decision        : décision propriétaire (avec date)
+#
+# ⚠️ Chaque entrée LÈVE la présomption dossier racine ↔ préfixe : le
+#   registre est strictement limité aux VRAIES exceptions opposables
+#   nécessaires à la CI. Une clarification déjà résolue (dossier et
+#   préfixe concordants) n'y a pas sa place : elle vit dans l'en-tête
+#   du fichier concerné et dans la chaîne d'audit. Toute entrée qui ne
+#   couvre plus de divergence est signalée périmée (APD-013) et doit
+#   être supprimée.
 # ==========================================================
 
 prefix_domain_exceptions:
@@ -88,17 +96,8 @@ prefix_domain_exceptions:
       est un classement opérationnel, pas le propriétaire fonctionnel.
     decision: "Exception assumée — arbitrage propriétaire 2026-07-03"
 
-  # --- Alerte Bluetti — préfixe panne conservé ------------------------
-  # energie_chaudiere est un SOUS-SYSTÈME concerné (contexte technique),
-  # pas un domaine d'ID propriétaire : aucun préfixe ne lui est déclaré
-  # et il n'y a pas lieu d'en créer un pour ce seul cas.
-
-  - id: "10040000000003"
-    fichier: 11_automations/panne/secteur/alerte_bluetti.yaml
-    alias: "Energie chaudiere - Alerte Bluetti"
-    prefixe: "1004"
-    domaine_prefixe: panne
-    justification: >-
-      Contexte panne secteur ; energie_chaudiere est un sous-système
-      concerné, pas un domaine d'ID propriétaire.
-    decision: "Préfixe panne conservé — arbitrage propriétaire 2026-07-03"
+  # Note — alerte Bluetti (11_automations/panne/secteur/alerte_bluetti.yaml,
+  # préfixe 1004 panne) : retirée du registre par arbitrage propriétaire
+  # (2026-07-03) après clarification de son en-tête — dossier racine panne/
+  # et préfixe panne concordent, ce n'est PAS une exception préfixe/domaine ;
+  # energie_chaudiere y est un sous-système concerné, pas un domaine d'ID.
