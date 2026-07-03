@@ -80,7 +80,7 @@ Ce signal est consommé par :
 - trigger `ouverture_grace` sur passage `off -> on`
 
 2) Garde-fou d’invalidation tentative :
-- Automation ID `10170000000010`
+- Automation ID `10010000000031`
 - trigger `on -> off` (fermeture avant confirmation)
 
 ---

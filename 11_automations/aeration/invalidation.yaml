@@ -1,6 +1,6 @@
 # ==========================================================
 #  AUTOMATION : Aération – Invalidation tentative non confirmée
-#  ID : 10170000000010
+#  ID : 10010000000031
 # ----------------------------------------------------------
 #  🧠 Rôle :
 #     Annuler proprement une tentative d’aération lorsque
@@ -24,7 +24,7 @@
 #     Elle ne remplace PAS le pipeline maître.
 # ==========================================================
 
-- id: "10170000000010"
+- id: "10010000000031"
   alias: "Aération - Invalidation tentative non confirmée"
   mode: single
 
