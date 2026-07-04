@@ -39,6 +39,14 @@ Réduire — et surtout **rendre explicite** — l'écart entre cinq surfaces :
 
 Le livrable est le présent document : cartographies croisées (§3–§4), matrice de couverture (§5), backlog priorisé de CI manquantes ou incomplètes (§6), inventaire du non-automatisable (§7), recommandations de lots (§8).
 
+### 1.4 Principe méthodologique C14
+
+> **Tout constat d'absence doit être établi en ouvrant la cible, pas en s'arrêtant à un nom de fichier.**
+
+Ce principe est né d'une erreur de ce chantier : la première version (#261) a déclaré « aucun contrat » pour recorder et Netatmo alors que les deux documents existaient — l'un rangé sous `architecture/`, l'autre sous un nom de fichier legacy. Un constat d'absence tiré d'une recherche par nom, sans ouvrir la cible réelle, est faux par construction.
+
+Corollaire opposable à tout audit de couverture : **une norme mal ancrée n'est pas une norme absente.** Un checker qui ne cite pas sa source, ou la cite par un nom périmé, révèle un défaut de *traçabilité*, jamais l'inexistence de la norme. Les deux diagnostics appellent des actions opposées (réparer l'ancrage vs écrire un contrat) ; les confondre produit du backlog fantôme. Un « fantôme » ne se déclare qu'après avoir cherché le document par son titre, son domaine et son contenu — pas seulement par son chemin supposé.
+
 ---
 
 ## 2. Apport du document Fable (`doctrine_noyau_normatif_executable.md`)
