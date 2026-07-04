@@ -163,6 +163,7 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 - [transverses/etat_avancement_chantier_navigation_documentaire_contrats.md](04_chantiers/transverses/etat_avancement_chantier_navigation_documentaire_contrats.md)
 - [transverses/etat_couverture_normative_domaines.md](04_chantiers/transverses/etat_couverture_normative_domaines.md)
 - [transverses/etat_avancement_couverture_normative_domaines.md](04_chantiers/transverses/etat_avancement_couverture_normative_domaines.md)
+- [transverses/chantier_couverture_ci_contrats_arsenal.md](04_chantiers/transverses/chantier_couverture_ci_contrats_arsenal.md)  _(chantier de cadrage — écart contrats Markdown ↔ couverture CI ; cartographies croisées, matrice de couverture, backlog priorisé de CI manquantes ; **lecture seule, aucune CI créée**)_
 
 ### Vacances
 - [vacances/chantier_vac_imp_5_desinfection_retour.md](04_chantiers/vacances/chantier_vac_imp_5_desinfection_retour.md)  _(VAC-IMP-5 — runtime commité `c4faf68`, validation runtime en attente)_
