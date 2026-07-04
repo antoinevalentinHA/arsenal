@@ -1,0 +1,55 @@
+name: Arsenal Security — Audit Publication Git (informatif)
+
+# C14 Lot 1E-b — branchement CI *informatif* du scanner de sécurité publication.
+# Mode informatif uniquement : `continue-on-error` => ce job ne bloque JAMAIS une PR
+# à ce stade. Rôle = verrou de non-régression visible : tout CRITICAL (secret, IP
+# privée, fichier interdit) apparaît dans les logs et le récapitulatif CI, sans gate.
+# Le passage en bloquant (`--fail-on critical` gating) est un lot ultérieur (hors 1E-b).
+# Le scanner ne modifie jamais le dépôt (invariant de l'outil).
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  audit-publication:
+    name: Scanner sécurité publication (informatif)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Exécuter le scanner (informatif, non bloquant)
+        id: scan
+        continue-on-error: true
+        run: |
+          python3 scripts/security/audit_publication_git.py --fail-on critical \
+            | tee "${RUNNER_TEMP}/scan.txt"
+
+      - name: Résumé du scan dans le récapitulatif CI
+        if: always()
+        run: |
+          crit=$(grep -c '\[CRITICAL\]' "${RUNNER_TEMP}/scan.txt" || true)
+          warn=$(grep -c '\[WARNING' "${RUNNER_TEMP}/scan.txt" || true)
+          {
+            echo "## 🔎 Audit sécurité publication Git — mode informatif (C14 Lot 1E-b)"
+            echo ""
+            echo "| Niveau | Nombre |"
+            echo "|---|---:|"
+            echo "| CRITICAL | ${crit:-0} |"
+            echo "| WARNING | ${warn:-0} |"
+            echo ""
+            echo "> Mode **informatif** (\`continue-on-error: true\`) : ce job **ne bloque pas** la PR."
+            if [ "${crit:-0}" != "0" ]; then
+              echo ""
+              echo "### ❌ CRITICAL détectés (non bloquant à ce stade)"
+              echo '```text'
+              grep '\[CRITICAL\]' "${RUNNER_TEMP}/scan.txt" || true
+              echo '```'
+            fi
+          } >> "${GITHUB_STEP_SUMMARY}"
