@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle M5 : Réouverture pendant blocage
+Source normative : 00_documentation_arsenal/contrats/aeration_blocage_chauffage/m5_reouverture/
 Contrats :
   - 1_reouverture_pendant_blocage.md  (cadre général M5)
   - 2_interaction_avec_m3.md          (interaction M5 / M3)

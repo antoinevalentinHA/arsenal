@@ -3,6 +3,7 @@
 # ==========================================================
 # 🧠 ARSENAL — CONTRACT CHECK
 # Domaine : VMC
+# Contrat (source normative) : 00_documentation_arsenal/contrats/vmc.md
 # Vérification des invariants structurels
 # ==========================================================
 

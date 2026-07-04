@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : ECS Sécurité & Gardiens
+Source normative : 00_documentation_arsenal/contrats/ecs/ (chapitres listés ci-dessous)
 Contrats : 07_gardiens_et_securite_active, 10_resilience_et_defaillances,
            11_ajustement_des_offsets, application_consigne,
            ecs_appliquer_consigne_confirmee

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : UPS / Arrêt Home Assistant
-Contrat : UPS / Arrêt HA v1.0
+Contrat (source normative) : 00_documentation_arsenal/contrats/ups_arret_ha.md
 Script  : scripts/arsenal_contracts/check_ups_arret_ha_contracts.py
 """
 

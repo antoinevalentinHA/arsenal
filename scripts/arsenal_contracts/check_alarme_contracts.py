@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Domaine Alarme
-Contrats : 00_gouvernance → 96_diagnostic_blocage
+Contrats (source normative) : 00_documentation_arsenal/contrats/alarme/ (00_gouvernance → 96_diagnostic_blocage)
 Script  : scripts/arsenal_contracts/check_alarme_contracts.py
 """
 

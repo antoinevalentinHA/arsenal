@@ -2,6 +2,7 @@
 # ==========================================================
 # 🧠 ARSENAL — CONTRACT CHECK
 #     Aération — M3 — Analyse DeltaT
+#     Contrat (source normative) : 00_documentation_arsenal/contrats/aeration_blocage_chauffage/m3_analyse_delta_t/
 # ==========================================================
 
 from pathlib import Path

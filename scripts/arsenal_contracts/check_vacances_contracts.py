@@ -3,6 +3,7 @@
 # ==========================================================
 # 🧠 ARSENAL — CONTRACT CHECK
 # Domaine : Vacances
+# Contrat (source normative) : 00_documentation_arsenal/contrats/vacances.md
 # Vérification des invariants structurels
 # ==========================================================
 

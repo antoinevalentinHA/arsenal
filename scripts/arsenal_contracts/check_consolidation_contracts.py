@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Couche consolidation brute
-Contrat : sensor.temperature_brute_consolidee_<zone> v1.4
+Contrat (source normative) : 00_documentation_arsenal/contrats/meteo/temperature_interieure/consolidation.md (sensor.temperature_brute_consolidee_<zone>)
 Script  : scripts/arsenal_contracts/check_consolidation_contracts.py
 """
 

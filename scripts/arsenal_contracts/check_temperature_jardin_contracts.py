@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Axe température jardin
-Contrat : contrat_axe_temperature_jardin v1.2
+Contrat (source normative) : 00_documentation_arsenal/contrats/meteo/axe_temperature_jardin.md
 Script  : scripts/arsenal_contracts/check_temperature_jardin_contracts.py
 """
 

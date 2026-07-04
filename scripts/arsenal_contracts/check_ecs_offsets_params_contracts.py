@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : ECS Auto-ajustement des offsets — paramètres
-Contrat : 11_ajustement_des_offsets.md (§6, §7, §10 « Notes de gouvernance »)
+Contrat (source normative) : 00_documentation_arsenal/contrats/ecs/11_ajustement_des_offsets.md (§6, §7, §10 « Notes de gouvernance »)
 
 Verrouille (ECS-OFF-5) les paramètres contractuels du §10 — dont « toute
 modification constitue un changement de contrat » — jusqu'ici déclarés

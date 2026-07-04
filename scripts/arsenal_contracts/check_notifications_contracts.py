@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Notifications
-Contrat : Arsenal Notifications (normatif, transverse)
+Contrat (source normative) : 00_documentation_arsenal/contrats/notifications.md
 Script  : scripts/arsenal_contracts/check_notifications_contracts.py
 """
 

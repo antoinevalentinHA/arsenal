@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Structure 01_customize
-Contrat : Structure — 01_customize (normatif)
+Contrat (source normative) : 00_documentation_arsenal/architecture/00_structure_includes/01_customize.md
 Script  : scripts/arsenal_contracts/check_01_customize_contracts.py
 """
 

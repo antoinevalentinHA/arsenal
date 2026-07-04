@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Axe humidité relative jardin
-Contrat : contrat_axe_humidite_relative_jardin v1.0
+Contrat (source normative) : 00_documentation_arsenal/contrats/meteo/axe_humidite_relative_jardin.md
 Script  : scripts/arsenal_contracts/check_humidite_relative_jardin_contracts.py
 """
 

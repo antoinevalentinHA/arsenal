@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Couche consolidation brute — Humidité relative
-Contrat : sensor.humidite_relative_brute_consolidee_<zone> v1.0
+Contrat (source normative) : 00_documentation_arsenal/contrats/meteo/humidite_relative_interieure/consolidation.md (sensor.humidite_relative_brute_consolidee_<zone>)
 Script  : scripts/arsenal_contracts/check_hr_consolidation_contracts.py
 """
 

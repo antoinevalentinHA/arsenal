@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Chauffage — Étanchéité de l'observabilité courbe
-Contrat : 76_observabilite_auto_ajustement_courbe.md (§9 séparation runtime/diagnostic,
+Contrat (source normative) : 00_documentation_arsenal/contrats/chauffage/76_observabilite_auto_ajustement_courbe.md (§9 séparation runtime/diagnostic,
           §10 INV-2 étanchéité)
 
 Rend OPPOSABLE et BLOQUANT l'invariant INV-2 (jusqu'ici seulement porté en warn-only

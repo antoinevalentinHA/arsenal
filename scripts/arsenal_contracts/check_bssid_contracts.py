@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Vérification contractuelle : Référentiel BSSID Maison
-Contrat Arsenal — bssid.md
+Contrat (source normative) : 00_documentation_arsenal/contrats/bssid.md
 """
 
 import sys

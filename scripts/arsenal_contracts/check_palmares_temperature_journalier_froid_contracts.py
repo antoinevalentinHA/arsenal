@@ -3,7 +3,7 @@
 Arsenal — Vérification contractuelle
 Palmarès historique — Journées les plus froides
 
-Référence : CONTRAT_PALMARES_TEMPERATURE_JOURNALIER_FROID.md
+Référence (source normative) : 00_documentation_arsenal/contrats/meteo/palmares_froid.md
 
 Version froide corrigée :
 - sentinelle 999

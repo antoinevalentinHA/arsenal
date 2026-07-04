@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Aération M0 Recover
-Contrats : 1_recover_normatif, 2_pipeline_zombie,
+Contrats (source normative, dossier 00_documentation_arsenal/contrats/aeration_blocage_chauffage/m0_recover_normatif/) :
+           1_recover_normatif, 2_pipeline_zombie,
            3_confirmee_orpheline, 4_blocage_orphelin
 Script  : scripts/arsenal_contracts/check_aeration_m0_recover_contracts.py
 """

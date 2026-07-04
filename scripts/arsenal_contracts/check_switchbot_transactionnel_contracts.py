@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Socle transactionnel SwitchBot
-Contrat : switchbot_transactionnel v2.0.1
+Contrat (source normative) : 00_documentation_arsenal/contrats/switchbot_transactionnel.md
 Script  : scripts/arsenal_contracts/check_switchbot_transactionnel_contracts.py
 """
 

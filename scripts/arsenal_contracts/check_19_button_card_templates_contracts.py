@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Structure 19_button_card_templates
-Contrat : Structure — button_card_templates (normatif)
+Contrat (source normative) : 00_documentation_arsenal/architecture/00_structure_includes/button_card_templates.md
 Script  : scripts/arsenal_contracts/check_19_button_card_templates_contracts.py
 """
 

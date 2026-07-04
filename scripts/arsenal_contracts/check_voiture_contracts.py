@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Vérification contractuelle : Voiture — Audi A3 e-tron
-Contrat Arsenal — voiture.md
+Contrat (source normative) : 00_documentation_arsenal/contrats/voiture.md
 """
 
 import sys

@@ -3,7 +3,7 @@
 Arsenal — Vérification contractuelle
 Palmarès historique — Journées les plus chaudes
 
-Référence : CONTRAT_PALMARES_TEMPERATURE_JOURNALIER_CHAUD.md v1.1
+Référence (source normative) : 00_documentation_arsenal/contrats/meteo/palmares_chaleur.md
 
 Phases couvertes (doctrine Arsenal contracts) :
   1. Présence des entités canoniques (helpers, template sensors, automations)

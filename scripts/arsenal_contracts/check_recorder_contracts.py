@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Recorder
-Contrats : Arsenal Recorder Contract, Arsenal Recorder Fiche de Décision
+Contrats (source normative) :
+  00_documentation_arsenal/architecture/01_recorder/contrat.md
+  00_documentation_arsenal/architecture/01_recorder/fiche_decision.md
+(Placement documentaire à statuer — cf. C14 Lot 1A : le dossier
+architecture/01_recorder/ se déclare « non normatif » alors que contrat.md l'est.)
 """
 
 import re

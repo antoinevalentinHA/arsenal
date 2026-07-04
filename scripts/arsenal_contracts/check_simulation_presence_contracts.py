@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Vérification contractuelle : Simulation de présence
-Contrat Arsenal v12.x — aligné runtime 2026.5
+Contrat (source normative) : 00_documentation_arsenal/contrats/simulation_presence.md
 """
 
 import sys

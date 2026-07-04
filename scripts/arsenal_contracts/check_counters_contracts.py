@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+Arsenal — Validation contractuelle : Structure — 09_counters
+Contrat (source normative) : 00_documentation_arsenal/architecture/00_structure_includes/09_counters.md
+"""
 from pathlib import Path
 import re
 import sys

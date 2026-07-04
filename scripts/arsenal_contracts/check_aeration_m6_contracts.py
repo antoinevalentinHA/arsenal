@@ -2,6 +2,7 @@
 # ==========================================================
 # 🧠 ARSENAL — VALIDATION CONTRACTUELLE
 #     Aération M6 — Réfermeture après réouverture
+#     Contrat (source normative) : 00_documentation_arsenal/contrats/aeration_blocage_chauffage/m6_refermeture/
 # ==========================================================
 
 from pathlib import Path

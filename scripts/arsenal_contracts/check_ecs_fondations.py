@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : ECS Fondations
+Source normative : 00_documentation_arsenal/contrats/ecs/ (chapitres listés ci-dessous)
 Contrats : 00_fondations_et_statut, 01_principes_perimetre_et_roles,
            02_gouvernance_autorites_et_chaine, 03_orchestration_et_wrappers,
            09_invariants_et_interdictions
