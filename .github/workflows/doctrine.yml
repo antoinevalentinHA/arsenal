@@ -12,6 +12,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Source normative : 00_documentation_arsenal/architecture/00_structure_includes/12_template_sensors.md
+      #   §Invariants — « Moteur unique : template: » / « Interdiction de platform: template ».
+      #   Invariant structurel opposable ; contrôle bloquant justifié (C14 Lot 1B).
       - name: Check forbidden legacy template platform
         run: |
           if grep -R "platform: template" \
@@ -22,9 +25,20 @@ jobs:
             exit 1
           fi
 
-      # 🔒 Désactivé temporairement
-      # Migration legacy default_entity_id non terminée.
+      # 🔒 Désactivé — placeholder sans code.
+      # Aucune clause normative écrite n'interdit `default_entity_id`. Ce bloc est le
+      # vestige d'une migration (retrait du default_entity_id legacy des gabarits template,
+      # cf. changelog v11.1 / v12.1.1) inachevée, non contradictoire avec des usages
+      # contractuels subsistants (ex. contrats/parametres_invalides.md). Arbitrage C14
+      # Lot 1B : à traiter comme migration documentaire séparée, PAS comme règle doctrine.yml.
+      # Réf. : 00_documentation_arsenal/audits/04_chantiers/transverses/c14_lot1b_qualification_doctrine_yml.md
 
+      # Source normative : 00_documentation_arsenal/architecture/00_structure_includes/11_automations.md
+      #   §Modes Arsenal — « Le choix du mode fait partie du contrat comportemental » ;
+      #   modes autorisés : single | restart | queued | parallel.
+      #   Limite connue : contrôle au niveau FICHIER (un fichier multi-automations dont au moins
+      #   une automation porte mode: passerait). Sans effet aujourd'hui (corpus = 1 automation/fichier) ;
+      #   durcissement par-automation proposé en C14 Lot 1B (rapport), non appliqué ici.
       - name: Check automations without mode
         run: |
           python3 - <<'PY'

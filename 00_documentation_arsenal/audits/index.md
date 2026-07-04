@@ -165,6 +165,7 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 - [transverses/etat_avancement_couverture_normative_domaines.md](04_chantiers/transverses/etat_avancement_couverture_normative_domaines.md)
 - [transverses/chantier_couverture_ci_contrats_arsenal.md](04_chantiers/transverses/chantier_couverture_ci_contrats_arsenal.md)  _(chantier de cadrage — écart contrats Markdown ↔ couverture CI ; cartographies croisées, matrice de couverture, backlog priorisé de CI manquantes ; **lecture seule, aucune CI créée**)_
 - [transverses/c14_lot1a_ancrages_checkers.md](04_chantiers/transverses/c14_lot1a_ancrages_checkers.md)  _(C14 Lot 1A — réparation mécanique des ancrages checker → document normatif ; 62 checkers ré-ancrés par chemin exact, **zéro changement de comportement CI** prouvé par comparaison de tokens)_
+- [transverses/c14_lot1b_qualification_doctrine_yml.md](04_chantiers/transverses/c14_lot1b_qualification_doctrine_yml.md)  _(C14 Lot 1B — arbitrage : statut normatif des règles de `doctrine.yml` ; `platform: template` et `mode:` = invariants écrits (ancrés), `default_entity_id` = placeholder mort sans norme ; durcissements proposés non appliqués)_
 
 ### Vacances
 - [vacances/chantier_vac_imp_5_desinfection_retour.md](04_chantiers/vacances/chantier_vac_imp_5_desinfection_retour.md)  _(VAC-IMP-5 — runtime commité `c4faf68`, validation runtime en attente)_
