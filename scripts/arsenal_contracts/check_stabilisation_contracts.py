@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Couche stabilisation
-Contrat : sensor.temperature_stabilisee_<zone> v1.1
+Contrat (source normative) : 00_documentation_arsenal/contrats/meteo/temperature_interieure/stabilisation.md (sensor.temperature_stabilisee_<zone>)
 Script  : scripts/arsenal_contracts/check_stabilisation_contracts.py
 """
 

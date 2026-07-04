@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Vérification contractuelle : Batteries des capteurs
-Contrat Arsenal — batteries.md v1.0
+Contrat (source normative) : 00_documentation_arsenal/contrats/batteries.md
 """
 
 import sys

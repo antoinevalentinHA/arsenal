@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Vérification contractuelle : Socle transactionnel Boiler Bridge
+Source normative : 00_documentation_arsenal/contrats/boiler/ (chapitres listés ci-dessous)
 Contrats : socle_transactionnel, mqtt_ack_ha, script_executif,
            consommation_ack, retry_transactionnel, guard_exposition_ha
 """

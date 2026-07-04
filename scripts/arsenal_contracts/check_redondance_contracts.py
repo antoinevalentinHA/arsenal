@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Vérification contractuelle : Réconciliation des capteurs de contact (redondance)
-Contrat : ARSENAL v2.2 — Réconciliation des capteurs de contact — Capteurs critiques
+Contrat (source normative) : 00_documentation_arsenal/contrats/ouvertures/redondance.md
 """
 
 import sys

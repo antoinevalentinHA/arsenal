@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Vérification contractuelle : Mode Babysitting
-Contrat Arsenal — Contexte global / Présences contextuelles spécifiques
+Contrat (source normative) : 00_documentation_arsenal/contrats/babysitting.md
 """
 
 import sys

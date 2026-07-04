@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Zones géographiques
-Contrat : CONTRAT_ZONES v1.0.4
+Contrat (source normative) : 00_documentation_arsenal/contrats/zones.md
 Script  : scripts/arsenal_contracts/check_zones_contracts.py
 """
 

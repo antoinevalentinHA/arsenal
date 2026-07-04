@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : script.garage_toggle
-Contrat : CONTRAT_IMPLEMENTATION_GARAGE_TOGGLE.md v1.0.0
+Contrat (source normative) : 00_documentation_arsenal/contrats/eclairage/garage.md
 """
 
 import re

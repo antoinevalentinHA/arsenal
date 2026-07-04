@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Éclairage / Jardin
-Contrat : CONTRAT_ECLAIRAGE_JARDIN.md — Arsenal v14.x
+Contrat (source normative) : 00_documentation_arsenal/contrats/eclairage/jardin.md
 """
 
 import re

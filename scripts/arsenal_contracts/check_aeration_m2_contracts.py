@@ -7,7 +7,7 @@
 #   invariants normatifs du contrat M2 (fin d'épisode aération).
 #
 #   Le contrat est défini dans :
-#     00_documentation_arsenal/contrats/aeration/M2/
+#     00_documentation_arsenal/contrats/aeration_blocage_chauffage/m2_fin_episode/
 #       1_fin_episode.md
 #       2_activation_blocage_et_cloture_episode.md
 #       3_armement_blocage_et_programmation_timers.md

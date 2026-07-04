@@ -2,6 +2,7 @@
 # ==========================================================
 # 🧠 ARSENAL — CONTRACT CHECK
 #     Aération — M4 — Fin blocage horaire
+#     Contrat (source normative) : 00_documentation_arsenal/contrats/aeration_blocage_chauffage/m4_fin_blocage/
 # ==========================================================
 
 from pathlib import Path

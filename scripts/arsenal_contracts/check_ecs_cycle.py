@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : ECS Cycle & Inertie
+Source normative : 00_documentation_arsenal/contrats/ecs/ (chapitres listés ci-dessous)
 Contrats : 05_etats_memoire_planification, 06_temps_timers_watchdogs,
            08_journalisation_et_tracabilite, fenetre_inertie_post_cycle,
            automation_10250000000026, automation_10250000000019,

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : clé `initial` dans les helpers HA (HINIT)
-Contrat : architecture/03_doctrines/restauration_etat_helpers.md (v1.0, opposable)
-Audit source : audits/01_rapports/transverses/audit_initial_helpers.md (#198)
+Contrat (source normative) : 00_documentation_arsenal/architecture/03_doctrines/restauration_etat_helpers.md (v1.0, opposable)
+Audit source : 00_documentation_arsenal/audits/01_rapports/transverses/audit_initial_helpers.md (#198)
 
 CI de conformité active (durcissement Phase 4) : garde-fou opposable.
 Logique Arsenal habituelle : ERROR => exit 1 ; WARN => exit 0 ; INFO => exit 0.

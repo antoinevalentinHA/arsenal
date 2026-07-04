@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+Arsenal — Validation contractuelle : Déshumidificateur — Socle transactionnel
+Contrat (source normative) : 00_documentation_arsenal/contrats/deshumidificateur/deshumidificateur.md
+"""
 from pathlib import Path
 import re
 import sys

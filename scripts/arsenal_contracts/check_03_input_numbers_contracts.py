@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Structure 03_input_numbers
-Contrat : Structure — 03_input_numbers (normatif)
+Contrat (source normative) : 00_documentation_arsenal/architecture/00_structure_includes/03_input_numbers.md
 Script  : scripts/arsenal_contracts/check_03_input_numbers_contracts.py
 """
 

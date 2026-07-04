@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Éclairage / Séjour
-Contrat : CONTRAT_ECLAIRAGE_SEJOUR.md v1.0.0
+Contrat (source normative) : 00_documentation_arsenal/contrats/eclairage/sejour.md
 """
 
 import re

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Vérification contractuelle : arsenal_self
-Contrat Arsenal v1.0.0
+Contrat (source normative) : 00_documentation_arsenal/contrats/arsenal_self.md
 """
 
 import sys

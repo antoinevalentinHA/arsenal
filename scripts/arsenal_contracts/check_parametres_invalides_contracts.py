@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Paramètres invalides
-Contrat : CONTRAT — PARAMÈTRES INVALIDES v1.0
+Contrat (source normative) : 00_documentation_arsenal/contrats/parametres_invalides.md
 Script  : scripts/arsenal_contracts/check_parametres_invalides_contracts.py
 """
 

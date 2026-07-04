@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : ECS Désinfection au retour de vacances
-Contrat : 09_invariants_et_interdictions.md (§2 invariants absolus, §3 interdictions)
+Contrat (source normative) : 00_documentation_arsenal/contrats/ecs/09_invariants_et_interdictions.md (§2 invariants absolus, §3 interdictions)
 
 Couvre (ECS-DESINF-1) les invariants les plus critiques du sous-système
 désinfection-retour, jusqu'ici non instrumentés :

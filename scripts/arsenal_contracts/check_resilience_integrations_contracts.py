@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Vérification contractuelle : Résilience des intégrations
-Contrat Arsenal — resilience_integrations.md v1.1
+Contrat (source normative) : 00_documentation_arsenal/contrats/resilience_integrations.md (v1.1)
 
 Mode report-only par défaut. Lit le registre comme source d'autorité et
 le compare au dépôt réel. Ne modifie aucun runtime.

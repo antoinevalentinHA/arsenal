@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Mobile High Accuracy Contextuel
-Contrat : mobile.high_accuracy.contextuel v2.2
+Contrat (source normative) : 00_documentation_arsenal/contrats/mobile.high_accuracy.contextuel.md
 Script  : scripts/arsenal_contracts/check_mobile_high_accuracy_contracts.py
 """
 

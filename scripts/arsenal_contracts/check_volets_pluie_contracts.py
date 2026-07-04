@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Réaction des volets à la pluie
-Contrat : CONTRAT_PLUIE_VOLETS v2.2.1
+Contrat (source normative) : 00_documentation_arsenal/contrats/volets_pluie.md
 Script  : scripts/arsenal_contracts/check_volets_pluie_contracts.py
 """
 

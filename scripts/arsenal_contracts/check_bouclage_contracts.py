@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Vérification contractuelle : ECS Bouclage
-Contrat Arsenal v2.3.0
+Contrat (source normative) : 00_documentation_arsenal/contrats/bouclage.md
 """
 
 import sys

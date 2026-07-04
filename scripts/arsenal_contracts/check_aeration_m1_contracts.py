@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+Arsenal — Validation contractuelle : Aération M1 — Début d'épisode
+Contrat (source normative) : 00_documentation_arsenal/contrats/aeration_blocage_chauffage/m1_debut_episode/
+"""
 from pathlib import Path
 import re
 import sys

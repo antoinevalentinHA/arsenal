@@ -3,6 +3,7 @@
 # ==========================================================
 # 🧠 ARSENAL — CONTRACT CHECK
 # Domaine : Présence / Visite
+# Contrat (source normative) : 00_documentation_arsenal/contrats/visite.md
 # Vérification des invariants structurels
 # ==========================================================
 

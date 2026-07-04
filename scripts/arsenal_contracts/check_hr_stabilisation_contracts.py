@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Couche stabilisation — Humidité relative
-Contrat : sensor.humidite_relative_stabilisee_<zone> v1.1
+Contrat (source normative) : 00_documentation_arsenal/contrats/meteo/humidite_relative_interieure/stabilisation.md (sensor.humidite_relative_stabilisee_<zone>)
 Script  : scripts/arsenal_contracts/check_hr_stabilisation_contracts.py
 """
 

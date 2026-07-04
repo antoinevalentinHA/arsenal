@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Vérification contractuelle : Aération — Recommandation
-Contrat Arsenal — aeration_recommandation.md
+Contrat (source normative) : 00_documentation_arsenal/contrats/aeration_recommandation.md
 """
 
 import sys

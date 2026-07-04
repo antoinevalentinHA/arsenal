@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Éclairage / Entrée
-Contrat : CONTRAT_ECLAIRAGE_ENTREE.md v1.0.0
+Contrat (source normative) : 00_documentation_arsenal/contrats/eclairage/entree.md
 """
 
 import re
