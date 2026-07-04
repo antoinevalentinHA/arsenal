@@ -1,0 +1,27 @@
+name: Arsenal Contracts — Registre Couverture CI
+
+on:
+  push:
+    paths:
+      - '00_documentation_arsenal/audits/REGISTRE_COUVERTURE_VERIFICATION.md'
+      - 'scripts/arsenal_contracts/check_ci_coverage_registry.py'
+      - 'scripts/arsenal_contracts/check_*.py'
+      - '.github/workflows/**'
+  pull_request:
+    paths:
+      - '00_documentation_arsenal/audits/REGISTRE_COUVERTURE_VERIFICATION.md'
+      - 'scripts/arsenal_contracts/check_ci_coverage_registry.py'
+      - 'scripts/arsenal_contracts/check_*.py'
+      - '.github/workflows/**'
+
+jobs:
+  validate-ci-coverage-registry:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run CI coverage registry anti-drift contract
+        run: |
+          python3 scripts/arsenal_contracts/check_ci_coverage_registry.py
