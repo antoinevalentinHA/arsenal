@@ -4,8 +4,25 @@
 # ----------------------------------------------------------
 # Contrat :
 #   documentation_arsenal/contrats/publication/securite_publication_git.md
-# Version contrat : v1.1.0  (S8 à promouvoir : voir § 9 du contrat)
-# Version script  : v1.2.0
+# Version contrat : v1.2.0
+# Version script  : v1.3.0
+#
+# v1.3.0 (C14 Lot 1E-c — préparation avant branchement CI) :
+#   - S1 : réduction des faux positifs de CODE. Dans un fichier de code, un
+#     mot-clé S1 (`token`, `secret`…) n'est CRITICAL que si sa valeur est un
+#     littéral chaîne quoté (les identifiants/types/appels — `token: str`,
+#     `_G_TOKEN = re.compile(...)` — ne sont plus signalés). Les vrais secrets
+#     codés en dur (`API_TOKEN = "…"`) restent CRITICAL. Fichiers non-code
+#     (YAML/.md) : comportement inchangé.
+#   - S5a : le contrôle des fichiers interdits porte désormais sur les fichiers
+#     VERSIONNÉS de tout l'arbre (git ls-files), indépendamment de EXCLUDED_DIRS
+#     — lève l'angle mort `zigbee2mqtt/` (un `.log` suivi y échappait). Un
+#     artefact runtime local non suivi (gitignoré) n'est pas signalé.
+#   - S2/S3 : deux FP de motif corrigés — `.home-assistant.io` n'est plus lu
+#     comme domaine local ; `synology.<ext>` (nom de fichier) n'est plus lu
+#     comme accès distant.
+#   - Ajout d'un mode `--selftest` (juge testé : FP code écartés, vrais secrets
+#     conservés, extensions interdites reconnues).
 #
 # v1.2.0 :
 #   - Implémentation du contrôle S8 — Coordonnées GPS (état courant + historique).
@@ -113,6 +130,56 @@ SECRET_PATTERNS: list[tuple[re.Pattern[str], str]] = [
 ]
 
 # ---------------------------------------------------------------------------
+# S1 — Réduction des faux positifs de code (C14 Lot 1E-c)
+# ---------------------------------------------------------------------------
+# Dans un fichier de CODE, un mot-clé S1 (`token`, `secret`, `password`, …) est
+# le plus souvent un IDENTIFIANT, un TYPE ou un APPEL — pas un secret :
+#   token: str            (annotation de type)
+#   _G_TOKEN = re.compile( (identifiant + appel)
+#   token=line.strip()    (argument nommé + appel)
+#   RE_LAT_SECRET = re.compile(r"…!secret…")  (nom de constante + regex)
+# Un secret réellement codé en dur, lui, est un LITTÉRAL CHAÎNE QUOTÉ :
+#   API_TOKEN = "sk-…"    password = 'hunter2'
+# => en fichier de code, S1 ne se déclenche QUE si la valeur commence par un
+#    guillemet (littéral). Les fichiers non-code (YAML, .md, .txt) conservent
+#    le comportement d'origine (une valeur non quotée peut être un vrai secret).
+# Conforme au contrat § 2 : « un faux positif justifié fait évoluer le contrat,
+# pas la documentation » — c'est une évolution de détection, pas un silence.
+CODE_EXTENSIONS = {
+    ".py", ".pyi", ".sh", ".bash", ".zsh", ".js", ".mjs", ".cjs", ".ts", ".tsx",
+    ".rb", ".pl", ".pm", ".php", ".go", ".rs", ".java", ".kt", ".c", ".h",
+    ".cpp", ".hpp", ".cs", ".lua", ".ps1", ".bat", ".cmd",
+}
+
+# Une valeur "littéral secret candidate" en contexte code commence par un guillemet.
+_S1_QUOTED_VALUE = re.compile(r"[:=]\s*['\"]")
+
+
+def _s1_value_is_code_not_secret(matched: str) -> bool:
+    """En fichier de code : vrai si la valeur du match S1 n'est PAS un littéral
+    chaîne quoté (donc un type / identifiant / appel), à ignorer.
+    Le `bearer <token>` (sans séparateur `[:=]`) n'est jamais dégradé."""
+    if "bearer" in matched.lower() and not re.search(r"[:=]", matched):
+        return False
+    return _S1_QUOTED_VALUE.search(matched) is None
+
+
+def s1_labels_for_line(active: str, is_code: bool) -> list[str]:
+    """Labels S1 déclenchés pour une ligne active (commentaire de fin retiré).
+    Factorisé pour être exercé par --selftest."""
+    labels: list[str] = []
+    if is_placeholder(active):
+        return labels
+    for pattern, label in SECRET_PATTERNS:
+        m = pattern.search(active)
+        if not m:
+            continue
+        if is_code and _s1_value_is_code_not_secret(m.group(0)):
+            continue
+        labels.append(label)
+    return labels
+
+# ---------------------------------------------------------------------------
 # Patterns S2 — Réseau / Exposition
 # ---------------------------------------------------------------------------
 
@@ -120,7 +187,7 @@ NETWORK_CRITICAL_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"192\.168\.\d{1,3}\.\d{1,3}"),                                          "IP privée 192.168.x.x"),
     (re.compile(r"\b10\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"),                                   "IP privée 10.x.x.x"),
     (re.compile(r"172\.(1[6-9]|2[0-9]|3[01])\.\d{1,3}\.\d{1,3}"),                       "IP privée 172.16-31.x.x"),
-    (re.compile(r"https?://[^\s\"']+\.(home|local|lan|internal|localdomain)", re.I),      "URL domaine local"),
+    (re.compile(r"https?://[^\s\"']+\.(home|local|lan|internal|localdomain)(?![\w-])", re.I), "URL domaine local"),
     # Port explicite hors ports publics courants
     (re.compile(r"(?<!\d):([0-9]{4,5})(?!\d)(?!.*(?:80|443|8080|8123|1883|5353))"), "port exposé"),
 ]
@@ -135,8 +202,12 @@ MQTT_BROKER_PATTERN    = re.compile(r"broker\s*[:=]\s*\S+",  re.I)
 USERNAME_PATTERN       = re.compile(r"username\s*[:=]\s*\S+", re.I)
 PASSWORD_PATTERN       = re.compile(r"password\s*[:=]\s*\S+", re.I)
 MQTT_TOPIC_SEN_PATTERN = re.compile(r"\b(alarm|code|presence)\b", re.I)   # dans un topic MQTT
+# synology\. suivi d'une extension de FICHIER (synology.yaml, synology.py…) n'est
+# pas un accès distant : c'est un nom de fichier. Exclu par lookahead (C14 Lot 1E-c).
 REMOTE_ACCESS_PATTERN  = re.compile(
-    r"(rsync://|ssh://|synology\.[^\s\"']+|https?://[^\s\"']*synology[^\s\"']*)", re.I
+    r"(rsync://|ssh://"
+    r"|synology\.(?!ya?ml|py|md|json|txt|sh|conf|cfg|ini|toml|png|jpe?g|svg|log|db|csv)[^\s\"']+"
+    r"|https?://[^\s\"']*synology[^\s\"']*)", re.I
 )
 NAS_VALUE_PATTERN      = re.compile(r"[:=]\s*['\"]?[^#\n]*\b(synology|nas)\b", re.I)
 
@@ -347,13 +418,30 @@ def scan_forbidden_dirs(findings: list[Finding]) -> None:
             dirs.remove(d)
 
 
-def scan_forbidden_files(files: list[Path], findings: list[Finding]) -> None:
-    """Détecte la présence de fichiers interdits par nom/extension (S5)."""
-    for path in files:
-        label = rel(path)
+def _git_tracked_files() -> list[str]:
+    """Chemins versionnés (relatifs à ROOT). Vide si hors dépôt git."""
+    out = run_git("ls-files")
+    return out.splitlines() if out else []
+
+
+def scan_forbidden_files(findings: list[Finding]) -> None:
+    """Détecte les fichiers interdits par nom/extension (S5a).
+
+    C14 Lot 1E-c — lève l'angle mort : le contrôle porte sur les fichiers
+    VERSIONNÉS de TOUT l'arbre, indépendamment de EXCLUDED_DIRS (sinon un
+    `.log` suivi sous `zigbee2mqtt/` échappait au contrôle). On se limite aux
+    fichiers versionnés : « présence dans le dépôt » = suivi par git. Un
+    artefact runtime local non suivi (gitignoré) ne sera pas publié — le
+    signaler serait un faux positif.
+    """
+    for rel_path in _git_tracked_files():
+        if rel_path in EXCLUDED_PATHS:
+            continue
+        name = Path(rel_path).name
         for pattern in FORBIDDEN_FILES:
-            if fnmatch.fnmatch(path.name, pattern):
-                add(findings, "CRITICAL", "S5", label, None, f"fichier interdit ({pattern})")
+            if fnmatch.fnmatch(name, pattern):
+                add(findings, "CRITICAL", "S5", rel_path, None,
+                    f"fichier interdit ({pattern})")
 
 
 # ---------------------------------------------------------------------------
@@ -369,6 +457,7 @@ def scan_text_file(path: Path, findings: list[Finding]) -> None:
     label      = rel(path)
     full_text  = "\n".join(lines)
     scope_doc  = is_scope_doc(lines)  # fichier entièrement documentaire
+    is_code    = path.suffix.lower() in CODE_EXTENSIONS  # S1 : valeur littérale exigée
     in_mqtt_block = False
     _seen: set[tuple[str, int | None, str, str]] = set()  # (control, line, pattern, severity)
 
@@ -413,9 +502,10 @@ def scan_text_file(path: Path, findings: list[Finding]) -> None:
         active = re.sub(r"\s+#.*$", "", line)
 
         # ── S1 — Secrets évidents ──────────────────────────────────────────
-        for pattern, label_pattern in SECRET_PATTERNS:
-            if pattern.search(active) and not is_placeholder(active):
-                add_once("CRITICAL", "S1", idx, label_pattern)
+        # En fichier de code : ne retenir qu'un littéral chaîne quoté (les
+        # identifiants / types / appels sont écartés). Cf. s1_labels_for_line.
+        for label_pattern in s1_labels_for_line(active, is_code):
+            add_once("CRITICAL", "S1", idx, label_pattern)
 
         # ── S2 — Réseau / Exposition ───────────────────────────────────────
         for pattern, label_pattern in NETWORK_CRITICAL_PATTERNS:
@@ -695,7 +785,7 @@ def write_report(findings: list[Finding], verdict: str, history_enabled: bool) -
         "",
         "---",
         "",
-        "_Rapport généré par `scripts/security/audit_publication_git.py` v1.2.0_",
+        "_Rapport généré par `scripts/security/audit_publication_git.py` v1.3.0_",
         "",
     ]
 
@@ -707,9 +797,65 @@ def write_report(findings: list[Finding], verdict: str, history_enabled: bool) -
 # Point d'entrée
 # ---------------------------------------------------------------------------
 
+def selftest() -> int:
+    """Auto-test du juge (on ne juge pas avec un juge défectueux). C14 Lot 1E-c.
+    Vérifie que S1 : (a) n'accroche plus les identifiants/types/appels de code ;
+    (b) accroche toujours les littéraux secrets ; et que S5a reconnaît les
+    extensions interdites."""
+    # (a) FAUX POSITIFS de code — ne doivent PAS être S1 (is_code=True)
+    negatives_code = [
+        "token: str",
+        "def normalize_token(token: str) -> str:",
+        "token=line.strip(),",
+        "token = os.path.relpath(os.path.abspath(f), index_dir)",
+        "_G_TOKEN = re.compile(",
+        'RE_LAT_SECRET = re.compile(r"latitude\\s*:\\s*!secret\\s+(\\S+)")',
+        "password = get_password()",
+        "secret = SomeType",
+    ]
+    for line in negatives_code:
+        labels = s1_labels_for_line(line, is_code=True)
+        assert not labels, f"selftest FP code non filtré : {line!r} -> {labels}"
+
+    # placeholder / référence !secret — ne doivent PAS être S1 (même hors code)
+    for line in ["token: !secret home_token", "password: CHANGEME", 'api_key: ""']:
+        assert not s1_labels_for_line(line, is_code=False), f"selftest placeholder : {line!r}"
+
+    # (b) VRAIS POSITIFS — doivent rester S1
+    positives = [
+        ('API_TOKEN = "sk-abcdef123456"', True, "token"),
+        ("token = 'ghp_realtokenvalue'", True, "token"),
+        ("password: hunter2realsecret", False, "password"),   # YAML non quoté
+        ("api_key = \"AIzaRealKeyValue\"", True, "api_key"),
+        ("Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6", False, "bearer"),
+    ]
+    for line, is_code, expected in positives:
+        labels = s1_labels_for_line(line, is_code=is_code)
+        assert expected in labels, f"selftest vrai positif manqué : {line!r} -> {labels}"
+
+    # S5a — extensions interdites reconnues par fnmatch
+    for name, forbidden in [
+        ("migration-4-to-5.log", True),
+        ("home-assistant_v2.db", True),
+        ("id_rsa.key", True),
+        ("configuration.yaml", False),
+        ("check_x.py", False),
+    ]:
+        hit = any(fnmatch.fnmatch(name, p) for p in FORBIDDEN_FILES)
+        assert hit == forbidden, f"selftest S5a : {name!r} attendu={forbidden} obtenu={hit}"
+
+    print("selftest OK")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Arsenal — Audit sécurité pré-publication Git"
+    )
+    parser.add_argument(
+        "--selftest",
+        action="store_true",
+        help="Exécuter les auto-tests du scanner (aucun scan du dépôt)",
     )
     parser.add_argument(
         "--history",
@@ -725,11 +871,14 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    if args.selftest:
+        return selftest()
+
     findings: list[Finding] = []
     files = iter_repo_files()
 
     scan_forbidden_dirs(findings)
-    scan_forbidden_files(files, findings)
+    scan_forbidden_files(findings)
 
     for path in files:
         if is_text_file(path):
