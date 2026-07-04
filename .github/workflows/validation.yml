@@ -12,8 +12,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      # Validation STRUCTURELLE bloquante — C14 Lot 1C, niveau 1.
+      # Vérifie que chaque include de configuration.yaml résout vers une cible
+      # existante (aucun include mort). NE valide PAS les schémas Home Assistant,
+      # ne charge pas les secrets, n'exige pas HACS, ne lance pas Home Assistant.
+      # Source normative : configuration.yaml (déclaration des includes Arsenal).
+      - name: Validate configuration.yaml includes (blocking)
+        run: python scripts/arsenal_contracts/check_configuration_includes.py
+
       - name: Install yamllint
         run: pip install yamllint
 
-      - name: YAML validation
-        run: yamllint -f parsable . || true
+      # Lint de STYLE — informatif et NON bloquant (C14 Lot 1C, niveau 0).
+      # Les constats yamllint actuels sont majoritairement cosmétiques / liés au
+      # Jinja ; ce lint NE valide PAS le chargement Home Assistant. Il est exposé
+      # via continue-on-error (résultats visibles, sans faire échouer le job) —
+      # remplace l'ancien `|| true` qui présentait un lint neutralisé comme une
+      # « YAML validation » bloquante (faux badge vert). Rendre ce lint bloquant
+      # exigerait un nettoyage préalable des ~778 constats (hors de ce lot).
+      - name: YAML style lint (informational only)
+        run: yamllint -f parsable .
+        continue-on-error: true
