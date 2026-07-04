@@ -1488,6 +1488,31 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Climatisation — ventilation : ajout du verdict `repos` (clim à l'arrêt → `fan_mode` figé, autorité s'abstient ; couleur gris neutre ; priorité `indisponible` > `repos` > `conforme`/`ecart`) ; triggers `not_to: ['unavailable', 'unknown']` (silence, application_mode) ; garde `from_state` numérique sur la notification batterie ScanWatch.
 - Lovelace — navigation : Imprimerie dynamisée (`sensor.etat_imprimerie_dashboard`, `#1E468C` retiré), Prises / Santé / Énergie neutralisées au gris de base NAV ; santé Boiler Bridge / Rain Bird regroupée en grille 2 colonnes ; D-NAV-COULEUR — menu principal soldé, reliquat dormant = section ⚙️ Système.
 
+---
+
+## 🧠 ARSENAL HA — [v16.3.3](changelogs/v16/v16_3_3.md) — STABLE — 2026-07-02
+**Tags :** chauffage, courbe, observabilite, clim, ecs, energie, arrosage, helpers, recorder, vmc, ci, doctrines, contrats, registres, changelog
+
+**Signal net :**
+- Chauffage — observabilité auto-ajustement courbe (lots L4→L7) : ajout d'une couche lecture seule (helpers `chauffage_courbe_*`, automations `10240000000012` / `10240000000013`, sensors de complétude / effet / persistance, `statistics` de dérive/effet), dashboard de supervision `diagnostics-courbe-dashboard` + template `carte_etat_interprete` ; garde d'étanchéité INV-2 (`check_chauffage_courbe_etancheite_contracts.py`) ; la décision `auto_ajustement.yaml` n'est pas rouverte.
+- Climatisation — retrait de la garde INV-3 de `guard.yaml` (instantané « actif + power off » à l'allumage traité à tort comme incohérence, cohérence persistante déléguée au watchdog) ; ajout du réarmement `10030000000111` après récupération de `climate.clim` / `switch.clim_power` ; contrats `08_execution` (v1.4) et `09_securite` (v1.5) mis à jour.
+- ECS — durcissement CI : checkers `check_ecs_desinfection_retour_contracts.py` (10 tests) et `check_ecs_offsets_params_contracts.py` (7 tests) + workflows ; hygiène `check_ecs_cycle.py` (7 entités §026), `check_ecs_securite.py`, workflows `contracts_ecs_*` (`setup-python` 3.11 + `python3`).
+- Énergie — ajout des proxys `sensor.box_energy_proxy` et `sensor.jardin_energy_proxy` (restent `unavailable` sans source valide), `utility_meter` re-sourcé ; retrait du repli à 0 sur les proxys déshumidificateur / lave-vaisselle / réfrigérateur.
+- Helpers — clé `initial` : doctrine `restauration_etat_helpers.md` + checker `check_initial_key_contracts.py` (HINIT) ; retraits de `initial` sur les helpers réglables, marqueur `initial VOULU` sur les valeurs figées ; VMC — garde « relais indisponibles » sur `basse_vitesse` / `haute_vitesse`.
+- Documentation — suppression de `changelog/prompt_changelog.md` remplacé par la doctrine `redaction_changelog.md` ; contrat Recorder Populations A/B (bannières + tests T11–T14 en WARN) ; recompte C12 (contrats 290, doctrines 12, checkers 71, workflows 75).
+
+---
+
+## 🧠 ARSENAL HA — [v16.3.4](changelogs/v16/v16_3_4.md) — STABLE — 2026-07-03
+**Tags :** automatisations, ids, doctrines, ci, clim, notifications, ecs, recorder, documentation, contrats, registres
+
+**Signal net :**
+- Automatisations — migration des IDs 13 → 14 chiffres (AID-006) : 58 identifiants passés au format canonique par insertion d'un `0` après le préfixe (`PPPP + s9` → `PPPP + 0 + s9`), sans changement de logique ; alignement des références (checkers, commentaires helpers / template sensors, contrats).
+- Doctrine et CI — `id_automatisations.md` : exception tracée AID-006 (unique, close), longueur 14 exigée en ERROR (AID-003), tolérance 13 retirée ; ajout du checker `check_automation_ids_contracts.py` (AID-001→005) + workflow `contracts_automation_ids.yml`.
+- Climatisation — ajout de la notification d'échec `10030000000121` (lecture seule : `persistent_notification.create` / `dismiss` sur `clim_execution_echec` quand `counter.clim_execution_retry_count > 2`) ; 3 tests de non-régression dans `check_climatisation_admissibilite_contracts.py` (`clim_bloquee`, `clim_action_en_cours`, notification) ; C13 ouvert et livré.
+- Recorder — ajout de blocs de commentaire d'instrumentation de chantier sur 8 groupes déjà historisés (aucune entité ni seuil modifié) ; audits ECS (auto-ajustement consigne + contre-expertise) et clim (revalidation + plan d'action) sans impact runtime.
+- Documentation — ajout de `ecosysteme_depots_satellites.md` et des liens croisés (architecture, navigation domaines, outils externes).
+
 ==================================================
 FIN INDEX
 ==================================================
