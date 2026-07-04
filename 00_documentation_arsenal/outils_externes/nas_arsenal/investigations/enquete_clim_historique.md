@@ -1,5 +1,7 @@
 # Arsenal — NAS : enquête historique climatisation (`enquete_clim_historique.py`)
 
+<!-- audit:scope=doc — document d'investigation ; IP LAN privées documentaires, aucun secret opérationnel (C14 Lot 1E-c) -->
+
 ## Statut
 
 - Outil d'investigation actif (écosystème d'analyse des backups NAS)

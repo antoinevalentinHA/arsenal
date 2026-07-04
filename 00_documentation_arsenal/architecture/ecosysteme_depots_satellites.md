@@ -1,5 +1,7 @@
 # 🛰️ Arsenal — Écosystème des dépôts satellites gouvernés
 
+<!-- audit:scope=doc — document d'architecture ; port `localhost` documentaire, aucun secret opérationnel (C14 Lot 1E-c) -->
+
 > **DESCRIPTIF — NON NORMATIF (règles métier).** Ce document **n'édicte aucune
 > règle métier** et **ne crée aucune dépendance**. Il **cartographie** les dépôts
 > logiciels que le système Arsenal gouverne, décrit comment Arsenal les consomme,

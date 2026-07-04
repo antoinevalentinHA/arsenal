@@ -1,5 +1,7 @@
 # C14 — Lot 1E : frontière git / sécurité publication (audit)
 
+<!-- audit:scope=doc — rapport d'audit discutant des motifs `token`/`secret` ; aucun secret réel (C14 Lot 1E-c) -->
+
 - **Type :** lot d'**audit / cadrage** du chantier [C14](chantier_couverture_ci_contrats_arsenal.md) — **pas** d'implémentation, pas de suppression, pas de désindexation
 - **Statut :** rapport livré ; aucun fichier runtime, `.gitignore`, workflow ni checker modifié
 - **Base :** `main` @ `6373b78` (post-#268)

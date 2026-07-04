@@ -1,7 +1,7 @@
 # CONTRAT — Sécurité publication Git
 
 **Référence :** `documentation_arsenal/contrats/publication/securite_publication_git.md`
-**Version :** v1.1.0
+**Version :** v1.2.0
 **Statut :** Normatif
 **Scope :** Arsenal — audit pré-publication
 
@@ -14,6 +14,7 @@
 | v1.0.0 | Version initiale |
 | v1.0.1 | Corrections script uniquement (bugs) — contrat inchangé |
 | v1.1.0 | Annotations `audit:ignore` / `audit:scope=doc` ; placeholders numériques ; S5 affiné ; exclusions de performance formalisées |
+| v1.2.0 | **C14 Lot 1E-c — réduction des faux positifs, sans affaiblir la détection.** S1 : en fichier de **code**, un mot-clé secret n'est `CRITICAL` que si sa valeur est un **littéral chaîne quoté** (les identifiants/types/appels — `token: str`, `_G_TOKEN = re.compile(...)` — ne sont plus des secrets ; les valeurs codées en dur `API_TOKEN = "…"` restent `CRITICAL`). S5a : le contrôle des **fichiers interdits** porte désormais sur les fichiers **versionnés** (`git ls-files`) de tout l'arbre, **indépendamment de `EXCLUDED_DIRS`** — lève l'angle mort `zigbee2mqtt/` (un `.log` suivi y échappait) ; un artefact runtime **non suivi** (gitignoré) n'est pas signalé. S2/S3 : `.home-assistant.io` n'est plus lu comme domaine local ; `synology.<ext>` (nom de fichier) n'est plus lu comme accès distant. Ajout d'un `--selftest`. Script : v1.2.0 → **v1.3.0**. |
 
 ---
 
@@ -87,6 +88,11 @@ zigbee2mqtt/
 
 > Ces répertoires ne sont **pas** dans FORBIDDEN_DIRS : leur présence n'est pas interdite,
 > leur contenu est simplement hors périmètre d'audit.
+
+> **v1.2.0 :** cette exclusion ne vaut que pour le scan de **contenu** (S1–S8).
+> La détection des **fichiers interdits (S5a)** porte désormais sur les fichiers
+> **versionnés** de tout l'arbre, y compris ces répertoires — un `.log` suivi
+> sous `zigbee2mqtt/` est donc bien signalé.
 
 ### 3.5 Placeholders reconnus
 
@@ -194,6 +200,15 @@ Patterns recherchés (insensibles à la casse, après suppression des commentair
 
 **Seuil :** toute correspondance avec une valeur non-placeholder → `CRITICAL`
 
+> **v1.2.0 — contexte de code.** Dans un fichier de **code**
+> (`.py`, `.sh`, `.js`, `.ts`, …), un mot-clé S1 n'est retenu que si sa valeur
+> est un **littéral chaîne quoté** (`API_TOKEN = "…"`). Un identifiant, un type
+> ou un appel (`token: str`, `_G_TOKEN = re.compile(...)`, `token=line.strip()`)
+> n'est **pas** un secret et n'est plus signalé. Les fichiers **non-code**
+> (YAML, `.md`, `.txt`) conservent le seuil ci-dessus (une valeur non quotée
+> peut être un vrai secret). Motivation : § 2 — un faux positif justifié fait
+> évoluer la détection, pas la documentation.
+
 ---
 
 ### S2 — Réseau / Exposition · `CRITICAL` ou `WARNING`
@@ -244,6 +259,11 @@ secrets.yaml
 *.key  *.pem  *.crt  *.env
 *.db   *.log
 ```
+
+> **v1.2.0 :** « présence dans le dépôt » = fichier **versionné** (`git ls-files`),
+> évalué sur **tout l'arbre** indépendamment des exclusions de § 3.4. Un fichier
+> interdit **local non suivi** (gitignoré) ne sera pas publié et n'est donc pas
+> signalé.
 
 #### 5b — Répertoires interdits (par nature, pas uniquement par nom)
 
