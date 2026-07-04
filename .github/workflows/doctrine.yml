@@ -12,48 +12,64 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install PyYAML
+        run: pip install pyyaml
+
       # Source normative : 00_documentation_arsenal/architecture/00_structure_includes/12_template_sensors.md
       #   §Invariants — « Moteur unique : template: » / « Interdiction de platform: template ».
       #   Invariant structurel opposable ; contrôle bloquant justifié (C14 Lot 1B).
       - name: Check forbidden legacy template platform
         run: |
           if grep -R "platform: template" \
-            11_template_sensors \
             12_template_sensors \
             --include="*.yaml"; then
             echo "Forbidden legacy platform: template found in template sensor directories"
             exit 1
           fi
 
-      # 🔒 Désactivé — placeholder sans code.
-      # Aucune clause normative écrite n'interdit `default_entity_id`. Ce bloc est le
-      # vestige d'une migration (retrait du default_entity_id legacy des gabarits template,
-      # cf. changelog v11.1 / v12.1.1) inachevée, non contradictoire avec des usages
-      # contractuels subsistants (ex. contrats/parametres_invalides.md). Arbitrage C14
-      # Lot 1B : à traiter comme migration documentaire séparée, PAS comme règle doctrine.yml.
-      # Réf. : 00_documentation_arsenal/audits/04_chantiers/transverses/c14_lot1b_qualification_doctrine_yml.md
-
       # Source normative : 00_documentation_arsenal/architecture/00_structure_includes/11_automations.md
       #   §Modes Arsenal — « Le choix du mode fait partie du contrat comportemental » ;
       #   modes autorisés : single | restart | queued | parallel.
-      #   Limite connue : contrôle au niveau FICHIER (un fichier multi-automations dont au moins
-      #   une automation porte mode: passerait). Sans effet aujourd'hui (corpus = 1 automation/fichier) ;
-      #   durcissement par-automation proposé en C14 Lot 1B (rapport), non appliqué ici.
+      #   Contrôle par AUTOMATION (durci en C14 Lot 1B-implémentation) : chaque item portant
+      #   une clé `id` doit porter sa propre clé `mode`. Robuste aux fichiers mono- ou
+      #   multi-automations. La valeur du mode n'est PAS imposée ici (présence de la clé seule).
       - name: Check automations without mode
         run: |
           python3 - <<'PY'
           import pathlib
           import sys
 
+          import yaml
+
+          class _Loader(yaml.SafeLoader):
+              pass
+
+          # Neutralise les tags HA (!include, !secret, ...) — sans incidence sur id/mode.
+          _Loader.add_multi_constructor("!", lambda loader, suffix, node: None)
+
           errors = []
 
-          for path in pathlib.Path("11_automations").rglob("*.yaml"):
-              text = path.read_text(encoding="utf-8", errors="ignore")
-              if "- id:" in text and "mode:" not in text:
-                  errors.append(str(path))
+          for path in sorted(pathlib.Path("11_automations").rglob("*.yaml")):
+              try:
+                  data = yaml.load(
+                      path.read_text(encoding="utf-8", errors="ignore"),
+                      Loader=_Loader,
+                  )
+              except yaml.YAMLError as exc:
+                  errors.append(f"{path} : YAML illisible ({exc})")
+                  continue
+              if data is None:
+                  continue
+              items = data if isinstance(data, list) else [data]
+              for item in items:
+                  if not isinstance(item, dict) or "id" not in item:
+                      continue
+                  if "mode" not in item:
+                      ident = item.get("id") or item.get("alias") or "<sans id/alias>"
+                      errors.append(f"{path} : automation id={ident!r} sans cle 'mode:'")
 
           if errors:
-              print("Automations without mode:")
+              print("Automations sans 'mode:' (controle par automation) :")
               for item in errors:
                   print(f"- {item}")
               sys.exit(1)
