@@ -39,7 +39,7 @@ automation ou un script Arsenal.
 | Pont (opérationnel) | **ELEGOO ESP32 Type-C** (WROOM-32 classique, pont USB-série CP2102) — firmware fork `antoinevalentinHA/rainbird-esp32`, image `esp32dev` **validée terrain** |
 | Pont précédent | **ESP32-C3** (Seeed XIAO) — **abandonné** pour ce rôle : radio BLE insuffisante, **scan Rain Bird non trouvé**. Ne pas réintroduire comme cible. |
 | Appareil découvert (HA / MQTT) | `Rain Bird BAT-BT-2-E9A3` — identité dérivée du **contrôleur**, inchangée par le changement de board |
-| IP réservée | `192.168.1.24` (board ELEGOO) — ancienne réservation C3 `192.168.1.115` caduque |
+| Adresse réseau | Réservation DHCP locale stable, hors référentiel Git (board ELEGOO) — ancienne réservation C3 caduque |
 | MAC | **non relevée lors du test terrain** (board ELEGOO) — ancienne MAC C3 `ac:27:6e:7e:98:1c` caduque |
 | Version firmware (terrain) | `bridge_version` exposée = **`0.3.2`**. **Origine exacte de l'image à clarifier** : les entités diagnostic `ble_status`/`ble_last_error` étant présentes (cf. note §2), l'image **n'est pas** « sans observabilité » ; la lignée de build (`535d503` / `esp32dev` / `ac306bf` ou autre) reste **à confirmer**. |
 | Configuration firmware | `NUM_STATIONS=2`, OTA pointant vers le **fork** |
