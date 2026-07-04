@@ -52,7 +52,7 @@ views:
                 icon: mdi:water-sync
                 variables:
                   label_on: Arrosage souhaité
-                  label_off: Aucun arrosage souhaité
+                  label_off: Pas de déclenchement maintenant
                   color_on: 'rgba(33, 150, 243, 0.2)'
                   color_off: 'rgba(158, 158, 158, 0.2)'
 

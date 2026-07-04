@@ -113,7 +113,7 @@ views:
             name: Besoin sol
             icon: mdi:sprout
             variables:
-              label_on: Besoin détecté
+              label_on: Sol sous seuil
               label_off: Sol suffisant
               color_on: 'rgba(255, 152, 0, 0.2)'
               color_off: 'rgba(76, 175, 80, 0.2)'
