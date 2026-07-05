@@ -85,6 +85,43 @@ calibrés** ; **aucun seuil** ; **aucune action**.
 
 ---
 
+## 3 bis. Observations acquises
+
+> Constats datés, **purement descriptifs** — aucune règle, aucun seuil, aucune
+> recommandation n'en découle en v0 (frontière §5 tenue).
+
+### 2026-07-05 (soirée) — réponse sol à un arrosage réel de 35 min (T04)
+
+Premier arrosage réel **instrumenté de bout en bout** (session supervisée
+manuelle station 1, 18:58 → 19:33 locale, 35 min, orchestration Lot D,
+verdict `close_nominale`). Relevé Recorder de
+`sensor.jardin_humidite_sol_mediane`, 19:00 → 20:53 locale :
+
+- **Amplitude** : médiane 26,1 % → 30,6 % (**+4,5 pts**, ~+17 % relatif),
+  **encore en hausse** à la fin du relevé (pic réel non capturé, attendu
+  plus tard dans la soirée) ;
+- **Lag d'infiltration ≈ 25 min** : quasi-plateau de l'ouverture de l'eau
+  (18:58) jusqu'à ~19:23, puis montée régulière ;
+- **Percolation post-arrosage dominante** : l'essentiel de la hausse
+  (27 → 30,6) s'est produit **après** l'arrêt de l'eau (19:33) — la réponse
+  utile s'étale sur 1 à 2 h au moins après le stop ;
+- **Franchissement du seuil de déclenchement** (30 %) à ~20:38, soit
+  ~1 h 05 après la fin de l'arrosage ;
+- **Contexte climatique** : journée à forte demande (ET₀ ≈ 6 mm/j) — une
+  part de l'apport de surface s'évapore avant d'atteindre les sondes ;
+- **Limite du relevé** : médiane seule — la lecture **par point** (dont le
+  Point 2, §2.2) et l'hétérogénéité restent à extraire pour ce cycle ; la
+  médiane peut sous-estimer la réponse si un point traîne ;
+- **Effets décisionnels constatés (conformes)** : cooldown ré-armé à 18:58
+  (`dernier_effectif`) ; `besoin_sol` maintenu `on` par hystérésis à 30,6 %
+  (< seuil + hystérésis) — le cooldown porte seul l'anti-sur-arrosage.
+
+Lecture prudente : **une seule occurrence**, par temps chaud, en arrosage
+manuel de 35 min. Ni la cinétique ni le lag ne sont généralisables avant
+d'autres cycles (doux / pluie / durées différentes).
+
+---
+
 ## 4. Critères de sortie vers v0.5 (indicatifs, **non normatifs**)
 
 On jugera l'observation v0 **suffisante** pour envisager une **recommandation
