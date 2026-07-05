@@ -72,11 +72,22 @@ views:
 
           # ==================================================
           # 🎄 BAIES VITRÉES / SAPIN — CONDITIONNEL
+          # --------------------------------------------------
+          # Visible si l'automatisme saisonnier est armé OU si
+          # la prise est réellement alimentée : toute source
+          # comptée « allumée » par la tuile NAV Éclairage doit
+          # être visible et actionnable ici.
           # ==================================================
           - type: conditional
             conditions:
-              - entity: input_boolean.prise_baies_vitrees_auto
-                state: "on"
+              - condition: or
+                conditions:
+                  - condition: state
+                    entity: input_boolean.prise_baies_vitrees_auto
+                    state: "on"
+                  - condition: state
+                    entity: switch.prise_sejour_baies_vitrees
+                    state: "on"
             card:
               type: grid
               square: false
