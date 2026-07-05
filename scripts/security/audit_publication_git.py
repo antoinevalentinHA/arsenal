@@ -4,8 +4,26 @@
 # ----------------------------------------------------------
 # Contrat :
 #   documentation_arsenal/contrats/publication/securite_publication_git.md
-# Version contrat : v1.2.0
-# Version script  : v1.3.0
+# Version contrat : v1.3.0
+# Version script  : v1.4.0
+#
+# v1.4.0 (incident P0 — secrets Zigbee2MQTT publiés) :
+#   - Périmètre : `zigbee2mqtt/` retiré de EXCLUDED_DIRS. Ce répertoire était
+#     classé « tiers » (§ 3.4) alors qu'il contient de la CONFIGURATION porteuse
+#     de credentials (mqtt.password) et de clés réseau. C'est l'angle mort à
+#     l'origine de la publication de zigbee2mqtt/configuration.yaml avec ses
+#     secrets : verdict PASS malgré un mot de passe MQTT littéral.
+#   - S9 — Clés réseau Zigbee : network_key / ext_pan_id littéraux (bloc YAML
+#     ou inline) => CRITICAL ; pan_id littéral => WARNING. Les valeurs
+#     `GENERATE` (sémantique native Zigbee2MQTT) et `'!secret x'` sont admises.
+#   - Placeholders : ajout de `GENERATE` et de la forme QUOTÉE `'!secret x'`
+#     (syntaxe Zigbee2MQTT) — la forme non quotée HA était déjà admise.
+#   - S2 : correction du motif « port exposé » — la liste blanche de ports
+#     (1883, 8123…) était testée par lookahead APRÈS le match et ne
+#     s'appliquait donc jamais au port matché lui-même (`:1883` était signalé).
+#     La liste blanche est désormais testée sur le port lui-même.
+#   - --selftest étendu : cas S9 positifs/négatifs, placeholders Zigbee2MQTT,
+#     liste blanche de ports S2.
 #
 # v1.3.0 (C14 Lot 1E-c — préparation avant branchement CI) :
 #   - S1 : réduction des faux positifs de CODE. Dans un fichier de code, un
@@ -60,6 +78,7 @@ EXCLUDED_PATHS: set[str] = {
     "security_audit_report.md",
     "00_documentation_arsenal/contrats/publication/securite_publication_git.md",
     "scripts/security/audit_publication_git.py",
+    "scripts/security/check_publication_zigbee2mqtt_contracts.py",
 }
 
 FORBIDDEN_FILES = [
@@ -74,8 +93,11 @@ FORBIDDEN_FILES = [
 
 # Répertoires ignorés par le walker (contenu non scanné).
 # Ne pas y mettre .storage / backups : ils doivent rester visibles pour S5.
-# www / custom_components / zigbee2mqtt : tiers, hors périmètre Arsenal.
-# Formalisées en contrat v1.1.0 § 3.4.
+# www / custom_components : tiers (code externe), hors périmètre Arsenal.
+# zigbee2mqtt/ N'EST PLUS exclu (v1.4.0) : c'est de la configuration Arsenal
+# porteuse de credentials — son exclusion « performance » a laissé passer un
+# mot de passe MQTT et la network_key du réseau Zigbee (incident P0).
+# Formalisées en contrat v1.1.0 § 3.4, amendées en v1.3.0 du contrat.
 EXCLUDED_DIRS = {
     ".git",
     "__pycache__",
@@ -86,7 +108,6 @@ EXCLUDED_DIRS = {
     ".pytest_cache",
     "www",
     "custom_components",
-    "zigbee2mqtt",
 }
 
 MAX_FILE_SIZE = 2 * 1024 * 1024
@@ -105,7 +126,9 @@ _PLACEHOLDER_PATTERN = re.compile(
     r"|null|~|none"               # YAML null
     r"|YOUR_.*|CHANGEME|REDACTED|PLACEHOLDER"
     r"|example|dummy|test|sample|demo"  # termes documentaires
-    r"|!secret\s+\w+"             # référence HA secrets.yaml
+    r"|['\"]?!secret\s+\w+"       # référence secrets externalisés — HA (nue)
+                                  # ou Zigbee2MQTT (quotée : '!secret x')
+    r"|GENERATE\b"                # Zigbee2MQTT : clé/PAN générés au premier démarrage
     r"|1234|0000|9999|12345|000000"  # codes numériques placeholder
     r"|\.\.\.|'\.\.\.|\"\.\.\.\""
     r"|<[a-z_]+>|x{3,}|\*{3,}"      # <password> <secret> xxxx ****
@@ -188,8 +211,10 @@ NETWORK_CRITICAL_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"\b10\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"),                                   "IP privée 10.x.x.x"),
     (re.compile(r"172\.(1[6-9]|2[0-9]|3[01])\.\d{1,3}\.\d{1,3}"),                       "IP privée 172.16-31.x.x"),
     (re.compile(r"https?://[^\s\"']+\.(home|local|lan|internal|localdomain)(?![\w-])", re.I), "URL domaine local"),
-    # Port explicite hors ports publics courants
-    (re.compile(r"(?<!\d):([0-9]{4,5})(?!\d)(?!.*(?:80|443|8080|8123|1883|5353))"), "port exposé"),
+    # Port explicite hors ports publics courants. La liste blanche est testée
+    # sur le port matché lui-même (v1.4.0) — l'ancien lookahead regardait
+    # APRÈS le match et ne neutralisait donc jamais `:1883` & co.
+    (re.compile(r"(?<!\d):(?!(?:80|443|8080|8123|1883|5353)(?!\d))([0-9]{4,5})(?!\d)"), "port exposé"),
 ]
 
 URL_WARNING_PATTERN = re.compile(r"https?://[^\s\"']{8,}", re.I)
@@ -248,6 +273,43 @@ GEO_COORD_PAIR_PATTERN = re.compile(
 GEO_COORD_BARE_PATTERN = re.compile(
     r"(?<![\w.])[+-]?\d{1,3}\.\d{5,}[1-9](?![\d.])"
 )
+
+
+# ---------------------------------------------------------------------------
+# Patterns S9 — Clés réseau Zigbee (v1.4.0, incident P0 zigbee2mqtt)
+# ---------------------------------------------------------------------------
+# La network_key Zigbee est la clé de chiffrement du réseau domotique : sa
+# publication permet de déchiffrer/injecter le trafic (alarme, contacts,
+# sirène). Elle ne matche AUCUN pattern S1 (pas de mot-clé token/password) :
+# d'où un contrôle dédié.
+#
+# Formes littérales interdites :
+#   1. BLOC — `network_key:` seul en fin de ligne : en YAML, une valeur vide
+#      introduit un bloc (liste d'octets ligne à ligne). Les seules formes
+#      légitimes versionnées étant `GENERATE` et `'!secret x'` (inline),
+#      un en-tête de bloc est par construction de la matière de clé littérale.
+#   2. INLINE — `network_key: [1, 2, …]` / valeur hex : toute valeur inline
+#      non placeholder (GENERATE / !secret / vide) est littérale.
+# `ext_pan_id` suit les mêmes règles (identifiant étendu du réseau, CRITICAL).
+# `pan_id` littéral est signalé en WARNING (identifiant court, moins sensible,
+# mais `GENERATE` reste la forme attendue en exemple versionné).
+ZIGBEE_KEY_BLOCK_PATTERN  = re.compile(r"^\s*(network_key|ext_pan_id)\s*:\s*$", re.I)
+ZIGBEE_KEY_INLINE_PATTERN = re.compile(r"\b(network_key|ext_pan_id)\s*[:=]\s*\S+", re.I)
+ZIGBEE_PAN_ID_PATTERN     = re.compile(r"(?<![\w])pan_id\s*[:=]\s*\S+", re.I)
+
+
+def s9_finding_for_line(active: str) -> tuple[str, str] | None:
+    """(sévérité, motif) S9 pour une ligne active, None si rien.
+    Factorisé pour être exercé par --selftest et les tests contractuels."""
+    if ZIGBEE_KEY_BLOCK_PATTERN.search(active):
+        return "CRITICAL", "clé réseau Zigbee en bloc littéral"
+    if is_placeholder(active):
+        return None
+    if ZIGBEE_KEY_INLINE_PATTERN.search(active):
+        return "CRITICAL", "clé réseau Zigbee inline littérale"
+    if ZIGBEE_PAN_ID_PATTERN.search(active):
+        return "WARNING", "pan_id Zigbee littéral"
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -578,6 +640,11 @@ def scan_text_file(path: Path, findings: list[Finding]) -> None:
         ):
             add_once("WARNING", "S8", idx, "valeur à signature de coordonnée GPS")
 
+        # ── S9 — Clés réseau Zigbee ────────────────────────────────────────
+        s9 = s9_finding_for_line(active)
+        if s9 is not None:
+            add_once(s9[0], "S9", idx, s9[1])
+
     # S3 — username + password dans le même fichier (CRITICAL)
     # is_placeholder vérifié ligne par ligne : un seul "password: null" ailleurs
     # ne doit pas masquer un vrai mot de passe sur une autre ligne.
@@ -603,6 +670,9 @@ _HISTORY_PATTERNS: list[tuple[str, str, re.Pattern[str]]] = [
     # S8 — coordonnée GPS keyed : forme exacte de la fuite historique
     # (« latitude: 44.8522979 » dans 17_zones/*_securite.yaml@parent-du-fix).
     ("S8", "CRITICAL", re.compile(r"\b(latitude|longitude)\b\s*[:=|]\s*[+-]?\d{1,3}\.\d+", re.I)),
+    # S9 — clé réseau Zigbee : forme exacte de la fuite historique
+    # (network_key en bloc littéral dans zigbee2mqtt/configuration.yaml).
+    ("S9", "CRITICAL", re.compile(r"\b(network_key|ext_pan_id)\s*[:=]", re.I)),
 ]
 
 
@@ -738,6 +808,7 @@ def write_report(findings: list[Finding], verdict: str, history_enabled: bool) -
         "S5": "Fichiers interdits",
         "S6": "Historique Git",
         "S8": "Coordonnées GPS",
+        "S9": "Clés réseau Zigbee",
     }
 
     for control, label in control_labels.items():
@@ -779,13 +850,13 @@ def write_report(findings: list[Finding], verdict: str, history_enabled: bool) -
     elif verdict == "WARNING":
         out.append("⚠️  **Revue manuelle obligatoire** avant toute publication. Chaque `WARNING` doit être explicitement accepté ou corrigé.")
     else:
-        out.append("✅ Publication techniquement autorisée selon le contrat `securite_publication_git.md` (S8 inclus, script v1.2.0).")
+        out.append("✅ Publication techniquement autorisée selon le contrat `securite_publication_git.md` (S8–S9 inclus, script v1.4.0).")
 
     out += [
         "",
         "---",
         "",
-        "_Rapport généré par `scripts/security/audit_publication_git.py` v1.3.0_",
+        "_Rapport généré par `scripts/security/audit_publication_git.py` v1.4.0_",
         "",
     ]
 
@@ -832,6 +903,50 @@ def selftest() -> int:
     for line, is_code, expected in positives:
         labels = s1_labels_for_line(line, is_code=is_code)
         assert expected in labels, f"selftest vrai positif manqué : {line!r} -> {labels}"
+
+    # S9 — clés réseau Zigbee : littéraux signalés, formes neutralisées admises
+    s9_cases: list[tuple[str, tuple[str, str] | None]] = [
+        # positifs (littéraux) — l'incident P0 zigbee2mqtt
+        ("  network_key:",                    ("CRITICAL", "clé réseau Zigbee en bloc littéral")),
+        ("  ext_pan_id:",                     ("CRITICAL", "clé réseau Zigbee en bloc littéral")),
+        ("  network_key: [13, 37, 42, 99]",   ("CRITICAL", "clé réseau Zigbee inline littérale")),
+        ("  pan_id: 54321",                   ("WARNING",  "pan_id Zigbee littéral")),
+        # négatifs (formes neutralisées / hors sujet)
+        ("  network_key: GENERATE",           None),
+        ("  ext_pan_id: GENERATE",            None),
+        ("  pan_id: GENERATE",                None),
+        ("  network_key: '!secret network_key'", None),
+        ("  base_topic: zigbee2mqtt",         None),
+    ]
+    for line, expected in s9_cases:
+        got = s9_finding_for_line(line)
+        assert got == expected, f"selftest S9 : {line!r} attendu={expected} obtenu={got}"
+
+    # Placeholders Zigbee2MQTT — GENERATE et '!secret x' quoté
+    for line in [
+        "password: '!secret mqtt_password'",
+        'password: "!secret mqtt_password"',
+        "network_key: GENERATE",
+    ]:
+        assert is_placeholder(line), f"selftest placeholder z2m : {line!r}"
+    assert not is_placeholder("password: generated_by_hand_value"), \
+        "selftest : 'generated…' ne doit pas être lu comme placeholder GENERATE"
+
+    # S1 — le mot de passe MQTT littéral (forme de l'incident) reste CRITICAL
+    assert "password" in s1_labels_for_line(
+        "  password: Fixture-Only-Value-cabp8q77", is_code=False
+    ), "selftest : mqtt.password littéral non détecté"
+
+    # S2 — liste blanche de ports appliquée au port matché lui-même
+    port_pattern = NETWORK_CRITICAL_PATTERNS[4][0]
+    assert not port_pattern.search("server: mqtt://core-mosquitto:1883"), \
+        "selftest S2 : le port 1883 (liste blanche) ne doit pas être signalé"
+    assert port_pattern.search("server: http://example:9443"), \
+        "selftest S2 : un port hors liste blanche doit rester signalé"
+
+    # Périmètre — zigbee2mqtt/ doit être scanné (angle mort de l'incident P0)
+    assert "zigbee2mqtt" not in EXCLUDED_DIRS, \
+        "selftest : zigbee2mqtt ne doit plus être exclu du scan de contenu"
 
     # S5a — extensions interdites reconnues par fnmatch
     for name, forbidden in [

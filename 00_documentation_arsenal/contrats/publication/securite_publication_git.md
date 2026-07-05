@@ -1,7 +1,7 @@
 # CONTRAT — Sécurité publication Git
 
 **Référence :** `documentation_arsenal/contrats/publication/securite_publication_git.md`
-**Version :** v1.2.0
+**Version :** v1.3.0
 **Statut :** Normatif
 **Scope :** Arsenal — audit pré-publication
 
@@ -15,6 +15,7 @@
 | v1.0.1 | Corrections script uniquement (bugs) — contrat inchangé |
 | v1.1.0 | Annotations `audit:ignore` / `audit:scope=doc` ; placeholders numériques ; S5 affiné ; exclusions de performance formalisées |
 | v1.2.0 | **C14 Lot 1E-c — réduction des faux positifs, sans affaiblir la détection.** S1 : en fichier de **code**, un mot-clé secret n'est `CRITICAL` que si sa valeur est un **littéral chaîne quoté** (les identifiants/types/appels — `token: str`, `_G_TOKEN = re.compile(...)` — ne sont plus des secrets ; les valeurs codées en dur `API_TOKEN = "…"` restent `CRITICAL`). S5a : le contrôle des **fichiers interdits** porte désormais sur les fichiers **versionnés** (`git ls-files`) de tout l'arbre, **indépendamment de `EXCLUDED_DIRS`** — lève l'angle mort `zigbee2mqtt/` (un `.log` suivi y échappait) ; un artefact runtime **non suivi** (gitignoré) n'est pas signalé. S2/S3 : `.home-assistant.io` n'est plus lu comme domaine local ; `synology.<ext>` (nom de fichier) n'est plus lu comme accès distant. Ajout d'un `--selftest`. Script : v1.2.0 → **v1.3.0**. |
+| v1.3.0 | **Incident P0 — secrets Zigbee2MQTT publiés.** Périmètre : `zigbee2mqtt/` **retiré des exclusions § 3.4** — répertoire de configuration porteuse de credentials, classé à tort « tiers » ; cette exclusion a produit un verdict `PASS` sur un mot de passe MQTT littéral et une clé réseau Zigbee versionnés. Nouveau contrôle **S9 — Clés réseau Zigbee** : `network_key` / `ext_pan_id` littéraux (bloc YAML ou inline) → `CRITICAL` ; `pan_id` littéral → `WARNING` ; formes admises : `GENERATE` et `'!secret x'`. Placeholders § 3.5 : ajout de `GENERATE` et de la forme **quotée** `'!secret x'` (syntaxe Zigbee2MQTT). S2 : liste blanche de ports appliquée au **port matché lui-même** (l'ancien lookahead ne neutralisait jamais `:1883`). CI : le workflow d'audit devient **bloquant** (`--fail-on critical`, plus de `continue-on-error`), précédé de `--selftest` et des contrats `check_publication_zigbee2mqtt_contracts.py`. Rapport : `audits/01_rapports/transverses/incident_p0_zigbee2mqtt_secrets_publies.md`. Script : v1.3.0 → **v1.4.0**. |
 
 ---
 
@@ -73,7 +74,7 @@ Ces exclusions sont codées en dur dans le script. Elles ne sont pas configurabl
 ### 3.4 Exclusions de performance
 
 Les répertoires suivants sont ignorés par le walker (contenu non scanné).
-Justification : tiers ou générés, hors périmètre Arsenal.
+Justification : tiers (code externe) ou générés, hors périmètre Arsenal.
 
 ```
 .git/
@@ -83,7 +84,6 @@ node_modules/
 .mypy_cache/  .pytest_cache/
 www/
 custom_components/
-zigbee2mqtt/
 ```
 
 > Ces répertoires ne sont **pas** dans FORBIDDEN_DIRS : leur présence n'est pas interdite,
@@ -93,6 +93,13 @@ zigbee2mqtt/
 > La détection des **fichiers interdits (S5a)** porte désormais sur les fichiers
 > **versionnés** de tout l'arbre, y compris ces répertoires — un `.log` suivi
 > sous `zigbee2mqtt/` est donc bien signalé.
+
+> **v1.3.0 — leçon de l'incident P0 :** `zigbee2mqtt/` est **retiré** de cette
+> liste. Seul du **code tiers** peut être exclu du scan de contenu ; un
+> répertoire de **configuration** (credentials, clés réseau) ne le peut jamais,
+> quelle que soit sa provenance. L'exclusion de `zigbee2mqtt/` a produit un
+> verdict `PASS` alors que `zigbee2mqtt/configuration.yaml` versionnait un mot
+> de passe MQTT littéral et la clé du réseau Zigbee.
 
 ### 3.5 Placeholders reconnus
 
@@ -105,6 +112,8 @@ Vérification effectuée **ligne par ligne** (un placeholder sur une ligne n'imm
 YOUR_*  CHANGEME  REDACTED  PLACEHOLDER
 example  dummy  test  sample  demo
 !secret <nom>          # référence HA secrets.yaml — valeur externalisée
+'!secret <nom>'        # idem, forme QUOTÉE (syntaxe Zigbee2MQTT) — v1.3.0
+GENERATE               # Zigbee2MQTT : clé/PAN générés au premier démarrage — v1.3.0
 ```
 
 **Placeholders numériques** (codes d'exemple conventionnels) :
@@ -297,6 +306,41 @@ pour ne pas dépendre de `EXCLUDED_DIRS`.
 
 ---
 
+### S8 — Coordonnées GPS · `CRITICAL` ou `WARNING`
+
+Implémenté en script v1.2.0 (fuite des coordonnées du domicile dans `17_zones/`).
+
+| Forme | Verdict |
+|---|---|
+| Clé `latitude` / `longitude` + valeur décimale (`:`/`=`/`\|`) | `CRITICAL` |
+| Paire de décimales haute précision adjacentes (forme narrative/GeoJSON) | `CRITICAL` |
+| Décimale isolée à signature GPS (≥ 6 décimales, filet heuristique) | `WARNING` |
+
+L'externalisation `!secret` (placeholder § 3.5) est la parade fonctionnelle.
+
+---
+
+### S9 — Clés réseau Zigbee · `CRITICAL` ou `WARNING`
+
+Implémenté en script v1.4.0 (incident P0 : `network_key` réelle versionnée dans
+`zigbee2mqtt/configuration.yaml`). La clé réseau Zigbee chiffre tout le trafic
+domotique (alarme, contacts, sirène) : sa publication permet de le déchiffrer
+et d'y injecter des commandes. Elle ne matche **aucun** mot-clé S1, d'où un
+contrôle dédié.
+
+| Forme | Verdict |
+|---|---|
+| `network_key` / `ext_pan_id` **en bloc YAML** (clé seule en fin de ligne : la liste d'octets suit) | `CRITICAL` |
+| `network_key` / `ext_pan_id` **inline** avec valeur littérale non-placeholder | `CRITICAL` |
+| `pan_id` inline avec valeur littérale non-placeholder | `WARNING` |
+| Valeur `GENERATE` ou `'!secret <nom>'` | aucun signal |
+
+> Un en-tête de bloc est signalé **par construction** : les seules formes
+> légitimement versionnables étant `GENERATE` et `'!secret x'` (inline),
+> une valeur vide introduisant un bloc est nécessairement de la matière de clé.
+
+---
+
 ## 6. Format de sortie
 
 ### 6.1 Console
@@ -367,14 +411,15 @@ Le code de retour `2` fait échouer le pipeline. Le code `1` peut être configur
 
 ---
 
-## 9. Évolutions prévues (hors scope v1.1)
+## 9. Évolutions prévues
 
-| Ref | Description |
-|---|---|
-| S7 | Entités HA nominatives (`person:`, `device_tracker:`, noms propres en valeur) |
-| S8 | Coordonnées GPS (`latitude`, `longitude`, zone `home`) |
-| S9 | Intégration `pre-commit` hook local |
-| S11 | Rapport JSON machine-readable pour intégration CI avancée |
+| Ref | Description | Statut |
+|---|---|---|
+| S7 | Entités HA nominatives (`person:`, `device_tracker:`, noms propres en valeur) | prévu |
+| S8 | Coordonnées GPS (`latitude`, `longitude`, zone `home`) | **implémenté** (script v1.2.0, § 5/S8) |
+| S9 | Clés réseau Zigbee (`network_key`, `ext_pan_id`, `pan_id`) | **implémenté** (script v1.4.0, § 5/S9) |
+| S10 | Intégration `pre-commit` hook local (ex-S9 de v1.1) | prévu |
+| S11 | Rapport JSON machine-readable pour intégration CI avancée | prévu |
 
 ---
 
@@ -382,7 +427,10 @@ Le code de retour `2` fait échouer le pipeline. Le code `1` peut être configur
 
 | Fichier | Rôle |
 |---|---|
-| `scripts/security/audit_publication_git.py` | Implémentation v1.0.1 |
+| `scripts/security/audit_publication_git.py` | Implémentation v1.4.0 |
+| `scripts/security/check_publication_zigbee2mqtt_contracts.py` | Contrats positifs/négatifs publication Zigbee2MQTT (verrou incident P0) |
+| `.github/workflows/security_publication_audit.yml` | Branchement CI **bloquant** (`--fail-on critical`) |
+| `zigbee2mqtt/configuration.example.yaml` | Exemple Zigbee2MQTT neutralisé — seul artefact z2m versionné |
 | `security_audit_report.md` | Rapport généré (non versionné) |
 | Ce fichier | Contrat normatif |
 

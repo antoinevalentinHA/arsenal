@@ -69,6 +69,13 @@ zigbee2mqtt/coordinator_backup.json
 zigbee2mqtt/state.json
 zigbee2mqtt/database.db*
 
+# Configuration réelle Zigbee2MQTT : credentials MQTT + clés réseau Zigbee.
+# JAMAIS versionnée (incident P0 2026-07). Seul l'exemple neutralisé
+# zigbee2mqtt/configuration.example.yaml est suivi par Git.
+zigbee2mqtt/configuration.yaml
+zigbee2mqtt/configuration_backup*.yaml
+zigbee2mqtt/secret.yaml
+
 # =====================================================
 # ==== Backups / archives
 # =====================================================
