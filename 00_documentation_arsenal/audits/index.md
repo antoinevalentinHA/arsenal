@@ -5,6 +5,9 @@
 
 ## Rapports
 
+### Arrosage
+- [arrosage/audit_arrosage_executions_longues_rain_bird.md](01_rapports/arrosage/audit_arrosage_executions_longues_rain_bird.md)  _(audit **architectural statique, lecture seule** — exécutions longues Rain Bird ; V1 fonctionnelle, **tolérable provisoirement**, insuffisante pour une automatisation plus ambitieuse ; défaut central : durée d'arrosage portée par des **instances vivantes** (`delay` 1–60 min dans le Run + appel bloquant de l'automation) et non par un état reconstructible ; stop nominal dépendant d'une instance HA vivante, **sans reprise post-redémarrage** ; preuve d'arrêt fondée sur `active_station` idle alors que le dépôt l'a documenté **non probant** (PR #96) ; sémantique de `dernier_effectif` = démarrage prouvé, **pas** eau sortie ni stop confirmé ; cible : session persistante + échéance + fin indépendante + watchdog ; **lots A–G proposés, arbitrages propriétaire en §9** ; aucun runtime modifié)_
+
 ### Bouclage
 - [bouclage/audit_bouclage_ecs.md](01_rapports/bouclage/audit_bouclage_ecs.md)
 
