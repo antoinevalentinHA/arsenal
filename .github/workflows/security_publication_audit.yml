@@ -1,10 +1,17 @@
-name: Arsenal Security — Audit Publication Git (informatif)
+name: Arsenal Security — Audit Publication Git (bloquant)
 
-# C14 Lot 1E-b — branchement CI *informatif* du scanner de sécurité publication.
-# Mode informatif uniquement : `continue-on-error` => ce job ne bloque JAMAIS une PR
-# à ce stade. Rôle = verrou de non-régression visible : tout CRITICAL (secret, IP
-# privée, fichier interdit) apparaît dans les logs et le récapitulatif CI, sans gate.
-# Le passage en bloquant (`--fail-on critical` gating) est un lot ultérieur (hors 1E-b).
+# Incident P0 « secrets Zigbee2MQTT publiés » — passage en BLOQUANT.
+# L'historique de ce job : branché en mode informatif au Lot 1E-b
+# (continue-on-error), le passage en bloquant était planifié « lot ultérieur ».
+# Cet écart a laissé publier zigbee2mqtt/configuration.yaml avec un mot de
+# passe MQTT et la network_key du réseau (le scanner rendait de toute façon
+# PASS : zigbee2mqtt/ était exclu du scan de contenu — corrigé en v1.4.0).
+# Rapport : 00_documentation_arsenal/audits/01_rapports/transverses/
+#           incident_p0_zigbee2mqtt_secrets_publies.md
+#
+# Ce job BLOQUE désormais toute PR sur un CRITICAL (--fail-on critical).
+# Les WARNING restent informatifs (récapitulatif CI). Le juge est testé avant
+# d'être appliqué : --selftest + contrats publication Zigbee2MQTT en préambule.
 # Le scanner ne modifie jamais le dépôt (invariant de l'outil).
 
 on:
@@ -18,36 +25,43 @@ permissions:
 
 jobs:
   audit-publication:
-    name: Scanner sécurité publication (informatif)
+    name: Scanner sécurité publication (bloquant)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Exécuter le scanner (informatif, non bloquant)
+      - name: Auto-test du scanner (on ne juge pas avec un juge défectueux)
+        run: python3 scripts/security/audit_publication_git.py --selftest
+
+      - name: Contrats publication Zigbee2MQTT (positifs/négatifs)
+        run: python3 scripts/security/check_publication_zigbee2mqtt_contracts.py
+
+      - name: Exécuter le scanner (bloquant sur CRITICAL)
         id: scan
-        continue-on-error: true
         run: |
+          set -o pipefail
           python3 scripts/security/audit_publication_git.py --fail-on critical \
             | tee "${RUNNER_TEMP}/scan.txt"
 
       - name: Résumé du scan dans le récapitulatif CI
         if: always()
         run: |
+          touch "${RUNNER_TEMP}/scan.txt"
           crit=$(grep -c '\[CRITICAL\]' "${RUNNER_TEMP}/scan.txt" || true)
           warn=$(grep -c '\[WARNING' "${RUNNER_TEMP}/scan.txt" || true)
           {
-            echo "## 🔎 Audit sécurité publication Git — mode informatif (C14 Lot 1E-b)"
+            echo "## 🔎 Audit sécurité publication Git — mode bloquant"
             echo ""
             echo "| Niveau | Nombre |"
             echo "|---|---:|"
             echo "| CRITICAL | ${crit:-0} |"
             echo "| WARNING | ${warn:-0} |"
             echo ""
-            echo "> Mode **informatif** (\`continue-on-error: true\`) : ce job **ne bloque pas** la PR."
+            echo "> Mode **bloquant** : tout \`CRITICAL\` fait échouer ce job et bloque la PR."
             if [ "${crit:-0}" != "0" ]; then
               echo ""
-              echo "### ❌ CRITICAL détectés (non bloquant à ce stade)"
+              echo "### ❌ CRITICAL détectés — publication bloquée"
               echo '```text'
               grep '\[CRITICAL\]' "${RUNNER_TEMP}/scan.txt" || true
               echo '```'
