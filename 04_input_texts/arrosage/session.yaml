@@ -10,20 +10,24 @@
 #   session reconstruisible après perte de l'instance de script.
 #
 # 🧮 VALEURS ÉCRITES PAR LE RUNTIME (codes internes)
-#   - `ouverte`                : session ouverte par le script Run
-#                                (gardes passées, commande imminente) ;
-#   - `fin_observee`           : switch natif station 1 repassé à `off`
-#                                pendant une session ouverte (automation
-#                                `10270000000005`) — fin OBSERVÉE, sans
-#                                préjuger de la clôture nominale ;
-#   - `close_nominale`         : séquence du script Run terminée
-#                                (délai écoulé + stop supervisé demandé) ;
+#   Par le script Run (start court) :
+#   - `ouverte`                : session ouverte (gardes passées,
+#                                commande imminente) ;
 #   - `demarrage_non_confirme` : switch natif jamais passé `on` dans le
 #                                délai — session close en anomalie.
-#   Un verdict resté `ouverte` après l'échéance prévue signale une
-#   clôture INCONNUE (instance perdue : reboot/reload — cf. audit §6) ;
-#   un verdict `fin_observee` sans `close_nominale` signale une clôture
-#   INCOMPLÈTE. La lecture qualitative vit dans
+#   Par l'automation d'observation `10270000000005` :
+#   - `fin_observee`           : switch natif repassé `off` pendant une
+#                                session ouverte — fin OBSERVÉE, la
+#                                clôture reste à poser.
+#   Par l'automation de fin `10270000000006` (Lot D) :
+#   - `close_nominale`         : clôture à l'échéance prévue, arrêt
+#                                prouvé (switch natif `off`) ;
+#   - `close_reprise`          : session orpheline soldée au démarrage HA ;
+#   - `close_watchdog`         : session soldée par le watchdog
+#                                (dépassement rattrapé) ;
+#   - `stop_incertain`         : stop demandé mais switch natif non `off`
+#                                — anomalie VISIBLE, retry watchdog.
+#   La lecture qualitative (dont le `depassement` d'échéance) vit dans
 #   `sensor.arrosage_session_etat` (template dédié).
 #
 # 🧭 HONNÊTETÉ (contrat 06)

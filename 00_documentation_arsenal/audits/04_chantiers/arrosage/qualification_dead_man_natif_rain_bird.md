@@ -1,5 +1,32 @@
 # Qualification terrain — dead-man natif Rain Bird
 
+> **⚠️ Amendement (2026-07-05) — décision propriétaire : Lot D livré SANS exécution
+> de ce protocole.** Le propriétaire a décidé d'avancer sans attendre C1/C2 : le
+> **dead-man natif reste NON QUALIFIÉ** (rien ne le déclare qualifié — la trace
+> §10 est toujours vide), et l'absence de qualification est **compensée par
+> l'orchestration HA du Lot D** (fin indépendante à l'échéance, reprise
+> post-redémarrage, watchdog /5 min avec retry, stop durci sur preuve switch
+> natif — automation `10270000000006`). **L'exécution de ce protocole reste
+> recommandée** : elle transformerait le filet présumé en fait.
+> Lecture post-Lot D du protocole :
+> - la mention « le couple `delay` + stop supervisé reste la seule ceinture »
+>   (encart initial ci-dessous) décrit l'état AVANT Lot D — la ceinture
+>   principale est désormais l'automation de fin `10270000000006` ;
+> - **C1 est inchangé** (commandes natives manuelles, hors session) ;
+> - **C2 §6.7 est amendé** : au retour de HA, la reprise (`10270000000006`)
+>   solde désormais la session ouverte dont l'échéance est passée — issue
+>   attendue : stop de rattrapage si nécessaire puis verdict `close_reprise`
+>   (notification « session soldée hors nominal »). Les constats (a)
+>   `fin_observee` / (b) `depassement` du texte original restent lisibles
+>   dans le Recorder comme états INTERMÉDIAIRES, plus comme états finaux.
+>   L'objet du test — l'eau s'arrête seule PENDANT l'indisponibilité de
+>   HA — est inchangé ;
+> - §9 : la conséquence « succès → Lot D envisageable » est caduque (Lot D
+>   livré par décision) ; « échec → watchdog/durcissement obligatoires »
+>   devient « échec → l'orchestration Lot D est la SEULE protection réelle,
+>   sa fiabilité devient critique et le filet natif ne doit plus jamais être
+>   invoqué comme argument ».
+
 > **Protocole de qualification terrain — Lot C** de l'audit
 > [« exécutions longues Rain Bird »](../../01_rapports/arrosage/audit_arrosage_executions_longues_rain_bird.md)
 > (§8 point 8, plan de lots §8). Document **non normatif** : il prépare et trace

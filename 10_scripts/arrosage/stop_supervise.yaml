@@ -16,14 +16,19 @@
 #     Seule garde : le pont délivre ses données (donnees_disponibles = on).
 #   - La commande native n'est JAMAIS exposée à l'UI : seule frontière =
 #     ce script. L'UI (lot ultérieur) n'appellera que ce script.
-#   - Vérification de l'effet par observation (06) : ACK ≠ preuve ;
-#     succès uniquement si active_station est réellement idle.
+#   - Vérification de l'effet par observation (06) : ACK ≠ preuve.
+#     PREUVE PRIMAIRE D'ARRÊT = switch natif station 1 `off` (durci
+#     Lot D, symétrie avec la preuve de démarrage #97) : le terrain
+#     (PR #96) a montré qu'active_station peut afficher 'Idle' pendant
+#     un arrosage RÉELLEMENT actif — il n'est donc PAS probant et n'est
+#     plus lu qu'en INDICATIF (notification d'échec).
 #   - ble_status / ble_last_error ne sont PAS une base de décision.
 #
 # 🔗 ENTITÉS
 #   Garde      : binary_sensor.rain_bird_pont_donnees_disponibles
 #   Commande   : button.rain_bird_bat_bt_2_e9a3_stop_all_irrigation
-#   Vérif      : sensor.rain_bird_bat_bt_2_e9a3_active_station
+#   Vérif      : switch.rain_bird_bat_bt_2_e9a3_station_1 (PREUVE PRIMAIRE : off)
+#   Indicatif  : sensor.rain_bird_bat_bt_2_e9a3_active_station (non probant)
 #   Notif      : script.notification_envoyer
 #
 # 🚫 NE FAIT PAS
@@ -45,8 +50,8 @@ arrosage_rain_bird_stop_supervise:
 
     - variables:
         stop_button: button.rain_bird_bat_bt_2_e9a3_stop_all_irrigation
+        station_switch: switch.rain_bird_bat_bt_2_e9a3_station_1
         active_sensor: sensor.rain_bird_bat_bt_2_e9a3_active_station
-        idle_states: ['idle', 'none', 'off', '']
         max_tentatives: 3
 
     # =========================================================
@@ -75,19 +80,21 @@ arrosage_rain_bird_stop_supervise:
     # =========================================================
     # 🔁 STOP supervisé — commande + attente + vérif, borné (3 essais)
     # =========================================================
+    # Preuve d'arrêt = switch natif station 1 `off` (primaire, Lot D).
+    # `unavailable`/`unknown` ne valent PAS `off` : pas de faux succès.
     - repeat:
         sequence:
           - service: button.press
             target:
               entity_id: "{{ stop_button }}"
           - wait_template: >
-              {{ states(active_sensor) | lower in idle_states }}
+              {{ is_state(station_switch, 'off') }}
             timeout: "00:00:08"
             continue_on_timeout: true
         until:
           - condition: template
             value_template: >
-              {{ states(active_sensor) | lower in idle_states
+              {{ is_state(station_switch, 'off')
                  or repeat.index >= max_tentatives }}
 
     # =========================================================
@@ -97,7 +104,7 @@ arrosage_rain_bird_stop_supervise:
         - conditions:
             - condition: template
               value_template: >
-                {{ states(active_sensor) | lower in idle_states }}
+                {{ is_state(station_switch, 'off') }}
           # Confirmé : pas de notification de succès (anti-bruit, doctrine).
           sequence: []
       default:
@@ -106,5 +113,7 @@ arrosage_rain_bird_stop_supervise:
             cible: input_text.telephone_antoine_notify
             titre: "💧 Arrosage – Stop Rain Bird non confirmé"
             message: >-
-              Stop Rain Bird NON confirmé après {{ max_tentatives }} tentatives.
-              État active_station observé : {{ states(active_sensor) }}.
+              Stop Rain Bird NON confirmé après {{ max_tentatives }} tentatives :
+              le switch natif station 1 n'est pas repassé 'off'.
+              Switch station 1 : {{ states(station_switch) }}.
+              active_station (indicatif, non probant) : {{ states(active_sensor) }}.

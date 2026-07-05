@@ -1,51 +1,63 @@
 # ==========================================================
 # 🧠 ARSENAL — TEMPLATE SENSORS
-#     Arrosage — Session station 1 (observabilité Lot B)
+#     Arrosage — Session station 1 (observabilité Lots B/D)
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #   Exposer la lecture DÉRIVÉE de l'état de session d'arrosage
 #   supervisée station 1 (audit « exécutions longues Rain Bird »,
-#   Lot B) à partir des helpers de session persistés :
+#   Lots B puis D) à partir des helpers de session persistés :
 #     - binary_sensor.arrosage_session_en_cours : une session
 #       Arsenal est-elle ouverte (non close) ?
 #     - sensor.arrosage_session_etat : lecture qualitative de la
-#       session (aucune / ouverte / depassement / close_nominale /
-#       close_incomplete / close_anomalie).
-#   OBSERVATION / DIAGNOSTIC UNIQUEMENT — remplace le « verrou
-#   implicite par instance » par un état OBSERVABLE, sans le
-#   remplacer fonctionnellement (le flux V1 est inchangé).
+#       session (aucune / ouverte / depassement / fin_observee /
+#       close_nominale / close_reprise / close_watchdog /
+#       stop_incertain / close_anomalie).
+#   OBSERVATION / DIAGNOSTIC UNIQUEMENT — l'orchestration de fin vit
+#   dans l'automation `10270000000006`, pas ici.
 #
 # 🔗 ENTRÉES
 #   - input_text.arrosage_session_verdict (discriminant)
-#   - input_datetime.arrosage_session_fin_prevue (échéance théorique)
+#   - input_datetime.arrosage_session_fin_prevue (échéance)
 #
 # 🧮 RÈGLE — sensor.arrosage_session_etat
 #   - `aucune`           : verdict vide / unknown (aucune session tracée) ;
-#   - `ouverte`          : verdict `ouverte`, échéance non dépassée ;
-#   - `depassement`      : verdict `ouverte`, échéance théorique + marge
-#                          dépassée → clôture INCONNUE (instance perdue :
-#                          reboot / reload pendant la session — audit §6) ;
-#   - `close_nominale`   : séquence Run terminée (verdict `close_nominale`) ;
-#   - `close_incomplete` : fin observée (switch off) SANS clôture nominale
-#                          du Run — état transitoire de quelques secondes
-#                          en fin de cycle nominal, durable si l'instance
-#                          a été perdue après la fin d'eau ;
-#   - `close_anomalie`   : démarrage non confirmé (verdict
-#                          `demarrage_non_confirme`).
+#   - `ouverte`          : verdict `ouverte`, échéance non dépassée
+#                          (fin nominale attendue de l'automation
+#                          `10270000000006` à l'échéance) ;
+#   - `depassement`      : verdict `ouverte`, échéance + marge dépassée —
+#                          NE devrait plus durer depuis le Lot D (la fin
+#                          indépendante / la reprise / le watchdog solde
+#                          la session) : un `depassement` persistant
+#                          signale une défaillance de l'orchestration
+#                          elle-même ;
+#   - `fin_observee`     : switch natif retombé `off` (automation
+#                          `10270000000005`) AVANT clôture — état d'attente
+#                          normal jusqu'à l'échéance ;
+#   - `close_nominale`   : clôturée à l'échéance, arrêt prouvé (switch off) ;
+#   - `close_reprise`    : soldée à la reprise post-redémarrage HA ;
+#   - `close_watchdog`   : soldée par le watchdog (dépassement rattrapé) ;
+#   - `stop_incertain`   : stop demandé mais switch natif non `off` —
+#                          ANOMALIE ACTIVE (retry watchdog en cours) ;
+#   - `close_anomalie`   : démarrage non confirmé (`demarrage_non_confirme`).
 #
 # ⏱️ MARGE DE DÉPASSEMENT — 300 s (5 min) — PARAMÈTRE RUNTIME D'OBSERVATION
-#   L'échéance théorique = début + durée demandée ; le flux réel ajoute
-#   la confirmation de démarrage (≤ 15 s) et le stop supervisé (≤ ~25 s).
-#   5 min absorbent ces étapes et le jitter sans faux `depassement`,
-#   tout en signalant une session réellement orpheline en ≤ 5 min après
-#   l'échéance. Constante volontairement codée ici (pas un réglage
-#   opérateur) — même idiome que les fenêtres de fraîcheur (3 h / 6 h).
+#   L'échéance théorique = début + durée demandée ; la fin orchestrée
+#   intervient à l'échéance, le watchdog au plus tard ~5 min après.
+#   5 min absorbent confirmation (≤ 15 s), stop supervisé (≤ ~25 s) et
+#   jitter sans faux `depassement`. Constante volontairement codée ici
+#   (pas un réglage opérateur) — même idiome que les fenêtres de
+#   fraîcheur (3 h / 6 h).
 #
-# 🧭 HONNÊTETÉ (contrat 06)
-#   `close_nominale` atteste une SÉQUENCE terminée (délai écoulé, stop
-#   demandé) — PAS une sortie d'eau physique, PAS un stop prouvé, PAS un
-#   effet humidité (preuve graduée — audit §5). `depassement` est un
-#   constat d'absence d'information, pas une preuve d'arrosage long.
+# 🧭 HONNÊTETÉ (contrat 06 — preuve graduée)
+#   - démarrage confirmé (switch `on`) ≠ eau physiquement sortie ;
+#   - fin observée / arrêt prouvé (switch `off`) ≠ stop hydraulique
+#     mesuré (aucun débitmètre) ;
+#   - `close_nominale` ≠ effet humidité constaté (canal sol séparé) ;
+#   - `depassement` / `stop_incertain` sont des constats d'absence de
+#     preuve, pas des preuves d'arrosage long.
+#   ⚠️ Le dead-man NATIF reste NON QUALIFIÉ (protocole Lot C non
+#   exécuté — décision propriétaire 2026-07-05) : aucun état ici ne
+#   présume de l'arrêt autonome du contrôleur.
 #
 # 🚫 INTERDITS
 #   - Piloter directement un équipement
@@ -53,7 +65,7 @@
 #   - Être lu par la décision V1 ou par le flux du Run (observabilité pure)
 #
 # 🏷️ STATUT
-#   Observabilité session (audit exécutions longues, Lot B) — Arsenal v16.x
+#   Observabilité session (audit exécutions longues, Lots B/D) — Arsenal v16.x
 # ==========================================================
 
 - binary_sensor:
@@ -71,9 +83,9 @@
       unique_id: arrosage_session_etat
       icon: >
         {% set v = states('sensor.arrosage_session_etat') %}
-        {{ 'mdi:progress-clock' if v in ['ouverte'] else
-           'mdi:progress-alert' if v in ['depassement', 'close_incomplete', 'close_anomalie'] else
-           'mdi:progress-check' if v == 'close_nominale' else
+        {{ 'mdi:progress-clock' if v in ['ouverte', 'fin_observee'] else
+           'mdi:progress-alert' if v in ['depassement', 'stop_incertain', 'close_watchdog', 'close_anomalie'] else
+           'mdi:progress-check' if v in ['close_nominale', 'close_reprise'] else
            'mdi:progress-question' }}
       state: >
         {% set verdict = states('input_text.arrosage_session_verdict') %}
@@ -87,10 +99,16 @@
           {% else %}
             ouverte
           {% endif %}
+        {% elif verdict == 'fin_observee' %}
+          fin_observee
         {% elif verdict == 'close_nominale' %}
           close_nominale
-        {% elif verdict == 'fin_observee' %}
-          close_incomplete
+        {% elif verdict == 'close_reprise' %}
+          close_reprise
+        {% elif verdict == 'close_watchdog' %}
+          close_watchdog
+        {% elif verdict == 'stop_incertain' %}
+          stop_incertain
         {% elif verdict == 'demarrage_non_confirme' %}
           close_anomalie
         {% else %}
