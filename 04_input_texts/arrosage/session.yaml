@@ -1,0 +1,47 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT
+#     Arrosage — Session station 1 : verdict (observabilité Lot B)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker le DERNIER VERDICT connu de la session d'arrosage
+#   supervisée station 1 (audit « exécutions longues Rain Bird »,
+#   Lot B). Code interne machine (traduction laissée à l'UI),
+#   restauré au redémarrage : c'est le discriminant qui rend la
+#   session reconstruisible après perte de l'instance de script.
+#
+# 🧮 VALEURS ÉCRITES PAR LE RUNTIME (codes internes)
+#   - `ouverte`                : session ouverte par le script Run
+#                                (gardes passées, commande imminente) ;
+#   - `fin_observee`           : switch natif station 1 repassé à `off`
+#                                pendant une session ouverte (automation
+#                                `10270000000005`) — fin OBSERVÉE, sans
+#                                préjuger de la clôture nominale ;
+#   - `close_nominale`         : séquence du script Run terminée
+#                                (délai écoulé + stop supervisé demandé) ;
+#   - `demarrage_non_confirme` : switch natif jamais passé `on` dans le
+#                                délai — session close en anomalie.
+#   Un verdict resté `ouverte` après l'échéance prévue signale une
+#   clôture INCONNUE (instance perdue : reboot/reload — cf. audit §6) ;
+#   un verdict `fin_observee` sans `close_nominale` signale une clôture
+#   INCOMPLÈTE. La lecture qualitative vit dans
+#   `sensor.arrosage_session_etat` (template dédié).
+#
+# 🧭 HONNÊTETÉ (contrat 06)
+#   Aucun de ces verdicts ne prouve une sortie d'eau physique ni un
+#   effet humidité : ils datent des COMMANDES et des OBSERVATIONS
+#   d'états natifs (preuve graduée — audit §5).
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Lire ce helper dans la décision V1 (observabilité pure)
+#   - Déclencher une action à partir de ce helper
+#
+# 🏷️ STATUT
+#   Observabilité session (audit exécutions longues, Lot B) — Arsenal v16.x
+# ==========================================================
+
+arrosage_session_verdict:
+  name: "Arrosage — Session verdict"
+  # PAS de clé `initial` (doctrine restauration_etat_helpers) : premier
+  # boot = unknown, traité comme « aucune session tracée » par les templates.
+  icon: mdi:clipboard-text-clock

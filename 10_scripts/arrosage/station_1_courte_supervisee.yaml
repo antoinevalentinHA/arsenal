@@ -36,6 +36,13 @@
 #                   sensor.rain_bird_bat_bt_2_e9a3_ble_rssi
 #   Arrêt         : script.arrosage_rain_bird_stop_supervise
 #   Notif         : script.notification_envoyer
+#   Session (obs.): input_datetime.arrosage_session_debut / _fin_prevue,
+#                   input_number.arrosage_session_duree_minutes,
+#                   input_text.arrosage_session_verdict
+#                   (écritures ADDITIVES Lot B — audit « exécutions longues » ;
+#                    observabilité pure : aucune garde, aucune attente, aucun
+#                    flux modifié ; la fin observée est portée par l'automation
+#                    10270000000005, PAS par ce script)
 #
 # 🧮 RÈGLE DE DÉMARRAGE (PREUVE PRIMAIRE = SWITCH NATIF)
 #   Terrain (PR #96) : pendant un arrosage RÉELLEMENT actif de la station 1,
@@ -100,6 +107,36 @@ arrosage_rain_bird_station_1_courte_supervisee:
             - stop: "Refus : gardes Run non satisfaites"
 
     # =========================================================
+    # 🧾 OBSERVABILITÉ SESSION — OUVERTURE (Lot B, additif)
+    # =========================================================
+    # Persiste l'état de session AVANT la commande native : début, durée
+    # demandée (clampée), échéance THÉORIQUE de fin, verdict 'ouverte'.
+    # Écritures d'état pures : n'ajoutent ni condition, ni attente, ni
+    # commande — le flux nominal (commande → confirmation → delay → stop)
+    # est strictement inchangé. Un refus de gardes (ci-dessus) n'ouvre
+    # AUCUNE session : seule une commande imminente en ouvre une.
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.arrosage_session_debut
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.arrosage_session_duree_minutes
+      data:
+        value: "{{ duree_minutes }}"
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.arrosage_session_fin_prevue
+      data:
+        datetime: "{{ (now() + timedelta(minutes=duree_minutes | int(2))).strftime('%Y-%m-%d %H:%M:%S') }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.arrosage_session_verdict
+      data:
+        value: "ouverte"
+
+    # =========================================================
     # ▶️ COMMANDE ENCADRÉE — durée paramétrée (helper, clamp [1,60]) puis ouverture station 1
     # =========================================================
     - service: number.set_value
@@ -146,6 +183,13 @@ arrosage_rain_bird_station_1_courte_supervisee:
                   Préconditions runtime : {{ precond_ok }}.
                   Wi-Fi RSSI : {{ states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') }} dBm.
                   BLE RSSI : {{ states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') }} dBm.
+            # 🧾 Observabilité session (Lot B, additif) : session close en
+            # anomalie — démarrage jamais prouvé. Écriture d'état pure.
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.arrosage_session_verdict
+              data:
+                value: "demarrage_non_confirme"
             - stop: "Démarrage station 1 non confirmé (switch non 'on')"
 
     # =========================================================
@@ -158,3 +202,20 @@ arrosage_rain_bird_station_1_courte_supervisee:
         minutes: "{{ duree_minutes }}"
 
     - service: script.arrosage_rain_bird_stop_supervise
+
+    # =========================================================
+    # 🧾 OBSERVABILITÉ SESSION — CLÔTURE NOMINALE (Lot B, additif)
+    # =========================================================
+    # Séquence terminée : délai écoulé + stop supervisé demandé (le Stop
+    # vérifie et notifie son propre échec — contrat 11). `close_nominale`
+    # atteste la SÉQUENCE, pas l'eau sortie ni le stop prouvé (audit §5).
+    # La fin OBSERVÉE (switch on → off) est horodatée par l'automation
+    # 10270000000005, qui pose `fin_observee` quelques secondes avant
+    # cette écriture — ordre assumé. Si l'instance meurt avant ce point,
+    # le verdict reste `ouverte` ou `fin_observee` : c'est exactement le
+    # signal recherché (clôture inconnue / incomplète).
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.arrosage_session_verdict
+      data:
+        value: "close_nominale"

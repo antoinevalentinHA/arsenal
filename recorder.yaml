@@ -432,6 +432,33 @@ include:
     - input_number.arrosage_rainbird_station_1_duree_minutes
 
     # =====================================================
+    # ==== 💧 ARROSAGE — OBSERVABILITÉ SESSION (LOT B AUDIT) ====
+    # =====================================================
+    # Historise l'état de session reconstructible livré par le Lot B de
+    # l'audit « exécutions longues Rain Bird » (audits/01_rapports/arrosage/
+    # audit_arrosage_executions_longues_rain_bird.md §7-§8) : ouverture,
+    # durée demandée, échéance théorique, fin observée, verdict et lectures
+    # dérivées. Permet de relire APRÈS COUP chaque session (nominale,
+    # interrompue, anomalie) au lieu de la reconstruire depuis les traces.
+    # Observation / diagnostic uniquement — aucune logique métier ne lit
+    # cet historique. Écritures rares (quelques-unes par session, ≤ 1/j
+    # en nominal V1) : volume négligeable.
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : Arrosage — audit exécutions longues, Lot B (observabilité session)
+    # Ajouté     : Lot B, 2026-07-05
+    # Réévaluer  : à la clôture du chantier de refonte (Lots C-G) — rejouer la
+    #              procédure de classification (rester en observabilité
+    #              permanente OU retirer le microscope).
+    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
+    - binary_sensor.arrosage_session_en_cours
+    - sensor.arrosage_session_etat
+    - input_datetime.arrosage_session_debut
+    - input_datetime.arrosage_session_fin_prevue
+    - input_datetime.arrosage_session_fin_observee
+    - input_number.arrosage_session_duree_minutes
+    - input_text.arrosage_session_verdict
+
+    # =====================================================
     # ==== 🎛️ MODES DE LA MAISON ====
     # =====================================================
     - input_select.mode_maison
