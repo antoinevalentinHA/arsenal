@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Arrosage — Session station 1 (observabilité Lot B)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker les bornes temporelles de la DERNIÈRE session
+#   d'arrosage supervisée station 1, comme ÉTAT RECONSTRUCTIBLE
+#   (audit « exécutions longues Rain Bird », Lot B) :
+#     - début de session (écrit par le script Run à l'ouverture) ;
+#     - échéance théorique de fin (début + durée demandée) ;
+#     - fin observée (écrite quand le switch natif repasse à off).
+#   Restaurés au redémarrage : ils survivent à la perte de
+#   l'instance de script (le flux, lui, reste inchangé — Lot B
+#   n'orchestre rien, il observe).
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement (date + heure)
+#   - Aucun calcul, aucune logique de décision locale
+#   - Aucun comportement autonome
+#   - Écrit UNIQUEMENT par le script Run supervisé et
+#     l'automation d'observation `10270000000005`
+#
+# 🏷️ NATURE
+#   Observabilité | État de session (audit Lot B)
+#
+# 🧮 SÉMANTIQUE (honnête, contrat 06)
+#   - `fin_prevue` est THÉORIQUE (début + durée demandée) : ce n'est
+#     ni une preuve ni une commande — le flux nominal reste porté par
+#     le `delay` du script Run (inchangé, cf. audit Lot D futur).
+#   - `fin_observee` date la DERNIÈRE fin observée (switch natif
+#     on → off) ; une valeur antérieure à `debut` signifie « pas
+#     encore de fin observée pour la session courante ».
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Déclencher directement un arrosage ou un stop
+#   - Lire ces helpers dans la décision V1 (observabilité pure)
+#
+# 🏷️ STATUT
+#   Observabilité session (audit exécutions longues, Lot B) — Arsenal v16.x
+# ==========================================================
+
+arrosage_session_debut:
+  name: "Arrosage — Session début"
+  has_date: true
+  has_time: true
+  # PAS de clé `initial` (doctrine restauration_etat_helpers) : HA restaure
+  # la dernière valeur écrite ; premier boot = unknown, traité comme
+  # « aucune session tracée » par les templates de session.
+  icon: mdi:ray-start-arrow
+
+arrosage_session_fin_prevue:
+  name: "Arrosage — Session fin prévue"
+  has_date: true
+  has_time: true
+  # PAS de clé `initial` : voir arrosage_session_debut.
+  icon: mdi:clock-alert-outline
+
+arrosage_session_fin_observee:
+  name: "Arrosage — Session fin observée"
+  has_date: true
+  has_time: true
+  # PAS de clé `initial` : voir arrosage_session_debut.
+  icon: mdi:ray-end

@@ -1,0 +1,70 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Arrosage — Session : fin observée (observation)
+#
+#  ID : 10270000000005
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Observer la FIN de la session d'arrosage supervisée station 1
+#   (audit « exécutions longues Rain Bird », Lot B) : quand le
+#   switch natif repasse `on → off` alors qu'une session Arsenal
+#   est OUVERTE, horodater la fin observée et poser le verdict
+#   `fin_observee`. Pure observation : c'est ce qui rend la fin
+#   de session visible MÊME si l'instance du script Run a disparu
+#   (reboot / reload pendant l'arrosage — audit §6).
+#
+# 📡 SIGNAL
+#   switch.rain_bird_bat_bt_2_e9a3_station_1 — la MÊME preuve
+#   primaire que le démarrage (contrat 06, acquis #97) : symétrie
+#   voulue, `active_station` n'est pas utilisé (non probant, PR #96).
+#
+# 🛡️ GARDE
+#   input_text.arrosage_session_verdict == `ouverte` : seule une
+#   session Arsenal ouverte est close ici. Un arrosage du secours
+#   interne Rain Bird (hors session) ne touche pas l'enregistrement.
+#   Transition STRICTE `on → off` : un retour depuis `unavailable`
+#   ne vaut pas fin observée (le doute reste `ouverte`, puis
+#   `depassement` — constat honnête d'absence d'information).
+#
+# 🔗 ACTION (écritures d'état uniquement)
+#   - input_datetime.arrosage_session_fin_observee ← now()
+#   - input_text.arrosage_session_verdict ← `fin_observee`
+#   En fin de cycle NOMINAL, le script Run pose ensuite
+#   `close_nominale` (séquence terminée) : l'ordre est assumé,
+#   `fin_observee` est un état de passage de quelques secondes.
+#
+# 🚫 NE FAIT PAS
+#   - aucune commande native, aucun script Run/Stop, aucun pilotage ;
+#   - ne modifie NI la décision V1, NI le cooldown, NI le flux du Run ;
+#   - n'introduit aucune orchestration de fin (Lot D futur, audit §8).
+#
+# 🏷️ STATUT
+#   Observabilité session (audit exécutions longues, Lot B) — Arsenal v16.x
+# ==========================================================
+
+- id: "10270000000005"
+  alias: "Arrosage - Session fin observee"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: switch.rain_bird_bat_bt_2_e9a3_station_1
+      from: "on"
+      to: "off"
+
+  condition:
+    - condition: state
+      entity_id: input_text.arrosage_session_verdict
+      state: "ouverte"
+
+  action:
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.arrosage_session_fin_observee
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.arrosage_session_verdict
+      data:
+        value: "fin_observee"

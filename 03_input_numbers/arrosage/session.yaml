@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Arrosage — Session station 1 : durée demandée (observabilité Lot B)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker la durée (minutes) DEMANDÉE lors de la dernière session
+#   d'arrosage supervisée station 1, telle que clampée et appliquée
+#   par le script Run au moment de l'ouverture de session (audit
+#   « exécutions longues Rain Bird », Lot B). Distinct du helper de
+#   RÉGLAGE opérateur `arrosage_rainbird_station_1_duree_minutes` :
+#   ici on fige ce qui a été demandé pour CETTE session, même si
+#   l'opérateur change le réglage ensuite.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucun calcul, aucune logique métier locale
+#   - Aucun comportement autonome
+#   - Écrit UNIQUEMENT par le script Run supervisé (ouverture)
+#
+# 🏷️ NATURE
+#   Observabilité | État de session (audit Lot B)
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Piloter directement un équipement
+#   - Lire ce helper dans la décision V1 ou dans le flux du Run
+#     (observabilité pure : le Run lit le helper de réglage, pas celui-ci)
+#
+# 🏷️ STATUT
+#   Observabilité session (audit exécutions longues, Lot B) — Arsenal v16.x
+# ==========================================================
+
+arrosage_session_duree_minutes:
+  name: "Arrosage — Session durée demandée"
+  min: 1
+  max: 60
+  step: 1
+  # ⚠️ PAS de clé `initial` (doctrine restauration_etat_helpers) : HA restaure
+  #    la dernière valeur écrite ; premier boot = unknown, sans danger
+  #    (aucune logique ne lit ce helper — observabilité pure).
+  unit_of_measurement: "min"
+  mode: box
+  icon: mdi:timer-sand-paused
