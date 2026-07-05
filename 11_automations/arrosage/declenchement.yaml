@@ -26,6 +26,15 @@
 #   GARDE commune : `binary_sensor.arrosage_intention` == `on` (toute
 #   l'autorisation est re-vérifiée par l'intention).
 #
+#   ⚠️ Ces déclencheurs se RECOUVRENT PAR CONSTRUCTION : au début de
+#   fenêtre, le trigger horaire ET l'intention `off → on` tirent au même
+#   instant (l'intention bascule précisément à l'entrée en fenêtre). De
+#   plus, l'action appelle le script Run en mode BLOQUANT : l'automation
+#   reste « en cours » pendant toute la durée de l'arrosage, ce qui sert
+#   de garde de ré-entrée. `mode: single` absorbe donc des déclenchements
+#   surnuméraires ATTENDUS → `max_exceeded: silent` (pas un incident,
+#   aucun avertissement « Already running » à journaliser).
+#
 # 🔗 ACTION
 #   - script.arrosage_rain_bird_station_1_courte_supervisee
 #
@@ -48,6 +57,8 @@
 - id: "10270000000002"
   alias: "Arrosage - Declenchement automatique V1"
   mode: single
+  # Recouvrement attendu des déclencheurs (cf. en-tête 🔔) : silencieux.
+  max_exceeded: silent
 
   trigger:
     # besoin devient vrai dans la fenêtre (et ré-évaluation /minute via now())
