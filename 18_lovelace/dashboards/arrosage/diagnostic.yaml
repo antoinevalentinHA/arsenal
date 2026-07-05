@@ -216,3 +216,75 @@ views:
                 entity: sensor.arrosage_dernier_effectif
                 name: Dernier arrosage prouvé
                 icon: mdi:history
+
+          # =========================================================
+          # 🧾 Session — l'arrosage courant et sa clôture (Lots B/D)
+          # =========================================================
+          # Lecture seule : états de session persistés (helpers Lot B) et
+          # lectures dérivées. La fin est orchestrée par l'automation
+          # 10270000000006 ; aucune commande native ici (contrat 11 §2).
+          - type: custom:button-card
+            template: section_header
+            name: 🧾 Session
+
+          - type: custom:button-card
+            template: carte_mode_binaire_interprete
+            entity: binary_sensor.arrosage_session_en_cours
+            name: Session en cours
+            icon: mdi:progress-clock
+            variables:
+              label_on: Session ouverte
+              label_off: Aucune session ouverte
+              color_on: 'rgba(33, 150, 243, 0.2)'
+              color_off: 'rgba(158, 158, 158, 0.1)'
+
+          - type: custom:button-card
+            template: carte_etat_interprete
+            entity: sensor.arrosage_session_etat
+            name: État de session
+            icon: mdi:clipboard-text-clock
+            variables:
+              couleurs:
+                aucune: 'rgba(158, 158, 158, 0.1)'
+                ouverte: 'rgba(33, 150, 243, 0.2)'
+                fin_observee: 'rgba(255, 235, 59, 0.2)'
+                close_nominale: 'rgba(76, 175, 80, 0.2)'
+                close_reprise: 'rgba(255, 235, 59, 0.2)'
+                close_watchdog: 'rgba(255, 152, 0, 0.2)'
+                close_anomalie: 'rgba(255, 152, 0, 0.2)'
+                stop_incertain: 'rgba(244, 67, 54, 0.2)'
+                depassement: 'rgba(244, 67, 54, 0.2)'
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: socle_info_72
+                entity: input_datetime.arrosage_session_debut
+                name: Début de session
+                icon: mdi:ray-start-arrow
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: input_number.arrosage_session_duree_minutes
+                name: Durée demandée
+                icon: mdi:timer-sand-paused
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: input_datetime.arrosage_session_fin_prevue
+                name: Fin prévue (échéance)
+                icon: mdi:clock-alert-outline
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: input_datetime.arrosage_session_fin_observee
+                name: Fin observée
+                icon: mdi:ray-end
+
+          - type: custom:button-card
+            template: socle_info_72
+            entity: input_text.arrosage_session_verdict
+            name: Verdict de session (code interne)
+            icon: mdi:clipboard-text-clock

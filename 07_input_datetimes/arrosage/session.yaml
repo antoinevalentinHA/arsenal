@@ -18,15 +18,17 @@
 #   - Aucun calcul, aucune logique de décision locale
 #   - Aucun comportement autonome
 #   - Écrit UNIQUEMENT par le script Run supervisé et
-#     l'automation d'observation `10270000000005`
+#     l'automation d'observation `10270000000005` ; LU par
+#     l'automation de fin `10270000000006` (Lot D)
 #
 # 🏷️ NATURE
 #   Observabilité | État de session (audit Lot B)
 #
 # 🧮 SÉMANTIQUE (honnête, contrat 06)
-#   - `fin_prevue` est THÉORIQUE (début + durée demandée) : ce n'est
-#     ni une preuve ni une commande — le flux nominal reste porté par
-#     le `delay` du script Run (inchangé, cf. audit Lot D futur).
+#   - `fin_prevue` est THÉORIQUE (début + durée demandée) ET, depuis le
+#     Lot D, la BASE DE LA FIN ORCHESTRÉE : l'automation `10270000000006`
+#     déclenche dessus (trigger `time`) le stop supervisé et la clôture.
+#     Ce n'est toujours ni une preuve ni une commande native.
 #   - `fin_observee` date la DERNIÈRE fin observée (switch natif
 #     on → off) ; une valeur antérieure à `debut` signifie « pas
 #     encore de fin observée pour la session courante ».

@@ -28,12 +28,14 @@
 #
 #   ⚠️ Ces déclencheurs se RECOUVRENT PAR CONSTRUCTION : au début de
 #   fenêtre, le trigger horaire ET l'intention `off → on` tirent au même
-#   instant (l'intention bascule précisément à l'entrée en fenêtre). De
-#   plus, l'action appelle le script Run en mode BLOQUANT : l'automation
-#   reste « en cours » pendant toute la durée de l'arrosage, ce qui sert
-#   de garde de ré-entrée. `mode: single` absorbe donc des déclenchements
-#   surnuméraires ATTENDUS → `max_exceeded: silent` (pas un incident,
-#   aucun avertissement « Already running » à journaliser).
+#   instant (l'intention bascule précisément à l'entrée en fenêtre).
+#   Depuis le Lot D, le script Run est COURT (démarrage prouvé puis fin
+#   portée par l'état de session + automation 10270000000006) : l'appel
+#   bloquant ne dure plus que quelques secondes. La ré-entrée pendant la
+#   session reste empêchée par les gardes du Run (switch natif off +
+#   station au repos) et par le cooldown armé au démarrage prouvé.
+#   `mode: single` absorbe le recouvrement à l'entrée en fenêtre →
+#   `max_exceeded: silent` (pas un incident, rien à journaliser).
 #
 # 🔗 ACTION
 #   - script.arrosage_rain_bird_station_1_courte_supervisee

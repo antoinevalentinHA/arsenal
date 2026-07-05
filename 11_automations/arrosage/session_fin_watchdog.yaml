@@ -1,0 +1,171 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Arrosage — Session : fin indépendante, reprise & watchdog
+#
+#  ID : 10270000000006
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Garantir la FIN BORNÉE de la session d'arrosage station 1
+#   (Lot D — audit « exécutions longues Rain Bird ») : la durée
+#   n'est plus portée par une instance de script suspendue mais par
+#   l'ÉTAT persisté (`arrosage_session_fin_prevue`). Cette automation
+#   est le SEUL porteur de la fin :
+#     - à l'ÉCHÉANCE prévue → stop supervisé + clôture nominale ;
+#     - au DÉMARRAGE de HA, si une session non soldée a dépassé son
+#       échéance pendant l'indisponibilité → procédure sûre de reprise ;
+#     - WATCHDOG (/5 min) → rattrape tout dépassement résiduel et
+#       RETENTE le stop tant que le switch natif n'est pas `off`.
+#   Elle fonctionne SANS instance préalable : chaque déclenchement
+#   reconstruit tout depuis les helpers de session (Lot B).
+#
+# 🧱 DOCTRINE
+#   - ⚠️ DEAD-MAN NATIF NON QUALIFIÉ (protocole Lot C non exécuté —
+#     décision propriétaire 2026-07-05 d'avancer sans attendre) :
+#     cette automation est la ceinture PRINCIPALE d'arrêt ; l'arrêt
+#     autonome natif reste un filet PRÉSUMÉ, jamais invoqué comme preuve.
+#   - Aucune commande native directe : la seule frontière reste le
+#     script Stop supervisé (contrat 11 §2). Aucune automation appelée.
+#   - Preuve d'arrêt = switch natif `off` (primaire, symétrie #96/#97) ;
+#     un stop non prouvé laisse le verdict `stop_incertain` VISIBLE.
+#   - Reprise : si l'échéance est ENCORE FUTURE au redémarrage, on
+#     n'agit pas — le trigger `echeance` (réarmé au reload sur
+#     l'input_datetime) tirera à l'heure dite. La reprise ne solde que
+#     les sessions dont l'échéance est passée.
+#   - N'arrose JAMAIS : aucune relance, aucun start, aucune écriture
+#     de durée. Fin, clôture et constat uniquement.
+#
+# 🔔 DÉCLENCHEURS + GARDES COMMUNES
+#   - echeance   : heure = `input_datetime.arrosage_session_fin_prevue`
+#                  (chemin NOMINAL de fin — remplace l'ancien `delay`) ;
+#   - demarrage  : redémarrage HA (session orpheline à solder) ;
+#   - watchdog   : time_pattern /5 min (rattrapage + retry de stop).
+#   GARDES : (session à solder : verdict `ouverte`/`fin_observee`, ou
+#   `stop_incertain` avec switch non-`off` — le retry ne s'arrête que
+#   sur preuve d'arrêt) ET (échéance atteinte ou dépassée).
+#   `mode: single` + `max_exceeded: silent` : les déclencheurs peuvent
+#   se recouvrir (echeance + watchdog à ±5 min) — recouvrement attendu,
+#   l'instance en cours fait le même travail.
+#
+# 🧮 VERDICTS POSÉS (codes internes, cf. 04_input_texts/arrosage/session.yaml)
+#   - `close_nominale`  : clôture à l'échéance, switch `off` prouvé ;
+#   - `close_reprise`   : session soldée au redémarrage HA ;
+#   - `close_watchdog`  : session soldée par le watchdog (dépassement) ;
+#   - `stop_incertain`  : stop demandé mais switch non `off` — anomalie
+#                         VISIBLE, retry au prochain tir watchdog.
+#
+# 🔔 NOTIFICATIONS (anti-bruit)
+#   - échéance nominale : AUCUNE notification (chemin normal) ;
+#   - reprise / watchdog avec stop nécessaire : notification (anomalie
+#     actionnable — une session a survécu à son superviseur) ;
+#   - échec du stop : notifié par le Stop supervisé lui-même (pas de
+#     doublon ici).
+#
+# 🚫 NE FAIT PAS
+#   - aucune commande native directe, aucun start, aucune relance ;
+#   - ne modifie NI la décision V1, NI le cooldown, NI l'intention ;
+#   - ne touche pas à `fin_observee` (portée par 10270000000005).
+#
+# 🏷️ STATUT
+#   Orchestration de session (audit exécutions longues, Lot D) — Arsenal v16.x
+# ==========================================================
+
+- id: "10270000000006"
+  alias: "Arrosage - Session fin et watchdog"
+  mode: single
+  # Recouvrement attendu des déclencheurs (cf. en-tête 🔔) : silencieux.
+  max_exceeded: silent
+
+  trigger:
+    - id: echeance
+      platform: time
+      at: input_datetime.arrosage_session_fin_prevue
+
+    - id: demarrage
+      platform: homeassistant
+      event: start
+
+    - id: watchdog
+      platform: time_pattern
+      minutes: "/5"
+
+  condition:
+    # Garde 1 — session à solder : ouverte / fin observée non close, ou
+    # stop incertain tant que le switch natif n'est pas retombé 'off'
+    # (retry) ; un `stop_incertain` avec switch 'off' est terminal (l'eau
+    # est prouvée arrêtée, l'anomalie reste visible au Recorder).
+    - condition: template
+      value_template: >
+        {% set v = states('input_text.arrosage_session_verdict') %}
+        {{ v in ['ouverte', 'fin_observee']
+           or (v == 'stop_incertain'
+               and not is_state('switch.rain_bird_bat_bt_2_e9a3_station_1', 'off')) }}
+    # Garde 2 — échéance atteinte ou dépassée (une session encore dans sa
+    # fenêtre n'est JAMAIS stoppée : au boot, le trigger `echeance` réarmé
+    # tirera à l'heure prévue).
+    - condition: template
+      value_template: >
+        {% set fin_ts = state_attr('input_datetime.arrosage_session_fin_prevue', 'timestamp') %}
+        {{ fin_ts is not none and now().timestamp() >= (fin_ts | float(0)) }}
+
+  action:
+    - variables:
+        station_switch: switch.rain_bird_bat_bt_2_e9a3_station_1
+        # Constat AVANT action : un stop est-il nécessaire ? ('on' OU état
+        # non exploitable — dans le doute on demande le stop, il est
+        # idempotent et porte ses propres gardes/notifications).
+        stop_requis: "{{ not is_state('switch.rain_bird_bat_bt_2_e9a3_station_1', 'off') }}"
+        verdict_cible: >
+          {{ 'close_nominale' if trigger.id == 'echeance'
+             else 'close_reprise' if trigger.id == 'demarrage'
+             else 'close_watchdog' }}
+
+    # ---------------------------------------------------------
+    # 1) STOP si nécessaire — via le script supervisé uniquement
+    # ---------------------------------------------------------
+    - choose:
+        - conditions: "{{ stop_requis }}"
+          sequence:
+            - service: script.arrosage_rain_bird_stop_supervise
+
+    # ---------------------------------------------------------
+    # 2) CLÔTURE — verdict prouvé par le switch natif
+    # ---------------------------------------------------------
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ is_state(station_switch, 'off') }}"
+          sequence:
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.arrosage_session_verdict
+              data:
+                value: "{{ verdict_cible }}"
+      default:
+        # Stop demandé mais arrêt NON prouvé : anomalie visible, pas de
+        # clôture mensongère. Le watchdog retentera (/5 min). L'échec du
+        # stop lui-même a déjà été notifié par le Stop supervisé.
+        - service: input_text.set_value
+          target:
+            entity_id: input_text.arrosage_session_verdict
+          data:
+            value: "stop_incertain"
+
+    # ---------------------------------------------------------
+    # 3) NOTIFICATION — uniquement hors chemin nominal (anti-bruit)
+    # ---------------------------------------------------------
+    # Un stop nécessaire à la reprise ou au watchdog signifie qu'une
+    # session a survécu à son superviseur : anomalie actionnable.
+    - choose:
+        - conditions: "{{ stop_requis and trigger.id != 'echeance' }}"
+          sequence:
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "💧 Arrosage – Session soldée hors nominal"
+                message: >-
+                  Session d'arrosage soldée par « {{ trigger.id }} » (stop de
+                  rattrapage demandé).
+                  Fin prévue : {{ states('input_datetime.arrosage_session_fin_prevue') }}.
+                  Switch station 1 après stop : {{ states(station_switch) }}.
+                  Verdict posé : {{ states('input_text.arrosage_session_verdict') }}.
+                  Rappel : dead-man natif NON qualifié (protocole Lot C non exécuté).

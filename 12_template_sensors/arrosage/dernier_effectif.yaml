@@ -19,6 +19,16 @@
 # 🔗 ENTITÉ SOURCE
 #   - switch.rain_bird_bat_bt_2_e9a3_station_1 (preuve primaire)
 #
+# 🧭 PREUVE GRADUÉE (contrat 06 / audit « exécutions longues » §5)
+#   Ce capteur atteste un DÉMARRAGE CONFIRMÉ par le switch natif — rien
+#   de plus : démarrage confirmé ≠ eau physiquement sortie (aucun
+#   débitmètre) ≠ stop prouvé ≠ effet humidité constaté. « Effectif »
+#   se lit donc « démarrage prouvé » ; c'est suffisant et prudent pour
+#   son rôle (cooldown : direction de défaillance sûre), mais ce n'est
+#   PAS une preuve hydraulique. La chaîne complète de session (fin
+#   observée, clôture, anomalies) vit dans les entités de session
+#   (Lots B/D), pas ici.
+#
 # 🚫 NE FAIT PAS
 #   - aucune commande, aucun pilotage : pure observation horodatée.
 #   - ne se fonde JAMAIS sur active_station / ACK BLE seul.
