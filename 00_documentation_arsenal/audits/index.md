@@ -142,6 +142,9 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 
 ## Chantiers
 
+### Arrosage
+- [arrosage/qualification_dead_man_natif_rain_bird.md](04_chantiers/arrosage/qualification_dead_man_natif_rain_bird.md)  _(**protocole de qualification terrain — Lot C** de l'audit « exécutions longues Rain Bird » ; arrêt AUTONOME de la station 1 à l'échéance de la durée native, **distinct** du dead-man `rain_delay` (T07–T09) ; tests C1 (arrêt natif pur, ×2) et C2 (perte d'instance HA pendant session — valide au passage l'observabilité Lot B) ; critères d'acceptation/échec + trace à remplir ; **non exécuté** — le dead-man n'est PAS qualifié tant que la trace §10 est vide ; conditionne le Lot D ; aucun runtime modifié)_
+
 ### Chauffage
 - [chauffage/ch_observabilite_auto_ajustement_courbe.md](04_chantiers/chauffage/ch_observabilite_auto_ajustement_courbe.md)  _(chantier unique issu de l'audit courbe — observabilité du mécanisme ; **non ordonnancé** ; aucun changement de comportement)_
 - [chauffage/backlog_auto_ajustement_courbe.md](04_chantiers/chauffage/backlog_auto_ajustement_courbe.md)  _(différés : protections empruntées ; requalifié : Eco% retenu comme critère métier d'éligibilité ; rejetés : suspension totale poêle, élargissement pente ; errata contrats 75/06)_

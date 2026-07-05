@@ -149,6 +149,8 @@ Quelques **axes ordonnés**, pas un backlog. Chaque lot sera **audité avant YAM
 >
 > **Lecture doctrinale.** La V1 **n'est pas bloquée techniquement** : elle est **empêchée par ses propres gardes** (interrupteur maître, suspension pluie, besoin sol, fenêtre disjointe, cooldown, préconditions runtime — [`17`](../../../contrats/arrosage/17_decision_v1.md) §3/§4), ce qui est **conforme à la doctrine**. **L'absence d'arrosage automatique ne vaut donc pas panne.** Aucune action corrective induite : on **ne modifie pas les seuils**, on **ne force pas l'automatisme**, on **n'affaiblit pas la suspension pluie**. La validation de la décision automatique sera **constatée à l'occasion** d'un cycle naturel favorable (**suivi opportuniste**, §3 — aucune simulation ni déclenchement forcé).
 
+> **Protocole prêt, non exécuté (Lot C, 2026-07-05) — dead-man natif station.** La qualification de l'**arrêt autonome de la station 1 à l'échéance de la durée native** (prérequis de sûreté du Lot D de l'audit « exécutions longues Rain Bird » ; **distinct** du dead-man `rain_delay` T07–T09) dispose d'un protocole terrain traçable : [`qualification_dead_man_natif_rain_bird.md`](../../04_chantiers/arrosage/qualification_dead_man_natif_rain_bird.md) (tests C1 ×2 + C2, critères d'acceptation/échec, trace §10 à remplir). Tant que la trace n'est pas remplie et arbitrée, l'arrêt autonome reste une hypothèse et le couple `delay` + stop supervisé reste intouchable.
+
 ## 9. Éléments explicitement différés
 
 Hors périmètre de la **première** livraison (différés, **non bloquants**) :
