@@ -1,5 +1,7 @@
 # 🗺️ Index — Architecture Arsenal
 
+> 🇬🇧 **English overview: [index.en.md](./index.en.md)**
+
 > **Porte d'entrée navigation.** Ce document liste et classe l'ensemble des
 > fichiers du dossier `architecture/`.
 > Pour le positionnement, les principes et la règle d'or : voir [README.md](./README.md).
