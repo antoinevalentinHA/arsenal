@@ -46,6 +46,65 @@ views:
                 icon: mdi:clock-check-outline
 
           # =========================================================
+          # 🔐 Préconditions runtime (garde lue par le Run arrosage)
+          # =========================================================
+          # Surface la garde binaire ET ses trois sous-verdicts
+          # (attributs ble_ok / wifi_ok / batterie_ok du capteur —
+          # aucune logique recalculée ici). Répond à « pourquoi le
+          # motif d'intention affiche préconditions non remplies ? ».
+          # Les valeurs BRUTES (RSSI, batterie) sont juste dessous
+          # (📶 Liens & alimentation). Plancher radio : -90 dBm
+          # (contrat 10, porté par le capteur — pas par l'UI).
+          - type: custom:button-card
+            template: section_header
+            name: 🔐 Préconditions runtime
+
+          - type: custom:button-card
+            template: carte_mode_binaire_interprete
+            entity: binary_sensor.arrosage_rain_bird_preconditions_runtime
+            name: Garde runtime arrosage
+            icon: mdi:lock-open-check
+            variables:
+              label_on: Pont exploitable
+              label_off: Précondition manquante
+              color_on: 'rgba(76, 175, 80, 0.2)'
+              color_off: 'rgba(255, 152, 0, 0.2)'
+
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+              - type: custom:button-card
+                template: carte_attribut_binaire_interprete
+                entity: binary_sensor.arrosage_rain_bird_preconditions_runtime
+                name: BLE ≥ -90 dBm
+                icon: mdi:bluetooth
+                variables:
+                  attribut: ble_ok
+                  label_ok: Exploitable
+                  label_ko: Hors plancher
+
+              - type: custom:button-card
+                template: carte_attribut_binaire_interprete
+                entity: binary_sensor.arrosage_rain_bird_preconditions_runtime
+                name: Wi-Fi ≥ -90 dBm
+                icon: mdi:wifi
+                variables:
+                  attribut: wifi_ok
+                  label_ok: Exploitable
+                  label_ko: Hors plancher
+
+              - type: custom:button-card
+                template: carte_attribut_binaire_interprete
+                entity: binary_sensor.arrosage_rain_bird_preconditions_runtime
+                name: Batterie connue
+                icon: mdi:battery-check
+                variables:
+                  attribut: batterie_ok
+                  label_ok: Connue
+                  label_ko: Inconnue
+
+          # =========================================================
           # 📶 Liens & alimentation (une seule carte par valeur)
           # =========================================================
           - type: custom:button-card
