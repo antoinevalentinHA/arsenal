@@ -1,4 +1,4 @@
-# 🗺️ Architecture — Index (English overview)
+# Architecture — Index (English overview)
 
 > 🇫🇷 **Version française complète : [index.md](./index.md)** — this page is a concise English entry point; the full, authoritative listing is maintained in French.
 >

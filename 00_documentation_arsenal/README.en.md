@@ -1,4 +1,4 @@
-# 🧠 Arsenal — Reference Documentation (English overview)
+# Arsenal — Reference Documentation (English overview)
 
 > 🇫🇷 **Version française complète : [README.md](./README.md)** — this page is a concise English entry point; the full corpus is maintained in French.
 >
