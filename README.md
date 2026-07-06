@@ -116,7 +116,9 @@ La perception mesure, la décision conclut, l'exécution applique. L'UI n'appara
 Trois principes non négociables structurent le tout :
 
 **Le backend décide. L'UI observe. Jamais l'inverse.**
+
 **Contrat avant YAML.** Chaque domaine a un contrat écrit *avant* d'avoir du code — si l'implémentation contredit le contrat, c'est l'implémentation qui est fausse.
+
 **L'exposition est une décision, pas un accident.** Ce qui sort vers l'extérieur (API, MQTT, notifications) est explicitement gouverné.
 
 ---
