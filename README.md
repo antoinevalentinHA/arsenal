@@ -9,7 +9,7 @@ Arsenal est une configuration Home Assistant **réelle, utilisée en production 
 
 Ce n'est ni un framework, ni une configuration à copier telle quelle. C'est un système complet, observable fichier par fichier — et gouverné comme un logiciel.
 
-![Vue d'accueil Arsenal — grille des domaines et confort thermique](00_documentation_arsenal/ui/captures/accueil.png)
+![Vue d'accueil Arsenal — grille des domaines et confort thermique](00_documentation_arsenal/ui/captures/accueil.png)<br>
 *Tableau de bord d'accueil : tous les domaines d'un coup d'œil.*
 
 ---
@@ -75,19 +75,19 @@ Quelques vues réelles, telles qu'elles tournent. Elles sont **denses par concep
 <details>
 <summary>Voir les captures</summary>
 
-![Vue Climatisation — principal : état, décision et verdict](00_documentation_arsenal/ui/captures/climatisation-principal.png)
+![Vue Climatisation — principal : état, décision et verdict](00_documentation_arsenal/ui/captures/climatisation-principal.png)<br>
 *Climatisation — principal : le backend décide et affiche son verdict ; l'UI observe.*
 
-![Vue diagnostic de la climatisation — chaîne interne de décision](00_documentation_arsenal/ui/captures/climatisation-diagnostic.png)
+![Vue diagnostic de la climatisation — chaîne interne de décision](00_documentation_arsenal/ui/captures/climatisation-diagnostic.png)<br>
 *Climatisation — diagnostic : la chaîne interne, seuils et blocages. Même domaine, deux profondeurs de lecture.*
 
-![Vue Eau chaude sanitaire — température et historique](00_documentation_arsenal/ui/captures/ecs-principal.png)
+![Vue Eau chaude sanitaire — température et historique](00_documentation_arsenal/ui/captures/ecs-principal.png)<br>
 *Eau chaude sanitaire : température, historique et bouclage supervisé.*
 
-![Vue Système — observabilité de l'infrastructure](00_documentation_arsenal/ui/captures/systeme.png)
+![Vue Système — observabilité de l'infrastructure](00_documentation_arsenal/ui/captures/systeme.png)<br>
 *Système : observabilité de l'infra — Raspberry Pi, systèmes critiques, connectivité, intégrations.*
 
-![Menu de navigation Arsenal — accès à tous les domaines](00_documentation_arsenal/ui/captures/navigation.png)
+![Menu de navigation Arsenal — accès à tous les domaines](00_documentation_arsenal/ui/captures/navigation.png)<br>
 *Un point d'entrée unique vers tous les domaines et les outils système.*
 
 </details>
@@ -172,7 +172,7 @@ Le **contrat** ([`contrats/chauffage/`](00_documentation_arsenal/contrats/chauff
 
 Le héros de cette section n'est pas le chauffage : c'est la chaîne **contrat → CI → audit → clôture**. Le chauffage la rend simplement vérifiable — par vous, dans les fichiers liés.
 
-![Pont chaudière (boiler bridge) — combustion, transactions acquittées et supervision](00_documentation_arsenal/ui/captures/systeme-boiler-bridge.png)
+![Pont chaudière (boiler bridge) — combustion, transactions acquittées et supervision](00_documentation_arsenal/ui/captures/systeme-boiler-bridge.png)<br>
 *Pont chaudière Viessmann : chaque commande physique est transactionnelle — acquittement, garde et supervision. On ne suppose jamais qu'une commande a été exécutée.*
 
 ### La documentation aussi
