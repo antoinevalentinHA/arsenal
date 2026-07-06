@@ -1,0 +1,89 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Attribut — Binaire interprété
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : interprétative
+# 🔍 NIVEAU DE CONFIANCE : indicatif
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Affiche un ATTRIBUT booléen backend (true/false) sous forme
+#   de libellé interprété, avec signal coloriel local. Pendant
+#   de `carte_mode_binaire_interprete` pour les capteurs qui
+#   exposent leurs sous-verdicts en attributs (ex. la garde
+#   `binary_sensor.arrosage_rain_bird_preconditions_runtime`
+#   et ses attributs `ble_ok` / `wifi_ok` / `batterie_ok`).
+#
+# 📡 SOURCE
+#   - entity.attributes[variables.attribut] (booléen backend)
+#   - variables.attribut  → nom de l'attribut à lire (obligatoire)
+#   - variables.label_ok  / variables.label_ko
+#   - variables.color_ok  / variables.color_ko
+#
+# ⚙️ LOGIQUE UI (palette 02_palette.md, règles 05_regles.md)
+#   - entité indisponible OU attribut absent/non booléen
+#       → state_display = "—" et fond gris indispo rgba(158, 158, 158, 0.1)
+#         (R6 : le gris indisponibilité prime, jamais masqué)
+#   - attribut = true  → libellé label_ok (défaut : "OK")
+#                        fond color_ok (défaut : vert rgba(76, 175, 80, 0.2))
+#   - attribut = false → libellé label_ko (défaut : "Manquant")
+#                        fond color_ko (défaut : orange rgba(255, 152, 0, 0.2)
+#                        — condition de garde manquante = dégradé,
+#                        pas une erreur critique)
+#   - name et state centrés ; aucune interaction
+#
+# 📐 USAGE
+#   - destinée aux sous-verdicts booléens exposés en attributs ;
+#     ne recalcule RIEN (le backend décide, l'UI traduit)
+#   - le codage coloriel est local — non utilisé comme source de vérité
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
+carte_attribut_binaire_interprete:
+  template: socle_status
+
+  show_state: true
+  show_label: false
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      if (!entity || entity.state === 'unknown' || entity.state === 'unavailable') return '—';
+
+      const v = entity.attributes?.[variables?.attribut];
+      if (v !== true && v !== false) return '—';
+
+      return v
+        ? (variables?.label_ok || 'OK')
+        : (variables?.label_ko || 'Manquant');
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            if (!entity || entity.state === 'unknown' || entity.state === 'unavailable')
+              return 'rgba(158, 158, 158, 0.1)';
+
+            const v = entity.attributes?.[variables?.attribut];
+            if (v !== true && v !== false) return 'rgba(158, 158, 158, 0.1)';
+
+            return v
+              ? (variables?.color_ok || 'rgba(76, 175, 80, 0.2)')
+              : (variables?.color_ko || 'rgba(255, 152, 0, 0.2)');
+          ]]]
+
+    name:
+      - justify-self: center
+      - text-align: center
+
+    state:
+      - justify-self: center
+      - text-align: center
