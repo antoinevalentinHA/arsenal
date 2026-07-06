@@ -37,28 +37,26 @@ views:
           # =========================================================
           # Décision d'intention + sa raison lisible (catégorie + motif dominant,
           # déjà calculés par le runtime ; traduction portée par la carte),
-          # côte à côte en grille 2 colonnes. Le « pourquoi » détaillé (besoin,
-          # suspension, sol, pont, exécution, ET₀/VPD) vit sur le Diagnostic.
-          # En-tête via l'include partagé (idiome Arsenal).
+          # EMPILÉES pleine largeur : la grille 2 colonnes tronquait le libellé
+          # d'intention sur mobile et créait des hauteurs disparates depuis que
+          # la raison porte deux lignes de contexte. Le « pourquoi » détaillé
+          # (besoin, suspension, sol, pont, exécution, ET₀/VPD) vit sur le
+          # Diagnostic. En-tête via l'include partagé (idiome Arsenal).
           - !include ../../includes/section_headers/decision.yaml
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: carte_mode_binaire_interprete
-                entity: binary_sensor.arrosage_intention
-                name: Intention
-                icon: mdi:water-sync
-                variables:
-                  label_on: Arrosage souhaité
-                  label_off: Pas de déclenchement maintenant
-                  color_on: 'rgba(33, 150, 243, 0.2)'
-                  color_off: 'rgba(158, 158, 158, 0.2)'
+          - type: custom:button-card
+            template: carte_mode_binaire_interprete
+            entity: binary_sensor.arrosage_intention
+            name: Intention
+            icon: mdi:water-sync
+            variables:
+              label_on: Arrosage souhaité
+              label_off: Pas de déclenchement maintenant
+              color_on: 'rgba(33, 150, 243, 0.2)'
+              color_off: 'rgba(158, 158, 158, 0.2)'
 
-              - type: custom:button-card
-                template: carte_arrosage_intention_raison
-                entity: binary_sensor.arrosage_intention
+          - type: custom:button-card
+            template: carte_arrosage_intention_raison
+            entity: binary_sensor.arrosage_intention
 
           # =========================================================
           # 🌱 Humidité du sol (tendance 72 h) — repère d'usage
