@@ -9,6 +9,9 @@ Arsenal est une configuration Home Assistant **réelle, utilisée en production 
 
 Ce n'est ni un framework, ni une configuration à copier telle quelle. C'est un système complet, observable fichier par fichier — et gouverné comme un logiciel.
 
+![Vue d'accueil Arsenal — grille des domaines et confort thermique](00_documentation_arsenal/ui/captures/accueil.png)
+*Tableau de bord d'accueil : tous les domaines d'un coup d'œil.*
+
 ---
 
 ## Ce qu'Arsenal fait concrètement
@@ -64,6 +67,30 @@ Les dashboards vivent dans [`18_lovelace/dashboards/`](18_lovelace/dashboards/),
 Règle d'or : **le backend décide, l'UI observe**. Aucune logique métier dans les dashboards — les cartes affichent des états, elles ne les calculent pas.
 
 Côté historisation, le [`recorder.yaml`](recorder.yaml) fonctionne en **allowlist** : chaque entité enregistrée est là par décision documentée (rôle, utilité, cardinalité, fréquence), pas par défaut.
+
+### Aperçu de l'interface
+
+Quelques vues réelles, telles qu'elles tournent. Elles sont **denses par conception** : l'UI observe des états, elle ne les calcule pas.
+
+<details>
+<summary>Voir les captures</summary>
+
+![Vue Climatisation — principal : état, décision et verdict](00_documentation_arsenal/ui/captures/climatisation-principal.png)
+*Climatisation — principal : le backend décide et affiche son verdict ; l'UI observe.*
+
+![Vue diagnostic de la climatisation — chaîne interne de décision](00_documentation_arsenal/ui/captures/climatisation-diagnostic.png)
+*Climatisation — diagnostic : la chaîne interne, seuils et blocages. Même domaine, deux profondeurs de lecture.*
+
+![Vue Eau chaude sanitaire — température et historique](00_documentation_arsenal/ui/captures/ecs-principal.png)
+*Eau chaude sanitaire : température, historique et bouclage supervisé.*
+
+![Vue Système — observabilité de l'infrastructure](00_documentation_arsenal/ui/captures/systeme.png)
+*Système : observabilité de l'infra — Raspberry Pi, systèmes critiques, connectivité, intégrations.*
+
+![Menu de navigation Arsenal — accès à tous les domaines](00_documentation_arsenal/ui/captures/navigation.png)
+*Un point d'entrée unique vers tous les domaines et les outils système.*
+
+</details>
 
 ---
 
@@ -144,6 +171,9 @@ L'argument le plus solide n'est pas une promesse d'architecture : c'est une cha�
 Le **contrat** ([`contrats/chauffage/`](00_documentation_arsenal/contrats/chauffage/README.md)) dit ce que le domaine doit faire ; la décision est centralisée dans un script souverain qui ne produit que des états *lisibles*. À chaque `push`, le workflow [`arsenal-ci-chauffage.yml`](.github/workflows/arsenal-ci-chauffage.yml) confronte l'implémentation au contrat : un self-test garde les analyseurs (on ne juge pas avec un juge défectueux), puis des étages *lint*, *décision* (`R-COV-1` / `R-MIRROR-1`) et *exécution* (`R-CALL-1`) rendent le verdict, contre un registre d'entités souverain — le domaine étant dans une transition documentée *warn-only → bloquant* (`ARSENAL_CI_ENFORCE`). Et l'audit est tracé jusqu'à sa [clôture](00_documentation_arsenal/audits/05_clotures/chauffage/validation_L1_observabilite_auto_ajustement_courbe.md), où chaque constat est résorbé ou explicitement assumé.
 
 Le héros de cette section n'est pas le chauffage : c'est la chaîne **contrat → CI → audit → clôture**. Le chauffage la rend simplement vérifiable — par vous, dans les fichiers liés.
+
+![Pont chaudière (boiler bridge) — combustion, transactions acquittées et supervision](00_documentation_arsenal/ui/captures/systeme-boiler-bridge.png)
+*Pont chaudière Viessmann : chaque commande physique est transactionnelle — acquittement, garde et supervision. On ne suppose jamais qu'une commande a été exécutée.*
 
 ### La documentation aussi
 
