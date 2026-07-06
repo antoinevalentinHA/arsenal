@@ -31,12 +31,21 @@
 #   - LIGNE SECONDAIRE contextuelle : quand la catégorie est `abstention`
 #     (motif infrastructure — le sol n'est PAS consulté par le motif
 #     dominant, ordre infrastructure-d'abord du contrat 17 R7) et que
-#     `binary_sensor.arrosage_besoin_sol` est `off`, le libellé ajoute
-#     « — sol suffisant par ailleurs ». AUCUN recalcul : simple LECTURE
-#     de l'état déjà décidé par le runtime (le motif dominant et son
-#     ordre restent inchangés). `besoin_sol` unknown/unavailable ⇒ rien
-#     d'ajouté (on ne masque pas une indisponibilité par un libellé).
+#     `binary_sensor.arrosage_besoin_sol` est `off`, le label devient
+#     DEUX lignes (idiome <br> des cartes diagnostic XL) :
+#       « sol suffisamment humide »   ← contexte métier, en premier
+#       « <motif dominant traduit> »  ← cause infrastructure, inchangée
+#     AUCUN recalcul : simple LECTURE de l'état déjà décidé par le
+#     runtime (le motif dominant et son ordre restent inchangés).
+#     `besoin_sol` unknown/unavailable ⇒ rien d'ajouté (on ne masque
+#     pas une indisponibilité par un libellé).
 #     `triggers_update` force le re-rendu quand besoin_sol change.
+#   - LISIBILITÉ MOBILE : le label passe en `white-space: normal`
+#     (le nowrap/ellipse par défaut TRONQUAIT le contexte sur mobile)
+#     et la carte surcharge localement la hauteur fixe 72px du socle
+#     (`height: auto` + `min-height: 72px`) pour que les deux lignes
+#     soient toujours visibles, jamais coupées (surcharge locale
+#     prévue par carte_base_v2).
 #   - NE recalcule NI le besoin sol, NI la fenêtre, NI le cooldown, NI la
 #     disponibilité du pont, NI la suspension pluie, NI l'intention :
 #     le runtime décide, l'UI explique.
@@ -97,18 +106,26 @@ carte_arrosage_intention_raison:
       // Ligne secondaire contextuelle : un motif d'abstention est
       // infrastructure-d'abord (contrat 17 R7) — préciser que le sol
       // est par ailleurs suffisant évite de croire qu'il est ignoré.
+      // Deux lignes distinctes (<br>, idiome des cartes diagnostic XL) :
+      // contexte métier d'abord, cause infrastructure ensuite — jamais
+      // concaténées sur une ligne tronquable sur mobile.
       // Lecture seule de l'état déjà calculé ; unknown/unavailable ⇒
       // rien d'ajouté (pas de masquage d'indisponibilité).
       const c = (entity.attributes?.categorie || "").toString().trim();
       const sol = states?.["binary_sensor.arrosage_besoin_sol"]?.state;
       if (base !== "—" && c === "abstention" && sol === "off") {
-        return base + " — sol suffisant par ailleurs";
+        return "sol suffisamment humide<br>" + base;
       }
       return base;
     ]]]
 
   styles:
     card:
+      # Surcharge locale de la hauteur fixe 72px du socle (prévue par
+      # carte_base_v2) : la carte grandit pour le label à deux lignes,
+      # jamais de texte coupé sur mobile.
+      - height: auto
+      - min-height: 72px
       - background-color: >
           [[[
             const c = (entity.attributes?.categorie || "").toString().trim();
@@ -118,3 +135,9 @@ carte_arrosage_intention_raison:
             if (c === "repos") return "rgba(76, 175, 80, 0.2)";
             return "rgba(158, 158, 158, 0.2)";
           ]]]
+
+    label:
+      # Le nowrap/ellipse par défaut tronquait l'information utile sur
+      # mobile : retour à la ligne autorisé (idiome des cartes XL).
+      - white-space: normal
+      - line-height: 1.3
