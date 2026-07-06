@@ -1,5 +1,7 @@
 # 📋 Index — Contrats fonctionnels Arsenal
 
+> 🇬🇧 **English overview: [index.en.md](./index.en.md)**
+
 > **Porte d'entrée navigation.** Ce document liste l'ensemble des contrats
 > fonctionnels du système Arsenal.
 > Pour le rôle, le statut et les principes des contrats :

@@ -1,5 +1,7 @@
 # 🧠 ARSENAL — DOCUMENTATION DE RÉFÉRENCE
 
+> 🇬🇧 **English overview: [README.en.md](./README.en.md)**
+
 ---
 
 ## 🎯 OBJET
