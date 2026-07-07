@@ -16,7 +16,7 @@ content: |
   _Aucun record enregistré._
   {% else %}
   {% for item in ns.records %}
-  {% if item.rang == 1 %}🥇{% elif item.rang == 2 %}🥈{% elif item.rang == 3 %}🥉{% else %}{{ item.rang }}️⃣{% endif %} {{ item.date }} — **{{ item.valeur }} °C**
+  {% if item.rang == 1 %}🥇{% elif item.rang == 2 %}🥈{% elif item.rang == 3 %}🥉{% elif item.rang == 10 %}🔟{% else %}{{ item.rang }}️⃣{% endif %} {{ item.date }} — **{{ item.valeur }} °C**
   {% endfor %}
 
   {% set total = ns.records | count %}
