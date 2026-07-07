@@ -73,6 +73,9 @@ A few real views, as they run. They are **dense by design**: the UI observes sta
 <details>
 <summary>See the screenshots</summary>
 
+![Weather leaderboard — persistent top-10 of climate records](00_documentation_arsenal/ui/captures/meteo-palmares.png)<br>
+*Weather leaderboard: not today's weather but the home's climate memory — a persistent top-10 (heat, cold, warm nights, rainfall), ranked and dated on the backend, rendered read-only. Dates are French display strings derived server-side; the card applies no formatting of its own. The selector is pure interface context — it drives nothing.*
+
 ![Air conditioning — main view: state, decision and verdict](00_documentation_arsenal/ui/captures/climatisation-principal.png)<br>
 *Air conditioning — main: the backend decides and shows its verdict; the UI observes.*
 
@@ -100,6 +103,7 @@ Arsenal is not copy-pasteable, but several patterns can be picked independently:
 - **Physical commands hardened by transactional ACK** — [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md).
 - **Explicit state machine** instead of tangled automations — [`contrats/aeration_blocage_chauffage/`](00_documentation_arsenal/contrats/aeration_blocage_chauffage/).
 - **Main / diagnostic / settings dashboard triplet** per domain — [`18_lovelace/dashboards/chauffage/`](18_lovelace/dashboards/chauffage/).
+- **Persistent leaderboard rendered read-only** — a backend pipeline closes each civil day, ranks it into a top-10 (FIFO on ties) and exposes ISO dates as canonical plus French display dates as a derived attribute; the Lovelace cards only read them. The *pattern* is reusable — the YAML is not, it rests on this home's sensors, automations and helpers.
 - **Documented allowlist recorder**, entity by entity — [`recorder.yaml`](recorder.yaml).
 
 Some patterns have even been extracted into standalone public repositories, reusable without knowing anything about Arsenal:
