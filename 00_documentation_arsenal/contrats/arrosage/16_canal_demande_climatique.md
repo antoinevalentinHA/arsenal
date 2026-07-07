@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — ARROSAGE
 ## 16 — Canal demande climatique (observation v0)
 
-**Version contrat :** v0.1
+**Version contrat :** v0.2
 **Statut :** **Normatif — définit les grandeurs d'observation** du **canal demande
 climatique (rapide)**. **Observation / diagnostic uniquement**, en deçà de toute
 recommandation et de toute action. **Runtime d'observation LIVRÉ (lot P3,
@@ -66,6 +66,21 @@ contrat — convention [`15`](15_canal_reservoir_sol.md) §5) :
 | Température extérieure **courante** | ✅ `sensor.temperature_jardin` | VPD |
 | **Latitude** | ✅ attribut `zone.home` | radiation extraterrestre Ra (calcul) |
 | **Quantième** (jour de l'année) | ✅ déterministe (date) | Ra (calcul) |
+
+> **Périmètre des entrées — opposable.** Toute mention « extérieur(e) » dans ce
+> tableau désigne l'**extérieur local du domicile** (jardin maison), **jamais**
+> l'extérieur du **site Imprimerie**. Les entrées de décision (VPD courant, ET₀)
+> se consomment via l'**interface canonique du domicile**, l'axe **`_jardin`**
+> (`sensor.temperature_jardin`, `sensor.humidite_relative_jardin`, et les
+> dérivés journaliers qui en découlent). L'axe **`_exterieur`** (extérieur du
+> site Imprimerie, site professionnel distant) est **non représentatif du
+> jardin** et **interdit** ici, quelle que soit sa ressemblance de nom avec le
+> rôle « température extérieure » (cf. doctrine
+> [`principes_generaux.md`](../../architecture/03_doctrines/principes_generaux.md)
+> §10 — autorisation de source par périmètre ;
+> [`nommage_entites.md`](../../architecture/03_doctrines/nommage_entites.md) —
+> désambiguïsation des zones ; incident de référence : PR #298 et audit
+> [`audit_frontiere_maison_imprimerie_sources_exterieures.md`](../../audits/01_rapports/architecture/audit_frontiere_maison_imprimerie_sources_exterieures.md)).
 
 > **Tmin / Tmax — exigence opposable.** Le contrat **ne fige aucun `entity_id`
 > runtime** (convention [`15`](15_canal_reservoir_sol.md) §5), mais **impose** que
