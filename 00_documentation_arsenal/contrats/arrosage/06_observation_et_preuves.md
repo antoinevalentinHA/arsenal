@@ -106,6 +106,72 @@ Règles :
 
 ---
 
+## 7. Observation de la pluie — cumul glissant honnête
+
+Le même principe « distinguer l'absence de fait de l'absence de donnée »
+s'applique à la **pluie observée**, entrée de la suspension d'arrosage
+([`suspension_pluie`](../../../12_template_sensors/arrosage/suspension_pluie.yaml)).
+
+### 7.1 Limite connue du couple `statistics/change` + source rare
+
+Les cumuls glissants `sensor.pluie_cumul_24h/48h/72h` étaient produits par des
+capteurs `platform: statistics` en `state_characteristic: change`
+(= plus récent − plus ancien **dans la fenêtre**), sourcés sur
+`sensor.pluie_total_local`. Cette source, monotone, **n'émet un état que
+lorsqu'elle change** : par temps sec prolongé, la fenêtre se vide et le capteur
+`statistics` retourne **`unknown`**. Le moteur brut **confond alors deux
+situations distinctes** : « fenêtre sans échantillon récent » (source saine,
+il n'a pas plu → **0.0 mm**) et « donnée absente » (source injoignable →
+**inconnu**). C'est une violation locale de l'honnêteté d'observation (§1).
+
+### 7.2 Règle — couche métier au-dessus du moteur brut
+
+Les moteurs `statistics` sont **rétrogradés en produits internes**
+(`sensor.pluie_cumul_*_brut`, non consommés). Une **couche métier template**
+([`meteo/pluie/cumul_glissant.yaml`](../../../12_template_sensors/meteo/pluie/cumul_glissant.yaml))
+porte les entités stables `sensor.pluie_cumul_24h/48h/72h` avec la sémantique :
+
+| Situation | État exposé | Niveau de vérité (§2) |
+|---|---|---|
+| Source `pluie_total_local` invalide / injoignable | `unavailable` (via `availability`) | **inconnu** |
+| Source saine + fenêtre brute vide (`unknown`) | **`0.0` mm** | **confirmé** (fait observé : aucune pluie) |
+| Source saine + valeur brute numérique | `max(0, brut)` mm | **confirmé** |
+
+Le **clamp `max(0, brut)`** neutralise la fenêtre négative transitoire d'un
+reset du store (cf. hypothèse des moteurs bruts) : un cumul de pluie **ne peut
+pas être négatif** ; un négatif est un **artefact technique**, pas une valeur
+métier exploitable — il est donc ramené à 0.0 et non présenté.
+
+### 7.3 Conséquences (honnêteté et sécurité)
+
+- **UI** : les cartes « Cumul 24 h / 48 h » affichent `0.0 mm` par temps sec
+  (fait), et un état indisponible **uniquement** si la source est réellement
+  défaillante — jamais un 0 masquant une panne (§5-6).
+- **Décision** : la suspension pluie reçoit un `0.0` numérique au lieu de
+  `unknown`. Le comportement décisionnel est **inchangé** (`0.0 < seuil` ⇒ pas
+  de suspension, exactement comme `unknown` était déjà traité en `indispo`) ;
+  la doctrine F1 (doute ⇒ ne pas priver le jardin) est préservée. La suspension
+  n'est qu'un **frein additif** de `binary_sensor.arrosage_intention`
+  ([contrat 17](17_decision_v1.md)) : un `0.0` **relâche un frein, il n'actionne
+  aucun accélérateur** (besoin sol, fenêtre, préconditions/fraîcheur pont).
+- **Redémarrage** : au boot, le moteur brut reconstruit sa fenêtre depuis
+  l'historique Recorder de `sensor.pluie_total_local` (source historisée,
+  Population A). Un `0.0` transitoire de reconstruction **ne peut pas** provoquer
+  d'arrosage prématuré : les préconditions runtime exigent un pont Rain Bird
+  **joignable et frais**, indisponible dans les premières secondes. **Aucune
+  garde supplémentaire n'est requise** — les gardes de décision existantes
+  suffisent.
+
+### 7.4 Invariant ajouté
+
+8. **Cumul de pluie honnête.** Un cumul glissant expose un **fait 0.0** quand la
+   source est saine et la fenêtre vide, et **inconnu** (`unavailable`) quand la
+   source est défaillante. Il ne replie jamais une source défaillante sur 0, ni
+   n'expose un cumul négatif. La logique métier vit dans une couche template
+   dédiée ; les moteurs `statistics` bruts ne sont **pas** consommés directement.
+
+---
+
 ## Renvois
 
 - Besoin (consomme le dernier arrosage connu) : [`04_besoin_hydrique.md`](04_besoin_hydrique.md)
