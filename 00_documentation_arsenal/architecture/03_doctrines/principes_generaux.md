@@ -131,6 +131,31 @@ système opérationnel d'un système qui marche par accident.
 
 ---
 
+## 10. Autorisation de source par périmètre
+
+**Doctrine.** L'autorisation d'une source pour une décision est
+**relative au périmètre du domaine consommateur**, jamais absolue.
+Une source correcte, stable et canonique **dans son propre périmètre**
+(géographique ou fonctionnel) n'est **pas** de ce seul fait autorisée
+pour une décision d'un **autre périmètre**. Une décision ne consomme
+qu'une source **représentative de son périmètre** et **explicitement
+autorisée** pour son domaine — en pratique, l'**interface canonique**
+de ce domaine.
+
+**Justification.** Une source peut être exploitable là où elle est
+mesurée tout en étant non représentative ailleurs ; sans règle
+d'autorisation par périmètre, une entité au nom plausible mais issue
+d'un autre site ou d'une autre fonction peut alimenter silencieusement
+une décision qu'elle ne décrit pas. La représentativité spatiale et
+fonctionnelle d'une entrée est une **condition d'admissibilité** de la
+décision, pas une propriété acquise par ressemblance de nom (cf.
+principe 7). Un incident réel a matérialisé ce risque : une décision du
+domicile a consommé une source extérieure d'un site distant, non
+représentative du domicile (audit
+[`audits/01_rapports/architecture/audit_frontiere_maison_imprimerie_sources_exterieures.md`](../../audits/01_rapports/architecture/audit_frontiere_maison_imprimerie_sources_exterieures.md)).
+
+---
+
 ## Invariant synthétique
 
 > Arsenal est un système **contractuel**, **stratifié**, **idempotent**,

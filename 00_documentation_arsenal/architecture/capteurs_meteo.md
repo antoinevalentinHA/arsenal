@@ -101,6 +101,30 @@ Aucune logique métier n’est autorisée à ce niveau.
 
 ---
 
+### Périmètres extérieurs — deux axes distincts
+
+Deux axes extérieurs coexistent et **ne doivent pas être confondus** :
+
+| Axe (suffixe) | Périmètre | Chaîne |
+|---|---|---|
+| **`_jardin`** | Extérieur **local du domicile** / jardin maison | Interface **canonique** : sources validées → consolidation → façade publiée → statut / disponibilité explicite |
+| **`_exterieur`** | Extérieur **local du site Imprimerie** (site professionnel distant) | **Agrégat** de capteurs extérieurs du site distant, sans pipeline métier |
+
+➡️ **Règle de consommation.** Toute **décision Maison** portant sur l'extérieur
+local consomme l'axe **`_jardin`** (interface canonique du domicile). L'axe
+**`_exterieur`** relève du **seul** périmètre du site Imprimerie
+(supervision / affichage de ce site) ; il n'est **ni représentatif ni autorisé**
+pour une décision du domicile. Une source valide dans un périmètre ne devient
+pas autorisée dans l'autre par ressemblance de nom (cf.
+[`03_doctrines/principes_generaux.md`](03_doctrines/principes_generaux.md) §10 ;
+désambiguïsation des zones dans
+[`03_doctrines/nommage_entites.md`](03_doctrines/nommage_entites.md)).
+
+> Contexte : incident et analyse dans
+> [`audits/01_rapports/architecture/audit_frontiere_maison_imprimerie_sources_exterieures.md`](../audits/01_rapports/architecture/audit_frontiere_maison_imprimerie_sources_exterieures.md).
+
+---
+
 ## 🧊 Capteurs filtrés par période
 
 ### Principe
