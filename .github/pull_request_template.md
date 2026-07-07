@@ -31,7 +31,7 @@ Rappel doctrine : le backend décide, l'UI observe — jamais l'inverse.
 ## Conformité à la doctrine
 
 - [ ] La séparation **décision / action / diagnostic / UI** est respectée (l'UI observe, elle ne décide pas).
-- [ ] **Aucun ID inventé** : toute entité référencée existe réellement.
+- [ ] **Aucun ID inventé** : les IDs d'automatisations sont pré-attribués, et toute entité référencée existe réellement.
 - [ ] **Aucun renommage d'entité** non justifié et non tracé.
 - [ ] Toute nouvelle **exposition externe** (MQTT, API, notification) est une décision explicite.
 - [ ] Le changement ne contredit pas le **contrat** du domaine (sinon, le contrat est mis à jour dans la même PR).
