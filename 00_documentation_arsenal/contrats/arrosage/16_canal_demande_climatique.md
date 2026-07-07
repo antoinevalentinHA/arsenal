@@ -4,9 +4,14 @@
 **Version contrat :** v0.1
 **Statut :** **Normatif — définit les grandeurs d'observation** du **canal demande
 climatique (rapide)**. **Observation / diagnostic uniquement**, en deçà de toute
-recommandation et de toute action. **Runtime NON livré :** ce document **spécifie**
-les grandeurs et leurs formules ; il **ne crée aucun** template sensor, helper,
-automation ou UI. Aucun lot runtime n'est ouvert ici.
+recommandation et de toute action. **Runtime d'observation LIVRÉ (lot P3,
+PR #178/#215)** : `12_template_sensors/arrosage/demande_climatique.yaml` expose
+ET₀, VPD et l'état qualitatif du canal, strictement en diagnostic — **non
+branché** à aucune décision, recommandation, dose ou pilotage (frontière §7
+inchangée). Ce document **spécifie** les grandeurs et leurs formules ; toute
+évolution du runtime au-delà de l'observation (fusion, décision, action) reste
+hors périmètre et nécessite un contrat dédié (cf. cadrage « modulation de
+durée », registre C11).
 
 > **Position dans le socle v0.** Ce contrat **dérive** du chapeau
 > [`13_observation_hydrique_jardin.md`](13_observation_hydrique_jardin.md) (canal
@@ -27,7 +32,7 @@ automation ou UI. Aucun lot runtime n'est ouvert ici.
 ## Objet
 
 Définir, comme **cible d'observation v0**, les **grandeurs de la demande
-climatique** qu'un futur runtime exposera : l'**évapotranspiration de référence
+climatique** que le runtime expose (lot P3 livré) : l'**évapotranspiration de référence
 ET₀** (journalière) et le **déficit de pression de vapeur VPD** (courant), assorties
 d'un **état qualitatif du canal**. Ces grandeurs sont **factuelles** ; elles
 **n'émettent aucune recommandation** et **ne pilotent rien**.
