@@ -8,9 +8,3 @@ views:
         name: 📡 Qualité radio Wi-Fi
 
       - !include ../../includes/cartes/diagnostic/barres_netatmo_wifi.yaml
-
-      - type: custom:button-card
-        template: section_header
-        name: 🛰️ Wi-Fi ponts (dBm)
-
-      - !include ../../includes/cartes/diagnostic/barres_wifi_ponts.yaml
