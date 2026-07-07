@@ -1,12 +1,18 @@
+# ==========================================================
+# 📡 ARSENAL — CARTE DIAGNOSTIC
+#     Wi-Fi ponts (RSSI dBm) — hors score Netatmo
+# ----------------------------------------------------------
+# Les ponts (Rain Bird…) remontent un RSSI Wi-Fi en dBm, sur
+# une échelle radicalement différente du score Netatmo 1–4
+# affiché par barres_netatmo_wifi.yaml. Ils sont donc isolés
+# ici sur leur propre échelle dBm (mêmes seuils couleur que
+# le Bluetooth) pour rester lisibles.
+# Lecture seule : aucune commande, aucune logique métier.
+# ==========================================================
 type: custom:auto-entities
 filter:
   include:
-    - entity_id: "sensor.*_bluetooth_signal"
-      state: "< 0"
-    # Pont Rain Bird (appareil BLE, intégration dédiée) : son RSSI BLE
-    # est exposé en dBm sous *_ble_rssi et non *_bluetooth_signal.
-    # Même échelle dBm que les SwitchBot ci-dessus → barre cohérente.
-    - entity_id: "sensor.rain_bird_*_ble_rssi"
+    - entity_id: "sensor.rain_bird_*_bridge_wifi_rssi"
       state: "< 0"
 sort:
   method: state
