@@ -77,6 +77,9 @@ Quelques vues réelles, telles qu'elles tournent. Elles sont **denses par concep
 <details>
 <summary>Voir les captures</summary>
 
+![Palmarès météo — top 10 persistant des records climatiques](00_documentation_arsenal/ui/captures/meteo-palmares.png)<br>
+*Palmarès météo : pas la météo du jour mais la mémoire climatique de la maison — un top 10 persistant (chaleur, froid, nuits chaudes, pluie), classé et daté côté backend, restitué en lecture seule. Les dates FR `DD/MM/YYYY` sont dérivées côté backend ; la carte n'applique aucun formatage. Le sélecteur est un pur contexte d'interface — il ne pilote rien.*
+
 ![Vue Climatisation — principal : état, décision et verdict](00_documentation_arsenal/ui/captures/climatisation-principal.png)<br>
 *Climatisation — principal : le backend décide et affiche son verdict ; l'UI observe.*
 
@@ -104,6 +107,7 @@ Arsenal n'est pas copiable tel quel, mais plusieurs patterns se picorent indépe
 - **Commandes physiques fiabilisées par ACK transactionnel** — acquittement, retry, garde : [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md) et [`contrats/switchbot_transactionnel.md`](00_documentation_arsenal/contrats/switchbot_transactionnel.md).
 - **Machine d'état explicite** plutôt qu'un enchevêtrement d'automatisations : [`contrats/aeration_blocage_chauffage/`](00_documentation_arsenal/contrats/aeration_blocage_chauffage/).
 - **Triplet de dashboards principal / diagnostic / réglages** par domaine : [`18_lovelace/dashboards/chauffage/`](18_lovelace/dashboards/chauffage/).
+- **Palmarès persistant restitué en lecture seule** — un pipeline backend clôture chaque journée civile, la classe dans un top 10 (FIFO sur égalité) et expose la date ISO comme donnée canonique plus une date d'affichage FR dérivée ; les cartes Lovelace se contentent de lire. Le *pattern* est réutilisable — le YAML ne l'est pas : il repose sur les capteurs, automatisations et helpers propres à cette maison.
 - **Recorder en allowlist documentée**, entité par entité : [`recorder.yaml`](recorder.yaml).
 - **Résilience secteur / internet / cloud** comme domaines contractualisés : [`contrats/pannes/`](00_documentation_arsenal/contrats/pannes/) et [`contrats/resilience_integrations.md`](00_documentation_arsenal/contrats/resilience_integrations.md).
 - **Pont NAS → MQTT → Home Assistant** comme outil transverse de frontière externe : [`outils_externes/nas_arsenal/`](00_documentation_arsenal/outils_externes/nas_arsenal/) et son contrat [`arsenal_nas.md`](00_documentation_arsenal/contrats/arsenal_nas.md).
