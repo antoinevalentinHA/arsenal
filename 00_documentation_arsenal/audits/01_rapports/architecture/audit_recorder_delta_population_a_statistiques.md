@@ -136,6 +136,33 @@ Aucune n'est appliquée par ce document. Ordre valeur/coût :
 
 ---
 
+## 7. Note de clôture (addendum) — pluie_cumul requalifiés
+
+> Addendum postérieur au corps figé ci-dessus. Ne réécrit pas l'analyse ; en
+> tire la conséquence runtime sur un point précis.
+
+Le §3.2 classait `sensor.pluie_cumul_24h/48h/72h` en **Population A douteuse**
+(sorties `platform: statistics`, Pop A seulement si consommées par une card
+`statistics_graph`). Ce point est **tranché et clos** :
+
+- Les capteurs `platform: statistics` sont **rétrogradés en produits internes**
+  `sensor.pluie_cumul_*_brut` et **ne sont plus consommés** (ni UI, ni décision,
+  ni palmarès). Ils **restent hors Recorder** (produits techniques dérivés ;
+  reconstruction au boot depuis l'historique de la source).
+- Les entités consommées `sensor.pluie_cumul_24h/48h/72h` deviennent une
+  **couche métier template**
+  ([`meteo/pluie/cumul_glissant.yaml`](../../../../12_template_sensors/meteo/pluie/cumul_glissant.yaml)),
+  motivée par une **limite d'honnêteté d'observation** du couple
+  `statistics/change` + source à mise à jour rare (fenêtre vide → `unknown` au
+  lieu de `0.0`). Voir [contrat arrosage 06 §7](../../../contrats/arrosage/06_observation_et_preuves.md).
+- **Invariant Recorder préservé** : la seule entité qui **doit** rester
+  historisée pour la reconstruction des fenêtres est la source
+  `sensor.pluie_total_local` (déjà présente, Pop A confirmée). La recommandation
+  **RD3** (confirmer côté UI l'usage `statistics_graph` des `pluie_cumul_*`)
+  devient **sans objet** : ces entités ne sont plus des sorties `statistics`.
+
+---
+
 ## Annexe A — Population A confirmée (95)
 
 **Via `platform: statistics` (76)** — `input_number.audi_temperature_charge`,

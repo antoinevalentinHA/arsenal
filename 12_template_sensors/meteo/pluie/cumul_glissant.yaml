@@ -1,0 +1,108 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR (COUCHE MÉTIER)
+#     Météo — Pluie — Cumul glissant 24 / 48 / 72 h
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter la SÉMANTIQUE MÉTIER du cumul de pluie glissant,
+#   au-dessus des moteurs bruts `platform: statistics`
+#   (sensor.pluie_cumul_*_brut). Expose les entités stables
+#   consommées par l'UI et les décisions d'arrosage :
+#     - sensor.pluie_cumul_24h
+#     - sensor.pluie_cumul_48h
+#     - sensor.pluie_cumul_72h
+#
+# 🧭 POURQUOI CETTE COUCHE (limite statistics/change + source rare)
+#   `state_characteristic: change` = (plus récent − plus ancien)
+#   DANS la fenêtre. La source (sensor.pluie_total_local) n'émet
+#   d'état que lorsqu'elle CHANGE : par temps sec prolongé, la
+#   fenêtre se vide → le brut retourne `unknown`. Or l'état métier
+#   vrai est alors 0.0 mm (source saine, il n'a simplement pas plu).
+#   Le brut confond « fenêtre vide » et « donnée absente » ; cette
+#   couche les DISTINGUE.
+#
+# 🧮 SÉMANTIQUE (contrat arrosage 06 §7)
+#   - source `pluie_total_local` invalide/injoignable
+#         → entité `unavailable` (via availability) — reste « Inconnu »
+#           honnête à l'UI, jamais replié en 0.
+#   - source saine + fenêtre brute vide (`unknown`)
+#         → 0.0 mm  (fait observé : aucune pluie sur la fenêtre)
+#   - source saine + valeur brute numérique
+#         → max(0, brut)  (clamp : un cumul de pluie ne peut être
+#           négatif ; le négatif transitoire est un artefact de reset
+#           du store, pas une valeur métier — documenté contrat 06 §7)
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.pluie_cumul_24h_brut / _48h_brut / _72h_brut  (moteurs)
+#         sensor.pluie_total_local                              (santé source)
+#
+# 🚫 NE FAIT PAS
+#   - Ne recalcule pas la fenêtre glissante (rôle des moteurs bruts)
+#   - Ne pilote aucun équipement, ne décide pas de suspension
+#   - N'écrit rien, n'émet aucune mise à jour artificielle (0 pollution
+#     recorder : n'émet que sur changement réel de ses entrées)
+#
+# 🏷️ STATUT
+#   Cumul glissant (couche métier) — Arsenal v16.x
+# ==========================================================
+
+- sensor:
+
+    # ------------------------------------------------------------
+    # Pluie – Cumul 24 h (métier)
+    # ------------------------------------------------------------
+    - name: "Pluie cumul 24h"
+      unique_id: pluie_cumul_24h
+      unit_of_measurement: "mm"
+      device_class: precipitation
+      state_class: measurement
+      icon: mdi:weather-rainy
+      availability: >
+        {{ states('sensor.pluie_total_local')
+           not in ['unknown', 'unavailable', 'none', 'None', ''] }}
+      state: >
+        {% set brut = states('sensor.pluie_cumul_24h_brut') %}
+        {% if brut in ['unknown', 'unavailable', 'none', 'None', ''] %}
+          0.0
+        {% else %}
+          {{ [brut | float(0), 0] | max | round(2) }}
+        {% endif %}
+
+    # ------------------------------------------------------------
+    # Pluie – Cumul 48 h (métier)
+    # ------------------------------------------------------------
+    - name: "Pluie cumul 48h"
+      unique_id: pluie_cumul_48h
+      unit_of_measurement: "mm"
+      device_class: precipitation
+      state_class: measurement
+      icon: mdi:weather-rainy
+      availability: >
+        {{ states('sensor.pluie_total_local')
+           not in ['unknown', 'unavailable', 'none', 'None', ''] }}
+      state: >
+        {% set brut = states('sensor.pluie_cumul_48h_brut') %}
+        {% if brut in ['unknown', 'unavailable', 'none', 'None', ''] %}
+          0.0
+        {% else %}
+          {{ [brut | float(0), 0] | max | round(2) }}
+        {% endif %}
+
+    # ------------------------------------------------------------
+    # Pluie – Cumul 72 h (métier)
+    # ------------------------------------------------------------
+    - name: "Pluie cumul 72h"
+      unique_id: pluie_cumul_72h
+      unit_of_measurement: "mm"
+      device_class: precipitation
+      state_class: measurement
+      icon: mdi:weather-rainy
+      availability: >
+        {{ states('sensor.pluie_total_local')
+           not in ['unknown', 'unavailable', 'none', 'None', ''] }}
+      state: >
+        {% set brut = states('sensor.pluie_cumul_72h_brut') %}
+        {% if brut in ['unknown', 'unavailable', 'none', 'None', ''] %}
+          0.0
+        {% else %}
+          {{ [brut | float(0), 0] | max | round(2) }}
+        {% endif %}
