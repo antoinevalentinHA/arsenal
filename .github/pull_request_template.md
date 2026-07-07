@@ -24,8 +24,9 @@ Rappel doctrine : le backend décide, l'UI observe — jamais l'inverse.
 ## Impact runtime
 
 <!-- Effet concret sur le système en production : nouveaux états, commandes physiques,
-     entités enregistrées, notifications. « Aucun impact runtime » est une réponse valide
-     et attendue pour un changement purement documentaire. -->
+     entités enregistrées, notifications, activation/désactivation d'automatisations.
+     « Aucun impact runtime » est une réponse valide et attendue pour un changement
+     purement documentaire. -->
 
 ## Conformité à la doctrine
 
