@@ -450,4 +450,27 @@ Toute déviation par rapport à ces six points constitue une non-conformité et 
 
 ---
 
-*Fin du contrat — version 1.0.*
+## Attributs de présentation (dérivés)
+
+Le capteur synthèse `sensor.palmares_pluie_journalier` enrichit chaque objet de
+l'attribut `records` d'un champ de **présentation** destiné à l'affichage humain.
+
+| Clé de `records[]` | Nature | Format | Rôle |
+|---|---|---|---|
+| `date` | **canonique** | ISO `YYYY-MM-DD` | tri, comparaison, parsing, fraîcheur |
+| `date_affichage` | **dérivé (présentation)** | `DD/MM/YYYY` | restitution UI uniquement |
+
+- La date ISO `records[].date` reste l'**unique donnée canonique** : toute logique
+  (classement, comparaison, `strptime('%Y-%m-%d')`, fraîcheur) la consomme.
+- `records[].date_affichage` est une **projection de présentation** dérivée de la
+  date ISO — **aucune incidence** sur le classement, les valeurs météo ou la fraîcheur.
+- L'UI Lovelace affiche `records[].date_affichage` **sans transformation locale**
+  (pas de `strftime` / `split` / `replace` / `as_datetime` côté carte).
+- Date vide ou invalide → restitution de la valeur brute (aucune date fabriquée).
+
+> Ajout 2026-07-07 — attribut de présentation dérivé `records[].date_affichage`.
+> La date ISO reste canonique ; aucun impact sur classement, valeurs ou fraîcheur.
+
+---
+
+*Fin du contrat — version 1.1.*

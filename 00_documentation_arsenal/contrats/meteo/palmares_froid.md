@@ -345,6 +345,28 @@ tout le pipeline froid.
 
 ---
 
+## Attributs de présentation (dérivés)
+
+Le capteur synthèse `sensor.palmares_temperature_journalier_froid` expose, en
+complément des attributs canoniques, des attributs de **présentation** destinés
+à l'affichage humain.
+
+| Attribut | Nature | Format | Rôle |
+|---|---|---|---|
+| `rang_NN_date` | **canonique** | ISO `YYYY-MM-DD` | tri, comparaison, parsing, fraîcheur |
+| `rang_NN_date_affichage` | **dérivé (présentation)** | `DD/MM/YYYY` | restitution UI uniquement |
+
+- La date ISO `rang_NN_date` reste l'**unique donnée canonique** : toute logique
+  (classement, comparaison, `strptime('%Y-%m-%d')`, fraîcheur) la consomme.
+- `rang_NN_date_affichage` est une **projection de présentation** dérivée de la
+  date ISO — **aucune incidence** sur le classement, les valeurs météo ou la fraîcheur.
+- L'UI Lovelace affiche `rang_NN_date_affichage` **sans transformation locale**
+  (pas de `strftime` / `split` / `replace` / `as_datetime` côté carte).
+- Date vide ou invalide → l'attribut de présentation restitue la valeur brute
+  (aucune date fabriquée).
+
+---
+
 ## Changelog
 
 | Version | Date | Modification |
@@ -352,3 +374,4 @@ tout le pipeline froid.
 | 1.0 | 2026-05-27 | Brouillon normatif initial — miroir du contrat chaud v1.1 avec les sept points de spécialisation explicitement traités |
 | 1.0.1 | 2026-05-27 | Correction §11 Population A : la phrase héritée du chaud (« fenêtre tronquée silencieusement ») était fausse pour le froid — le contrat interdit explicitement les minima glissants comme source métier (§3.4). Remplacée par la qualification correcte : source clôturée persistante, non glissante. |
 | 1.0.2 | 2026-05-27 | Correction §5 — contradiction bloquante détectée : la plage helpers `[-50, 50]` rendait techniquement impossible le stockage de la sentinelle `999` (HA refuse les valeurs hors `min`/`max`). Distinction explicite désormais entre `plage_metier_source` `[-30, 30]`, `plage_helpers_metier` `[-50, 50]` et `plage_helpers_technique` `[-50, 1000]`. La sentinelle `999` reste hors plage métier (préserve INV-FR-6) mais entre dans la plage technique (stockable par HA). |
+| 1.0.3 | 2026-07-07 | Ajout d'attributs de présentation dérivés `rang_NN_date_affichage` (`DD/MM/YYYY`) exposés côté backend. La date ISO `rang_NN_date` reste canonique ; aucun impact sur classement, valeurs ou fraîcheur. |

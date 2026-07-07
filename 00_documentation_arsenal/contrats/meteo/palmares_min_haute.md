@@ -351,8 +351,31 @@ produite par le pipeline froid, conformément au principe de non-redondance.
 
 ---
 
+## Attributs de présentation (dérivés)
+
+Le capteur synthèse `sensor.palmares_temperature_min_journaliere_haute` expose,
+en complément des attributs canoniques, des attributs de **présentation**
+destinés à l'affichage humain.
+
+| Attribut | Nature | Format | Rôle |
+|---|---|---|---|
+| `rang_NN_date` | **canonique** | ISO `YYYY-MM-DD` | tri, comparaison, parsing, fraîcheur |
+| `rang_NN_date_affichage` | **dérivé (présentation)** | `DD/MM/YYYY` | restitution UI uniquement |
+
+- La date ISO `rang_NN_date` reste l'**unique donnée canonique** : toute logique
+  (classement, comparaison, `strptime('%Y-%m-%d')`, fraîcheur) la consomme.
+- `rang_NN_date_affichage` est une **projection de présentation** dérivée de la
+  date ISO — **aucune incidence** sur le classement, les valeurs météo ou la fraîcheur.
+- L'UI Lovelace affiche `rang_NN_date_affichage` **sans transformation locale**
+  (pas de `strftime` / `split` / `replace` / `as_datetime` côté carte).
+- Date vide ou invalide → l'attribut de présentation restitue la valeur brute
+  (aucune date fabriquée).
+
+---
+
 ## Changelog
 
 | Version | Date | Modification |
 |---|---|---|
 | 1.0 | 2026-06-22 | Brouillon normatif initial — classement descendant du minimum journalier clôturé, réutilisation de la chaîne de capture froide, double sentinelle (999 absence source, -999 rang vide). |
+| 1.1 | 2026-07-07 | Ajout d'attributs de présentation dérivés `rang_NN_date_affichage` (`DD/MM/YYYY`) exposés côté backend. La date ISO `rang_NN_date` reste canonique ; aucun impact sur classement, valeurs ou fraîcheur. |

@@ -38,15 +38,18 @@ views:
               {% set UNAV = [none, '', 'unknown', 'unavailable'] %}
               {% set cv = state_attr('sensor.palmares_temperature_journalier_chaud', 'rang_01_valeur') %}
               {% set cd = state_attr('sensor.palmares_temperature_journalier_chaud', 'rang_01_date') %}
+              {% set cda = state_attr('sensor.palmares_temperature_journalier_chaud', 'rang_01_date_affichage') %}
               {% set fv = state_attr('sensor.palmares_temperature_journalier_froid', 'rang_01_valeur') %}
               {% set fd = state_attr('sensor.palmares_temperature_journalier_froid', 'rang_01_date') %}
+              {% set fda = state_attr('sensor.palmares_temperature_journalier_froid', 'rang_01_date_affichage') %}
               {% set nv = state_attr('sensor.palmares_temperature_min_journaliere_haute', 'rang_01_valeur') %}
               {% set nd = state_attr('sensor.palmares_temperature_min_journaliere_haute', 'rang_01_date') %}
+              {% set nda = state_attr('sensor.palmares_temperature_min_journaliere_haute', 'rang_01_date_affichage') %}
               {% set r = state_attr('sensor.palmares_pluie_journalier', 'records') or [] %}
-              - 🔥 **Chaleur** — {% if cv is not none and cd not in UNAV %}{{ cv }} °C · {{ cd }}{% else %}—{% endif %}
-              - ❄️ **Froid** — {% if fv is not none and fv != 999 and fd not in UNAV %}{{ fv }} °C · {{ fd }}{% else %}—{% endif %}
-              - 🌙 **Nuit chaude** — {% if nv is not none and nv != -999 and nd not in UNAV %}{{ nv }} °C · {{ nd }}{% else %}—{% endif %}
-              - 🌧️ **Pluie** — {% if r | count > 0 %}{{ r[0].valeur }} mm · {{ r[0].date }}{% else %}—{% endif %}
+              - 🔥 **Chaleur** — {% if cv is not none and cd not in UNAV %}{{ cv }} °C · {{ cda }}{% else %}—{% endif %}
+              - ❄️ **Froid** — {% if fv is not none and fv != 999 and fd not in UNAV %}{{ fv }} °C · {{ fda }}{% else %}—{% endif %}
+              - 🌙 **Nuit chaude** — {% if nv is not none and nv != -999 and nd not in UNAV %}{{ nv }} °C · {{ nda }}{% else %}—{% endif %}
+              - 🌧️ **Pluie** — {% if r | count > 0 %}{{ r[0].valeur }} mm · {{ r[0].date_affichage }}{% else %}—{% endif %}
 
           # ==================================================
           # 🔎 SÉLECTEUR DE CONSULTATION (sobre — modèle Clim)

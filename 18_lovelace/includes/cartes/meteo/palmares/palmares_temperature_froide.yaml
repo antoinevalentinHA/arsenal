@@ -6,11 +6,12 @@ content: |
     {% set p = '%02d' | format(i) %}
     {% set valeur = state_attr('sensor.palmares_temperature_journalier_froid', 'rang_' ~ p ~ '_valeur') %}
     {% set date = state_attr('sensor.palmares_temperature_journalier_froid', 'rang_' ~ p ~ '_date') %}
+    {% set date_aff = state_attr('sensor.palmares_temperature_journalier_froid', 'rang_' ~ p ~ '_date_affichage') %}
 
     {% if valeur is not none
           and valeur != 999
           and date not in [none, '', 'unknown', 'unavailable'] %}
-      {% set ns.records = ns.records + [dict(rang=i, date=date, valeur=valeur)] %}
+      {% set ns.records = ns.records + [dict(rang=i, date=date, date_affichage=date_aff, valeur=valeur)] %}
     {% endif %}
   {% endfor %}
 
@@ -18,7 +19,7 @@ content: |
   _Aucun record enregistré._
   {% else %}
   {% for item in ns.records %}
-  {% if item.rang == 1 %}🥇{% elif item.rang == 2 %}🥈{% elif item.rang == 3 %}🥉{% elif item.rang == 10 %}🔟{% else %}{{ item.rang }}️⃣{% endif %} {{ item.date }} — **{{ item.valeur }} °C**
+  {% if item.rang == 1 %}🥇{% elif item.rang == 2 %}🥈{% elif item.rang == 3 %}🥉{% elif item.rang == 10 %}🔟{% else %}{{ item.rang }}️⃣{% endif %} {{ item.date_affichage }} — **{{ item.valeur }} °C**
   {% endfor %}
 
   {% set total = ns.records | count %}

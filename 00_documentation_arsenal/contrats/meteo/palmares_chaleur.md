@@ -328,6 +328,28 @@ Aucune de ces extensions n'a de valeur normative en v1.2.
 
 ---
 
+## Attributs de présentation (dérivés)
+
+Le capteur synthèse `sensor.palmares_temperature_journalier_chaud` expose, en
+complément des attributs canoniques, des attributs de **présentation** destinés
+à l'affichage humain.
+
+| Attribut | Nature | Format | Rôle |
+|---|---|---|---|
+| `rang_NN_date` | **canonique** | ISO `YYYY-MM-DD` | tri, comparaison, parsing, fraîcheur |
+| `rang_NN_date_affichage` | **dérivé (présentation)** | `DD/MM/YYYY` | restitution UI uniquement |
+
+- La date ISO `rang_NN_date` reste l'**unique donnée canonique** : toute logique
+  (classement, comparaison, `strptime('%Y-%m-%d')`, fraîcheur) la consomme.
+- `rang_NN_date_affichage` est une **projection de présentation** dérivée de la
+  date ISO — **aucune incidence** sur le classement, les valeurs météo ou la fraîcheur.
+- L'UI Lovelace affiche `rang_NN_date_affichage` **sans transformation locale**
+  (pas de `strftime` / `split` / `replace` / `as_datetime` côté carte).
+- Date vide ou invalide → l'attribut de présentation restitue la valeur brute
+  (aucune date fabriquée).
+
+---
+
 ## Changelog
 
 | Version | Date | Modification |
@@ -335,3 +357,4 @@ Aucune de ces extensions n'a de valeur normative en v1.2.
 | 1.0 | 2026-05-26 | Brouillon normatif initial |
 | 1.1 | 2026-05-26 | Architecture source formalisée (pipeline 3 couches), sentinelle -999, FIFO documenté, invariants B1-B4 avec exemption sentinelle 1970 |
 | 1.2 | 2026-05-27 | Durcissement anti-stale data : snapshot palmarès fondé sur la mémoire courante, interdiction des dates de clôture implicites sans mémoire dédiée, clarification de l'invalidation par sentinelle, robustesse B4 par comparaison timestamp, et doctrine Jinja `namespace` pour l'accumulation des rangs. |
+| 1.3 | 2026-07-07 | Ajout d'attributs de présentation dérivés `rang_NN_date_affichage` (`DD/MM/YYYY`) exposés côté backend. La date ISO `rang_NN_date` reste canonique ; aucun impact sur classement, valeurs ou fraîcheur. |
