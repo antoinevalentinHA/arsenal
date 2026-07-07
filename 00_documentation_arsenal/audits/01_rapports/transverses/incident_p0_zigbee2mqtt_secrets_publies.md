@@ -112,17 +112,30 @@ scan complet du dépôt = **0 `CRITICAL`**, exit 0.
 La purge du dépôt **ne révoque rien** : les valeurs restent valides côté
 runtime et lisibles dans l'historique Git distant.
 
-1. **Rotation immédiate du mot de passe MQTT** du compte `addons`
+**Statut (2026-07-07) — risque accepté par décision opérateur, non réalisées :**
+rotation MQTT, rotation clé réseau Zigbee et purge d'historique **ne sont
+pas exécutées**. Justification opérateur : l'exposition est jugée limitée au
+réseau local — atteindre le broker MQTT ou le trafic radio Zigbee suppose
+déjà une intrusion sur le réseau local, un niveau d'accès qui rendrait la
+plupart des autres protections secondaires. **Déclencheur de réouverture** :
+tout changement de surface d'exposition (accès distant au broker, réseau
+invité/IoT non cloisonné, clone du dépôt distant sorti du contrôle de
+l'opérateur, ou publication future d'un secret exploitable à distance).
+
+1. **Rotation du mot de passe MQTT** du compte `addons`
    (broker Mosquitto), puis report de la nouvelle valeur dans
    `zigbee2mqtt/secret.yaml` **local** (non versionné, désormais gitignoré).
+   — **non faite, risque accepté** (cf. ci-dessus).
 2. **Rotation de la clé réseau Zigbee** : décision d'opérateur — changer la
    clé impose de ré-appairer l'ensemble des 66 périphériques. Tant que la
-   rotation n'est pas faite, considérer le trafic Zigbee comme déchiffrable
-   par quiconque a lu le dépôt et se trouve à portée radio.
+   rotation n'est pas faite, le trafic Zigbee reste déchiffrable par
+   quiconque a lu le dépôt et se trouve à portée radio.
+   — **non faite, risque accepté** (cf. ci-dessus).
 3. **Purge de l'historique Git** (`git filter-repo` ou BFG sur les deux
    fichiers, puis force-push et invalidation des clones/forks) : décision
    séparée — sans elle, l'invariant du contrat (« un CRITICAL en historique
    bloque ») s'appliquera au premier scan `--history`.
+   — **non faite, risque accepté** (cf. ci-dessus).
 4. **Runtime local** : ce dépôt supprime `zigbee2mqtt/configuration.yaml` du
    suivi Git. Si le runtime synchronise le dépôt par `git pull`, **préserver
    ou restaurer le fichier local réel** après synchronisation (il est
