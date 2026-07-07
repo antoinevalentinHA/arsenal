@@ -57,3 +57,11 @@ sensor.meter_petite_maison_bluetooth_signal:
 sensor.sdb_enfants_bluetooth_signal:
   friendly_name: "Meter SDB Enfants"
   icon: mdi:gauge
+
+############################################################
+# 💧 PONT ARROSAGE
+############################################################
+
+sensor.rain_bird_bat_bt_2_e9a3_ble_rssi:
+  friendly_name: "Rain Bird"
+  icon: mdi:sprinkler
