@@ -51,7 +51,10 @@
             {% set d = states('input_text.palmares_pluie_journalier_rang_' ~ id ~ '_date') %}
             {% set v = states('input_number.palmares_pluie_journalier_rang_' ~ id ~ '_valeur') | float(0) %}
             {% if d not in ['', 'unknown', 'unavailable', 'none', 'None'] and v > 0 %}
-              {% set ns.records = ns.records + [dict(rang=i, date=d, valeur=v | round(1))] %}
+              {# date_affichage : présentation dérivée DD/MM/YYYY, date (ISO) reste canonique #}
+              {% set dt = strptime(d, '%Y-%m-%d', none) %}
+              {% set da = dt.strftime('%d/%m/%Y') if dt is not none else d %}
+              {% set ns.records = ns.records + [dict(rang=i, date=d, date_affichage=da, valeur=v | round(1))] %}
             {% endif %}
           {% endfor %}
           {{ ns.records }}

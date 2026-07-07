@@ -85,6 +85,48 @@
           {{ states('input_number.palmares_temperature_journalier_chaud_rang_10_valeur') | float(0) }}
         rang_10_date: >
           {{ states('input_text.palmares_temperature_journalier_chaud_rang_10_date') }}
+        # Présentation (dérivé, non canonique) — DD/MM/YYYY.
+        # L'ISO rang_NN_date reste la donnée de tri/comparaison/parsing.
+        rang_01_date_affichage: >
+          {% set d = states('input_text.palmares_temperature_journalier_chaud_rang_01_date') %}
+          {% set dt = strptime(d, '%Y-%m-%d', none) %}
+          {{ dt.strftime('%d/%m/%Y') if dt is not none else d }}
+        rang_02_date_affichage: >
+          {% set d = states('input_text.palmares_temperature_journalier_chaud_rang_02_date') %}
+          {% set dt = strptime(d, '%Y-%m-%d', none) %}
+          {{ dt.strftime('%d/%m/%Y') if dt is not none else d }}
+        rang_03_date_affichage: >
+          {% set d = states('input_text.palmares_temperature_journalier_chaud_rang_03_date') %}
+          {% set dt = strptime(d, '%Y-%m-%d', none) %}
+          {{ dt.strftime('%d/%m/%Y') if dt is not none else d }}
+        rang_04_date_affichage: >
+          {% set d = states('input_text.palmares_temperature_journalier_chaud_rang_04_date') %}
+          {% set dt = strptime(d, '%Y-%m-%d', none) %}
+          {{ dt.strftime('%d/%m/%Y') if dt is not none else d }}
+        rang_05_date_affichage: >
+          {% set d = states('input_text.palmares_temperature_journalier_chaud_rang_05_date') %}
+          {% set dt = strptime(d, '%Y-%m-%d', none) %}
+          {{ dt.strftime('%d/%m/%Y') if dt is not none else d }}
+        rang_06_date_affichage: >
+          {% set d = states('input_text.palmares_temperature_journalier_chaud_rang_06_date') %}
+          {% set dt = strptime(d, '%Y-%m-%d', none) %}
+          {{ dt.strftime('%d/%m/%Y') if dt is not none else d }}
+        rang_07_date_affichage: >
+          {% set d = states('input_text.palmares_temperature_journalier_chaud_rang_07_date') %}
+          {% set dt = strptime(d, '%Y-%m-%d', none) %}
+          {{ dt.strftime('%d/%m/%Y') if dt is not none else d }}
+        rang_08_date_affichage: >
+          {% set d = states('input_text.palmares_temperature_journalier_chaud_rang_08_date') %}
+          {% set dt = strptime(d, '%Y-%m-%d', none) %}
+          {{ dt.strftime('%d/%m/%Y') if dt is not none else d }}
+        rang_09_date_affichage: >
+          {% set d = states('input_text.palmares_temperature_journalier_chaud_rang_09_date') %}
+          {% set dt = strptime(d, '%Y-%m-%d', none) %}
+          {{ dt.strftime('%d/%m/%Y') if dt is not none else d }}
+        rang_10_date_affichage: >
+          {% set d = states('input_text.palmares_temperature_journalier_chaud_rang_10_date') %}
+          {% set dt = strptime(d, '%Y-%m-%d', none) %}
+          {{ dt.strftime('%d/%m/%Y') if dt is not none else d }}
         rangs_remplis: >
           {% set dates = [
             states('input_text.palmares_temperature_journalier_chaud_rang_01_date'),

@@ -6,7 +6,7 @@ content: |
   _Aucun record enregistré._
   {% else %}
   {% for item in r %}
-  {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% elif loop.index == 10 %}🔟{% else %}{{ loop.index }}️⃣{% endif %} {{ item.date }} — **{{ item.valeur }} mm**
+  {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% elif loop.index == 10 %}🔟{% else %}{{ loop.index }}️⃣{% endif %} {{ item.date_affichage }} — **{{ item.valeur }} mm**
   {% endfor %}
 
   {% set total = r | count %}
