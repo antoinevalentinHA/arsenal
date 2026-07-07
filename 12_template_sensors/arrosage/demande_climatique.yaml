@@ -39,8 +39,8 @@
 #   Tmin  : sensor.temperature_min_jour_courant_jardin
 #   Tmax  : sensor.temperature_max_jour_courant_jardin
 #           (extrêmes réels du jour, plage gardée [-30,50]°C)
-#   T     : sensor.temperature_exterieur        (courante)
-#   HR    : sensor.humidite_relative_exterieur  (courante)
+#   T     : sensor.temperature_jardin           (courante)
+#   HR    : sensor.humidite_relative_jardin     (courante)
 #   φ     : latitude de zone.maison_securite (= !secret home_latitude,
 #           lecture d'attribut pour calcul dérivé — sanctionnée par
 #           l'invariant zones I9 ; zone.home interdit en template, T10/§7.3)
@@ -129,20 +129,20 @@
       state_class: measurement
       icon: mdi:water-opacity
       availability: >
-        {% set t = states('sensor.temperature_exterieur') %}
-        {% set hr = states('sensor.humidite_relative_exterieur') %}
+        {% set t = states('sensor.temperature_jardin') %}
+        {% set hr = states('sensor.humidite_relative_jardin') %}
         {{ is_number(t) and is_number(hr) and 0 < (hr | float) <= 100 }}
       state: >
-        {% set t = states('sensor.temperature_exterieur') | float %}
-        {% set hr = states('sensor.humidite_relative_exterieur') | float %}
+        {% set t = states('sensor.temperature_jardin') | float %}
+        {% set hr = states('sensor.humidite_relative_jardin') | float %}
         {% set es = 0.6108 * (e ** (17.27 * t / (t + 237.3))) %}
         {% set vpd = es * (1 - hr / 100) %}
         {{ vpd | round(2) }}
       attributes:
-        temperature_c: "{{ states('sensor.temperature_exterieur') }}"
-        humidite_relative_pct: "{{ states('sensor.humidite_relative_exterieur') }}"
+        temperature_c: "{{ states('sensor.temperature_jardin') }}"
+        humidite_relative_pct: "{{ states('sensor.humidite_relative_jardin') }}"
         pression_vapeur_saturante_kpa: >
-          {% set t = states('sensor.temperature_exterieur') %}
+          {% set t = states('sensor.temperature_jardin') %}
           {% if is_number(t) %}
           {{ (0.6108 * (e ** (17.27 * (t | float) / ((t | float) + 237.3)))) | round(3) }}
           {% else %}indisponible{% endif %}
@@ -163,8 +163,8 @@
         {% set tmin = states('sensor.temperature_min_jour_courant_jardin') %}
         {% set tmax = states('sensor.temperature_max_jour_courant_jardin') %}
         {% set tmean = states('sensor.temperature_exterieure_moyenne_jour') %}
-        {% set t = states('sensor.temperature_exterieur') %}
-        {% set hr = states('sensor.humidite_relative_exterieur') %}
+        {% set t = states('sensor.temperature_jardin') %}
+        {% set hr = states('sensor.humidite_relative_jardin') %}
         {% set et0_ok = is_number(tmin) and is_number(tmax) and is_number(tmean)
            and (tmax | float) >= (tmin | float) %}
         {% set vpd_ok = is_number(t) and is_number(hr) and 0 < (hr | float) <= 100 %}
@@ -179,15 +179,15 @@
           {{ is_number(tmin) and is_number(tmax) and is_number(tmean)
              and (tmax | float) >= (tmin | float) }}
         vpd_disponible: >
-          {% set t = states('sensor.temperature_exterieur') %}
-          {% set hr = states('sensor.humidite_relative_exterieur') %}
+          {% set t = states('sensor.temperature_jardin') %}
+          {% set hr = states('sensor.humidite_relative_jardin') %}
           {{ is_number(t) and is_number(hr) and 0 < (hr | float) <= 100 }}
         raison: >
           {% set tmin = states('sensor.temperature_min_jour_courant_jardin') %}
           {% set tmax = states('sensor.temperature_max_jour_courant_jardin') %}
           {% set tmean = states('sensor.temperature_exterieure_moyenne_jour') %}
-          {% set t = states('sensor.temperature_exterieur') %}
-          {% set hr = states('sensor.humidite_relative_exterieur') %}
+          {% set t = states('sensor.temperature_jardin') %}
+          {% set hr = states('sensor.humidite_relative_jardin') %}
           {% set et0_ok = is_number(tmin) and is_number(tmax) and is_number(tmean)
              and (tmax | float) >= (tmin | float) %}
           {% set vpd_ok = is_number(t) and is_number(hr) and 0 < (hr | float) <= 100 %}
