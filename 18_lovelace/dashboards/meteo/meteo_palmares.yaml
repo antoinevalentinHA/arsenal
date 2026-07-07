@@ -9,37 +9,147 @@ views:
     # badges
     #   ↓
     # vertical-stack racine
+    #   ↓
+    # résumé global (4 records n°1, mono-palmarès)
+    #   ↓
+    # sélecteur de consultation (contexte d'interface)
+    #   ↓
+    # détail conditionnel (top-10 du palmarès choisi)
     # ======================================================
     cards:
       - type: vertical-stack
         cards:
-          # ======================================================
-          # 🏆 PALMARÈS MÉTÉO
-          # ------------------------------------------------------
-          # Destination dédiée regroupant les palmarès historiques
-          # existants (chantier C7). Cartes réutilisées verbatim,
-          # aucune entité ni capteur modifié.
-          # ======================================================
+          # ==================================================
+          # 🏆 RÉSUMÉ GLOBAL
+          # --------------------------------------------------
+          # Records n°1 des quatre palmarès, toujours visibles.
+          # Chaque carte est mono-palmarès / mono-grandeur.
+          # ==================================================
           - type: custom:button-card
             template: section_header
-            name: 🌡️ Records de chaleur
+            name: 🏆 Palmarès météo
 
-          - !include ../../includes/cartes/meteo/palmares/palmares_temperature_chaude.yaml
+          # --------------------------------------------------
+          # 🔥 BANDEAU FRAÎCHEUR — RESTITUTION PURE
+          # Source unique : sensor.etat_meteo_palmares_dashboard
+          # Aucun calcul de fraîcheur ici (pas de fenêtre, pas
+          # de recalcul). Mapping strict des états existants,
+          # aligné avec l'icône « Rec. météo » de la navigation.
+          #   alert  → 🔥 record chaud / nuit chaude récent
+          #   normal → 🔵 record froid / pluie récent
+          #   off    → aucun bandeau
+          # --------------------------------------------------
+          - type: conditional
+            conditions:
+              - entity: sensor.etat_meteo_palmares_dashboard
+                state: alert
+            card:
+              type: markdown
+              content: "### 🔥 Record chaud récent"
 
+          - type: conditional
+            conditions:
+              - entity: sensor.etat_meteo_palmares_dashboard
+                state: normal
+            card:
+              type: markdown
+              content: "### 🔵 Record froid ou pluie récent"
+
+          # --------------------------------------------------
+          # Records n°1 — une carte par palmarès (mono-entité)
+          # Lecture directe du rang 1 exposé par chaque capteur.
+          # --------------------------------------------------
+          - type: markdown
+            content: |
+              {% set v = state_attr('sensor.palmares_temperature_journalier_chaud', 'rang_01_valeur') %}
+              {% set d = state_attr('sensor.palmares_temperature_journalier_chaud', 'rang_01_date') %}
+              🔥 **Chaleur** — {% if v is not none and d not in [none, '', 'unknown', 'unavailable'] %}**{{ v }} °C** · {{ d }}{% else %}_—_{% endif %}
+
+          - type: markdown
+            content: |
+              {% set v = state_attr('sensor.palmares_temperature_journalier_froid', 'rang_01_valeur') %}
+              {% set d = state_attr('sensor.palmares_temperature_journalier_froid', 'rang_01_date') %}
+              ❄️ **Froid** — {% if v is not none and v != 999 and d not in [none, '', 'unknown', 'unavailable'] %}**{{ v }} °C** · {{ d }}{% else %}_—_{% endif %}
+
+          - type: markdown
+            content: |
+              {% set v = state_attr('sensor.palmares_temperature_min_journaliere_haute', 'rang_01_valeur') %}
+              {% set d = state_attr('sensor.palmares_temperature_min_journaliere_haute', 'rang_01_date') %}
+              🌙 **Nuit chaude** — {% if v is not none and v != -999 and d not in [none, '', 'unknown', 'unavailable'] %}**{{ v }} °C** · {{ d }}{% else %}_—_{% endif %}
+
+          - type: markdown
+            content: |
+              {% set r = state_attr('sensor.palmares_pluie_journalier', 'records') or [] %}
+              🌧️ **Pluie** — {% if r | count > 0 %}**{{ r[0].valeur }} mm** · {{ r[0].date }}{% else %}_—_{% endif %}
+
+          # ==================================================
+          # 🔎 SÉLECTEUR DE CONSULTATION
+          # --------------------------------------------------
+          # input_select.palmares_meteo_affichage = contexte
+          # d'interface (ne pilote rien, ne décide rien).
+          # ==================================================
           - type: custom:button-card
             template: section_header
-            name: ❄️ Records de froid
+            name: 🔎 Palmarès affiché
 
-          - !include ../../includes/cartes/meteo/palmares/palmares_temperature_froide.yaml
+          - type: tile
+            entity: input_select.palmares_meteo_affichage
+            name: Palmarès affiché
+            features_position: bottom
+            features:
+              - type: select-options
 
-          - type: custom:button-card
-            template: section_header
-            name: 🌙 Records de nuits chaudes
+          # ==================================================
+          # 📋 DÉTAIL CONDITIONNEL — TOP 10 DU PALMARÈS CHOISI
+          # --------------------------------------------------
+          # Cartes réutilisées verbatim (aucune entité ni
+          # capteur modifié). Le badge « 🔥 récent » propre à
+          # chaque carte reste inchangé.
+          # ==================================================
+          - type: conditional
+            conditions:
+              - entity: input_select.palmares_meteo_affichage
+                state: Chaleur
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: 🌡️ Records de chaleur
+                - !include ../../includes/cartes/meteo/palmares/palmares_temperature_chaude.yaml
 
-          - !include ../../includes/cartes/meteo/palmares/palmares_temperature_min_haute.yaml
+          - type: conditional
+            conditions:
+              - entity: input_select.palmares_meteo_affichage
+                state: Froid
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: ❄️ Records de froid
+                - !include ../../includes/cartes/meteo/palmares/palmares_temperature_froide.yaml
 
-          - type: custom:button-card
-            template: section_header
-            name: 🌧️ Records de précipitations
+          - type: conditional
+            conditions:
+              - entity: input_select.palmares_meteo_affichage
+                state: Nuits chaudes
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: 🌙 Records de nuits chaudes
+                - !include ../../includes/cartes/meteo/palmares/palmares_temperature_min_haute.yaml
 
-          - !include ../../includes/cartes/meteo/palmares/pluie_palmares.yaml
+          - type: conditional
+            conditions:
+              - entity: input_select.palmares_meteo_affichage
+                state: Précipitations
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: 🌧️ Records de précipitations
+                - !include ../../includes/cartes/meteo/palmares/pluie_palmares.yaml

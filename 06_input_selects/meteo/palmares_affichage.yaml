@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Palmarès affiché (Météo)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Sélection du PALMARÈS AFFICHÉ dans le dashboard
+#   « Palmarès météo » (détail conditionnel top-10).
+#
+#   Options :
+#     • Chaleur
+#     • Froid
+#     • Nuits chaudes
+#     • Précipitations
+#
+# 🧩 Nature :
+#   Contexte d'interface (tolérance visuelle).
+#
+# ❌ Ne fait PAS :
+#   - Ne pilote RIEN
+#   - Ne déclenche AUCUNE action
+#   - Ne participe à AUCUNE décision
+#   - Ne représente PAS un état réel du système
+#   - Ne modifie AUCUN capteur ni calcul de palmarès
+#
+# 🔗 Utilisation :
+#   - Dashboard Lovelace uniquement :
+#       18_lovelace/dashboards/meteo/meteo_palmares.yaml
+#       (sélecteur → cartes `conditional` de détail)
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte UI / Logique / Action
+#   - Le backend décide, l'UI observe.
+#   - Un helper d'interface n'influence jamais le système.
+# ==========================================================
+
+palmares_meteo_affichage:
+  name: Palmarès affiché
+  options:
+    - Chaleur
+    - Froid
+    - Nuits chaudes
+    - Précipitations
+  icon: mdi:trophy
