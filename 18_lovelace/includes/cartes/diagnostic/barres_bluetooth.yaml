@@ -3,6 +3,11 @@ filter:
   include:
     - entity_id: "sensor.*_bluetooth_signal"
       state: "< 0"
+    # Pont Rain Bird (appareil BLE, intégration dédiée) : son RSSI BLE
+    # est exposé en dBm sous *_ble_rssi et non *_bluetooth_signal.
+    # Même échelle dBm que les SwitchBot ci-dessus → barre cohérente.
+    - entity_id: "sensor.rain_bird_*_ble_rssi"
+      state: "< 0"
 sort:
   method: state
   numeric: true
