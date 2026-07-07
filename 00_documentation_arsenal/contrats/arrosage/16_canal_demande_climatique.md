@@ -62,8 +62,8 @@ contrat — convention [`15`](15_canal_reservoir_sol.md) §5) :
 |---|---|---|
 | Température extérieure **moyenne** journalière (Tmean) | ✅ `sensor.temperature_exterieure_moyenne_jour` | ET₀ |
 | Température extérieure **min / max** journalières (Tmin / Tmax) | ◐ à **lier au runtime** (capteur extérieur + min/max du jour ; palmarès journaliers existants) | ET₀ (terme d'amplitude) |
-| **Humidité relative** extérieure courante (HR) | ✅ `sensor.humidite_relative_exterieur` | VPD |
-| Température extérieure **courante** | ✅ (capteur extérieur courant) | VPD |
+| **Humidité relative** extérieure courante (HR) | ✅ `sensor.humidite_relative_jardin` | VPD |
+| Température extérieure **courante** | ✅ `sensor.temperature_jardin` | VPD |
 | **Latitude** | ✅ attribut `zone.home` | radiation extraterrestre Ra (calcul) |
 | **Quantième** (jour de l'année) | ✅ déterministe (date) | Ra (calcul) |
 
