@@ -56,7 +56,7 @@ views:
           # ==================================================
           - type: custom:button-card
             template: section_header
-            name: Palmarès affiché
+            name: 🔎 Palmarès affiché
 
           - type: tile
             entity: input_select.palmares_meteo_affichage
