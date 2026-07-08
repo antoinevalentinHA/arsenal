@@ -45,3 +45,41 @@
             {{ 'on' if m < seuil else 'off' }}
           {% endif %}
         {% endif %}
+      # 🏷️ MOTIF — sous-verdict lisible (l'UI traduit, ne recalcule pas)
+      #   Distingue le besoin FRANC (médiane sous le seuil) du besoin
+      #   MAINTENU par l'hystérésis (médiane déjà remontée dans la bande
+      #   [seuil ; seuil+hyst[, mais le besoin ne retombe pas encore).
+      #   Sans ce motif, la carte diagnostic affichait « Sol sous seuil »
+      #   alors que la médiane était au-dessus du seuil (bande de maintien).
+      #     - sous_seuil          : médiane < seuil (besoin franc)
+      #     - maintenu_hysteresis : seuil ≤ médiane < seuil+hyst (anti-battement)
+      #     - suffisant           : médiane ≥ seuil+hyst (pas de besoin)
+      #     - indisponible        : médiane muette → abstention (garde §4)
+      attributes:
+        motif: >
+          {% set raw = states('sensor.jardin_humidite_sol_mediane') %}
+          {% if raw in ['unknown', 'unavailable', 'none', 'None', ''] %}
+            indisponible
+          {% else %}
+            {% set m = raw | float(999) %}
+            {% set seuil = states('input_number.arrosage_seuil_humidite_declenchement') | float(30) %}
+            {% set hyst = states('input_number.arrosage_hysteresis_humidite') | float(5) %}
+            {% if this.state == 'on' %}
+              {% set actif = m < (seuil + hyst) %}
+            {% else %}
+              {% set actif = m < seuil %}
+            {% endif %}
+            {% if not actif %}
+              suffisant
+            {% elif m < seuil %}
+              sous_seuil
+            {% else %}
+              maintenu_hysteresis
+            {% endif %}
+          {% endif %}
+        mediane: >
+          {{ states('sensor.jardin_humidite_sol_mediane') }}
+        seuil: >
+          {{ states('input_number.arrosage_seuil_humidite_declenchement') | float(30) }}
+        hysteresis: >
+          {{ states('input_number.arrosage_hysteresis_humidite') | float(5) }}

@@ -1,0 +1,97 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Attribut — Catégoriel interprété
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : interprétative
+# 🔍 NIVEAU DE CONFIANCE : indicatif
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Affiche un ATTRIBUT catégoriel backend (3 valeurs ou plus)
+#   sous forme lisible, avec signal coloriel local. Pendant
+#   « attribut » de `carte_etat_interprete` — de la même façon que
+#   `carte_attribut_binaire_interprete` est le pendant de
+#   `carte_mode_binaire_interprete`. Pour les capteurs qui portent
+#   leur sous-verdict multi-états en attribut plutôt qu'en state
+#   (ex. `binary_sensor.arrosage_besoin_sol` reste binaire pour la
+#   décision, mais expose `motif` : sous_seuil / maintenu_hysteresis
+#   / suffisant / indisponible).
+#
+# 📡 SOURCE
+#   - entity.attributes[variables.attribut] (chaîne catégorielle)
+#   - variables.attribut  → nom de l'attribut à lire (obligatoire)
+#   - variables.couleurs : map valeur → couleur de fond (palette)
+#   - variables.libelles : map valeur → libellé lisible (optionnel)
+#
+# ⚙️ LOGIQUE UI (palette 02_palette.md, règles 05_regles.md)
+#   - entité indisponible OU attribut absent/vide
+#       → state_display = "—" et fond gris indispo rgba(158,158,158,0.1)
+#         (R6 : le gris indisponibilité prime, jamais masqué)
+#   - valeur non mappée → gris indispo (valeur non exploitable)
+#   - sinon → fond variables.couleurs[valeur] (palette au site d'appel)
+#   - libellé : variables.libelles[valeur] si fourni, sinon valeur brute
+#   - name et state centrés ; aucune interaction
+#
+# 🎨 DOCTRINE COULEURS
+#   La palette (valeurs rgba) est déclarée AU SITE D'APPEL via
+#   variables.couleurs — même convention que `carte_etat_interprete`.
+#   Le template ne porte QUE le mécanisme + le fallback gris indispo
+#   prioritaire (couleurs/05). Le backend décide ; l'UI traduit.
+#
+# 📐 USAGE
+#   - destinée aux sous-verdicts catégoriels exposés en attributs ;
+#     ne recalcule RIEN (le backend décide, l'UI traduit)
+#   - le codage coloriel est local — non utilisé comme source de vérité
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
+carte_attribut_categoriel_interprete:
+  template: socle_status
+
+  show_state: true
+  show_label: false
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      if (!entity || entity.state === 'unknown' || entity.state === 'unavailable') return '—';
+
+      // trim() défensif : HA ne strippe PAS la valeur d'attribut rendue
+      // (les templates `>` laissent des espaces autour) — cf. la même
+      // précaution dans carte_arrosage_intention_raison.
+      const v = (entity.attributes?.[variables?.attribut] ?? '').toString().trim();
+      if (v === '') return '—';
+
+      const lib = (variables && variables.libelles) || {};
+      return lib[v] || v;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            if (!entity || entity.state === 'unknown' || entity.state === 'unavailable')
+              return 'rgba(158, 158, 158, 0.1)';
+
+            const v = (entity.attributes?.[variables?.attribut] ?? '').toString().trim();
+            if (v === '')
+              return 'rgba(158, 158, 158, 0.1)';
+
+            const map = (variables && variables.couleurs) || {};
+            return map[v] || 'rgba(158, 158, 158, 0.1)';
+          ]]]
+
+    name:
+      - justify-self: center
+      - text-align: center
+
+    state:
+      - justify-self: center
+      - text-align: center
