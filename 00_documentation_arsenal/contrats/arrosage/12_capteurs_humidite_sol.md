@@ -37,27 +37,32 @@ dashboard) et **ne fige rien** : il **relève** une surface réelle.
 
 ## 2. Nommage canonique des appareils
 
-Trois sondes sont prévues, une par zone. Le **nom d'appareil** retenu dans
-Zigbee2MQTT / Home Assistant est canonique :
+**Six points de mesure** sont désormais appairés dans la **zone d'arrosage
+unique** (points 1 à 3 d'origine + points 4 à 6 ajoutés). Le **nom d'appareil**
+retenu dans Zigbee2MQTT / Home Assistant est canonique :
 
 | Zone | Nom d'appareil canonique |
 |---|---|
 | Zone 1 | `Jardin - Humidité sol - Zone 1` |
 | Zone 2 | `Jardin - Humidité sol - Zone 2` |
 | Zone 3 | `Jardin - Humidité sol - Zone 3` |
+| Zone 4 | *(nom d'appareil non fourni ; entités relevées §5/§6)* |
+| Zone 5 | *(nom d'appareil non fourni ; entités relevées §5/§6)* |
+| Zone 6 | *(nom d'appareil non fourni ; entités relevées §5/§6)* |
 
 > Le **mapping zone ↔ station Rain Bird** **n'est pas** établi par ce nommage : il
 > reste une **inconnue Phase 0** ([`07`](07_phase_0_terrain.md) T02,
 > [`04`](04_besoin_hydrique.md) §5). Le numéro de zone du capteur est une étiquette
 > d'inventaire, **pas** une affectation hydraulique.
 
-> **⚠️ Vocabulaire — une seule zone d'arrosage, trois points de mesure.** Le
+> **⚠️ Vocabulaire — une seule zone d'arrosage, six points de mesure.** Le
 > système Rain Bird actuel n'a **qu'une seule zone / station d'arrosage**
-> opérationnelle. Les appareils nommés « Zone 1 / 2 / 3 » sont **trois points de
-> mesure d'humidité** répartis **dans cette zone unique**, **PAS** trois zones
-> d'arrosage indépendantes. Le mot « zone » dans le nom du capteur est donc un
-> **repère de point de mesure**, à ne pas confondre avec une zone hydraulique
-> Rain Bird.
+> opérationnelle. Les appareils nommés « Zone 1 … 6 » sont **six points de
+> mesure d'humidité** répartis **dans cette zone unique**, **PAS** six zones
+> d'arrosage indépendantes. **Aucun chantier multi-zone** n'est ouvert : les
+> points 4/5/6 ne créent ni zone, ni secteur, ni agrégat supplémentaire. Le mot
+> « zone » dans le nom du capteur est donc un **repère de point de mesure**, à ne
+> pas confondre avec une zone hydraulique Rain Bird.
 
 ---
 
@@ -121,8 +126,18 @@ pas été relevés précisément** et **ne doivent pas être inventés** :
 
 | Entité (rôle) | `entity_id` réel | Statut | Périmètre transversal |
 |---|---|---|---|
-| Batterie | `sensor.jardin_humidite_sol_zone_1_battery`, `sensor.jardin_humidite_sol_zone_2_battery`, `sensor.jardin_humidite_sol_zone_3_battery` | **relevé + intégré** | `group.batteries` + `01_customize/batteries.yaml` (cosmétique) |
-| Linkquality (LQI) | `sensor.jardin_humidite_sol_zone_1_linkquality`, `sensor.jardin_humidite_sol_zone_2_linkquality`, `sensor.jardin_humidite_sol_zone_3_linkquality` | **relevé + intégré** | `group.zigbee_linkquality_all` + liste trigger de l'agrégateur LQI + `01_customize/connectivite/zigbee_lqi.yaml` (cosmétique) |
+| Batterie | Points 1-3 : `sensor.jardin_humidite_sol_zone_1_battery`, `sensor.jardin_humidite_sol_zone_2_battery`, `sensor.jardin_humidite_sol_zone_3_battery`. Points 4-6 : `sensor.sol_jardin_zone_4_battery`, `sensor.sol_jardin_zone_5_battery`, `sensor.sol_jardin_zone_6_battery` | **relevé + intégré** | `group.batteries` + `01_customize/batteries.yaml` (cosmétique) |
+| Linkquality (LQI) | `sensor.jardin_humidite_sol_zone_1_linkquality` … `sensor.jardin_humidite_sol_zone_6_linkquality` (points 1 à 6) | **relevé + intégré** | `group.zigbee_linkquality_all` + liste trigger de l'agrégateur LQI + `01_customize/connectivite/zigbee_lqi.yaml` (cosmétique) |
+
+> **⚠️ Divergence de nommage batterie — relevée, non normalisée.** Les batteries
+> des points **4/5/6** portent le slug `sensor.sol_jardin_zone_{4,5,6}_battery`
+> (ordre des mots inversé, sans `humidite`), **différent** du schéma
+> `sensor.jardin_humidite_sol_zone_{1,2,3}_battery` des points 1-3. Ces `entity_id`
+> sont **relevés tels quels** et utilisés **verbatim** ; ils **ne sont ni renommés
+> ni normalisés** (doctrine README). L'humidité et la linkquality des points 4/5/6
+> suivent en revanche le schéma `jardin_humidite_sol_zone_N`. La **température** des
+> points 4/5/6 **n'a pas été fournie** au relevé : **à relever** (sans impact
+> runtime — non consommée par les agrégats ni le recorder).
 | Autres diagnostics Zigbee (dernière vue, etc.) | — | **à relever** | non relevé |
 | Mise à jour firmware (`update.*` si exposé) | — | **à relever** | **update disponible** signalée (Zone 1), **non traitée** dans ce lot |
 
@@ -148,6 +163,9 @@ cellules `à relever` / `à établir` ne sont **pas** des trous d'erreur : elles
 | Zone 1 | `Jardin - Humidité sol - Zone 1` | `sensor.jardin_humidite_sol_zone_1_soil_moisture` | `sensor.jardin_humidite_sol_zone_1_temperature` | `sensor.jardin_humidite_sol_zone_1_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_1_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | à établir (Phase 0 T02) | **confirmé (appairé)** |
 | Zone 2 | `Jardin - Humidité sol - Zone 2` | `sensor.jardin_humidite_sol_zone_2_soil_moisture` *(attendu)* | `sensor.jardin_humidite_sol_zone_2_temperature` *(attendu)* | `sensor.jardin_humidite_sol_zone_2_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_2_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | à établir (Phase 0 T02) | **attendu (non appairé)** |
 | Zone 3 | `Jardin - Humidité sol - Zone 3` | `sensor.jardin_humidite_sol_zone_3_soil_moisture` *(attendu)* | `sensor.jardin_humidite_sol_zone_3_temperature` *(attendu)* | `sensor.jardin_humidite_sol_zone_3_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_3_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | à établir (Phase 0 T02) | **attendu (non appairé)** |
+| Zone 4 | *(non fourni)* | `sensor.jardin_humidite_sol_zone_4_soil_moisture` *(intégré agrégat)* | à relever | `sensor.sol_jardin_zone_4_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_4_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | zone unique (même station) | **confirmé (relevé)** |
+| Zone 5 | *(non fourni)* | `sensor.jardin_humidite_sol_zone_5_soil_moisture` *(intégré agrégat)* | à relever | `sensor.sol_jardin_zone_5_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_5_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | zone unique (même station) | **confirmé (relevé)** |
+| Zone 6 | *(non fourni)* | `sensor.jardin_humidite_sol_zone_6_soil_moisture` *(intégré agrégat)* | à relever | `sensor.sol_jardin_zone_6_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_6_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | zone unique (même station) | **confirmé (relevé)** |
 
 > **Précision de relevé.** Les `entity_id` **batterie** et **linkquality** ci-dessus
 > sont **confirmés par leur intégration** aux périmètres canoniques transversaux ;
@@ -311,6 +329,40 @@ de nouvelle :
 - **cycles météo / arrosage futurs** ([`07`](07_phase_0_terrain.md) T03–T04) avant
   toute idée de seuil — les **seuils hydriques restent à définir après observation
   longue** (§9).
+
+---
+
+## 13. Extension à six points (mise à jour 2026-07-08)
+
+> **Note factuelle, non normative.** Constate l'ajout des points de mesure **4, 5
+> et 6** par **extension contrôlée** du modèle des points 1-3. **Ne fixe aucun
+> seuil**, **ne crée aucune zone**, **ne modifie aucune décision**.
+
+- **Points supplémentaires de la MÊME zone Rain Bird unique.** Les points 4/5/6
+  sont **trois points de mesure de plus** de la zone d'arrosage unique — **pas** de
+  nouvelle zone, **pas** de secteur, **aucune logique multi-zone**, **aucun second
+  agrégat**.
+- **Agrégat humidité sol : 3 → 6 points.** Les trois `*_soil_moisture` des points
+  4/5/6 rejoignent la liste `pts` de `12_template_sensors/arrosage/reservoir_sol.yaml`.
+  Médiane, minimum, hétérogénéité et nombre de points frais **recalculent sur 6
+  points** ; aucune nouvelle grandeur, aucun capteur aval, aucune décision V1
+  modifiés.
+- **État qualitatif recalibré sur 6 points** : `5-6 → complet` · `3-4 → degrade` ·
+  `1-2 → insuffisant` · `0 → indisponible` (libellé `points frais` passé de `0..3`
+  à `0..6`). Le **seuil métier d'humidité** est **inchangé**.
+- **Bruts hors recorder — maintenu.** Les `*_soil_moisture` / `*_temperature` /
+  `*_battery` / `*_linkquality` des points 4/5/6 **ne sont pas historisés**, comme
+  les points 1-3 ; seuls les agrégats dérivés le restent.
+- **Batterie & LQI par les chaînes transverses existantes.** Batteries dans
+  `group.batteries` (+ notification système générique), linkquality dans
+  `group.zigbee_linkquality_all` + liste trigger de l'agrégateur qualité radio. **Ni
+  refonte, ni carte par sonde, ni exposition au cockpit arrosage** : batterie/LQI
+  restent visibles via les dashboards **système / diagnostic** existants.
+- **`entity_id` relevés, non normalisés** (§5) : batterie `sol_jardin_zone_{4,5,6}_battery`
+  (schéma divergent) ; humidité/LQI `jardin_humidite_sol_zone_{4,5,6}_*` ;
+  température **non fournie** (à relever).
+
+---
 
 - Besoin hydrique (consomme `‹humidite_sol_zone›`) : [`04_besoin_hydrique.md`](04_besoin_hydrique.md)
 - Observation & preuves (honnêteté d'état) : [`06_observation_et_preuves.md`](06_observation_et_preuves.md)

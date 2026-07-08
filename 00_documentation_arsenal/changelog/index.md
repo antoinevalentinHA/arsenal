@@ -1536,6 +1536,17 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Météo — palmarès : ajout de `input_select.palmares_meteo_affichage` (sélecteur d'affichage, contexte d'interface seul), refonte de `meteo_palmares.yaml` (résumé markdown + sélecteur `tile` + 4 blocs `conditional`), ajout de l'emoji de rang 10 sur les 4 cartes.
 - Registres — recompte : checkers 78 → 79, workflows 82 → 83, contrats 290 → 291 ; ajout de l'audit frontière Maison / Imprimerie.
 
+---
+
+## 🧠 ARSENAL HA — [v16.3.7](changelogs/v16/v16_3_7.md) — STABLE — 2026-07-08
+**Tags :** arrosage, humidite_sol, reservoir_sol, batteries, zigbee, lqi, contrats, docs
+
+**Signal net :**
+- Arrosage — extension du canal réservoir sol à **six points de mesure** (ajout des points 4/5/6 dans la **zone Rain Bird unique**, sans multi-zone ni second agrégat) : `sensor.jardin_humidite_sol_zone_{4,5,6}_soil_moisture` ajoutés à la liste `pts` de `reservoir_sol.yaml` ; médiane/minimum/hétérogénéité/points frais recalculés sur 6 points.
+- État qualitatif du canal recalibré sur 6 points (`5-6 → complet` · `3-4 → degrade` · `1-2 → insuffisant` · `0 → indisponible`, libellé `0..3` → `0..6`) ; plancher de disponibilité de la médiane (≥ 2 points frais) et décision V1 **inchangés**.
+- Supervision transverse : batteries `sensor.sol_jardin_zone_{4,5,6}_battery` (slug relevé divergent, non normalisé) ajoutées à `group.batteries` ; linkquality `sensor.jardin_humidite_sol_zone_{4,5,6}_linkquality` ajoutées au groupe LQI et à la liste de triggers de l'agrégateur qualité radio.
+- Documentation alignée (`contrats/arrosage/12`, `14`, `15`). Aucune automatisation, aucun changement recorder, aucun changement dashboard arrosage.
+
 ==================================================
 FIN INDEX
 ==================================================
