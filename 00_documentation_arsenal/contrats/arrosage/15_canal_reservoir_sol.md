@@ -33,8 +33,8 @@ recommandation** et **ne pilotent rien**.
 
 ## 1. Périmètre & dépendances
 
-- **Sources** : les trois points d'humidité sol (`*_soil_moisture`) d'une **zone
-  unique** ([`12`](12_capteurs_humidite_sol.md) §1), filtrés par leur **qualité**
+- **Sources** : les six points d'humidité sol (`*_soil_moisture`) d'une **zone
+  unique** ([`12`](12_capteurs_humidite_sol.md) §1/§13), filtrés par leur **qualité**
   ([`14`](14_qualite_donnees_sol.md) §2).
 - **Amont** : chapeau [`13`](13_observation_hydrique_jardin.md) (canaux, frontière
   v0) ; qualité [`14`](14_qualite_donnees_sol.md) (frais/stale/indisponible/suspect).
@@ -56,9 +56,10 @@ recommandation** et **ne pilotent rien**.
   autant les extrêmes ; **cohérente** avec seulement trois points ; reste une
   **observation**, pas une décision.
 
-**Disponibilité (installation mono-zone actuelle) :**
-- la médiane est **exploitable dès 2 points frais** (canal `degrade`), et
-  **indisponible à 1 ou 0 point frais** (canal `insuffisant`/`indisponible`) ;
+**Disponibilité (installation mono-zone, six points de mesure) :**
+- la médiane est **exploitable dès 2 points frais** et **indisponible à 1 ou 0
+  point frais** ; ce **plancher (≥ 2)** est **inchangé** par l'extension à 6
+  points et reste **indépendant** du libellé d'état qualitatif (§5) ;
 - à **2 points frais**, la médiane correspond **mécaniquement à la moyenne des
   deux valeurs** disponibles : lecture **assumée comme dégradée mais exploitable**,
   cohérente avec la multiplicité des capteurs (rendre la lecture plus robuste, ne
@@ -114,12 +115,21 @@ recommandation** et **ne pilotent rien**.
 Le futur runtime **doit rendre visible** le **nombre de points frais** utilisés
 dans les agrégats. Lecture conceptuelle (alignée [`14`](14_qualite_donnees_sol.md) §3/§4) :
 
-| Points frais | Lecture du canal | Exploitable pour la décision automatique |
+| Points frais (sur 6) | État qualitatif (libellé diagnostic) | Médiane exploitable (plancher ≥ 2) |
 |---|---|---|
-| **3/3** | lecture **complète** | oui |
-| **2/3** | lecture **dégradée** mais **exploitable** | **oui** (médiane = moyenne des 2 points) |
-| **1/3** | canal **insuffisant** pour une agrégation représentative | non — **abstention** |
-| **0/3** | canal **indisponible** | non — **abstention** |
+| **5-6 / 6** | `complet` | oui |
+| **3-4 / 6** | `degrade` | oui |
+| **2 / 6** | `insuffisant` | **oui** (médiane = moyenne des 2 points) |
+| **1 / 6** | `insuffisant` | non — **abstention** |
+| **0 / 6** | `indisponible` | non — **abstention** |
+
+> **Deux axes distincts.** Le **libellé d'état qualitatif** est recalibré sur 6
+> points (`5-6 → complet` · `3-4 → degrade` · `1-2 → insuffisant` · `0 →
+> indisponible`) et sert au **diagnostic** ; la **disponibilité de la médiane**
+> garde son **plancher ≥ 2 points frais inchangé**. À **2 points frais**, l'état
+> affiché est `insuffisant` **mais la médiane reste publiée** (lecture dégradée
+> assumée) : les deux axes ne se confondent pas. Le libellé d'état **ne pilote
+> aucune décision** — seule la médiane est consommée en aval.
 
 > **Le contrat fixe ce qui doit être visible, pas comment.** Les `entity_id` ne
 > sont pas figés par ce contrat : la convention runtime est portée par le lot

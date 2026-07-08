@@ -317,3 +317,15 @@ sensor.jardin_humidite_sol_zone_2_linkquality:
 sensor.jardin_humidite_sol_zone_3_linkquality:
   friendly_name: "Humidité sol jardin — Zone 3"
   icon: mdi:water-percent
+
+sensor.jardin_humidite_sol_zone_4_linkquality:
+  friendly_name: "Humidité sol jardin — Zone 4"
+  icon: mdi:water-percent
+
+sensor.jardin_humidite_sol_zone_5_linkquality:
+  friendly_name: "Humidité sol jardin — Zone 5"
+  icon: mdi:water-percent
+
+sensor.jardin_humidite_sol_zone_6_linkquality:
+  friendly_name: "Humidité sol jardin — Zone 6"
+  icon: mdi:water-percent

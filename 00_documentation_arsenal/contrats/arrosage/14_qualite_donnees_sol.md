@@ -31,18 +31,22 @@ future.
 
 ## 1. Sources concernées
 
-**Humidité sol (les trois points de mesure d'une zone unique) :**
+**Humidité sol (les six points de mesure d'une zone unique) :**
 - `sensor.jardin_humidite_sol_zone_1_soil_moisture`
 - `sensor.jardin_humidite_sol_zone_2_soil_moisture`
 - `sensor.jardin_humidite_sol_zone_3_soil_moisture`
+- `sensor.jardin_humidite_sol_zone_4_soil_moisture`
+- `sensor.jardin_humidite_sol_zone_5_soil_moisture`
+- `sensor.jardin_humidite_sol_zone_6_soil_moisture`
 
-**Températures sol associées** (`sensor.jardin_humidite_sol_zone_{1,2,3}_temperature`)
-— utiles comme **observation secondaire** uniquement, **jamais comme déclencheurs**
+**Températures sol associées** (`sensor.jardin_humidite_sol_zone_{1,2,3}_temperature`
+relevées ; points 4/5/6 **à relever**) — utiles comme **observation secondaire**
+uniquement, **jamais comme déclencheurs**
 ([`12`](12_capteurs_humidite_sol.md), [`13`](13_observation_hydrique_jardin.md) §3).
 
-> Rappel : « Zone 1/2/3 » = **points de mesure**, pas zones d'arrosage. Les
-> `entity_id` Zone 2/3 restent à confirmer au relevé formel
-> ([`12`](12_capteurs_humidite_sol.md) §4).
+> Rappel : « Zone 1 … 6 » = **points de mesure** d'une **zone unique**, pas zones
+> d'arrosage ; **aucun multi-zone**. Points 4/5/6 relevés
+> ([`12`](12_capteurs_humidite_sol.md) §5/§6, §13).
 
 ---
 
@@ -68,7 +72,7 @@ Chaque point reçoit **un état de qualité** :
 
 | Qualité agrégée | Sens |
 |---|---|
-| **complète** | trois points frais et cohérents |
+| **complète** | cinq ou six points frais et cohérents |
 | **dégradée** | un point manquant/stale/suspect ; agrégats encore exploitables avec réserve |
 | **insuffisante** | trop peu de points frais pour une lecture fiable du canal sol |
 | **incohérente** | points frais mais en **contradiction forte** (hétérogénéité anormale) |
@@ -85,9 +89,12 @@ Chaque point reçoit **un état de qualité** :
 2. Une donnée **stale reste une donnée ancienne**, **pas** une valeur fraîche.
 3. Une donnée **suspecte n'est pas exclue automatiquement** sans **critère
    robuste** (§5).
-4. **Un seul capteur stale dégrade la confiance** (qualité ≥ **dégradée**).
-5. **Deux capteurs stale** rendent le canal sol **insuffisant ou très dégradé**.
-6. **Trois capteurs stale** rendent le canal sol **indisponible pour décision**.
+4. **La perte de points frais dégrade la confiance** : le canal n'est **complet**
+   qu'à **5-6 points frais** ; dès qu'il n'en reste que **3-4**, la qualité est
+   **dégradée** (recalibré sur 6 points, cf. [`15`](15_canal_reservoir_sol.md) §5).
+5. **1-2 points frais** rendent le canal sol **insuffisant** pour une lecture
+   représentative.
+6. **0 point frais** rend le canal sol **indisponible pour décision**.
 7. L'agrégation **rend visible le nombre de points frais** réellement utilisés.
 8. Aucune de ces qualifications **n'émet de recommandation** ni **ne déclenche
    d'action** (frontière v0, [`13`](13_observation_hydrique_jardin.md) §2/§4).

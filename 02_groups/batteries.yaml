@@ -105,3 +105,6 @@ batteries:
     - sensor.jardin_humidite_sol_zone_1_battery
     - sensor.jardin_humidite_sol_zone_2_battery
     - sensor.jardin_humidite_sol_zone_3_battery
+    - sensor.sol_jardin_zone_4_battery
+    - sensor.sol_jardin_zone_5_battery
+    - sensor.sol_jardin_zone_6_battery

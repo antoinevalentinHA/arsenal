@@ -349,3 +349,15 @@ sensor.jardin_humidite_sol_zone_2_battery:
 sensor.jardin_humidite_sol_zone_3_battery:
   friendly_name: "Humidité sol jardin — Zone 3"
   icon: mdi:water-percent
+
+sensor.sol_jardin_zone_4_battery:
+  friendly_name: "Humidité sol jardin — Zone 4"
+  icon: mdi:water-percent
+
+sensor.sol_jardin_zone_5_battery:
+  friendly_name: "Humidité sol jardin — Zone 5"
+  icon: mdi:water-percent
+
+sensor.sol_jardin_zone_6_battery:
+  friendly_name: "Humidité sol jardin — Zone 6"
+  icon: mdi:water-percent

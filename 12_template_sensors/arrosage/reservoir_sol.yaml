@@ -4,9 +4,9 @@
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #   Produire les grandeurs d'OBSERVATION du canal réservoir sol
-#   (contrat 15_canal_reservoir_sol.md) à partir des trois points
-#   d'humidité sol d'une ZONE UNIQUE Rain Bird (3 points de mesure,
-#   PAS 3 zones d'arrosage) :
+#   (contrat 15_canal_reservoir_sol.md) à partir des six points
+#   d'humidité sol d'une ZONE UNIQUE Rain Bird (6 points de mesure,
+#   PAS 6 zones d'arrosage) :
 #     - humidité représentative (médiane des points frais) ;
 #     - point le plus sec (minimum) ;
 #     - hétérogénéité (max - min) ;
@@ -52,6 +52,9 @@
 #   sensor.jardin_humidite_sol_zone_1_soil_moisture
 #   sensor.jardin_humidite_sol_zone_2_soil_moisture
 #   sensor.jardin_humidite_sol_zone_3_soil_moisture
+#   sensor.jardin_humidite_sol_zone_4_soil_moisture
+#   sensor.jardin_humidite_sol_zone_5_soil_moisture
+#   sensor.jardin_humidite_sol_zone_6_soil_moisture
 #
 # 🧱 SOURCE DE VÉRITÉ INTERNE
 #   sensor.jardin_humidite_sol_valeurs_fraiches : liste JSON des valeurs
@@ -81,7 +84,10 @@
         {% set pts = [
           'sensor.jardin_humidite_sol_zone_1_soil_moisture',
           'sensor.jardin_humidite_sol_zone_2_soil_moisture',
-          'sensor.jardin_humidite_sol_zone_3_soil_moisture'
+          'sensor.jardin_humidite_sol_zone_3_soil_moisture',
+          'sensor.jardin_humidite_sol_zone_4_soil_moisture',
+          'sensor.jardin_humidite_sol_zone_5_soil_moisture',
+          'sensor.jardin_humidite_sol_zone_6_soil_moisture'
         ] %}
         {% set ns = namespace(vals=[]) %}
         {% for p in pts %}
@@ -96,9 +102,9 @@
       attributes:
         seuil_fraicheur_secondes: "21600"
 
-    # ----- 1. Humidité représentative = médiane des points frais (>= 2/3) -----
-    #   Exploitable dès 2 points frais (canal `degrade`), indisponible à <= 1
-    #   (canal `insuffisant`/`indisponible` -> abstention). À 2 points, la médiane
+    # ----- 1. Humidité représentative = médiane des points frais (>= 2) -----
+    #   Exploitable dès 2 points frais, indisponible à <= 1 point frais
+    #   (-> abstention). À 2 points, la médiane
     #   = moyenne des deux valeurs : lecture dégradée mais exploitable, assumée en
     #   installation mono-zone (contrats 15 §2/§5, 17 §3.7 — Option A).
     - name: "Jardin humidite sol mediane"
@@ -151,7 +157,7 @@
         {% set vals = raw | from_json if raw not in ['unknown', 'unavailable'] else [] %}
         {{ (vals | max - vals | min) | round(1) }}
 
-    # ----- 4. Nombre de points frais utilisés (0..3) -----
+    # ----- 4. Nombre de points frais utilisés (0..6) -----
     - name: "Jardin humidite sol points frais"
       unique_id: jardin_humidite_sol_points_frais
       default_entity_id: sensor.jardin_humidite_sol_points_frais
@@ -165,8 +171,9 @@
         seuil_fraicheur_secondes: "21600"
 
     # ----- 5. État qualitatif du canal réservoir sol -----
-    #   Vocabulaire v0 fondé sur le NOMBRE de points frais uniquement :
-    #     3 -> complet · 2 -> degrade · 1 -> insuffisant · 0 -> indisponible.
+    #   Vocabulaire v0 fondé sur le NOMBRE de points frais uniquement
+    #   (recalibré sur 6 points de mesure d'une zone unique) :
+    #     5-6 -> complet · 3-4 -> degrade · 1-2 -> insuffisant · 0 -> indisponible.
     #   Les états "heterogene" / "a_verifier" du contrat 15 ne sont PAS émis
     #   en v0 : aucun seuil d'hétérogénéité robuste n'existe (contrat 15 §6),
     #   on n'introduit donc aucun seuil arbitraire. État diagnostic : ne
@@ -177,16 +184,16 @@
       icon: >
         {% set raw = states('sensor.jardin_humidite_sol_valeurs_fraiches') %}
         {% set n = (raw | from_json if raw not in ['unknown', 'unavailable'] else []) | length %}
-        {% if n >= 3 %} mdi:check-circle-outline
-        {% elif n == 2 %} mdi:alert-circle-outline
-        {% elif n == 1 %} mdi:alert-outline
+        {% if n >= 5 %} mdi:check-circle-outline
+        {% elif n >= 3 %} mdi:alert-circle-outline
+        {% elif n >= 1 %} mdi:alert-outline
         {% else %} mdi:close-circle-outline {% endif %}
       state: >
         {% set raw = states('sensor.jardin_humidite_sol_valeurs_fraiches') %}
         {% set n = (raw | from_json if raw not in ['unknown', 'unavailable'] else []) | length %}
-        {% if n >= 3 %} complet
-        {% elif n == 2 %} degrade
-        {% elif n == 1 %} insuffisant
+        {% if n >= 5 %} complet
+        {% elif n >= 3 %} degrade
+        {% elif n >= 1 %} insuffisant
         {% else %} indisponible {% endif %}
       attributes:
         points_frais: >

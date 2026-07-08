@@ -97,6 +97,9 @@
         - sensor.jardin_humidite_sol_zone_1_linkquality
         - sensor.jardin_humidite_sol_zone_2_linkquality
         - sensor.jardin_humidite_sol_zone_3_linkquality
+        - sensor.jardin_humidite_sol_zone_4_linkquality
+        - sensor.jardin_humidite_sol_zone_5_linkquality
+        - sensor.jardin_humidite_sol_zone_6_linkquality
       id: "any_linkquality_change"
 
   binary_sensor:
