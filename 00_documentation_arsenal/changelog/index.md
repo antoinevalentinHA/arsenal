@@ -1513,6 +1513,29 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Recorder — ajout de blocs de commentaire d'instrumentation de chantier sur 8 groupes déjà historisés (aucune entité ni seuil modifié) ; audits ECS (auto-ajustement consigne + contre-expertise) et clim (revalidation + plan d'action) sans impact runtime.
 - Documentation — ajout de `ecosysteme_depots_satellites.md` et des liens croisés (architecture, navigation domaines, outils externes).
 
+---
+
+## 🧠 ARSENAL HA — [v16.3.5](changelogs/v16/v16_3_5.md) — STABLE — 2026-07-07
+**Tags :** arrosage, rain_bird, meteo, pluie, aeration, securite, publication, ci, checkers, lovelace, energie, docs, registres, changelog
+
+**Signal net :**
+- Arrosage — supervision des exécutions longues Rain Bird : remplacement du `delay` long par une session persistée (helpers `arrosage_session_*`, `binary_sensor.arrosage_session_en_cours`, `sensor.arrosage_session_etat`) ; fin portée par les automations `10270000000005` (fin observée) et `10270000000006` (watchdog) ; scripts start court + stop supervisé sur preuve du switch natif ; canal demande climatique recâblé sur `sensor.temperature_jardin` / `humidite_relative_jardin`.
+- Météo — cumul de pluie : ajout de `sensor.pluie_cumul_24h/48h/72h` (template métier, `0.0` sans pluie), moteurs `statistics` renommés en `sensor.pluie_cumul_*_brut` (usage interne).
+- Sécurité de publication — incident P0 Zigbee2MQTT : ajout du checker `check_publication_zigbee2mqtt_contracts.py` (Z1–Z7) + workflow bloquant `security_publication_audit.yml`, scanner `audit_publication_git.py` v1.4.0 (règle S9 clés réseau), contrat `securite_publication_git.md` v1.3.0 ; anonymisation de l'IP du pont Rain Bird.
+- Couverture CI des contrats (C14) : ré-ancrage des docstrings de ~62 checkers (source normative), ajout des checkers `check_automation_prefix_domain_contracts.py` (préfixe ↔ domaine, doctrine dédiée + registre d'exceptions), `check_ci_coverage_registry.py` (anti-dérive) et `check_configuration_includes.py` ; `doctrine.yml` et `validation.yml` durcis.
+- Aération — déplacement de `disqualification_aeration.yaml` (ouvertures → aeration) et migration d'ID `10170000000010` → `10010000000031` ; ajout des traductions EN (README / index), des changelogs gelés v16.3.3 / v16.3.4 et de 7 captures d'écran.
+
+---
+
+## 🧠 ARSENAL HA — [v16.3.6](changelogs/v16/v16_3_6.md) — STABLE — 2026-07-07
+**Tags :** perimetre, sources_exterieures, doctrines, ci, meteo, palmares, lovelace, registres
+
+**Signal net :**
+- Périmètre des sources extérieures (frontière Maison / Imprimerie, incident PR #298) : ajout du checker `check_source_isolation_contracts.py` (deny-list de 30 `sensor.*_exterieur` interdits dans les domaines de décision Maison, matching par frontière de token) + workflow `contracts_source_isolation.yml`.
+- Doctrine — désambiguïsation du périmètre : `_jardin` = extérieur du domicile, `_exterieur` = site Imprimerie (`nommage_entites.md`) ; nouveau principe §10 « autorisation de source par périmètre » (`principes_generaux.md`) ; contrat arrosage `16_canal_demande_climatique.md` v0.2 (entrées VPD/ET₀ via l'axe `_jardin`).
+- Météo — palmarès : ajout de `input_select.palmares_meteo_affichage` (sélecteur d'affichage, contexte d'interface seul), refonte de `meteo_palmares.yaml` (résumé markdown + sélecteur `tile` + 4 blocs `conditional`), ajout de l'emoji de rang 10 sur les 4 cartes.
+- Registres — recompte : checkers 78 → 79, workflows 82 → 83, contrats 290 → 291 ; ajout de l'audit frontière Maison / Imprimerie.
+
 ==================================================
 FIN INDEX
 ==================================================
