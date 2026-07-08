@@ -136,8 +136,9 @@ pas été relevés précisément** et **ne doivent pas être inventés** :
 > sont **relevés tels quels** et utilisés **verbatim** ; ils **ne sont ni renommés
 > ni normalisés** (doctrine README). L'humidité et la linkquality des points 4/5/6
 > suivent en revanche le schéma `jardin_humidite_sol_zone_N`. La **température** des
-> points 4/5/6 **n'a pas été fournie** au relevé : **à relever** (sans impact
-> runtime — non consommée par les agrégats ni le recorder).
+> points 4/5/6 suit le **même schéma** que les points 1-3
+> (`sensor.jardin_humidite_sol_zone_{4,5,6}_temperature`), **confirmée** au relevé —
+> sans impact runtime (non consommée par les agrégats ni le recorder).
 | Autres diagnostics Zigbee (dernière vue, etc.) | — | **à relever** | non relevé |
 | Mise à jour firmware (`update.*` si exposé) | — | **à relever** | **update disponible** signalée (Zone 1), **non traitée** dans ce lot |
 
@@ -163,9 +164,9 @@ cellules `à relever` / `à établir` ne sont **pas** des trous d'erreur : elles
 | Zone 1 | `Jardin - Humidité sol - Zone 1` | `sensor.jardin_humidite_sol_zone_1_soil_moisture` | `sensor.jardin_humidite_sol_zone_1_temperature` | `sensor.jardin_humidite_sol_zone_1_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_1_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | à établir (Phase 0 T02) | **confirmé (appairé)** |
 | Zone 2 | `Jardin - Humidité sol - Zone 2` | `sensor.jardin_humidite_sol_zone_2_soil_moisture` *(attendu)* | `sensor.jardin_humidite_sol_zone_2_temperature` *(attendu)* | `sensor.jardin_humidite_sol_zone_2_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_2_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | à établir (Phase 0 T02) | **attendu (non appairé)** |
 | Zone 3 | `Jardin - Humidité sol - Zone 3` | `sensor.jardin_humidite_sol_zone_3_soil_moisture` *(attendu)* | `sensor.jardin_humidite_sol_zone_3_temperature` *(attendu)* | `sensor.jardin_humidite_sol_zone_3_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_3_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | à établir (Phase 0 T02) | **attendu (non appairé)** |
-| Zone 4 | *(non fourni)* | `sensor.jardin_humidite_sol_zone_4_soil_moisture` *(intégré agrégat)* | à relever | `sensor.sol_jardin_zone_4_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_4_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | zone unique (même station) | **confirmé (relevé)** |
-| Zone 5 | *(non fourni)* | `sensor.jardin_humidite_sol_zone_5_soil_moisture` *(intégré agrégat)* | à relever | `sensor.sol_jardin_zone_5_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_5_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | zone unique (même station) | **confirmé (relevé)** |
-| Zone 6 | *(non fourni)* | `sensor.jardin_humidite_sol_zone_6_soil_moisture` *(intégré agrégat)* | à relever | `sensor.sol_jardin_zone_6_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_6_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | zone unique (même station) | **confirmé (relevé)** |
+| Zone 4 | *(non fourni)* | `sensor.jardin_humidite_sol_zone_4_soil_moisture` *(intégré agrégat)* | `sensor.jardin_humidite_sol_zone_4_temperature` | `sensor.sol_jardin_zone_4_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_4_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | zone unique (même station) | **confirmé (relevé)** |
+| Zone 5 | *(non fourni)* | `sensor.jardin_humidite_sol_zone_5_soil_moisture` *(intégré agrégat)* | `sensor.jardin_humidite_sol_zone_5_temperature` | `sensor.sol_jardin_zone_5_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_5_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | zone unique (même station) | **confirmé (relevé)** |
+| Zone 6 | *(non fourni)* | `sensor.jardin_humidite_sol_zone_6_soil_moisture` *(intégré agrégat)* | `sensor.jardin_humidite_sol_zone_6_temperature` | `sensor.sol_jardin_zone_6_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_6_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | zone unique (même station) | **confirmé (relevé)** |
 
 > **Précision de relevé.** Les `entity_id` **batterie** et **linkquality** ci-dessus
 > sont **confirmés par leur intégration** aux périmètres canoniques transversaux ;
@@ -359,8 +360,8 @@ de nouvelle :
   refonte, ni carte par sonde, ni exposition au cockpit arrosage** : batterie/LQI
   restent visibles via les dashboards **système / diagnostic** existants.
 - **`entity_id` relevés, non normalisés** (§5) : batterie `sol_jardin_zone_{4,5,6}_battery`
-  (schéma divergent) ; humidité/LQI `jardin_humidite_sol_zone_{4,5,6}_*` ;
-  température **non fournie** (à relever).
+  (schéma divergent) ; humidité/LQI/température `jardin_humidite_sol_zone_{4,5,6}_*`
+  (température **confirmée**, même schéma que 1-3).
 
 ---
 
