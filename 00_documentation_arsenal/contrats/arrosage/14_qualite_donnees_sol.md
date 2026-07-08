@@ -40,7 +40,7 @@ future.
 - `sensor.jardin_humidite_sol_zone_6_soil_moisture`
 
 **Températures sol associées** (`sensor.jardin_humidite_sol_zone_{1,2,3}_temperature`
-relevées ; points 4/5/6 **à relever**) — utiles comme **observation secondaire**
+et `sensor.jardin_humidite_sol_zone_{4,5,6}_temperature`, **relevées**) — utiles comme **observation secondaire**
 uniquement, **jamais comme déclencheurs**
 ([`12`](12_capteurs_humidite_sol.md), [`13`](13_observation_hydrique_jardin.md) §3).
 
