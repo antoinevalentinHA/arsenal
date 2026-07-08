@@ -107,16 +107,28 @@ views:
                 icon: mdi:check-decagram
 
           # Conclusion métier du domaine sol.
+          # Lit le sous-verdict `motif` (attribut backend) plutôt que le
+          # simple on/off : distingue le besoin FRANC (sol sous seuil) du
+          # besoin MAINTENU par l'hystérésis (médiane déjà remontée dans la
+          # bande [seuil ; seuil+hyst[). Sans ça, la carte affichait « Sol
+          # sous seuil » même quand la médiane repassait au-dessus du seuil.
           - type: custom:button-card
-            template: carte_mode_binaire_interprete
+            template: carte_attribut_categoriel_interprete
             entity: binary_sensor.arrosage_besoin_sol
             name: Besoin sol
             icon: mdi:sprout
             variables:
-              label_on: Sol sous seuil
-              label_off: Sol suffisant
-              color_on: 'rgba(255, 152, 0, 0.2)'
-              color_off: 'rgba(76, 175, 80, 0.2)'
+              attribut: motif
+              libelles:
+                sous_seuil: Sol sous seuil
+                maintenu_hysteresis: Maintenu (hystérésis)
+                suffisant: Sol suffisant
+                indisponible: Indisponible
+              couleurs:
+                sous_seuil: 'rgba(255, 152, 0, 0.2)'
+                maintenu_hysteresis: 'rgba(255, 235, 59, 0.2)'
+                suffisant: 'rgba(76, 175, 80, 0.2)'
+                indisponible: 'rgba(158, 158, 158, 0.1)'
 
           # =========================================================
           # 🌡️ Climat (observation à blanc, hors décision V1)
