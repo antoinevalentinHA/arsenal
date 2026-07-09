@@ -63,6 +63,7 @@ import fnmatch
 import os
 import re
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -413,10 +414,18 @@ def add(findings: list[Finding], severity: str, control: str,
 
 
 def run_git(*args: str) -> str:
+    # Décodage explicite en UTF-8 : git émet de l'UTF-8 (contenus de fichiers,
+    # noms, historique). Sans `encoding=`, `text=True` décode avec la locale
+    # (cp1252 sous Windows), ce qui fait planter `--history` sur du contenu
+    # d'historique non-cp1252 (UnicodeDecodeError, byte 0x9d…). errors="replace"
+    # tolère un éventuel blob non-UTF-8 sans interrompre le scan. Neutre en CI
+    # Linux (locale déjà UTF-8).
     result = subprocess.run(
         ["git", *args],
         cwd=ROOT,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
         check=False,
@@ -964,6 +973,16 @@ def selftest() -> int:
 
 
 def main() -> int:
+    # Sortie console robuste hors UTF-8 (console Windows cp1252) : les libellés
+    # et emojis du rapport (❌ ⚠️ ✅, tiret cadratin) planteraient sinon à
+    # l'impression (UnicodeEncodeError). errors="replace" garantit un affichage
+    # non bloquant ; no-op en CI Linux (déjà UTF-8).
+    for _stream in (sys.stdout, sys.stderr):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
     parser = argparse.ArgumentParser(
         description="Arsenal — Audit sécurité pré-publication Git"
     )
