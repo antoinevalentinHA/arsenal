@@ -15,9 +15,16 @@
 #     - Toute source indisponible est considérée comme
 #       rendant l'invariant violé (pas d'optimisme silencieux).
 #     - Les helpers visiteur_start / visiteur_end sont des
-#       fenêtres intra-journée (HH:MM:SS) : la comparaison
-#       lexicale de strings est licite UNE FOIS la garde
-#       d'indisponibilité passée — pas besoin de parsing.
+#       fenêtres intra-journée (HH:MM:SS, sans franchissement
+#       de minuit) : comparaison lexicale de chaînes gardée
+#       (licite après garde d'indisponibilité pour ce format
+#       zéro-padé 24 h). EXCEPTION ASSUMÉE à la doctrine de
+#       parsing temporel du contrat parametres_invalides : le
+#       contrat VISITE (check_visite_contracts) interdit toute
+#       fonction de logique temporelle sur les entités
+#       visiteur_* hors du capteur canonique
+#       12_template_sensors/presence/visite.yaml. Priorité au
+#       contrat visite (centralisation temporelle).
 #
 # ----------------------------------------------------------
 # 🚨 INVARIANTS SURVEILLÉS
