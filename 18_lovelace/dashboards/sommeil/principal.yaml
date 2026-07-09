@@ -175,24 +175,6 @@ views:
           # ======================================================
           # 📝 DÉTAIL HEURES DE RÉVEILS
           # ======================================================
-          - type: markdown
-            content: >
-              **Heures des réveils – Arnaud :**  
+          - !include ../../includes/cartes/sommeil/reveils_arnaud.yaml
 
-              {{ states('input_text.reveils_arnaud_heures') or 'Aucun réveil détecté' }}
-            visibility:
-              - condition: numeric_state
-                entity: input_number.reveils_nocturnes_arnaud
-                above: 0
-            text_only: true
-
-          - type: markdown
-            content: >
-              **Heures des réveils – Matthieu :**  
-
-              {{ states('input_text.reveils_matthieu_heures') or 'Aucun réveil détecté' }}
-            visibility:
-              - condition: numeric_state
-                entity: input_number.reveils_nocturnes_matthieu
-                above: 0
-            text_only: true
+          - !include ../../includes/cartes/sommeil/reveils_matthieu.yaml

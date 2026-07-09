@@ -125,44 +125,4 @@ views:
           # ------------------------------------------------------
           # 🧮 Analyse textuelle complète (bilan mensuel)
           # ------------------------------------------------------
-          - type: markdown
-            content: >
-              <div style="line-height: 1.5; margin-bottom: 6px;">
-              {% set actuel = (states('sensor.autonomie_audi_e_tron_mensuelle') | float(0)) | round(1) %}
-              {% set historique = states('input_text.historique_autonomie_audi_etron') %}
-              {% set lignes = historique.split('\n') if historique else [] %}
-              {% set valeurs = [] %}
-              {% for ligne in lignes %}
-                {% set match = ligne | regex_search('([0-9]+\\.?[0-9]*)') %}
-                {% if match %}
-                  {% set valeurs = valeurs + [match | float] %}
-                {% endif %}
-              {% endfor %}
-              {% if valeurs|length > 0 %}
-                {% set maxv = valeurs|max %}
-                {% set perte = ((maxv - actuel) / maxv * 100) | round(1) %}
-              {% else %}
-                {% set maxv = None %}
-                {% set perte = None %}
-              {% endif %}
-
-              {% if actuel > 0 %}
-              <b>Moyenne du mois en cours :</b> {{ actuel }} km<br>
-              {% else %}
-              <b>Moyenne du mois en cours :</b> <i>en attente de données</i><br>
-              {% endif %}
-
-              {% if perte is not none and actuel > 0 %}
-              📉 <b>Perte depuis le pic :</b> {{ perte }} %<br>
-              {% endif %}
-
-              {% if historique and historique != 'unknown' %}
-              <br>
-              🗓️ <b>Historique (5 derniers mois) :</b><br>
-              <pre style="margin: 4px 0 0 0;">{{ historique }}</pre>
-              {% else %}
-              <br>
-              🗓️ <b>Historique (5 derniers mois) :</b><br>
-              <i>Aucun historique disponible</i>
-              {% endif %}
-              </div>
+          - !include ../../includes/cartes/voiture/audi_batterie_bilan_mensuel.yaml

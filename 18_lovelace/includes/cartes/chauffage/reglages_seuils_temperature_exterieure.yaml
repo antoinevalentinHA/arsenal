@@ -1,0 +1,23 @@
+type: markdown
+content: |
+  {% set seuil_on = states('input_number.chauffage_seuil_ext_on') %}
+  {% set seuil_off = states('input_number.chauffage_seuil_ext_off') %}
+
+  {% if seuil_on not in ['unknown', 'unavailable']
+     and seuil_off not in ['unknown', 'unavailable'] %}
+
+  {% set seuil_on = seuil_on | float %}
+  {% set seuil_off = seuil_off | float %}
+
+  🔎 Seuils d’autorisation
+
+  - Autorisation confort : < {{ seuil_on | round(1) }} °C  
+  - Interdiction confort : ≥ {{ seuil_off | round(1) }} °C  
+
+  {% else %}
+
+  🔎 Seuils d’autorisation
+
+  ⏳ Données non disponibles (initialisation)
+
+  {% endif %}
