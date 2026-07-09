@@ -415,6 +415,76 @@ def test_ui_consumes_only_global() -> None:
 
 
 # ---------------------------------------------------------------------------
+# T13 — Fail-closed des sources non-numériques (input_datetime / input_boolean)
+#
+# Doctrine (§ Doctrine d'expression) : « toute source indisponible → invariant
+# violé, pas d'optimisme silencieux ». Les input_number sont gardés par
+# | float(none) + is none (le fallback | float(0) est déjà interdit par T8).
+# Les input_datetime / input_boolean, eux, ne passent pas par float() : leur
+# indisponibilité doit être testée EXPLICITEMENT dans le state, via une
+# appartenance « <var> in ['unknown', 'unavailable', 'none', ''] » (littérale
+# ou via une variable liste, ex. « <var> in indispos »).
+#
+# Ce test capte le trou PARAM-01 (climatisation inv9) : une source datetime /
+# boolean lue dans le state mais jamais testée pour indisponibilité — l'état
+# devient alors fail-OPEN (une borne absente n'est pas signalée). Scope : bloc
+# `state` uniquement. Deux motifs sanctionnés :
+#   1. « {% set VAR = states('input_datetime|boolean...') %} » sans « VAR in … »
+#   2. « is_state('input_datetime|boolean...') » (collapse unavailable → False)
+# ---------------------------------------------------------------------------
+
+STATE_BLOCK_RE = re.compile(
+    r"state\s*:\s*>\s*\n(.*?)(?:\n\s+attributes\s*:|\Z)",
+    re.DOTALL,
+)
+
+BINDING_RE = re.compile(
+    r"{%\s*set\s+(\w+)\s*=\s*states\(\s*['\"]"
+    r"(input_(?:datetime|boolean)\.[^'\"]+)['\"]\s*\)\s*(?:\|\s*string\s*)?%}"
+)
+
+IS_STATE_NON_NUMERIC_RE = re.compile(
+    r"is_state\(\s*['\"](input_(?:datetime|boolean)\.[^'\"]+)"
+)
+
+
+def extract_state_block(content: str) -> str:
+    m = STATE_BLOCK_RE.search(content)
+    return m.group(1) if m else ""
+
+
+def test_non_numeric_sources_guarded() -> None:
+    files = domain_files()
+    violations = []
+    for path in sorted(files):
+        state = extract_state_block(read(path))
+        if not state:
+            continue
+        # 1. Variables liées à states('input_datetime|boolean...') non testées
+        for var, entity in BINDING_RE.findall(state):
+            if not re.search(rf"\b{re.escape(var)}\s+in\b", state):
+                violations.append(
+                    f"{path.relative_to(REPO_ROOT)} : source non-numérique "
+                    f"{entity} (var «{var}») lue dans le state sans garde "
+                    f"d'indisponibilité (attendu : «{var} in ['unknown', "
+                    f"'unavailable', 'none', '']»)"
+                )
+        # 2. is_state() direct sur une source datetime/boolean dans le state
+        for m in IS_STATE_NON_NUMERIC_RE.finditer(state):
+            violations.append(
+                f"{path.relative_to(REPO_ROOT)} : is_state({m.group(1)}) dans le "
+                f"state masque l'indisponibilité (lire la valeur brute via "
+                f"states(...) puis tester explicitement l'appartenance)"
+            )
+    if violations:
+        for v in violations:
+            ERRORS.append(f"T13 — Source non-numérique non gardée (fail-closed) : {v}")
+    else:
+        print("✔ T13 — Sources non-numériques (datetime/boolean) du state "
+              "gardées contre l'indisponibilité")
+
+
+# ---------------------------------------------------------------------------
 # Registre des tests
 # ---------------------------------------------------------------------------
 
@@ -431,6 +501,7 @@ TESTS = [
     test_ui_included_in_dashboards,
     test_group_only_valid_entities,
     test_ui_consumes_only_global,
+    test_non_numeric_sources_guarded,
 ]
 
 # ---------------------------------------------------------------------------
