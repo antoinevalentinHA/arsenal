@@ -46,12 +46,24 @@ views:
               {% set nd = state_attr('sensor.palmares_temperature_min_journaliere_haute', 'rang_01_date') %}
               {% set nda = state_attr('sensor.palmares_temperature_min_journaliere_haute', 'rang_01_date_affichage') %}
               {% set r = state_attr('sensor.palmares_pluie_journalier', 'records') or [] %}
-              | Palmarès | Record | Date |
-              |:---|---:|:---:|
-              | 🔥 **Chaleur** | {% if cv is not none and cd not in UNAV %}{{ cv }} °C{% else %}—{% endif %} | {% if cv is not none and cd not in UNAV %}{{ cda }}{% else %}—{% endif %} |
-              | ❄️ **Froid** | {% if fv is not none and fv != 999 and fd not in UNAV %}{{ fv }} °C{% else %}—{% endif %} | {% if fv is not none and fv != 999 and fd not in UNAV %}{{ fda }}{% else %}—{% endif %} |
-              | 🌙 **Nuit chaude** | {% if nv is not none and nv != -999 and nd not in UNAV %}{{ nv }} °C{% else %}—{% endif %} | {% if nv is not none and nv != -999 and nd not in UNAV %}{{ nda }}{% else %}—{% endif %} |
-              | 🌧️ **Pluie** | {% if r | count > 0 %}{{ r[0].valeur }} mm{% else %}—{% endif %} | {% if r | count > 0 %}{{ r[0].date_affichage }}{% else %}—{% endif %} |
+              {% set c_ok = cv is not none and cd not in UNAV %}
+              {% set f_ok = fv is not none and fv != 999 and fd not in UNAV %}
+              {% set n_ok = nv is not none and nv != -999 and nd not in UNAV %}
+              {% set p_ok = r | count > 0 %}
+              {% set cval = (cv ~ ' °C') if c_ok else '—' %}
+              {% set fval = (fv ~ ' °C') if f_ok else '—' %}
+              {% set nval = (nv ~ ' °C') if n_ok else '—' %}
+              {% set pval = (r[0].valeur ~ ' mm') if p_ok else '—' %}
+              {% set cdt = cda if c_ok else '—' %}
+              {% set fdt = fda if f_ok else '—' %}
+              {% set ndt = nda if n_ok else '—' %}
+              {% set pdt = r[0].date_affichage if p_ok else '—' %}
+              ```text
+              {{ "%-12s"|format('Chaleur') }}{{ "%8s"|format(cval) }}  {{ "%-10s"|format(cdt) }}  🔥
+              {{ "%-12s"|format('Froid') }}{{ "%8s"|format(fval) }}  {{ "%-10s"|format(fdt) }}  ❄️
+              {{ "%-12s"|format('Nuit chaude') }}{{ "%8s"|format(nval) }}  {{ "%-10s"|format(ndt) }}  🌙
+              {{ "%-12s"|format('Pluie') }}{{ "%8s"|format(pval) }}  {{ "%-10s"|format(pdt) }}  🌧️
+              ```
 
           # ==================================================
           # 🔎 SÉLECTEUR DE CONSULTATION (sobre — modèle Clim)
