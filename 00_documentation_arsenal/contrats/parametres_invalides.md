@@ -1,6 +1,6 @@
 # 📜 CONTRAT — PARAMÈTRES INVALIDES
 
-**Version** : 1.1
+**Version** : 1.2
 **Statut** : normatif
 **Domaine** : observabilité système — intégrité des paramètres
 **Portée** : transverse (tous sous-systèmes Arsenal)
@@ -148,8 +148,21 @@ sans exception.
 
 - `| float(none)` pour parser un `input_number` (avec garde `is none`)
 - `| int(none)` idem si applicable
-- `as_datetime(...)` pour parser un `input_datetime`, **toujours
-  précédé d'une garde** sur la chaîne brute
+- Parsing d'un `input_datetime`, **toujours précédé d'une garde** sur la
+  chaîne brute, selon la nature du helper :
+  - **helper avec date** (`has_date: true`) : `as_datetime(...)`.
+  - **helper heure-seule** (`has_date: false` / `has_time: true`, état
+    `"HH:MM:SS"`) : `today_at(...)`. ⚠ `as_datetime("HH:MM:SS")` retourne
+    **`None`** (aucune date à parser), et une comparaison `None < None`
+    lève un `TypeError` qui casse le rendu du capteur. `today_at` ancre
+    l'heure sur la date du jour et rend des datetimes comparables. Réservé
+    aux fenêtres intra-journée sans franchissement de minuit.
+
+    > Exception : si le helper heure-seule est une entité surveillée par
+    > un autre contrat interdisant la logique temporelle (ex.
+    > `input_datetime.visiteur_*` sous le contrat VISITE), conserver la
+    > comparaison lexicale gardée (licite sur du `"HH:MM:SS"` zéro-padé
+    > 24 h) et documenter l'exception en en-tête.
 - **Variables Jinja en tête** d'expression (`{% set x = ... %}`) pour
   lire chaque source une seule fois et rendre la logique lisible
 
@@ -597,3 +610,4 @@ Procédure normative à suivre pour ajouter un sous-système :
 |---------|------------|------------------------------------------------|
 | 1.0     | 2026-04-30 | Version initiale. Couches 1–4 normatives.      |
 | 1.1     | 2026-05-26 | Ajout du domaine climatisation.                |
+| 1.2     | 2026-07-09 | Parsing `input_datetime` heure-seule : `today_at(...)` (et non `as_datetime`, qui rend `None` → `TypeError`). |
