@@ -106,6 +106,25 @@ views:
                 name: Points frais
                 icon: mdi:check-decagram
 
+              # Faits de dispersion — grandeurs d'observation déjà calculées par le
+              # runtime (réservoir_sol.yaml), rendues visibles ici (P0 observabilité,
+              # audit_humidite_sol_mediane_dispersion.md). Lecture seule : ni seuil,
+              # ni jugement automatique. Minimum = point le plus sec ; Écart =
+              # hétérogénéité (max − min). La médiane reste portée par le cockpit
+              # (tendance) et le verdict « Besoin sol » ci-dessous. Pas de capteur
+              # « maximum » en backend : non affiché (aucun entity_id créé).
+              - type: custom:button-card
+                template: carte_kpi_bleu
+                entity: sensor.jardin_humidite_sol_minimum
+                name: Minimum
+                icon: mdi:water-alert-outline
+
+              - type: custom:button-card
+                template: carte_kpi_bleu
+                entity: sensor.jardin_humidite_sol_heterogeneite
+                name: Écart
+                icon: mdi:arrow-expand-vertical
+
           # Conclusion métier du domaine sol.
           # Lit le sous-verdict `motif` (attribut backend) plutôt que le
           # simple on/off : distingue le besoin FRANC (sol sous seuil) du
