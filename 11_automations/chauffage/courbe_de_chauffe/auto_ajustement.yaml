@@ -194,17 +194,10 @@
                         para_after: "{{ parallele_suggeree }}"
                         timestamp: "{{ now().strftime('%d/%m %H:%M') }}"
 
-                    - service: persistent_notification.create
-                      data:
-                        title: "🤖 Simulation auto-ajustement chauffage"
-                        message: >
-                          Mode auto actif (simulation).
-
-                          Ajustements proposés :
-                          • Pente : {{ pente_actuelle }} → {{ pente_suggeree }}
-                          • Parallèle : {{ parallele_actuel }} → {{ parallele_suggeree }}
-
-                          Aucun changement n'a été appliqué.
+                # Compte-rendu de calcul (ajustements PROPOSÉS, non appliqués) :
+                # c'est un événement/diagnostic, restitué par le logbook et
+                # l'event ci-dessus. Pas de persistant (audit Notifications,
+                # NOTIF-06 — événement déguisé : formulation au passé, sans état).
 
                 - conditions:
                     - condition: template

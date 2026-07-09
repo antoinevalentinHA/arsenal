@@ -44,6 +44,8 @@
   # 🧩 Variables — Saison calculee sur base du mois courant
   # ======================================================
   variables:
+    # Capturé au démarrage du run, AVANT le select_option → saison sortante.
+    saison_precedente: "{{ states('input_select.saison') }}"
     saison_calculee: >
       {% set m = now().month %}
       {% if m in [12, 1, 2] %} Hiver
@@ -70,9 +72,12 @@
       data:
         option: "{{ saison_calculee }}"
 
-    # Message utilisateur
-    - service: persistent_notification.create
+    # Notification ÉVÉNEMENTIELLE (changement de saison) → canal mobile.
+    # Un changement de saison est un événement, pas un état durable :
+    # il ne doit pas être projeté en persistant (audit Notifications, NOTIF-06).
+    - service: script.notification_envoyer
       data:
-        title: "🌦️ Saison – Contexte actif"
+        cible: input_text.telephone_antoine_notify
+        titre: "🌦️ Saison"
         message: >
-          **{{ states('input_select.saison') }}** a **{{ saison_calculee }}**.
+          Changement de saison : {{ saison_precedente }} → {{ saison_calculee | trim }}.

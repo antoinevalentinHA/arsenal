@@ -55,10 +55,13 @@
       target:
         entity_id: input_boolean.ecs_cycle_en_cours
 
-    - service: persistent_notification.create
+    # Notification ÉVÉNEMENTIELLE (déblocage ponctuel au démarrage) → canal mobile.
+    # Décrit une action passée : ce n'est pas un état durable, donc pas de
+    # persistant (audit Notifications, NOTIF-06 — événement déguisé).
+    - service: script.notification_envoyer
       data:
-        title: "🔄 ECS – Verrou cycle levé"
+        cible: input_text.telephone_antoine_notify
+        titre: "🔄 ECS – Verrou cycle levé"
         message: >
-          alors que la consigne était déjà à 10 °C.  
-          
-          Le verrou a été remis à *OFF* automatiquement pour permettre un nouveau cycle.
+          Verrou cycle ECS levé automatiquement au démarrage
+          (consigne déjà à 10 °C). Un nouveau cycle est possible.

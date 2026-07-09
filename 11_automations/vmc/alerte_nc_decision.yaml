@@ -50,6 +50,12 @@
         - "unknown"
         - "unavailable"
 
+    # Re-projection post-démarrage : HA ne restaure pas les persistantes.
+    # Si l'état non conforme est encore vrai au boot, la notification est recréée.
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
   action:
     - choose:
 

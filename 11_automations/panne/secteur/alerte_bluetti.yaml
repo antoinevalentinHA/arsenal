@@ -11,6 +11,13 @@
 # Signaler une perte ou degradation critique de l'alimentation
 # locale de la chaine thermique protegee par le Bluetti AC180.
 #
+# Structure (audit Notifications, NOTIF-04) :
+#   - la notification PERSISTANTE est une PROJECTION D'ETAT :
+#     create si alerte active, dismiss sinon, recalculable au boot
+#     (trigger systeme_stable → on) ;
+#   - le push MOBILE est un EVENEMENT : emis uniquement sur la
+#     transition reelle vers l'alerte, jamais lors d'une re-projection.
+#
 # Invariant :
 # Cette automation ne qualifie jamais une panne secteur Arsenal.
 # Elle ne pilote ni chauffage, ni ECS, ni mode panne secteur.
@@ -27,21 +34,23 @@
   trigger:
     - platform: state
       entity_id: binary_sensor.bluetti_alerte_active
-      to: "on"
-      id: alerte_active
 
+    # Re-projection post-démarrage : HA ne restaure pas les persistantes
     - platform: state
-      entity_id: binary_sensor.bluetti_alerte_active
-      to: "off"
-      id: alerte_resolue
+      entity_id: input_boolean.systeme_stable
+      to: "on"
 
   condition: []
 
   action:
+
+    # 1) Projection d'état persistant : create si alerte active, sinon dismiss.
+    #    Recalculable au boot depuis le seul état courant.
     - choose:
         - conditions:
-            - condition: trigger
-              id: alerte_active
+            - condition: state
+              entity_id: binary_sensor.bluetti_alerte_active
+              state: "on"
           sequence:
             - service: persistent_notification.create
               data:
@@ -55,7 +64,23 @@
                   SOC : {{ states('sensor.bluetti_battery_soc') }} %
 
                   Tension sortie : {{ states('sensor.bluetti_ac_output_voltage') }} V
+      default:
+        - service: persistent_notification.dismiss
+          data:
+            notification_id: energie_chaudiere_bluetti
 
+    # 2) Push mobile (ÉVÉNEMENT) : uniquement sur la transition réelle
+    #    vers l'alerte (off/inconnu → on), jamais lors d'une re-projection boot.
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.entity_id == 'binary_sensor.bluetti_alerte_active'
+                   and trigger.to_state is not none
+                   and trigger.to_state.state == 'on'
+                   and trigger.from_state is not none
+                   and trigger.from_state.state != 'on' }}
+          sequence:
             - service: script.notification_envoyer
               data:
                 cible: input_text.telephone_antoine_notify
@@ -64,11 +89,3 @@
                   Alerte Bluetti : {{ states('sensor.bluetti_sante_synthese') }}.
                 data:
                   tag: energie_chaudiere_bluetti
-
-        - conditions:
-            - condition: trigger
-              id: alerte_resolue
-          sequence:
-            - service: persistent_notification.dismiss
-              data:
-                notification_id: energie_chaudiere_bluetti
