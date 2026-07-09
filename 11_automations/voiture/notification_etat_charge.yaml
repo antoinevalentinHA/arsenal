@@ -42,6 +42,11 @@
       entity_id: sensor.audi_e_tron_etat_de_charge_local
       from: "charging"
 
+    # Re-projection post-démarrage : HA ne restaure pas les persistantes
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
   # ======================================================
   # 🔄 Actions — Création / extinction de la notification
   # ======================================================

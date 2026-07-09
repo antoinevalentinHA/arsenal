@@ -65,11 +65,16 @@
   mode: restart
 
   # ======================================================
-  # 🔔 Déclencheur — Tout changement d’état du mode
+  # 🔔 Déclencheur — Changement d’état du mode ou stabilisation boot
   # ======================================================
   trigger:
     - platform: state
       entity_id: input_boolean.mode_babysitting
+
+    # Re-projection post-démarrage : HA ne restaure pas les persistantes
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
 
   # ======================================================
   # 🔄 Actions — Création ou disqualification de l’état

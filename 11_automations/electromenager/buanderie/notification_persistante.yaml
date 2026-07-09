@@ -1,0 +1,77 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Buanderie – Projection d’état persistant du cycle
+#
+#  ID : 10080000000007
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de PROJECTION D’ÉTAT MÉTIER.
+#
+#     Elle projette dans l’UI une notification persistante
+#     représentant exclusivement l’état courant :
+#
+#         « Buanderie – Cycle en cours »
+#
+#     tant que `input_boolean.buanderie_cycle` est à ON,
+#     et la disqualifie explicitement à son extinction.
+#
+# ----------------------------------------------------------
+#  🧱 NATURE
+#
+#     - Projection directe d’un état métier backend
+#     - Découplée de la DÉTECTION de début/fin de cycle
+#       (`debut.yaml` / `fin.yaml`), qui restent propriétaires
+#       du flag et du push mobile de fin.
+#
+# ----------------------------------------------------------
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement sur :
+#         • tout changement de input_boolean.buanderie_cycle
+#         • stabilisation post-démarrage (systeme_stable → on)
+#     - Si ON  : création de la notification persistante d’état
+#     - Si OFF : disqualification explicite
+#
+#  🔄 ROBUSTESSE RELOAD
+#
+#     HA ne restaure pas les notifications persistantes au reboot.
+#     Le flag `buanderie_cycle` (input_boolean) est restauré ;
+#     cette projection recrée la notification si le cycle est encore
+#     en cours après un redémarrage.
+#
+#  ✅ COMPATIBILITÉ : Home Assistant 2024.8+
+# ==========================================================
+
+- id: "10080000000007"
+  alias: "Électroménager - Buanderie - Notification"
+  description: >
+    Projette une notification persistante tant que le cycle de la
+    buanderie est en cours, et la disqualifie à son extinction.
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.buanderie_cycle
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  action:
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.buanderie_cycle
+              state: "on"
+          sequence:
+            - action: persistent_notification.create
+              data:
+                notification_id: buanderie_cycle
+                title: "🧺 Buanderie – Cycle en cours"
+                message: >
+                  Un cycle d’électroménager est actuellement en cours.
+      default:
+        - action: persistent_notification.dismiss
+          data:
+            notification_id: buanderie_cycle

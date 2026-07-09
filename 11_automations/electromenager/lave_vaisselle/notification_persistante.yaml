@@ -1,0 +1,77 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Lave-vaisselle – Projection d’état persistant du cycle
+#
+#  ID : 10080000000006
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de PROJECTION D’ÉTAT MÉTIER.
+#
+#     Elle projette dans l’UI une notification persistante
+#     représentant exclusivement l’état courant :
+#
+#         « Lave-vaisselle – Cycle en cours »
+#
+#     tant que `input_boolean.lave_vaisselle_cycle` est à ON,
+#     et la disqualifie explicitement à son extinction.
+#
+# ----------------------------------------------------------
+#  🧱 NATURE
+#
+#     - Projection directe d’un état métier backend
+#     - Découplée de la DÉTECTION de début/fin de cycle
+#       (`debut.yaml` / `fin.yaml`), qui restent propriétaires
+#       du flag et du push mobile de fin.
+#
+# ----------------------------------------------------------
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement sur :
+#         • tout changement de input_boolean.lave_vaisselle_cycle
+#         • stabilisation post-démarrage (systeme_stable → on)
+#     - Si ON  : création de la notification persistante d’état
+#     - Si OFF : disqualification explicite
+#
+#  🔄 ROBUSTESSE RELOAD
+#
+#     HA ne restaure pas les notifications persistantes au reboot.
+#     Le flag `lave_vaisselle_cycle` (input_boolean) est restauré ;
+#     cette projection recrée la notification si le cycle est encore
+#     en cours après un redémarrage.
+#
+#  ✅ COMPATIBILITÉ : Home Assistant 2024.8+
+# ==========================================================
+
+- id: "10080000000006"
+  alias: "Électroménager - Lave-vaisselle - Notification"
+  description: >
+    Projette une notification persistante tant que le cycle du
+    lave-vaisselle est en cours, et la disqualifie à son extinction.
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.lave_vaisselle_cycle
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  action:
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.lave_vaisselle_cycle
+              state: "on"
+          sequence:
+            - action: persistent_notification.create
+              data:
+                notification_id: lave_vaisselle_cycle
+                title: "🍽️ Lave-vaisselle – Cycle en cours"
+                message: >
+                  Le lave-vaisselle est actuellement en fonctionnement.
+      default:
+        - action: persistent_notification.dismiss
+          data:
+            notification_id: lave_vaisselle_cycle

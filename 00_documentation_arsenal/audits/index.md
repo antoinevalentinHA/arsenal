@@ -146,6 +146,9 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 ### Météo
 - [meteo/plan_action_meteo_axe_temperature.md](03_plans_action/meteo/plan_action_meteo_axe_temperature.md)
 
+### Notifications
+- [notifications/plan_action_notifications.md](03_plans_action/notifications/plan_action_notifications.md)  _(suites de l'audit Notifications — cycle de vie des persistantes ; arbitrage rendu 2026-07-09 ; **corrections NOTIF-01→06 appliquées** sur l'idiome `systeme_stable → on` (présence recalculable, projection panne secteur, extraction électroménager, requalification des événements déguisés, VMC/voiture/bluetti alignés ; panne_internet = reprise différée assumée) ; validation statique verte, **terrain en attente** ; cockpit C15)_
+
 ### Température intérieure
 - [temperature_interieure/plan_action_temperature_interieure_agregats.md](03_plans_action/temperature_interieure/plan_action_temperature_interieure_agregats.md)
 

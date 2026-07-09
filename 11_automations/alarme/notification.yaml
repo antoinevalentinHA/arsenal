@@ -47,6 +47,12 @@
         - armed_away
         - disarmed
 
+    # Re-projection post-démarrage : HA ne restaure pas les persistantes.
+    # À l'état armed_away restauré, la notification est recréée ; sinon dismiss.
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
   action:
     - choose:
 

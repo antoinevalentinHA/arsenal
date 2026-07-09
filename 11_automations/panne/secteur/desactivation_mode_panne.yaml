@@ -149,11 +149,13 @@
       target:
         entity_id: input_boolean.mode_confort_chauffage
 
-    # 3) Disqualifier l’état panne visible
-    - service: persistent_notification.dismiss
-      data:
-        notification_id: mode_panne_secteur
-
+    # 3) Disqualification de l’état panne visible : DÉLÉGUÉE.
+    #    La notification persistante `mode_panne_secteur` est une projection de
+    #    `input_boolean.panne_secteur_active` (voir notification_persistante.yaml) :
+    #    l'extinction du booléen ci-dessus (étape 1) déclenche automatiquement
+    #    son dismiss. Plus de dismiss manuel ici — propriété unique de la projection
+    #    (audit Notifications, NOTIF-02).
+    #
     # 4) Notification mobile de fin d’épisode
     - service: script.notification_envoyer_avance
       data:

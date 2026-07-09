@@ -76,13 +76,10 @@
   # 🔄 Action — Flag ON + notification
   # ======================================================
   action:
+    # Marque l'entrée en cycle. La notification persistante d'état est
+    # projetée par notification_persistante.yaml (projection de
+    # lave_vaisselle_cycle + systeme_stable → on), pour être recréable
+    # au reboot (audit Notifications, NOTIF-03).
     - action: input_boolean.turn_on
       target:
         entity_id: input_boolean.lave_vaisselle_cycle
-
-    - action: persistent_notification.create
-      data:
-        title: "🍽️ Lave-vaisselle – Cycle en cours"
-        message: >
-          Le lave-vaisselle est actuellement en fonctionnement.
-        notification_id: lave_vaisselle_cycle

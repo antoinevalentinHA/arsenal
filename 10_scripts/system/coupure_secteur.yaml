@@ -101,23 +101,16 @@ mode_panne_coupure_secteur:
               data:
                 mode: "desinfection"
     # sinon : pas de cycle ECS — autonomie restante de la chaîne préservée
-    # 2) Notification persistante – reflète l'état RÉEL des deux volets
-    - service: persistent_notification.create
-      data:
-        notification_id: mode_panne_secteur
-        title: "⚠️ Coupure secteur – Mode panne actif"
-        message: >
-          Coupure d'alimentation secteur en cours.
-
-          **État système :** `input_boolean.panne_secteur_active` = ON.
-
-          **Chauffage confort :** {{ 'activé (besoin thermique + présence + SOC)' if confort_engage else 'neutralisé (inutile ou SOC bas) — régime réduit maintenu' }}
-
-          **ECS de secours (stockage thermique) :** {{ 'cycle désinfection déclenché — ballon poussé au maximum' if budget_ecs_ok else 'non déclenché — Bluetti indisponible ou SOC critique, autonomie préservée' }}
-
-          Cette notification restera visible tant que
-          la panne secteur sera active.
-
+    #
+    # 2) Notification persistante d'état : DÉLÉGUÉE.
+    #    La projection persistante `mode_panne_secteur` est désormais portée
+    #    par une automation dédiée, `11_automations/panne/secteur/notification_persistante.yaml`
+    #    (projection de `input_boolean.panne_secteur_active` + systeme_stable → on).
+    #    Ce découplage garantit la re-création au démarrage même si HA reboote
+    #    EN PLEINE COUPURE — cas où la garde d'idempotence de l'entrée
+    #    empêchait toute re-création (audit Notifications, NOTIF-02).
+    #    Ce script conserve UNIQUEMENT le push mobile (événement d'entrée).
+    #
     # 3) Notification mobile prioritaire – état réel
     - service: script.notification_envoyer_avance
       data:

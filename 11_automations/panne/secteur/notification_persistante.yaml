@@ -1,0 +1,117 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Panne secteur – Projection d’état persistant du mode
+#
+#  ID : 10040000000004
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de PROJECTION D’ÉTAT MÉTIER.
+#
+#     Elle projette dans l’UI une notification persistante
+#     représentant exclusivement l’état courant :
+#
+#         « Coupure secteur – Mode panne actif »
+#
+#     tant que `input_boolean.panne_secteur_active` est à ON,
+#     et la disqualifie explicitement à sa désactivation.
+#
+# ----------------------------------------------------------
+#  🧱 NATURE
+#
+#     - Projection directe d’un état système backend
+#     - Zéro logique décisionnelle, zéro action de résilience
+#     - Zéro mémoire événementielle
+#
+# ----------------------------------------------------------
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement sur :
+#         • tout changement de input_boolean.panne_secteur_active
+#         • stabilisation post-démarrage (systeme_stable → on)
+#
+#     - Si ON  : création de la notification persistante d’état
+#     - Si OFF : disqualification explicite
+#
+#     Le message décrit l’ÉTAT COURANT (panne active + régime
+#     confort chauffage courant). Le récit de l’action de secours
+#     (cycle ECS déclenché) est un ÉVÉNEMENT : il vit dans le push
+#     mobile émis à l’entrée en panne et dans le logbook, jamais
+#     dans cette projection persistante.
+#
+# ----------------------------------------------------------
+#  🔄 ROBUSTESSE RELOAD
+#
+#     HA ne restaure pas les notifications persistantes au reboot.
+#     Découplée de l’action d’entrée gardée par idempotence
+#     (`activation_mode_panne.yaml`), cette projection est recréée
+#     au démarrage si la panne est encore active — y compris lorsque
+#     HA redémarre EN PLEINE COUPURE (secours Bluetti/UPS), cas où
+#     la garde d’idempotence de l’entrée empêchait toute re-création.
+#
+# ----------------------------------------------------------
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne détecte pas la panne
+#     - Ne pilote ni chauffage, ni ECS
+#     - Ne sort pas du mode panne
+#     - Ne trace aucun événement passé
+#
+#  ✅ COMPATIBILITÉ : Home Assistant 2024.8+
+# ==========================================================
+
+- id: "10040000000004"
+  alias: "Panne - Notification mode panne secteur"
+  description: >
+    Projette une notification persistante tant que le mode panne secteur
+    est actif, et la disqualifie explicitement à sa désactivation.
+    Découplée de l’action d’entrée : recréable au démarrage même en
+    pleine coupure.
+  mode: restart
+
+  # ======================================================
+  # 🔔 Déclencheurs — État panne ou stabilisation boot
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: input_boolean.panne_secteur_active
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  # ======================================================
+  # 🔄 Actions — Création ou disqualification de l’état
+  # ======================================================
+  action:
+    - choose:
+
+        # --------------------------------------------------
+        # 🟥 Panne active → création de l’état visible
+        # --------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.panne_secteur_active
+              state: "on"
+          sequence:
+            - service: persistent_notification.create
+              data:
+                notification_id: mode_panne_secteur
+                title: "⚠️ Coupure secteur – Mode panne actif"
+                message: >
+                  Coupure d’alimentation secteur en cours.
+
+                  **Chauffage confort :** {{ 'activé (besoin thermique + présence + SOC)'
+                  if is_state('input_boolean.mode_confort_chauffage', 'on')
+                  else 'neutralisé — régime réduit maintenu' }}
+
+                  Cette notification reste visible tant que
+                  la panne secteur est active.
+
+      # --------------------------------------------------
+      # 🟩 Panne levée → disqualification
+      # --------------------------------------------------
+      default:
+        - service: persistent_notification.dismiss
+          data:
+            notification_id: mode_panne_secteur

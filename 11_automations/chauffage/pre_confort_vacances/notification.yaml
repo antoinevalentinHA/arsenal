@@ -30,6 +30,11 @@
     - platform: state
       entity_id: input_boolean.pre_confort_actif_calcule
 
+    # Re-projection post-démarrage : HA ne restaure pas les persistantes
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
   action:
     - choose:
 

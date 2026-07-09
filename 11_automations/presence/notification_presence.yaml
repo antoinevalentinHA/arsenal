@@ -32,13 +32,14 @@
 #     - États interprétés :
 #
 #         Présent :
-#           • tout état ≠ not_home
+#           • tout état ≠ not_home / unknown / unavailable
 #
 #         Absent :
 #           • not_home
 #
-#     Tout autre état n’est PAS assimilé implicitement
-#     à une absence.
+#     Tout autre état (unknown / unavailable) n’est PAS assimilé
+#     implicitement à une absence : la notification est laissée
+#     inchangée tant que l’état n’est pas concluant.
 #
 #  🚫 INTERDITS
 #
@@ -50,58 +51,53 @@
 #
 #  🔄 ROBUSTESSE RELOAD
 #
-#     - Recalculable à partir du seul état courant
-#     - Notifications indépendantes et disqualifiées explicitement
+#     - Recalculable à partir du seul état courant.
+#     - L’action ne dépend PAS de `trigger.from_state` : elle
+#       recalcule les deux notifications depuis l’état courant de
+#       `person.*` à chaque déclenchement, y compris au démarrage
+#       via `input_boolean.systeme_stable → on`.
+#     - HA ne restaure pas les notifications persistantes au reboot ;
+#       le trigger de stabilisation garantit leur re-création si
+#       l’état de présence est encore vrai après un redémarrage.
+#     - Notifications indépendantes et disqualifiées explicitement.
 #
 # ==========================================================
 
 - id: "10210000000001"
   alias: Présence - Notification
-  mode: single
+  mode: restart
 
+  # ======================================================
+  # 🔔 Déclencheurs — Changement de présence ou stabilisation boot
+  # ======================================================
   trigger:
-    # Valentin : absent explicite
+    # Présence individuelle : tout changement d’état
     - platform: state
       entity_id: person.valentin
-      to: "not_home"
 
-    # Valentin : présent (sortie de not_home vers n'importe quel état)
-    - platform: state
-      entity_id: person.valentin
-      from: "not_home"
-
-    # Constance : absente explicite
     - platform: state
       entity_id: person.constance
-      to: "not_home"
 
-    # Constance : présente (sortie de not_home vers n'importe quel état)
+    # Stabilisation post-démarrage : re-projection depuis l’état courant
     - platform: state
-      entity_id: person.constance
-      from: "not_home"
+      entity_id: input_boolean.systeme_stable
+      to: "on"
 
   condition: []
 
+  # ======================================================
+  # 🔄 Actions — Re-projection des deux états depuis l’état courant
+  # ======================================================
   action:
-    - choose:
-        # Valentin absent explicite
-        - conditions:
-            - condition: template
-              value_template: >
-                {{ trigger.entity_id == 'person.valentin'
-                   and trigger.to_state.state == 'not_home' }}
-          sequence:
-            - action: persistent_notification.dismiss
-              data:
-                notification_id: presence_valentin
 
-        # Valentin présent
+    # ---- Antoine (person.valentin) ----
+    - choose:
+        # Présent → création
         - conditions:
             - condition: template
               value_template: >
-                {{ trigger.entity_id == 'person.valentin'
-                   and trigger.from_state is not none
-                   and trigger.from_state.state == 'not_home' }}
+                {{ states('person.valentin') not in
+                   ['not_home', 'unknown', 'unavailable', 'none'] }}
           sequence:
             - action: persistent_notification.create
               data:
@@ -110,24 +106,25 @@
                 message: >
                   Antoine est présent.
 
-        # Constance absente explicite
+        # Absent explicite → disqualification
         - conditions:
-            - condition: template
-              value_template: >
-                {{ trigger.entity_id == 'person.constance'
-                   and trigger.to_state.state == 'not_home' }}
+            - condition: state
+              entity_id: person.valentin
+              state: "not_home"
           sequence:
             - action: persistent_notification.dismiss
               data:
-                notification_id: presence_constance
+                notification_id: presence_valentin
+      default: []
 
-        # Constance présente
+    # ---- Constance (person.constance) ----
+    - choose:
+        # Présente → création
         - conditions:
             - condition: template
               value_template: >
-                {{ trigger.entity_id == 'person.constance'
-                   and trigger.from_state is not none
-                   and trigger.from_state.state == 'not_home' }}
+                {{ states('person.constance') not in
+                   ['not_home', 'unknown', 'unavailable', 'none'] }}
           sequence:
             - action: persistent_notification.create
               data:
@@ -135,4 +132,14 @@
                 title: "👤 Présence Constance"
                 message: >
                   Constance est présente.
+
+        # Absente explicite → disqualification
+        - conditions:
+            - condition: state
+              entity_id: person.constance
+              state: "not_home"
+          sequence:
+            - action: persistent_notification.dismiss
+              data:
+                notification_id: presence_constance
       default: []

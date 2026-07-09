@@ -94,10 +94,9 @@
     - choose:
         - conditions: "{{ wait.trigger is none }}"
           sequence:
-            - action: persistent_notification.dismiss
-              data:
-                notification_id: buanderie_cycle
-
+            # Push mobile de fin (événement). La disqualification de la
+            # notification persistante d'état est portée par la projection
+            # (extinction de buanderie_cycle ci-dessous — NOTIF-03).
             - action: script.notification_envoyer
               data:
                 cible: input_text.telephone_antoine_notify
