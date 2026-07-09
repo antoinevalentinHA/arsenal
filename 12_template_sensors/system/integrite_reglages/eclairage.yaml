@@ -17,10 +17,15 @@
 #     - Toute source indisponible est considérée comme
 #       rendant l'invariant violé (pas d'optimisme silencieux).
 #     - Les helpers sont des fenêtres intra-journée
-#       (HH:MM:SS, sans franchissement de minuit) : parsing
-#       via as_datetime(...) après garde d'indisponibilité
-#       (jamais de comparaison directe de chaînes ISO — cf.
-#       doctrine du contrat parametres_invalides).
+#       (has_date:false / has_time:true → état "HH:MM:SS",
+#       sans franchissement de minuit) : parsing via
+#       today_at(...) après garde d'indisponibilité (jamais
+#       de comparaison directe de chaînes ISO — cf. doctrine
+#       du contrat parametres_invalides).
+#       ⚠ as_datetime(...) est PROSCRIT ici : sur une heure
+#       nue sans date il retourne None, et None < None lève
+#       un TypeError. today_at ancre l'heure sur la date du
+#       jour et rend des datetimes comparables.
 #
 # ----------------------------------------------------------
 # 🚨 INVARIANTS SURVEILLÉS
@@ -133,19 +138,19 @@
           or sim_matin_ent_debut in indispos or sim_matin_ent_fin in indispos
           or sim_soir_ent_debut in indispos or sim_soir_ent_fin in indispos %}
         {% set jardin_matin_invalide =
-             indisponible or not (as_datetime(jardin_debut) < as_datetime(jardin_fin)) %}
+             indisponible or not (today_at(jardin_debut) < today_at(jardin_fin)) %}
         {% set sim_matin_cp_invalide =
-             indisponible or not (as_datetime(sim_matin_cp_debut) < as_datetime(sim_matin_cp_fin)) %}
+             indisponible or not (today_at(sim_matin_cp_debut) < today_at(sim_matin_cp_fin)) %}
         {% set sim_soir_cp_invalide =
-             indisponible or not (as_datetime(sim_soir_cp_debut) < as_datetime(sim_soir_cp_fin)) %}
+             indisponible or not (today_at(sim_soir_cp_debut) < today_at(sim_soir_cp_fin)) %}
         {% set sim_matin_gar_invalide =
-             indisponible or not (as_datetime(sim_matin_gar_debut) < as_datetime(sim_matin_gar_fin)) %}
+             indisponible or not (today_at(sim_matin_gar_debut) < today_at(sim_matin_gar_fin)) %}
         {% set sim_soir_gar_invalide =
-             indisponible or not (as_datetime(sim_soir_gar_debut) < as_datetime(sim_soir_gar_fin)) %}
+             indisponible or not (today_at(sim_soir_gar_debut) < today_at(sim_soir_gar_fin)) %}
         {% set sim_matin_ent_invalide =
-             indisponible or not (as_datetime(sim_matin_ent_debut) < as_datetime(sim_matin_ent_fin)) %}
+             indisponible or not (today_at(sim_matin_ent_debut) < today_at(sim_matin_ent_fin)) %}
         {% set sim_soir_ent_invalide =
-             indisponible or not (as_datetime(sim_soir_ent_debut) < as_datetime(sim_soir_ent_fin)) %}
+             indisponible or not (today_at(sim_soir_ent_debut) < today_at(sim_soir_ent_fin)) %}
         {{ jardin_matin_invalide
            or sim_matin_cp_invalide
            or sim_soir_cp_invalide
@@ -159,43 +164,43 @@
           {% set fin = states('input_datetime.heure_extinction_jardin_matin_fixe') %}
           {{ debut in ['unknown', 'unavailable', 'none', '']
              or fin in ['unknown', 'unavailable', 'none', '']
-             or not (as_datetime(debut) < as_datetime(fin)) }}
+             or not (today_at(debut) < today_at(fin)) }}
         simulation_presence_matin_chambre_parents_invalide: >
           {% set debut = states('input_datetime.debut_cycle_simulation_presence_matin_chambre_parents') %}
           {% set fin = states('input_datetime.fin_cycle_simulation_presence_matin_chambre_parents') %}
           {{ debut in ['unknown', 'unavailable', 'none', '']
              or fin in ['unknown', 'unavailable', 'none', '']
-             or not (as_datetime(debut) < as_datetime(fin)) }}
+             or not (today_at(debut) < today_at(fin)) }}
         simulation_presence_soir_chambre_parents_invalide: >
           {% set debut = states('input_datetime.debut_cycle_simulation_presence_soir_chambre_parents') %}
           {% set fin = states('input_datetime.fin_cycle_simulation_presence_soir_chambre_parents') %}
           {{ debut in ['unknown', 'unavailable', 'none', '']
              or fin in ['unknown', 'unavailable', 'none', '']
-             or not (as_datetime(debut) < as_datetime(fin)) }}
+             or not (today_at(debut) < today_at(fin)) }}
         simulation_presence_matin_garage_invalide: >
           {% set debut = states('input_datetime.debut_cycle_simulation_presence_matin_garage') %}
           {% set fin = states('input_datetime.fin_cycle_simulation_presence_matin_garage') %}
           {{ debut in ['unknown', 'unavailable', 'none', '']
              or fin in ['unknown', 'unavailable', 'none', '']
-             or not (as_datetime(debut) < as_datetime(fin)) }}
+             or not (today_at(debut) < today_at(fin)) }}
         simulation_presence_soir_garage_invalide: >
           {% set debut = states('input_datetime.debut_cycle_simulation_presence_soir_garage') %}
           {% set fin = states('input_datetime.fin_cycle_simulation_presence_soir_garage') %}
           {{ debut in ['unknown', 'unavailable', 'none', '']
              or fin in ['unknown', 'unavailable', 'none', '']
-             or not (as_datetime(debut) < as_datetime(fin)) }}
+             or not (today_at(debut) < today_at(fin)) }}
         simulation_presence_matin_entree_invalide: >
           {% set debut = states('input_datetime.debut_cycle_simulation_presence_matin_entree') %}
           {% set fin = states('input_datetime.fin_cycle_simulation_presence_matin_entree') %}
           {{ debut in ['unknown', 'unavailable', 'none', '']
              or fin in ['unknown', 'unavailable', 'none', '']
-             or not (as_datetime(debut) < as_datetime(fin)) }}
+             or not (today_at(debut) < today_at(fin)) }}
         simulation_presence_soir_entree_invalide: >
           {% set debut = states('input_datetime.debut_cycle_simulation_presence_soir_entree') %}
           {% set fin = states('input_datetime.fin_cycle_simulation_presence_soir_entree') %}
           {{ debut in ['unknown', 'unavailable', 'none', '']
              or fin in ['unknown', 'unavailable', 'none', '']
-             or not (as_datetime(debut) < as_datetime(fin)) }}
+             or not (today_at(debut) < today_at(fin)) }}
         helpers_indisponibles: >
           {% set sources = [
               'input_datetime.heure_allumage_jardin_matin',
@@ -246,19 +251,19 @@
             or sim_soir_ent_debut in indispos or sim_soir_ent_fin in indispos %}
           {% if indisponible %}
             helpers_indisponibles
-          {% elif not (as_datetime(jardin_debut) < as_datetime(jardin_fin)) %}
+          {% elif not (today_at(jardin_debut) < today_at(jardin_fin)) %}
             jardin_matin_invalide
-          {% elif not (as_datetime(sim_matin_cp_debut) < as_datetime(sim_matin_cp_fin)) %}
+          {% elif not (today_at(sim_matin_cp_debut) < today_at(sim_matin_cp_fin)) %}
             simulation_presence_matin_chambre_parents_invalide
-          {% elif not (as_datetime(sim_soir_cp_debut) < as_datetime(sim_soir_cp_fin)) %}
+          {% elif not (today_at(sim_soir_cp_debut) < today_at(sim_soir_cp_fin)) %}
             simulation_presence_soir_chambre_parents_invalide
-          {% elif not (as_datetime(sim_matin_gar_debut) < as_datetime(sim_matin_gar_fin)) %}
+          {% elif not (today_at(sim_matin_gar_debut) < today_at(sim_matin_gar_fin)) %}
             simulation_presence_matin_garage_invalide
-          {% elif not (as_datetime(sim_soir_gar_debut) < as_datetime(sim_soir_gar_fin)) %}
+          {% elif not (today_at(sim_soir_gar_debut) < today_at(sim_soir_gar_fin)) %}
             simulation_presence_soir_garage_invalide
-          {% elif not (as_datetime(sim_matin_ent_debut) < as_datetime(sim_matin_ent_fin)) %}
+          {% elif not (today_at(sim_matin_ent_debut) < today_at(sim_matin_ent_fin)) %}
             simulation_presence_matin_entree_invalide
-          {% elif not (as_datetime(sim_soir_ent_debut) < as_datetime(sim_soir_ent_fin)) %}
+          {% elif not (today_at(sim_soir_ent_debut) < today_at(sim_soir_ent_fin)) %}
             simulation_presence_soir_entree_invalide
           {% else %}
             none
