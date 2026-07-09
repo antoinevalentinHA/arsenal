@@ -1,0 +1,20 @@
+type: markdown
+content: |
+  {% set presence = is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+
+  {% if presence %}
+    {% set seuil_on  = states('input_number.clim_seuil_declenchement_presence') | float(none) %}
+    {% set seuil_off = states('input_number.clim_seuil_extinction_presence')    | float(none) %}
+  {% else %}
+    {% set seuil_on  = states('input_number.clim_seuil_declenchement_absence') | float(none) %}
+    {% set seuil_off = states('input_number.clim_seuil_extinction_absence')    | float(none) %}
+  {% endif %}
+
+  {% if seuil_on is not none and seuil_off is not none %}
+  🔎 Seuils actifs (mode {{ 'présence' if presence else 'absence' }})
+
+  - Allumage  : ≥ {{ seuil_on  | round(1) }} °C
+  - Extinction : ≤ {{ seuil_off | round(1) }} °C
+  {% else %}
+  ⚠️ Seuils indisponibles
+  {% endif %}

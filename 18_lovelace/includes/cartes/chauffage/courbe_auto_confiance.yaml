@@ -1,0 +1,6 @@
+type: markdown
+content: >
+  Confiance — pente : {{ state_attr('sensor.chauffage_courbe_effet_pente', 'confiance') }},
+  parallèle : {{ state_attr('sensor.chauffage_courbe_effet_parallele', 'confiance') }}.
+  `indetermine` tant que le signal est indisponible, la fenêtre non
+  stabilisée, l'écart déjà proche de zéro, ou la variation dans le bruit.

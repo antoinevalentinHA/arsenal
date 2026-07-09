@@ -1,0 +1,10 @@
+type: markdown
+content: >
+  **Heures des réveils – Matthieu :**  
+
+  {{ states('input_text.reveils_matthieu_heures') or 'Aucun réveil détecté' }}
+visibility:
+  - condition: numeric_state
+    entity: input_number.reveils_nocturnes_matthieu
+    above: 0
+text_only: true
