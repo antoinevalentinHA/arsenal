@@ -96,11 +96,13 @@
         {% set off_on   = states('input_number.clim_offset_on')                              | float(none) %}
         {% set off_off  = states('input_number.clim_offset_off')                             | float(none) %}
         {% set ext_heat = states('input_number.clim_hiver_seuil_temperature_exterieure')     | float(none) %}
-        {% set blocage  = is_state('input_boolean.clim_blocage_horaire_actif', 'on') %}
-        {% set h_on_raw  = states('input_datetime.clim_heure_blocage_autom_on')  | string %}
-        {% set h_off_raw = states('input_datetime.clim_heure_blocage_autom_off') | string %}
-        {% set h_on  = h_on_raw[:5]  if h_on_raw  | length >= 5 else '' %}
-        {% set h_off = h_off_raw[:5] if h_off_raw | length >= 5 else '' %}
+        {% set blocage_raw = states('input_boolean.clim_blocage_horaire_actif') %}
+        {% set h_on_raw  = states('input_datetime.clim_heure_blocage_autom_on') %}
+        {% set h_off_raw = states('input_datetime.clim_heure_blocage_autom_off') %}
+        {% set blocage_indispo = blocage_raw in ['unknown', 'unavailable', 'none', ''] %}
+        {% set h_on_indispo  = h_on_raw  in ['unknown', 'unavailable', 'none', ''] %}
+        {% set h_off_indispo = h_off_raw in ['unknown', 'unavailable', 'none', ''] %}
+        {% set blocage_actif = blocage_raw == 'on' %}
         {% set indispo = d_p is none or e_p is none or d_a is none or e_a is none
              or ext_cool is none or off_on is none or off_off is none or ext_heat is none %}
         {% set inv1 = indispo or not (d_p > e_p) %}
@@ -111,7 +113,13 @@
         {% set inv6 = off_off is none or not (off_off > 0) %}
         {% set inv7 = ext_heat is none or not (-20 <= ext_heat <= 15) %}
         {% set inv8 = ext_cool is none or ext_heat is none or not (ext_heat < ext_cool) %}
-        {% set inv9 = blocage and h_on != '' and h_off != '' and h_on == h_off %}
+        {# inv9 fail-closed : boolean de blocage indisponible -> invalide (on ne peut
+           pas affirmer que le blocage horaire est sainement inactif) ; si le blocage
+           est actif, une borne horaire indisponible -> invalide (pas d'optimisme) ;
+           heures identiques (blocage jamais relache = permanent 24h) -> invalide. #}
+        {% set inv9 = blocage_indispo
+             or (blocage_actif and (h_on_indispo or h_off_indispo
+                 or h_on_raw[:5] == h_off_raw[:5])) %}
         {{ inv1 or inv2 or inv3 or inv4 or inv5 or inv6 or inv7 or inv8 or inv9 }}
 
       attributes:
@@ -152,12 +160,22 @@
           {{ ext_cool is none or ext_heat is none or not (ext_heat < ext_cool) }}
 
         blocage_horaire_permanent: >
-          {% set blocage  = is_state('input_boolean.clim_blocage_horaire_actif', 'on') %}
-          {% set h_on_raw  = states('input_datetime.clim_heure_blocage_autom_on')  | string %}
-          {% set h_off_raw = states('input_datetime.clim_heure_blocage_autom_off') | string %}
-          {% set h_on  = h_on_raw[:5]  if h_on_raw  | length >= 5 else '' %}
-          {% set h_off = h_off_raw[:5] if h_off_raw | length >= 5 else '' %}
-          {{ blocage and h_on != '' and h_off != '' and h_on == h_off }}
+          {% set blocage_actif = is_state('input_boolean.clim_blocage_horaire_actif', 'on') %}
+          {% set h_on_raw  = states('input_datetime.clim_heure_blocage_autom_on') %}
+          {% set h_off_raw = states('input_datetime.clim_heure_blocage_autom_off') %}
+          {% set h_on_indispo  = h_on_raw  in ['unknown', 'unavailable', 'none', ''] %}
+          {% set h_off_indispo = h_off_raw in ['unknown', 'unavailable', 'none', ''] %}
+          {{ blocage_actif and not h_on_indispo and not h_off_indispo
+             and h_on_raw[:5] == h_off_raw[:5] }}
+        blocage_horaire_actif_indisponible: >
+          {{ states('input_boolean.clim_blocage_horaire_actif')
+             in ['unknown', 'unavailable', 'none', ''] }}
+        heure_blocage_autom_on_indisponible: >
+          {{ states('input_datetime.clim_heure_blocage_autom_on')
+             in ['unknown', 'unavailable', 'none', ''] }}
+        heure_blocage_autom_off_indisponible: >
+          {{ states('input_datetime.clim_heure_blocage_autom_off')
+             in ['unknown', 'unavailable', 'none', ''] }}
 
         seuil_declenchement_presence_indisponible: >
           {{ states('input_number.clim_seuil_declenchement_presence')
@@ -200,13 +218,17 @@
           {% set off_on   = states('input_number.clim_offset_on')                              | float(none) %}
           {% set off_off  = states('input_number.clim_offset_off')                             | float(none) %}
           {% set ext_heat = states('input_number.clim_hiver_seuil_temperature_exterieure')     | float(none) %}
-          {% set blocage  = is_state('input_boolean.clim_blocage_horaire_actif', 'on') %}
-          {% set h_on_raw  = states('input_datetime.clim_heure_blocage_autom_on')  | string %}
-          {% set h_off_raw = states('input_datetime.clim_heure_blocage_autom_off') | string %}
-          {% set h_on  = h_on_raw[:5]  if h_on_raw  | length >= 5 else '' %}
-          {% set h_off = h_off_raw[:5] if h_off_raw | length >= 5 else '' %}
+          {% set blocage_raw = states('input_boolean.clim_blocage_horaire_actif') %}
+          {% set h_on_raw  = states('input_datetime.clim_heure_blocage_autom_on') %}
+          {% set h_off_raw = states('input_datetime.clim_heure_blocage_autom_off') %}
+          {% set blocage_indispo = blocage_raw in ['unknown', 'unavailable', 'none', ''] %}
+          {% set h_on_indispo  = h_on_raw  in ['unknown', 'unavailable', 'none', ''] %}
+          {% set h_off_indispo = h_off_raw in ['unknown', 'unavailable', 'none', ''] %}
+          {% set blocage_actif = blocage_raw == 'on' %}
           {% if d_p is none or e_p is none or d_a is none or e_a is none
-             or ext_cool is none or off_on is none or off_off is none or ext_heat is none %}
+             or ext_cool is none or off_on is none or off_off is none or ext_heat is none
+             or blocage_indispo
+             or (blocage_actif and (h_on_indispo or h_off_indispo)) %}
             helpers_indisponibles
           {% elif not (d_p > e_p) %}
             cool_hysteresis_presence_invalide
@@ -224,7 +246,7 @@
             heat_seuil_ext_hors_plage
           {% elif not (ext_heat < ext_cool) %}
             cool_heat_seuils_ext_incoherents
-          {% elif blocage and h_on != '' and h_off != '' and h_on == h_off %}
+          {% elif blocage_actif and h_on_raw[:5] == h_off_raw[:5] %}
             blocage_horaire_permanent
           {% else %}
             none
