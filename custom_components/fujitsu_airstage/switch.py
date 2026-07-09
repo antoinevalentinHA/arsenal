@@ -77,12 +77,16 @@ class AirstageEcoSwitch(AirstageAcEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn eco mode on."""
         await self._ac.set_economy_mode(constants.BooleanProperty.ON)
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update(
+            {constants.ACParameter.ECONOMY_MODE: constants.BooleanProperty.ON}
+        )
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn eco mode off."""
         await self._ac.set_economy_mode(constants.BooleanProperty.OFF)
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update(
+            {constants.ACParameter.ECONOMY_MODE: constants.BooleanProperty.OFF}
+        )
 
 
 class AirstagePowerfulSwitch(AirstageAcEntity, SwitchEntity):
@@ -105,12 +109,16 @@ class AirstagePowerfulSwitch(AirstageAcEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn powerful on."""
         await self._ac.set_powerful_mode(constants.BooleanProperty.ON)
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update(
+            {constants.ACParameter.POWERFUL_MODE: constants.BooleanProperty.ON}
+        )
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn powerful off."""
         await self._ac.set_powerful_mode(constants.BooleanProperty.OFF)
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update(
+            {constants.ACParameter.POWERFUL_MODE: constants.BooleanProperty.OFF}
+        )
 
 
 class AirstageOutdoorLowNoiseSwitch(AirstageAcEntity, SwitchEntity):
@@ -133,12 +141,16 @@ class AirstageOutdoorLowNoiseSwitch(AirstageAcEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn outdoor unit low noise" on."""
         await self._ac.set_outdoor_low_noise(constants.BooleanProperty.ON)
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update(
+            {constants.ACParameter.OUTDOOR_LOW_NOISE: constants.BooleanProperty.ON}
+        )
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn outdoor unit low noise" off."""
         await self._ac.set_outdoor_low_noise(constants.BooleanProperty.OFF)
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update(
+            {constants.ACParameter.OUTDOOR_LOW_NOISE: constants.BooleanProperty.OFF}
+        )
 
 
 class AirstageEnergySaveFanSwitch(AirstageAcEntity, SwitchEntity):
@@ -169,12 +181,16 @@ class AirstageEnergySaveFanSwitch(AirstageAcEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn energy saving fan on."""
         await self._ac.set_energy_save_fan(constants.BooleanProperty.ON)
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update(
+            {constants.ACParameter.ENERGY_SAVE_FAN: constants.BooleanProperty.ON}
+        )
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn energy saving fan off."""
         await self._ac.set_energy_save_fan(constants.BooleanProperty.OFF)
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update(
+            {constants.ACParameter.ENERGY_SAVE_FAN: constants.BooleanProperty.OFF}
+        )
 
 
 class AirstageQuietFanSwitch(AirstageAcEntity, SwitchEntity):
@@ -212,14 +228,16 @@ class AirstageQuietFanSwitch(AirstageAcEntity, SwitchEntity):
             current = None
         self._previous_fan_speed = _RESTORABLE_FAN_SPEEDS.get(current)
         await self._ac.set_fan_speed(constants.FanSpeed.QUIET)
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update(
+            {constants.ACParameter.FAN_SPEED: constants.FanSpeed.QUIET}
+        )
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn quiet fan off, restoring the last known manual fan speed."""
         target = self._previous_fan_speed or constants.FanSpeed.LOW
         await self._ac.set_fan_speed(target)
         self._previous_fan_speed = None
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update({constants.ACParameter.FAN_SPEED: target})
 
 
 class AirstageIndoorLedSwitch(AirstageAcEntity, SwitchEntity):
@@ -248,12 +266,16 @@ class AirstageIndoorLedSwitch(AirstageAcEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn energy saving fan on."""
         await self._ac.set_indoor_led(constants.BooleanProperty.ON)
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update(
+            {constants.ACParameter.INDOOR_LED: constants.BooleanProperty.ON}
+        )
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn energy saving fan off."""
         await self._ac.set_indoor_led(constants.BooleanProperty.OFF)
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update(
+            {constants.ACParameter.INDOOR_LED: constants.BooleanProperty.OFF}
+        )
 
 
 class AirstagePowerSwitch(AirstageAcEntity, SwitchEntity):
@@ -290,12 +312,16 @@ class AirstagePowerSwitch(AirstageAcEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn power on."""
         await self._ac.turn_on()
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update(
+            {constants.ACParameter.ONOFF_MODE: constants.BooleanProperty.ON}
+        )
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn power off."""
         await self._ac.turn_off()
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update(
+            {constants.ACParameter.ONOFF_MODE: constants.BooleanProperty.OFF}
+        )
 
 
 class AirstageHumanDetectionAutoSaveSwitch(AirstageAcEntity, SwitchEntity):
@@ -318,9 +344,21 @@ class AirstageHumanDetectionAutoSaveSwitch(AirstageAcEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn Human Detection Auto Save on."""
         await self._ac.set_hmn_detection_auto_save(constants.BooleanProperty.ON)
-        await self.instance.coordinator.async_refresh()
+        self.apply_optimistic_update(
+            {
+                constants.ACParameter.HMN_DETECTION_AUTO_SAVE: (
+                    constants.BooleanProperty.ON
+                )
+            }
+        )
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn Human Detection Auto Save off."""
         await self._ac.set_hmn_detection_auto_save(constants.BooleanProperty.OFF)
-        await self.instance.coordinator.async_refresh()
+        self.apply_optimistic_update(
+            {
+                constants.ACParameter.HMN_DETECTION_AUTO_SAVE: (
+                    constants.BooleanProperty.OFF
+                )
+            }
+        )

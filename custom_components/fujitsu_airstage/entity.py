@@ -64,6 +64,38 @@ class AirstageAcEntity(AirstageEntity):
             data=self.coordinator.data[self.ac_key]
         )
 
+    def apply_optimistic_update(self, updates: dict[Any, Any]) -> None:
+        """Reflect just-written parameters locally without an immediate re-poll.
+
+        The Airstage API is eventually consistent (``iot_class:
+        local_polling``): for up to a poll interval after a write the unit
+        keeps reporting its *previous* value. Calling
+        ``coordinator.async_refresh()`` straight after a write therefore reads
+        the stale value back — and for the fan speed that resurfaces the
+        manufacturer ``auto``. When an external automation reasserts the
+        commanded speed on seeing ``auto``, the two race into a tight
+        write → stale-read → rewrite loop (visible flapping, API hammering).
+
+        Instead we patch the commanded values into the coordinator's cached
+        ``parameters`` list — the source ``_ac`` rebuilds its state from — and
+        notify the coordinator's listeners. Every entity of the device then
+        reflects the target immediately, and the next *scheduled* poll (well
+        past the unit's convergence window) reconciles with the device without
+        an early stale read. ``updates`` maps a ``pyairstage`` ``ACParameter``
+        to its raw value; both are stringified to match the on-device format.
+        """
+        data = self.coordinator.data
+        if not data or self.ac_key not in data:
+            return
+
+        wanted = {str(name): str(value) for name, value in updates.items()}
+        for parameter in data[self.ac_key].get("parameters", []):
+            name = parameter.get("name")
+            if name in wanted:
+                parameter["value"] = wanted[name]
+
+        self.coordinator.async_update_listeners()
+
     @property
     def extra_state_attributes(self) -> dict:
         devices = self.instance.coordinator.data

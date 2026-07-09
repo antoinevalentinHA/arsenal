@@ -208,15 +208,27 @@ class AirstageAC(AirstageAcEntity, ClimateEntity):
             await self.async_turn_on()
 
         new_hvac_mode = kwargs.get(ATTR_HVAC_MODE)
+        updates: dict[Any, Any] = {}
 
         if new_hvac_mode is not None and new_hvac_mode != self.hvac_mode:
             # TODO: come up with multi-set option through pyairstage
             await self._ac.set_operation_mode(HA_STATE_TO_FUJITSU[new_hvac_mode])
-            await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+            updates[constants.ACParameter.OPERATION_MODE] = HA_STATE_TO_FUJITSU[
+                new_hvac_mode
+            ]
 
         if self.hvac_mode != HVACMode.FAN_ONLY:
-            await self._ac.set_target_temperature(kwargs.get(ATTR_TEMPERATURE))
-            await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+            temperature = kwargs.get(ATTR_TEMPERATURE)
+            await self._ac.set_target_temperature(temperature)
+            if temperature is not None:
+                # Same encoding pyairstage.set_target_temperature applies before
+                # sending: round to the nearest 0.5 °C, store as tenths.
+                updates[constants.ACParameter.TARGET_TEMPERATURE] = int(
+                    round(temperature * 2) / 2 * 10
+                )
+
+        if updates:
+            self.apply_optimistic_update(updates)
 
     @property
     def current_temperature(self) -> float | None:
@@ -318,42 +330,80 @@ class AirstageAC(AirstageAcEntity, ClimateEntity):
     async def async_turn_on(self) -> None:
         """Set the HVAC State to on."""
         await self._ac.turn_on()
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update(
+            {constants.ACParameter.ONOFF_MODE: constants.BooleanProperty.ON}
+        )
 
     async def async_turn_off(self) -> None:
         """Set the HVAC State to off."""
         await self._ac.turn_off()
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        self.apply_optimistic_update(
+            {constants.ACParameter.ONOFF_MODE: constants.BooleanProperty.OFF}
+        )
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set the HVAC Mode and State."""
         if hvac_mode == HVACMode.OFF:
             await self._ac.turn_off()
+            self.apply_optimistic_update(
+                {constants.ACParameter.ONOFF_MODE: constants.BooleanProperty.OFF}
+            )
         else:
             _LOGGER.debug(self._ac.get_device_on_off_state())
             if self._ac.get_device_on_off_state() == constants.BooleanDescriptors.OFF:
                 await self._ac.turn_on()
             await self._ac.set_operation_mode(HA_STATE_TO_FUJITSU[hvac_mode])
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+            self.apply_optimistic_update(
+                {
+                    constants.ACParameter.ONOFF_MODE: constants.BooleanProperty.ON,
+                    constants.ACParameter.OPERATION_MODE: HA_STATE_TO_FUJITSU[
+                        hvac_mode
+                    ],
+                }
+            )
 
     async def async_set_fan_mode(self, fan_mode: str) -> None:
         """Set the Fan Mode."""
         await self._ac.set_fan_speed(HA_FAN_TO_FUJITSU[fan_mode])
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+        # Optimistic update rather than an immediate re-poll: the unit reports
+        # the previous fan speed for up to a poll interval after the write, so
+        # re-polling now would read the stale value (often the manufacturer
+        # "auto") straight back and fight any automation reasserting the speed.
+        self.apply_optimistic_update(
+            {constants.ACParameter.FAN_SPEED: HA_FAN_TO_FUJITSU[fan_mode]}
+        )
 
     async def async_set_swing_mode(self, swing_mode: str) -> None:
         if swing_mode == VERTICAL_SWING:
             await self._ac.set_vertical_swing(constants.BooleanProperty.ON)
+            self.apply_optimistic_update(
+                {constants.ACParameter.VERTICAL_SWING: constants.BooleanProperty.ON}
+            )
         else:
-            await self._ac.set_vertical_direction(ha_swing_to_fujitsu(swing_mode))
-        await self.instance.coordinator.async_refresh()  # TODO: see if we can update entity
+            direction = ha_swing_to_fujitsu(swing_mode)
+            await self._ac.set_vertical_direction(direction)
+            updates: dict[Any, Any] = {
+                constants.ACParameter.VERTICAL_SWING: constants.BooleanProperty.OFF
+            }
+            positions = {
+                4: constants.VerticalSwing4PositionsValues,
+                6: constants.VerticalSwing6PositionsValues,
+                8: constants.VerticalSwing8PositionsValues,
+            }.get(self._ac.get_num_vertical_swing_positions())
+            if positions is not None:
+                updates[constants.ACParameter.VERTICAL_DIRECTION] = int(
+                    positions[direction.name]
+                )
+            self.apply_optimistic_update(updates)
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         if preset_mode == MINIMUM_HEAT:
             await self._ac.set_minimum_heat(constants.BooleanProperty.ON)
+            value = constants.BooleanProperty.ON
         else:
             await self._ac.set_minimum_heat(constants.BooleanProperty.OFF)
-        await self.instance.coordinator.async_refresh()
+            value = constants.BooleanProperty.OFF
+        self.apply_optimistic_update({constants.ACParameter.MINIMUM_HEAT: value})
 
     @property
     def supported_features(self) -> ClimateEntityFeature:
