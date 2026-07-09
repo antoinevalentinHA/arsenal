@@ -46,10 +46,12 @@ views:
               {% set nd = state_attr('sensor.palmares_temperature_min_journaliere_haute', 'rang_01_date') %}
               {% set nda = state_attr('sensor.palmares_temperature_min_journaliere_haute', 'rang_01_date_affichage') %}
               {% set r = state_attr('sensor.palmares_pluie_journalier', 'records') or [] %}
-              - 🔥 **Chaleur** — {% if cv is not none and cd not in UNAV %}{{ cv }} °C · {{ cda }}{% else %}—{% endif %}
-              - ❄️ **Froid** — {% if fv is not none and fv != 999 and fd not in UNAV %}{{ fv }} °C · {{ fda }}{% else %}—{% endif %}
-              - 🌙 **Nuit chaude** — {% if nv is not none and nv != -999 and nd not in UNAV %}{{ nv }} °C · {{ nda }}{% else %}—{% endif %}
-              - 🌧️ **Pluie** — {% if r | count > 0 %}{{ r[0].valeur }} mm · {{ r[0].date_affichage }}{% else %}—{% endif %}
+              | Palmarès | Record | Date |
+              |:---|---:|:---:|
+              | 🔥 **Chaleur** | {% if cv is not none and cd not in UNAV %}{{ cv }} °C{% else %}—{% endif %} | {% if cv is not none and cd not in UNAV %}{{ cda }}{% else %}—{% endif %} |
+              | ❄️ **Froid** | {% if fv is not none and fv != 999 and fd not in UNAV %}{{ fv }} °C{% else %}—{% endif %} | {% if fv is not none and fv != 999 and fd not in UNAV %}{{ fda }}{% else %}—{% endif %} |
+              | 🌙 **Nuit chaude** | {% if nv is not none and nv != -999 and nd not in UNAV %}{{ nv }} °C{% else %}—{% endif %} | {% if nv is not none and nv != -999 and nd not in UNAV %}{{ nda }}{% else %}—{% endif %} |
+              | 🌧️ **Pluie** | {% if r | count > 0 %}{{ r[0].valeur }} mm{% else %}—{% endif %} | {% if r | count > 0 %}{{ r[0].date_affichage }}{% else %}—{% endif %} |
 
           # ==================================================
           # 🔎 SÉLECTEUR DE CONSULTATION (sobre — modèle Clim)
