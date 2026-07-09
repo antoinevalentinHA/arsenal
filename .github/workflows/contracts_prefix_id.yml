@@ -1,0 +1,21 @@
+name: Arsenal Contracts — Intégrité Préfixe ID (source de vérité)
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-prefix-id-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Selftest checker (on ne juge pas avec un juge défectueux)
+        run: python scripts/arsenal_contracts/check_prefix_id_contracts.py --selftest
+
+      - name: Validate prefix_id source-of-truth integrity
+        run: python scripts/arsenal_contracts/check_prefix_id_contracts.py
