@@ -15,9 +15,10 @@
 #     - Toute source indisponible est considérée comme
 #       rendant l'invariant violé (pas d'optimisme silencieux).
 #     - Les helpers visiteur_start / visiteur_end sont des
-#       fenêtres intra-journée (HH:MM:SS) : la comparaison
-#       lexicale de strings est licite UNE FOIS la garde
-#       d'indisponibilité passée — pas besoin de parsing.
+#       fenêtres intra-journée (HH:MM:SS) : parsing via
+#       as_datetime(...) après garde d'indisponibilité
+#       (jamais de comparaison directe de chaînes ISO — cf.
+#       doctrine du contrat parametres_invalides).
 #
 # ----------------------------------------------------------
 # 🚨 INVARIANTS SURVEILLÉS
@@ -70,7 +71,7 @@
         {% set indisponible =
              debut in ['unknown', 'unavailable', 'none', '']
           or fin in ['unknown', 'unavailable', 'none', ''] %}
-        {% set plage_invalide = indisponible or not (debut < fin) %}
+        {% set plage_invalide = indisponible or not (as_datetime(debut) < as_datetime(fin)) %}
         {{ plage_invalide }}
       attributes:
         plage_visiteur_invalide: >
@@ -78,7 +79,7 @@
           {% set fin = states('input_datetime.visiteur_end') %}
           {{ debut in ['unknown', 'unavailable', 'none', '']
              or fin in ['unknown', 'unavailable', 'none', '']
-             or not (debut < fin) }}
+             or not (as_datetime(debut) < as_datetime(fin)) }}
         debut_indisponible: >
           {{ states('input_datetime.visiteur_start')
              in ['unknown', 'unavailable', 'none', ''] }}
@@ -97,7 +98,7 @@
           {% endif %}
           {% if indispos | count > 0 %}
             helpers_indisponibles
-          {% elif not (debut < fin) %}
+          {% elif not (as_datetime(debut) < as_datetime(fin)) %}
             plage_visiteur_invalide
           {% else %}
             none

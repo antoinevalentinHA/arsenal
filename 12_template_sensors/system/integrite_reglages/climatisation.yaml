@@ -119,7 +119,7 @@
            heures identiques (blocage jamais relache = permanent 24h) -> invalide. #}
         {% set inv9 = blocage_indispo
              or (blocage_actif and (h_on_indispo or h_off_indispo
-                 or h_on_raw[:5] == h_off_raw[:5])) %}
+                 or as_datetime(h_on_raw) == as_datetime(h_off_raw))) %}
         {{ inv1 or inv2 or inv3 or inv4 or inv5 or inv6 or inv7 or inv8 or inv9 }}
 
       attributes:
@@ -166,7 +166,7 @@
           {% set h_on_indispo  = h_on_raw  in ['unknown', 'unavailable', 'none', ''] %}
           {% set h_off_indispo = h_off_raw in ['unknown', 'unavailable', 'none', ''] %}
           {{ blocage_actif and not h_on_indispo and not h_off_indispo
-             and h_on_raw[:5] == h_off_raw[:5] }}
+             and as_datetime(h_on_raw) == as_datetime(h_off_raw) }}
         blocage_horaire_actif_indisponible: >
           {{ states('input_boolean.clim_blocage_horaire_actif')
              in ['unknown', 'unavailable', 'none', ''] }}
@@ -246,7 +246,7 @@
             heat_seuil_ext_hors_plage
           {% elif not (ext_heat < ext_cool) %}
             cool_heat_seuils_ext_incoherents
-          {% elif blocage_actif and h_on_raw[:5] == h_off_raw[:5] %}
+          {% elif blocage_actif and as_datetime(h_on_raw) == as_datetime(h_off_raw) %}
             blocage_horaire_permanent
           {% else %}
             none
