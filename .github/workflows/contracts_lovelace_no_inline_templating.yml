@@ -1,0 +1,25 @@
+name: Arsenal Contracts — Lovelace No Inline Templating
+
+on:
+  push:
+    paths:
+      - '18_lovelace/**'
+      - 'scripts/arsenal_contracts/check_lovelace_no_inline_templating_contracts.py'
+      - '.github/workflows/contracts_lovelace_no_inline_templating.yml'
+  pull_request:
+    paths:
+      - '18_lovelace/**'
+      - 'scripts/arsenal_contracts/check_lovelace_no_inline_templating_contracts.py'
+      - '.github/workflows/contracts_lovelace_no_inline_templating.yml'
+
+jobs:
+  validate-lovelace-no-inline-templating:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Lovelace no-inline-templating contract
+        run: |
+          python3 scripts/arsenal_contracts/check_lovelace_no_inline_templating_contracts.py
