@@ -133,6 +133,9 @@
 - [climatisation/note_calibration_tenue_T_presence_confort_thermique.md](02_conception/climatisation/note_calibration_tenue_T_presence_confort_thermique.md)  _(note de calibration — **T = 120 s déployé (observationnel), non ratifié, révisable** ; plage [90 s, 180 s])_
 - [climatisation/inventaire_consommateurs_presence_famille_unifiee.md](02_conception/climatisation/inventaire_consommateurs_presence_famille_unifiee.md)  _(inventaire de périmètre — **mis à jour post-déploiement** ; 7 fichiers rebranchés (5 V1 + 2 V2) ; 2 verdicts Cat 3 infirmés par la contre-expertise (dry, absence_longue))_
 
+### Météo
+- [meteo/cadrage_autorite_unique_precipitations.md](02_conception/meteo/cadrage_autorite_unique_precipitations.md)  _(cadrage / arbitrage **C17** (ex-`D-PLUIE`) — **arbitré 2026-07-11, direction incrémentale, sans implémentation** ; « autorité unique » recadrée = **acquisition sécurisée partagée**, PAS fusion : qualifications **plurielles par design** (any-rain / forte / récente) ; **distinction métier gravée** chambres (fenêtre ouverte) ≠ séjour (protection préventive pluie forte, `intention_pluie_forte` Netatmo-seul **correct**) → **« séjour aveugle » retiré, acceptable par design** ; lot 1 contrat de production (lançable), lot 2 sécurisation locale (après validation terrain C16) ; big-bang et unification séjour **exclus** ; **aucune règle opposable, aucun runtime**)_
+
 ## Constats
 
 _Constats transverses consignés dans le registre vivant : [registre_anomalies_transverses.md](02_constats/transverses/registre_anomalies_transverses.md)._
