@@ -129,10 +129,21 @@ views:
               - from: 60
                 to: 100
                 color: "rgba(144, 202, 249, 0.9)" # 🔵 très dominante
+            tap_action:
+              action: none
+            hold_action:
+              action: none
+            double_tap_action:
+              action: none
             style: |
               bar-card-background {
                 background: rgba(158, 158, 158, 0.2);
                 border-radius: 8px;
+              }
+              /* Répartition des phases en lecture seule : non cliquable */
+              ha-card {
+                pointer-events: none;
+                cursor: default;
               }
 
           - type: custom:button-card
