@@ -1,0 +1,15 @@
+name: Arsenal Contracts — Pluie Production
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-pluie-production-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate pluie production contracts
+        run: python scripts/arsenal_contracts/check_pluie_production_contracts.py
