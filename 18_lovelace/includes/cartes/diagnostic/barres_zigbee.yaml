@@ -27,9 +27,18 @@ card:
     - from: 140
       to: 255
       color: "rgba(76, 175, 80, 0.2)"      # 🟢 bon / excellent
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
   style: |
     ha-card {
       border-radius: 12px;
       box-shadow: var(--ha-card-box-shadow);
       padding: 8px;
+      /* Vue diagnostic en lecture seule : barres non cliquables */
+      pointer-events: none;
+      cursor: default;
     }
