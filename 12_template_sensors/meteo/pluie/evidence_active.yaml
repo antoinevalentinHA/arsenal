@@ -1,0 +1,123 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR (moteur moderne)
+#     Météo — Pluie — Évidence consolidée active
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer une ÉVIDENCE DE PLUIE consolidée, unique et
+#   déclarative, à partir de toutes les sources disponibles.
+#   Cette évidence est le POINT COMMUN consommé par les deux
+#   écrivains de `input_boolean.pluie_en_cours` :
+#     - début d'épisode  (maj_sensor/on.yaml)
+#     - fin d'épisode     (maj_sensor/off.yaml)
+#   Aucun des deux écrivains ne recalcule les sources : ils
+#   consomment cette entité (autorité unique de qualification,
+#   symétrie entrée / sortie — cf. C16).
+#
+# 🧭 SÉMANTIQUE (source unique, résolution de la bande 0/0,1)
+#   `sensor.pluviometre_precipitation` est une INTENSITÉ (mm/h,
+#   cf. dashboards « Intensité » / « mm/h »). La sémantique
+#   canonique retenue est donc : « il pleut » = intensité > 0.
+#   Elle unifie l'ancienne entrée (> 0) et l'ancienne sortie
+#   (≤ 0,1) en un seuil unique ; l'anti-rebond de fin est porté
+#   par `delay_off` (5 min), qui remplace l'ancien deadband 0,1.
+#
+# 🧱 ÉVIDENCE = OU borné des sources
+#   - Netatmo   : valide ET intensité > 0
+#   - SNZB-05   : valide ET 'on' ET mouillage récent (≤ 10 min)
+#                 → fenêtre de fraîcheur alignée sur le
+#                   coupe-circuit « capteur bloqué » de
+#                   11_automations/meteo/pluie/impulsion/debut.yaml.
+#                 Au-delà de 10 min de mouillage continu, le SNZB
+#                 est présumé bloqué et cesse d'être une évidence
+#                 (un détecteur de fuite sèche lentement : il ne
+#                 distingue pas « encore mouillé » de « bloqué »).
+#                 Sur pluie réelle > 10 min, Netatmo prend le
+#                 relais du maintien.
+#   - Injection : `input_boolean.pluie_zigbee_virtuel` (secours /
+#                 test / contournement capteur — impulsion 2 min).
+#
+# 🕒 ANTI-REBOND
+#   - delay_on  1 s  : reprend l'anti-rebond de l'impulsion Zigbee.
+#   - delay_off 5 min: averses discontinues = un seul épisode
+#                      (remplace l'ancien deadband + les 5 min de
+#                       la sortie Netatmo-only).
+#
+# 🛡️ DISPONIBILITÉ (traitement du régime absent — principes §6)
+#   Disponible dès qu'AU MOINS une source réelle (Netatmo OU SNZB)
+#   est exploitable. Netatmo absent n'est donc plus bloquant : tant
+#   que le SNZB est exploitable, l'évidence reste calculable et la
+#   sortie d'épisode fonctionne (correctif de l'état collant C16).
+#
+# 🧱 ARCHITECTURE
+#   - Décision / qualification uniquement (stateless, recalculable)
+#   - Aucune action, aucun service, aucune notification
+#
+# 🚫 NE FAIT PAS
+#   - Ne pilote aucun équipement
+#   - N'écrit pas `pluie_en_cours` (rôle des automations on/off)
+#   - Ne mesure aucun cumul, ne fait aucune statistique
+# ==========================================================
+
+- binary_sensor:
+    - name: "Pluie évidence active"
+      unique_id: pluie_evidence_active
+      default_entity_id: binary_sensor.pluie_evidence_active
+      delay_on: "00:00:01"
+      delay_off: "00:05:00"
+      icon: >
+        {% if is_state(this.entity_id, 'on') %}
+          mdi:weather-pouring
+        {% else %}
+          mdi:weather-partly-rainy
+        {% endif %}
+
+      # Disponible si au moins une source réelle est exploitable.
+      availability: >
+        {{ states('sensor.pluviometre_precipitation')
+             not in ['unknown','unavailable','none','']
+           or states('binary_sensor.zigbee_pluie_water_leak')
+             not in ['unknown','unavailable','none',''] }}
+
+      state: >
+        {% set FRESH = 600 %}
+        {% set netatmo = states('sensor.pluviometre_precipitation') %}
+        {% set netatmo_valide = netatmo not in ['unknown','unavailable','none',''] %}
+        {% set netatmo_rain = netatmo_valide and (netatmo | float(0)) > 0 %}
+        {% set snzb = states.binary_sensor.zigbee_pluie_water_leak %}
+        {% set snzb_valide = snzb is not none
+             and snzb.state not in ['unknown','unavailable','none'] %}
+        {% set snzb_age = (now() - snzb.last_changed).total_seconds()
+             if snzb_valide else 999999 %}
+        {% set snzb_rain = snzb_valide and snzb.state == 'on' and snzb_age <= FRESH %}
+        {% set virtuel = is_state('input_boolean.pluie_zigbee_virtuel', 'on') %}
+        {{ netatmo_rain or snzb_rain or virtuel }}
+
+      attributes:
+        # Diagnostic sobre : quelle source porte (ou non) l'évidence.
+        netatmo_rain: >
+          {% set n = states('sensor.pluviometre_precipitation') %}
+          {{ n not in ['unknown','unavailable','none',''] and (n | float(0)) > 0 }}
+        snzb_rain: >
+          {% set s = states.binary_sensor.zigbee_pluie_water_leak %}
+          {% set ok = s is not none and s.state not in ['unknown','unavailable','none'] %}
+          {% set age = (now() - s.last_changed).total_seconds() if ok else 999999 %}
+          {{ ok and s.state == 'on' and age <= 600 }}
+        snzb_age_s: >
+          {% set s = states.binary_sensor.zigbee_pluie_water_leak %}
+          {% if s is not none and s.state not in ['unknown','unavailable','none'] %}
+            {{ (now() - s.last_changed).total_seconds() | int }}
+          {% else %}
+            unavailable
+          {% endif %}
+        source_maintien: >
+          {% set n = states('sensor.pluviometre_precipitation') %}
+          {% set n_rain = n not in ['unknown','unavailable','none',''] and (n | float(0)) > 0 %}
+          {% set s = states.binary_sensor.zigbee_pluie_water_leak %}
+          {% set s_ok = s is not none and s.state not in ['unknown','unavailable','none'] %}
+          {% set s_age = (now() - s.last_changed).total_seconds() if s_ok else 999999 %}
+          {% set s_rain = s_ok and s.state == 'on' and s_age <= 600 %}
+          {% set virtuel = is_state('input_boolean.pluie_zigbee_virtuel', 'on') %}
+          {% if n_rain %}netatmo
+          {% elif s_rain %}snzb
+          {% elif virtuel %}virtuel
+          {% else %}aucune{% endif %}

@@ -258,6 +258,7 @@ include:
     #         la source, la fenêtre glissante est tronquée après purge/redémarrage.
     # Population A dans ce bloc : pluie_total_local uniquement.
     - binary_sensor.zigbee_pluie_water_leak
+    - binary_sensor.pluie_evidence_active
     - sensor.pluviometre_precipitation
     - sensor.pluie_aujourdhui_local
     - sensor.pluie_total_local
