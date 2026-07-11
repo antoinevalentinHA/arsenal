@@ -6,51 +6,58 @@
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
-#     Automation de DÉCISION MÉTÉO.
+#     Automation de DÉCISION MÉTÉO (sortie d'état).
 #
-#     Elle détermine la fin effective d’un épisode
-#     de pluie au sens métier, et désactive l’état
-#     global `pluie_en_cours` lorsque la pluie
-#     est absente de façon confirmée.
+#     Elle désactive l’état global `pluie_en_cours`
+#     lorsque plus AUCUNE source valide ne signale de pluie,
+#     en consommant l’évidence consolidée
+#     `binary_sensor.pluie_evidence_active`.
 #
-#     La source de vérité utilisée est Netatmo,
-#     considérée comme référence météo fiable.
+#     Elle est le PENDANT SYMÉTRIQUE de la décision d’entrée
+#     (maj_sensor/on.yaml) : les deux écrivains consomment
+#     la MÊME évidence, aucun ne recalcule les sources.
 #
 #  🧱 NATURE
 #
 #     - Décision métier (fin d’état)
-#     - Basée sur une mesure météo normalisée
-#     - Résiliente aux redémarrages Home Assistant
+#     - Consommateur de l’évidence consolidée (multi-sources)
+#     - Résiliente au redémarrage et à l’absence Netatmo
 #
 #  ⚙️ PRINCIPE
 #
-#     - Condition préalable : pluie en cours active
-#     - Source unique : pluviomètre Netatmo
-#     - Deux mécanismes complémentaires :
-#         • Détection directe : pluie < 0.1 mm/h maintenue 5 min
-#         • Watchdog temporel : vérification périodique
-#           en cas de redémarrage HA
-#     - Désactivation de l’état `pluie_en_cours`
-#       lorsque l’absence de pluie est confirmée
+#     - Fonctionnement NOMINAL — ÉVÉNEMENTIEL :
+#         • `pluie_evidence_active` → off  ⇒ fin d’épisode
+#           (le delay_off 5 min de l’évidence porte l’anti-rebond ;
+#            averses discontinues = un seul épisode)
+#     - Réconciliation au démarrage :
+#         • `systeme_stable` → on, si l’évidence est déjà off
+#     - BACKSTOP DÉGRADÉ — non nominal :
+#         • un tick périodique ferme l’épisode UNIQUEMENT dans le
+#           régime « Netatmo absent » et si l’épisode dure depuis
+#           plus de T_max. Ce filet ne se déclenche jamais tant
+#           qu’une source valide entretient l’évidence : il ne
+#           coupe donc PAS un orage confirmé par Netatmo, même long.
+#
+#  🧮 T_max (backstop dégradé) = 3 h — justification
+#     En marche nominale la fermeture est immédiate (évidence off).
+#     Netatmo absent + SNZB mouillé en continu : l’évidence retombe
+#     déjà d’elle-même (fraîcheur SNZB 10 min + delay_off 5 min ⇒
+#     ~15 min). Le backstop ne borne donc qu’un cas pathologique
+#     résiduel (SNZB en battement rapide + Netatmo absent) : 3 h est
+#     assez large pour ne jamais gêner un épisode réel et assez court
+#     pour éviter un blocage prolongé. Couvert par la matrice de tests.
 #
 #  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
 #     - Ne détecte pas le début de la pluie
-#     - Ne s’appuie pas sur les capteurs Zigbee
-#     - Ne génère pas d’impulsion logique
-#     - Ne décide rien en cas de capteur indisponible
+#     - Ne recalcule pas les sources (délégué à l’évidence)
+#     - Ne rouvre aucun ouvrant, ne pilote aucun équipement
 #
 #  🔗 UTILISATION
 #
 #     - Autorité unique de sortie de l’état pluie
 #     - Consommée par les scénarios dépendants
 #       (aération, arrosage, protections, etc.)
-#
-#  🛡️ ROBUSTESSE
-#
-#     Le watchdog temporel garantit un état
-#     cohérent même après redémarrage
-#     de Home Assistant.
 #
 #  ✅ COMPATIBILITÉ
 #
@@ -60,69 +67,77 @@
 - id: "10160000000003"
   alias: "Météo - Pluie - Fin épisode"
   description: >
-    Désactive `pluie_en_cours` si Netatmo ne détecte plus de pluie
-    depuis au moins 5 minutes, en ignorant les indisponibilités du capteur.
+    Désactive `pluie_en_cours` dès qu’aucune source valide ne signale de pluie
+    (évidence consolidée `binary_sensor.pluie_evidence_active`), avec
+    réconciliation au démarrage et backstop dégradé borné (Netatmo absent).
 
   mode: single
   max_exceeded: silent
 
   # ======================================================
-  # 🔔 Déclencheurs — Netatmo < 0.1 mm/h ou watchdog
+  # 🔔 Déclencheurs
   # ======================================================
   trigger:
-    # Détection principale
-    - platform: numeric_state
-      id: netatmo
-      entity_id: sensor.pluviometre_precipitation
-      below: 0.1
-      for: "00:05:00"
+    # Nominal (événementiel) : plus aucune évidence de pluie
+    - platform: state
+      id: evidence
+      entity_id: binary_sensor.pluie_evidence_active
+      to: "off"
 
-    # Watchdog (cas redémarrage HA)
+    # Réconciliation au démarrage
+    - platform: state
+      id: demarrage
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+    # Backstop dégradé (non nominal) — voir en-tête T_max
     - platform: time_pattern
-      id: watchdog
-      minutes: "/1"
+      id: backstop
+      minutes: "/5"
 
   # ======================================================
-  # ✅ Conditions globales
+  # ✅ Condition globale
   # ======================================================
   condition:
     - condition: state
       entity_id: input_boolean.pluie_en_cours
       state: "on"
-    - condition: template
-      alias: "Capteur Netatmo valide"
-      value_template: >
-        {{ states('sensor.pluviometre_precipitation') not in ['unavailable','unknown','none'] }}
 
   # ======================================================
-  # 🔄 Action — Arrêt pluie selon type de déclencheur
+  # 🔄 Action — Fin d’épisode selon le régime
   # ======================================================
   action:
     - choose:
 
-        # ✅ Cas 1 : Netatmo sous seuil depuis 5 min
+        # ✅ Nominal / réconciliation : plus d’évidence de pluie
         - conditions:
-            - condition: trigger
-              id: netatmo
+            - condition: or
+              conditions:
+                - condition: trigger
+                  id: evidence
+                - condition: trigger
+                  id: demarrage
+            - condition: state
+              entity_id: binary_sensor.pluie_evidence_active
+              state: "off"
           sequence:
             - service: input_boolean.turn_off
               target:
                 entity_id: input_boolean.pluie_en_cours
 
-        # ✅ Cas 2 : Watchdog (vérification manuelle)
+        # 🧯 Backstop dégradé : Netatmo absent + épisode anormalement long
         - conditions:
             - condition: trigger
-              id: watchdog
+              id: backstop
             - condition: template
-              alias: "Watchdog - Vérifie pluie absente depuis ≥5 min"
+              alias: "Netatmo absent ET épisode > T_max (3 h)"
               value_template: >
-                {% set s = states.sensor.pluviometre_precipitation %}
-                {% if not s or s.state in ['unavailable','unknown','none'] %}
-                  false
-                {% else %}
-                  {{ (s.state | float(999)) <= 0.1 and
-                     (now() - s.last_changed).total_seconds() >= 5*60 }}
-                {% endif %}
+                {% set TMAX = 3 * 60 * 60 %}
+                {% set net = states('sensor.pluviometre_precipitation') %}
+                {% set net_absent = net in ['unknown','unavailable','none',''] %}
+                {% set e = states.input_boolean.pluie_en_cours %}
+                {% set age = (now() - e.last_changed).total_seconds() if e else 0 %}
+                {{ net_absent and age > TMAX }}
           sequence:
             - service: input_boolean.turn_off
               target:
