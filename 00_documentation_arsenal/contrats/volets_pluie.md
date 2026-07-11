@@ -106,7 +106,7 @@ Aucune dépendance à l'ouverture des fenêtres séjour.
 | `input_boolean.pluie_en_cours` | Pluie détectée, faible ou forte (frontière d'entrée — régime chambres) |
 | `binary_sensor.intention_pluie_forte` | Pluie forte qualifiée (frontière d'entrée — régime séjour) |
 
-> Ces signaux sont la **frontière d'entrée** de ce contrat. Leur production relève d'un contrat météo distinct.
+> Ces signaux sont la **frontière d'entrée** de ce contrat. Leur production relève du contrat météo distinct [`meteo/pluie_production.md`](meteo/pluie_production.md) (autorité de production des signaux de précipitation).
 
 ### 5.3 Couche Décision
 

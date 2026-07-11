@@ -23,6 +23,7 @@ hubs de navigation (voir §Navigation).
 | [`palmares_froid.md`](palmares_froid.md) | Palmarès historique — froid |
 | [`palmares_min_haute.md`](palmares_min_haute.md) | Palmarès historique — nuits les plus chaudes (minimale journalière la plus haute) |
 | [`pluie_palmares.md`](pluie_palmares.md) | Palmarès — pluie |
+| [`pluie_production.md`](pluie_production.md) | Production / qualification des signaux de précipitation (autorité de la frontière d'entrée de `volets_pluie.md`) |
 | [`fallback.md`](fallback.md) | Continuité de la donnée météo (fallback) |
 | [`validation.md`](validation.md) | Conditions de validité d'une source de donnée |
 | [`affichage.md`](affichage.md) | Règles normatives de restitution UI de la météo |
