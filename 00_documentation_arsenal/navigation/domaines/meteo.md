@@ -23,7 +23,11 @@ Domaine météo extérieure : observation et structuration des données météo 
 - [`tendance_temperature.md`](../../contrats/meteo/tendance_temperature.md)
 - [`palmares_chaleur.md`](../../contrats/meteo/palmares_chaleur.md)
 - [`palmares_froid.md`](../../contrats/meteo/palmares_froid.md)
+- [`palmares_min_haute.md`](../../contrats/meteo/palmares_min_haute.md)
 - [`pluie_palmares.md`](../../contrats/meteo/pluie_palmares.md)
+
+**Précipitations :**
+- [`pluie_production.md`](../../contrats/meteo/pluie_production.md) — production / qualification des signaux de précipitation (autorité de la frontière d'entrée de `volets_pluie.md`)
 
 **Affichage :**
 - [`affichage.md`](../../contrats/meteo/affichage.md)
