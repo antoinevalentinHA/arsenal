@@ -21,12 +21,12 @@
 
 ## 1. Contexte
 
-Le pont Rain Bird (`rainbird-esp32`, contrôleur BAT-BT-2) est logé dans une **fosse
-recouverte d'une plaque d'acier**, contrainte physique documentée qui **atténue fortement
-la radio** ([`08_inventaire_pont_runtime.md`](../../../contrats/arrosage/08_inventaire_pont_runtime.md) §2).
-Dans ces conditions réelles, les niveaux radio observés — Wi-Fi et BLE autour de **-76 à
--87 dBm** — ne sont jamais sensiblement meilleurs : ils sont **structurels**, pas
-accidentels.
+Le pont Rain Bird (`rainbird-esp32`, contrôleur BAT-BT-2) est **installé en surface**. À son
+emplacement réel, les niveaux radio observés — Wi-Fi et BLE autour de **-76 dBm** — sont
+**moyens mais stables** et, de l'aveu de l'opérateur, **ne sont jamais sensiblement
+meilleurs** ; ils restent **nettement au-dessus du plancher d'exploitabilité (-90 dBm)**.
+La qualité radio observée est donc une **caractéristique durable de l'emplacement**, sans
+conséquence fonctionnelle (aucun incident, pont exploitable).
 
 Le dashboard `dashboards/systeme/rain_bird.yaml` affiche pourtant un verdict global
 **« Santé : Dégradé »**, alors que toutes les autres tuiles attestent un fonctionnement
@@ -99,9 +99,11 @@ Source brute
 
 **Cause exacte :** le gate `wifi_faible or ble_non_qualifie` (lignes 69-70 de
 [`pont_sante.yaml`](../../../../12_template_sensors/arrosage/pont_sante.yaml)) dégrade la
-santé dès qu'un RSSI est **≤ -75 dBm**. Or les RSSI réels, sous plaque d'acier, sont
-**structurellement ≤ -75** : le verdict est donc **condamné à `degrade` en permanence**,
-indépendamment de toute anomalie opérationnelle.
+santé dès qu'un RSSI est **≤ -75 dBm**. Or, à l'emplacement réel, les RSSI observés sont
+**stables autour de -76 dBm** et, selon l'opérateur, **jamais sensiblement meilleurs** :
+tant que le signal reste à ce niveau, le verdict est **en pratique toujours `degrade`**,
+indépendamment de toute anomalie opérationnelle — alors même que -76 dBm demeure **largement
+au-dessus du plancher d'exploitabilité (-90)**.
 
 ---
 
@@ -146,7 +148,7 @@ Garde d'exploitabilité (couche autorisation, **indépendante**) :
 | [`10_prerequis_runtime.md`](../../../contrats/arrosage/10_prerequis_runtime.md) | Plancher d'**exploitabilité** radio = **-90 dBm** (porté par `preconditions_runtime`). Note §2 : « Santé pont `degrade` mais **exploitable** (préconditions `on`, données fraîches) ». |
 | [`11_mode_manuel_supervise.md`](../../../contrats/arrosage/11_mode_manuel_supervise.md) §9 | « **Pont exploitable** malgré santé `degrade`, **préconditions runtime `on`** ». |
 | [`17_decision_v1.md`](../../../contrats/arrosage/17_decision_v1.md) §2/§3.6 | Liste `sensor.rain_bird_pont_sante` comme **entrée de décision** V1 (« santé pont suffisante pour exécuter et observer ») — **mais** le runtime ne l'implémente pas comme gate (cf. §10). |
-| [`08_inventaire_pont_runtime.md`](../../../contrats/arrosage/08_inventaire_pont_runtime.md) §2 | RSSI observés Wi-Fi -83/-87, BLE -79/-83 (plaque d'acier) ; `ble_status`/`ble_last_error` **explicitement écartés** des capteurs de santé. |
+| [`08_inventaire_pont_runtime.md`](../../../contrats/arrosage/08_inventaire_pont_runtime.md) §2 | Relevé runtime des RSSI et des sources ; `ble_status`/`ble_last_error` **explicitement écartés** des capteurs de santé. (Valeur observée au déclencheur : ~-76 dBm, au-dessus du plancher -90.) |
 | [`resilience_integrations.md`](../../../contrats/arrosage/../resilience_integrations.md) | Doctrine **fraîcheur ≠ disponibilité ≠ reprise**, référencée par 03 §6. |
 
 ---
@@ -258,9 +260,9 @@ frontière** en important le seuil -75 de la couche qualité. La cible d'une cor
 - **É1 — Frontière qualité → santé franchie (principal).** `pont_sante` dégrade sur la
   **qualité radio** (-75), critère absent de la notion contractuelle de santé (03 §6).
   Confusion entre **qualité radio informative** et **santé opérationnelle**.
-- **É2 — Verdict structurellement bloqué.** Sous plaque d'acier, RSSI toujours ≤ -75 → santé
-  **jamais `ok`** ; le verdict perd sa valeur de signal (il ne distingue plus nominal et
-  anomalie).
+- **É2 — Verdict durablement bloqué.** À l'emplacement réel, le RSSI stable (~-76 dBm,
+  jamais sensiblement meilleur) reste ≤ -75 → santé **jamais `ok`** ; le verdict perd sa
+  valeur de signal (il ne distingue plus nominal et anomalie).
 - **É3 — Divergence contrat ↔ runtime (17).** Le contrat 17 §2/§3.6 liste `pont_sante` comme
   entrée de décision ; le runtime `intention.yaml` **ne le lit pas** (documenté « non
   bloquant »). Le runtime est **plus sûr** que le contrat ; l'écart est **inoffensif** mais
@@ -320,11 +322,11 @@ gate rien).
 | **A — Santé = disponibilité + fraîcheur seulement** | Retirer entièrement la branche radio du calcul de santé ; la qualité radio reste portée par `pont_qualite_*`. S'appuie directement sur 03 §6. | ✅ **Oui** (radio hors santé) | `ok` | faible ; clarifie 03 (radio informative) |
 | **B — Santé dégrade sous exploitabilité (-90)** | Remplacer le gate `≤ -75` par « radio **hors exploitabilité** » (`< -90` / unknown / ≥ 0), aligné sur `preconditions_runtime`. | ⚠️ **Partiel** (importe l'exploitabilité dans la santé) | `ok` (à -76) | faible ; mais replie 2 couches |
 | **C — Requalifier les niveaux de santé** | Introduire/clarifier `ok` (stable+frais+exploitable) / `degrade` (anomalie réelle **non bloquante** : fraîcheur limite, batterie faible, échecs récents) / `indisponible` (précondition non satisfaite). La radio moyenne stable **> plancher** reste neutre. | ✅ **Oui** (santé = opérationnel ; radio informative) | `ok` | moyen ; nécessite décision doctrinale 03 + éventuel checker |
-| **D — Statu quo documenté** | Ne rien changer ; documenter que « dégradé » est attendu sous plaque d'acier. | — | `degrade` | verdict reste non informatif (rejeté implicitement par le déclencheur) |
+| **D — Statu quo documenté** | Ne rien changer ; documenter que « dégradé » est l'état attendu au niveau radio observé (~-76 dBm). | — | `degrade` | verdict reste non informatif (rejeté implicitement par le déclencheur) |
 
 **Combinaisons possibles :** A ou C peuvent intégrer un **critère batterie faible** et/ou un
 **compteur d'échecs récents** pour donner à `degrade` un sens **positif** (anomalie réelle),
-au lieu d'un `degrade` structurel. Ceci relève d'un arbitrage de fond (Phase 3+), pas du
+au lieu d'un `degrade` systématique. Ceci relève d'un arbitrage de fond (Phase 3+), pas du
 présent rapport.
 
 ---
@@ -417,7 +419,7 @@ sont) :
 - Pré-requis runtime / plancher -90 : [`10_prerequis_runtime.md`](../../../contrats/arrosage/10_prerequis_runtime.md)
 - Mode manuel supervisé (exploitable malgré degrade) : [`11_mode_manuel_supervise.md`](../../../contrats/arrosage/11_mode_manuel_supervise.md)
 - Décision V1 (entrée pont_sante à réconcilier) : [`17_decision_v1.md`](../../../contrats/arrosage/17_decision_v1.md)
-- Inventaire du pont (RSSI, plaque d'acier) : [`08_inventaire_pont_runtime.md`](../../../contrats/arrosage/08_inventaire_pont_runtime.md)
+- Inventaire du pont (RSSI, sources écartées) : [`08_inventaire_pont_runtime.md`](../../../contrats/arrosage/08_inventaire_pont_runtime.md)
 - Audit voisin (exécutions longues Rain Bird) : [`audit_arrosage_executions_longues_rain_bird.md`](audit_arrosage_executions_longues_rain_bird.md)
 - Cockpit de pilotage des chantiers : [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md)
 - Index des audits : [`index.md`](../../index.md)
