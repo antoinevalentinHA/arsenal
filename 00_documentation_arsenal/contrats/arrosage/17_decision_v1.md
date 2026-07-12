@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — ARROSAGE
 ## 17 — Décision d'arrosage V1 (paramétrable, livrable)
 
-**Version contrat :** v1.0
+**Version contrat :** v1.1 — amendée **C18 (Lot 1)**, 2026-07-12 : réconciliation du rôle de `pont_sante` (diagnostic, non décisionnel — §2 / §3, D-C18-B)
 **Statut :** **Normatif — décision V1 ; runtime V1 réalisé (mergé, publié v16.3).**
 Définit la **fonction de décision** d'un arrosage automatique **V1** mono-station :
 ses **entrées**, sa **règle paramétrable**, ses **invariants de sûreté** et la
@@ -106,7 +106,7 @@ paramètres opérateur, en **déléguant l'exécution** au script supervisé ép
 | **Cooldown / intervalle minimal** | Délai minimal entre deux arrosages Arsenal (anti-acharnement) | `input_number.arrosage_intervalle_minimal_heures` |
 | **Plafond journalier** | Au plus **un** arrosage Arsenal par jour | porté par le **cooldown** (`input_number.arrosage_intervalle_minimal_heures`) — pas de helper dédié |
 | **Interrupteur maître** | Autorise/coupe globalement l'automatisme Arsenal | `input_boolean.arrosage_automatique_actif` |
-| **Préconditions runtime + santé pont** | Pont **exploitable** pour exécuter/observer | `binary_sensor.arrosage_rain_bird_preconditions_runtime`, `sensor.rain_bird_pont_sante` |
+| **Préconditions runtime + disponibilité du pont** | Pont **exploitable** pour exécuter/observer | `binary_sensor.arrosage_rain_bird_preconditions_runtime`, `binary_sensor.rain_bird_pont_donnees_disponibles` |
 | **Historique d'arrosage** *(fonctionnel)* | « Quand a-t-on **réellement** arrosé pour la dernière fois ? » — applique cooldown + plafond | `sensor.arrosage_dernier_effectif` — horodaté sur **démarrage prouvé par le switch natif** (jamais ACK seul, [`06`](06_observation_et_preuves.md)) |
 
 > **Historique exprimé fonctionnellement.** La décision **tient compte d'un
@@ -138,13 +138,26 @@ besoin → décision de 04/05, mais **concret et paramétré**.
 4. **hors suspension pluie** (`binary_sensor.arrosage_suspension_pluie` = `off`) ;
 5. **cooldown respecté** et **plafond journalier non atteint** (via l'historique
    `‹dernier_arrosage_effectif›`) ;
-6. **préconditions runtime `on`** et **santé pont** suffisante pour exécuter et
-   observer ;
+6. **préconditions runtime `on`** (`binary_sensor.arrosage_rain_bird_preconditions_runtime`)
+   et **données du pont disponibles** (`binary_sensor.rain_bird_pont_donnees_disponibles = on`)
+   — le **pont exploitable** pour exécuter et observer ;
 7. **aucune inconnue critique** : état réservoir sol `indisponible`/`insuffisant`
    ⇒ **abstention prudente** (jamais conclure « sol humide » par défaut,
    [`04`](04_besoin_hydrique.md) §4). L'état **`degrade` (2/3 points frais) est
    recevable** : il peut **porter une intention positive** si la médiane (alors
    exploitable, [`15`](15_canal_reservoir_sol.md) §2/§5) passe sous le seuil.
+
+> **Réconciliation D-C18-B (Lot 1) — `pont_sante` n'est PAS une entrée de décision.**
+> Une version antérieure listait `sensor.rain_bird_pont_sante` parmi les entrées (§2) et
+> évoquait une « santé pont suffisante » (§3.6). Le **runtime décisionnel réel**
+> (`binary_sensor.arrosage_intention`) **ne lit pas** `pont_sante` : il s'autorise sur
+> **`preconditions_runtime`** (exploitabilité, plancher -90) **et**
+> **`pont_donnees_disponibles`** (disponibilité). Le contrat est **aligné sur ce runtime
+> sûr** : `pont_sante` est une **synthèse de diagnostic / observabilité**, **non-gating**
+> ([`03_coexistence_rainbird.md`](03_coexistence_rainbird.md) §6.4). La santé `degrade`
+> **n'inhibe pas** l'intention (elle reste recevable tant que préconditions `on` et
+> données disponibles). Rendre `pont_sante` décisionnel exigerait une **décision
+> contractuelle explicite** (non prévue).
 
 Si une condition manque, l'intention est **inactive**, et la cause reste
 **explicable** (motif dominant, modèle [`aeration_recommandation.md`](../aeration_recommandation.md)).
