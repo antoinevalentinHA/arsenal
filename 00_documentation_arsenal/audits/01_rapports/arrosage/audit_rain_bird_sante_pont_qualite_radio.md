@@ -21,12 +21,32 @@
 
 ## 1. Contexte
 
-Le pont Rain Bird (`rainbird-esp32`, contrôleur BAT-BT-2) est **installé en surface**. À son
-emplacement réel, les niveaux radio observés — Wi-Fi et BLE autour de **-76 dBm** — sont
-**moyens mais stables** et, de l'aveu de l'opérateur, **ne sont jamais sensiblement
-meilleurs** ; ils restent **nettement au-dessus du plancher d'exploitabilité (-90 dBm)**.
-La qualité radio observée est donc une **caractéristique durable de l'emplacement**, sans
-conséquence fonctionnelle (aucun incident, pont exploitable).
+La chaîne Rain Bird comprend **deux équipements distincts** : le **contrôleur** Rain Bird
+BAT-BT-2 et le **pont** ESP32 (firmware `rainbird-esp32`). Leur **topologie a évolué dans le
+temps** ; il faut distinguer l'inventaire historique de la configuration actuellement
+déployée :
+
+- **Topologie antérieure** — telle que **décrite (correctement à l'époque)** par l'inventaire
+  [`08_inventaire_pont_runtime.md`](../../../contrats/arrosage/08_inventaire_pont_runtime.md) §2
+  et les pré-requis [`10_prerequis_runtime.md`](../../../contrats/arrosage/10_prerequis_runtime.md)
+  P6/P7 : contrôleur **dans une fosse sous plaque d'acier**, pont ESP32 **dans la petite
+  maison**.
+- **Topologie actuelle** — contrôleur **sorti de la fosse, en surface** ; pont ESP32 **dans le
+  jardin, dans un meuble en béton**.
+
+Cet audit raisonne sur la **topologie actuellement déployée**. Sur cette configuration, les
+niveaux radio observés — Wi-Fi du pont et BLE pont↔contrôleur — sont **moyens mais stables,
+autour de -76 dBm** et, de l'aveu de l'opérateur, **jamais sensiblement meilleurs** ; ils
+restent **nettement au-dessus du plancher d'exploitabilité (-90 dBm)**, sans conséquence
+fonctionnelle (aucun incident, pont exploitable). La mesure ~-76 dBm **n'est attribuée à
+aucune cause physique particulière** dans ce rapport (ni plaque d'acier — désormais absente
+de la chaîne — ni meuble béton).
+
+> **Note topologie.** Les documents 08/10 **ne sont pas erronés** : ils décrivent la
+> topologie **antérieure**. Ils **ne reflètent plus complètement** l'installation actuelle.
+> Leur mise à jour éventuelle est **hors périmètre** de cet audit (candidate à un arbitrage
+> ultérieur, cf. §18) ; le présent rapport se borne à **préciser le contexte**, sans corriger
+> ni requalifier ces contrats.
 
 Le dashboard `dashboards/systeme/rain_bird.yaml` affiche pourtant un verdict global
 **« Santé : Dégradé »**, alors que toutes les autres tuiles attestent un fonctionnement
@@ -148,7 +168,7 @@ Garde d'exploitabilité (couche autorisation, **indépendante**) :
 | [`10_prerequis_runtime.md`](../../../contrats/arrosage/10_prerequis_runtime.md) | Plancher d'**exploitabilité** radio = **-90 dBm** (porté par `preconditions_runtime`). Note §2 : « Santé pont `degrade` mais **exploitable** (préconditions `on`, données fraîches) ». |
 | [`11_mode_manuel_supervise.md`](../../../contrats/arrosage/11_mode_manuel_supervise.md) §9 | « **Pont exploitable** malgré santé `degrade`, **préconditions runtime `on`** ». |
 | [`17_decision_v1.md`](../../../contrats/arrosage/17_decision_v1.md) §2/§3.6 | Liste `sensor.rain_bird_pont_sante` comme **entrée de décision** V1 (« santé pont suffisante pour exécuter et observer ») — **mais** le runtime ne l'implémente pas comme gate (cf. §10). |
-| [`08_inventaire_pont_runtime.md`](../../../contrats/arrosage/08_inventaire_pont_runtime.md) §2 | Relevé runtime des RSSI et des sources ; `ble_status`/`ble_last_error` **explicitement écartés** des capteurs de santé. (Valeur observée au déclencheur : ~-76 dBm, au-dessus du plancher -90.) |
+| [`08_inventaire_pont_runtime.md`](../../../contrats/arrosage/08_inventaire_pont_runtime.md) §2 | Relevé runtime des RSSI et des sources (**topologie antérieure**, cf. §1) ; `ble_status`/`ble_last_error` **explicitement écartés** des capteurs de santé. Mesure actuelle : ~-76 dBm, au-dessus du plancher -90. |
 | [`resilience_integrations.md`](../../../contrats/arrosage/../resilience_integrations.md) | Doctrine **fraîcheur ≠ disponibilité ≠ reprise**, référencée par 03 §6. |
 
 ---
@@ -361,6 +381,14 @@ sont) :
 4. **Diagnostic** — **a priori inutile** (couche qualité déjà correcte).
 5. **UI** — **a priori inutile** (rendu déjà fidèle).
 6. **Validation sur états réels** puis **clôture documentaire**.
+
+> **Point de contexte connexe (hors périmètre de cette PR).** L'inventaire 08 et les
+> pré-requis 10 décrivent la **topologie antérieure** (fosse/plaque, ESP32 en petite maison)
+> et **ne reflètent plus complètement** l'installation actuelle (contrôleur en surface, ESP32
+> en meuble béton au jardin). Une **mise à jour de ces documents sur la topologie actuelle**
+> est un **arbitrage distinct**, à décider à l'ouverture du chantier — il **n'est pas** un
+> lot du présent audit et **ne conditionne pas** le diagnostic technique (§13), lequel tient
+> sur la configuration actuelle.
 
 ---
 
