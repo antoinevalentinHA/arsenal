@@ -18,30 +18,38 @@
 #   rain_bird_pont_sante
 #
 # 🔗 DÉPENDANCES
-#   Lit (signaux dérivés Arsenal) :
+#   Lit EN ÉTAT (signaux dérivés Arsenal — santé = disponibilité + fraîcheur) :
 #     binary_sensor.rain_bird_pont_donnees_disponibles
 #     binary_sensor.rain_bird_pont_donnees_fraiches
-#   Lit (radio brute — pour le niveau dégradé) :
+#   Expose EN ATTRIBUTS (diagnostic d'affichage seulement — PAS en état) :
 #     sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi
 #     sensor.rain_bird_bat_bt_2_e9a3_ble_rssi
+#     sensor.rain_bird_bat_bt_2_e9a3_battery_level
+#     sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat
 #
-# 🧱 PRINCIPE (priorité descendante)
-#   1. inconnu      : signal de disponibilité non encore évalué
+# 🧱 PRINCIPE (priorité descendante — contrat 03 §6.2, chantier C18)
+#   1. inconnu      : disponibilité non évaluée (signal amont unknown/…)
 #   2. indisponible : pont_donnees_disponibles = off (cœur indisponible)
-#   3. degrade      : disponible MAIS pont_donnees_fraiches = off
-#                     OU radio faible (Wi-Fi / BLE)
-#   4. ok           : disponible ET frais ET radio correcte
-#   Disponibilité du pont != fraîcheur métier : des données anciennes
-#   mais un pont disponible = DÉGRADÉ, jamais indisponible. La fraîcheur
-#   métier (uptime < 3 h) est portée par pont_donnees_fraiches.
+#   3. degrade      : disponible MAIS pont_donnees_fraiches = off (périmé)
+#   4. ok           : disponible ET frais
+#   La SANTÉ = capacité opérationnelle (disponibilité + fraîcheur). Elle NE
+#   dépend d'AUCUNE valeur RSSI : la qualité radio (-75) et l'exploitabilité
+#   (-90) sont des couches distinctes (03 §6.1) — un signal moyen mais stable
+#   au-dessus du plancher ne dégrade PAS la santé. Une panne radio réelle est
+#   déjà captée par disponibilité/fraîcheur (le pont cesse d'émettre des
+#   télémétries exploitables). Disponibilité != fraîcheur : données anciennes
+#   mais pont disponible = DÉGRADÉ, jamais indisponible.
+#   Verrou anti-régression (bloc state sans RSSI) : R6-like dans
+#   scripts/arsenal_contracts/check_resilience_integrations_contracts.py.
 #
 # 🚫 INTERDITS
 #   - Piloter directement un équipement
 #   - Déclencher une action
 #   - Transformer une donnée inconnue en certitude
+#   - Réintroduire une valeur RSSI dans le calcul d'ÉTAT (03 §6.1/§6.2)
 #
 # 🏷️ STATUT
-#   Synthèse — Arsenal v14.x
+#   Synthèse — Arsenal v14.x (santé alignée contrat 03 §6, C18 Lot 3)
 # ==========================================================
 
 - sensor:
@@ -52,21 +60,11 @@
         {% set dispo = states('binary_sensor.rain_bird_pont_donnees_disponibles') %}
         {% set frais = states('binary_sensor.rain_bird_pont_donnees_fraiches') %}
 
-        {% set wifi_raw = states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') %}
-        {% set wifi = wifi_raw | int(default=0) %}
-        {% set wifi_faible = (wifi_raw in indispo) or wifi >= 0 or wifi <= -75 %}
-
-        {% set ble_raw = states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') %}
-        {% set ble = ble_raw | int(default=0) %}
-        {% set ble_non_qualifie = (ble_raw in indispo) or ble >= 0 or ble <= -75 %}
-
         {% if dispo in indispo %}
           inconnu
         {% elif dispo != 'on' %}
           indisponible
         {% elif frais != 'on' %}
-          degrade
-        {% elif wifi_faible or ble_non_qualifie %}
           degrade
         {% else %}
           ok

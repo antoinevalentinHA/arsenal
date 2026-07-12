@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | **C18** — Rain Bird : sémantique de santé du pont |
 | **Domaine** | Arrosage — pont `rainbird-esp32` (diagnostic / synthèse de santé) |
-| **Statut** | **Actif — Lot 1 (contrat) livré.** Sémantique de santé fixée + D-C18-A/D-C18-B tranchées (contrats 03 §6 / 17 §2-§3, amendés). **Aucun runtime livré** ; écart contrat↔runtime tracé (Lot 3). Restent D-C18-C / D-C18-D ouvertes. |
+| **Statut** | **Actif — Lot 3 (runtime + guard) livré ; validation terrain + clôture (Lot 4) en attente.** Lot 1 (contrat, 03 §6 / 17 §2-§3) + Lot 2 (arbitré, absorbé) + Lot 3 (`pont_sante.yaml` conforme 03 §6.2 — RSSI retiré de l'état ; guard anti-régression C18 + selftest dans le checker résilience) livrés. Écart contrat↔runtime **résorbé**. Restent D-C18-C / D-C18-D ouvertes. |
 | **Priorité** | **P3** — aucun incident fonctionnel ; `pont_sante` ne gate rien (impact strictement diagnostic/UI). Non urgent, mais décision requise. |
 | **Rapport source (mergé)** | [`audit_rain_bird_sante_pont_qualite_radio.md`](../../01_rapports/arrosage/audit_rain_bird_sante_pont_qualite_radio.md) (PR #342, mergée) |
 | **Registre** | [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md) (ligne C18, co-commit) |
@@ -140,7 +140,7 @@ Le dépôt distingue **déjà** trois notions, portées par trois entités. Le c
 |---|---|---|---|
 | **Lot 1 — Contrat / clarification normative** | Trancher la sémantique de santé dans [`03`](../../../contrats/arrosage/03_coexistence_rainbird.md) §6 (santé = disponibilité + fraîcheur ; qualité -75 informative ; exploitabilité -90 = autorisation séparée) **et** réconcilier [`17`](../../../contrats/arrosage/17_decision_v1.md) §2/§3.6 (statut réel de `pont_sante`). Acte D-C18-A et D-C18-B. | **✅ Livré (Lot 1)** — 03 §6.1–§6.4 + 17 §2/§3 amendés ; écart runtime tracé. | — |
 | **Lot 2 — Checker CI** | Garde de non-régression sémantique : interdire la réintroduction d'un critère radio non contractuel dans `pont_sante`. | **Décidé (voir §10) : pas de lot autonome.** Guard **replié** dans `check_resilience_integrations_contracts.py`, **co-livré avec le Lot 3** (aucun nouveau workflow/registre ; séquencement respecté). | Lot 1 |
-| **Lot 3 — Correction backend minimale + guard** | Modifier [`pont_sante.yaml`](../../../../12_template_sensors/arrosage/pont_sante.yaml) conformément à l'option A (03 §6.2/§6.3) : retirer le gate radio ≤ -75, en **conservant** les gates disponibilité/fraîcheur (INV-C18-2) ; **+ guard anti-régression** (extension du checker résilience) **+ tests**. Une **PR unique verte**. | **Nécessaire** (résout le symptôme ; **absorbe le Lot 2**). | Lot 1 |
+| **Lot 3 — Correction backend minimale + guard** | Modifier [`pont_sante.yaml`](../../../../12_template_sensors/arrosage/pont_sante.yaml) conformément à l'option A (03 §6.2/§6.3) : retirer le gate radio ≤ -75, en **conservant** les gates disponibilité/fraîcheur (INV-C18-2) ; **+ guard anti-régression** (extension du checker résilience) **+ tests**. Une **PR unique verte**. | **✅ Livré (Lot 3)** — état `pont_sante` = disponibilité + fraîcheur (RSSI hors état, attributs préservés) ; guard `C18-pont-sante` + selftest dans `check_resilience_integrations_contracts.py` (étape CI `--selftest`) ; **table de vérité 4 états validée**. **Validation terrain en attente** (Lot 4). | Lot 1 |
 | **Lot 4 — Validation sur états réels + clôture** | Vérifier le verdict sur états réels (nominal, perte de fraîcheur, indisponibilité) ; clôturer C18 (registre + trace). | **Nécessaire**. | Lot 3 |
 
 **Lots explicitement NON nécessaires (démontré) :**

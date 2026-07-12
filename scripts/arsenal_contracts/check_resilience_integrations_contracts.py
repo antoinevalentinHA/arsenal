@@ -44,6 +44,11 @@ FILES_ARROSAGE_FRAICHEUR = [
 # secours que si le pont est FRAIS. Verrou anti-régression sur le script écrivain.
 FILE_RAIN_DELAY = ROOT / "10_scripts" / "arrosage" / "rain_delay_appliquer.yaml"
 GATE_NEUTRALISATION = "maitre_on and dispo_ok and frais_ok"
+# C18 (contrat 03 §6.1/§6.2) : la SANTÉ du pont (sensor.rain_bird_pont_sante)
+# ne dépend d'AUCUNE valeur RSSI — elle repose sur disponibilité + fraîcheur.
+# Verrou anti-régression ciblé sur le bloc `state:` seul (les RSSI restent
+# légitimes en attributs diagnostiques, non contrôlés ici).
+FILE_PONT_SANTE = ROOT / "12_template_sensors" / "arrosage" / "pont_sante.yaml"
 FILE_ETAT = ROOT / "12_template_sensors" / "system" / "integrations" / "etat.yaml"
 FILE_WAN = ROOT / "12_template_sensors" / "system" / "connectivite" / "internet" / "contexte_wan_indisponible.yaml"
 FILE_SCRIPT_CANON = ROOT / "10_scripts" / "system" / "resilience_integration_recover.yaml"
@@ -359,6 +364,59 @@ def coexistence_freshness_gate():
     if GATE_NEUTRALISATION not in body:
         problems.append(f"branche de neutralisation non gardée par la fraîcheur "
                         f"(attendu : « {GATE_NEUTRALISATION} »)")
+    return (not problems, problems)
+
+
+def _pont_sante_state_violations(state_text):
+    """
+    Invariant sémantique C18 (03 §6.1/§6.2) évalué sur le TEXTE du bloc `state`
+    de sensor.rain_bird_pont_sante. Ciblage sémantique (pas de dépendance à la
+    forme exacte du YAML) :
+      - INTERDIT : toute lecture de RSSI en état (santé ≠ qualité radio) ;
+      - INTERDIT : le seuil de qualité radio -75 réintroduit en état ;
+      - REQUIS  : les deux sources de santé (disponibilité + fraîcheur).
+    Retourne la liste des violations (vide = conforme).
+    """
+    problems = []
+    txt = str(state_text)
+    if "rssi" in txt.lower():
+        problems.append("le bloc state référence un RSSI "
+                        "(santé ≠ qualité radio, 03 §6.1)")
+    if "-75" in txt:
+        problems.append("le bloc state référence le seuil qualité -75 (03 §6.2)")
+    if "rain_bird_pont_donnees_disponibles" not in txt:
+        problems.append("dépendance disponibilité absente "
+                        "(binary_sensor.rain_bird_pont_donnees_disponibles)")
+    if "rain_bird_pont_donnees_fraiches" not in txt:
+        problems.append("dépendance fraîcheur absente "
+                        "(binary_sensor.rain_bird_pont_donnees_fraiches)")
+    return problems
+
+
+def pont_sante_no_rssi_gate():
+    """
+    C18 : sensor.rain_bird_pont_sante — la SANTÉ opérationnelle repose UNIQUEMENT
+    sur disponibilité + fraîcheur, JAMAIS sur une valeur RSSI (03 §6.1/§6.2).
+    Extrait le bloc `state` de l'entrée unique_id=rain_bird_pont_sante (parsing
+    YAML structuré : les RSSI restent exposés en `attributes`, hors périmètre).
+    Retourne (ok: bool, problems: list[str]).
+    """
+    data = load_yaml(FILE_PONT_SANTE)
+    if not isinstance(data, list):
+        return (False, [f"{FILE_PONT_SANTE.name} illisible ou structure inattendue"])
+    state_text = None
+    for block in data:
+        if not isinstance(block, dict):
+            continue
+        for _domain, entries in block.items():
+            if not isinstance(entries, list):
+                continue
+            for e in entries:
+                if isinstance(e, dict) and str(e.get("unique_id")) == "rain_bird_pont_sante":
+                    state_text = e.get("state")
+    if state_text is None:
+        return (False, ["entrée unique_id=rain_bird_pont_sante ou son bloc `state` introuvable"])
+    problems = _pont_sante_state_violations(state_text)
     return (not problems, problems)
 
 
@@ -782,6 +840,26 @@ def main():
             print(f"  {sym} {regle}{tag} {msg}")
     print()
 
+    # ---------- C18 : santé pont sans RSSI (santé = disponibilité + fraîcheur) ----------
+    # Aligne le runtime sur 03 §6.1/§6.2 : la SANTÉ ne dépend d'aucune valeur RSSI
+    # (couche qualité/exploitabilité distinctes). Verrou anti-régression ciblé sur
+    # le bloc `state` seul (RSSI en attributs diagnostiques préservés).
+    print("[Santé pont Rain Bird — sans RSSI en état (C18)]  global")
+    ps_ok, ps_problems = pont_sante_no_rssi_gate()
+    if ps_ok:
+        record("Santé pont C18", "C18-pont-sante", PASS,
+               f"{FILE_PONT_SANTE.name} : state fondé sur disponibilité + fraîcheur, "
+               f"aucun RSSI (03 §6.1/§6.2)")
+    else:
+        record("Santé pont C18", "C18-pont-sante", FAIL,
+               f"{FILE_PONT_SANTE.name} : " + " ; ".join(ps_problems))
+    for (_i, regle, cat, msg) in RESULTS:
+        if _i == "Santé pont C18":
+            sym = {PASS: "✔", DETTE: "⚠", EXCEPTION: "✔", WARN: "⚠", FAIL: "✗"}[cat]
+            tag = "" if cat == PASS else f" {cat}"
+            print(f"  {sym} {regle}{tag} {msg}")
+    print()
+
     try:
         for integ in registre["integrations"]:
             print(f"[{integ['nom']}]  {integ.get('statut_attendu', '')}")
@@ -827,11 +905,64 @@ def main():
     return 0
 
 
+def selftest():
+    """
+    Auto-test du verrou C18 (pont_sante sans RSSI en état) — mutation-style :
+    prouve que la garde ACCEPTE un état conforme et REJETTE les régressions.
+    """
+    # État conforme (post-C18) : disponibilité + fraîcheur, aucun RSSI.
+    good = (
+        "{% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}"
+        "{% set dispo = states('binary_sensor.rain_bird_pont_donnees_disponibles') %}"
+        "{% set frais = states('binary_sensor.rain_bird_pont_donnees_fraiches') %}"
+        "{% if dispo in indispo %} inconnu"
+        "{% elif dispo != 'on' %} indisponible"
+        "{% elif frais != 'on' %} degrade"
+        "{% else %} ok {% endif %}"
+    )
+    assert _pont_sante_state_violations(good) == [], \
+        f"selftest: faux positif sur état conforme ({_pont_sante_state_violations(good)})"
+
+    # Régression 1 : réintroduction d'une lecture RSSI en état.
+    bad_rssi = good + "{% set w = states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') %}"
+    assert any("rssi" in p.lower() for p in _pont_sante_state_violations(bad_rssi)), \
+        "selftest: RSSI en état non détecté"
+
+    # Régression 2 : réintroduction du seuil qualité -75 en état.
+    bad_seuil = good + "{% if w <= -75 %} degrade {% endif %}"
+    assert any("-75" in p for p in _pont_sante_state_violations(bad_seuil)), \
+        "selftest: seuil -75 non détecté"
+
+    # Régression 3 : perte de la dépendance disponibilité.
+    no_dispo = (
+        "{% set frais = states('binary_sensor.rain_bird_pont_donnees_fraiches') %}"
+        "{% if frais != 'on' %} degrade {% else %} ok {% endif %}"
+    )
+    assert any("disponibilité" in p for p in _pont_sante_state_violations(no_dispo)), \
+        "selftest: dépendance disponibilité manquante non détectée"
+
+    # Régression 4 : perte de la dépendance fraîcheur.
+    no_frais = (
+        "{% set dispo = states('binary_sensor.rain_bird_pont_donnees_disponibles') %}"
+        "{% if dispo != 'on' %} indisponible {% else %} ok {% endif %}"
+    )
+    assert any("fraîcheur" in p for p in _pont_sante_state_violations(no_frais)), \
+        "selftest: dépendance fraîcheur manquante non détectée"
+
+    print("selftest OK")
+
+
 if __name__ == "__main__":
     try:
+        if "--selftest" in sys.argv:
+            selftest()
+            sys.exit(0)
         sys.exit(main())
     except SystemExit:
         raise
+    except AssertionError as exc:
+        print(f"❌ SELFTEST ÉCHOUÉ : {exc}")
+        sys.exit(1)
     except Exception as exc:  # filet de sécurité -> code 2
         print(f"❌ ERREUR INTERNE non rattrapée : {exc}")
         sys.exit(2)
