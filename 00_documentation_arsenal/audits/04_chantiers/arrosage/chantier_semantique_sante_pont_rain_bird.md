@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | **C18** — Rain Bird : sémantique de santé du pont |
 | **Domaine** | Arrosage — pont `rainbird-esp32` (diagnostic / synthèse de santé) |
-| **Statut** | **Ouvert — gouvernance.** Périmètre, invariants, critères et lots définis ; **aucun runtime livré**. Première étape = **décision contractuelle** (Lot 1). |
+| **Statut** | **Actif — Lot 1 (contrat) livré.** Sémantique de santé fixée + D-C18-A/D-C18-B tranchées (contrats 03 §6 / 17 §2-§3, amendés). **Aucun runtime livré** ; écart contrat↔runtime tracé (Lot 3). Restent D-C18-C / D-C18-D ouvertes. |
 | **Priorité** | **P3** — aucun incident fonctionnel ; `pont_sante` ne gate rien (impact strictement diagnostic/UI). Non urgent, mais décision requise. |
 | **Rapport source (mergé)** | [`audit_rain_bird_sante_pont_qualite_radio.md`](../../01_rapports/arrosage/audit_rain_bird_sante_pont_qualite_radio.md) (PR #342, mergée) |
 | **Registre** | [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md) (ligne C18, co-commit) |
@@ -108,14 +108,20 @@ Le dépôt distingue **déjà** trois notions, portées par trois entités. Le c
     (anomalie réelle **non bloquante** : fraîcheur limite, batterie faible, échecs
     récents) / `indisponible` (précondition non satisfaite) — radio moyenne stable
     **> plancher** reste neutre.
-  > Préférence d'audit : **A ou C** (préservent la séparation) plutôt que **B**.
-    **Non tranché** — décision opérateur au Lot 1.
+  > **✅ Tranché au Lot 1 — option A** : la **valeur RSSI est retirée** du calcul de
+    santé (santé = disponibilité + fraîcheur). B (aligner -90) et C (enrichir `degrade`)
+    écartées à ce stade. Justification et sémantique normative :
+    [`03_coexistence_rainbird.md`](../../../contrats/arrosage/03_coexistence_rainbird.md)
+    §6.2 (D-C18-A).
 - **D-C18-B — Réconciliation contrat 17.** Le contrat
-  [`17_decision_v1.md`](../../../contrats/arrosage/17_decision_v1.md) §2/§3.6 **liste**
+  [`17_decision_v1.md`](../../../contrats/arrosage/17_decision_v1.md) §2/§3.6 **listait**
   `sensor.rain_bird_pont_sante` comme **entrée de décision**, alors que le runtime
-  `intention.yaml` **ne le lit pas** (documenté « non bloquant »). Décision : **retirer
-  pont_sante des entrées de décision** (aligner le contrat sur le runtime sûr) **ou**
-  formaliser un couplage explicite (peu probable — irait contre INV-C18-3).
+  `intention.yaml` **ne le lit pas** (gate réel = `preconditions_runtime` +
+  `pont_donnees_disponibles`).
+  > **✅ Réconcilié au Lot 1** : `pont_sante` requalifié **diagnostic, non décisionnel**
+    (aligné sur le runtime sûr) ; entrée de décision = **préconditions + disponibilité**.
+    Cf. [`17_decision_v1.md`](../../../contrats/arrosage/17_decision_v1.md) §2/§3 et
+    [`03`](../../../contrats/arrosage/03_coexistence_rainbird.md) §6.4 (D-C18-B).
 - **D-C18-C — Sens positif de `degrade` (option C).** Si l'option C est retenue :
   faut-il **enrichir** `degrade` d'un critère **batterie faible** et/ou **échecs
   récents**, pour lui donner une valeur de signal ? (arbitrage de fond, à cadrer si C).
@@ -132,7 +138,7 @@ Le dépôt distingue **déjà** trois notions, portées par trois entités. Le c
 
 | Lot | Objet | Nécessité | Dépend de |
 |---|---|---|---|
-| **Lot 1 — Contrat / clarification normative** | Trancher la sémantique de santé dans [`03`](../../../contrats/arrosage/03_coexistence_rainbird.md) §6 (santé = disponibilité + fraîcheur + exploitabilité -90 ; qualité -75 informative) **et** réconcilier [`17`](../../../contrats/arrosage/17_decision_v1.md) §2/§3.6 (statut réel de `pont_sante`). Acte D-C18-A et D-C18-B. | **Nécessaire** (contrat avant runtime). | — |
+| **Lot 1 — Contrat / clarification normative** | Trancher la sémantique de santé dans [`03`](../../../contrats/arrosage/03_coexistence_rainbird.md) §6 (santé = disponibilité + fraîcheur ; qualité -75 informative ; exploitabilité -90 = autorisation séparée) **et** réconcilier [`17`](../../../contrats/arrosage/17_decision_v1.md) §2/§3.6 (statut réel de `pont_sante`). Acte D-C18-A et D-C18-B. | **✅ Livré (Lot 1)** — 03 §6.1–§6.4 + 17 §2/§3 amendés ; écart runtime tracé. | — |
 | **Lot 2 — Checker CI** | Garde de non-régression sémantique : interdire la réintroduction d'un critère radio non contractuel dans `pont_sante` ; verrouiller la sémantique du Lot 1. | **Conditionnel** — selon la précision exigée par le Lot 1 (à décider à l'issue du Lot 1). | Lot 1 |
 | **Lot 3 — Correction backend minimale** | Modifier [`pont_sante.yaml`](../../../../12_template_sensors/arrosage/pont_sante.yaml) conformément à l'option actée : retirer/replacer le gate radio ≤ -75, en **conservant** les gates disponibilité/fraîcheur (INV-C18-2). | **Nécessaire** (résout le symptôme). | Lot 1 |
 | **Lot 4 — Validation sur états réels + clôture** | Vérifier le verdict sur états réels (nominal, perte de fraîcheur, indisponibilité) ; clôturer C18 (registre + trace). | **Nécessaire**. | Lot 3 |

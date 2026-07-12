@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — ARROSAGE
 ## 03 — Coexistence contrôlée Arsenal ↔ Rain Bird
 
-**Version contrat :** v0.1
+**Version contrat :** v0.2 — amendée **C18 (Lot 1)**, 2026-07-12 : sémantique normative de la santé du pont et séparation des trois couches (§6.1–§6.4)
 **Statut :** Normatif — antérieur au runtime
 **Objet :** Contrat **central** du domaine. Définit comment Arsenal et le
 programme interne du Rain Bird coexistent sans conflit, et comment le secours
@@ -144,6 +144,87 @@ La distinction **fraîcheur ≠ disponibilité ≠ reprise** est reprise de
   dead-man switch.
 - Un pont **dégradé** doit faire **basculer vers le secours** (laisser
   `rain_delay` expirer), pas tenter des commandes incertaines.
+
+### 6.1 Trois couches distinctes — ne jamais confondre
+
+> **Invariant sémantique (chantier C18, Lot 1).** La **santé opérationnelle**
+> qualifie la **capacité du pont à être piloté et observé** ; elle **ne mesure pas**
+> la finesse du signal radio. **Trois notions distinctes** cohabitent, chacune avec
+> sa propre autorité et son entité propriétaire — aucune ne doit être repliée dans une
+> autre :
+
+| Couche | Question | Autorité / seuil | Entité propriétaire |
+|---|---|---|---|
+| **Santé opérationnelle** | « le pont est-il pilotable / observable maintenant ? » | disponibilité + fraîcheur (ce §6) | `sensor.rain_bird_pont_sante` |
+| **Exploitabilité runtime** | « la radio est-elle exploitable pour émettre une commande ? » | radio **≥ -90 dBm** + batterie connue ([`10_prerequis_runtime.md`](10_prerequis_runtime.md)) | `binary_sensor.arrosage_rain_bird_preconditions_runtime` |
+| **Qualité radio** | « quelle est la finesse du lien ? » (bon / acceptable / faible) | -67 / -74 / **-75** dBm | `sensor.rain_bird_pont_qualite_wifi`, `…_qualite_ble` |
+
+> La **qualité radio** est une **information graduée neutre** : un signal **moyen mais
+> stable** (p. ex. ~-76 dBm) **supérieur au plancher d'exploitabilité** n'a **aucune
+> conséquence opérationnelle** et **ne dégrade pas** la santé. La **valeur RSSI** — ni
+> le seuil qualité **-75**, ni le plancher d'exploitabilité **-90** — **n'est pas** un
+> critère de **dégradation de santé** : une défaillance radio **réelle** est **déjà**
+> captée par la **disponibilité** et la **fraîcheur** des données (le pont cesse de
+> remonter des télémétries exploitables), **sans** lire le RSSI.
+
+### 6.2 Sémantique normative du verdict de santé
+
+Le verdict `sensor.rain_bird_pont_sante` prend **quatre états**, par **priorité
+descendante**, fondés **uniquement** sur la disponibilité et la fraîcheur (**jamais**
+sur la valeur RSSI) :
+
+| État | Condition normative | Sens opérationnel |
+|---|---|---|
+| **`inconnu`** | disponibilité **non évaluée** (signal amont `unknown` / `unavailable` / vide) | on ne sait pas encore — jamais maquillé en certitude |
+| **`indisponible`** | **données cœur indisponibles** (`binary_sensor.rain_bird_pont_donnees_disponibles = off`) | incapacité opérationnelle / précondition non satisfaite |
+| **`degrade`** | disponible **mais** données **non fraîches** (`binary_sensor.rain_bird_pont_donnees_fraiches = off`) | anomalie **réelle mais non bloquante** : données présentes mais **périmées** (poll interrompu) |
+| **`ok`** | disponible **et** frais | fonctionnement **stable, frais et exploitable** |
+
+> **Décision D-C18-A (tranchée — Lot 1).** La **valeur RSSI est retirée** du calcul de
+> santé (option A du rapport d'audit). **Justification :** (1) l'autorité de la santé
+> (ce §6) n'a **jamais** inclus la valeur RSSI ; (2) le plancher **-90** relève de
+> l'**autorisation** (préconditions) et le seuil **-75** de l'**information** (qualité)
+> — les replier dans la santé **violerait** la séparation des trois couches (§6.1) ;
+> (3) une défaillance radio réelle est **déjà** captée par la disponibilité / fraîcheur
+> (producteurs fiables), donc ce retrait **ne perd aucun signal** opérationnel et **ne
+> crée aucun faux nominal** ; (4) il **n'introduit aucun nouveau critère** de
+> dégradation. Les options **B** (aligner sur -90) et **C** (enrichir `degrade` de
+> batterie / échecs récents) sont **écartées à ce stade** : B replie deux couches ; C
+> introduirait des signaux **sans besoin démontré ni producteur / sémantique établis**
+> (interdit tant que ces trois conditions ne sont pas réunies — cf. décision ouverte
+> D-C18-C au dossier de chantier).
+
+> **Écart runtime temporaire (tracé — contrat avant runtime).** Ce §6 fixe la **norme**
+> (Lot 1). Le runtime `12_template_sensors/arrosage/pont_sante.yaml` **dégrade encore**
+> sur radio ≤ -75 dBm et **n'est pas corrigé ici**. Cet **écart contrat ↔ runtime** est
+> **temporaire et assumé** ; sa résorption est l'objet du **Lot 3** (correction backend
+> minimale), sous les critères §6.3. Tant que le Lot 3 n'est pas livré, le verdict
+> `degrade` **structurel** observé sur radio moyenne reste **non conforme** à la norme
+> ci-dessus, sans conséquence fonctionnelle (le verdict **ne gate rien**, §6.4).
+
+### 6.3 Critères d'acceptation du correctif runtime (Lot 3)
+
+Le runtime `pont_sante` corrigé **devra** :
+
+1. produire **`ok`** quand le pont est **disponible et frais**, **quelle que soit** une
+   qualité radio moyenne stable **supérieure au plancher -90** ;
+2. produire **`degrade`** **si et seulement si** disponible **et** non frais
+   (`binary_sensor.rain_bird_pont_donnees_fraiches = off`) ;
+3. produire **`indisponible`** sur données cœur indisponibles, **`inconnu`** sur signal
+   amont non évalué ;
+4. **ne lire aucune valeur RSSI** comme critère de dégradation ;
+5. n'altérer **aucune** garde, décision, exécution ou notification d'arrosage
+   (`pont_sante` reste **non-gating**, §6.4).
+
+### 6.4 `pont_sante` est diagnostic, non décisionnel
+
+`sensor.rain_bird_pont_sante` est une **synthèse de diagnostic / observabilité**. Il
+**ne conditionne aucune** décision, garde de sûreté ni exécution d'arrosage : la
+décision V1 s'autorise sur `binary_sensor.arrosage_rain_bird_preconditions_runtime`
+(exploitabilité) **et** `binary_sensor.rain_bird_pont_donnees_disponibles`
+(disponibilité), **jamais** sur le verdict de santé (cf. [`17_decision_v1.md`](17_decision_v1.md)
+§2/§3, décision **D-C18-B**). Toute évolution qui rendrait `pont_sante` décisionnel
+exigerait une **décision contractuelle explicite** (non prévue à ce jour).
 
 ---
 
