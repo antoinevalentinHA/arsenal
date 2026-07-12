@@ -139,8 +139,8 @@ Le dépôt distingue **déjà** trois notions, portées par trois entités. Le c
 | Lot | Objet | Nécessité | Dépend de |
 |---|---|---|---|
 | **Lot 1 — Contrat / clarification normative** | Trancher la sémantique de santé dans [`03`](../../../contrats/arrosage/03_coexistence_rainbird.md) §6 (santé = disponibilité + fraîcheur ; qualité -75 informative ; exploitabilité -90 = autorisation séparée) **et** réconcilier [`17`](../../../contrats/arrosage/17_decision_v1.md) §2/§3.6 (statut réel de `pont_sante`). Acte D-C18-A et D-C18-B. | **✅ Livré (Lot 1)** — 03 §6.1–§6.4 + 17 §2/§3 amendés ; écart runtime tracé. | — |
-| **Lot 2 — Checker CI** | Garde de non-régression sémantique : interdire la réintroduction d'un critère radio non contractuel dans `pont_sante` ; verrouiller la sémantique du Lot 1. | **Conditionnel** — selon la précision exigée par le Lot 1 (à décider à l'issue du Lot 1). | Lot 1 |
-| **Lot 3 — Correction backend minimale** | Modifier [`pont_sante.yaml`](../../../../12_template_sensors/arrosage/pont_sante.yaml) conformément à l'option actée : retirer/replacer le gate radio ≤ -75, en **conservant** les gates disponibilité/fraîcheur (INV-C18-2). | **Nécessaire** (résout le symptôme). | Lot 1 |
+| **Lot 2 — Checker CI** | Garde de non-régression sémantique : interdire la réintroduction d'un critère radio non contractuel dans `pont_sante`. | **Décidé (voir §10) : pas de lot autonome.** Guard **replié** dans `check_resilience_integrations_contracts.py`, **co-livré avec le Lot 3** (aucun nouveau workflow/registre ; séquencement respecté). | Lot 1 |
+| **Lot 3 — Correction backend minimale + guard** | Modifier [`pont_sante.yaml`](../../../../12_template_sensors/arrosage/pont_sante.yaml) conformément à l'option A (03 §6.2/§6.3) : retirer le gate radio ≤ -75, en **conservant** les gates disponibilité/fraîcheur (INV-C18-2) ; **+ guard anti-régression** (extension du checker résilience) **+ tests**. Une **PR unique verte**. | **Nécessaire** (résout le symptôme ; **absorbe le Lot 2**). | Lot 1 |
 | **Lot 4 — Validation sur états réels + clôture** | Vérifier le verdict sur états réels (nominal, perte de fraîcheur, indisponibilité) ; clôturer C18 (registre + trace). | **Nécessaire**. | Lot 3 |
 
 **Lots explicitement NON nécessaires (démontré) :**
@@ -190,8 +190,8 @@ L'audit a établi (précisions opérateur) une **évolution de topologie** :
    runtime (INV-C18-5).
 5. **Aucune régression** sur gardes, décisions, exécutions et notifications d'arrosage
    (inchangées par construction — `pont_sante` ne les alimente pas).
-6. Checkers documentaires et de domaine **verts** (dont, le cas échéant, la garde du
-   Lot 2).
+6. Checkers documentaires et de domaine **verts** (dont la **garde anti-régression**
+   anti-RSSI, co-livrée au **Lot 3** — cf. §10).
 
 ---
 
@@ -204,6 +204,52 @@ L'audit a établi (précisions opérateur) une **évolution de topologie** :
   (co-commit obligatoire).
 - Ce document est la **source faisant foi** du chantier C18 ; il est **indexé** dans
   [`index.md`](../../index.md) (même commit).
+
+---
+
+## 10. Évaluation du Lot 2 (checker CI) — décision
+
+Évaluation menée après merge du Lot 1 (contrat autorité). **Invariant à protéger** :
+`sensor.rain_bird_pont_sante` ne dépend d'**aucune valeur RSSI** ; santé = **disponibilité
++ fraîcheur** ; les seuils qualité (-75) et exploitabilité (-90) restent dans leurs couches
+([`03`](../../../contrats/arrosage/03_coexistence_rainbird.md) §6.1–§6.2).
+
+| # | Question | Constat |
+|---|---|---|
+| 1 | **Risque réel de régression** | **Faible sévérité** (`pont_sante` **non-gating** → une régression n'a **aucun** effet fonctionnel, seulement une tuile mal colorée) mais **récurrence plausible** : la confusion **a déjà eu lieu** (le -75 vient d'un copier du seuil qualité). Tentation documentée, non hypothétique. |
+| 2 | **Couverture par les checkers existants** | **Non couvert.** Aucun checker n'inspecte la composition de `pont_sante`. Le **seul** checker touchant le pont — `check_resilience_integrations_contracts.py` — possède déjà des invariants **03 §6** (R6 garde `pont_donnees_fraiches` du script `rain_delay`, R14 doctrine `last_reported` sur `pont_donnees_fraiches.yaml`) et **parse déjà** les fichiers `12_template_sensors/arrosage/` — mais **ne contrôle pas** l'absence de RSSI dans `pont_sante`. |
+| 3 | **Contrôle statique : robuste ou trop couplé ?** | **Robuste si ciblé sur le bloc `state:`** (l'invariant = le `state` ne référence ni `_rssi` ni le seuil -75). Un grep naïf du fichier **faux-positiverait** : `pont_sante` **expose légitimement** `wifi_rssi`/`ble_rssi` en **attributs** d'affichage. Le contrôle doit donc distinguer `state` / `attributes` → **parsing YAML structuré**, exactement ce que fait déjà le checker résilience (HALoader). Bas couplage à l'implémentation (n'impose pas *comment* calculer, seulement de *ne pas lire* le RSSI en état). |
+| 4 | **Coût de maintenance proportionné ?** | **Checker dédié = disproportionné** : gouvernance C14 (script **+ nouveau workflow** `.github/workflows/contracts_*.yml` + selftest + non-orphelin `check_ci_coverage_registry`) pour **un seul capteur non-gating**. **Extension du checker résilience existant = coût marginal faible** (une règle dans un checker déjà câblé, déjà propriétaire des invariants 03 §6 arrosage — aucun nouveau workflow/registre). |
+| 5 | **Les tests du Lot 3 suffisent-ils ?** | Les tests du Lot 3 sont **ponctuels** : ils valident la correction à l'instant T, **sans empêcher** une ré-introduction future. Seul un **guard permanent** prévient la dérive (doctrine C14 : « rejeté par la machine, pas par un relecteur »). |
+
+> **Contrainte de séquencement décisive.** Un guard « `pont_sante.state` sans RSSI » serait
+> **rouge** contre le runtime **actuel** (qui dégrade encore sur -75 — écart tracé,
+> [`03`](../../../contrats/arrosage/03_coexistence_rainbird.md) §6). Il **ne peut donc pas**
+> constituer une **PR autonome verte avant** le Lot 3.
+
+### Décision (Lot 2)
+
+> **Pas de checker CI dédié (PR autonome) — mais un guard permanent, au bon endroit et au
+> bon moment.**
+>
+> - **Écarté** : ouvrir un **checker dédié** en PR autonome (disproportionné pour un capteur
+>   non-gating ; et impossible à rendre vert avant le Lot 3).
+> - **Retenu** : **replier un guard minimal anti-RSSI dans le checker existant**
+>   `check_resilience_integrations_contracts.py` (déjà propriétaire des invariants 03 §6
+>   arrosage, déjà câblé en CI via `contracts_resilience_integrations.yml`), **co-livré avec
+>   le Lot 3** (même PR : correction runtime **+** guard → CI verte, guard aligné sur le
+>   runtime corrigé). Règle : le **bloc `state:`** de `pont_sante.yaml` ne référence ni
+>   `bridge_wifi_rssi`/`ble_rssi` ni le seuil `-75`, et référence bien
+>   `pont_donnees_disponibles` + `pont_donnees_fraiches`.
+>
+> Cette voie **n'ajoute aucun artefact de gouvernance** (pas de nouveau workflow/registre),
+> donne une **protection anti-régression permanente** (C14), et respecte le **séquencement**
+> (le guard n'existe qu'avec le runtime conforme). Le Lot 2 **ne produit donc pas de PR
+> séparée** : il est **absorbé dans le Lot 3** comme composant « garde CI » de ce dernier.
+
+**Conséquence sur le découpage :** le Lot 2 « checker » **cesse d'être un lot autonome** ; le
+Lot 3 devient **« correction runtime `pont_sante.yaml` + guard anti-régression (extension du
+checker résilience) + tests »**, en une PR unique verte.
 
 ---
 
