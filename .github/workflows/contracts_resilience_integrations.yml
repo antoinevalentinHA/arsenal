@@ -22,5 +22,8 @@ jobs:
       - name: Install PyYAML
         run: pip install pyyaml
 
+      - name: Auto-test du checker (verrou C18 pont_sante)
+        run: python3 scripts/arsenal_contracts/check_resilience_integrations_contracts.py --selftest
+
       - name: Vérification contractuelle — Résilience intégrations
         run: python3 scripts/arsenal_contracts/check_resilience_integrations_contracts.py
