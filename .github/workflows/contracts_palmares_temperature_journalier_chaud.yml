@@ -17,7 +17,7 @@ on:
       - "12_template_sensors/meteo/temperature_max_jardin.yaml"
       - "recorder.yaml"
       - "scripts/arsenal_contracts/check_palmares_temperature_journalier_chaud_contracts.py"
-      - "00_documentation_arsenal/contrats/meteo/CONTRAT_PALMARES_TEMPERATURE_JOURNALIER_CHAUD.md"
+      - "00_documentation_arsenal/contrats/meteo/palmares_chaleur.md"
   pull_request:
     paths:
       - "03_input_numbers/meteo/**"
