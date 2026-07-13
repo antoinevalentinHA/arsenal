@@ -330,11 +330,21 @@ include:
     # mesures du contrôleur pour qualifier dans la durée les pre-requis
     # P2 (batterie / RSSI) et P6 (Wi-Fi) — cf. contrats/arrosage 08 et 10.
     # Aucune commande, aucun pilotage Rain Bird.
+    #
+    # Reclassification Population B (contrat recorder §Réévaluation — « bruit
+    # logbook constaté ») : retrait des reformulations qualitatives radio,
+    # redondantes avec le RSSI BRUT conservé. Les entités restent VIVANTES pour
+    # l'UI / les États — seule leur HISTORISATION est retirée (aucune entité HA
+    # supprimée).
+    #   - sensor.rain_bird_pont_qualite_wifi/_ble : bandes bon/acceptable/faible
+    #     re-dérivables du dBm — valeur historique nulle en propre.
+    #   - sensor.rain_bird_pont_diagnostic : résumé projection_ui à texte libre,
+    #     cardinalité non bornée (§Cardinalité), le plus bavard du bloc.
+    # RSSI bruts + batterie CONSERVÉS : preuve primaire de la qualification P2/P6
+    # encore OUVERTE (contrat 10 §2, maj terrain 2026-06-26 : P2/P6 « à qualifier »).
+    # Réévaluer ces RSSI bruts à la CLÔTURE de la qualification P2/P6, pas avant.
     - binary_sensor.arrosage_rain_bird_preconditions_runtime
     - sensor.rain_bird_pont_sante
-    - sensor.rain_bird_pont_qualite_wifi
-    - sensor.rain_bird_pont_qualite_ble
-    - sensor.rain_bird_pont_diagnostic
     - binary_sensor.rain_bird_pont_donnees_disponibles
     - binary_sensor.rain_bird_pont_donnees_fraiches
     - sensor.rain_bird_bat_bt_2_e9a3_active_station
