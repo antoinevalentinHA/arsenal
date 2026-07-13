@@ -6,14 +6,14 @@ on:
       - "19_button_card_templates/**/*.yaml"
       - "configuration.yaml"
       - "scripts/arsenal_contracts/check_19_button_card_templates_contracts.py"
-      - ".github/workflows/arsenal_19_button_card_templates.yml"
+      - ".github/workflows/contracts_19_button_card_templates.yml"
 
   pull_request:
     paths:
       - "19_button_card_templates/**/*.yaml"
       - "configuration.yaml"
       - "scripts/arsenal_contracts/check_19_button_card_templates_contracts.py"
-      - ".github/workflows/arsenal_19_button_card_templates.yml"
+      - ".github/workflows/contracts_19_button_card_templates.yml"
 
   workflow_dispatch:
 
