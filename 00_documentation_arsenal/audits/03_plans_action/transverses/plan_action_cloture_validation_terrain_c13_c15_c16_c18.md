@@ -5,6 +5,8 @@
 - **Objet :** recueillir les preuves manquantes identifiées par l'investigation historique afin de clôturer, à terme, C13, C15, C16 et C18.
 - **Sources faisant foi :** [`investigation_historique_cloture_terrain_c16_c15_c13.md`](../../01_rapports/transverses/investigation_historique_cloture_terrain_c16_c15_c13.md) · [`protocole_validation_c18_sante_pont.md`](../../04_chantiers/arrosage/protocole_validation_c18_sante_pont.md) · [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md) · contrats/runtime C13/C15/C16 · `recorder.yaml` · [`audit_recorder_instrumentation_temporaire.md`](../../01_rapports/architecture/audit_recorder_instrumentation_temporaire.md).
 
+> **État d'avancement (2026-07-13).** **Instrumentation Recorder mergée par la PR #354 et activée au redémarrage complet de Home Assistant le 2026-07-13 (T0 confirmé).** Échéances de réévaluation effectives : C16 **2026-09-11** ; C13 **2026-11-10**. **C18 clôturé** (validation live T1 + T5 du 2026-07-13 ; registre ⑤). Restent ouverts : **C16** (attente prochaine pluie), **C13** (attente occurrence réelle), **C15** (test live à réaliser).
+
 ---
 
 ## 1. Principe

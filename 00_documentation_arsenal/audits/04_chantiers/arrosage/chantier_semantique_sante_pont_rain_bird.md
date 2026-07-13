@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | **C18** — Rain Bird : sémantique de santé du pont |
 | **Domaine** | Arrosage — pont `rainbird-esp32` (diagnostic / synthèse de santé) |
-| **Statut** | **Actif — Lot 3 (runtime + guard) livré ; validation terrain + clôture (Lot 4) en attente.** Lot 1 (contrat, 03 §6 / 17 §2-§3) + Lot 2 (arbitré, absorbé) + Lot 3 (`pont_sante.yaml` conforme 03 §6.2 — RSSI retiré de l'état ; guard anti-régression C18 + selftest dans le checker résilience) livrés. Écart contrat↔runtime **résorbé**. Restent D-C18-C / D-C18-D ouvertes. |
+| **Statut** | **Clos (2026-07-13)** — Lot 4 (validation terrain) acquis : **T1 PASS** (`pont_sante=ok` malgré Wi-Fi RSSI -77 / BLE -80, ≤ -75 ; attributs RSSI exposés), **T5 non-régression** (préconditions `on`, intention `repos`, `dernier_effectif` présent et cohérent `2026-07-12T19:34:28+00:00` ; aucune non-régression apparente) ; T3/T4 opportunistes non bloquants. Lots 1-4 soldés ; écart contrat↔runtime résorbé. **D-C18-C / D-C18-D portées en ③ (à arbitrer/dormant, ligne `D-C18-CD`)** — distinctes, non tranchées par la clôture. |
 | **Priorité** | **P3** — aucun incident fonctionnel ; `pont_sante` ne gate rien (impact strictement diagnostic/UI). Non urgent, mais décision requise. |
 | **Rapport source (mergé)** | [`audit_rain_bird_sante_pont_qualite_radio.md`](../../01_rapports/arrosage/audit_rain_bird_sante_pont_qualite_radio.md) (PR #342, mergée) |
 | **Registre** | [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md) (ligne C18, co-commit) |
