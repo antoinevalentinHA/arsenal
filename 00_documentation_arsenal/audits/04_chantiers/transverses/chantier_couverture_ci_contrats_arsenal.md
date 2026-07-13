@@ -141,7 +141,7 @@ Deux nuances de **statut** (réelles, mais distinctes d'une norme fantôme) :
 
 ### 3.5 CI existantes incomplètes ou dégradées
 
-- `validation.yml` : **non bloquant par construction** (`|| true`).
+- `validation.yml` : **non bloquant par construction** (`|| true`) — **corrigé depuis le cadrage (Lot 1C, 2026-07)** : le `|| true` a été retiré ; `validation.yml` exécute désormais un contrôle **bloquant** de résolution des includes (`check_configuration_includes.py`) + un lint yamllint **informatif assumé** (`continue-on-error`).
 - `arsenal-ci-chauffage` : **entièrement warn-only** (`ARSENAL_CI_ENFORCE=false`) ; couverture lint bornée à un fichier.
 - `doctrine.yml` : check `mode:` par fichier (faux négatifs) ; check `default_entity_id` désactivé ; grep sur dossier inexistant.
 - Paths filters : chemin mort dans `contracts_palmares_temperature_journalier_chaud.yml` ; auto-référence erronée dans `contracts_19_button_card_templates.yml` ; exception de nommage `clim_ventilation_contracts.yml`.
@@ -301,6 +301,15 @@ Ces contraintes **demeurent pleinement opposables**. Leur absence de CI est un c
 ### 8.2 Quick wins (indépendants, < 1 jour chacun)
 
 `yamllint` bloquant (ou retrait assumé) · chemins morts des path filters · renommage `clim_ventilation_contracts.yml` · `ROOT` de `check_vmc` · rafraîchissement du registre de couverture · citations d'ancrage (série mécanique).
+
+> **État d'exécution (2026-07-13, `main` @ `aa3f3ab7`).** La quasi-totalité de ces quick wins a été soldée depuis le cadrage (base observée `f583efe`) ; consigné ici uniquement pour ne pas rouvrir du travail déjà fait (biais agent, §1.1). **Suivi canonique** : ligne **C14** du [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md) — le détail lot-par-lot n'est pas recopié ici (charte §91, anti backlog déguisé).
+>
+> - **Chemins morts des path filters** — ✅ soldé (#348) : `palmares…chaud` → `palmares_chaleur.md` ; auto-référence de `contracts_19_button_card_templates.yml` corrigée.
+> - **Renommage `clim_ventilation_contracts.yml`** — ✅ soldé (#349) → `contracts_climatisation_ventilation.yml` (registre de couverture réconcilié, dernière exception de nommage à suffixe supprimée).
+> - **`ROOT` de `check_vmc`** — ✅ soldé (#350) : racine ancrée sur le script (`parents[2]`), invocation désormais cwd-indépendante.
+> - **Rafraîchissement du registre de couverture** — ✅ soldé **et mis sous garde mécanique** (Lot 1D : `check_ci_coverage_registry.py`, bloquant — la dérive redevient une ERROR CI).
+> - **Citations d'ancrage (série mécanique)** — ✅ soldé (Lot 1A : 62 checkers ré-ancrés par chemin exact, 14 restants déjà conformes).
+> - **`yamllint` bloquant / retrait assumé** — partiellement traité (Lot 1C) : le faux badge vert (`|| true`) est **retiré**, `validation.yml` exécute un contrôle **bloquant** de résolution des includes et yamllint reste **informatif assumé**. Le rendre bloquant n'est **pas** un quick win — ~776 constats (302 errors / 474 warnings) à résorber au préalable : vrai chantier.
 
 ### 8.3 Dettes de couverture à instruire (Lots 2–3)
 
