@@ -18,7 +18,10 @@ ERRORS = []
 # CONFIGURATION
 # ==========================================================
 
-ROOT = Path(".")
+# Racine du dépôt ancrée sur l'emplacement du script (parents[2] =
+# scripts/arsenal_contracts/ -> scripts/ -> racine), et NON sur le cwd :
+# le checker donne le même verdict quel que soit le répertoire d'appel.
+ROOT = Path(__file__).resolve().parents[2]
 
 
 # ==========================================================
@@ -67,7 +70,7 @@ for path in ROOT.rglob("*.yaml"):
     if not path.is_file():
         continue
 
-    path_str = str(path).lower()
+    path_str = str(path.relative_to(ROOT)).lower()
 
     if "vmc" not in path_str:
         continue
@@ -104,7 +107,7 @@ for path in ROOT.rglob("*.yaml"):
     if not path.is_file():
         continue
 
-    path_str = str(path).lower()
+    path_str = str(path.relative_to(ROOT)).lower()
 
     if "vmc" not in path_str:
         continue
