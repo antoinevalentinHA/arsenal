@@ -296,6 +296,34 @@ include:
     - sensor.pression_chambre_arnaud
 
     # =====================================================
+    # ==== 🌧️ PLUIE — ÉPISODE (INSTRUMENTATION TEMPORAIRE C16) ====
+    # =====================================================
+    # RECORDER — Population B
+    # Rôle      : état d'épisode de pluie `input_boolean.pluie_en_cours`
+    #             (ouvert par maj_sensor/on, fermé par maj_sensor/off ; chantier C16).
+    # Utilité   : PROUVER l'ouverture et la fermeture NOMINALES d'un épisode aux
+    #             côtés de l'évidence déjà historisée
+    #             (binary_sensor.pluie_evidence_active) — corréler évidence ↔ épisode
+    #             pour valider le correctif de l'état collant. Sans cet historique,
+    #             l'état d'épisode est invisible après coup.
+    # Logbook   : acceptable — binaire, quelques transitions/jour en pluie, nul sinon.
+    # Cardinalité : binaire (on/off) — finie.
+    # Fréquence : << 5/h — un épisode réel = 1 ouverture + 1 fermeture ; temps sec = 0.
+    # NB : lecture seule ; aucune logique métier ne lit cet HISTORIQUE recorder
+    #      (les automations lisent l'état LIVE — invariant d'indépendance préservé).
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : C16 — état collant `pluie_en_cours` (plan d'action transverse mergé)
+    # Objet      : historisation temporaire pour prouver l'ouverture/fermeture nominale
+    #              d'épisode (occurrence naturelle : prochaine pluie réelle).
+    # Ajouté     : 2026-07-13 — activation effective au redémarrage Home Assistant
+    # Réévaluer  : 2026-09-11 (T0 + 60 j) — RÉÉVALUATION propriétaire OBLIGATOIRE,
+    #              PAS une suppression automatique : maintien motivé · retrait ·
+    #              modification de la stratégie de preuve. Aucun maintien silencieux au-delà.
+    # Retrait    : dès preuve acquise ET chantier C16 clôturé ; maintien tant que
+    #              C16 est actif ET l'instrumentation nécessaire.
+    - input_boolean.pluie_en_cours
+
+    # =====================================================
     # ==== 🛰️ RAIN BIRD — PONT / QUALIFICATION P2 & P6 ====
     # =====================================================
     # Observabilité lecture seule. Historise la santé du pont et les
@@ -521,6 +549,36 @@ include:
     # ---- Diagnostic ventilation (synthèse conformité réel/recommandé) ----
     # Observabilité dashboard : verdict + cause d'écart. Lecture seule.
     - sensor.clim_ventilation_diagnostic
+
+    # =====================================================
+    # ==== ❄️ CLIM — ÉCHEC EXÉCUTION PERSISTANT (INSTRUMENTATION TEMPORAIRE C13) ====
+    # =====================================================
+    # RECORDER — Population B
+    # Rôle      : latch d'échec `input_boolean.clim_execution_echec` + budget de
+    #             reprise `counter.clim_execution_retry_count` (auto 10030000000121 ;
+    #             contrat clim 08_execution.md, dette D5).
+    # Utilité   : PROUVER, à la prochaine occurrence réelle, la séquence de
+    #             notification d'échec persistant — latch=on ET budget>2 ⇒ création,
+    #             puis latch=off ⇒ retrait. Complète les call_service déjà captés.
+    #             Sans ces deux états, la séquence est invisible après coup.
+    # Logbook   : acceptable — binaire + compteur, changements uniquement en échec (rare).
+    # Cardinalité : binaire (on/off) ; compteur borné à valeurs faibles (0..3).
+    # Fréquence : << 5/h — nul en nominal ; quelques changements groupés lors d'un échec.
+    # NB : lecture seule ; aucune logique métier ne lit cet HISTORIQUE recorder
+    #      (les automations lisent l'état LIVE — invariant d'indépendance préservé).
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : C13 — notification d'échec d'exécution persistant clim, dette D5 (plan d'action transverse mergé)
+    # Objet      : historisation temporaire pour capturer une occurrence réelle rare
+    #              (ou un test provoqué décidé par le propriétaire).
+    # Ajouté     : 2026-07-13 — activation effective au redémarrage Home Assistant
+    # Réévaluer  : 2026-11-10 (T0 + 120 j) — RÉÉVALUATION propriétaire OBLIGATOIRE,
+    #              PAS une suppression automatique : maintien motivé · retrait ·
+    #              modification de la stratégie de preuve · autorisation d'un test provoqué.
+    #              Aucun maintien silencieux au-delà.
+    # Retrait    : dès preuve acquise ET chantier C13 clôturé ; maintien tant que
+    #              C13 est actif ET l'instrumentation nécessaire.
+    - input_boolean.clim_execution_echec
+    - counter.clim_execution_retry_count
 
     # =====================================================
     #  ==== 🪟 AERATION ====
