@@ -143,6 +143,45 @@
       entity_id: input_boolean.aeration_recover_requested
       to: "on"
 
+    # --------------------------------------------------------------
+    #  M2 - Reconciliation sur ETAT (anti front consomme / post-boot)
+    #
+    #  Ces triggers ne sont PAS une preuve de fermeture : ils ne font
+    #  que provoquer une re-evaluation de la porte M2 lorsqu'une garde
+    #  transitoirement fausse au moment du front "fermeture_stable"
+    #  redevient compatible. La preuve fonctionnelle de fermeture vient
+    #  exclusivement de l'etat courant de fenetres_maison_fermees_stable
+    #  (garde de branche + assertion interne du script M2).
+    # --------------------------------------------------------------
+    - id: reconciliation_feature_active
+      platform: state
+      entity_id: input_boolean.blocage_chauffage_aeration_active
+      to: "on"
+
+    - id: reconciliation_systeme_stable
+      platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+    - id: reconciliation_pipeline_arme
+      platform: state
+      entity_id: input_boolean.aeration_pipeline_arme
+      to: "on"
+
+    # Post-boot : le template sensor part de unknown/unavailable, jamais de
+    # "off" -> le front nominal "fermeture_stable" (from off) est manque.
+    - id: reconciliation_fermees_stable_unknown
+      platform: state
+      entity_id: binary_sensor.fenetres_maison_fermees_stable
+      from: "unknown"
+      to: "on"
+
+    - id: reconciliation_fermees_stable_unavailable
+      platform: state
+      entity_id: binary_sensor.fenetres_maison_fermees_stable
+      from: "unavailable"
+      to: "on"
+
   ##################################################################
   #  CONDITIONS GLOBALES
   ##################################################################
@@ -221,8 +260,26 @@
                   ['unknown','unavailable','none','None','']
                 }}
 
-            - condition: template
-              value_template: "{{ trigger.id == 'fermeture_stable' }}"
+            # Trigger nominal OU reconciliation sur etat (anti front consomme).
+            # Le littéral "trigger.id == 'fermeture_stable'" est conservé.
+            - condition: or
+              conditions:
+                - condition: template
+                  value_template: "{{ trigger.id == 'fermeture_stable' }}"
+                - condition: template
+                  value_template: >
+                    {{ trigger.id in [
+                         'reconciliation_feature_active',
+                         'reconciliation_systeme_stable',
+                         'reconciliation_pipeline_arme',
+                         'reconciliation_fermees_stable_unknown',
+                         'reconciliation_fermees_stable_unavailable'
+                       ] }}
+
+            # Preuve fonctionnelle de fermeture = ETAT courant (jamais le trigger).
+            - condition: state
+              entity_id: binary_sensor.fenetres_maison_fermees_stable
+              state: "on"
 
             - condition: state
               entity_id: input_boolean.aeration_episode_en_cours

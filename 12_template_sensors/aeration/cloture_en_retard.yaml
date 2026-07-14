@@ -1,0 +1,47 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR :
+#     Chauffage – Aération – Clôture en retard (DIAGNOSTIC)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Constater — à des fins de DIAGNOSTIC uniquement — qu'un
+#   épisode d'aération reste ouvert alors que toutes les
+#   conditions de clôture M2 sont réunies de façon CONTINUE
+#   au-delà d'une borne contractuelle fixe (60 s).
+#
+#   La combinaison surveillée n'est PAS incohérente pendant le
+#   délai normal de routage et d'exécution de M2. Elle ne le
+#   devient que si elle PERSISTE : c'est le rôle du delay_on.
+#
+# 🧱 NATURE
+#   - Capteur d'observation pur (device_class: problem)
+#   - Persistance mesurée par delay_on (aucun last_changed,
+#     aucun tick d'horloge, aucun helper configurable)
+#
+# 🚫 FRONTIÈRE STRICTE (hors chemin recover)
+#   - N'EST PAS une clause de binary_sensor.chauffage_aeration_coherence_ko
+#   - N'alimente PAS input_boolean.aeration_recover_requested
+#   - N'est lu par AUCUNE automation d'action
+#   - N'écrit AUCUN helper
+#   - Ne déclenche AUCUNE remédiation (M0/M4)
+#
+# 📍 Entité : binary_sensor.chauffage_aeration_cloture_en_retard
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Chauffage – Aération – Clôture en retard"
+      unique_id: chauffage_aeration_cloture_en_retard
+      default_entity_id: binary_sensor.chauffage_aeration_cloture_en_retard
+      device_class: problem
+
+      # Persistance continue 60 s de la combinaison de clôture non réalisée.
+      delay_on: "00:01:00"
+
+      state: >
+        {{ is_state('input_boolean.aeration_episode_en_cours','on')
+           and is_state('binary_sensor.fenetres_maison_fermees_stable','on')
+           and is_state('input_boolean.aeration_pipeline_arme','on')
+           and is_state('input_boolean.chauffage_blocage_aeration','off')
+           and is_state('input_boolean.systeme_stable','on')
+           and states('input_datetime.aeration_debut') not in
+               ['unknown','unavailable','none','None',''] }}

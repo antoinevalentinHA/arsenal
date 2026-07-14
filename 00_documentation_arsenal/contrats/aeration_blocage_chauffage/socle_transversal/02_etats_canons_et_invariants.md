@@ -209,6 +209,25 @@ Ces états doivent être captés par :
 - sécurité démarrage
 - M0 recover
 
+## Clôture non réalisée (état transitoire illégal si persistant)
+
+8) `épisode ON` + `fermeture stable acquise` + `blocage OFF`
+   + `pipeline ON` + `systeme_stable ON` + `aeration_debut` valide.
+
+Cette combinaison est **légitime** pendant le délai normal de
+routage et d’exécution de M2. Elle devient **illégale** seulement
+si elle **persiste** au-delà de la borne contractuelle fixe de
+**60 s** (clôture M2 non réalisée).
+
+Captation — **distincte** du chemin recover :
+
+- **Réconciliation nominale** : le pipeline maître route vers M2
+  (triggers `reconciliation_*`, preuve sur état). C’est le seul
+  mécanisme de résolution.
+- **Observation** : `binary_sensor.chauffage_aeration_cloture_en_retard`
+  (diagnostic pur, `delay_on: 60s`). Ce capteur **n’alimente pas**
+  `coherence_ko`, `aeration_recover_requested` ni M0.
+
 ---
 
 # 🛑 INVARIANTS ABSOLUS
@@ -218,6 +237,11 @@ Ces états doivent être captés par :
 - Aucun redémarrage thermique direct.
 - Aucune dépendance circulaire avec la décision centrale.
 - Aucune persistance d’état résiduel après M4.
+- **INV-CLÔTURE** : si `épisode ON` ∧
+  `fenetres_maison_fermees_stable ON` ∧ `blocage OFF` ∧
+  `pipeline ON` ∧ `systeme_stable ON` ∧ `aeration_debut` valide,
+  alors la transition M2 DOIT s’exécuter — indépendamment de tout
+  front. Cet état ne doit jamais persister au-delà de 60 s.
 
 ---
 
