@@ -21,6 +21,9 @@
 #   `float(14)` porté par les consommateurs.
 #
 # 🏷️ Préférence opérateur au déploiement : 14 h (non gravée).
+#
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 # ==========================================================
 
 clim_duree_absence_longue:
