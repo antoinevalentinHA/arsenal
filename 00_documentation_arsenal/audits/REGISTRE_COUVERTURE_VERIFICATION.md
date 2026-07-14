@@ -43,14 +43,14 @@ Relation de couverture attendue : **surface normative à vérifier ≥ surface v
 
 | Indicateur | Valeur | Commande de re-vérification |
 |---|---|---|
-| Contrats `.md` (récursif) | **292** | `find 00_documentation_arsenal/contrats -name '*.md' \| wc -l` |
+| Contrats `.md` (récursif) | **293** | `find 00_documentation_arsenal/contrats -name '*.md' \| wc -l` |
 | Doctrines transversales | **12** | `ls 00_documentation_arsenal/architecture/03_doctrines/*.md \| grep -v README \| wc -l` |
 | Checkers | **82** | `ls scripts/arsenal_contracts/check_*.py \| wc -l` |
-| Workflows (total) | **86** | `ls .github/workflows/*.yml \| wc -l` |
+| Workflows (total) | **87** | `ls .github/workflows/*.yml \| wc -l` |
 | Workflows `contracts_*` (préfixe) | **81** | `ls .github/workflows/contracts_*.yml \| wc -l` |
 | Workflows à checker hors préfixe `contracts_*` | **1** | `validation.yml` → `check_configuration_includes.py` (+ lint de style informatif) |
 | Workflows à checker (total) | **81** | 80 préfixés `contracts_*` + 1 hors préfixe ; chacun invoque **exactement un** `check_*.py` |
-| Orchestrateurs (sans `check_*.py`) | **3** | `doctrine` (inline) · `docs` (6 scripts `docs_lint/`) · `arsenal-ci-chauffage` (`tools/arsenal_ci`) |
+| Orchestrateurs (sans `check_*.py`) | **4** | `doctrine` (inline) · `docs` (6 scripts `docs_lint/`) · `arsenal-ci-chauffage` (`tools/arsenal_ci`) · `arsenal-ci-climatisation` (`tools/arsenal_ci` — gate live politique d'absence COOL, C20) |
 | Scanner sécurité publication (informatif, sans `check_*.py`) | **1** | `security_publication_audit.yml` → `scripts/security/audit_publication_git.py` (C14 Lot 1E-b, `continue-on-error`, **non bloquant**) |
 | Couplage checker ↔ workflow à checker | **1:1** (82 ↔ 82) | aucun checker orphelin, aucun workflow à checker sans checker (confronté par `check_ci_coverage_registry.py`) |
 

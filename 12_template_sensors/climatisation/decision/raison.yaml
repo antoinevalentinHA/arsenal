@@ -82,8 +82,10 @@
           deshumidification
         {% elif heat_adm %}
           soutien_chauffage
-        {% elif cool_besoin and is_state('binary_sensor.clim_extinction_absence_prolongee_autorisee', 'on') %}
-          absence_prolongee
+        {% elif cool_besoin and is_state('binary_sensor.clim_veto_absence_vacances', 'on') %}
+          {% set v = is_state('binary_sensor.vacances_actives', 'on') %}
+          {% set a = is_state('binary_sensor.clim_extinction_absence_prolongee_autorisee', 'on') %}
+          {% if a and v %}absence_et_vacances{% elif v %}vacances{% else %}absence_prolongee{% endif %}
         {% elif cool_besoin and (states('sensor.temperature_jardin') | float(0) < states('input_number.clim_seuil_temperature_exterieure_minimum') | float(99)) %}
           exterieur_trop_froid
         {% else %}

@@ -1,0 +1,26 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Climatisation — Horodatage de début d'absence
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Ancre temporelle du début d'une absence continue, base de
+#   la CONTINUITÉ PHYSIQUE : échéance = début + durée réglable
+#   (input_number.clim_duree_absence_longue).
+#
+#   Écrivain UNIQUE : automation 10030000000122
+#   (Climatisation - Absence - Horodatage et reconciliation).
+#
+# 🧱 SÉMANTIQUE
+#   - valeur réelle (timestamp) = absence en cours depuis cet instant ;
+#   - sentinelle `1970-01-01 00:00:00` = aucune absence active.
+#
+# ⚠️ PAS de clé `initial` : la restauration d'état HA préserve
+#   l'ancre au reboot (continuité physique — une remise à zéro
+#   arbitraire violerait le contrat 15 §4). La réconciliation au
+#   démarrage est portée par l'automation écrivaine.
+# ==========================================================
+
+clim_debut_absence:
+  name: "Début d'absence (clim)"
+  has_date: true
+  has_time: true

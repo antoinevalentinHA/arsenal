@@ -1,0 +1,33 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Climatisation — Durée d'absence longue (seuil réglable)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Seuil réglable, en heures, au-delà duquel une absence
+#   continue qualifie l'absence longue non qualifiée et
+#   autorise l'extinction du COOL.
+#
+#   Source UNIQUE de la durée de qualification (plus aucune
+#   durée figée). Gouverne EXCLUSIVEMENT l'absence longue :
+#   les Vacances ignorent ce seuil (veto immédiat).
+#
+# 🔗 Contrat opposable :
+#   00_documentation_arsenal/contrats/climatisation/15_absence_vacances_veto_cool.md
+#
+# ⚠️ PAS de clé `initial` : elle désactiverait la restauration
+#   d'état HA et reforcerait le réglage opérateur au reboot
+#   (doctrine restauration_etat_helpers.md R01). Sans `initial`,
+#   HA restaure la dernière valeur réglée. Repli de lecture
+#   `float(14)` porté par les consommateurs.
+#
+# 🏷️ Préférence opérateur au déploiement : 14 h (non gravée).
+# ==========================================================
+
+clim_duree_absence_longue:
+  name: "Durée absence longue"
+  min: 8
+  max: 48
+  step: 1
+  unit_of_measurement: "heures"
+  mode: box
+  icon: mdi:timer-sand

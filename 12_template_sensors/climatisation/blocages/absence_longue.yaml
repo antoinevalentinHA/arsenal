@@ -3,26 +3,45 @@
 #     Clim – Extinction autorisée (absence prolongée)
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Exposer la vérité métier autorisant l’extinction
-#   complète de la climatisation lorsque l’absence
-#   prolongée est confirmée.
+#   Exposer la vérité métier « absence longue qualifiée » —
+#   une des deux causes du veto composite
+#   binary_sensor.clim_veto_absence_vacances.
 #
-# 🧱 PRINCIPE
-#   - Basé exclusivement sur le timer d’absence prolongée
-#   - Valide uniquement si l’absence est toujours réelle
-#   - Aucun calcul de durée
-#   - Aucune action
+# 🧱 PRINCIPE (contrat 15 — base horodatée)
+#   - Absence débruitée confirmée (présence stabilisée off)
+#   - Ancrage sur input_datetime.clim_debut_absence
+#   - Échéance = début + durée réglable (heures)
+#   - CONTINUITÉ PHYSIQUE : un redémarrage ne remet pas la durée
+#     écoulée à zéro (l'ancre persiste). Aucun timer.
+#   - Repli de lecture explicite : durée `float(14)` ; ancre
+#     sentinelle/indisponible ⇒ non qualifiée (fail-closed).
 #
+# 🔗 Contrat opposable :
+#   00_documentation_arsenal/contrats/climatisation/15_absence_vacances_veto_cool.md
 # ==========================================================
 
 - binary_sensor:
     - name: "Clim – Extinction autorisée (absence prolongée)"
       unique_id: clim_extinction_absence_prolongee_autorisee
       default_entity_id: binary_sensor.clim_extinction_absence_prolongee_autorisee
+      icon: mdi:timer-off
       state: >
+        {% set debut_ts = as_timestamp(states('input_datetime.clim_debut_absence'), default=0) | int(0) %}
+        {% set duree_h = states('input_number.clim_duree_absence_longue') | float(14) %}
+        {% set absente = is_state('binary_sensor.presence_confort_thermique_stabilisee', 'off') %}
         {{
-          is_state('binary_sensor.presence_confort_thermique_stabilisee', 'off')
-          and is_state('timer.absence_longue_clim', 'idle')
+          absente
+          and debut_ts > 0
+          and (as_timestamp(now()) | int(0)) >= (debut_ts + (duree_h * 3600) | int)
         }}
-      icon: >
-        mdi:timer-off
+      attributes:
+        debut_absence: >
+          {% set ts = as_timestamp(states('input_datetime.clim_debut_absence'), default=0) | int(0) %}
+          {{ states('input_datetime.clim_debut_absence') if ts > 0 else 'aucune' }}
+        echeance: >
+          {% set ts = as_timestamp(states('input_datetime.clim_debut_absence'), default=0) | int(0) %}
+          {% set duree_h = states('input_number.clim_duree_absence_longue') | float(14) %}
+          {{ (ts + (duree_h * 3600) | int) | timestamp_local if ts > 0 else 'aucune' }}
+        duree_ecoulee_h: >
+          {% set ts = as_timestamp(states('input_datetime.clim_debut_absence'), default=0) | int(0) %}
+          {{ (((as_timestamp(now()) | int(0)) - ts) / 3600) | round(2) if ts > 0 else 0 }}

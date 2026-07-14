@@ -1,0 +1,50 @@
+name: "Arsenal CI — Climatisation (oracle politique d'absence COOL)"
+
+# Gate LIVE de la politique d'absence COOL (contrat 15, chantier C20).
+# Exécute la suite arsenal_ci (dont l'oracle structurel cool_veto_gate + le gate
+# live test_lot_5_2 qui lit le VRAI runtime) sur tout changement du runtime
+# climatisation concerné ou de l'outil. La suite pytest est BLOQUANTE : une
+# dérive du runtime hors du contrat 15 échoue le job.
+#
+# Orchestrateur (n'appelle aucun scripts/arsenal_contracts/check_*.py) — cf.
+# 00_documentation_arsenal/audits/REGISTRE_COUVERTURE_VERIFICATION.md §3.
+
+on:
+  push:
+    paths:
+      - "tools/arsenal_ci/**"
+      - "12_template_sensors/climatisation/**.yaml"
+      - "11_automations/climatisation/**"
+      - "03_input_numbers/climatisation/**"
+      - "07_input_datetimes/climatisation/**"
+      - ".github/workflows/arsenal-ci-climatisation.yml"
+  pull_request:
+    paths:
+      - "tools/arsenal_ci/**"
+      - "12_template_sensors/climatisation/**.yaml"
+      - "11_automations/climatisation/**"
+      - "03_input_numbers/climatisation/**"
+      - "07_input_datetimes/climatisation/**"
+      - ".github/workflows/arsenal-ci-climatisation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  oracle-absence-cool:
+    name: Oracle politique d'absence COOL (pytest arsenal_ci)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer les dependances
+        run: pip install pyyaml pytest
+
+      - name: Suite arsenal_ci (oracle structurel + gate live runtime)
+        run: PYTHONPATH=tools python -m pytest tools/arsenal_ci/tests/ -q
