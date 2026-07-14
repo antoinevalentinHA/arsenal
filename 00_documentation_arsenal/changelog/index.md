@@ -1536,6 +1536,17 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Météo — palmarès : ajout de `input_select.palmares_meteo_affichage` (sélecteur d'affichage, contexte d'interface seul), refonte de `meteo_palmares.yaml` (résumé markdown + sélecteur `tile` + 4 blocs `conditional`), ajout de l'emoji de rang 10 sur les 4 cartes.
 - Registres — recompte : checkers 78 → 79, workflows 82 → 83, contrats 290 → 291 ; ajout de l'audit frontière Maison / Imprimerie.
 
+---
+
+## 🧠 ARSENAL HA — [v16.3.7](changelogs/v16/v16_3_7.md) — CLOSE — 2026-07-14
+**Tags :** aeration, ci, checkers, contrats, registres, docs
+
+**Signal net :**
+- Aération — clôture d'épisode réconciliée sur état (chantier C19) : `input_boolean.aeration_episode_en_cours` pouvait rester bloqué sur `on` (clôture M2 dépendante du seul front fugitif `fermeture_stable`, consommé si une garde était transitoirement fausse — reboot `unknown→on`, interrupteur maître off, système instable, pipeline non armé) ; ajout de 5 triggers `reconciliation_*` au pipeline maître, porte M2 en `or` additif (littéral `fermeture_stable` conservé) avec **preuve de fermeture désormais exclusivement sur l'état** `fenetres_maison_fermees_stable == 'on'` ; `script.aeration_m2_fin_episode` inchangé.
+- Aération — capteur diagnostic dédié `binary_sensor.chauffage_aeration_cloture_en_retard` (`delay_on 60s`), strictement hors chemin recover (n'alimente ni `coherence_ko`, ni `aeration_recover_requested`, ni M0).
+- CI — `check_aeration_m2_contracts.py` durci (+4 tests, région de branche bornée) ; oracle comportemental `tools/arsenal_ci/behavior/m2_gate.py` + tests lot 4.1 (B1 reboot / B2 front consommé / B3 fenêtres ouvertes) ; 10 mutations négatives vérifiées ; compteurs de couverture inchangés (aucun nouveau checker/workflow).
+- Contrats socle aération (02 INV-CLÔTURE + état transitoire illégal, m2/1, 03, 07) et registres (C19 en ① Actifs, audit indexé) alignés.
+
 ==================================================
 FIN INDEX
 ==================================================
