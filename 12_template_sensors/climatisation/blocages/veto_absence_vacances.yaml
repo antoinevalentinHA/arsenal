@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR (CLIM)
+#     Clim – Veto absence / Vacances (composite)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Agréger, en un POINT UNIQUE, les deux causes d'interdiction
+#   du COOL liées à l'absence :
+#     - absence longue qualifiée (clim_extinction_absence_prolongee_autorisee)
+#     - Vacances actives (vacances_actives) — cause IMMÉDIATE
+#
+#   Consommé par binary_sensor.autorisation_clim_cool, qui lit
+#   cette vérité SANS dupliquer sa formule.
+#
+# 🧱 PRINCIPE
+#   - Lecture PURE, aucun écrivain, aucune mémoire, aucune hystérésis.
+#   - Disjonction OR : le veto s'affirme dès qu'une cause est vraie.
+#
+# 🔗 Contrat opposable :
+#   00_documentation_arsenal/contrats/climatisation/15_absence_vacances_veto_cool.md
+#
+# 🚧 FRONTIÈRE C21 : ce veto est INCONDITIONNEL ici (C20). La
+#   préparation du retour (C21) pourra le neutraliser dans une
+#   fenêtre bornée — non implémentée à ce stade.
+# ==========================================================
+
+- binary_sensor:
+    - name: "Clim – Veto absence / Vacances"
+      unique_id: clim_veto_absence_vacances
+      default_entity_id: binary_sensor.clim_veto_absence_vacances
+      icon: mdi:snowflake-off
+      state: >
+        {{
+          is_state('binary_sensor.clim_extinction_absence_prolongee_autorisee', 'on')
+          or is_state('binary_sensor.vacances_actives', 'on')
+        }}
+      attributes:
+        cause: >
+          {% set a = is_state('binary_sensor.clim_extinction_absence_prolongee_autorisee', 'on') %}
+          {% set v = is_state('binary_sensor.vacances_actives', 'on') %}
+          {% if a and v %}
+            cumulé
+          {% elif v %}
+            vacances
+          {% elif a %}
+            absence_prolongee
+          {% else %}
+            aucune
+          {% endif %}
