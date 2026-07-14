@@ -1364,7 +1364,6 @@ class AudiService:
         headers = {
             "Accept": "application/json",
             "Accept-Charset": "utf-8",
-            "X-QMAuth": self._calculate_X_QMAuth(),
             "User-Agent": AudiAPI.HDR_USER_AGENT,
             "Content-Type": "application/x-www-form-urlencoded",
         }
@@ -1374,7 +1373,6 @@ class AudiService:
             "grant_type": "authorization_code",
             "code": authcode_strings["code"][0],
             "redirect_uri": "myaudi:///",
-            "response_type": "token id_token",
             "code_verifier": code_verifier,
         }
         # IDK token request
