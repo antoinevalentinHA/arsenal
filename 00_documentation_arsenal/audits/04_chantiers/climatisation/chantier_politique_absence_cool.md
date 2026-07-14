@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | **C20** — Politique d'absence COOL (veto immédiat Vacances + durée réglable + continuité physique) |
 | **Domaine** | Climatisation — mode COOL : autorisation, absence, Vacances |
-| **Statut** | **Ouvert (2026-07-14) — gouvernance seule, aucun runtime.** Contrat à rédiger avant toute implémentation. |
+| **Statut** | **Ouvert — Lot 1 (contrats) rédigé, en revue (2026-07-14).** IDs C20 attribués (`input_number.clim_duree_absence_longue`, `input_datetime.clim_debut_absence`, `binary_sensor.clim_veto_absence_vacances`, automation `10030000000122`). Contrat opposable [`15_absence_vacances_veto_cool.md`](../../../contrats/climatisation/15_absence_vacances_veto_cool.md) créé + réconciliations voisines. **Aucun runtime, checker ou dashboard** avant validation du Lot 1. |
 | **Priorité** | **P2** — pas d'incident bloquant ; corrige un veto prématuré (départ Vacances non pris en compte immédiatement) et une durée non gouvernée. |
 | **Note de décision** | [`cadrage_decision_politique_absence_vacances_cool.md`](../../02_conception/climatisation/cadrage_decision_politique_absence_vacances_cool.md) (D1–D7, D14–D15) |
 | **Rapport d'audit source (mergé, intact)** | [`audit_absence_vacances_chauffage_climatisation_cool.md`](../../01_rapports/transverses/audit_absence_vacances_chauffage_climatisation_cool.md) (#361) |

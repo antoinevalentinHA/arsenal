@@ -80,7 +80,7 @@
 | [arrosage/](./arrosage/) | 19 | README ✅ | Arrosage jardin — coexistence gouvernée Arsenal ↔ Rain Bird (v0.1 ; observation v0 livrée ; **décision V1 paramétrable spécifiée**) + relevé pont MQTT, classification entités, pré-requis runtime, mode manuel supervisé, relevé capteurs humidité sol Zigbee, socle observation hydrique v0 (chapeau + qualité données sol + canal réservoir sol **livré** + canal demande climatique **spécifié**) + **contrat de décision d'arrosage V1** (mono-station, exécution déléguée au script Run supervisé) |
 | [boiler/](./boiler/) | 7 | README ✅ | Chaudière / boiler bridge |
 | [chauffage/](./chauffage/) | 52 | README ✅ | Pipeline chauffage + capteurs + amendements |
-| [climatisation/](./climatisation/) | 42 | README ✅ | Climatisation (15 root + 27 capteurs) |
+| [climatisation/](./climatisation/) | 43 | README ✅ | Climatisation (16 root + 27 capteurs) |
 | [deshumidificateur/](./deshumidificateur/) | 3 | README ✅ | Déshumidificateur cave |
 | [eclairage/](./eclairage/) | 7 | README ✅ | Éclairage |
 | [ecs/](./ecs/) | 29 | README ✅ | ECS — fondation (00-11) + contrats d'exécution |

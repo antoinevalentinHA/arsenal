@@ -57,7 +57,9 @@ Elles ne sont jamais consommées directement par la Décision.
 
 - La présence ne déclenche jamais une action seule
 - Elle conditionne DRY et HEAT
-- L'absence prolongée peut inhiber COOL — portée par `binary_sensor.clim_extinction_absence_prolongee_autorisee`, alimenté par `timer.absence_longue_clim`
+- Le COOL est inhibé par **deux causes distinctes** agrégées dans le veto composite `binary_sensor.clim_veto_absence_vacances` (cf. [`15_absence_vacances_veto_cool.md`](15_absence_vacances_veto_cool.md), opposable) :
+  - **absence longue non qualifiée** — `binary_sensor.clim_extinction_absence_prolongee_autorisee`, qualifiée par **continuité physique** (horodatage `input_datetime.clim_debut_absence` + durée réglable `input_number.clim_duree_absence_longue`) ;
+  - **Vacances actives** — `binary_sensor.vacances_actives`, cause **immédiate** indépendante de toute durée.
 
 ---
 
