@@ -55,7 +55,9 @@ Conséquences normatives :
 | Horaire | 2 | `input_boolean.clim_blocage_horaire_actif` *(existant)* | plage horaire + `now()` | `binary_sensor.clim_blocage_horaire_reel` | COOL · HEAT · DRY |
 | Aération étage | 2 | `input_boolean.clim_blocage_aeration_etage_actif` *(nouveau)* | `binary_sensor.aeration_preferable_etage` | `binary_sensor.clim_blocage_aeration_etage_reel` | COOL · DRY |
 | Fenêtres | 2 | `input_boolean.clim_blocage_fenetres_actif` *(nouveau)* | `binary_sensor.fenetre_ouverte_maison_avec_delai` | `binary_sensor.clim_blocage_fenetres_reel` | COOL · HEAT · DRY |
-| Absence prolongée | 2 | `input_boolean.clim_blocage_absence_prolongee_actif` *(nouveau)* | `binary_sensor.clim_extinction_absence_prolongee_autorisee` | `binary_sensor.clim_blocage_absence_prolongee_reel` | COOL |
+| Absence prolongée | 2 | `input_boolean.clim_blocage_absence_prolongee_actif` *(prévu — dette D14, non créé)* | `binary_sensor.clim_extinction_absence_prolongee_autorisee` (base horodatée, cf. [`15`](15_absence_vacances_veto_cool.md)) | `binary_sensor.clim_blocage_absence_prolongee_reel` *(prévu — dette D14)* | COOL |
+| Vacances actives | 2 | — (qualification métier du domaine Vacances) | `binary_sensor.vacances_actives` | agrégé dans `binary_sensor.clim_veto_absence_vacances` | COOL |
+| Veto composite absence/Vacances | 2 | — | `clim_extinction_absence_prolongee_autorisee` OU `vacances_actives` | `binary_sensor.clim_veto_absence_vacances` *(consommé par l'autorisation, cf. [`15`](15_absence_vacances_veto_cool.md))* | COOL |
 | Poêle | 2 | `input_boolean.blocage_clim_poele` *(existant, flag manuel direct)* | — | l'`input_boolean` lui-même | HEAT |
 | Aération post-chauffage | 2 | `input_boolean.chauffage_blocage_aeration` *(existant, flag manuel direct)* | — | l'`input_boolean` lui-même | HEAT |
 | Survol (voyant) | 3 | — | agrégation des blocages effectifs | `binary_sensor.clim_bloquee` | aucun (observabilité) |

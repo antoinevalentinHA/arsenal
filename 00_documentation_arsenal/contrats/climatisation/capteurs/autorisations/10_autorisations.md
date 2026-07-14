@@ -34,7 +34,7 @@ Indiquer si le mode COOL est autorisé indépendamment du besoin thermique.
 | `binary_sensor.aeration_preferable_etage` | Interdit COOL si `on` |
 | `binary_sensor.fenetre_ouverte_maison_avec_delai` | Interdit COOL si `on` |
 | `binary_sensor.clim_blocage_horaire_reel` | Interdit COOL si `on` |
-| `binary_sensor.clim_extinction_absence_prolongee_autorisee` | Interdit COOL si `on` |
+| `binary_sensor.clim_veto_absence_vacances` | Veto composite absence longue **OU** Vacances — interdit COOL si `on` (cf. [`15`](../../15_absence_vacances_veto_cool.md)) |
 
 ### Logique
 
@@ -44,8 +44,10 @@ AUTORISATION = true si et seulement si :
   ET  aeration_preferable_etage                    == off
   ET  fenetre_ouverte_maison_avec_delai            == off
   ET  clim_blocage_horaire_reel                    == off
-  ET  clim_extinction_absence_prolongee_autorisee  == off
+  ET  clim_veto_absence_vacances                   == off
 ```
+
+> Le terme d'absence est désormais porté par le **veto composite** `binary_sensor.clim_veto_absence_vacances` (= absence longue qualifiée **OU** Vacances actives, cf. [`15_absence_vacances_veto_cool.md`](../../15_absence_vacances_veto_cool.md)). L'autorisation **lit** cette vérité sans dupliquer sa formule ; les quatre autres conditions sont inchangées.
 
 L'entité est `on` uniquement si toutes les conditions sont simultanément vraies.
 Toute condition fausse fait passer l'entité à `off`.
@@ -262,5 +264,5 @@ Non déterminables depuis le YAML fourni.
 | Aération | `aeration_preferable_etage` | `chauffage_blocage_aeration` | `aeration_preferable_etage` |
 | Fenêtres | `fenetre_ouverte_maison_avec_delai` | `fenetre_ouverte_maison_avec_delai` | `fenetre_ouverte_maison_avec_delai` |
 | Blocage horaire | Oui | Oui | Oui |
-| Blocage spécifique | Absence prolongée | Poêle + activation explicite | Aucun |
+| Blocage spécifique | Veto composite absence longue **OU** Vacances | Poêle + activation explicite | Aucun |
 | Fallback numérique | `float(0)` / `float(99)` | `float(0)` / `float(99)` | N/A |

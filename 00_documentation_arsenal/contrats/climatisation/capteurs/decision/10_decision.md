@@ -343,7 +343,7 @@ Cascade priorisée :
 | 6 | `binary_sensor.besoin_clim_cool_admissible` | — | `refroidissement` |
 | 7 | `binary_sensor.besoin_clim_dry_admissible` | — | `deshumidification` |
 | 8 | `binary_sensor.besoin_clim_heat_admissible` | — | `soutien_chauffage` |
-| 9 | `binary_sensor.clim_extinction_absence_prolongee_autorisee` | `cool_besoin` | `absence_prolongee` |
+| 9 | `binary_sensor.clim_veto_absence_vacances` (attribut `cause`) | `cool_besoin` | `vacances` \| `absence_prolongee` \| `absence_et_vacances` (cumulé), selon `cause` — cf. [`15`](../../15_absence_vacances_veto_cool.md) |
 | 10 | `sensor.temperature_jardin` < `input_number.clim_seuil_temperature_exterieure_minimum` | `cool_besoin` | `exterieur_trop_froid` |
 | 11 | (aucune condition) | — | `aucune_demande_admissible` |
 
