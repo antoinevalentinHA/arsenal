@@ -79,6 +79,59 @@ PROTECTED_DATETIMES = [
 ]
 
 # ==========================================================
+# 🔁 RÉCONCILIATION M2 SUR ÉTAT (anti front consommé / post-boot)
+# ==========================================================
+
+# Trigger nominal (front de fermeture) — littéral conservé dans la porte M2.
+M2_NOMINAL_TRIGGER_ID = "fermeture_stable"
+
+# Triggers de réconciliation autorisés à ré-évaluer la porte M2.
+# (id, entity_id, from_state|None, to_state)
+RECONCILIATION_TRIGGERS = [
+    ("reconciliation_feature_active",
+     "input_boolean.blocage_chauffage_aeration_active", None, "on"),
+    ("reconciliation_systeme_stable",
+     "input_boolean.systeme_stable", None, "on"),
+    ("reconciliation_pipeline_arme",
+     "input_boolean.aeration_pipeline_arme", None, "on"),
+    ("reconciliation_fermees_stable_unknown",
+     "binary_sensor.fenetres_maison_fermees_stable", "unknown", "on"),
+    ("reconciliation_fermees_stable_unavailable",
+     "binary_sensor.fenetres_maison_fermees_stable", "unavailable", "on"),
+]
+
+# Preuve fonctionnelle de fermeture au niveau de la branche M2 (ÉTAT courant).
+M2_CLOSURE_STATE_ENTITY = "binary_sensor.fenetres_maison_fermees_stable"
+
+# ==========================================================
+# 🩺 CAPTEUR DIAGNOSTIC « CLÔTURE EN RETARD » (hors chemin recover)
+# ==========================================================
+
+DIAGNOSTIC_SENSOR_FILE = (
+    ROOT / "12_template_sensors" / "aeration" / "cloture_en_retard.yaml"
+)
+DIAGNOSTIC_SENSOR_ENTITY = "binary_sensor.chauffage_aeration_cloture_en_retard"
+DIAGNOSTIC_UNIQUE_ID = "chauffage_aeration_cloture_en_retard"
+DIAGNOSTIC_DELAY_ON = "00:01:00"
+
+# Les six prédicats constitutifs de l'état du capteur (5 is_state + 1 validité).
+DIAGNOSTIC_ISSTATE_PREDICATES = [
+    ("input_boolean.aeration_episode_en_cours", "on"),
+    ("binary_sensor.fenetres_maison_fermees_stable", "on"),
+    ("input_boolean.aeration_pipeline_arme", "on"),
+    ("input_boolean.chauffage_blocage_aeration", "off"),
+    ("input_boolean.systeme_stable", "on"),
+]
+DIAGNOSTIC_DEBUT_PREDICATE = "states('input_datetime.aeration_debut') not in"
+
+# Le capteur diagnostic ne doit jamais être relié au chemin recover.
+RECOVER_COUPLING_TOKENS = [
+    "aeration_recover_requested",
+    "script.aeration_m0_recover",
+    "chauffage_aeration_coherence_ko",
+]
+
+# ==========================================================
 # 🧰 INFRASTRUCTURE
 # ==========================================================
 
@@ -834,6 +887,229 @@ def test_m5_m6_do_not_modify_datetime_targets():
     print("✔ test_m5_m6_do_not_modify_datetime_targets")
 
 
+def _trigger_block(text, trig_id):
+    """Retourne le bloc textuel d'un trigger `- id: trig_id` borné au
+    prochain saut de ligne vide (chaque trigger est isolé par une ligne vide)."""
+    m = re.search(
+        rf"^\s*-\s*id\s*:\s*[\"']?{re.escape(trig_id)}[\"']?\s*$",
+        text,
+        re.MULTILINE,
+    )
+    if not m:
+        return None
+    rest = text[m.end():]
+    blank = re.search(r"\n[ \t]*\n", rest)
+    end = m.end() + (blank.start() if blank else len(rest))
+    return text[m.start():end]
+
+
+def test_m2_reconciliation_triggers_declared():
+    """Les 5 triggers de réconciliation M2 sont déclarés avec entity_id/from/to.
+
+    Référence : contrat 1_fin_episode.md § RÉCONCILIATION SUR ÉTAT.
+    """
+    master_file, _ = find_master_automation_file()
+    if not master_file:
+        print("✔ test_m2_reconciliation_triggers_declared")
+        return
+
+    text = strip_yaml_comments(read_text(master_file))
+
+    for trig_id, entity_id, from_state, to_state in RECONCILIATION_TRIGGERS:
+        block = _trigger_block(text, trig_id)
+        if block is None:
+            add_error(
+                f"{master_file.relative_to(ROOT)} : trigger de réconciliation "
+                f"absent : id={trig_id}."
+            )
+            continue
+
+        if not re.search(r"^\s*platform\s*:\s*state\s*$", block, re.MULTILINE):
+            add_error(f"{trig_id} : platform:state absente.")
+
+        if not re.search(
+            rf"^\s*entity_id\s*:\s*[\"']?{re.escape(entity_id)}[\"']?\s*$",
+            block,
+            re.MULTILINE,
+        ):
+            add_error(f"{trig_id} : entity_id attendu {entity_id} absent.")
+
+        if not re.search(
+            rf"^\s*to\s*:\s*[\"']?{re.escape(to_state)}[\"']?\s*$",
+            block,
+            re.MULTILINE,
+        ):
+            add_error(f"{trig_id} : to={to_state} absent.")
+
+        if from_state is not None and not re.search(
+            rf"^\s*from\s*:\s*[\"']?{re.escape(from_state)}[\"']?\s*$",
+            block,
+            re.MULTILINE,
+        ):
+            add_error(f"{trig_id} : from={from_state} attendu absent.")
+
+    print("✔ test_m2_reconciliation_triggers_declared")
+
+
+def m2_branch_region(text):
+    """Retourne la région textuelle de la SEULE branche M2 : de son
+    `- conditions:` (le plus proche AVANT l'action M2) jusqu'à l'action
+    `script.aeration_m2_fin_episode`. Borne structurelle (pas de fenêtre
+    flottante), qui EXCLUT la branche M6 (laquelle key aussi fermeture_stable)."""
+    action = re.search(
+        rf"^\s*-\s*(?:action|service)\s*:\s*{re.escape(M2_SCRIPT_ENTITY)}\s*$",
+        text,
+        re.MULTILINE,
+    )
+    if not action:
+        return None
+    conds = list(re.finditer(
+        r"^\s*-\s+conditions\s*:\s*$", text[:action.start()], re.MULTILINE
+    ))
+    if not conds:
+        return None
+    return text[conds[-1].start():action.start()]
+
+
+def test_m2_gate_accepts_reconciliation_triggers():
+    """La porte M2 accepte le trigger nominal + les 5 IDs de réconciliation,
+    conserve le littéral fermeture_stable, et prouve la fermeture par l'ÉTAT.
+
+    Toutes les vérifications sont bornées à la RÉGION de la branche M2 (exclut
+    M6, qui key aussi fermeture_stable) afin qu'un retrait localisé soit capté.
+
+    Référence : contrat 1_fin_episode.md § RÉCONCILIATION SUR ÉTAT.
+    """
+    master_file, _ = find_master_automation_file()
+    if not master_file:
+        print("✔ test_m2_gate_accepts_reconciliation_triggers")
+        return
+
+    text = strip_yaml_comments(read_text(master_file))
+    region = m2_branch_region(text)
+    if region is None:
+        add_error(
+            f"{master_file.relative_to(ROOT)} : région de branche M2 "
+            "introuvable (ancre = action script.aeration_m2_fin_episode)."
+        )
+        print("✔ test_m2_gate_accepts_reconciliation_triggers")
+        return
+
+    # 1. Littéral nominal conservé DANS la porte M2 (pas ailleurs, ex. M6).
+    if f"trigger.id == '{M2_NOMINAL_TRIGGER_ID}'" not in region:
+        add_error(
+            f"{master_file.relative_to(ROOT)} : littéral "
+            f"\"trigger.id == '{M2_NOMINAL_TRIGGER_ID}'\" absent de la porte M2."
+        )
+
+    # 2. Les 5 IDs présents dans la porte (forme QUOTÉE = liste trigger.id in [...]),
+    #    à distinguer de leur déclaration `- id: <x>` (non quotée).
+    for trig_id, *_ in RECONCILIATION_TRIGGERS:
+        if not re.search(rf"['\"]{re.escape(trig_id)}['\"]", region):
+            add_error(
+                f"{master_file.relative_to(ROOT)} : id de réconciliation "
+                f"{trig_id} absent de la porte M2 (liste trigger.id in [...])."
+            )
+
+    # 3. Preuve de fermeture = garde d'ÉTAT au niveau branche.
+    if not entity_state_guard_present(region, M2_CLOSURE_STATE_ENTITY, "on"):
+        add_error(
+            f"{master_file.relative_to(ROOT)} : garde d'état de fermeture "
+            f"absente ({M2_CLOSURE_STATE_ENTITY} = on) dans la branche M2."
+        )
+
+    print("✔ test_m2_gate_accepts_reconciliation_triggers")
+
+
+def test_cloture_en_retard_sensor_present():
+    """Le capteur diagnostic porte ses 6 prédicats + delay_on 60s.
+
+    Référence : socle_transversal/07_coherence_ko_detecteur.md § FRONTIÈRE M0.
+    """
+    if not DIAGNOSTIC_SENSOR_FILE.exists():
+        add_error(
+            f"Capteur diagnostic absent : "
+            f"{DIAGNOSTIC_SENSOR_FILE.relative_to(ROOT)}."
+        )
+        print("✔ test_cloture_en_retard_sensor_present")
+        return
+
+    text = read_text(DIAGNOSTIC_SENSOR_FILE)
+
+    if f"unique_id: {DIAGNOSTIC_UNIQUE_ID}" not in text:
+        add_error(f"Capteur diagnostic : unique_id {DIAGNOSTIC_UNIQUE_ID} absent.")
+
+    # 5 prédicats is_state(...)
+    for entity_id, state in DIAGNOSTIC_ISSTATE_PREDICATES:
+        if not re.search(
+            rf"is_state\(\s*['\"]{re.escape(entity_id)}['\"]\s*,\s*"
+            rf"['\"]{re.escape(state)}['\"]\s*\)",
+            text,
+        ):
+            add_error(
+                f"Capteur diagnostic : prédicat is_state({entity_id},{state}) absent."
+            )
+
+    # 6e prédicat : validité aeration_debut
+    if DIAGNOSTIC_DEBUT_PREDICATE not in text:
+        add_error(
+            "Capteur diagnostic : prédicat de validité aeration_debut absent."
+        )
+
+    # Borne temporelle contractuelle (couverte statiquement — pas de moteur temps)
+    if not re.search(
+        rf"delay_on\s*:\s*[\"']?{re.escape(DIAGNOSTIC_DELAY_ON)}[\"']?\s*$",
+        text,
+        re.MULTILINE,
+    ):
+        add_error(
+            f"Capteur diagnostic : delay_on {DIAGNOSTIC_DELAY_ON} absent."
+        )
+
+    print("✔ test_cloture_en_retard_sensor_present")
+
+
+def test_cloture_en_retard_sensor_isolated_from_recover():
+    """Le capteur diagnostic n'est ni lu par une automation d'action, ni relié
+    au chemin recover (aeration_recover_requested / M0 / coherence_ko).
+
+    Référence : socle_transversal/07_coherence_ko_detecteur.md § FRONTIÈRE M0.
+    """
+    # a) Aucune automation d'action ne lit le capteur diagnostic.
+    automations_dir = ROOT / "11_automations"
+    for path in yaml_files(automations_dir):
+        text = strip_yaml_comments(read_text(path))
+        if DIAGNOSTIC_SENSOR_ENTITY in text:
+            add_error(
+                f"{path.relative_to(ROOT)} : le capteur diagnostic "
+                f"{DIAGNOSTIC_SENSOR_ENTITY} ne doit être lu par aucune "
+                "automation d'action."
+            )
+
+    # b) Le capteur diagnostic ne référence aucun jalon du chemin recover.
+    if DIAGNOSTIC_SENSOR_FILE.exists():
+        sensor_text = read_text(DIAGNOSTIC_SENSOR_FILE)
+        for token in RECOVER_COUPLING_TOKENS:
+            # Toléré dans les commentaires (frontière documentée) ; interdit en runtime.
+            runtime_text = strip_yaml_comments(sensor_text)
+            if token in runtime_text:
+                add_error(
+                    f"Capteur diagnostic : couplage recover interdit détecté "
+                    f"({token})."
+                )
+
+    # c) Le script M0 ne référence pas le capteur diagnostic.
+    m0_file = AERATION_SCRIPTS_DIR / "m0_remediation_incoherence.yaml"
+    if m0_file.exists():
+        if DIAGNOSTIC_SENSOR_ENTITY in strip_yaml_comments(read_text(m0_file)):
+            add_error(
+                f"{m0_file.relative_to(ROOT)} : M0 ne doit pas référencer "
+                f"le capteur diagnostic {DIAGNOSTIC_SENSOR_ENTITY}."
+            )
+
+    print("✔ test_cloture_en_retard_sensor_isolated_from_recover")
+
+
 def test_test_registry_matches_functions():
     """La liste TESTS doit pointer vers des fonctions effectivement définies.
 
@@ -867,6 +1143,10 @@ TESTS = [
     "test_blocage_activation_is_exclusive_to_m2_with_allowed_exceptions",
     "test_m5_m6_do_not_modify_blocage_state",
     "test_m5_m6_do_not_modify_datetime_targets",
+    "test_m2_reconciliation_triggers_declared",
+    "test_m2_gate_accepts_reconciliation_triggers",
+    "test_cloture_en_retard_sensor_present",
+    "test_cloture_en_retard_sensor_isolated_from_recover",
     "test_test_registry_matches_functions",
 ]
 

@@ -22,6 +22,10 @@ Ils ne décident rien.
 - Écrit par : M1 (ON), M2 (OFF), invalidation tentative (OFF)
 - Lu par : pipeline, guards
 - Ne déclenche aucune action thermique
+- Note : la réconciliation M2 sur état (triggers `reconciliation_*`)
+  ne crée AUCUN writer supplémentaire — elle ne fait que ré-router
+  vers M2, seul point de passage OFF. La liste des writers reste
+  strictement : M1 (ON), M2 (OFF), invalidation tentative (OFF).
 
 ## input_boolean.aeration_pipeline_arme
 - Signifie : pipeline autorisé à exécuter M2/M3/M4

@@ -23,9 +23,33 @@ M2 ne peut être exécuté que si :
 - `chauffage_blocage_aeration = off`
 - `aeration_pipeline_arme = on`
 - `binary_sensor.fenetres_maison_fermees_stable = on`
+- `systeme_stable = on`
+- `aeration_debut` valide
 
 Toute exécution hors de ce cadre constitue
 une violation contractuelle.
+
+### 🔁 RÉCONCILIATION SUR ÉTAT (anti front consommé)
+
+La clôture ne dépend plus d’un front unique. Le pipeline maître
+ré-évalue la porte M2 sur plusieurs triggers, dont le nominal :
+
+- nominal : `trigger.id == 'fermeture_stable'` (littéral conservé) ;
+- réconciliation : `reconciliation_feature_active`,
+  `reconciliation_systeme_stable`, `reconciliation_pipeline_arme`,
+  `reconciliation_fermees_stable_unknown`,
+  `reconciliation_fermees_stable_unavailable`.
+
+Chaque trigger de réconciliation correspond à une garde
+transitoirement fausse au moment du front nominal
+(interrupteur maître, système instable, pipeline non armé,
+capteur template en `unknown`/`unavailable` post-boot) qui
+redevient compatible.
+
+**Le trigger n’est jamais une preuve de fermeture.** La preuve
+fonctionnelle vient exclusivement de l’état courant
+`binary_sensor.fenetres_maison_fermees_stable == 'on'`
+(garde de branche + assertion interne du script M2).
 
 ---
 

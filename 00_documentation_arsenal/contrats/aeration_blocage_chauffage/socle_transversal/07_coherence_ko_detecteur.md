@@ -115,6 +115,21 @@ Aucune autre chaîne n’est autorisée.
 
 ---
 
+## 🧭 FRONTIÈRE — Capteur diagnostic « clôture en retard »
+
+`binary_sensor.chauffage_aeration_cloture_en_retard` est un capteur
+**diagnostic dédié**, strictement **hors** du présent détecteur :
+
+- il **n’est pas** une clause de `binary_sensor.chauffage_aeration_coherence_ko` ;
+- il **n’alimente pas** `input_boolean.aeration_recover_requested` ;
+- il ne déclenche donc **aucune** remédiation (M0/M4).
+
+Sa combinaison (clôture M2 non réalisée > 60 s) est résolue
+**nominalement** par la réconciliation M2 du pipeline maître, pas
+par le chemin recover. Ce capteur ne fait qu’**observer**.
+
+---
+
 ## 🛑 INTERDITS
 
 Il est strictement interdit :
