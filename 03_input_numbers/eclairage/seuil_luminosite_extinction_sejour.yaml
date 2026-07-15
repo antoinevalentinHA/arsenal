@@ -1,0 +1,50 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Éclairage — Séjour — Seuil luminosité extinction automatique
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker le seuil de luminosité réelle au-delà duquel
+#   l'extinction automatique du séjour est autorisée, même
+#   en présence (il fait suffisamment jour, l'éclairage est
+#   inutile).
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Seuil luminosité séjour (extinction) uniquement
+#   - Valeur exprimée en lux
+#   - Mesure de référence : sensor.luminosite_garage_illuminance
+#     (unique capteur de luminosité de l'installation)
+#   - Paramètre consommé par :
+#       binary_sensor.sejour_extinction_luminosite_autorisee
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🧷 CONVENTION DE DÉSACTIVATION
+#   Valeur 0 = fonctionnalité neutralisée : l'extinction par
+#   luminosité n'est jamais autorisée. C'est aussi la valeur
+#   par défaut (premier démarrage), sûre et non intrusive.
+#
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme mesure réelle de luminosité
+#   - Déclencher directement une extinction
+#   - Modifier automatiquement cette valeur
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v16.x
+# ==========================================================
+
+sejour_seuil_luminosite_extinction_auto:
+  name: Séjour — Seuil luminosite extinction auto
+  min: 0
+  max: 2000
+  step: 10
+  unit_of_measurement: lx
+  mode: slider
+  icon: mdi:brightness-7

@@ -1,0 +1,71 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR
+#     Séjour — Extinction automatique autorisée (luminosité)
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Autorité logique unique indiquant si l'extinction
+#   automatique du séjour est autorisée selon la luminosité
+#   réelle mesurée dans l'installation.
+#
+#   Ce capteur :
+#     - ne pilote rien
+#     - sert uniquement d'autorisation pour l'automatisation
+#       d'extinction du séjour par luminosité
+#
+# 📌 ENTITE
+#   - binary_sensor.sejour_extinction_luminosite_autorisee
+#
+# 🔗 DEPENDANCES
+#   - sensor.luminosite_garage_illuminance
+#     (unique capteur de luminosité — proxy d'ambiance)
+#   - input_number.sejour_seuil_luminosite_extinction_auto
+#
+# 🧠 PRINCIPE
+#   L'extinction automatique est autorisée lorsque :
+#
+#     seuil > 0  ET  luminosite_reelle > seuil
+#
+#   Autrement dit : il fait suffisamment jour pour que
+#   l'éclairage soit inutile, même en présence.
+#   Le seuil est réglable dynamiquement via l'UI.
+#
+# 🧷 CONVENTION DE DÉSACTIVATION
+#   seuil = 0 → state toujours off → extinction jamais
+#   autorisée (fonctionnalité neutralisée). Défaut sûr.
+#
+# ⚠️ IMPORTANT
+#   Ce capteur ne prend aucune décision temporelle
+#   (jour / nuit / saison). Il repose uniquement sur la
+#   luminosité physique. Contrairement à l'allumage
+#   (piloté par sensor.periode_meteo), l'extinction repose
+#   sur la lumière réelle.
+# ==========================================================
+
+- binary_sensor:
+    - name: "Séjour — Extinction luminosité autorisée"
+      unique_id: "sejour_extinction_luminosite_autorisee"
+
+      icon: >
+        {% if is_state('binary_sensor.sejour_extinction_luminosite_autorisee', 'on') %}
+          mdi:lightbulb-off-auto
+        {% else %}
+          mdi:lightbulb-off-auto-outline
+        {% endif %}
+
+      availability: >
+        {{ states('sensor.luminosite_garage_illuminance') not in ['unknown','unavailable','none','']
+           and states('input_number.sejour_seuil_luminosite_extinction_auto') not in ['unknown','unavailable','none',''] }}
+
+      attributes:
+        illuminance: >
+          {{ states('sensor.luminosite_garage_illuminance') }}
+        seuil_luminosite: >
+          {{ states('input_number.sejour_seuil_luminosite_extinction_auto') }}
+
+      state: >
+        {% set lux = states('sensor.luminosite_garage_illuminance') %}
+        {% set seuil = states('input_number.sejour_seuil_luminosite_extinction_auto') %}
+        {{ lux not in ['unknown','unavailable','none','']
+           and seuil not in ['unknown','unavailable','none','']
+           and seuil | float(0) > 0
+           and lux | float(-1) > seuil | float(0) }}

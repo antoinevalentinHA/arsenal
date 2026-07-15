@@ -82,6 +82,18 @@ views:
               - type: numeric-input
                 style: buttons
 
+          - type: tile
+            entity: input_number.sejour_seuil_luminosite_extinction_auto
+            name: Luminosité extinction (lx) — 0 = off
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: tile
+            entity: binary_sensor.sejour_extinction_luminosite_autorisee
+            name: Extinction luminosité autorisée
+
           - type: custom:button-card
             template: sub_section_header
             name: Sapin 🎄
