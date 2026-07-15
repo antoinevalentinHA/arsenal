@@ -1,0 +1,119 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     HomeKit – Escalade matérielle (power-cycle du pont)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Fermer la boucle de résilience HomeKit lorsque la
+#     remédiation LOGICIELLE a échoué.
+#
+#     La relance HomeKit (10120000000019) ne sait que
+#     `reload_config_entry` : un rechargement de l'entrée de
+#     configuration. Or le « pont » HomeKit (accessoire réseau
+#     exposant les capteurs du groupe group.homekit_capteurs)
+#     peut se FIGER matériellement — service HAP gelé, hôte
+#     encore joignable au ping. Dans ce cas un reload relance la
+#     même connexion vers un boîtier gelé → re-timeout : aucune
+#     relance logicielle ne le réveille.
+#
+#     Cette automation escalade alors vers la SEULE action qui
+#     récupère un boîtier figé : un redémarrage ÉLECTRIQUE de sa
+#     prise, via le mécanisme existant `script.reboot_netatmo`.
+#
+# 🔌 CIBLE MATÉRIELLE
+#
+#     Le pont HomeKit est alimenté par `switch.prise_chambre_arnaud`.
+#     Power-cycler cette prise réamorce le boîtier et, avec lui,
+#     l'ensemble des capteurs `*_1` qu'il expose.
+#
+# 🧱 CONTRAT
+#
+#     - aucune décision de diagnostic locale : consomme le
+#       signal d'épuisement de la chaîne de reload HomeKit
+#       (compteur de tentatives au plafond, gel toujours avéré) ;
+#     - une seule impulsion matérielle par épuisement ;
+#     - réamorce ensuite la boucle canonique (compteur remis à 0,
+#       backoff relancé) pour que la détection de retour OK et,
+#       si besoin, un nouveau cycle logiciel reprennent la main ;
+#     - inhibée hors état système nominal (garde secteur / box).
+#
+# 🏷️ ID : 10120000000029
+# ==========================================================
+
+- id: "10120000000029"
+  alias: "Système - Escalade matérielle HomeKit"
+  mode: single
+  max_exceeded: silent
+
+  # Épuisement de la chaîne de reload : le compteur de tentatives
+  # atteint le plafond (5) sans retour de fraîcheur. Au-delà, la
+  # chaîne logicielle se bloque (op=block) sans jamais power-cycler.
+  trigger:
+    - platform: numeric_state
+      entity_id: input_number.homekit_reload_tentatives
+      above: 4
+
+  condition:
+    # Le gel doit être TOUJOURS avéré : si un reload avait réussi,
+    # retour_ok aurait remis le compteur à 0 avant d'atteindre le
+    # plafond. Garde défensive explicite malgré tout.
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: binary_sensor.gel_avere_homekit
+          state: "on"
+        - condition: state
+          entity_id: binary_sensor.indisponibilite_franche_homekit
+          state: "on"
+
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+    # Campagne de remédiation réseau en cours : ne pas superposer
+    # un power-cycle à un reboot box.
+    - condition: state
+      entity_id: input_boolean.reboot_box_en_cours
+      state: "off"
+
+    # Pendant une panne secteur, le gel traduit la perte
+    # d'alimentation (KO attendu) : power-cycler une prise
+    # (elle-même sur secteur) est futile. Reporté en sortie de panne.
+    - condition: state
+      entity_id: binary_sensor.panne_secteur_en_cours
+      state: "off"
+
+  action:
+    # 1) Redémarrage électrique du pont via le mécanisme existant.
+    - action: script.reboot_netatmo
+      data:
+        switch_entity: "switch.prise_chambre_arnaud"
+
+    # 2) Réamorçage de la boucle canonique HomeKit :
+    #    - compteur remis à 0 : la chaîne logicielle pourra de
+    #      nouveau tenter des reloads aux prochains épisodes
+    #      (sinon plafond figé → blocage permanent) ;
+    #    - backoff relancé : arme recovery_en_cours pour que
+    #      retour_ok se déclenche si le boîtier revient frais,
+    #      et re-tente un cycle logiciel s'il reste figé.
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.homekit_reload_tentatives
+      data:
+        value: 0
+
+    - action: timer.start
+      target:
+        entity_id: timer.homekit_reload_backoff
+      data:
+        duration: "00:05:00"
+
+    # 3) Notification de l'escalade.
+    - action: script.notification_envoyer
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "🔌 HomeKit – Escalade matérielle"
+        message: >
+          Pont HomeKit figé après épuisement des relances logicielles :
+          power-cycle de switch.prise_chambre_arnaud effectué.
+          Reprise de la surveillance de fraîcheur en cours.
