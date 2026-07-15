@@ -20,10 +20,27 @@ Ce que le checker CONTRÔLE :
      - INTEG-2 : tout chemin scripts/.../*.py référencé par un workflow existe
                  réellement (aucune référence morte).
 
-  2. Fraîcheur des compteurs §3 du registre (COUNT-*)
+  2. Fraîcheur des compteurs §3 du registre (COUNT-0 / COUNT-1)
      - la valeur en gras déclarée pour chaque indicateur countable doit égaler
        le comptage réel ; toute dérive est une ERROR ; une ligne d'indicateur
        manquante (structure §3 modifiée) est une ERROR.
+
+  3. Fraîcheur des volumes §2 « Les trois couches » (COUNT-2 / COUNT-3)
+     - la colonne « Volume (cf. §3) » de §2 REDIT des compteurs dont §3 est la
+       source déclarée. Cette duplication a dérivé en silence (§2 affichait
+       291/80/84 contre 293/82/87 réels au 2026-07-15) parce que la garde
+       COUNT-0/1 ne couvrait que §3 : « la mesure de couverture ment » dans le
+       document même qui mesure la couverture.
+     - Les volumes §2 sont donc confrontés au comptage RÉEL (même source de
+       vérité que §3, donc §2 ≡ §3 par construction). Ligne §2 absente ou
+       volume dérivé => ERROR.
+
+     Périmètre volontairement ANCRÉ sur les 3 lignes de §2, jamais sur tout le
+     document : le §8 (journal) est une trace historique DATÉE truffée de
+     nombres périmés par nature (« checkers 68→71 », « contrats 267→290 »,
+     « workflows 72→75 »). Un scan global les signalerait comme des dérives et
+     rendrait le journal inécrivable. Le journal est de l'histoire, pas une
+     déclaration d'état.
 
 Ce que le checker N'IMPOSE PAS (pas de faux postulat) :
   - ni « 1 workflow = 1 checker » ;
@@ -134,6 +151,65 @@ def parse_registry_counters(text: str) -> dict[str, int | None]:
     return out
 
 
+# ---------------------------------------------------------------------------
+# Fraîcheur des volumes §2 « Les trois couches »
+# ---------------------------------------------------------------------------
+# §2 redit des compteurs dont §3 est la source déclarée ("Volume (cf. §3)").
+# On BORNE la recherche à la section §2 : le §8 (journal daté) contient des
+# nombres historiques qu'il ne faut jamais confronter au réel.
+_SECTION_2 = re.compile(r"^##\s*2\.\s.*?(?=^##\s*3\.\s)", re.M | re.S)
+
+# label logique -> (motif sur la ligne §2, libellé d'erreur)
+# `.` ne matche pas le saut de ligne (pas de DOTALL) : chaque motif reste
+# confiné à SA ligne de tableau, même si un autre libellé suit.
+_SECTION2_ROWS = {
+    "contrats_md": (
+        re.compile(r"^\|\s*\*\*Vérité normative\*\*.*?\|\s*(\d+)\s*`\.md`\s*de contrats", re.M),
+        "§2 Vérité normative — contrats .md",
+    ),
+    "doctrines": (
+        re.compile(r"^\|\s*\*\*Vérité normative\*\*.*?·\s*(\d+)\s*doctrines", re.M),
+        "§2 Vérité normative — doctrines",
+    ),
+    "checkers": (
+        re.compile(r"^\|\s*\*\*Couverture mécanique\*\*.*?\|\s*(\d+)\s*checkers", re.M),
+        "§2 Couverture mécanique — checkers",
+    ),
+    "workflows_total": (
+        re.compile(r"^\|\s*\*\*CI exécutée\*\*.*?\|\s*(\d+)\s*workflows", re.M),
+        "§2 CI exécutée — workflows",
+    ),
+}
+
+
+def check_section2_volumes(text: str, counts: dict[str, int]) -> list[str]:
+    """Confronte les volumes redits en §2 au comptage réel (§2 ≡ §3 ≡ réel)."""
+    errors: list[str] = []
+    section = _SECTION_2.search(text)
+    if not section:
+        return [
+            "COUNT-2 : section §2 « Les trois couches » introuvable "
+            "(structure du registre modifiee ?)."
+        ]
+    body = section.group(0)
+    for key, (pat, label) in _SECTION2_ROWS.items():
+        m = pat.search(body)
+        if not m:
+            errors.append(
+                f"COUNT-2 : volume '{label}' introuvable en §2 "
+                f"(ligne supprimee ou reformulee ?)."
+            )
+            continue
+        got = int(m.group(1))
+        live = counts[key]
+        if got != live:
+            errors.append(
+                f"COUNT-3 : derive '{label}' — §2 declare {got}, reel {live} "
+                f"(§3 est la source declaree de cette colonne)."
+            )
+    return errors
+
+
 def check_counters(text: str, counts: dict[str, int]) -> list[str]:
     errors: list[str] = []
     declared = parse_registry_counters(text)
@@ -164,6 +240,7 @@ def main() -> None:
     counts = canonical_counts(ROOT)
     text = REGISTRE.read_text(encoding="utf-8", errors="ignore")
     errors += check_counters(text, counts)
+    errors += check_section2_volumes(text, counts)
     errors += check_topology(AC_DIR, WF_DIR, CHECKER_HELPERS, ROOT)
 
     if errors:
@@ -176,7 +253,7 @@ def main() -> None:
         "OK - registre de couverture CI coherent : "
         f"{counts['checkers']} checkers, {counts['workflows_total']} workflows "
         f"({counts['contracts_prefix']} contracts_*), 0 checker orphelin, "
-        "0 reference morte, compteurs §3 a jour."
+        "0 reference morte, compteurs §3 ET volumes §2 a jour."
     )
 
 
@@ -211,7 +288,97 @@ def selftest() -> None:
     errs = check_counters(broken, counts)
     assert any("COUNT-0" in e for e in errs), "selftest ligne manquante"
 
-    # 4. topologie : conforme / orphelin / référence morte
+    # 4. volumes §2 « Les trois couches »
+    def registry_s2(contrats=10, doctrines=4, checkers=2, workflows=3, journal=""):
+        return (
+            "## 2. Les trois couches\n\n"
+            "| Couche | Définition | Source canonique | Volume (cf. §3) |\n"
+            "|---|---|---|---|\n"
+            f"| **Vérité normative** | Ce que le système DOIT faire. | `../contrats/` "
+            f"| {contrats} `.md` de contrats · {doctrines} doctrines |\n"
+            f"| **Couverture mécanique** | Les contrôles. | `../../scripts/` "
+            f"| {checkers} checkers |\n"
+            f"| **CI exécutée** | Le sous-ensemble exécuté. | `../../.github/workflows/` "
+            f"| {workflows} workflows — **ventilation détaillée au §3**, non recopiée ici |\n"
+            "\n## 3. Compteurs\n\n" + journal
+        )
+
+    # 4a. volumes §2 conformes -> 0 erreur
+    assert not check_section2_volumes(registry_s2(), counts), "selftest §2 conforme"
+
+    # 4b. dérive §2 sur chacun des 4 volumes -> COUNT-3 (le bug réel du 2026-07-15)
+    for kwargs, label in (
+        ({"contrats": 291}, "contrats"),
+        ({"doctrines": 99}, "doctrines"),
+        ({"checkers": 80}, "checkers"),
+        ({"workflows": 84}, "workflows"),
+    ):
+        errs = check_section2_volumes(registry_s2(**kwargs), counts)
+        assert any("COUNT-3" in e for e in errs), f"selftest derive §2 {label}"
+
+    # 4c. ligne §2 absente -> COUNT-2
+    broken = registry_s2().replace("| **Couverture mécanique**", "| **Autre chose**")
+    errs = check_section2_volumes(broken, counts)
+    assert any("COUNT-2" in e for e in errs), "selftest ligne §2 absente"
+
+    # 4d. section §2 absente -> COUNT-2
+    errs = check_section2_volumes("## 3. Compteurs\n", counts)
+    assert any("COUNT-2" in e for e in errs), "selftest section §2 absente"
+
+    # 4e. ANTI-FAUX-POSITIF : le journal §8 est une trace historique datée,
+    #     truffée de nombres périmés. Il ne doit JAMAIS être confronté au réel.
+    #
+    #     Deux protections indépendantes, testées séparément ci-dessous :
+    #       (1) l'ANCRAGE sur les libellés de ligne §2 — protection primaire ;
+    #       (2) le BORNAGE à la section §2 — défense en profondeur, seule
+    #           protection si le journal REPRODUIT une ligne §2 (cas réel : une
+    #           entrée qui documente une refonte du §2 en citant l'ancien
+    #           tableau).
+    #
+    #     NB : un journal de prose ne suffit PAS à tester le bornage (aucune de
+    #     ses lignes ne matche les libellés) — un tel test passerait même sans
+    #     bornage, et ne prouverait rien.
+
+    # (1) ancrage : de la prose historique truffée de nombres périmés est ignorée.
+    journal_prose = (
+        "## 8. Journal\n\n"
+        "| 2026-07-01 | Compteurs -> 68 checkers - 72 workflows (68 contrats, 1:1). |\n"
+        "| 2026-07-01 | contrats 267->290, doctrines 10->12, checkers 68->71, "
+        "workflows total 72->75. |\n"
+        "| 2026-06-20 | 80 checkers - 84 workflows (photographie perimee). |\n"
+    )
+    assert not check_section2_volumes(
+        registry_s2(journal=journal_prose), counts
+    ), "selftest journal §8 en prose ignore (ancrage sur les libelles)"
+
+    # (2) bornage : ce que le bornage protège VRAIMENT.
+    #
+    #     `re.search` rend la PREMIERE occurrence, et §2 precede §8 : tant que la
+    #     ligne §2 existe, elle est trouvee d'abord et un journal sosie est sans
+    #     effet — le bornage ne se voit pas. Il devient load-bearing quand la
+    #     ligne §2 DISPARAIT (renommee/reformulee) alors qu'un sosie subsiste au
+    #     journal : sans bornage, la recherche tombe sur le sosie et lit une
+    #     valeur qui n'est plus declaree en §2 -> COUNT-2 manque, la disparition
+    #     passe en SILENCE. Avec bornage : COUNT-2.
+    #
+    #     Le sosie porte ici la valeur REELLE (2 checkers) : sans bornage le
+    #     checker rendrait 0 erreur (faux negatif parfait). Ce cas TUE la
+    #     mutation `body = text`.
+    s2_ligne_disparue = registry_s2().replace(
+        "| **Couverture mécanique**", "| **Couverture outillée**"
+    )
+    sosie_au_journal = (
+        "## 8. Journal\n\n"
+        "| 2026-06-20 | Refonte du §2 — ancien tableau conserve pour trace : |\n"
+        "| **Couverture mécanique** | Les contrôles. | `../../scripts/` | 2 checkers |\n"
+    )
+    errs = check_section2_volumes(s2_ligne_disparue + sosie_au_journal, counts)
+    assert any("COUNT-2" in e for e in errs), (
+        "selftest bornage §2 : ligne §2 disparue + sosie au journal doit lever "
+        "COUNT-2 (sans bornage, le sosie masque la disparition)"
+    )
+
+    # 5. topologie : conforme / orphelin / référence morte
     with tempfile.TemporaryDirectory() as tmp:
         base = Path(tmp)
         ac = base / "scripts" / "arsenal_contracts"
