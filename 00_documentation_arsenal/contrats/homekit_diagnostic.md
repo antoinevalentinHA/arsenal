@@ -1,5 +1,5 @@
 # Contrat — Diagnostic station météo Netatmo
-**Arsenal** · Couche observation · v1.2
+**Arsenal** · Couche observation · v1.3
 
 ---
 
@@ -100,6 +100,8 @@ Conditions :
 Lecture honnête :
 
 > Quelque chose, dans la chaîne entre la station physique et HA, ne livre plus de mesures. La cause réelle n'est pas déductible de cette seule observation. Plusieurs causes sont compatibles : station physiquement figée mais firmware réseau encore actif, bridge HomeKit gelé, intégration Netatmo cloud désynchronisée, etc.
+
+> **Remédiation (v1.3).** Un `muet_ping_ok` **persistant** déclenche désormais un power-cycle borné de la station — voir la politique explicite en §9.1. C'est la levée de l'abstention v1.1–v1.2 (cf. §11), motivée par la preuve terrain. Comme pour `muet_ping_ko`, cette remédiation est subordonnée à `input_boolean.systeme_stable = on` : un `muet_ping_ok` observé pendant l'instabilité post-redémarrage de HA (preuves encore `unavailable`, ping déjà remonté) est un artefact d'initialisation, non un gel réel.
 
 ### `muet_ping_ko`
 
@@ -225,6 +227,24 @@ Il est **interdit** de combiner ping et preuves de vie dans une même condition 
 - **Désigner une cause de panne dans le nom d'un état**
 - **Pré-câbler une remédiation à un état observationnel sans politique explicite**
 
+### 9.1 Politique de remédiation externe (v1.3)
+
+> Cette politique est **externe** au diagnostic : elle est portée par des automatisations dédiées (`11_automations/meteo/reboot_station/*.yaml`) qui *consomment* l'état. Le capteur de diagnostic reste strictement observationnel (§9 « Autorisé ») et les noms d'états restent descriptifs (§10). L'existence de cette section satisfait l'exigence §9 d'une **politique explicite** : la remédiation n'est plus ni implicite ni absente.
+
+Les deux états muets autorisent une remédiation par l'alimentation. L'action est identique — un **unique** power-cycle de la prise de la station concernée (`switch.prise_chambre_arnaud` pour la station 1, `switch.prise_chambre_matthieu` pour la station 2) via `script.reboot_netatmo` — mais leur **déclenchement diffère** selon la force de la preuve :
+
+| État | Preuve observée | Déclenchement | Fondement |
+|------|-----------------|---------------|-----------|
+| `muet_ping_ko` | silence total (mesures **et** ping) | **immédiat** | Cause probable : perte réseau / alimentation. Remédiation par l'alimentation défendable sans délai (§3). |
+| `muet_ping_ok` | silence des mesures, ping vivant | **après persistance ≥ 20 min** | Un silence *bref* avec ping vivant peut être un trou de report transitoire. Un silence *persistant* constitue la « preuve suffisante » qui manquait en v1.1–v1.2 (cf. §11) : la leçon terrain établit qu'un power-cycle le résout. |
+
+Invariants de la politique :
+
+- **Ciblage par station.** Chaque station a sa prise et son diagnostic ; la remédiation n'agit que sur la prise de la station effectivement muette — jamais globalement. La détection agrégée par fraîcheur (`sensor.homekit_age_donnees`) est **inapte** au ciblage : elle suit le capteur le plus frais du groupe combiné, si bien qu'une station muette y est masquée par l'autre station saine. Le diagnostic **par station** est donc la seule autorité de déclenchement légitime.
+- **Débounce sur `muet_ping_ok` uniquement.** La temporisation (`for: 00:20:00`) confirme la persistance. `muet_ping_ko` reste immédiat.
+- **Tir unique, aucune boucle ni retry.** Une impulsion par épisode (`mode: single`) ; aucune escalade ni relance automatique en cas d'échec.
+- **Gardes communes aux deux états.** L'action n'est exécutée que si : `input_boolean.systeme_stable = on` (garde de démarrage, §3), `binary_sensor.panne_secteur_en_cours = off` (un silence sous coupure secteur est un KO attendu, non un gel — la prise est elle-même sur secteur), `input_boolean.reboot_box_en_cours = off` et `binary_sensor.acces_externe = on` (pas de superposition à une campagne de remédiation réseau).
+
 ---
 
 ## 10. Règle de nommage des états
@@ -259,9 +279,9 @@ Conclusions verrouillées par ce cas :
 3. un reboot électrique de station peut résoudre un silence avec ping vivant
 ```
 
-Conséquence architecturale : aucune remédiation automatique n'est câblée sur `muet_ping_ok` à ce stade. L'état est **terminal observationnel** : il décrit une situation où Arsenal n'a pas de preuve suffisante pour choisir une action, et s'abstient légitimement.
+Conséquence architecturale (v1.1 → v1.2) : à ce stade, aucune remédiation automatique n'était câblée sur `muet_ping_ok`. L'état était traité comme **terminal observationnel** — Arsenal n'avait pas encore de preuve suffisante pour choisir une action, et s'abstenait légitimement. L'abstention n'était pas un trou de remédiation : c'était une décision contractuelle assumée **tant qu'une preuve terrain ne désignerait pas une remédiation efficace pour ce cas**.
 
-L'abstention sur `muet_ping_ok` n'est pas un trou de remédiation. C'est une décision contractuelle assumée tant qu'une preuve terrain ne désignera pas une remédiation efficace pour ce cas.
+**Levée de l'abstention (v1.3).** La condition posée est désormais remplie. La leçon terrain ci-dessus — confirmée par une récurrence en 2026-07 (station muette, ping vivant, intégration HomeKit en échec de configuration, résolution par power-cycle manuel de la prise) — désigne le power-cycle comme remédiation efficace du `muet_ping_ok`. L'abstention est remplacée par une **politique explicite et bornée** (§9.1) : un unique power-cycle de la prise de la station, ciblé par station, déclenché seulement après **persistance ≥ 20 min** de l'état (débounce anti-transitoire) et sous les gardes communes. Le `muet_ping_ok` cesse d'être terminal ; il reste néanmoins **strictement observationnel** (§10) — la décision d'agir vit dans une automatisation externe qui le consomme, pas dans le nom de l'état.
 
 ---
 
@@ -282,7 +302,8 @@ L'abstention sur `muet_ping_ok` n'est pas un trou de remédiation. C'est une dé
 - **v1.0** — Contrat initial. États : `ok` / `ko_homekit` / `ko_reseau`.
 - **v1.1** — Renommage des états vers une forme strictement observationnelle suite à une leçon terrain (§11). `ko_homekit` → `muet_ping_ok`, `ko_reseau` → `muet_ping_ko`. Ajout du §10 (règle de nommage), du §11 (leçon terrain), précision en §2.3 sur la portée réelle du ping. Aucune modification de la logique d'évaluation.
 - **v1.2** — Précision de la garde de démarrage en §3 (`muet_ping_ko`) : la remédiation automatique consommant cet état (redémarrage électrique de station) est subordonnée à `input_boolean.systeme_stable = on`, afin d'éviter un power-cycle parasite déclenché par un `muet_ping_ko` artefact d'initialisation post-redémarrage de Home Assistant. Aucune modification de la logique d'évaluation.
+- **v1.3** — Levée de l'abstention de remédiation sur `muet_ping_ok` (§11) au profit d'une **politique explicite et bornée** (§9.1), motivée par la leçon terrain 2026-05-06 et sa récurrence 2026-07 : un unique power-cycle de la prise de la station, **ciblé par station**, déclenché sur `muet_ping_ok` **après persistance ≥ 20 min** (débounce), `muet_ping_ko` restant immédiat. Extension explicite de la garde de démarrage `systeme_stable` à `muet_ping_ok` (§3). Gardes communes inchangées (`systeme_stable`, `panne_secteur_en_cours`, `reboot_box_en_cours`, `acces_externe`). **Aucune modification de la logique d'évaluation du diagnostic** ni des noms d'états, qui restent purement observationnels (§10).
 
 ---
 
-*Arsenal — document contractuel · couche observation · diagnostic Netatmo · v1.2*
+*Arsenal — document contractuel · couche observation · diagnostic Netatmo · v1.3*
