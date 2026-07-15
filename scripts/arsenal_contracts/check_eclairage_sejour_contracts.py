@@ -417,6 +417,52 @@ def test_switch_exclusivity():
 
 
 # ---------------------------------------------------------------------------
+# T13 — Extinction par luminosité — off_luminosite.yaml (§6bis)
+# ---------------------------------------------------------------------------
+
+def test_luminosite_extinction():
+    """
+    Vérifie l'automation d'extinction par luminosité :
+      - le fichier off_luminosite.yaml existe,
+      - il porte l'ID canonique 10070000000035,
+      - il délègue à script.sejour_off (autorité d'action canonique, I1),
+      - il n'allume pas switch.prise_lampe_sejour (§6bis interdictions),
+      - il n'écrit pas sejour_extinction_deadline (I4 / §6bis interdictions).
+    """
+    path = DOMAIN_DIR / "off_luminosite.yaml"
+    check(path.is_file(), "T13 — fichier off_luminosite.yaml manquant")
+    if not path.is_file():
+        return
+
+    content = read(path)
+    cleaned = strip_comments(content)
+
+    check(
+        bool(re.search(r"\b10070000000035\b", content)),
+        "T13 — ID 10070000000035 absent de off_luminosite.yaml",
+    )
+    check(
+        bool(re.search(r"script\.sejour_off", cleaned)),
+        "T13 — off_luminosite.yaml ne délègue pas à script.sejour_off (I1)",
+    )
+    check(
+        not bool(re.search(r"switch\.turn_on", cleaned)),
+        "T13 — off_luminosite.yaml contient switch.turn_on (interdit §6bis)",
+    )
+
+    deadline_write = re.compile(
+        r"input_datetime\.set_(?:datetime|value).{0,300}sejour_extinction_deadline"
+        r"|sejour_extinction_deadline.{0,300}input_datetime\.set_(?:datetime|value)",
+        re.DOTALL,
+    )
+    check(
+        not bool(deadline_write.search(cleaned)),
+        "T13 — off_luminosite.yaml écrit sejour_extinction_deadline (interdit §6bis/I4)",
+    )
+    ok("T13 — extinction par luminosité (off_luminosite.yaml) conforme (§6bis)")
+
+
+# ---------------------------------------------------------------------------
 # Registre des tests
 # ---------------------------------------------------------------------------
 
@@ -433,6 +479,7 @@ TESTS = [
     test_off_triggers_on_deadline,
     test_no_for_in_deadline_writer,
     test_switch_exclusivity,
+    test_luminosite_extinction,
 ]
 
 # ---------------------------------------------------------------------------

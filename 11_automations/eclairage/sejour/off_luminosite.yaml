@@ -1,0 +1,149 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Éclairage séjour — Extinction sur luminosité réelle
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   '10070000000035'
+#
+# 🎯 RÔLE
+#   Éteindre la lampe du séjour lorsqu'il fait suffisamment
+#   jour (luminosité réelle au-dessus du seuil), même en
+#   présence : l'éclairage devient inutile.
+#
+#   Comble l'angle mort du cycle nominal, dont l'extinction
+#   ne repose que sur l'absence (deadline). Ici, l'extinction
+#   repose sur la lumière réelle, indépendamment de la présence.
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : extinction sur bascule de luminosité,
+#              rattrapage post-redémarrage,
+#              rattrapage post-rechargement automations
+#   - Exclut : allumage, calcul de deadline d'absence,
+#              état logique dupliqué
+#
+# 🔖 NATURE
+#   Application
+#
+# ⚙️ MODE
+#   single
+#   Justification : une seule extinction à la fois. Les retriggers
+#   sont absorbés par les conditions d'idempotence et par
+#   l'idempotence de script.sejour_off.
+#   max_exceeded: silent — le warning "Already running" est
+#   attendu et non bloquant.
+#
+# 📣 DÉCLENCHEURS
+#   - binary_sensor.sejour_extinction_luminosite_autorisee : off → on
+#   - redémarrage Home Assistant (rattrapage, délai 90s)
+#   - rechargement des automations (rattrapage, délai 10s)
+#
+# 🔗 DÉPENDANCES
+#   Lit     : binary_sensor.sejour_extinction_luminosite_autorisee
+#             input_boolean.sejour_auto_light
+#             switch.prise_lampe_sejour
+#   Action  : script.sejour_off (autorité d'action canonique)
+#
+# 🧠 AUTORITÉ
+#   Applique une décision de luminosité portée par le capteur
+#   binary_sensor.sejour_extinction_luminosite_autorisee.
+#   Ne calcule aucun seuil, ne pilote pas directement le switch.
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger.
+#   L'extinction n'est demandée que si l'autorisation luminosité
+#   est active, l'automatisme autorisé et la lampe allumée.
+#   script.sejour_off n'agit que si la lampe est on.
+#
+# 🚫 INTERDITS
+#   - Allumer la lampe
+#   - Écrire input_datetime.sejour_extinction_deadline
+#   - Calculer un seuil de luminosité
+#   - Piloter directement switch.prise_lampe_sejour hors
+#     de l'autorité canonique script.sejour_off
+#   - Créer un état logique parallèle
+#
+# 🏷️ STATUT
+#   Réactive — Arsenal v16.x
+# ==========================================================
+
+- id: "10070000000035"
+  alias: "Éclairage - Séjour - Extinction luminosité"
+  description: >
+    Éteint la lampe du séjour lorsque la luminosité réelle
+    dépasse le seuil configuré, même en présence. Robuste aux
+    redémarrages et aux rechargements d'automations.
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.sejour_extinction_luminosite_autorisee
+      to: "on"
+      id: luminosite
+
+    - platform: homeassistant
+      event: start
+      id: start
+
+    - platform: event
+      event_type: automation_reloaded
+      id: reload
+
+  action:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: luminosite
+          sequence:
+            - condition: state
+              entity_id: input_boolean.sejour_auto_light
+              state: "on"
+
+            - condition: state
+              entity_id: switch.prise_lampe_sejour
+              state: "on"
+
+            - alias: "Éteindre la lumière du séjour (autorité canonique)"
+              action: script.sejour_off
+
+        - conditions:
+            - condition: trigger
+              id: start
+          sequence:
+            - delay: "00:01:30"
+
+            - condition: state
+              entity_id: binary_sensor.sejour_extinction_luminosite_autorisee
+              state: "on"
+
+            - condition: state
+              entity_id: input_boolean.sejour_auto_light
+              state: "on"
+
+            - condition: state
+              entity_id: switch.prise_lampe_sejour
+              state: "on"
+
+            - alias: "Éteindre la lumière du séjour (autorité canonique)"
+              action: script.sejour_off
+
+        - conditions:
+            - condition: trigger
+              id: reload
+          sequence:
+            - delay: "00:00:10"
+
+            - condition: state
+              entity_id: binary_sensor.sejour_extinction_luminosite_autorisee
+              state: "on"
+
+            - condition: state
+              entity_id: input_boolean.sejour_auto_light
+              state: "on"
+
+            - condition: state
+              entity_id: switch.prise_lampe_sejour
+              state: "on"
+
+            - alias: "Éteindre la lumière du séjour (autorité canonique)"
+              action: script.sejour_off
