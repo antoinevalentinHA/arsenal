@@ -204,6 +204,9 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 - [climatisation/patch_doc_intention_asymetrie_cool.md](04_chantiers/climatisation/patch_doc_intention_asymetrie_cool.md)  _(patch documentaire séparé — correction d'intention « asymétrie max/min COOL » ; appliqué dans `90_observations.md`)_
 - [climatisation/chantier_efficacite_clim_par_chambre.md](04_chantiers/climatisation/chantier_efficacite_clim_par_chambre.md)  _(chantier **observationnel** Phase 0 — efficacité clim par chambre = **effectivité de couplage, pas COP** ; **non normatif**, zéro runtime/capteur/UI ; porte = variable cachée, extérieur = confondant, CO₂ = proxy de découplage ; métriques candidates figées)_
 
+### Éclairage
+- [eclairage/chantier_extinction_luminosite_sejour.md](04_chantiers/eclairage/chantier_extinction_luminosite_sejour.md)  _(**Chantier C22 — runtime livré (#368), validation terrain en attente** ; comble l'angle mort « lampe séjour allumée en plein jour tant qu'il y a présence » — le cycle nominal n'éteignait que sur **absence** (deadline) ; ajout d'un **second axe d'extinction sur luminosité réelle** (`sensor.luminosite_garage_illuminance`, **unique capteur**, proxy d'ambiance) ; option retenue « garder période + extinction lux » (**seuil unique, pas d'hystérésis** — l'allumage reste période-gaté ⇒ pas de battement, bandeau d'autorisation binaire préservé) ; helper seuil **défaut 0 = désactivé**, autorité `binary_sensor.sejour_extinction_luminosite_autorisee`, automation `10070000000035` déléguant à `script.sejour_off` ; contrat `sejour.md` v1.1.0 (§6bis) + test T13 ; **réserve : proxy garage à valider en terrain + calibration du seuil**)_
+
 ### Transverses
 - [transverses/hysteresis_5_domaines.md](04_chantiers/transverses/hysteresis_5_domaines.md)
 - [transverses/cadrage_ci_includes_lovelace.md](04_chantiers/transverses/cadrage_ci_includes_lovelace.md)
