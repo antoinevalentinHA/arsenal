@@ -91,7 +91,7 @@ production non contractualisée).
     SNZB-05 prioritaire, Netatmo (> 0) en secours.
   - Sortie : `11_automations/meteo/pluie/maj_sensor/off.yaml` (`10160000000003`, `single`) —
     Netatmo < 0,1 mm pendant 5 min + watchdog 1 min. **Ignore explicitement le Zigbee.**
-- `12_template_sensors/volets/intention_pluie_detectee.yaml` → `binary_sensor.intention_pluie_forte`
+- `12_template_sensors/volets/intention_pluie_forte.yaml` → `binary_sensor.intention_pluie_forte`
   (**déclaratif**, Netatmo ≥ `input_number.seuil_pluie_fermeture_volets`, défaut 2,5 mm).
 - `12_template_sensors/meteo/pluie/recente.yaml` → `binary_sensor.pluie_recente` (Netatmo `last_hour` > 0).
 
@@ -114,7 +114,7 @@ production non contractualisée).
 
 ### 2.6 Paramètres
 
-- `05_input_booleans/meteo/volets_auto_pluie.yaml` → `input_boolean.fermeture_volets_pluie` (verrou global).
+- `05_input_booleans/meteo/fermeture_volets_pluie.yaml` → `input_boolean.fermeture_volets_pluie` (verrou global).
 - `06_input_selects/volets/pluie.yaml` → `input_select.activation_volets_pluie` (`Toujours` / `En présence uniquement` / `En absence uniquement`).
 - `03_input_numbers/meteo/pluie_volets.yaml` → `input_number.seuil_pluie_fermeture_volets` (0–5 mm, défaut 2,5).
 - `03_input_numbers/arrosage/seuils_pluie.yaml` → seuils cumuls 24/48/72 h + prévue + horizon (chaîne arrosage).
@@ -292,10 +292,11 @@ de récence.
 
 ### 7.1 Écarts de cohérence documentaire relevés
 
-- Fichier `12_template_sensors/volets/intention_pluie_detectee.yaml` → entité
+- ~~Fichier `12_template_sensors/volets/intention_pluie_detectee.yaml` → entité
   `intention_pluie_forte` (nom de fichier ≠ entité ; aucune entité `intention_pluie_detectee`
-  n'existe).
-- Fichier `05_input_booleans/meteo/volets_auto_pluie.yaml` → entité `fermeture_volets_pluie` (idem).
+  n'existe).~~ **Résolu (2026-07-15)** : fichier renommé `intention_pluie_forte.yaml`.
+- ~~Fichier `05_input_booleans/meteo/volets_auto_pluie.yaml` → entité `fermeture_volets_pluie` (idem).~~
+  **Résolu (2026-07-15)** : fichier renommé `fermeture_volets_pluie.yaml`.
 - `binary_sensor.pluie_recente` et `input_number.seuil_pluie_fermeture_volets` sont **exposés
   dans les dashboards volets mais non nommés** dans `contrats/volets_pluie.md` (le contrat
   exclut pourtant en §2 le seuil pluviométrique, qui figure dans l'écran de réglages volets).

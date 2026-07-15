@@ -32,7 +32,7 @@
 | Élément | État réel | Source faisant foi |
 |---|---|---|
 | **Évidence consolidée any-rain** | **Livrée (C16, #337)** : `binary_sensor.pluie_evidence_active`, déclarative, multi-source (Netatmo `>0` ∪ SNZB borné 10 min ∪ injection), disponibilité = ≥ 1 source réelle. Consommée par les deux écrivains de `pluie_en_cours`. **Validation terrain en attente.** | `12_template_sensors/meteo/pluie/evidence_active.yaml` · `REGISTRE_CHANTIERS.md` (C16) |
-| **Qualification « pluie forte »** | `binary_sensor.intention_pluie_forte` = Netatmo intensité ≥ `seuil_pluie_fermeture_volets` (2,5 mm). **Netatmo-seul, correct par construction** (cf. §2). | `12_template_sensors/volets/intention_pluie_detectee.yaml` |
+| **Qualification « pluie forte »** | `binary_sensor.intention_pluie_forte` = Netatmo intensité ≥ `seuil_pluie_fermeture_volets` (2,5 mm). **Netatmo-seul, correct par construction** (cf. §2). | `12_template_sensors/volets/intention_pluie_forte.yaml` |
 | **Qualification « pluie récente »** | `binary_sensor.pluie_recente` = Netatmo `last_hour` > 0. | `12_template_sensors/meteo/pluie/recente.yaml` |
 | **Acquisition (sources de décision)** | Les qualifications lisent les **sources brutes externes** (`sensor.pluviometre_precipitation` cloud Netatmo, `binary_sensor.zigbee_pluie_water_leak` Zigbee). **Aucune façade locale sécurisée côté décision** — alors qu'elle existe côté cumuls (`sensor.pluie_total_local`). | `securisation_capteurs_externes.md` · audit domaine §6.2 |
 | **Contrat de production** | **Inexistant.** `volets_pluie.md` §5.2 délègue la frontière à « un contrat météo distinct » qui n'existe pas ; la précipitation n'est pas un axe reconnu de `capteurs_meteo.md`. | `contrats/volets_pluie.md` §5.2 · audit domaine §7.1 |
