@@ -1,12 +1,21 @@
 # ==========================================================
 # 🧠 ARSENAL — AUTOMATISATION
-#     Netatmo – Remédiation station muette sans ping (Arnaud)
+#     Netatmo – Remédiation station muette (Arnaud)
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #
 #     Exécuter une action corrective ciblée sur la station
 #     Netatmo de la chambre Arnaud lorsqu'un diagnostic
 #     d'observation dédié l'autorise explicitement.
+#
+#     Deux modes de silence déclenchent le redémarrage :
+#     - muet_ping_ko : station muette ET injoignable au ping
+#       (boîtier mort / débranché) → redémarrage immédiat.
+#     - muet_ping_ok : station muette mais TOUJOURS joignable au
+#       ping (service HAP/HomeKit figé, hôte vivant) → redémarrage
+#       après temporisation de confirmation (anti-transitoire).
+#       C'est le cas d'un pont HomeKit gelé : aucune relance
+#       logicielle ne le réveille, seul un power-cycle récupère.
 #
 #     Cette automation :
 #     - consomme un diagnostic externe dédié
@@ -19,6 +28,7 @@
 #     - aucune décision locale de diagnostic
 #     - aucune remédiation secondaire pendant campagne réseau
 #     - action uniquement en état réseau nominal
+#     - muet_ping_ok temporisé (débounce) ; muet_ping_ko immédiat
 #     - aucune boucle ni retry
 # ==========================================================
 
@@ -27,9 +37,20 @@
   mode: single
 
   trigger:
+    # Boîtier mort / injoignable : redémarrage immédiat.
     - platform: state
       entity_id: sensor.diagnostic_netatmo_arnaud
       to: "muet_ping_ko"
+      id: ping_ko
+
+    # Service figé mais hôte joignable (pont HomeKit gelé) : on
+    # confirme la persistance du silence avant de power-cycler,
+    # pour ne pas rebooter sur un simple trou de report transitoire.
+    - platform: state
+      entity_id: sensor.diagnostic_netatmo_arnaud
+      to: "muet_ping_ok"
+      for: "00:20:00"
+      id: ping_ok
 
   condition:
     - condition: state
@@ -62,5 +83,7 @@
         cible: input_text.telephone_antoine_notify
         titre: "🔧 Netatmo – Redémarrage"
         message: >
-          Station Netatmo chambre Arnaud redémarrée
-          après détection d'une station muette sans ping.
+          Station Netatmo chambre Arnaud redémarrée après détection
+          {% if trigger.id == 'ping_ok' %}d'une station muette
+          joignable (service figé, ping OK){% else %}d'une station
+          muette sans ping{% endif %}.
