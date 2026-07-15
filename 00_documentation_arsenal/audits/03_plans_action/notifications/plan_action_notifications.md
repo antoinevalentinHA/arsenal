@@ -7,6 +7,11 @@
 > ([`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md)).
 >
 > **Vivant** : à relire avant chaque lot, à mettre à jour après chaque lot, à clôturer quand les constats sont soldés.
+>
+> **✅ PLAN CLOS (2026-07-15).** NOTIF-01→06 soldés (L1→L5 appliqués ou décidés) **et validation terrain acquise**
+> (§5) : C15 est **clôturé** au registre (⑤). Le domaine transverse des notifications est déclaré **re-conforme**.
+> Subsiste, **hors périmètre et non bloquant** : le durcissement CI du checker (§4, lot ultérieur optionnel) et
+> la reprise différée assumée de `panne_internet` (L4, décision actée, aucun changement runtime).
 
 ## 1. Cadre
 
@@ -58,8 +63,16 @@ Le point (a) est le plus sûr (peu de faux positifs) et le plus utile comme gard
 
 - **Statique** : `check_notifications_contracts.py` vert + `yamllint` propre (les IDs neufs `10040000000004`,
   `10080000000006`, `10080000000007` respectent le préfixe de domaine, `max+1`).
-- **Terrain (en attente)** : reboot HA en présence d'un état actif (mode panne simulé, cycle électroménager, alarme armée)
-  → vérifier que la notification persistante **réapparaît** après stabilisation. Suivi opportuniste, non bloquant.
+- **Terrain — ✅ ACQUISE (2026-07-15)** : reboot volontaire pendant un **cycle lave-vaisselle réel** → la persistante
+  `lave_vaisselle_cycle` est **recréée 47 s après le démarrage** (≈ le `delay: "00:00:45"` de `systeme_stable`),
+  **sans aucun `input_boolean.turn_on` intercalé** — le flag a donc été *restauré*, pas redétecté par `debut.yaml`
+  (seuil 30 W / 3 min), ce qui **exclut le confondant de re-détection par les données seules**. La même fenêtre
+  contient le **contrefactuel** : 7 reboots pré-correctif survenus cycle actif, tous suivis d'**aucun acte**
+  (notification perdue = le défaut d'origine). Réserve du 2026-07-13 **levée**.
+  Preuve : [`preuve_terrain_c15_survie_persistantes_reboot.md`](../../01_rapports/notifications/preuve_terrain_c15_survie_persistantes_reboot.md).
+  **Portée** : établit l'idiome canonique sur le véhicule de preuve admis par le protocole (`lave_vaisselle_cycle`
+  **ou** `buanderie_cycle`), l'idiome étant partagé par toutes les projections corrigées ; les autres instances
+  restent couvertes par la validation statique, comme prévu — sans exigence terrain propre à chacune.
 
 ## 6. Règles de mise à jour
 

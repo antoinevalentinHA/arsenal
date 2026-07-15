@@ -6,6 +6,16 @@
 - **Réponse :** **non pour les trois** — pour des raisons distinctes, et **sans qu'aucune non-conformité fonctionnelle ne soit démontrée**.
 - **Données :** deux sauvegardes Home Assistant non chiffrées (2026-06-23 et 2026-07-13), bases Recorder — **conservées, avec les scripts et le détail technique, hors dépôt** (dépôt privé d'audit runtime). Le présent rapport n'en restitue que la méthode et les verdicts.
 
+> **⚠️ Mise à jour du 2026-07-15 — le verdict C15 de ce rapport est périmé (C16 et C13 restent exacts).**
+> Marqueurs datés ajoutés **sans réécriture de l'analyse**, qui reste juste *à sa date* du 2026-07-13.
+> Ce rapport concluait que C15 relevait de l'**absence de preuve suffisante** (§1 sens n° 2) — *preuve absente*,
+> **jamais** *correctif invalidé*. Cette distinction s'est révélée exacte : la séquence manquante a été
+> **produite délibérément** le 2026-07-15 (reboot pendant un cycle lave-vaisselle réel) et le correctif s'est
+> montré **opérant** — persistante recréée à **+47 s**. **C15 est clos** ⇒
+> [`preuve_terrain_c15_survie_persistantes_reboot.md`](../notifications/preuve_terrain_c15_survie_persistantes_reboot.md).
+> La **recommandation de ce rapport a donc été suivie et a abouti** : c'est bien la « validation live requise »
+> qu'il préconisait qui a clos le chantier, sans instrumentation.
+
 ---
 
 ## 1. Trois constats de nature différente — à ne jamais confondre
@@ -31,6 +41,15 @@ Le capteur d'évidence consolidée introduit par le correctif n'apparaît dans l
 → **Non clôturable par historique. Aucune non-conformité observée. Validation live requise (prochaine pluie réelle).**
 
 ### C15 — survie des notifications persistantes au reboot — **absence de preuve suffisante**
+
+> **✅ VERDICT PÉRIMÉ DEPUIS LE 2026-07-15 — C15 CLOS.** Marqueur daté ajouté **sans réécriture de l'analyse
+> ci-dessous**, qui reste exacte *à sa date*. La seule chose qui manquait — un reboot coïncidant avec un état
+> actif après le correctif — a été **produite délibérément** (reboot volontaire pendant un cycle lave-vaisselle
+> réel) : la persistante est **recréée à +47 s**, le confondant de re-détection est **exclu par les données
+> seules**, et les 7 reboots pré-correctif évoqués ci-dessous comme « contexte, jamais preuve » acquièrent
+> valeur de **témoin négatif** dans un avant/après contrôlé. Voir
+> [`preuve_terrain_c15_survie_persistantes_reboot.md`](../notifications/preuve_terrain_c15_survie_persistantes_reboot.md).
+> **C16 et C13 restent ouverts, verdicts ci-dessous inchangés.**
 Le déclencheur de re-projection au démarrage **s'exécute bel et bien** (observé : exécution de la branche de retrait des projections — appels `persistent_notification.dismiss` — à chaque redémarrage post-correctif). Mais **aucun redémarrage n'a coïncidé avec un état actif après le 2026-07-09** : la branche décisive — reboot pendant un cycle/mode actif suivi du **ré-affichage** de la persistante — n'a **aucune occurrence** post-correctif. Les cas « reboot pendant état actif » présents dans l'historique sont **tous antérieurs** au correctif et illustrent l'**ancien** comportement (notification perdue) : contexte, jamais preuve.
 → **Non clôturable par historique. Aucune non-conformité observée (le mécanisme de boot est vu s'exécuter). Validation live requise (reboot volontaire pendant un cycle actif).**
 
@@ -39,6 +58,9 @@ Sur toute la fenêtre post-correctif, l'événement déclencheur — échec d'ex
 → **Non clôturable par historique. Aucune non-conformité observée. Validation par occurrence réelle future ou test provoqué.**
 
 ## 4. Conclusion
+
+> **⚠️ Périmée pour C15 depuis le 2026-07-15 (voir chapeau et §3) : C15 est clos par validation live.
+> La conclusion ci-dessous vaut à sa date ; elle reste exacte pour C16 et C13.**
 
 Les trois chantiers **restent en validation terrain — statut inchangé et exact**. Aucune clôture. La cause est double :
 - **structurelle** — pour C15 et C13, les entités d'état décisives sont hors liste blanche Recorder ; la preuve repose donc sur une reconstruction indirecte à partir des événements, moins complète qu'un historique d'états ;
