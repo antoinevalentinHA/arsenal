@@ -4,8 +4,10 @@
 Arsenal — Validation contractuelle
 Domaine : Diagnostic station meteo Netatmo
 Contrat (source normative) : 00_documentation_arsenal/contrats/homekit_diagnostic.md
-(« Diagnostic station météo Netatmo », couche observation ; document en v1.2,
-invariants vérifiés ici = socle v1.1 — écart de version noté en résiduel C14 Lot 1A)
+(« Diagnostic station météo Netatmo », couche observation ; document en v1.3,
+invariants vérifiés ici = socle v1.1 — écart de version noté en résiduel C14 Lot 1A.
+La v1.3 n'ajoute qu'une politique de remédiation externe (§9.1) : aucun invariant
+structurel du diagnostic n'est modifié, ce checker reste inchangé sur le fond.)
 
 Le script verifie les invariants testables sans ambiguite du contrat
 v1.1, en se restreignant au fichier canonique pour les invariants
