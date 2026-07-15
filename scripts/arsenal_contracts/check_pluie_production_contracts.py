@@ -20,7 +20,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 # ---------------------------------------------------------------------------
 F_CONTRAT   = REPO_ROOT / "00_documentation_arsenal/contrats/meteo/pluie_production.md"
 F_EVIDENCE  = REPO_ROOT / "12_template_sensors/meteo/pluie/evidence_active.yaml"
-F_FORTE     = REPO_ROOT / "12_template_sensors/volets/intention_pluie_detectee.yaml"
+F_FORTE     = REPO_ROOT / "12_template_sensors/volets/intention_pluie_forte.yaml"
 F_RECENTE   = REPO_ROOT / "12_template_sensors/meteo/pluie/recente.yaml"
 F_PREVUE    = REPO_ROOT / "12_template_sensors/meteo/pluie/prevue.yaml"
 F_EN_COURS  = REPO_ROOT / "05_input_booleans/meteo/pluie_en_cours.yaml"

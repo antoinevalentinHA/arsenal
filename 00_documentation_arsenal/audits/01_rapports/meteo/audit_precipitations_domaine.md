@@ -269,8 +269,9 @@ palmarès + dashboard).
 | Maintenabilité (CI) | — | **Écart** | Palmarès pluie STRICT **sans checker** (température en a 3) ; détection/cumuls/suspension sans CI |
 
 **Écarts de cohérence documentaire** (rappel/complément de l'audit compagnon) :
-`intention_pluie_detectee.yaml` définit `intention_pluie_forte` ; `volets_auto_pluie.yaml`
-définit `fermeture_volets_pluie` ; `utility_meter` clé `pluie_semaine` → entité
+~~`intention_pluie_detectee.yaml` définit `intention_pluie_forte` ; `volets_auto_pluie.yaml`
+définit `fermeture_volets_pluie`~~ (**résolus 2026-07-15** — les deux fichiers portent désormais
+le nom de leur entité) ; `utility_meter` clé `pluie_semaine` → entité
 `sensor.pluie_hebdomadaire` (clé ≠ nom d'entité) ; label `pluie_recente` ambigu entre domaines.
 
 ---
