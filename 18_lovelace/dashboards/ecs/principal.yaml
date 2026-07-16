@@ -20,16 +20,14 @@ views:
           action: navigate
           navigation_path: /diagnostics-ecs-dashboard
 
-      - type: custom:button-card
-        template: bouton_navigation_badge_carre
-        icon: mdi:home-outline
-        tap_action:
-          action: navigate
-          navigation_path: /ecs-petite-maison-dashboard
-
     cards:
       - type: vertical-stack
         cards:
+          # ==================================================
+          # 🏡 BANDEAU FACETTES ECS (Maison / Petite maison)
+          # ==================================================
+          - !include ../../includes/navigation/ecs.yaml
+
           # ==================================================
           # 🚿 ECS — ÉTAT & COMMANDES
           # ==================================================
