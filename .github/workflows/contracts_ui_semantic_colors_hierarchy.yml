@@ -1,0 +1,33 @@
+name: Arsenal Contracts — UI Semantic Colors Hierarchy
+
+on:
+  push:
+    paths:
+      - '18_lovelace/**'
+      - '19_button_card_templates/**'
+      - 'scripts/arsenal_contracts/check_ui_semantic_colors_hierarchy_contracts.py'
+      - '.github/workflows/contracts_ui_semantic_colors_hierarchy.yml'
+  pull_request:
+    paths:
+      - '18_lovelace/**'
+      - '19_button_card_templates/**'
+      - 'scripts/arsenal_contracts/check_ui_semantic_colors_hierarchy_contracts.py'
+      - '.github/workflows/contracts_ui_semantic_colors_hierarchy.yml'
+
+jobs:
+  validate-ui-semantic-colors-hierarchy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # On ne juge pas avec un juge défectueux : le --selftest tourne AVANT
+      # le contrôle réel — si le juge est cassé, le verdict ne vaut rien.
+      - name: Selftest du checker (le juge se vérifie avant de juger)
+        run: |
+          python3 scripts/arsenal_contracts/check_ui_semantic_colors_hierarchy_contracts.py --selftest
+
+      - name: Run UI semantic colors hierarchy contract validation
+        run: |
+          python3 scripts/arsenal_contracts/check_ui_semantic_colors_hierarchy_contracts.py
