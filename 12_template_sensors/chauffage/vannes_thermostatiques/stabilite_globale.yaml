@@ -1,0 +1,93 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR :
+#     Chauffage – Vannes thermostatiques – Stabilité globale (agrégat)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#     Dériver, en LECTURE SEULE, un VERDICT GLOBAL de stabilité
+#     thermique des vannes thermostatiques, agrégé sur toutes les
+#     pièces (parents / arnaud / matthieu). Sert d'AMORCE au hub
+#     Diagnostics Chauffage : un coup d'œil unique, le détail par
+#     pièce restant sur le sous-dashboard `diagnostics-vannes`.
+#
+#     État catégoriel (pire cas sur les pièces disponibles) :
+#       • tres_stable   : toutes les pièces disponibles < 0.02
+#       • a_surveiller  : au moins une pièce dans [0.02, 0.05[, aucune ≥ 0.05
+#       • instable      : au moins une pièce ≥ 0.05
+#       • indisponible  : aucune variance de pièce exploitable
+#
+# 🧱 NATURE / GARANTIES
+#     - Dérivé d'observabilité PUR (registre diagnostic).
+#     - Aucune autorité causale, aucun pilotage, aucun trigger.
+#     - JAMAIS relu par la décision (étanchéité).
+#     - Les seuils 0.02 / 0.05 CALQUENT `thermo_stabilite_12h_status`
+#       (UI par pièce) mais sont ici évalués AU BACKEND : le backend
+#       décide l'état, l'UI ne fait que traduire (couleur + libellé).
+#       Point de vérité unique des seuils à terme = ce capteur.
+#
+# 🔗 DÉPENDANCES (lectures)
+#     - sensor.temperature_stats_12h_variance_chambre_parents
+#     - sensor.temperature_stats_12h_variance_chambre_arnaud
+#     - sensor.temperature_stats_12h_variance_chambre_matthieu
+#       (statistics 12h par pièce ; suffixes = options de
+#        input_select.adjustment_piece)
+#
+# 🗄️ RECORDER — décision : NON historisé.
+#     La famille diagnostic vannes (plateaux / stats 12h) n'est pas
+#     dans l'allowlist `recorder.yaml` : outil de diagnostic « live »,
+#     par pièce, réinitialisable. Cet agrégat suit la même politique
+#     (coup d'œil courant, pas de trajectoire historisée). À rouvrir
+#     par décision explicite si un besoin d'historique apparaît.
+#
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- sensor:
+    - name: "Vannes thermostatiques stabilité globale"
+      unique_id: vannes_thermostatiques_stabilite_globale
+      icon: mdi:radiator
+      state: >
+        {% set pieces = ['chambre_parents', 'chambre_arnaud', 'chambre_matthieu'] %}
+        {% set ns = namespace(instables=0, surveiller=0, dispo=0) %}
+        {% for p in pieces %}
+          {% set v = states('sensor.temperature_stats_12h_variance_' ~ p) | float(-1) %}
+          {% if v >= 0 %}
+            {% set ns.dispo = ns.dispo + 1 %}
+            {% if v >= 0.05 %}
+              {% set ns.instables = ns.instables + 1 %}
+            {% elif v >= 0.02 %}
+              {% set ns.surveiller = ns.surveiller + 1 %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.dispo == 0 %}
+          indisponible
+        {% elif ns.instables > 0 %}
+          instable
+        {% elif ns.surveiller > 0 %}
+          a_surveiller
+        {% else %}
+          tres_stable
+        {% endif %}
+      attributes:
+        seuils_variance: "à surveiller ≥ 0.02 · instable ≥ 0.05"
+        pieces_a_surveiller: >
+          {% set out = namespace(l=[]) %}
+          {% for p in ['chambre_parents', 'chambre_arnaud', 'chambre_matthieu'] %}
+            {% set v = states('sensor.temperature_stats_12h_variance_' ~ p) | float(-1) %}
+            {% if v >= 0.02 and v < 0.05 %}{% set out.l = out.l + [p] %}{% endif %}
+          {% endfor %}
+          {{ out.l | join(', ') if out.l else '—' }}
+        pieces_instables: >
+          {% set out = namespace(l=[]) %}
+          {% for p in ['chambre_parents', 'chambre_arnaud', 'chambre_matthieu'] %}
+            {% set v = states('sensor.temperature_stats_12h_variance_' ~ p) | float(-1) %}
+            {% if v >= 0.05 %}{% set out.l = out.l + [p] %}{% endif %}
+          {% endfor %}
+          {{ out.l | join(', ') if out.l else '—' }}
+        pire_variance: >
+          {% set out = namespace(m=-1) %}
+          {% for p in ['chambre_parents', 'chambre_arnaud', 'chambre_matthieu'] %}
+            {% set v = states('sensor.temperature_stats_12h_variance_' ~ p) | float(-1) %}
+            {% if v > out.m %}{% set out.m = v %}{% endif %}
+          {% endfor %}
+          {{ '?' if out.m < 0 else out.m | round(3) }}
