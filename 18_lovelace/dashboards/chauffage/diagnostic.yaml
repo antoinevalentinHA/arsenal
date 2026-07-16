@@ -14,14 +14,6 @@ views:
           action: navigate
           navigation_path: /chauffage-dashboard
 
-      - type: custom:button-card
-        template: bouton_navigation_badge_carre
-        name: Diagnostics thermiques
-        icon: mdi:magnify
-        tap_action:
-          action: navigate
-          navigation_path: /diagnostics-thermiques-dashboard
-
     ########################################################
     # ♨️ VERTICAL STACK PRINCIPAL
     ########################################################
@@ -175,6 +167,42 @@ views:
             tap_action:
               action: navigate
               navigation_path: /diagnostics-vannes-dashboard
+
+          - type: custom:button-card
+            template: section_header
+            name: 🧪 Diagnostics thermiques
+
+          # Teaser compact (qualité thermique globale + accès) — le détail
+          # par axe (régulation / reprise / inertie / stabilité) vit dans le
+          # sous-dashboard dédié. Amorce calquée sur vannes / courbe : coup
+          # d'œil au hub, détail sur la page. Le verdict de tête est décidé
+          # au backend (sensor.diagnostic_chauffage_thermique_synthese) ;
+          # l'UI traduit. Distinct de « État global » (raison courante).
+          - type: custom:button-card
+            template: carte_etat_interprete
+            entity: sensor.diagnostic_chauffage_thermique_synthese
+            name: Qualité thermique — synthèse
+            variables:
+              couleurs:
+                nominal: 'rgba(76, 175, 80, 0.2)'
+                correct: 'rgba(33, 150, 243, 0.2)'
+                a_surveiller: 'rgba(255, 152, 0, 0.2)'
+                # Gris INDISPO (0.1) : aucun axe exploitable → cas donnée
+                # indisponible de la charte (02_palette.md), prioritaire.
+                indisponible: 'rgba(158, 158, 158, 0.1)'
+              libelles:
+                nominal: Nominal
+                correct: Correct
+                a_surveiller: À surveiller
+                indisponible: Indisponible
+
+          - type: custom:button-card
+            template: bouton_navigation
+            name: Ouvrir le diagnostic
+            icon: mdi:magnify
+            tap_action:
+              action: navigate
+              navigation_path: /diagnostics-thermiques-dashboard
 
           - type: custom:button-card
             template: section_header
