@@ -1,0 +1,22 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+# Dashboard Boiler — entrée depuis DIAGNOSTICS ECS.
+# Frère de systeme/boiler.yaml : MÊME corps partagé, seul le bouton
+# Retour diffère (-> /diagnostics-ecs-dashboard, le parent logique
+# d'où l'on vient). Cf. ui/navigation.md (retours contextuels).
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-ecs-dashboard
+
+    cards:
+      - !include ../../includes/cartes/systeme/boiler_corps.yaml

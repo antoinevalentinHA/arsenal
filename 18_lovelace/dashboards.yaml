@@ -481,6 +481,22 @@ diagnostics-boiler-dashboard:
   show_in_sidebar: false
   filename: 18_lovelace/dashboards/systeme/boiler.yaml
 
+# Frères du dashboard Boiler : même corps (includes/cartes/systeme/boiler_corps.yaml),
+# retour contextuel différent selon le hub d'origine (chauffage / ECS).
+diagnostics-boiler-chauffage-dashboard:
+  mode: yaml
+  title: Boiler
+  icon: mdi:fire
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/systeme/boiler_chauffage.yaml
+
+diagnostics-boiler-ecs-dashboard:
+  mode: yaml
+  title: Boiler
+  icon: mdi:fire
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/systeme/boiler_ecs.yaml
+
 diagnostics-chauffage-dashboard:
   mode: yaml
   title: Chauffage
