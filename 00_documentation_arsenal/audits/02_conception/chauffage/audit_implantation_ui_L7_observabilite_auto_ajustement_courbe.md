@@ -93,6 +93,8 @@ chauffage-dashboard (principal)
 
 **Scénario B — un sous-dashboard dédié « Diagnostics — Auto-ajustement courbe », rattaché au hub Diagnostics Chauffage par un 3ᵉ badge de navigation (miroir exact de Vannes / Thermiques), avec badge retour vers le hub.**
 
+> **Mise à jour (2026-07-16) — rattachement affiné.** Le *rattachement au hub* (verdict B) est conservé ; seul son **véhicule** change : l'accès depuis le hub passe désormais par le **bouton contextuel du teaser** (« Ouvrir la supervision »), et **non** par un 3ᵉ badge de tête. Motif : éviter la **double entrée** vers `/diagnostics-courbe-dashboard`. Détail et invariance `R-LL-NAV-1` : `dossier_conception_lot_L7_…md` §2.4.
+
 Justifications :
 1. **Homogénéité** : c'est le pattern déjà en place (C1) ; on n'invente rien, on **complète une série**.
 2. **Réponse à la question « synthèse ou hub ? »** : le hub **reste hybride** (synthèse + hub) ; l'auto-ajustement en devient le **3ᵉ sous-diagnostic**. Le « bouton de plus » **n'empile pas un contrôle** — il **promeut une amorce déjà présente** (la carte « Dernier ajustement ») vers sa page dédiée. C'est cohérent, non redondant.

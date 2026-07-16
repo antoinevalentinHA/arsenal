@@ -35,15 +35,21 @@
 
 ### 2.1 Décision
 - **Nouveau sous-dashboard** de clé pressentie **`diagnostics-courbe-dashboard`** (aligné sur `diagnostics-vannes-dashboard` / `diagnostics-thermiques-dashboard`), déclaré dans `dashboards.yaml`.
-- **Badge d'accès** ajouté sur le hub `diagnostics-chauffage-dashboard` (3ᵉ badge sous-diagnostic, miroir vannes/thermiques).
+- **Accès depuis le hub** `diagnostics-chauffage-dashboard` : **bouton contextuel** « Ouvrir la supervision » du teaser (§2.2), **et non** un badge de navigation. Décision opérateur du 2026-07-16 (cf. §2.4) : contrairement à vannes/thermiques, l'accès n'est **pas** promu en badge de tête ; il reste rattaché à l'amorce qu'il prolonge. Un badge en plus du bouton faisait **double entrée** vers la même cible.
 - **Badge retour** vers le hub dans le nouveau sous-dashboard.
-- **Conformité `R-LL-NAV-1`** : `navigation_path` canonique `/<dashboard-key>` ; **pas de cul-de-sac** ; **retour cohérent** avec le prédécesseur (le hub).
+- **Conformité `R-LL-NAV-1`** : `navigation_path` canonique `/<dashboard-key>` ; **pas de cul-de-sac** ; **retour cohérent** avec le prédécesseur (le hub, qui reste prédécesseur via le bouton du teaser).
 
 ### 2.2 Réduction de l'amorce du hub
 - La section « 🔁 Auto-ajustement courbe de chauffe » du hub (aujourd'hui une carte `chauffage_auto_courbe_status_72` « Dernier ajustement ») est **réduite à un teaser compact** : **statut apprenant/gel + complétude + bouton d'accès** au sous-dashboard. Objectif : coup d'œil au hub, **supervision complète sur la page dédiée** ; évite la **double maintenance** et le doublon d'affichage.
 
 ### 2.3 Frontière de rôle (opposable en revue)
 - La page dédiée est **supervision** : **lecture seule**, aucun toggle/slider/service. Le **pilotage** reste dans `reglages-chauffage-dashboard` ; la **synthèse d'état** reste au hub. Aucun recouvrement fonctionnel.
+
+### 2.4 Décision opérateur — accès unique par le teaser *(2026-07-16, révision de la conception initiale)*
+- **Constat.** La conception initiale prévoyait **deux** points d'accès au sous-dashboard depuis le hub : le **badge** de tête (§2.1, miroir vannes/thermiques) **et** le **bouton** du teaser (§2.2). En pratique, les deux ciblent `/diagnostics-courbe-dashboard` — soit une **double entrée** vers la même destination.
+- **Décision.** L'accès depuis le hub passe **uniquement** par le **bouton contextuel** « Ouvrir la supervision » du teaser. Le **3ᵉ badge de navigation est retiré** du hub `diagnostic.yaml`.
+- **Motif.** Le bouton est **au plus près de l'amorce qu'il prolonge** (statut + complétude) ; il rend la promotion « coup d'œil → page dédiée » **explicite et contextuelle**, là où un badge de tête n'apporte qu'un raccourci redondant. La légère perte d'homogénéité avec vannes/thermiques (accès par badge) est **assumée** : ces deux sous-diagnostics n'ont pas de teaser d'amorce dans le hub, l'auto-ajustement si.
+- **Invariance CI.** `R-LL-NAV-1` reste vert : le bouton fournit l'action `navigate`, donc le hub reste **prédécesseur** du sous-dashboard (retour cohérent, pas de cul-de-sac). Le **badge retour** du sous-dashboard est **inchangé**.
 
 ---
 
@@ -114,7 +120,7 @@ Ordre retenu (haut → bas), pensé **coup d'œil d'abord** :
 | V3 | **Effet borné** | Effet affiché en tendance de fenêtre régime, **avec limites** ; aucune formulation causale (INV-4) |
 | V4 | **Nominal/anomal lisible** | Distinction visuelle conforme aux contrats couleurs ; persistance rendue « à surveiller », pas « anomal » |
 | V5 | **Supervision ≠ pilotage** | **Aucune** action/écriture/toggle sur la page ; pilotage resté dans `reglages-chauffage` (INV-1) |
-| V6 | **Navigation conforme** | Dashboard déclaré ; badge d'accès depuis le hub ; badge retour ; `R-LL-NAV-1` vert |
+| V6 | **Navigation conforme** | Dashboard déclaré ; accès depuis le hub par le **bouton contextuel du teaser** (§2.4, plus de badge d'accès) ; badge retour ; `R-LL-NAV-1` vert |
 | V7 | **Amorce réduite** | Section hub ramenée à un teaser (statut + complétude + accès) ; pas de double maintenance |
 | V8 | **Non-multiplication (INV-7)** | Tout composant se rattache à une des 8 questions ; aucun indicateur orphelin |
 

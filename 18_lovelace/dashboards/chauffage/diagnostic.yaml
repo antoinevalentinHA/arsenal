@@ -30,14 +30,6 @@ views:
           action: navigate
           navigation_path: /diagnostics-thermiques-dashboard
 
-      - type: custom:button-card
-        template: bouton_navigation_badge_carre
-        name: Auto-ajustement courbe
-        icon: mdi:chart-bell-curve-cumulative
-        tap_action:
-          action: navigate
-          navigation_path: /diagnostics-courbe-dashboard
-
     ########################################################
     # ♨️ VERTICAL STACK PRINCIPAL
     ########################################################
