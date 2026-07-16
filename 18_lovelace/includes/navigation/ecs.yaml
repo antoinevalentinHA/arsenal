@@ -1,0 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — BANDEAU DE NAVIGATION : ECS (facettes maison)
+# ----------------------------------------------------------
+# Raccourci de domaine (cf. ui/navigation.md §Bandeaux contextuels) :
+# bascule entre les deux facettes ECS d'un même domaine, sans
+# redéfinir la trame globale de navigation.
+#   • Maison            -> /ecs-dashboard
+#   • Petite maison     -> /ecs-petite-maison-dashboard (au fond du jardin)
+# Icônes seules (patron imprimerie / météo) : maison pleine vs contour,
+# couleurs distinctes (neutre vs vert jardin) pour départager les deux.
+# ==========================================================
+
+type: custom:layout-card
+layout_type: custom:grid-layout
+layout:
+  grid-template-columns: 1fr repeat(2, 50px) 1fr
+  justify-items: center
+  align-items: center
+cards:
+
+  # === Maison ===
+  - type: custom:button-card
+    view_layout:
+      grid-column: 2
+    template: bouton_navigation_badge_carre
+    icon: mdi:home
+    tap_action:
+      action: navigate
+      navigation_path: /ecs-dashboard
+    styles:
+      icon:
+        - color: '#424242'
+
+  # === Petite maison (au fond du jardin) ===
+  - type: custom:button-card
+    view_layout:
+      grid-column: 3
+    template: bouton_navigation_badge_carre
+    icon: mdi:home-outline
+    tap_action:
+      action: navigate
+      navigation_path: /ecs-petite-maison-dashboard
+    styles:
+      icon:
+        - color: '#2E7D32'
