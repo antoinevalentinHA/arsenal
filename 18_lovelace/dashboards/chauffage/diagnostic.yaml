@@ -158,7 +158,10 @@ views:
                 tres_stable: 'rgba(76, 175, 80, 0.2)'
                 a_surveiller: 'rgba(255, 152, 0, 0.2)'
                 instable: 'rgba(244, 67, 54, 0.2)'
-                indisponible: 'rgba(158, 158, 158, 0.2)'
+                # Gris INDISPO (0.1), pas gris neutre (0.2) : « indisponible »
+                # = variance non exploitable → cas donnée indisponible de la
+                # charte (02_palette.md), qui prime sur toute autre couleur.
+                indisponible: 'rgba(158, 158, 158, 0.1)'
               libelles:
                 tres_stable: Très stable
                 a_surveiller: À surveiller
