@@ -1538,14 +1538,17 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 
 ---
 
-## 🧠 ARSENAL HA — [v16.3.7](changelogs/v16/v16_3_7.md) — CLOSE — 2026-07-14
-**Tags :** aeration, ci, checkers, contrats, registres, docs
+## 🧠 ARSENAL HA — [v16.3.8](changelogs/v16/v16_3_8.md) — STABLE — 2026-07-15
+**Tags :** climatisation, aeration, meteo, pluie, eclairage, notifications, arrosage, rain_bird, ci, checkers, lovelace, registres
 
 **Signal net :**
-- Aération — clôture d'épisode réconciliée sur état (chantier C19) : `input_boolean.aeration_episode_en_cours` pouvait rester bloqué sur `on` (clôture M2 dépendante du seul front fugitif `fermeture_stable`, consommé si une garde était transitoirement fausse — reboot `unknown→on`, interrupteur maître off, système instable, pipeline non armé) ; ajout de 5 triggers `reconciliation_*` au pipeline maître, porte M2 en `or` additif (littéral `fermeture_stable` conservé) avec **preuve de fermeture désormais exclusivement sur l'état** `fenetres_maison_fermees_stable == 'on'` ; `script.aeration_m2_fin_episode` inchangé.
-- Aération — capteur diagnostic dédié `binary_sensor.chauffage_aeration_cloture_en_retard` (`delay_on 60s`), strictement hors chemin recover (n'alimente ni `coherence_ko`, ni `aeration_recover_requested`, ni M0).
-- CI — `check_aeration_m2_contracts.py` durci (+4 tests, région de branche bornée) ; oracle comportemental `tools/arsenal_ci/behavior/m2_gate.py` + tests lot 4.1 (B1 reboot / B2 front consommé / B3 fenêtres ouvertes) ; 10 mutations négatives vérifiées ; compteurs de couverture inchangés (aucun nouveau checker/workflow).
-- Contrats socle aération (02 INV-CLÔTURE + état transitoire illégal, m2/1, 03, 07) et registres (C19 en ① Actifs, audit indexé) alignés.
+- Climatisation (C20) — politique d'absence/vacances COOL : remplacement de `timer.absence_longue_clim` par les helpers horodatés `input_datetime.clim_debut_absence` / `input_number.clim_duree_absence_longue` (automation `10030000000122`, réconciliation au boot), et regroupement des causes d'inhibition dans `binary_sensor.clim_veto_absence_vacances` ; contrat `15_absence_vacances_veto_cool.md` ajouté.
+- Aération (C19) — clôture d'épisode réconciliée sur état : 5 triggers `reconciliation_*` sur la porte M2, preuve de fermeture prise sur l'état `fenetres_maison_fermees_stable == 'on'`, capteur diagnostic `binary_sensor.chauffage_aeration_cloture_en_retard` (`delay_on 60s`, hors chemin recover).
+- Météo (C16/C17) — autorité unique des précipitations : ajout de `binary_sensor.pluie_evidence_active` (`OR` borné Netatmo/SNZB/injection) et du contrat `pluie_production.md` ; refonte de `maj_sensor/on.yaml` et `off.yaml` (backstop 3 h, réconciliation `systeme_stable`) + checker `check_pluie_production_contracts.py`.
+- Éclairage (C22) — extinction du séjour sur luminosité : `input_number.sejour_seuil_luminosite_extinction_auto` (0 = off), `binary_sensor.sejour_extinction_luminosite_autorisee`, automation `10070000000035` déléguant à `script.sejour_off`.
+- Notifications (C15) — cycle de vie des persistantes : projections d'état dédiées (electroménager, panne secteur) et re-projection au démarrage via `systeme_stable → on` ; push mobile conservé pour l'événement.
+- Arrosage (C18) — extension des capteurs d'humidité du sol (3 → 6 points) et retrait du RSSI de l'état de `sensor.rain_bird_pont_sante` (état sur disponibilité/fraîcheur, non-gating), verrou anti-régression dans `check_resilience_integrations_contracts.py`.
+- CI — nouveaux checkers `check_lovelace_no_inline_templating_contracts.py` et `check_prefix_id_contracts.py`, self-tests branchés en workflow, renommage `clim_ventilation_contracts.yml` → `contracts_climatisation_ventilation.yml` ; recompte contrats 291 → 293, checkers 79 → 82, workflows 83 → 87.
 
 ==================================================
 FIN INDEX
