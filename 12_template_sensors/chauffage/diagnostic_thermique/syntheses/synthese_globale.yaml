@@ -1,0 +1,107 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR :
+#     Chauffage – Diagnostic thermique – Synthèse globale (agrégat)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#     Dériver, en LECTURE SEULE, un VERDICT DE TÊTE de la QUALITÉ
+#     THERMIQUE, agrégé sur les 4 synthèses indicatives du diagnostic
+#     thermique (régulation, reprise, inertie, stabilité). Sert
+#     d'AMORCE au hub Diagnostics Chauffage : un coup d'œil unique, le
+#     détail par axe restant sur le sous-dashboard `diagnostics-thermiques`.
+#
+#     Distinct de « État global » du hub (chauffage_diagnostic_global_compact),
+#     qui synthétise programme / intention / raison (pourquoi le chauffage
+#     chauffe MAINTENANT). Ici : QUALITÉ thermique observée, pas raison courante.
+#
+#     État catégoriel (pire cas sur les axes disponibles) :
+#       • nominal        : tous les axes disponibles sont « bons »
+#       • correct        : aucun axe dégradé, au moins un axe « moyen »
+#       • a_surveiller   : au moins un axe dégradé (instable / lente /
+#                          dissipatif / nervosité)
+#       • indisponible   : aucun axe exploitable
+#
+#     Le diagnostic thermique CARACTÉRISE (il ne signale pas une panne) :
+#     le pire cas est « à surveiller » (orange), JAMAIS rouge critique —
+#     cohérent avec le rendu 🟠 par axe de la carte d'interprétation.
+#
+# 🧱 NATURE / GARANTIES
+#     - Dérivé d'observabilité PUR (registre diagnostic), lecture seule.
+#     - Aucune autorité causale, aucun pilotage, aucun trigger.
+#     - Les marqueurs de niveau (bon / moyen / dégradé) CALQUENT la carte
+#       `diagnostic_thermique_interpretation` (mêmes sous-chaînes) mais sont
+#       ici évalués AU BACKEND : le backend décide l'état, l'UI traduit.
+#
+# 🔗 DÉPENDANCES (lectures)
+#     - sensor.diagnostic_chauffage_regulation
+#     - sensor.diagnostic_chauffage_reprise
+#     - sensor.diagnostic_chauffage_inertie
+#     - sensor.diagnostic_chauffage_stabilite
+#
+# 🗄️ RECORDER — décision : NON historisé.
+#     La famille diagnostic thermique (régulation / reprise / inertie /
+#     stabilité) n'est pas dans l'allowlist `recorder.yaml` : synthèses
+#     indicatives « live ». Cet agrégat suit la même politique. À rouvrir
+#     par décision explicite si un besoin d'historique apparaît.
+#
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- sensor:
+    - name: "Diagnostic chauffage thermique synthèse"
+      unique_id: diagnostic_chauffage_thermique_synthese
+      icon: mdi:magnify
+      state: >
+        {% set na = ['unknown', 'unavailable', 'none', ''] %}
+        {% set axes = [
+          states('sensor.diagnostic_chauffage_regulation'),
+          states('sensor.diagnostic_chauffage_reprise'),
+          states('sensor.diagnostic_chauffage_inertie'),
+          states('sensor.diagnostic_chauffage_stabilite')
+        ] %}
+        {% set ns = namespace(degrade=0, good=0, dispo=0) %}
+        {% for s in axes %}
+          {% set sl = s | string | lower %}
+          {% if sl not in na %}
+            {% set ns.dispo = ns.dispo + 1 %}
+            {% if 'instable' in sl or 'lente' in sl or 'dissipatif' in sl or 'nervosité' in sl %}
+              {% set ns.degrade = ns.degrade + 1 %}
+            {% elif 'très stable' in sl or 'rapide' in sl or 'très bonne' in sl %}
+              {% set ns.good = ns.good + 1 %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.dispo == 0 %}
+          indisponible
+        {% elif ns.degrade > 0 %}
+          a_surveiller
+        {% elif ns.good == ns.dispo %}
+          nominal
+        {% else %}
+          correct
+        {% endif %}
+      attributes:
+        axes_a_surveiller: >
+          {% set na = ['unknown', 'unavailable', 'none', ''] %}
+          {% set pairs = [
+            ('régulation', states('sensor.diagnostic_chauffage_regulation')),
+            ('reprise', states('sensor.diagnostic_chauffage_reprise')),
+            ('inertie', states('sensor.diagnostic_chauffage_inertie')),
+            ('stabilité', states('sensor.diagnostic_chauffage_stabilite'))
+          ] %}
+          {% set out = namespace(l=[]) %}
+          {% for nom, s in pairs %}
+            {% set sl = s | string | lower %}
+            {% if sl not in na and ('instable' in sl or 'lente' in sl or 'dissipatif' in sl or 'nervosité' in sl) %}
+              {% set out.l = out.l + [nom] %}
+            {% endif %}
+          {% endfor %}
+          {{ out.l | join(', ') if out.l else '—' }}
+        nb_axes_disponibles: >
+          {% set na = ['unknown', 'unavailable', 'none', ''] %}
+          {% set axes = [
+            states('sensor.diagnostic_chauffage_regulation'),
+            states('sensor.diagnostic_chauffage_reprise'),
+            states('sensor.diagnostic_chauffage_inertie'),
+            states('sensor.diagnostic_chauffage_stabilite')
+          ] %}
+          {{ axes | map('string') | map('lower') | reject('in', na) | list | length }}
