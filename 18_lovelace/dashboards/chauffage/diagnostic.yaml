@@ -16,14 +16,6 @@ views:
 
       - type: custom:button-card
         template: bouton_navigation_badge_carre
-        name: Vannes thermostatiques
-        icon: mdi:radiator
-        tap_action:
-          action: navigate
-          navigation_path: /diagnostics-vannes-dashboard
-
-      - type: custom:button-card
-        template: bouton_navigation_badge_carre
         name: Diagnostics thermiques
         icon: mdi:magnify
         tap_action:
@@ -146,6 +138,40 @@ views:
                 name: Tendance 24h
                 variables:
                   kind: tendance_24h
+
+          - type: custom:button-card
+            template: section_header
+            name: 🌡️ Vannes thermostatiques
+
+          # Teaser compact (stabilité globale + accès) — le diagnostic
+          # complet par pièce (sélecteur, plateaux, reset) vit dans le
+          # sous-dashboard dédié. Amorce calquée sur l'auto-ajustement
+          # courbe : coup d'œil au hub, détail par pièce sur la page.
+          # Le verdict global est décidé au backend
+          # (sensor.vannes_thermostatiques_stabilite_globale) ; l'UI traduit.
+          - type: custom:button-card
+            template: carte_etat_interprete
+            entity: sensor.vannes_thermostatiques_stabilite_globale
+            name: Stabilité 12h — toutes pièces
+            variables:
+              couleurs:
+                tres_stable: 'rgba(76, 175, 80, 0.2)'
+                a_surveiller: 'rgba(255, 152, 0, 0.2)'
+                instable: 'rgba(244, 67, 54, 0.2)'
+                indisponible: 'rgba(158, 158, 158, 0.2)'
+              libelles:
+                tres_stable: Très stable
+                a_surveiller: À surveiller
+                instable: Instable
+                indisponible: Indisponible
+
+          - type: custom:button-card
+            template: bouton_navigation
+            name: Ouvrir le diagnostic
+            icon: mdi:radiator
+            tap_action:
+              action: navigate
+              navigation_path: /diagnostics-vannes-dashboard
 
           - type: custom:button-card
             template: section_header
