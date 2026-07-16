@@ -34,7 +34,7 @@ views:
             icon: mdi:lan-connect
             tap_action:
               action: navigate
-              navigation_path: /diagnostics-boiler-dashboard
+              navigation_path: /diagnostics-boiler-ecs-dashboard
 
           - type: horizontal-stack
             cards:
