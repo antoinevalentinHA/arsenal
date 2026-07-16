@@ -32,6 +32,9 @@ views:
             entity: sensor.boiler_bridge_sante
             name: Boiler Bridge
             icon: mdi:lan-connect
+            tap_action:
+              action: navigate
+              navigation_path: /diagnostics-boiler-dashboard
 
           - type: horizontal-stack
             cards:
