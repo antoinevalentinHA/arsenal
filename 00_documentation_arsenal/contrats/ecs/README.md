@@ -44,6 +44,7 @@ scripts, capteurs et mécanismes précis du cycle ECS.
 | [`reference_thermique_post_inertie_ecs.md`](reference_thermique_post_inertie_ecs.md) | Grandeur thermique de référence pour l'analyse post-cycle |
 | [`signature_thermique_chauffe.md`](signature_thermique_chauffe.md) | Lecture physique progressive du démarrage thermique d'un cycle |
 | [`sensor_ecs_temperature_ballon_securisee.md`](sensor_ecs_temperature_ballon_securisee.md) | Comportement opposable du capteur sécurisé de température ballon (provenance mesure/retenue/indisponible ; aucune valeur artificielle) |
+| [`sensor_ecs_consigne_chaudiere_securisee.md`](sensor_ecs_consigne_chaudiere_securisee.md) | Comportement opposable du capteur sécurisé de consigne chaudière — setpoint (provenance source/retenue/indisponible ; aucune valeur artificielle) |
 | [`sensor_ecs_temperature_max_cycle.md`](sensor_ecs_temperature_max_cycle.md) | Comportement opposable du capteur de température max de cycle |
 | [`sensor_ecs_temperature_max_reelle_cycle.md`](sensor_ecs_temperature_max_reelle_cycle.md) | Comportement opposable du capteur de température max réelle de cycle |
 | [`automation_10250000000019.md`](automation_10250000000019.md) | Comportement opposable de l'automation `…019` |
