@@ -266,6 +266,9 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 ### Climatisation
 - [climatisation/cloture_presence_confort_thermique_stabilisee.md](05_clotures/climatisation/cloture_presence_confort_thermique_stabilisee.md)  _(chantier **C4** CLÔTURÉ — 2026-06-19 ; présence confort thermique stabilisée **validée terrain** sur le périmètre **COOL/DRY** (C1/C2/C3 PASS) ; `T = 120 s` **ratifié** avec réserve de surveillance ; volet B (extension hors COOL/DRY) **hors périmètre**, porté par D-PRES)_
 
+### ECS — sécurisation des paramètres (C24)
+- [ecs/cloture_c24_securisation_parametres_ecs.md](05_clotures/ecs/cloture_c24_securisation_parametres_ecs.md)  _(chantier **C24** CLÔTURÉ — 2026-07-17 ; écart **I1** (fabrication d'un `0.0` artificiel par les capteurs sécurisés ECS) résorbé ; matrice **9/9 SATISFAIT** (C5 avec réserves explicites) ; chaîne #396→#401 (producteurs sécurisés, consommateurs durcis, verrouillage CI **T14**) ; réserves assumées : `0.0` Recorder pré-correctif purgés à 30 j, couverture T14 partielle sur `log/debut`/`temperature_max`, preuve contractuelle/structurelle/oracle sans rendu Jinja réel ; **clôture chantier-scopée — domaine ECS non clôturé**)_
+
 ---
 
 ### État du domaine Chauffage — auto-ajustement courbe
