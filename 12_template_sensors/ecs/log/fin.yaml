@@ -27,7 +27,7 @@
       icon: mdi:clock-check-outline
 
       state: >
-        {% set temp = states('sensor.ecs_temperature_ballon_securisee') | float(0) %}
+        {% set temp = states('sensor.ecs_temperature_ballon_securisee') | float(none) %}
         {% set cons = states('sensor.ecs_consigne_dernier_cycle') | float(0) %}
         {% set resume = states('input_text.ecs_dernier_cycle_resume') %}
         {% set start_str = resume.split('|')[0] if resume not in ['unknown','unavailable','none',''] else none %}
@@ -39,7 +39,7 @@
         {% set ecs_recent = (as_timestamp(now()) - as_timestamp(ecs_on)) < 7200 %}
         {% set anti_rebond = (as_timestamp(now()) - last) > 300 %}
 
-        {% if temp >= cons and start > 0 and ecs_recent and anti_rebond %}
+        {% if temp is not none and temp >= cons and start > 0 and ecs_recent and anti_rebond %}
           {{ now().isoformat() }}
         {% elif last_str not in ['unknown','unavailable','none'] %}
           {{ last_str }}

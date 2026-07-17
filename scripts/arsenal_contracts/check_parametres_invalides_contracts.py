@@ -485,6 +485,166 @@ def test_non_numeric_sources_guarded() -> None:
 
 
 # ---------------------------------------------------------------------------
+# T14 — Verrouillage local ECS : anti-refabrication numérique (chantier C24)
+#
+# Portée STRICTEMENT locale ECS — ce n'est PAS une interdiction transverse de
+# tout `float(0)`. Les zéros canoniques et les usages hors périmètre ne sont
+# PAS arbitrés ici. Deux axes seulement :
+#
+#   Axe 1 — fichiers cœur C24 contractualisés : aucune fabrication numérique
+#           (`float(0)`/`float(0.0)`, `int(0)`, `else 0`, `get(..., 0)`,
+#           `default(0)`).
+#   Axe 2 — lecteurs directs des DEUX capteurs sécurisés : aucune lecture
+#           `states('sensor.ecs_temperature_ballon_securisee')` ou
+#           `states('sensor.ecs_consigne_chaudiere_securisee')` ne porte, sur
+#           la même expression, un fallback fabriqué.
+#
+#           Tolérance : une garde `is_number` sur la MÊME lecture sécurisée,
+#           dans la même expression Jinja et TEXTUELLEMENT AVANT la conversion,
+#           rend le fallback structurellement inatteignable → conforme. Une
+#           garde portant sur une autre valeur, placée après la conversion, ou
+#           située dans une expression Jinja distincte (branche ne protégeant
+#           pas la conversion) ne tolère PAS le fallback.
+#
+# Robustesse : chaque expression Jinja (`{% ... %}` / `{{ ... }}`) est
+# reconstituée en ligne logique (commentaires retirés, blancs — dont les sauts
+# de ligne — normalisés) avant application des motifs. Le découpage d'une
+# expression sur plusieurs lignes ne contourne donc pas la règle.
+# ---------------------------------------------------------------------------
+
+CORE_C24_FILES = (
+    "12_template_sensors/ecs/temperature.yaml",
+    "12_template_sensors/ecs/consigne_effective.yaml",
+    "10_scripts/ecs/cycle.yaml",
+    "11_automations/ecs/reset_verrou_cycle.yaml",
+)
+
+SECURED_SENSORS = (
+    "sensor.ecs_temperature_ballon_securisee",
+    "sensor.ecs_consigne_chaudiere_securisee",
+)
+
+# Dossiers de configuration HA balayés pour l'axe 2 (le filtrage réel se fait
+# sur la présence du nom d'entité sécurisée : périmètre = vrais lecteurs).
+AXIS2_DIRS = (
+    "10_scripts",
+    "11_automations",
+    "12_template_sensors",
+    "14_mqtt_sensors",
+    "18_lovelace",
+)
+
+_ZERO = r"0(?:\.0+)?"
+
+# Fabrications numériques interdites dans les fichiers cœur C24 (axe 1).
+FABRICATION_PATTERNS = (
+    (re.compile(rf"\|\s*float\s*\(\s*{_ZERO}\s*\)"), "float(0)"),
+    (re.compile(rf"\|\s*int\s*\(\s*{_ZERO}\s*\)"), "int(0)"),
+    (re.compile(rf"\|\s*default\s*\(\s*{_ZERO}\s*\)"), "default(0)"),
+    (re.compile(rf"\.get\(\s*[^)]*,\s*{_ZERO}\s*\)"), "get(..., 0)"),
+    (re.compile(rf"\belse\s+{_ZERO}\b(?!\s*\.)"), "else 0"),
+)
+
+_SECURED_ALT = "|".join(re.escape(s) for s in SECURED_SENSORS)
+
+# Lecture d'un capteur sécurisé suivie (même expression) d'un fallback fabriqué.
+SECURED_READ_FABRICATION_RE = re.compile(
+    rf"states\(\s*['\"](?:{_SECURED_ALT})['\"]\s*\)\s*"
+    rf"\|\s*(?:float|int|default)\s*\(\s*{_ZERO}\s*\)"
+)
+
+# Garde `is_number` portant sur une lecture sécurisée (tolérance axe 2).
+SECURED_ISNUMBER_GUARD_RE = re.compile(
+    rf"states\(\s*['\"](?:{_SECURED_ALT})['\"]\s*\)\s*\|\s*is_number"
+)
+
+_JINJA_EXPR_RE = re.compile(r"\{%.*?%\}|\{\{.*?\}\}", re.DOTALL)
+_JINJA_COMMENT_RE = re.compile(r"\{#.*?#\}", re.DOTALL)
+
+
+def _strip_yaml_comments(text: str) -> str:
+    """Retire les lignes de commentaire YAML (`#`) — cohérent avec T8/T13."""
+    return "\n".join(
+        line for line in text.splitlines() if not line.lstrip().startswith("#")
+    )
+
+
+def expressions_jinja(text: str) -> list[str]:
+    """Reconstitue chaque expression Jinja en ligne logique.
+
+    Commentaires YAML (`#`) et Jinja (`{# #}`) retirés, blancs (dont sauts de
+    ligne) normalisés en espaces : une expression découpée sur plusieurs lignes
+    est réassemblée avant l'application des motifs.
+    """
+    code = _strip_yaml_comments(text)
+    code = _JINJA_COMMENT_RE.sub(" ", code)
+    flat = re.sub(r"\s+", " ", code)
+    return _JINJA_EXPR_RE.findall(flat)
+
+
+def violations_axe1(rel_path: str, text: str) -> list[str]:
+    """Axe 1 — fabrications numériques interdites dans un fichier cœur C24."""
+    out: list[str] = []
+    for expr in expressions_jinja(text):
+        for pattern, label in FABRICATION_PATTERNS:
+            if pattern.search(expr):
+                out.append(
+                    f"{rel_path} : fabrication «{label}» interdite (fichier "
+                    f"cœur C24) dans «{expr.strip()[:90]}»"
+                )
+    return out
+
+
+def violations_axe2(rel_path: str, text: str) -> list[str]:
+    """Axe 2 — refabrication sur une lecture directe d'un capteur sécurisé."""
+    out: list[str] = []
+    for expr in expressions_jinja(text):
+        for m in SECURED_READ_FABRICATION_RE.finditer(expr):
+            # Tolérance : garde is_number sur la même lecture sécurisée,
+            # textuellement AVANT la conversion (fallback inatteignable).
+            garde = SECURED_ISNUMBER_GUARD_RE.search(expr)
+            if garde is not None and garde.start() < m.start():
+                continue
+            out.append(
+                f"{rel_path} : lecture d'un capteur sécurisé avec fallback "
+                f"fabriqué dans «{expr.strip()[:90]}» (attendu : float(none) "
+                f"+ garde explicite, ou is_number avant conversion)"
+            )
+    return out
+
+
+def test_ecs_secured_no_fabrication() -> None:
+    violations: list[str] = []
+
+    # Axe 1 — fichiers cœur C24 (chemins littéraux, périmètre fermé).
+    for rel in CORE_C24_FILES:
+        path = REPO_ROOT / rel
+        if not path.is_file():
+            violations.append(f"fichier cœur C24 introuvable : {rel}")
+            continue
+        violations.extend(violations_axe1(rel, read(path)))
+
+    # Axe 2 — lecteurs directs des deux capteurs sécurisés (clé = nom d'entité).
+    for d in AXIS2_DIRS:
+        base = REPO_ROOT / d
+        if not base.is_dir():
+            continue
+        for path in sorted(base.rglob("*.yaml")):
+            text = read(path)
+            if not any(s in text for s in SECURED_SENSORS):
+                continue
+            rel = str(path.relative_to(REPO_ROOT))
+            violations.extend(violations_axe2(rel, text))
+
+    if violations:
+        for v in violations:
+            ERRORS.append(f"T14 — {v}")
+    else:
+        print("✔ T14 — Aucune refabrication numérique (cœur C24 + lecteurs "
+              "des capteurs sécurisés) [verrouillage local ECS]")
+
+
+# ---------------------------------------------------------------------------
 # Registre des tests
 # ---------------------------------------------------------------------------
 
@@ -502,6 +662,7 @@ TESTS = [
     test_group_only_valid_entities,
     test_ui_consumes_only_global,
     test_non_numeric_sources_guarded,
+    test_ecs_secured_no_fabrication,
 ]
 
 # ---------------------------------------------------------------------------
