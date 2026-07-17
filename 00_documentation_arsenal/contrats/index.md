@@ -83,7 +83,7 @@
 | [climatisation/](./climatisation/) | 43 | README ✅ | Climatisation (16 root + 27 capteurs) |
 | [deshumidificateur/](./deshumidificateur/) | 3 | README ✅ | Déshumidificateur cave |
 | [eclairage/](./eclairage/) | 7 | README ✅ | Éclairage |
-| [ecs/](./ecs/) | 29 | README ✅ | ECS — fondation (00-11) + contrats d'exécution |
+| [ecs/](./ecs/) | 30 | README ✅ | ECS — fondation (00-11) + contrats d'exécution |
 | [imprimerie/](./imprimerie/) | 4 | README ✅ | Bruit machines industrielles (Imprimerie) |
 | [meteo/](./meteo/) | 22 | README ✅ | Météo — axes, palmarès, production pluie, validation, sous-domaines |
 | [ouvertures/](./ouvertures/) | 4 | README ✅ | Ouvertures (portes / fenêtres) |

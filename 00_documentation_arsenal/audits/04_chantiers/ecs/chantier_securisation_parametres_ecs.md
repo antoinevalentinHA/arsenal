@@ -3,6 +3,7 @@
 ## 📌 Statut
 
 - **Ouverture documentaire — aucun patch runtime engagé.** Ce document ouvre le chantier ; la correction runtime (Lot 1) reste **à réaliser après validation** de ce cadrage et création du contrat propriétaire.
+- **Lot 1 — brique 1 : contrat propriétaire rédigé — PR documentaire en cours ; runtime non engagé.** Le contrat [`../../../contrats/ecs/sensor_ecs_temperature_ballon_securisee.md`](../../../contrats/ecs/sensor_ecs_temperature_ballon_securisee.md) grave la politique normative et les invariants I-SEC-1..5. Les briques suivantes (mise en conformité `temperature.yaml`, durcissement des consommateurs, verrouillage CI) **ne sont pas engagées**. C24 reste **actif, non clos**.
 - **Identifiant global** : **C24** (série globale ; aucun identifiant local créé).
 - **Domaine** : ECS — sécurisation des paramètres / intégrité des grandeurs mesurées.
 - **Priorité** : **P2** (justification §3).
@@ -64,7 +65,7 @@ Sa correction **n'est pas décidée** ; ne pas la modifier sans politique contra
 
 ## 5. Invariants cibles
 
-> **Invariants cibles validés pour le chantier, destinés à être gravés dans le contrat propriétaire avant implémentation runtime.** Ils **ne sont pas encore** des invariants contractuels opposables existants ; ils le deviendront après création et validation du contrat, dans un lot ultérieur.
+> **Invariants cibles du chantier, gravés dans le contrat propriétaire rédigé** ([`../../../contrats/ecs/sensor_ecs_temperature_ballon_securisee.md`](../../../contrats/ecs/sensor_ecs_temperature_ballon_securisee.md) §7). Ils deviennent **opposables à la validation/merge de ce contrat** ; la mise en conformité runtime qui les honore reste un lot ultérieur non engagé.
 
 - **I-SEC-1** — avant toute mesure valide : état **inconnu**, **aucune** sentinelle numérique (`0`/`0.0`/`-1`/autre).
 - **I-SEC-2** — **aucun** fallback transformant une absence de mesure ou de restauration en valeur plausible.
