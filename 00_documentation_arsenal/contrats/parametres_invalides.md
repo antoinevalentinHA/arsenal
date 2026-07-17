@@ -1,6 +1,6 @@
 # 📜 CONTRAT — PARAMÈTRES INVALIDES
 
-**Version** : 1.2
+**Version** : 1.3
 **Statut** : normatif
 **Domaine** : observabilité système — intégrité des paramètres
 **Portée** : transverse (tous sous-systèmes Arsenal)
@@ -604,6 +604,56 @@ Procédure normative à suivre pour ajouter un sous-système :
 
 ---
 
+## 🔒 VERROUILLAGE LOCAL ECS — T14 (chantier C24)
+
+Le contrôle `T14` du checker
+[`check_parametres_invalides_contracts.py`](../../scripts/arsenal_contracts/check_parametres_invalides_contracts.py)
+grave un verrouillage **strictement local ECS**, issu du chantier **C24**
+(sécurisation des paramètres ECS, écart I1). Il **complète** la doctrine « Aucun
+fallback silencieux » ci-dessus sur un périmètre nommé, **sans** l'étendre à tout
+le dépôt.
+
+**Portée — exclusivement :**
+
+1. **Fichiers cœur C24** (chemins littéraux) :
+   `12_template_sensors/ecs/temperature.yaml`,
+   `12_template_sensors/ecs/consigne_effective.yaml`,
+   `10_scripts/ecs/cycle.yaml`,
+   `11_automations/ecs/reset_verrou_cycle.yaml`.
+   Aucune fabrication numérique : ni `float(0)` / `float(0.0)`, ni `int(0)`, ni
+   `else 0`, ni `get(..., 0)`, ni `default(0)`.
+2. **Lecteurs directs des deux capteurs sécurisés**
+   `sensor.ecs_temperature_ballon_securisee` et
+   `sensor.ecs_consigne_chaudiere_securisee` : aucune lecture de ces entités ne
+   porte, sur la même expression, un fallback fabriqué. La forme conforme est
+   `| float(none)` suivi d'une garde explicite (ou une garde `is_number` — voir
+   ci-dessous).
+
+**Ce que T14 n'est PAS :**
+
+- Ce **n'est pas** une interdiction transverse de tout `float(0)` du dépôt. Les
+  **zéros canoniques** (puissances, compteurs, comparaisons `> 0`, calculs
+  cosmétiques) et tout usage **hors de ce périmètre** ne sont **pas arbitrés
+  ici**. T14 ne rend pas le checker transverse.
+
+**Tolérance `is_number` :** une garde `is_number` peut rendre un fallback
+**structurellement inatteignable** et donc conforme — **uniquement** si elle
+porte sur la **même lecture sécurisée**, dans la **même expression Jinja**, et
+**textuellement avant** la conversion. Une garde portant sur une autre valeur,
+placée après la conversion, ou située dans une expression Jinja distincte
+(branche ne protégeant pas la conversion) ne tolère **pas** le fallback.
+
+**Robustesse :** la détection réassemble chaque expression Jinja en ligne
+logique (commentaires retirés, sauts de ligne normalisés) : découper une
+expression sur plusieurs lignes ne contourne pas la règle.
+
+**Preuve :** premier test unitaire du checker,
+[`tools/arsenal_ci/tests/test_lot3_verrou_ci_parametres_invalides.py`](../../tools/arsenal_ci/tests/test_lot3_verrou_ci_parametres_invalides.py)
+(fixtures synthétiques + propriété pérenne « zéro refabrication same-family » sur
+le dépôt réel).
+
+---
+
 ## 📜 CHANGELOG
 
 | Version | Date       | Notes                                          |
@@ -611,3 +661,4 @@ Procédure normative à suivre pour ajouter un sous-système :
 | 1.0     | 2026-04-30 | Version initiale. Couches 1–4 normatives.      |
 | 1.1     | 2026-05-26 | Ajout du domaine climatisation.                |
 | 1.2     | 2026-07-09 | Parsing `input_datetime` heure-seule : `today_at(...)` (et non `as_datetime`, qui rend `None` → `TypeError`). |
+| 1.3     | 2026-07-17 | T14 — verrouillage local ECS (chantier C24) : anti-refabrication numérique sur les 4 fichiers cœur et les lecteurs directs des deux capteurs sécurisés. Tolérance `is_number` bornée. **Pas** une interdiction transverse de `float(0)`. |
