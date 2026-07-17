@@ -20,12 +20,19 @@
 #       - ARMED_AWAY -> Armer (Absent)
 #       - DISARMED  -> Desarmer
 #       - NOOP      -> Aucune action
+#       - unknown/unavailable -> Indisponible
 #   - Compare l'intention cible a l'etat reel de
 #     `alarm_control_panel.alarme_maison`
-#   - Code visuel :
-#       - intention coherente -> vert
-#       - divergence -> rouge
-#       - NOOP -> gris neutre
+#   - Priorite de restitution (chantier C23, invariant partage
+#     avec carte_alarme_decision) :
+#       INDISPONIBILITE > TRIGGERED > NOOP > COHERENCE > DIVERGENCE
+#   - Code visuel (fond) :
+#       - indisponibilite (cible OU reel) -> gris indispo rgba(158,158,158,0.1)
+#       - reel triggered                  -> rouge rgba(244,67,54,0.2)
+#       - NOOP                            -> gris neutre rgba(158,158,158,0.2)
+#       - intention coherente             -> vert rgba(76,175,80,0.2)
+#       - divergence                      -> rouge rgba(244,67,54,0.2)
+#   - Branches mutuellement exclusives (une seule s'applique)
 #   - Carte strictement informative
 #   - Aucun calcul de decision
 #
@@ -58,7 +65,9 @@ carte_alarme_intention:
     action: none
 
   state_display: |
-    [[[ 
+    [[[
+      const IN = ['unknown', 'unavailable'];
+      if (IN.includes(entity.state)) return 'Indisponible';
       const map = {
         'ARMED_AWAY': 'Armer (Absent)',
         'DISARMED': 'Désarmer',
@@ -68,13 +77,50 @@ carte_alarme_intention:
     ]]]
 
   state:
-    # 🟢 COHÉRENT
+    # ⚪ L1 — Indisponibilité (priorité absolue, R6) — cible OU réel indisponible
+    - operator: template
+      value: >
+        [[[
+          const IN = ['unknown', 'unavailable'];
+          const cible = entity.state;
+          const reel  = states['alarm_control_panel.alarme_maison']?.state;
+          return IN.includes(cible) || IN.includes(reel);
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158,158,158,0.1)
+
+    # 🔴 L2 — Alarme déclenchée (panneau réel triggered)
+    - operator: template
+      value: >
+        [[[
+          const IN = ['unknown', 'unavailable'];
+          const cible = entity.state;
+          const reel  = states['alarm_control_panel.alarme_maison']?.state;
+          return reel === 'triggered' && !IN.includes(cible);
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(244,67,54,0.2)
+
+    # ⚪ L3 — NOOP (abstention valide, gris neutre)
+    - operator: template
+      value: >
+        [[[
+          const IN = ['unknown', 'unavailable'];
+          const reel = states['alarm_control_panel.alarme_maison']?.state;
+          return entity.state === 'NOOP' && !IN.includes(reel) && reel !== 'triggered';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158,158,158,0.2)
+
+    # 🟢 L4 — Cohérent (opérandes disponibles, intention == réel)
     - operator: template
       value: >
         [[[
           const cible = entity.state;
           const reel  = states['alarm_control_panel.alarme_maison']?.state;
-
           return (cible === 'ARMED_AWAY' && reel === 'armed_away') ||
                  (cible === 'DISARMED'  && reel === 'disarmed');
         ]]]
@@ -82,22 +128,19 @@ carte_alarme_intention:
         card:
           - background-color: rgba(76,175,80,0.2)
 
-    # 🔴 DIVERGENCE
+    # 🔴 L5 — Divergence (opérandes disponibles, réel ≠ triggered, cible ≠ NOOP, intention ≠ réel)
     - operator: template
       value: >
         [[[
+          const IN = ['unknown', 'unavailable'];
           const cible = entity.state;
           const reel  = states['alarm_control_panel.alarme_maison']?.state;
-
-          return (cible === 'ARMED_AWAY' && reel !== 'armed_away') ||
-                 (cible === 'DISARMED'  && reel !== 'disarmed');
+          if (IN.includes(cible) || IN.includes(reel)) return false;
+          if (reel === 'triggered' || cible === 'NOOP') return false;
+          const coherent = (cible === 'ARMED_AWAY' && reel === 'armed_away') ||
+                           (cible === 'DISARMED'  && reel === 'disarmed');
+          return !coherent;
         ]]]
       styles:
         card:
           - background-color: rgba(244,67,54,0.2)
-
-    # ⚪ NOOP
-    - value: 'NOOP'
-      styles:
-        card:
-          - background-color: rgba(158,158,158,0.2)

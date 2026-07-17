@@ -2,11 +2,12 @@
 
 ## 📌 Statut
 
-- **Chantier ouvert — cadrage validé, patch UI non engagé**
+- **Chantier en cours — patch UI implémenté sur branche, PR à ouvrir** (non mergé ; sans preuve terrain `triggered`/indisponibilité, différée). Ouverture initiale documentaire : PR #391 (mergée), sans patch.
 - **Identifiant global** : **C23** (série globale ; aucun identifiant local `CHx` créé)
 - **Domaine** : Sécurité / Alarme — restitution UI
 - **Priorité** : **P2** — le défaut affecte la **compréhension** de la restitution UI ; le runtime, la décision, les notifications et la chaîne de sûreté restent **sains**.
-- **Nature de la présente ouverture** : **documentaire**. **Aucun patch** des cartes, aucun extrait YAML de solution, aucune modification runtime/UI/contrat.
+- **Patch UI** : les 2 cartes sœurs `carte_alarme_decision` / `carte_alarme_intention` portent l'échelle de restitution (branches mutuellement exclusives ; preuve statique 25/25 ; checkers UI verts). Aucune entité/helper/socle, aucune modification runtime/contrat/notification.
+- **Changelog** : non créé à ce stade — un changelog est un artefact de release produit sur dépôt de diffs + demande explicite de l'opérateur (doctrine `redaction_changelog.md` §1) ; le changement est tracé par la PR et la ligne du registre.
 
 ---
 

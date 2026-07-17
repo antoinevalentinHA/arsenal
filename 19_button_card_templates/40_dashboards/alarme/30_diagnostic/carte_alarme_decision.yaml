@@ -21,16 +21,22 @@
 #   - Affiche l’état réel de l’alarme :
 #       - armed_away → "Armée (Absent)"
 #       - disarmed   → "Désarmée"
-#   - Affiche la décision cible :
+#       - triggered  → "Alarme déclenchée" (icône mdi:shield-alert)
+#       - unknown/unavailable → "Indisponible"
+#   - Affiche la décision cible + raison (label inchangé) :
 #       - ARMED_AWAY → "Décision : Armer"
 #       - DISARMED   → "Décision : Désarmer"
 #       - NOOP       → "Décision : Aucune action"
-#   - Ajoute la raison si disponible
-#   - Compare décision cible et état réel
-#   - Code visuel :
-#       - cohérent → vert
-#       - divergence → rouge
-#       - NOOP → considéré cohérent (neutre logique)
+#   - Priorité de restitution (chantier C23, invariant partagé
+#     avec carte_alarme_intention) :
+#       INDISPONIBILITÉ > TRIGGERED > NOOP > COHÉRENCE > DIVERGENCE
+#   - Code visuel (fond) :
+#       - indisponibilité (réel OU cible) → gris indispo rgba(158,158,158,0.1)
+#       - triggered                       → rouge rgba(244,67,54,0.2)
+#       - NOOP                            → gris neutre rgba(158,158,158,0.2)
+#       - cohérent                        → vert rgba(76,175,80,0.2)
+#       - divergence                      → rouge rgba(244,67,54,0.2)
+#   - Branches mutuellement exclusives (une seule s’applique)
 #   - Carte strictement informative
 #   - Aucun calcul de décision
 #   - Aucun pilotage du système
@@ -50,13 +56,19 @@
 carte_alarme_decision:
   template: socle_diagnostic
 
-  icon: mdi:shield-home
+  icon: |
+    [[[
+      return entity.state === 'triggered' ? 'mdi:shield-alert' : 'mdi:shield-home';
+    ]]]
 
   state_display: |
     [[[
+      const IN = ['unknown', 'unavailable'];
+      if (IN.includes(entity.state)) return 'Indisponible';
       const map = {
         'armed_away': 'Armée (Absent)',
-        'disarmed': 'Désarmée'
+        'disarmed': 'Désarmée',
+        'triggered': 'Alarme déclenchée'
       };
       return map[entity.state] || entity.state;
     ]]]
@@ -74,26 +86,67 @@ carte_alarme_decision:
     ]]]
 
   state:
-    # 🟢 Cohérent
+    # ⚪ L1 — Indisponibilité (priorité absolue, R6) — réel OU cible indisponible
+    - operator: template
+      value: >
+        [[[
+          const IN = ['unknown', 'unavailable'];
+          const reel  = entity.state;
+          const cible = states['input_text.alarme_etat_cible']?.state;
+          return IN.includes(reel) || IN.includes(cible);
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158,158,158,0.1)
+
+    # 🔴 L2 — Alarme déclenchée (triggered) — prime sur NOOP / cohérence / divergence
+    - operator: template
+      value: >
+        [[[
+          const IN = ['unknown', 'unavailable'];
+          const cible = states['input_text.alarme_etat_cible']?.state;
+          return entity.state === 'triggered' && !IN.includes(cible);
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(244,67,54,0.2)
+
+    # ⚪ L3 — NOOP (abstention valide, gris neutre)
+    - operator: template
+      value: >
+        [[[
+          const IN = ['unknown', 'unavailable'];
+          const cible = states['input_text.alarme_etat_cible']?.state;
+          return cible === 'NOOP' && !IN.includes(entity.state) && entity.state !== 'triggered';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158,158,158,0.2)
+
+    # 🟢 L4 — Cohérent (opérandes disponibles, réel == cible)
     - operator: template
       value: >
         [[[
           const cible = states['input_text.alarme_etat_cible']?.state;
           return (cible === 'ARMED_AWAY' && entity.state === 'armed_away') ||
-                 (cible === 'DISARMED'  && entity.state === 'disarmed') ||
-                 (cible === 'NOOP');
+                 (cible === 'DISARMED'  && entity.state === 'disarmed');
         ]]]
       styles:
         card:
           - background-color: rgba(76,175,80,0.2)
 
-    # 🔴 Divergence
+    # 🔴 L5 — Divergence (opérandes disponibles, réel ≠ triggered, cible ≠ NOOP, réel ≠ cible)
     - operator: template
       value: >
         [[[
+          const IN = ['unknown', 'unavailable'];
+          const reel  = entity.state;
           const cible = states['input_text.alarme_etat_cible']?.state;
-          return (cible === 'ARMED_AWAY' && entity.state !== 'armed_away') ||
-                 (cible === 'DISARMED'  && entity.state !== 'disarmed');
+          if (IN.includes(reel) || IN.includes(cible)) return false;
+          if (reel === 'triggered' || cible === 'NOOP') return false;
+          const coherent = (cible === 'ARMED_AWAY' && reel === 'armed_away') ||
+                           (cible === 'DISARMED'  && reel === 'disarmed');
+          return !coherent;
         ]]]
       styles:
         card:
