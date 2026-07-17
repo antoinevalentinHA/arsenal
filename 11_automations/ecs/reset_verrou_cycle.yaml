@@ -42,10 +42,21 @@
       entity_id: input_boolean.ecs_cycle_en_cours
       state: "on"
     - condition: template
+      # Condition thermique de libération (I-SEC-5, contrat
+      # sensor_ecs_temperature_ballon_securisee.md §8.3) : évaluable UNIQUEMENT si
+      # la température ET la consigne sont réellement numériques. Aucune valeur
+      # inconnue/indisponible/vide n'est convertie en faux « froid » (aucun
+      # float(0)/int(0)). Une température numérique `provenance: retenue` (dernière
+      # mesure réelle non fraîche) reste évaluable — le verrou n'exige pas de
+      # mesure fraîche (limite consignée au chantier C24).
       value_template: >
-        {% set consigne = states('sensor.ecs_consigne_chaudiere_securisee') | float(0) %}
-        {% set t_cuve = states('sensor.ecs_temperature_ballon_securisee') | float(0) %}
-        {{ consigne <= 10 and t_cuve < 30 }}
+        {% set consigne = states('sensor.ecs_consigne_chaudiere_securisee') %}
+        {% set t_cuve = states('sensor.ecs_temperature_ballon_securisee') %}
+        {% if (consigne | is_number) and (t_cuve | is_number) %}
+          {{ (consigne | float) <= 10 and (t_cuve | float) < 30 }}
+        {% else %}
+          false
+        {% endif %}
 
   # ======================================================
   # 🔄 Actions — Déblocage immédiat + notification
