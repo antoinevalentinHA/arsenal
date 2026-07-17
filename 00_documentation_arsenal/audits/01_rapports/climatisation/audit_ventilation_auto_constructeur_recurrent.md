@@ -23,6 +23,16 @@
 > valeur `auto`). Un correctif appartient au dépôt **ha-airstage**, pas à
 > Arsenal.
 
+> ✅ **RÉSOLU (2026-07-17).** Le correctif **M2** a été réalisé dans le dépôt
+> `ha_airstage` (**écriture optimiste** en remplacement du re-poll immédiat) et
+> **vendoré** dans Arsenal (`apply_optimistic_update()` — cf. `entity.py`,
+> `climate.py`, `switch.py`, `PATCHES_ARSENAL.md`). **Validation terrain
+> utilisateur le 2026-07-17** : le symptôme récurrent a disparu — ce qui **confirme
+> M2** (l'hypothèse forte du §3 devient un fait établi par le résultat) et
+> **satisfait le §5** (confirmation runtime). La chaîne Arsenal reste **inchangée**
+> (filets M1 conservés). Détail et périmètre : clôture dédiée
+> [`../../05_clotures/climatisation/cloture_ventilation_auto_constructeur.md`](../../05_clotures/climatisation/cloture_ventilation_auto_constructeur.md).
+
 ---
 
 ## 1. SYMPTÔME
@@ -139,6 +149,10 @@ ou **différer** le refresh d'assez pour laisser l'unité converger.
 > une API de polling), mais la sémantique exacte de cohérence de `pyairstage`
 > (`>=2.4.1,<3`, dépendance pip non vendorée) **n'a pas été vérifiée en
 > runtime**. À **confirmer par relevé** (voir §5).
+>
+> ✅ **CONFIRMÉ (2026-07-17).** Correctif M2 (écriture optimiste) déployé côté
+> `ha_airstage` et vendoré ; disparition du symptôme récurrent confirmée en
+> terrain par l'utilisateur. VENT-AUTO-3 n'est plus une hypothèse.
 
 ### VENT-AUTO-4 — Amplification : P3 sans anti-rebond `for:` — *arbitrage de robustesse, pas un défaut*
 
@@ -166,9 +180,21 @@ suffit pas ; ce n'est pas un défaut de la chaîne.
 - **Le correctif appartient au dépôt `ha-airstage`**, pas à Arsenal. Un prompt de
   session dédié est fourni en **Annexe A**.
 
+> ✅ **SUITE DONNÉE (2026-07-17).** Le correctif M2 a été réalisé dans
+> `ha_airstage` (écriture optimiste), vendoré dans Arsenal, et **validé terrain**.
+> Voir la clôture :
+> [`../../05_clotures/climatisation/cloture_ventilation_auto_constructeur.md`](../../05_clotures/climatisation/cloture_ventilation_auto_constructeur.md).
+
 ---
 
 ## 5. CONFIRMATION RUNTIME RECOMMANDÉE (avant tout correctif)
+
+> ✅ **SATISFAIT (2026-07-17).** Confirmation obtenue par validation terrain
+> utilisateur : après déploiement du correctif optimiste, le symptôme récurrent
+> (`fan_mode` retombant sur `auto`) a disparu. Le relevé Recorder chiffré
+> ci-dessous reste **disponible en option** (mesure quantitative avant/après),
+> mais n'était pas requis pour clore : la récurrence était le symptôme, sa
+> disparition durable est le critère retenu.
 
 À relever dans le Recorder / les traces HA pour valider M2 :
 
