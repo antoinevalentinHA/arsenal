@@ -43,6 +43,9 @@ Entrée : [`contrats/ecs/`](../../contrats/ecs/) (colonne `00→11` + contrats d
 **Thread offsets** (rapport seul) :
 - [`audit_ecs_offsets.md`](../../audits/01_rapports/ecs/audit_ecs_offsets.md)
 
+**Thread exposition diagnostique** (rapport seul, lecture seule) :
+- [`audit_exposition_diagnostics_ecs.md`](../../audits/01_rapports/ecs/audit_exposition_diagnostics_ecs.md) *(exposition des diagnostics vs contrats ; 19 exigences opposables — bilan 10 CONFORME / 5 PARTIEL / 4 RUNTIME_MANQUANT ; 2 CONTRAT_AMBIGU hors chiffrage ; arbitrage normatif distinct non ouvert)*
+
 **Thread bouclage — clôturé** :
 - [`audit_bouclage_ecs.md`](../../audits/01_rapports/bouclage/audit_bouclage_ecs.md) *(rapport final, clôturé)*
 
