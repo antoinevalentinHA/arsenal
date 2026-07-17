@@ -193,6 +193,7 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 - [chauffage/dossier_conception_observabilite.md](04_chantiers/chauffage/dossier_conception_observabilite.md)
 
 ### ECS
+- [ecs/chantier_securisation_parametres_ecs.md](04_chantiers/ecs/chantier_securisation_parametres_ecs.md)  _(**ouverture chantier C24** issue de l'audit d'exposition diagnostique (#394) — sécurisation des paramètres ECS ; écart **I1** : `sensor.ecs_temperature_ballon_securisee` fabrique un `0.0` au bootstrap froid, propagé comme mesure réelle (tmax, mémoire de cycle, offsets) ; nuance de sûreté sur la libération du verrou sous `unknown` ; **Lot 1 ferme** (température ballon + consommateurs + contrat propriétaire + CI) / **Lot 2 conditionnel** (capteur sœur consigne) ; invariants **cibles** I-SEC-1..5 ; **P2** ; ouverture documentaire, **aucun runtime/contrat/checker modifié**)_
 - [ecs/backlog_ecs.md](04_chantiers/ecs/backlog_ecs.md)  _(backlog ECS — watchdog résolu par arbitrage ; ECS-DOC + ECS-OFF-1 réalisés ; reliquat = chantier « Durcissement CI ECS » (étendu OFF-5), non ouvert)_
 
 ### Climatisation
