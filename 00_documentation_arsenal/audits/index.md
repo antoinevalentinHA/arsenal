@@ -102,6 +102,7 @@
 
 ### Alarme
 - [alarme/audit_alarme_rapport_officiel.md](01_rapports/alarme/audit_alarme_rapport_officiel.md)
+- [alarme/audit_exposition_diagnostics_alarme.md](01_rapports/alarme/audit_exposition_diagnostics_alarme.md)  _(Audit de l'exposition diagnostique vs contrats — 13 exigences, 11 conformes, 2 partielles (ALM-DIAG-001, ALM-DIAG-003), lecture seule.)_
 
 ### Lovelace
 - [lovelace/audit_19_button_card_templates.md](01_rapports/lovelace/audit_19_button_card_templates.md)
