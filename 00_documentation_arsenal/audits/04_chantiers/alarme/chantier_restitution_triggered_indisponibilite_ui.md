@@ -2,7 +2,7 @@
 
 ## 📌 Statut
 
-- **Chantier en cours — patch UI implémenté sur branche, PR à ouvrir** (non mergé ; sans preuve terrain `triggered`/indisponibilité, différée). Ouverture initiale documentaire : PR #391 (mergée), sans patch.
+- **Chantier en cours — patch UI mergé (#392), validation terrain différée** (chantier non clos ; preuve terrain `triggered`/indisponibilité différée). Ouverture initiale documentaire : PR #391 (mergée), sans patch.
 - **Identifiant global** : **C23** (série globale ; aucun identifiant local `CHx` créé)
 - **Domaine** : Sécurité / Alarme — restitution UI
 - **Priorité** : **P2** — le défaut affecte la **compréhension** de la restitution UI ; le runtime, la décision, les notifications et la chaîne de sûreté restent **sains**.
