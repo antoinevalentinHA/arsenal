@@ -2,23 +2,37 @@
 # 🛣️ TEMPLATE TRIGGERED SENSOR — ECS (Température ballon sécurisée)
 # ----------------------------------------------------------
 # 🎯 Objectif :
-#   Fournir une lecture stable et fiable de la température ECS,
-#   même lorsque la source chaudière renvoie une valeur invalide
-#   ou indisponible.
+#   Fournir aux consommateurs ECS une lecture fiable de la
+#   température ballon, robuste aux invalidités transitoires de
+#   la source chaudière — SANS jamais fabriquer de valeur.
 #
-# ⚙️ Fonctionnement :
-#   - Déclenchement sur tout changement de
-#       `sensor.boiler_dhw_temperature`
-#       ou au démarrage de Home Assistant.
-#   - Si la valeur source est numérique → mise à jour directe.
-#   - Sinon → conservation de la dernière valeur valide connue.
+# 📜 Contrat propriétaire :
+#   00_documentation_arsenal/contrats/ecs/sensor_ecs_temperature_ballon_securisee.md
+#   (invariants I-SEC-1..5) — subordonné à parametres_invalides.md.
 #
-# 💡 Avantages :
-#   - Évite les transitions “unavailable”
-#   - Maintient un historique continu
-#   - Empêche les faux `last_changed` pendant les pertes source
+# ⚙️ Comportement (table contractuelle §5 du contrat) :
+#   - source valide                       → valeur source     · provenance = mesure
+#   - source invalide + restauration
+#     contractualisée (état numérique ET
+#     provenance restaurée ∈ {mesure,
+#     retenue})                           → état restauré      · provenance = retenue
+#   - source invalide + aucune
+#     restauration contractualisée        → unknown            · provenance = indisponible
 #
-# 🧮 Source : sensor.boiler_dhw_temperature
+# 🚫 Interdits (I-SEC-1/I-SEC-2) :
+#   - aucune sentinelle numérique (0 / 0.0 / -1) ni fallback
+#     numérique fabriqué (`float(0)` / `int(0)` / défaut chiffré) ;
+#   - aucune garde `availability` transformant `unknown` en
+#     `unavailable` (l'absence de donnée = `state: unknown`
+#     + `provenance: indisponible`, pas une indispo du porteur).
+#
+# 🧠 Rejet du 0.0 historique : une valeur restaurée n'est retenue
+#   que si elle porte une provenance `mesure`/`retenue` — que seul
+#   ce capteur conforme produit, et jamais avec un 0.0 fabriqué.
+#   Une ancienne valeur (dont un 0.0 historique) dépourvue de
+#   provenance est rejetée → `unknown`. Aucune migration d'état.
+#
+# 🧮 Source : sensor.boiler_dhw_temperature (domaine Boiler)
 # 📊 Type : Trigger Template Sensor
 # 📏 Unité : °C
 # ✅ Compatibilité : Home Assistant 2024.8+
@@ -31,6 +45,9 @@
       entity_id: input_boolean.systeme_stable
       to: "on"
       id: systeme_stable
+    - platform: homeassistant
+      event: start
+      id: ha_start
 
   sensor:
     - name: "ECS - Temperature ballon (securisee)"
@@ -43,26 +60,38 @@
         {% set v = states('sensor.boiler_dhw_temperature') %}
         {% if v | is_number %}
           {{ v | float | round(1) }}
-        {% elif this.state is defined and this.state not in ['unknown','unavailable','none'] %}
-          {{ this.state | float(0) | round(1) }}
         {% else %}
-          {{ this.attributes.get('last_valid', 0) | float(0) | round(1) }}
+          {% set prev = this.state %}
+          {% set prov = this.attributes.get('provenance', none) %}
+          {% if (prev | is_number) and prov in ['mesure', 'retenue'] %}
+            {{ prev | float | round(1) }}
+          {% else %}
+            unknown
+          {% endif %}
         {% endif %}
 
       attributes:
-        last_valid: >
+        provenance: >
           {% set v = states('sensor.boiler_dhw_temperature') %}
           {% if v | is_number %}
-            {{ v | float | round(1) }}
+            mesure
           {% else %}
-            {{ this.attributes.get('last_valid', this.state | float(0)) | float(0) | round(1) }}
+            {% set prev = this.state %}
+            {% set prov = this.attributes.get('provenance', none) %}
+            {% if (prev | is_number) and prov in ['mesure', 'retenue'] %}
+              retenue
+            {% else %}
+              indisponible
+            {% endif %}
           {% endif %}
 
       icon: >
-        {% set temp = states('sensor.ecs_temperature_ballon_securisee') | float(0) %}
-        {% if temp < 35 %}
+        {% set s = states('sensor.ecs_temperature_ballon_securisee') %}
+        {% if not (s | is_number) %}
+          mdi:thermometer-off
+        {% elif (s | float) < 35 %}
           mdi:coolant-temperature
-        {% elif temp < 45 %}
+        {% elif (s | float) < 45 %}
           mdi:water-thermometer
         {% else %}
           mdi:water-boiler
