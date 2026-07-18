@@ -85,7 +85,7 @@
 | [eclairage/](./eclairage/) | 7 | README ✅ | Éclairage |
 | [ecs/](./ecs/) | 31 | README ✅ | ECS — fondation (00-11) + contrats d'exécution |
 | [imprimerie/](./imprimerie/) | 4 | README ✅ | Bruit machines industrielles (Imprimerie) |
-| [meteo/](./meteo/) | 23 | README ✅ | Météo — axes, palmarès, production pluie, validation, sous-domaines |
+| [meteo/](./meteo/) | 24 | README ✅ | Météo — axes, palmarès, production pluie, validation, sous-domaines |
 | [ouvertures/](./ouvertures/) | 4 | README ✅ | Ouvertures (portes / fenêtres) |
 | [pannes/](./pannes/) | 11 | README ✅ | Pannes — internet + secteur |
 | [publication/](./publication/) | 2 | README ✅ | Publication |
