@@ -74,3 +74,11 @@ fermer_volets_enfants:
     - service: script.fermer_volet_arnaud
     - delay: "00:00:01"
     - service: script.fermer_volet_matthieu
+
+stop_volets_enfants:
+  alias: "Volets - Stop chambres"
+  mode: single
+  sequence:
+    - service: script.stop_volet_arnaud
+    - delay: "00:00:01"
+    - service: script.stop_volet_matthieu

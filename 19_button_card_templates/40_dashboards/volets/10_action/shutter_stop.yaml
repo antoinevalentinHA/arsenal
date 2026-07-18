@@ -1,0 +1,55 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI MÉTIER
+#     Volets — Action « Stop » (arrêt) 72px
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI MÉTIER
+#
+# 🎯 RÔLE
+#     Spécialisation « arrêt / interruption » de shutter_action_base.
+#     Tuile d'action pure : interrompt le mouvement du volet.
+#     N'affiche aucun état (volets Budendorf sans retour d'état).
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de shutter_action_base
+#     - UI uniquement (aucune décision, aucune lecture d'état)
+#
+# 🎨 SÉMANTIQUE
+#     - Fond 🟠 orange rgba(255,152,0,0.2) = sens de commande « arrêt »
+#     - Couleur CATÉGORIELLE, non décisionnelle
+#       (cf. charte couleurs — Exception 9 : sens de commande volets)
+#     - L'orange n'exprime PAS « avertissement » ici
+#
+# 🔗 DÉPENDANCES
+#     - variables.service  : service HA à appeler (ex. script.stop_volet_x)
+#     - variables.target   : cible (optionnel)
+#     - variables.confirm  : texte de confirmation modale (optionnel)
+#     - variables.name     : libellé (défaut « Stop »)
+#     - variables.icon     : icône (défaut mdi:stop)
+#
+# ⚠️ CONTRAINTES
+#     - Aucune confirmation par défaut : l'arrêt doit rester immédiat
+#     - Peut cibler cover.stop_cover directement via variables.service
+#       (le socle injecte alors entity_id dans data — convention HA)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: shutter_stop
+#     variables:
+#       service: script.stop_volet_sejour_gauche
+#
+# ==========================================================
+
+shutter_stop:
+  template: shutter_action_base
+
+  variables:
+    name: Stop
+    icon: mdi:stop
+
+  styles:
+    card:
+      # Exception 9 — sens de commande « arrêt » (catégoriel, non décisionnel)
+      - background-color: "rgba(255, 152, 0, 0.2)"

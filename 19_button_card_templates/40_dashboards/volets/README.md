@@ -20,13 +20,16 @@ Le dossier est organisé en **4 familles UI distinctes** :
 
 ### A. Actions volets
 
-Exemple : `shutter_action_base`
+Socle : `shutter_action_base`
+Spécialisations finales : `shutter_open`, `shutter_stop`, `shutter_close`
 
 - Socle d'action paramétrable pour montée / descente / stop via `variables`
 - Aucune lecture d'état
 - **Type UI : action** (proxy UI d'une commande backend)
 
-> Ce template est un **socle fonctionnel**, pas une carte métier finale. Il ne doit pas être utilisé directement sans spécialisation. Le traitement de `cover.stop_cover*` utilise une convention spécifique Home Assistant (injection de `entity_id` dans `data` au lieu de `target`) — à documenter dans l'entête.
+> `shutter_action_base` est un **socle fonctionnel**, pas une carte métier finale. Il ne doit pas être utilisé directement sans spécialisation. Le traitement de `cover.stop_cover*` utilise une convention spécifique Home Assistant (injection de `entity_id` dans `data` au lieu de `target`) — documenté dans l'entête.
+
+> Les trois spécialisations finales `shutter_open` / `shutter_stop` / `shutter_close` fixent le libellé, l'icône par défaut et la couleur de **sens de commande** (montée 🟢 / arrêt 🟠 / descente 🔵). Cette couleur est **catégorielle et non décisionnelle** : elle n'exprime aucun état (les volets Budendorf n'ont aucun retour d'état). Elle est encadrée par la charte couleurs — **Exception 9 (sens de commande des volets)**, sur le modèle de l'Exception 1 (modes HVAC). Le dashboard `principal.yaml` n'utilise plus que ces trois spécialisations (aucune couleur ni logique inline côté Lovelace).
 
 ---
 
@@ -75,7 +78,7 @@ Exemple : `pluie_cibles_volets_kpi_72`
 
 | Type UI        | Signification                                                                                    | Exemples                                                                                     |
 |----------------|--------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| action         | commande utilisateur explicite, socle fonctionnel                                               | `shutter_action_base`                                                                        |
+| action         | commande utilisateur explicite, socle fonctionnel                                               | `shutter_action_base` (socle), `shutter_open`, `shutter_stop`, `shutter_close`              |
 | interprétative | restitution locale d'une décision ou d'un indicateur métier                                    | `decision_pluie_forte_72`, `decision_pluie_recente_72`, `pluie_decision_72`, `pluie_cibles_volets_kpi_72` |
 | diagnostic     | qualification d'un risque ou d'une exposition                                                   | `exposition_fenetres_concernees_ouvertes_72`, `pluie_exposition_resume_72`                   |
 | pure           | *(non utilisé dans ce domaine)*                                                                  | —                                                                                            |
@@ -105,6 +108,9 @@ Niveau 4 — Ciblage / Protection → 40_kpi_protection/
 
   10_action/
     shutter_action_base.yaml
+    shutter_open.yaml
+    shutter_stop.yaml
+    shutter_close.yaml
 
   20_decision_pluie/
     decision_pluie_forte_72.yaml
@@ -135,9 +141,12 @@ Deux approches coexistent — mutuellement exclusives à terme :
 
 > Ne pas laisser cette coexistence dériver sans doctrine. Les deux options sont valides, mais doivent être assumées et documentées dans les entêtes des trois cartes.
 
-### 2. `shutter_action_base` — socle vs carte finale
+### 2. `shutter_action_base` — socle vs carte finale — ✅ tranchée
 
-Décider si ce README documente uniquement le socle, ou également les spécialisations concrètes si elles existent en dehors de ce dossier. À ce stade, le socle seul est documenté — ne pas confondre ce template avec une carte d'usage final.
+Les spécialisations finales existent désormais dans ce même dossier
+(`shutter_open`, `shutter_stop`, `shutter_close`) et sont documentées ci-dessus.
+Le socle `shutter_action_base` reste réservé à l'héritage et n'est plus
+utilisé directement par les dashboards.
 
 ---
 
