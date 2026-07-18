@@ -29,6 +29,9 @@
     - name: "Besoin chauffage d’appoint climatisation"
       unique_id: besoin_clim_heat
       default_entity_id: binary_sensor.besoin_clim_heat
+      availability: >
+        {{ states('binary_sensor.clim_seuil_allumage_heat_atteint') not in ['unknown', 'unavailable']
+           and states('binary_sensor.clim_seuil_extinction_heat_atteint') not in ['unknown', 'unavailable'] }}
       state: >
         {% set on = is_state('binary_sensor.clim_seuil_allumage_heat_atteint', 'on') %}
         {% set off = is_state('binary_sensor.clim_seuil_extinction_heat_atteint', 'on') %}

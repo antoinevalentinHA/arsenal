@@ -35,6 +35,9 @@
     - name: "Besoin refroidissement climatisation"
       unique_id: besoin_clim_cool
       default_entity_id: binary_sensor.besoin_clim_cool
+      availability: >
+        {{ states('binary_sensor.clim_seuil_allumage_cool_atteint') not in ['unknown', 'unavailable']
+           and states('binary_sensor.clim_seuil_extinction_cool_atteint') not in ['unknown', 'unavailable'] }}
       state: >
         {% set on = is_state('binary_sensor.clim_seuil_allumage_cool_atteint', 'on') %}
         {% set off = is_state('binary_sensor.clim_seuil_extinction_cool_atteint', 'on') %}
