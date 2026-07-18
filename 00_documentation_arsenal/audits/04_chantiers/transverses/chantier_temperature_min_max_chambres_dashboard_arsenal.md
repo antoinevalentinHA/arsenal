@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Arbitrage et contractualisation des agrégats de température MIN/MAX des chambres et de leur restitution sur le dashboard Arsenal. |
 | **Domaine** | TRANSVERSE (Chauffage ↔ Climatisation ↔ production Météo/température intérieure ↔ UI Lovelace). |
-| **Statut** | **ouvert — Lot 2A contractualisé et mergé (PR #413) ; réexamen pré-Lot 2B terminé (catégorie physique `dans_plage` rendue en vert via l'Exception 2 étendue ; gris neutre intermédiaire non retenu ; note d'arbitrage reconsolidée) ; contrat de restitution (Lot 2B) non commencé.** |
+| **Statut** | **ouvert — Lot 2A contractualisé et mergé (PR #413) ; reconsolidation pré-Lot 2B mergée (PR #414) ; Lot 2B contractualisé (contrat de restitution `restitution_chambres_etage.md` validé et consigné) ; aucun runtime ni UI implémenté ; C27 actif.** |
 | **Priorité** | **P2** (proposée) — voir justification §Priorité. |
 | **Ouvert le** | 2026-07-18. |
 | **Preuve de départ** | [`01_rapports/transverses/audit_cartes_temperature_min_max_dashboard_arsenal.md`](../../01_rapports/transverses/audit_cartes_temperature_min_max_dashboard_arsenal.md) (mergé par la PR #410). |
-| **Prochain jalon** | **Lot 2B — contrat de restitution des bornes thermiques des chambres de l'étage** (`restitution_chambres_etage.md`), après la présente reconsolidation documentaire. |
+| **Prochain jalon** | **Audit et cadrage du lot runtime C27** (publication honnête de la frontière basse ; alignement `seuil_allumage_clim_applique` ; création des deux catégories backend ; alignement des agrégats au Lot 2A ; audit de compatibilité des consommateurs), puis lot UI. |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C27 **ne vaut ni arbitrage rendu, ni décision de
 > contractualiser, ni décision de corriger.** Ce document est une **ouverture documentaire de
@@ -236,12 +236,25 @@ exploitables, validité dès une façade, **aucune mémoire/TTL propre**, **abst
 exploitable**, couverture observable, 12 invariants `INV-BTE-*`. **Exclut** RDC, petite maison,
 catégories thermiques, couleurs et logique HVAC (renvoyés au Lot 2B et aux domaines concernés).
 
-### Lot 2B — contrat de sémantique et restitution (prochain jalon)
+### Lot 2B — contrat de restitution (validé et consigné)
 
-Rédaction et validation du contrat de restitution `restitution_chambres_etage.md` : catégories
-`froid` / `dans_plage` / `chaud` (selon la carte), références physiques **dédiées** (basse/haute,
-stables, non contextuelles, indépendantes de tout paramètre décisionnel HVAC), catégorie portée par le
-backend, mapping UI vers l'**Exception 2 étendue** (dont le vert `dans_plage`), **indisponibilité native
-`0.1`** (aucun gris neutre `0.2` intermédiaire). **Dépend du Lot 2A mergé** et **ne rouvre pas** le
-contrat de production. **Aucun runtime, UI, checker ou CI n'est décidé ou engagé à ce stade. C27 reste
+Contrat de restitution consigné :
+[`../../contrats/meteo/temperature_interieure/restitution_chambres_etage.md`](../../../contrats/meteo/temperature_interieure/restitution_chambres_etage.md).
+Modèle **P2** (plage thermique *appliquée*, non absolue). Frontières : **basse** = seuil intérieur ON
+Chauffage confort (`chauffage_consigne_confort − chauffage_offset_on`, ancrée confort, à **exposer** en
+autorité unique publiée) ; **haute** = seuil COOL ON appliqué (`sensor.seuil_allumage_clim_applique`,
+déplacement présence/nuit assumé). Catégories **O3** (`froid`/`dans_plage` ; `chaud`/`dans_plage`),
+comparaisons strictes (**égalité ∈ `dans_plage`**), **indisponibilité native** (interdiction de tout
+fallback numérique/sentinelle), mapping vers l'**Exception 2 étendue**, 13 invariants `INV-RCE-*`.
+**Ne rouvre pas** le contrat de production.
+
+**Aucun runtime ni UI n'est implémenté à ce stade.** Le **futur lot runtime** devra notamment traiter :
+
+- **publication honnête de la frontière basse** (capteur d'exposition, identifiant fixé à l'audit) ;
+- **alignement de `sensor.seuil_allumage_clim_applique`** avec l'interdiction de fallback numérique ;
+- **création des deux catégories backend** ;
+- **alignement des agrégats au contrat Lot 2A** (abstention, `{{ last }}`) ;
+- **audit de compatibilité des consommateurs** avant toute modification de disponibilité.
+
+Puis un **lot UI** (mapping Exception 2 étendue, suppression du JS local, cross-entity). **C27 reste
 actif et non clos.**
