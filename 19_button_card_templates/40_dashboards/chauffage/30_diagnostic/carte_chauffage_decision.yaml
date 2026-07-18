@@ -67,6 +67,12 @@ carte_chauffage_decision:
         const intention = states['sensor.chauffage_mode_calcule']?.state;
         const raison = states['sensor.chauffage_raison_calculee']?.state || '';
 
+        // C26 — indisponibilité prioritaire (R6) : sources consommées programme (reel)
+        // + mode_calcule (intention). Évaluée AVANT le calcul de cohérence (pas de
+        // faux rouge). Le littéral 'Inconnu' (état disponible) reste hors périmètre.
+        const UNAV = ['unknown', 'unavailable', undefined, null, 'none', ''];
+        const indisponible = UNAV.includes(reel) || UNAV.includes(intention);
+
         // Correspondance unique (socle de données CH-6) — aucune map inline.
         const reg = variables.registre_chauffage || {};
         const m = reg[raison];
@@ -82,23 +88,28 @@ carte_chauffage_decision:
 
         const reason_txt = raison ? (m ? m.libelle_court : raison) : '';
 
-        // Couleur : incohérence -> rouge (surcouche prioritaire, cf. 05_regles.md) ;
-        // sinon couleur de la table canonique (repli gris neutre).
-        const bg = (!coherent)
-          ? "rgba(244, 67, 54, 0.2)"
-          : (m ? m.couleur : "rgba(158, 158, 158, 0.2)");
+        // Couleur : indisponibilité -> gris indispo prioritaire (R6, cf. 05_regles.md) ;
+        // sinon incohérence -> rouge ; sinon couleur de la table canonique (repli gris neutre).
+        const bg = indisponible
+          ? "rgba(158, 158, 158, 0.1)"
+          : ((!coherent)
+              ? "rgba(244, 67, 54, 0.2)"
+              : (m ? m.couleur : "rgba(158, 158, 158, 0.2)"));
 
         return {
           reel: reel,
           intention: intention || '—',
           raison: raison,
           reason_txt: reason_txt,
+          indisponible: indisponible,
           bg: bg
         };
       ]]]
 
   state_display: |
     [[[
+      // C26 — indisponibilité prioritaire (R6)
+      if (variables.diag.indisponible) return 'Indisponible';
       const map = {
         'Confort': 'Confort actif',
         'Eco': 'Réduit actif',
@@ -110,6 +121,8 @@ carte_chauffage_decision:
   label: |
     [[[
       const d = variables.diag;
+      // C26 — indisponibilité prioritaire (R6)
+      if (d.indisponible) return 'Données indisponibles';
       return `Intention : ${d.intention}${d.reason_txt ? ' — ' + d.reason_txt : ''}`;
     ]]]
 
