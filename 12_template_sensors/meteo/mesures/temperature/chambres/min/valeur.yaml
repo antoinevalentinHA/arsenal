@@ -12,7 +12,7 @@
 #       • sensor.temperature_chambre_matthieu
 #       • sensor.temperature_chambre_parents
 #   - Ignore les valeurs non numériques.
-#   - Si aucune valeur n’est disponible, conserve la dernière connue.
+#   - Si aucune valeur vivante ne subsiste, l’agrégat s’abstient (unavailable).
 #
 # 📦 Capteur créé :
 #   • sensor.temperature_min_chambres
@@ -42,6 +42,11 @@
       state_class: measurement
       device_class: temperature
 
+      availability: >
+        {{ states('sensor.temperature_chambre_arnaud') | float(none) is not none
+           or states('sensor.temperature_chambre_matthieu') | float(none) is not none
+           or states('sensor.temperature_chambre_parents') | float(none) is not none }}
+
       state: >
         {% set brut = {
           'Chambre Arnaud': states('sensor.temperature_chambre_arnaud'),
@@ -50,12 +55,9 @@
         } %}
 
         {% set valides = brut.items() | selectattr('1', 'is_number') | list %}
-        {% set last = this.state %}
 
         {% if valides %}
           {{ (valides | sort(attribute=1))[0][1] | float | round(1) }}
-        {% else %}
-          {{ last }}
         {% endif %}
 
       attributes:
