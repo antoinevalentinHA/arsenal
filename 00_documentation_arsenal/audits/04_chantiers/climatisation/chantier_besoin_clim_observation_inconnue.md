@@ -167,28 +167,29 @@ Le runtime respectait **séparément** les contrats existants (franchissement `f
 
 ---
 
-## 11. Lots (mis à jour post-L1)
+## 11. Lots (mis à jour post-merge)
 
-- **L1 — consolidation contractuelle : TERMINÉE** (doctrine + amendements A–F proposés).
-- **L2 — consignation contractuelle** : après **validation propriétaire** des amendements A–F.
-- **L3 — runtime** conforme aux contrats consolidés (seuils honnêtes ; franchissements abstinents ; besoin indisponible ; garde admissibilité) + audit des consommateurs des franchissements.
-- **L4 — validation** (statique + simulée + terrain naturel, sans forcer de panne) puis **clôture** ; **déblocage de C27 R2**.
+- **L1 — consolidation contractuelle : TERMINÉE** (doctrine + amendements A–F).
+- **L2 — consignation contractuelle : TERMINÉE** (amendements A–F consignés, PR #417).
+- **L3 — runtime : TERMINÉE** — **L3A** défense aval (admissibilité fail-closed runtime + boot, PR #418) ; **L3B** honnêteté amont (seuils honnêtes ; 4 franchissements abstinents ; 2 besoins abstinents, PR #419) ; audit des consommateurs réalisé.
+- **L4 — validation : TERMINÉE** — statique + simulée + **preuve live** de l'idiome `availability`/`this` (HA Core 2026.7.2) ; checkers et CI verts ; **terrain naturel non forcé** (panne réelle non provoquée). **Déblocage de C27 R2 constaté (PR #420).**
 
 ---
 
-## 12. Critères de clôture (bornés)
+## 12. Critères de clôture (bornés) — **tous satisfaits (2026-07-18)**
 
-- silence contractuel §7 **levé** (amendements A–F consignés) ;
-- comportement COOL et HEAT sur observation inexploitable **gouverné** (besoin indisponible ; pas de maintien/réarmement aveugle) ;
-- seuils appliqués **honnêtes** (aucun repli numérique) ;
-- **garde aval Admissibilité** effective (fail-closed sur besoin indisponible) ;
+- silence contractuel §7 **levé** (amendements A–F consignés, #417) ;
+- comportement COOL et HEAT sur observation inexploitable **gouverné** (besoin indisponible ; pas de maintien/réarmement aveugle) — L3A #418 / L3B #419 ;
+- seuils appliqués **honnêtes** (aucun repli numérique) — L3B #419 ;
+- **garde aval Admissibilité** effective (fail-closed sur besoin indisponible) — L3A #418 ;
 - sûreté **démontrée jusqu'à l'action** ;
-- **déblocage de C27 R2** constaté ;
-- validation sans panne artificielle.
+- **déblocage de C27 R2** constaté — #420 ;
+- validation sans panne artificielle **(panne réelle des trois thermomètres non provoquée, preuve terrain différée)**.
 
 ---
 
 ## 13. Statut & prochain jalon
 
-- **Statut** : **L1 terminée — P1** ; doctrine consolidée ; amendements A–F **proposés**, en attente de **validation propriétaire** ; aucun runtime ; **bloquant pour C27 R2**.
-- **Prochain jalon** : **validation propriétaire des amendements A–F**, puis **consignation contractuelle (L2)**.
+- **Statut** : **CLOS — défense fonctionnelle complète (2026-07-18).** L3A #418, L3B #419 ; interlock fermé par C27 R2 #420 ; critères §12 satisfaits ; `unknown`/`unavailable` ne valent plus `false` ; retour dans la bande d'hystérésis → `off` **sans résurrection d'un ancien `on`**.
+- **Prochain jalon** : **aucun** (chantier clos).
+- **Réserve honnête** : **panne réelle simultanée des trois thermomètres non provoquée — preuve terrain explicitement différée** (non exigée par les critères §12).

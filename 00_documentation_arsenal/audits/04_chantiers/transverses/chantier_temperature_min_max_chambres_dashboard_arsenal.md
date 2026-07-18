@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Arbitrage et contractualisation des agrégats de température MIN/MAX des chambres et de leur restitution sur le dashboard Arsenal. |
 | **Domaine** | TRANSVERSE (Chauffage ↔ Climatisation ↔ production Météo/température intérieure ↔ UI Lovelace). |
-| **Statut** | **ouvert — Lot 2A contractualisé et mergé (PR #413) ; reconsolidation pré-Lot 2B mergée (PR #414) ; Lot 2B contractualisé (contrat de restitution `restitution_chambres_etage.md` validé et consigné) ; aucun runtime ni UI implémenté ; C27 actif.** |
+| **Statut** | **actif — défense fonctionnelle acquise ; restitution UI publiée mais NON conforme au contrat Lot 2B.** Lot 2A mergé (#413), reconsolidation (#414), Lot 2B consigné (#415). **R2 (abstention des agrégats) mergée (#420)** : les deux cartes MIN/MAX **existent et sont publiées** (température + chambre) ; agrégats → `unavailable` sur mort des trois observations ⇒ **interlock C28 fermé, plus de valeur figée mensongère (C28 + R2)**. **Restitution UI NON conforme au contrat Lot 2B** — 6 écarts opposables : frontière basse non publiée + recalcul UI ; catégories backend O3 absentes ; lecture UI de helpers interdite (§10) ; cross-entity MIN←MAX (§9) ; gris indispo `rgba(158,158,158,0.1)` non appliqué (§8) ; palette Exception 2 non appliquée (§11). C27 reste actif. |
 | **Priorité** | **P2** (proposée) — voir justification §Priorité. |
 | **Ouvert le** | 2026-07-18. |
 | **Preuve de départ** | [`01_rapports/transverses/audit_cartes_temperature_min_max_dashboard_arsenal.md`](../../01_rapports/transverses/audit_cartes_temperature_min_max_dashboard_arsenal.md) (mergé par la PR #410). |
-| **Prochain jalon** | **Audit et cadrage du lot runtime C27** (publication honnête de la frontière basse ; alignement `seuil_allumage_clim_applique` ; création des deux catégories backend ; alignement des agrégats au Lot 2A ; audit de compatibilité des consommateurs), puis lot UI. |
+| **Prochain jalon** | **Conformité de restitution (contrat Lot 2B)** : publication de la frontière basse ; catégories backend O3 ; suppression des lectures directes / recalculs UI interdits (§10) ; suppression du cross-entity MIN←MAX (§9) ; priorité du gris indispo `rgba(158,158,158,0.1)` (§8) ; palette conforme à l'Exception 2 étendue (§11). *(L'alignement des agrégats — R2 — est livré, #420.)* |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C27 **ne vaut ni arbitrage rendu, ni décision de
 > contractualiser, ni décision de corriger.** Ce document est une **ouverture documentaire de
