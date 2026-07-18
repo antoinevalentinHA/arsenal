@@ -536,8 +536,13 @@ def _count_triggers(content):
 
 
 def test_isomorphisme_runtime_nb_triggers():
-    """Les 3 automations runtime ont exactement 4 triggers (Porte 1, 2, ext besoin, ext autorisation)."""
-    expected = 4
+    """
+    Asymétrie contractuelle volontaire (C28) :
+    - COOL / HEAT : 5 triggers (Porte 1, Porte 2, extinction besoin,
+      extinction autorisation, extinction besoin indisponible) ;
+    - DRY : 4 triggers (hors périmètre C28).
+    """
+    expected_by_mode = {"cool": 5, "dry": 4, "heat": 5}
     counts = {}
     for mode in MODES:
         path = AUTOMATION_PATHS_RUNTIME[mode]
@@ -546,6 +551,7 @@ def test_isomorphisme_runtime_nb_triggers():
         counts[mode] = _count_triggers(read(path))
 
     for mode, n in counts.items():
+        expected = expected_by_mode[mode]
         if n != expected:
             fail(
                 f"Automation runtime {mode} : {n} triggers détectés "
@@ -1140,6 +1146,141 @@ def test_doc_admissibilite_presente():
 
 
 # ---------------------------------------------------------------------------
+# Tests — C28 défense aval (extinction besoin indisponible)
+# ---------------------------------------------------------------------------
+
+def _split_items(section, key):
+    """Découpe un bloc YAML en items débutant par '- <key>:' à leur indentation.
+
+    Découpage textuel volontaire (pas de dépendance PyYAML — la CI n'installe
+    aucune dépendance), suffisant pour lier chaque vérification à SON bloc.
+    """
+    return [p for p in re.split(r"\n(?=\s*-\s*" + key + r"\s*:)", section) if p.strip()]
+
+
+def test_runtime_extinction_besoin_indisponible_c28():
+    """
+    C28 — défense aval, vérification LIÉE AUX BLOCS.
+
+    Pour COOL/HEAT, exige :
+      1. UN MÊME bloc trigger portant à la fois
+         - platform: template,
+         - le test besoin in ['unknown','unavailable'],
+         - id: extinction_besoin_indisponible ;
+      2. une branche 'condition: trigger' portant ce même id ;
+      3. dont l'action est input_boolean.turn_off ciblant
+         input_boolean.besoin_clim_<mode>_admissible.
+    Pour DRY (hors périmètre C28), interdit ce trigger.
+    """
+    tid = "extinction_besoin_indisponible"
+    for mode in MODES:
+        path = AUTOMATION_PATHS_RUNTIME[mode]
+        if not path.is_file():
+            continue
+        content = read(path)
+        rel = path.relative_to(ROOT)
+
+        # Sections trigger: … condition: … / action: … (fin de fichier)
+        m_trig = re.search(r"\n\s*trigger:\s*\n(.*?)\n\s*condition:", content, re.DOTALL)
+        m_act = re.search(r"\n\s*action:\s*\n(.*)\Z", content, re.DOTALL)
+        trig_section = m_trig.group(1) if m_trig else ""
+        act_section = m_act.group(1) if m_act else ""
+
+        besoin_sig = re.compile(
+            r"\{\{\s*states\('binary_sensor\.besoin_clim_" + mode
+            + r"'\)\s+in\s+\[\s*'unknown'\s*,\s*'unavailable'\s*\]"
+        )
+
+        # Trigger(s) 'platform: template' portant la signature besoin (dans le MÊME item)
+        c28_trigs = [
+            it for it in _split_items(trig_section, "platform")
+            if re.search(r"platform:\s*template", it) and besoin_sig.search(it)
+        ]
+        # Branche d'action portant 'condition: trigger' + id attendu (dans le MÊME item)
+        good_branch = None
+        for b in _split_items(act_section, "conditions"):
+            if re.search(r"condition:\s*trigger\s*\n\s*id:\s*" + tid + r"\b", b):
+                good_branch = b
+                break
+        target = "input_boolean.besoin_clim_" + mode + "_admissible"
+
+        if mode in ("cool", "heat"):
+            if not c28_trigs:
+                fail(f"Automation runtime {mode} : aucun trigger 'platform: template' "
+                     f"testant besoin in ['unknown','unavailable'] ({rel})")
+                continue
+            # l'id doit être porté PAR CE trigger, pas seulement par la branche
+            if not any(re.search(r"id:\s*" + tid + r"\b", it) for it in c28_trigs):
+                fail(f"Automation runtime {mode} : le trigger C28 ne porte pas "
+                     f"'id: {tid}' (id absent/mal orthographié sur le trigger) ({rel})")
+                continue
+            if good_branch is None:
+                fail(f"Automation runtime {mode} : branche 'condition: trigger / "
+                     f"id: {tid}' absente ({rel})")
+                continue
+            if not re.search(r"(action|service):\s*input_boolean\.turn_off\b", good_branch):
+                fail(f"Automation runtime {mode} : la branche {tid} n'appelle pas "
+                     f"input_boolean.turn_off ({rel})")
+                continue
+            if ("entity_id: " + target) not in good_branch:
+                fail(f"Automation runtime {mode} : la branche {tid} ne cible pas "
+                     f"'{target}' ({rel})")
+                continue
+            print(f"  ✔ runtime {mode} : trigger(platform+besoin+id) + "
+                  f"branche(turn_off → {target}) (C28)")
+        else:  # dry — hors périmètre C28
+            if c28_trigs or re.search(r"id:\s*" + tid + r"\b", content):
+                fail(f"Automation runtime {mode} : trigger C28 '{tid}' présent alors "
+                     f"que DRY est hors périmètre ({rel})")
+            else:
+                print(f"  ✔ runtime {mode} : pas de trigger C28 (hors périmètre)")
+
+
+def test_boot_fail_closed_besoin_indisponible_c28():
+    """
+    C28 — fail-closed boot, vérification LIÉE AU BLOC.
+
+    Le test besoin in ['unknown','unavailable'] doit appartenir à la CONDITION
+    (corps du value_template, jusqu'au '}}') de la sous-branche d'extinction
+    conservatrice COOL/HEAT — identifiée par son test 'autorisation … off'.
+    Un même test présent seulement ailleurs (commentaire, autre bloc) échoue.
+    DRY hors périmètre.
+    """
+    for mode in ("cool", "heat"):
+        path = AUTOMATION_PATHS_BOOT[mode]
+        if not path.is_file():
+            continue
+        content = read(path)
+        rel = path.relative_to(ROOT)
+        # Sous-branche conservatrice : '- conditions:' → '- condition: template' →
+        # value_template block scalar, capturé jusqu'au premier '}}'.
+        m = re.search(
+            r"-\s*conditions:\s*\n\s*-\s*condition:\s*template\s*\n\s*"
+            r"value_template:\s*>\s*\n(?P<vt>.*?\}\})",
+            content, re.DOTALL,
+        )
+        cond_vt = m.group("vt") if m else ""
+        autor_ok = re.search(
+            r"is_state\('binary_sensor\.autorisation_clim_" + mode + r"',\s*'off'\)",
+            cond_vt,
+        )
+        besoin_ok = re.search(
+            r"states\('binary_sensor\.besoin_clim_" + mode
+            + r"'\)\s+in\s+\[\s*'unknown'\s*,\s*'unavailable'\s*\]",
+            cond_vt,
+        )
+        if not (m and autor_ok):
+            fail(f"Automation boot {mode} : sous-branche d'extinction conservatrice "
+                 f"(condition template 'autorisation … off') introuvable ({rel})")
+        elif not besoin_ok:
+            fail(f"Automation boot {mode} : le test besoin in ['unknown','unavailable'] "
+                 f"n'appartient pas à la condition de l'extinction conservatrice "
+                 f"(C28 fail-closed boot) ({rel})")
+        else:
+            print(f"  ✔ boot {mode} : test besoin dans la condition conservatrice (C28)")
+
+
+# ---------------------------------------------------------------------------
 # Registre des tests
 # ---------------------------------------------------------------------------
 
@@ -1154,11 +1295,13 @@ TESTS = [
     test_runtime_porte_1_et_porte_2,
     test_runtime_pas_de_trigger_boot,
     test_runtime_mode_single,
+    test_runtime_extinction_besoin_indisponible_c28,
     # Doctrine v2 — boot
     test_boot_trigger_homeassistant_start,
     test_boot_garde_systeme_stable,
     test_boot_pas_de_trigger_systeme_stable,
     test_boot_sous_branches_choose,
+    test_boot_fail_closed_besoin_indisponible_c28,
     # Isomorphisme
     test_isomorphisme_runtime_nb_triggers,
     test_isomorphisme_boot_nb_triggers,

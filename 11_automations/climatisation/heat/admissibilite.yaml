@@ -64,6 +64,12 @@
       to: 'off'
       id: extinction_autorisation
 
+    # --- EXTINCTION BESOIN INDISPONIBLE (C28) : besoin unknown/unavailable ---
+    - platform: template
+      value_template: >
+        {{ states('binary_sensor.besoin_clim_heat') in ['unknown', 'unavailable'] }}
+      id: extinction_besoin_indisponible
+
   condition: []
 
   action:
@@ -106,6 +112,15 @@
         - conditions:
             - condition: trigger
               id: extinction_autorisation
+          sequence:
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.besoin_clim_heat_admissible
+
+        # --- EXTINCTION BESOIN INDISPONIBLE (C28) ---
+        - conditions:
+            - condition: trigger
+              id: extinction_besoin_indisponible
           sequence:
             - action: input_boolean.turn_off
               target:
