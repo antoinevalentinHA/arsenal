@@ -62,8 +62,8 @@ sur toute couleur de mode.
 ### Objet
 
 Autoriser un codage visuel basé sur une logique **physique thermique**
-(froid / chauffe en cours / chaud), distinct de la sémantique métier
-OK / KO / WARN / INFO.
+(froid / valeur dans la plage attendue / chauffe en cours / chaud),
+distinct de la sémantique métier OK / KO / WARN / INFO.
 
 Cette exception est strictement limitée aux cartes :
 - ECS
@@ -77,14 +77,55 @@ Elle ne constitue pas un jugement métier.
 | Couleur | Valeur | État thermique |
 |---------|--------|---------------|
 | 🔵 Bleu froid | `rgba(144, 202, 249, 0.25)` | Froid / température basse |
+| 🟢 Vert dans la plage | `rgba(76, 175, 80, 0.2)` | Valeur dans la plage attendue — aucun franchissement du seuil physique défavorable (catégorie `dans_plage`) |
 | 🟠 Orange | `rgba(255, 152, 0, 0.2)` | Chauffe en cours |
 | 🔴 Rouge | `rgba(244, 67, 54, 0.2)` | Température haute / cible atteinte |
-| ⚪ Gris neutre | `rgba(158, 158, 158, 0.2)` | Valeur non numérique exploitable |
+| ⚪ Gris neutre | `rgba(158, 158, 158, 0.2)` | Cas thermique neutre ou catégorie thermique non déterminée, uniquement lorsqu'un contrat le prévoit explicitement |
 | ⚪ Gris indispo | `rgba(158, 158, 158, 0.1)` | `unknown` / `unavailable` |
+
+### Catégorie physique `dans_plage` (vert thermique)
+
+Le vert thermique `rgba(76, 175, 80, 0.2)` code une **catégorie physique
+`dans_plage`, strictement bornée** (à perception positive, sans jugement `OK`
+autonome) : la valeur de l'indicateur **ne franchit pas** son seuil physique
+défavorable. La réalité gouvernante est la **comparaison physique**, pas le
+caractère « positif » de la couleur ; `dans_plage` n'est pas une quatrième
+famille sémantique générale.
+
+- **Sens unique et opposable** : « valeur dans la plage attendue pour
+  l'indicateur concerné, sans franchissement du seuil physique défavorable ».
+- **Égalité exacte traitée positivement** : une couleur défavorable
+  (bleu froid ou rouge chaud) n'apparaît qu'au **franchissement strict et
+  démontré** du seuil physique défavorable ; à l'égalité exacte avec la
+  référence, l'état reste `dans_plage`.
+- **Ce vert ne signifie jamais** : confort global, conformité à une consigne,
+  absence de besoin HVAC, autorisation, décision, action, nominalité système,
+  ni absence de toute anomalie système. Il ne qualifie que **la seule grandeur
+  physique de l'indicateur**.
+- **Activation par contrat uniquement** : ce vert n'est disponible que
+  **lorsqu'un contrat définit explicitement**, pour l'indicateur concerné, la
+  catégorie physique `dans_plage`. Il **n'est pas** généralisé automatiquement
+  à tous les indicateurs thermiques : les indicateurs thermiques existants sans
+  cette catégorie restent **inchangés**, et aucun indicateur (bornes de service
+  ECS ou autre) sans vert n'est **automatiquement migré**.
+- **Aucun mélange de palettes** : le vert appartient désormais à l'Exception 2
+  elle-même. Un indicateur thermique qui l'emploie reste **intégralement**
+  dans la palette thermique (bleu froid / vert `dans_plage` / orange / rouge /
+  gris) et **n'emprunte pas** le vert de la palette sémantique générale. La
+  valeur RGBA est identique au vert canon Arsenal, mais son **régime** ici est
+  **thermique et catégoriel**, non sémantique métier.
 
 ### Priorité
 
 L'indisponibilité prime toujours (`rgba(158, 158, 158, 0.1)`).
+
+Le **gris neutre `0.2`** (cas thermique neutre ou catégorie thermique non
+déterminée, prévu par le contrat concerné) et le **gris indisponibilité `0.1`**
+(`unknown` / `unavailable`) restent **deux réalités distinctes** : le second
+prime et ne doit jamais être masqué par le premier. Un contrat peut ne prévoir
+**aucun état gris neutre `0.2`**. En revanche, lorsqu'un indicateur est
+`unknown` ou `unavailable`, le **gris indisponibilité `0.1` reste obligatoire et
+prioritaire**.
 
 ### 🚫 Interdits
 
@@ -95,6 +136,13 @@ L'indisponibilité prime toujours (`rgba(158, 158, 158, 0.1)`).
   dans une même logique décisionnelle
 - Utiliser le bleu thermique `rgba(144, 202, 249, 0.25)`
   pour encoder un statut métier
+- Décrire le vert `dans_plage` comme un confort global, une conformité à une
+  consigne, une autorisation / décision / action HVAC, ou une nominalité
+  système
+- Généraliser le vert `dans_plage` à un indicateur thermique dont le contrat
+  ne définit pas explicitement la catégorie physique `dans_plage`
+- Faire apparaître une couleur défavorable (bleu froid ou rouge chaud) sans
+  franchissement **strict** du seuil physique défavorable
 
 ---
 

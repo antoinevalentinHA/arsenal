@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Arbitrage et contractualisation des agrégats de température MIN/MAX des chambres et de leur restitution sur le dashboard Arsenal. |
 | **Domaine** | TRANSVERSE (Chauffage ↔ Climatisation ↔ production Météo/température intérieure ↔ UI Lovelace). |
-| **Statut** | **ouvert — Lot 2A contractualisé ; contrat de restitution requis (Lot 2B).** |
+| **Statut** | **ouvert — Lot 2A contractualisé et mergé (PR #413) ; réexamen pré-Lot 2B terminé (catégorie physique `dans_plage` rendue en vert via l'Exception 2 étendue ; gris neutre intermédiaire non retenu ; note d'arbitrage reconsolidée) ; contrat de restitution (Lot 2B) non commencé.** |
 | **Priorité** | **P2** (proposée) — voir justification §Priorité. |
 | **Ouvert le** | 2026-07-18. |
 | **Preuve de départ** | [`01_rapports/transverses/audit_cartes_temperature_min_max_dashboard_arsenal.md`](../../01_rapports/transverses/audit_cartes_temperature_min_max_dashboard_arsenal.md) (mergé par la PR #410). |
-| **Prochain jalon** | **Lot 2B — contrat de sémantique et restitution des bornes thermiques des chambres de l'étage**. |
+| **Prochain jalon** | **Lot 2B — contrat de restitution des bornes thermiques des chambres de l'étage** (`restitution_chambres_etage.md`), après la présente reconsolidation documentaire. |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C27 **ne vaut ni arbitrage rendu, ni décision de
 > contractualiser, ni décision de corriger.** Ce document est une **ouverture documentaire de
@@ -192,9 +192,11 @@ propriétaire** :
 Décisions acquises (résumé, sans recopier la note) :
 - **Vision A** — lecture physique thermique ; chaque carte qualifie sa propre grandeur (MIN
   froid/neutre/indisponible ; MAX chaud/neutre/indisponible) ; ni besoin, ni décision, ni cross-entity.
-- **Restitution** — Exception 2 thermique ; **catégorie thermique portée par le backend**, mapping
-  couleur appliqué par l'UI (**pas de RGBA métier backend**) ; neutre gris `0.2`, indisponibilité
-  `0.1` ; HEAT d'appoint hors restitution.
+- **Restitution** — Exception 2 thermique **étendue** ; **catégorie thermique portée par le backend**,
+  mapping couleur appliqué par l'UI (**pas de RGBA métier backend**) ; **`froid` / `dans_plage` (vert) /
+  `chaud`** selon la carte ; **indisponibilité native gris `0.1`** (aucun gris neutre `0.2` intermédiaire
+  pour ces catégories) ; HEAT d'appoint hors restitution. *(Amendé au réexamen pré-Lot 2B — voir bloc
+  ci-dessous.)*
 - **Production** — **agrégats sans mémoire propre** ; abstention lorsque toutes les façades se sont
   déjà abstenues ; fraîcheur héritée des façades ; périmètre = 3 chambres ; couverture partielle
   observable ; pas d'entité compagnon d'emblée.
@@ -206,6 +208,23 @@ Précisions encore ouvertes (reportées au Lot 2, non décidées) :
 - forme Home Assistant de l'indisponibilité de l'agrégat ;
 - attributs de couverture ;
 - noms et emplacements canoniques des deux contrats.
+
+### Réexamen propriétaire pré-Lot 2B (2026-07-18) — terminé
+
+Décision propriétaire sur la seule restitution de l'état non-froid / non-chaud : la catégorie
+résiduelle grise « neutre » est **remplacée** par une **catégorie physique `dans_plage`** rendue en
+**vert de l'Exception 2 thermique étendue**. Conséquences documentaires **préalables au Lot 2B**,
+consignées par la présente reconsolidation :
+
+- **extension contrôlée de l'Exception 2** (`ui/couleurs/03_exceptions.md`) : ajout du vert `dans_plage`,
+  activé **uniquement** par un contrat explicite, sans migration automatique des autres indicateurs ;
+- **re-consolidation** de la note d'arbitrage (B1/B2/B3/B6, modèle, tableau) ;
+- **gris neutre intermédiaire non retenu** pour les catégories C27 : une catégorie incalculable est
+  **indisponible** (gris `0.1`).
+
+**Le contrat de restitution n'est ni rédigé ni validé ; les valeurs numériques des références ne sont
+pas décidées ; aucune entité backend n'est créée ; le runtime n'est pas corrigé ; les cartes ne sont
+pas modifiées ; aucune validation terrain n'a eu lieu. Lot 2B non commencé. C27 reste actif.**
 
 ### Lot 2A — contrat de production (terminé)
 
@@ -219,8 +238,10 @@ catégories thermiques, couleurs et logique HVAC (renvoyés au Lot 2B et aux dom
 
 ### Lot 2B — contrat de sémantique et restitution (prochain jalon)
 
-Rédaction et validation du contrat de restitution : catégories `froid` / `neutre` / `chaud`,
-références physiques **dédiées** (basse/haute, stables, non contextuelles), catégorie portée par le
-backend, mapping UI vers l'Exception 2, neutre `0.2` / indisponibilité `0.1`. **Dépend du Lot 2A
-mergé.** **Aucun runtime, UI, checker ou CI n'est décidé ou engagé à ce stade. C27 reste actif et
-non clos.**
+Rédaction et validation du contrat de restitution `restitution_chambres_etage.md` : catégories
+`froid` / `dans_plage` / `chaud` (selon la carte), références physiques **dédiées** (basse/haute,
+stables, non contextuelles, indépendantes de tout paramètre décisionnel HVAC), catégorie portée par le
+backend, mapping UI vers l'**Exception 2 étendue** (dont le vert `dans_plage`), **indisponibilité native
+`0.1`** (aucun gris neutre `0.2` intermédiaire). **Dépend du Lot 2A mergé** et **ne rouvre pas** le
+contrat de production. **Aucun runtime, UI, checker ou CI n'est décidé ou engagé à ce stade. C27 reste
+actif et non clos.**
