@@ -95,6 +95,7 @@ trois modes. Substituer `<mode>` par `cool`, `dry` ou `heat`.
 | `requalification_autorisation` | `binary_sensor.autorisation_clim_<mode>` → `on` | `for: 5 min` |
 | `extinction_besoin` | `binary_sensor.besoin_clim_<mode>` → `off` | — |
 | `extinction_autorisation` | `binary_sensor.autorisation_clim_<mode>` → `off` | — |
+| `extinction_besoin_indisponible` (C28) | `binary_sensor.besoin_clim_<mode>` → `unavailable`/`unknown` | — |
 
 ### Branches d'action
 
@@ -104,8 +105,26 @@ trois modes. Substituer `<mode>` par `cool`, `dry` ou `heat`.
 | `requalification_autorisation` | besoin `on` | `turn_on` |
 | `extinction_besoin` | — | `turn_off` |
 | `extinction_autorisation` | — | `turn_off` |
+| `extinction_besoin_indisponible` (C28) | — | `turn_off` |
 
 `mode: single`. Aucune branche `boot` n'est portée par l'automation runtime.
+
+### Fail-closed sur besoin non vivant (C28)
+
+Lorsque `binary_sensor.besoin_clim_<mode>` (binary_sensor template d'hystérésis) devient
+`unknown` ou `unavailable`, l'admissibilité **doit être révoquée immédiatement** :
+`input_boolean.besoin_clim_<mode>_admissible` passe à `off`,
+`binary_sensor.besoin_clim_<mode>_admissible` reflète `off`, et `sensor.clim_target_mode`
+**converge vers `off`**. **Aucune action COOL/HEAT ne peut être maintenue ni réarmée**
+tant que le besoin n'est pas redevenu vivant. Cette révocation s'ajoute, au **même rang
+normatif**, aux extinctions existantes sur `besoin → off` et `autorisation → off`.
+
+Le contrat impose ce **résultat** et le **front déclencheur attendu** (transition du
+besoin vers `unknown`/`unavailable`) ; le **moyen concret** de détecter ce front relève
+de l'implémentation runtime et **doit être vérifié** (audit L3), sans qu'un mécanisme
+Home Assistant particulier soit présumé conforme ici. C'est la **défense en profondeur
+métier**, indépendante du comportement amont du besoin. *(Le boot est déjà couvert :
+« capteurs `unknown/unavailable` après 1 min → Extinction conservatrice ».)*
 
 ---
 
@@ -178,6 +197,10 @@ mais avec des capteurs KO justifie une extinction par sécurité.
 7. Si la convergence système (`systeme_stable`) n'a pas eu lieu dans les
    5 minutes après `homeassistant.start`, la réconciliation abandonne sans
    modifier l'état du helper.
+8. **(C28)** Un **besoin indisponible** (`unknown`/`unavailable`) **révoque
+   immédiatement** l'admissibilité (fail-closed), au même rang qu'un besoin `off`
+   ou une autorisation `off`. L'admissibilité n'est **jamais** maintenue sur un
+   besoin non vivant, et la décision converge vers `off`.
 
 ---
 

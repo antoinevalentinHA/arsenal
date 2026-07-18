@@ -4,21 +4,21 @@
 |---|---|
 | **Chantier** | Gouverner le raccord *disponibilité des températures/seuils appliqués → franchissements ON/OFF → hystérésis des besoins COOL/HEAT → admissibilité/décision/exécution*, lorsqu'une observation nécessaire devient inexploitable ; et l'honnêteté des seuils appliqués (interdiction de fabriquer une observation par un repli numérique). |
 | **Domaine** | CLIMATISATION (COOL et HEAT d'appoint). |
-| **Statut** | **cadrage ouvert — aucun runtime commencé ; aucune couche corrective choisie ; consolidation contractuelle requise avant tout patch. Chantier BLOQUANT pour C27 R2 (abstention des agrégats).** |
-| **Priorité** | **P2** (proposée) — voir §Priorité. Candidature P1 signalée (dimension sûreté). |
+| **Statut** | **L1 (consolidation contractuelle) terminée — doctrine consolidée ; amendements contractuels A–F proposés, en attente de validation propriétaire avant consignation ; aucun runtime commencé. Chantier BLOQUANT pour C27 R2 (abstention des agrégats).** |
+| **Priorité** | **P1** — propagation démontrée jusqu'à l'action (maintien COOL/HEAT en aveugle non masqué par l'aval) ; risque déjà présent aujourd'hui via le gel des agrégats. Voir §Priorité. |
 | **Ouvert le** | 2026-07-18. |
 | **Preuve de départ** | Défaut latent **révélé par l'audit du lot runtime C27** ([`../transverses/chantier_temperature_min_max_chambres_dashboard_arsenal.md`](../transverses/chantier_temperature_min_max_chambres_dashboard_arsenal.md)) : rendre les agrégats `temperature_min/max_chambres` **abstinents** (Lot 2A) activerait un maintien de besoin sur données inconnues. Loci runtime et contractuels au §3. |
-| **Prochain jalon** | **Consolidation contractuelle** (autorité sur inconnu / hystérésis / extinction / abstention / sûreté), COOL et HEAT étudiés séparément, **avant** tout choix de couche et tout patch. |
+| **Prochain jalon** | **Validation propriétaire des amendements A–F** (§14), puis consignation contractuelle (L2), puis runtime (L3), puis validation (L4). |
 
-> **⚠️ Portée de l'ouverture.** Cette ouverture **ne vaut ni arbitrage rendu, ni choix de couche corrective (A/B/C/D), ni décision de patcher, ni amendement de contrat.** C'est une **ouverture documentaire de gouvernance** : elle enregistre l'objet, le défaut latent, le silence contractuel, la dépendance imposée à C27, et les questions ouvertes. **Aucun runtime, contrat, checker, CI ou patch n'est produit ni modifié par ce document. C27 n'est pas modifié.**
+> **⚠️ État courant (post-L1).** La **consolidation contractuelle (L1) est terminée** : la doctrine est **arrêtée** (§6), la propagation jusqu'à l'action est **démontrée** (§3.4), la couche corrective est **retenue** (§10), et les **amendements A–F** sont **proposés** (§10bis). **Aucun contrat n'est encore consigné, aucun runtime n'est modifié, C27 n'est pas modifié.** La prochaine étape est la **validation propriétaire des amendements** avant consignation (L2).
 
 ---
 
 ## Priorité (justification)
 
-**P2 proposée.** Le défaut est **latent** : aujourd'hui les agrégats `temperature_min/max_chambres` **ne s'abstiennent pas** (ils republient `{{ last }}`), donc l'extinction peut encore s'évaluer sur la valeur figée et **libérer** le besoin — le maintien aveugle n'est **pas** observable en régime établi. Il est en outre **partiellement masqué** en aval (admissibilité, veto, exécution — cf. §3). Il **devient activable** dès que C27 rendra les agrégats abstinents (C27 R2).
+**P1 (décision propriétaire, après L1).** L'audit L1 a **démontré** que le maintien COOL/HEAT en aveugle **atteint l'action** et **n'est pas masqué** en aval : `clim_target_mode` reste `cool`/`heat` et la commande est **maintenue** tant que la température n'est pas revenue (l'admissibilité est front-triggered, la décision et l'exécution ne relisent **aucune** température des chambres, l'`autorisation` dépend de l'extérieur/fenêtres/horaire/absence, pas des chambres). De plus, le risque **existe déjà aujourd'hui** via le **gel** des agrégats (`{{ last }}`) : la clim peut être maintenue sur une température de chambres **périmée** (dette déjà nommée en `13 §6`). Il reste **peu fréquent** (panne simultanée des 3 façades pendant un COOL/HEAT actif), mais sa conséquence **atteint l'action** et sa direction est **contraire à la sûreté** (« couper vite, rallumer prudemment »). → **P1 retenue.**
 
-**Candidature P1 signalée** : la doctrine Climatisation pose « la sécurité prime sur le confort » et « couper vite, rallumer prudemment » ; un besoin qui reste `on` sur une observation absente est l'exact inverse. Le classement final P1/P2 relève d'une **décision propriétaire** (dimension sûreté vs caractère latent/masqué).
+**Limite de création (non un masque) :** un besoin latché ON ne crée **pas** de front neuf → l'admissibilité **ne peut pas naître** d'un état OFF pendant la panne (Porte 2). Le blind-ON **perpétue** une action existante, il n'en démarre pas de nouvelle.
 
 ---
 
@@ -57,9 +57,9 @@ Quand l'observation devient inconnue : `allumage_atteint → false` **et** `exti
 - **Doctrine de sûreté / abstention honnête : forte mais liée à d'AUTRES couches** — admissibilité (extinction conservatrice au boot sur signaux KO), veto fail-closed (`15_absence_vacances_veto_cool.md`), exécution (inconnu = échec, pas abstention neutre, `08_execution.md`), « **0 ≠ unavailable**, jamais de repli numérique, jamais de `hold` » (`13_intensite_besoin_froid.md`, **scopé au capteur d'intensité**), « la sécurité prime sur le confort » (`05_decision_candidats.md`, `09_securite.md`).
 - **`seuil_allumage/extinction_clim_applique`** : gouvernés (`10_sensors_seuils.md`) **mais aucune clause `float(0)`** — le `float(0)` est un **défaut d'implémentation non documenté** ; là où un repli est délibérément choisi ailleurs, il est **fail-closed**, pas un `0` neutre.
 
-### 3.4 Rôle protecteur actuel de l'aval (sans le considérer comme une correction)
+### 3.4 Aval NON protecteur — propagation jusqu'à l'action démontrée (L1)
 
-Le maintien aveugle survit aujourd'hui **parce que l'aval force `off`/fail-closed** (admissibilité boot, veto, exécution) — c'est un **masquage**, **pas une correction** de la couche besoin. Le degré exact de ce masquage **jusqu'à l'action réelle** n'est **pas démontré** et fait partie de l'objet C28 (§9).
+L'audit L1 a **tracé la chaîne bout-en-bout** et **démontré** que l'aval **ne protège pas** contre le maintien aveugle : aucune couche au-dessus du franchissement ne relit la température des chambres. `clim_target_mode` reste `cool`/`heat` et la commande est **maintenue** tant que la température n'est pas revenue. `autorisation_clim_cool` dépend de l'extérieur/fenêtres/horaire/absence (pas des chambres) ; la décision et l'exécution ne lisent que des booléens ; l'infra-fail-closed est borné à `climate.clim`/`switch.clim_power`. Le boot ne force `off` que via l'extinction conservatrice **keyée sur les booléens**, **pas** sur la température inconnue. **Le maintien COOL/HEAT en aveugle atteint donc l'action** (cas de perpétuation d'une action déjà en cours ; cf. §Priorité pour la limite de création).
 
 ---
 
@@ -75,23 +75,22 @@ C28 gouverne le raccord entre :
 
 ---
 
-## 5. Hors périmètre de l'ouverture
+## 5. Hors périmètre (état courant post-L1)
 
-Ne **pas**, à ce stade :
+À ce stade (L1 terminée, avant validation propriétaire et consignation) :
 
-- amender les contrats Climatisation ;
-- choisir définitivement la couche corrective (A/B/C/D) ;
-- modifier le runtime ;
-- modifier C27 ;
-- créer un checker ou modifier la CI ;
-- préparer un patch ;
-- **prétendre qu'une commande réelle reste nécessairement active** : la propagation jusqu'à l'action doit encore être **démontrée bout en bout**.
+- **aucun contrat n'est consigné** (les amendements A–F sont **proposés**, non appliqués) ;
+- **aucun runtime n'est modifié**, aucun patch, aucun checker, aucune CI ;
+- **C27 n'est pas modifié** ;
+- **DRY** reste **hors périmètre** (sauf composant partagé démontré à L3) ;
+- **`08_execution.md`** n'est **pas** amendé (aucune lacune propre à l'exécution démontrée ; la défense thermique reste en Admissibilité) ;
+- la **correction du gel des agrégats** reste au **contrat de production C27** (C28 gouverne la **réaction** de la machine Climatisation, pas la valeur périmée de l'agrégat).
 
 ---
 
-## 6. Principes de cadrage
+## 6. Principes de cadrage → doctrine consolidée (L1)
 
-> Ces principes **gouvernent la méthode et le périmètre** du chantier ; ils **ne créent, à eux seuls, aucune règle opposable au runtime**. Ils ne **deviendront opposables** qu'**après consolidation dans les contrats Climatisation compétents** (L1). C28 **n'amende aucune doctrine** à l'ouverture.
+> Ces principes ont **fondé** la consolidation L1 et sont désormais **formalisés** dans les amendements A–F (§10bis). Ils **deviendront opposables au runtime** à la **consignation (L2)**, après validation propriétaire. Ils restent la **doctrine de référence** du chantier.
 
 - une **observation inconnue n'est pas équivalente à un seuil non atteint** ;
 - l'**inconnu ne doit pas fabriquer une valeur numérique** ;
@@ -104,9 +103,9 @@ Ne **pas**, à ce stade :
 
 ---
 
-## 7. Silence contractuel (constat central)
+## 7. Silence contractuel identifié — traité par les amendements A–F
 
-Le runtime respecte **séparément** les contrats existants (franchissement `false`-sur-inconnu **mandaté** ; hystérésis `hold` **normative**), mais **leur composition** — `false` + `false` → `hold` d'un `on` sur donnée absente — **n'est gouvernée nulle part**. Ce n'est donc **pas** une non-conformité citable mais un **silence/incomplétude** au raccord franchissement ↔ besoin, en **tension** avec la doctrine de sûreté que **toutes les couches voisines** appliquent déjà. La consolidation contractuelle (§Prochain jalon) doit **lever ce silence** avant tout patch.
+Le runtime respectait **séparément** les contrats existants (franchissement `false`-sur-inconnu **spécifié** ; hystérésis `hold` **spécifiée**), mais **leur composition** — `false` + `false` → `hold` d'un `on` sur donnée absente — **n'était gouvernée nulle part** (silence/incomplétude, en tension avec la doctrine `13` normative mais entity-local). **L1 lève ce silence** : les amendements A–F (§10bis) formalisent explicitement `unknown ≠ seuil non atteint`, l'abstention du besoin, l'honnêteté des seuils, la garde aval en Admissibilité, et généralisent la doctrine `13` à l'échelle du domaine. La **consignation (L2)** rendra ces règles opposables.
 
 ---
 
@@ -118,19 +117,18 @@ Le runtime respecte **séparément** les contrats existants (franchissement `fal
 
 ---
 
-## 9. Questions ouvertes
+## 9. Questions runtime encore ouvertes (pour L3)
 
-1. Pourquoi les binaires d'extinction COOL/HEAT retournent `false` sur inconnu (mandat contractuel) — et faut-il **distinguer** l'inconnu du « seuil non atteint » à cette couche ?
-2. Comment les verrous de besoin réagissent exactement (COOL et HEAT **séparément**) à `false`+`false` sur inconnu, au démarrage, au reload (« non déterminable depuis le YAML ») ?
-3. Quelle **couche** doit porter le correctif (observation de seuil / besoin / pipeline / garde d'exécution / plusieurs) ?
-4. Le comportement actuel est-il **non conforme** ou seulement **incomplet** ? (constat §7 : incomplet.)
-5. `sensor.seuil_allumage_clim_applique` et son `float(0)` doivent-ils être traités **dans ce chantier** ? (recommandé : oui, §4.)
-6. Jusqu'où l'aval **masque** réellement le maintien aveugle **jusqu'à l'action** — un besoin `on` aveugle atteint-il une **commande COOL/HEAT réelle** ? (à **démontrer**, non présumé.)
-7. Amender quel(s) fichier(s) contractuel(s) (`besoins/10_besoins.md`, `seuils_et_franchissements/20_binary_sensors_franchissement.md`, `09_securite.md`) ?
+*(Les questions de cadrage/doctrine sont **résolues** par L1 — cf. §7 et §10bis. Ne restent que des incertitudes d'implémentation, à lever à l'audit runtime L3, sans forcer de panne.)*
+
+1. **Détection fiable de `besoin → unknown/unavailable`** : HA émet-il ce front de façon exploitable, et le wrapper `besoin_clim_<mode>_admissible` + `clim_target_mode` convergent-ils bien vers `off` une fois l'`input_boolean` éteint (vs état indéfini) ?
+2. **Boot/reload de l'hystérésis** (`restore_state`) — « non déterminable depuis le YAML » : à caractériser en simulation.
+3. **Propagation de l'abstention des franchissements** vers leurs autres consommateurs (« couche décision clim · UI diagnostic »).
+4. **Divergence contrat↔runtime** sur l'entité de présence des seuils appliqués (`presence_famille_unifiee` documenté vs `presence_confort_thermique_stabilisee` + `clim_mode_nuit_effectif` runtime) — **dette documentaire hors périmètre C28**, à signaler.
 
 ---
 
-## 10. Options de couche (recensées, non tranchées)
+## 10. Options de couche — recensement et résolution (L1)
 
 | Option | Couche | Principe | Nature |
 |---|---|---|---|
@@ -139,26 +137,51 @@ Le runtime respecte **séparément** les contrats existants (franchissement `fal
 | **C** | Aval (admissibilité/décision/exécution) | garantir extinction/abstention sur inconnu | **masque** sans corriger la couche besoin |
 | **D** | Combinée | seuils honnêtes + franchissement/besoin propageant l'inconnu + vérif. aval | cohérente bout-en-bout, plus large |
 
-**Aucune option n'est retenue à l'ouverture.** La cible est une **correction cohérente bout en bout** ; la couche exacte sera arrêtée **après consolidation contractuelle**.
+**Résolution L1 (décision propriétaire) : Option D — combinée, autorité primaire au raccord seuils/franchissements↔besoin + garde aval indépendante en Admissibilité.** Justifiée par la preuve que l'aval **ne masque pas** (§ Résultat L1). « Aval seul » (C) rejeté (ne masque même pas) ; « seuil `float(0)` seul » rejeté (aggrave).
 
 ---
 
-## 11. Lots pressentis (indicatifs, non ordonnancés fermement)
+## 10bis. Résultat L1 (consolidation contractuelle)
 
-- **L1 — consolidation contractuelle** : lever le silence §7 ; définir l'autorité sur inconnu/hystérésis/extinction/abstention/sûreté ; COOL vs HEAT séparés.
-- **L2 — décision de couche** (A/B/C/D) fondée sur L1.
-- **L3 — runtime** conforme au contrat consolidé (dont honnêteté des seuils appliqués).
-- **L4 — validation** (statique + simulée + terrain naturel, sans forcer de panne) puis **clôture**.
+**Chaîne tracée (COOL/HEAT) et propagation démontrée.** Toute la température des chambres est **absorbée** au raccord seuils→franchissements→besoin ; **aucune couche au-dessus ne relit la température**. Si la clim refroidit/chauffe déjà quand la température devient inexploitable : `besoin` **maintient ON** (hystérésis `hold` sur `false`+`false`), l'admissibilité (front-triggered) **reste ON**, `clim_target_mode` reste `cool`/`heat`, et la commande est **maintenue** jusqu'au retour des capteurs. **L'aval NE masque PAS** (l'`autorisation` dépend de l'extérieur/fenêtres/horaire/absence, pas des chambres ; l'exécution ne fail-close que sur `climate.clim`/`switch.clim_power`). Le boot force `off` uniquement via l'extinction conservatrice keyée sur les booléens, **pas** sur la température inconnue.
 
-*(Découpage indicatif ; les lots réels seront fondés sur les dépendances constatées en L1.)*
+**Doctrine consolidée retenue (8 points)** :
+1. `unknown`/`unavailable` ≠ `false` ≠ « seuil non franchi ».
+2. **Abstention honnête de tous les seuils appliqués thermiques COOL et HEAT** ; **suppression des replis numériques `float(0)`, `float(20)` et `float(0.5)`** (aucune sentinelle admise comme frontière thermique).
+3. Franchissement : **préserve/propage** l'inexploitabilité (s'abstient, ne collapse pas en `false`).
+4. Maintien hystérétique **légitime seulement** sur observations **vivantes**.
+5. Observation déterminante inexploitable → **besoin nativement indisponible** (jamais `on` conservé, **ni** `off` artificiel) → **admissibilité fail-closed** → décision `off` → **aucune action maintenue/réarmée**.
+6. Retour de disponibilité : ON vrai → réarmement normal ; OFF vrai → `off` ; **bande d'hystérésis sans état fiable → aucune restauration aveugle d'un ancien `on`**.
+7. Boot/reload avec données inexploitables → **fail-closed**.
+8. Garde aval en **Admissibilité** (métier), **défense en profondeur indépendante** ; Guard **reste système-only** ; exécution conserve ses protections infra.
+
+**Décisions propriétaire actées** : C28 → **P1** ; besoin → **indisponible** (jamais `on` conservé, ni `off` artificiel) ; **garde fail-closed aval obligatoire en Admissibilité** ; COOL/HEAT même doctrine (démonstration séparée) ; **DRY hors périmètre** ; **seuils appliqués COOL et HEAT (replis `float(0)`/`float(20)`/`float(0.5)`) inclus** ; **C28 avant C27 R2**.
+
+**Amendements contractuels proposés (A–F)** — voir document séparé `C28_L1_amendements_proposes.md` :
+- **A** `capteurs/seuils_et_franchissements/10_sensors_seuils.md` — abstention honnête de **tous** les seuils appliqués thermiques **COOL et HEAT** ; suppression des replis `float(0)`, `float(20)`, `float(0.5)`.
+- **B** `capteurs/seuils_et_franchissements/20_binary_sensors_franchissement.md` — franchissements thermiques : abstention native (propagation de l'inexploitabilité), `unknown` ≠ seuil non atteint.
+- **C** `capteurs/besoins/10_besoins.md` — besoin COOL/HEAT indisponible sur observation non vivante ; pas de restauration aveugle.
+- **D** `capteurs/admissibilite/00_admissibilite.md` — extinction runtime sur `besoin → unavailable` (garde aval fail-closed) + invariant.
+- **E** `09_securite.md` — clarification : vivacité thermique = métier (Admissibilité), Guard reste système-only (aucun nouvel invariant Guard).
+- **F** `13_intensite_besoin_froid.md` §6 — fermeture/renvoi de la dette domaine-wide (machine → C28 ; agrégat → C27).
+
+---
+
+## 11. Lots (mis à jour post-L1)
+
+- **L1 — consolidation contractuelle : TERMINÉE** (doctrine + amendements A–F proposés).
+- **L2 — consignation contractuelle** : après **validation propriétaire** des amendements A–F.
+- **L3 — runtime** conforme aux contrats consolidés (seuils honnêtes ; franchissements abstinents ; besoin indisponible ; garde admissibilité) + audit des consommateurs des franchissements.
+- **L4 — validation** (statique + simulée + terrain naturel, sans forcer de panne) puis **clôture** ; **déblocage de C27 R2**.
 
 ---
 
 ## 12. Critères de clôture (bornés)
 
-- silence contractuel §7 **levé** (autorité explicite sur inconnu/hystérésis/extinction) ;
-- comportement COOL et HEAT sur observation inconnue **gouverné et démontré** (pas de maintien aveugle non gouverné) ;
-- seuils appliqués **honnêtes** (aucun repli numérique fabriquant une observation) ;
+- silence contractuel §7 **levé** (amendements A–F consignés) ;
+- comportement COOL et HEAT sur observation inexploitable **gouverné** (besoin indisponible ; pas de maintien/réarmement aveugle) ;
+- seuils appliqués **honnêtes** (aucun repli numérique) ;
+- **garde aval Admissibilité** effective (fail-closed sur besoin indisponible) ;
 - sûreté **démontrée jusqu'à l'action** ;
 - **déblocage de C27 R2** constaté ;
 - validation sans panne artificielle.
@@ -167,5 +190,5 @@ Le runtime respecte **séparément** les contrats existants (franchissement `fal
 
 ## 13. Statut & prochain jalon
 
-- **Statut** : cadrage ouvert ; aucun runtime ; aucune couche choisie ; **bloquant pour C27 R2**.
-- **Prochain jalon** : **consolidation contractuelle** (L1), COOL et HEAT séparés, avant tout choix de couche et tout patch.
+- **Statut** : **L1 terminée — P1** ; doctrine consolidée ; amendements A–F **proposés**, en attente de **validation propriétaire** ; aucun runtime ; **bloquant pour C27 R2**.
+- **Prochain jalon** : **validation propriétaire des amendements A–F**, puis **consignation contractuelle (L2)**.

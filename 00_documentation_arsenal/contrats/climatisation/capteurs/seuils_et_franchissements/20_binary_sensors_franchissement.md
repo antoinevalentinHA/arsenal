@@ -1,6 +1,6 @@
 # Binary Sensors — Franchissements
 
-Tous retournent `false` si une entrée est `unavailable` ou `unknown`, sauf `clim_humidex_sup_cible_dry` (voir [`90_observations.md`](90_observations.md)).
+**Franchissements thermiques (COOL/HEAT — allumage & extinction) : abstention native (C28).** Lorsqu'une entrée (`temperature_*_chambres` **ou** le seuil appliqué correspondant) est `unavailable`/`unknown`, le franchissement thermique **s'abstient** (devient `unavailable`) — il **ne collapse pas** l'inconnu en `false`. **Un `unavailable` n'est pas un « seuil non franchi ».** Les franchissements **hygrométriques (DRY)** conservent leur comportement propre (`clim_humidex_sup_cible_dry` sans fallback ; les deux franchissements DRY à hystérésis retournent `false` sur `unavailable`/`unknown` — voir [`90_observations.md`](90_observations.md)).
 
 ---
 
@@ -14,7 +14,7 @@ Tous retournent `false` si une entrée est `unavailable` ou `unknown`, sauf `cli
 | Rôle | Température maximale des chambres ≥ seuil ON COOL |
 | Dépendances | `sensor.temperature_max_chambres` · `sensor.seuil_allumage_clim_applique` |
 | Logique | `temperature_max_chambres ≥ seuil_allumage_clim_applique` |
-| Fallback | unavailable / unknown → false |
+| Abstention (C28) | entrée `unavailable`/`unknown`/non numérique → **franchissement `unavailable`** (jamais `false`). L'inexploitabilité est **propagée**, pas masquée. |
 | Consommé par | `binary_sensor.besoin_clim_cool` |
 | Position | Couche observation — franchissement COOL ON |
 
@@ -28,7 +28,7 @@ Tous retournent `false` si une entrée est `unavailable` ou `unknown`, sauf `cli
 | Rôle | Température minimale des chambres ≤ seuil OFF COOL |
 | Dépendances | `sensor.temperature_min_chambres` · `sensor.seuil_extinction_clim_applique` |
 | Logique | `temperature_min_chambres ≤ seuil_extinction_clim_applique` |
-| Fallback | unavailable / unknown → false |
+| Abstention (C28) | entrée `unavailable`/`unknown`/non numérique → **franchissement `unavailable`** (jamais `false`). L'inexploitabilité est **propagée**, pas masquée. |
 | Consommé par | couche décision clim · UI diagnostic |
 | Position | Couche observation — franchissement COOL OFF |
 
@@ -44,7 +44,7 @@ Tous retournent `false` si une entrée est `unavailable` ou `unknown`, sauf `cli
 | Rôle | Température minimale des chambres < seuil ON HEAT (logique inverse) |
 | Dépendances | `sensor.temperature_min_chambres` · `sensor.seuil_allumage_chauffage_clim` |
 | Logique | `temperature_min_chambres < seuil_allumage_chauffage_clim` |
-| Fallback | unavailable / unknown → false |
+| Abstention (C28) | entrée `unavailable`/`unknown`/non numérique → **franchissement `unavailable`** (jamais `false`). L'inexploitabilité est **propagée**, pas masquée. |
 | Consommé par | `binary_sensor.besoin_clim_heat` |
 | Position | Couche observation — franchissement HEAT ON |
 
@@ -58,9 +58,21 @@ Tous retournent `false` si une entrée est `unavailable` ou `unknown`, sauf `cli
 | Rôle | Température minimale des chambres ≥ seuil OFF HEAT |
 | Dépendances | `sensor.temperature_min_chambres` · `sensor.seuil_extinction_chauffage_clim` |
 | Logique | `temperature_min_chambres ≥ seuil_extinction_chauffage_clim` |
-| Fallback | unavailable / unknown → false |
+| Abstention (C28) | entrée `unavailable`/`unknown`/non numérique → **franchissement `unavailable`** (jamais `false`). L'inexploitabilité est **propagée**, pas masquée. |
 | Consommé par | `binary_sensor.besoin_clim_heat` |
 | Position | Couche observation — franchissement HEAT OFF |
+
+---
+
+## `unknown` ≠ seuil non atteint (C28)
+
+Un franchissement thermique à `false` signifie **exclusivement** « seuil non franchi
+**sur données vivantes** ». L'inexploitabilité d'une entrée est un **troisième cas**
+(`unavailable`), distinct de `false`. Les consommateurs — notamment `besoin_clim_cool`
+et `besoin_clim_heat` — **doivent** distinguer ces cas : un consommateur **ne doit
+jamais** interpréter l'`unavailable` d'un franchissement comme « seuil non atteint ».
+La vivacité de **tous** les franchissements nécessaires est vérifiée **avant** toute
+logique ON/OFF (cf. [`../besoins/10_besoins.md`](../besoins/10_besoins.md)).
 
 ---
 

@@ -40,6 +40,18 @@ Le Guard ne consomme donc qu'une seule source de vérité métier : la sortie
 canonique `sensor.clim_target_mode`. À travers elle, il voit déjà le verdict
 de présence, de fenêtres et d'autorisations — sans jamais les relire.
 
+> **Vivacité thermique = grandeur du monde → Admissibilité (C28).** La **vivacité
+> de l'observation thermique** (température des chambres et seuils appliqués
+> exploitables) est une **grandeur du monde** : sa perte est gouvernée par la couche
+> **Admissibilité** (fail-closed sur besoin indisponible, cf.
+> [`capteurs/admissibilite/00_admissibilite.md`](capteurs/admissibilite/00_admissibilite.md)),
+> **jamais** par le Guard. Ajouter au Guard un invariant « pas de COOL/HEAT si
+> température non vivante » **échouerait** au test d'universalité (mode-dépendant,
+> paramètre-dépendant) et **court-circuiterait** l'Admissibilité — ce que la présente
+> frontière interdit. Le Guard **reste système-only**
+> (`target_mode`/`climate.clim`/`switch.clim_power`) ; **aucun nouvel invariant Guard**
+> n'est introduit par C28.
+
 ---
 
 ## Critère de démarcation Sécurité / Métier
