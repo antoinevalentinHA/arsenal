@@ -7,35 +7,24 @@
 #     TEMPLATE UI METIER
 #
 # 🎯 ROLE
-#     Affiche la température minimale parmi les chambres et
-#     positionne cette valeur dans une lecture thermique globale :
-#
-#       - Froid      → basé sur un seuil chauffage avec offset
-#       - Surchauffe → basée sur la vérité contractuelle clim COOL
-#
-#     Indique aussi la chambre la plus froide en label.
+#     Affiche la température minimale parmi les chambres, la chambre
+#     la plus froide en label, et restitue la catégorie thermique
+#     produite par le backend (contrat C27 Lot 2B).
 #
 # 🧱 NATURE
 #     - Template button-card
 #     - Spécialisation de carte_temperature_confort
-#     - UI uniquement (aucune décision)
+#     - UI uniquement — MAPPING trivial catégorie → couleur (§11)
+#     - Aucune décision, aucun recalcul, aucune comparaison de seuil
 #
-# 🎨 SEMANTIQUE
-#     - clim seuil allumage atteint              -> 🔴 rouge
-#     - temp_min < seuil chauffage ON            -> 🔵 bleu
-#     - entre les deux                           -> 🟢 vert
-#     - valeur manquante / état invalide         -> ⚪ gris
+# 🎨 SEMANTIQUE (Exception 2 thermique étendue — mapping trivial)
+#     - catégorie backend `froid`       -> 🔵 bleu thermique rgba(144,202,249,0.25)
+#     - catégorie backend `dans_plage`  -> 🟢 vert          rgba(76,175,80,0.2)
+#     - indisponibilité (native)        -> ⚪ gris indispo   rgba(158,158,158,0.1) — PRIORITAIRE
 #
-# 🔗 DEPENDANCES
-#     - sensor.temperature_min_chambres
-#     - binary_sensor.clim_seuil_allumage_cool_atteint
-#     - input_number.chauffage_consigne_confort
-#     - input_number.chauffage_offset_on
-#
-# ⚠️ CONTRAINTES
-#     - Symétrie stricte avec carte_temperature_max_chambres
-#     - Aucun recalcul clim local
-#     - Le froid reste basé sur chauffage principal
+# 🔗 DEPENDANCES (§9/§10 — aucun helper thermique, aucun franchissement, aucun cross-entity)
+#     - sensor.temperature_min_chambres            (valeur + chambre)
+#     - sensor.categorie_thermique_min_chambres    (catégorie backend)
 #
 # 🧩 USAGE
 #     type: custom:button-card
@@ -51,36 +40,17 @@ carte_temperature_min_chambres:
     card:
       - background-color: |
           [[[
-            const get = (id) => {
-              const s = states[id];
-              const v = parseFloat(s?.state);
-              return Number.isFinite(v) ? v : null;
-            };
+            const cat = states['sensor.categorie_thermique_min_chambres']?.state;
 
-            const temp_min        = get('sensor.temperature_min_chambres');
-            const cons_chauff     = get('input_number.chauffage_consigne_confort');
-            const off_chauff      = get('input_number.chauffage_offset_on');
-            const cool_on_atteint = states['binary_sensor.clim_seuil_allumage_cool_atteint']?.state;
+            const GRIS_INDISPO = 'rgba(158, 158, 158, 0.1)';
+            const FROID        = 'rgba(144, 202, 249, 0.25)';
+            const DANS_PLAGE   = 'rgba(76, 175, 80, 0.2)';
 
-            const RED   = 'rgba(244, 67, 54, 0.2)';
-            const GREEN = 'rgba(76, 175, 80, 0.2)';
-            const BLUE  = 'rgba(33, 150, 243, 0.2)';
-            const GREY  = 'rgba(158, 158, 158, 0.2)';
-
-            if (
-              temp_min === null ||
-              cons_chauff === null ||
-              off_chauff === null ||
-              !['on', 'off'].includes(cool_on_atteint)
-            ) {
-              return GREY;
-            }
-
-            const seuil_chauff_on = cons_chauff - off_chauff;
-
-            if (cool_on_atteint === 'on')     return RED;
-            if (temp_min < seuil_chauff_on)   return BLUE;
-            return GREEN;
+            // Priorité : indisponibilité native (unavailable/unknown/toute
+            // autre valeur) -> gris indispo prioritaire ; sinon mapping trivial.
+            if (cat === 'froid')      return FROID;
+            if (cat === 'dans_plage') return DANS_PLAGE;
+            return GRIS_INDISPO;
           ]]]
 
   label: |

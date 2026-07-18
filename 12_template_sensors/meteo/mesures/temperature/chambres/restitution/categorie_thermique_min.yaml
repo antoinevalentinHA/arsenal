@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 TEMPLATE SENSOR — Catégorie thermique MIN chambres
+# ----------------------------------------------------------
+# 🎯 RÔLE (contrat C27 Lot 2B — restitution_chambres_etage.md §6/§7)
+#   Produire la catégorie sémantique de la borne BASSE (MIN chambres)
+#   contre sa PROPRE référence (frontière basse appliquée) :
+#     - MIN <  référence basse  → `froid`
+#     - MIN >= référence basse  → `dans_plage` (égalité incluse)
+#
+#   Le backend produit la SÉMANTIQUE, jamais une couleur (§6). L'UI mappe.
+#
+# 🧱 SÉPARATION (§9 — aucun cross-entity)
+#   Ne lit QUE : sensor.temperature_min_chambres + sa référence basse.
+#   Ne lit JAMAIS temperature_max_chambres ni la référence haute.
+#
+# 🛡️ DISPONIBILITÉ NATIVE (§8)
+#   Catégorie `unavailable` si l'agrégat MIN OU la référence basse est
+#   inexploitable. Aucun état textuel, aucune catégorie périmée.
+#
+# 🔗 DÉPENDANCES
+#   - sensor.temperature_min_chambres
+#   - sensor.seuil_interieur_on_chauffage_applique  (référence basse)
+#
+# 📍 Entité : sensor.categorie_thermique_min_chambres
+# ==========================================================
+
+- sensor:
+    - name: "Catégorie thermique MIN chambres"
+      unique_id: categorie_thermique_min_chambres
+      icon: mdi:thermometer-chevron-down
+      availability: >
+        {{ states('sensor.temperature_min_chambres') | float(none) is not none
+           and states('sensor.seuil_interieur_on_chauffage_applique') | float(none) is not none }}
+      state: >
+        {% set mini = states('sensor.temperature_min_chambres') | float %}
+        {% set ref_basse = states('sensor.seuil_interieur_on_chauffage_applique') | float %}
+        {{ 'froid' if mini < ref_basse else 'dans_plage' }}

@@ -383,6 +383,113 @@ def test_forbidden_hex_colors():
 
 
 # ==========================================================
+# T4 — C27 : restitution conforme des cartes MIN/MAX (contrat Lot 2B)
+#      restitution_chambres_etage.md — backend décide, UI mappe.
+# ==========================================================
+
+def _nospace(s):
+    return re.sub(r"\s+", "", s)
+
+
+def _code(s):
+    # Retire les lignes de commentaire YAML (#) : les vérifications de
+    # consommation/interdiction portent sur le CODE, jamais sur la doc en-tête.
+    return "\n".join(l for l in s.splitlines() if not l.lstrip().startswith("#"))
+
+
+def test_c27_restitution_chambres_min_max():
+
+    R = ROOT
+    front = R / "12_template_sensors/chauffage/seuil_interieur_on_confort_applique.yaml"
+    cmin = R / "12_template_sensors/meteo/mesures/temperature/chambres/restitution/categorie_thermique_min.yaml"
+    cmax = R / "12_template_sensors/meteo/mesures/temperature/chambres/restitution/categorie_thermique_max.yaml"
+    kmin = R / "19_button_card_templates/40_dashboards/arsenal/30_diagnostic/carte_temperature_min_chambres.yaml"
+    kmax = R / "19_button_card_templates/40_dashboards/arsenal/30_diagnostic/carte_temperature_max_chambres.yaml"
+
+    before = len(ERRORS)
+    for label, p in [("frontière basse", front), ("catégorie MIN", cmin),
+                     ("catégorie MAX", cmax), ("carte MIN", kmin), ("carte MAX", kmax)]:
+        if not p.exists():
+            fail(f"C27 : {label} absent ({p.relative_to(R)})")
+    if len(ERRORS) > before:
+        return  # fichiers manquants : on n'enchaîne pas les faux positifs
+
+    # Code seul (commentaires d'en-tête retirés) : « consommer » = dans le code.
+    F = _code(front.read_text(encoding="utf-8", errors="ignore"))
+    CMIN = _code(cmin.read_text(encoding="utf-8", errors="ignore"))
+    CMAX = _code(cmax.read_text(encoding="utf-8", errors="ignore"))
+    KMIN = _code(kmin.read_text(encoding="utf-8", errors="ignore"))
+    KMAX = _code(kmax.read_text(encoding="utf-8", errors="ignore"))
+
+    # 1. Frontière basse PUBLIÉE, formule consigne − offset, availability, aucun repli
+    if "unique_id: seuil_interieur_on_chauffage_applique" not in F:
+        fail("C27 : frontière basse — unique_id attendu absent")
+    if ("chauffage_consigne_confort')|float-states('input_number.chauffage_offset_on')|float"
+            not in _nospace(F)):
+        fail("C27 : frontière basse — formule `consigne_confort − offset_on` attendue")
+    if not re.search(r"^\s*availability\s*:", F, re.M):
+        fail("C27 : frontière basse — availability absente")
+    if re.search(r"float\(\s*(?!none)\d", F):
+        fail("C27 : frontière basse — repli numérique float(<n>) interdit")
+
+    # 2-3. Catégories backend : bon agrégat + bonne frontière, états, pas de cross-entity, availability
+    if "unique_id: categorie_thermique_min_chambres" not in CMIN:
+        fail("C27 : catégorie MIN — unique_id absent")
+    if "temperature_min_chambres" not in CMIN or "seuil_interieur_on_chauffage_applique" not in CMIN:
+        fail("C27 : catégorie MIN — doit consommer l'agrégat MIN ET la référence basse")
+    if "temperature_max_chambres" in CMIN or "seuil_allumage_clim_applique" in CMIN:
+        fail("C27 : catégorie MIN — cross-entity interdit (ni MAX ni référence haute)")
+    if "'froid'" not in CMIN or "'dans_plage'" not in CMIN:
+        fail("C27 : catégorie MIN — états `froid`/`dans_plage` attendus")
+    if not re.search(r"^\s*availability\s*:", CMIN, re.M):
+        fail("C27 : catégorie MIN — availability absente")
+
+    if "unique_id: categorie_thermique_max_chambres" not in CMAX:
+        fail("C27 : catégorie MAX — unique_id absent")
+    if "temperature_max_chambres" not in CMAX or "seuil_allumage_clim_applique" not in CMAX:
+        fail("C27 : catégorie MAX — doit consommer l'agrégat MAX ET la référence haute")
+    if "temperature_min_chambres" in CMAX or "seuil_interieur_on_chauffage_applique" in CMAX:
+        fail("C27 : catégorie MAX — cross-entity interdit (ni MIN ni référence basse)")
+    if "'chaud'" not in CMAX or "'dans_plage'" not in CMAX:
+        fail("C27 : catégorie MAX — états `chaud`/`dans_plage` attendus")
+    if not re.search(r"^\s*availability\s*:", CMAX, re.M):
+        fail("C27 : catégorie MAX — availability absente")
+
+    # 4-10. Cartes : consomment la catégorie, aucune logique métier, palette exacte, gris indispo prioritaire
+    cartes = [
+        ("MIN", KMIN, "categorie_thermique_min_chambres", "categorie_thermique_max_chambres",
+         "temperature_min_chambres", "temperature_max_chambres", "chambre_la_plus_froide",
+         "rgba(144,202,249,0.25)"),
+        ("MAX", KMAX, "categorie_thermique_max_chambres", "categorie_thermique_min_chambres",
+         "temperature_max_chambres", "temperature_min_chambres", "chambre_la_plus_chaude",
+         "rgba(244,67,54,0.2)"),
+    ]
+    for tag, K, cat, other_cat, agg, other_agg, chambre, cat_color in cartes:
+        Kn = _nospace(K)
+        if cat not in K:
+            fail(f"C27 : carte {tag} — ne consomme pas sa catégorie backend `{cat}`")
+        for forbidden in ("input_number.chauffage", "clim_seuil_allumage_cool_atteint",
+                          "seuil_allumage_clim_applique", "seuil_interieur_on_chauffage_applique"):
+            if forbidden in K:
+                fail(f"C27 : carte {tag} — lecture interdite `{forbidden}` (helper/franchissement/frontière)")
+        if other_cat in K or other_agg in K:
+            fail(f"C27 : carte {tag} — cross-entity interdit (référence à l'autre borne)")
+        if agg not in K or chambre not in K:
+            fail(f"C27 : carte {tag} — valeur/chambre non préservées ({agg} / {chambre})")
+        if _nospace(cat_color) not in Kn:
+            fail(f"C27 : carte {tag} — couleur catégorie {cat_color} attendue (Exception 2 étendue)")
+        if "rgba(76,175,80,0.2)" not in Kn:
+            fail(f"C27 : carte {tag} — vert `dans_plage` rgba(76,175,80,0.2) attendu")
+        if "rgba(158,158,158,0.1)" not in Kn:
+            fail(f"C27 : carte {tag} — gris indispo rgba(158,158,158,0.1) prioritaire attendu")
+        if "rgba(158,158,158,0.2)" in Kn:
+            fail(f"C27 : carte {tag} — gris neutre 0.2 interdit pour ces catégories")
+
+    if len(ERRORS) == before:
+        print("✔ C27 restitution chambres MIN/MAX conforme (Lot 2B)")
+
+
+# ==========================================================
 # registre des tests
 # ==========================================================
 
@@ -390,6 +497,7 @@ TESTS = [
     "test_only_allowed_rgba_are_used",
     "test_only_allowed_rgb_are_used",
     "test_forbidden_hex_colors",
+    "test_c27_restitution_chambres_min_max",
 ]
 
 

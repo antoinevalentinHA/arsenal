@@ -1,0 +1,39 @@
+# ==========================================================
+# 🧠 TEMPLATE SENSOR — Catégorie thermique MAX chambres
+# ----------------------------------------------------------
+# 🎯 RÔLE (contrat C27 Lot 2B — restitution_chambres_etage.md §6/§7)
+#   Produire la catégorie sémantique de la borne HAUTE (MAX chambres)
+#   contre sa PROPRE référence (frontière haute appliquée) :
+#     - MAX >  référence haute  → `chaud`
+#     - MAX <= référence haute  → `dans_plage` (égalité incluse)
+#
+#   Le backend produit la SÉMANTIQUE, jamais une couleur (§6). L'UI mappe.
+#
+# 🧱 SÉPARATION (§9 — aucun cross-entity)
+#   Ne lit QUE : sensor.temperature_max_chambres + sa référence haute.
+#   Ne lit JAMAIS temperature_min_chambres ni la référence basse.
+#   La référence haute est consommée comme VALEUR de seuil (§10), jamais
+#   comme franchissement binaire ni décision.
+#
+# 🛡️ DISPONIBILITÉ NATIVE (§8)
+#   Catégorie `unavailable` si l'agrégat MAX OU la référence haute est
+#   inexploitable. Aucun état textuel, aucune catégorie périmée.
+#
+# 🔗 DÉPENDANCES
+#   - sensor.temperature_max_chambres
+#   - sensor.seuil_allumage_clim_applique  (référence haute — INV-RCE-4)
+#
+# 📍 Entité : sensor.categorie_thermique_max_chambres
+# ==========================================================
+
+- sensor:
+    - name: "Catégorie thermique MAX chambres"
+      unique_id: categorie_thermique_max_chambres
+      icon: mdi:thermometer-chevron-up
+      availability: >
+        {{ states('sensor.temperature_max_chambres') | float(none) is not none
+           and states('sensor.seuil_allumage_clim_applique') | float(none) is not none }}
+      state: >
+        {% set maxi = states('sensor.temperature_max_chambres') | float %}
+        {% set ref_haute = states('sensor.seuil_allumage_clim_applique') | float %}
+        {{ 'chaud' if maxi > ref_haute else 'dans_plage' }}
