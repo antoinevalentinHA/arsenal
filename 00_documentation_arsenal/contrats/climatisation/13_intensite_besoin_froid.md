@@ -228,9 +228,21 @@ chambres deviennent indisponibles. Cette **dette de gel** est **réelle** et
 concerne tout le domaine (besoin COOL, aération, chauffage).
 
 La couche perception du présent contrat **s'en protège** par la garde anti-gel
-fondée sur les façades (§4.3) et **n'attend pas** sa correction pour exister. La
-**correction de l'agrégat** (TTL / `availability` / ré-évaluation périodique)
-reste un **chantier séparé**, non bloquant pour cette couche.
+fondée sur les façades (§4.3) et **n'attend pas** sa correction pour exister.
+
+**Prise en charge (C28 / C27).** Cette dette de gel a **deux volets**, désormais
+gouvernés séparément : **(a)** la **réaction de la machine Climatisation** à une
+observation non vivante — le besoin COOL/HEAT ne doit ni maintenir `on` ni réarmer en
+aveugle — est **gouvernée par C28** (amendements aux couches seuils/franchissements/
+besoins/admissibilité :
+[`capteurs/besoins/10_besoins.md`](capteurs/besoins/10_besoins.md),
+[`capteurs/seuils_et_franchissements/20_binary_sensors_franchissement.md`](capteurs/seuils_et_franchissements/20_binary_sensors_franchissement.md),
+[`capteurs/admissibilite/00_admissibilite.md`](capteurs/admissibilite/00_admissibilite.md)) ;
+**(b)** la **correction de l'agrégat** lui-même (abstention honnête à zéro façade, sans
+gel) reste **gouvernée par C27** (contrat de production). La garde anti-gel locale du
+présent contrat (§4.3) **demeure** valable comme protection propre à la couche
+perception. La dette domaine-wide n'est donc **plus un simple constat** : elle est
+**prise en charge** par C28 (machine) et C27 (agrégat).
 
 ---
 

@@ -53,6 +53,21 @@ Cela préserve l'état courant sans modification : c'est le mécanisme d'hystér
 
 Le comportement à l'initialisation (démarrage HA, restauration d'état) dépend de la configuration du moteur de template Home Assistant et n'est pas déterminable depuis le YAML seul.
 
+### Vivacité et abstention — ordre de décision normatif (C28)
+
+L'évaluation du besoin suit **strictement** cet ordre :
+
+1. **Vérifier la vivacité de TOUS les franchissements nécessaires** — allumage **et** extinction. Si `clim_seuil_allumage_cool_atteint` **ou** `clim_seuil_extinction_cool_atteint` est `unavailable`/`unknown` (c'est-à-dire si `temperature_max_chambres`, `temperature_min_chambres`, ou un seuil appliqué est inexploitable), alors **`besoin_clim_cool` est indisponible** — sans exception.
+2. **Seulement si toutes les observations sont vivantes** : allumage vrai → `on` ; sinon extinction vraie → `off` ; sinon maintien hystérétique.
+
+**Conséquence explicite : un franchissement d'allumage vrai ne permet PAS `on` si le franchissement d'extinction est indisponible.** La machine ne peut ni **s'armer** ni **se maintenir** sans disposer **aussi** de son **chemin de libération** (l'extinction). La vivacité est un **prérequis** évalué **avant** toute logique ON/OFF.
+
+**Abstention native.** Lorsque le besoin est indisponible, il **ne conserve jamais** `on` **ni** ne publie artificiellement `off` : il devient **`unavailable`**. Aucune ancienne valeur `on` ne survit à une observation non vivante.
+
+**Retour de disponibilité — état déterministe.** Après une **rupture de vivacité**, l'**ancien état hystérétique est invalidé**. Au retour : allumage vrai → `on` ; extinction vraie → `off` ; **si aucun seuil ON ni OFF n'est franchi (retour dans la bande), le besoin repart de `off`** — résultat normatif **`off`** (et non `unavailable` ni un ancien `on`), **sans** prétendre que l'observation inconnue elle-même valait `off`.
+
+**Boot/reload.** Au démarrage avec observations inexploitables, le besoin est **indisponible** ; aucun état restauré ne le rend `on`. Dès que les observations redeviennent vivantes, la règle « retour de disponibilité » ci-dessus s'applique (repart de `off` si dans la bande).
+
 ### Position dans le système
 
 ```
@@ -112,6 +127,12 @@ SINON  →  état courant conservé  (hystérésis — aucun franchissement acti
 ### Comportement de repli (fallback)
 
 Identique à `besoin_clim_cool` : conservation de l'état courant via `this.entity_id`.
+
+### Vivacité et abstention — ordre de décision normatif (C28)
+
+**Même ordre normatif que `besoin_clim_cool`** : (1) vérifier la vivacité de `clim_seuil_allumage_heat_atteint` **et** `clim_seuil_extinction_heat_atteint` (tous deux fondés sur `temperature_min_chambres`) → l'**indisponibilité de MIN (ou d'un seuil HEAT) suffit** à rendre **`besoin_clim_heat` indisponible** ; (2) seulement si tout est vivant : allumage vrai → `on` / sinon extinction vraie → `off` / sinon maintien.
+
+**Même prérequis** : pas d'armement ni de maintien sans **chemin de libération vivant**. **Abstention native** (jamais `on` conservé, ni `off` artificiel). **Retour dans la bande après rupture de vivacité → `off` déterministe**. **Boot/reload inexploitable → aucun réarmement/maintien.**
 
 ### Position dans le système
 
@@ -197,3 +218,4 @@ Non déterminables depuis le YAML fourni. Cette entité est destinée à être c
 | Nommage des dépendances | `clim_seuil_*` | `clim_seuil_*` | `chambre_max_humidex_*` |
 | Contraintes physiques | Aucune | Aucune | Aucune |
 | Actions embarquées | Aucune | Aucune | Aucune |
+| Abstention sur observation non vivante (C28) | **Oui** (indisponible) | **Oui** (indisponible) | *(DRY : hors périmètre C28)* |
