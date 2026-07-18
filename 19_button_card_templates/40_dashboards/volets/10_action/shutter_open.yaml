@@ -27,7 +27,7 @@
 #     - variables.target   : cible (optionnel)
 #     - variables.confirm  : texte de confirmation modale (optionnel)
 #     - variables.name     : libellé (défaut « Ouvrir »)
-#     - variables.icon     : icône (défaut mdi:window-shutter-open)
+#     - variables.icon     : icône (défaut mdi:arrow-up-bold — grosse flèche montée)
 #
 # 🧩 USAGE
 #     type: custom:button-card
@@ -43,7 +43,7 @@ shutter_open:
 
   variables:
     name: Ouvrir
-    icon: mdi:window-shutter-open
+    icon: mdi:arrow-up-bold
 
   styles:
     card:

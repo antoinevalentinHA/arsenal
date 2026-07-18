@@ -92,3 +92,9 @@ shutter_action_base:
   styles:
     card:
       - background-color: "rgba(158, 158, 158, 0.2)"
+    # Icône d'action agrandie pour une lecture immédiate du geste
+    # (ouvrir / stop / fermer). Taille uniquement — la couleur #111
+    # typographique canonique héritée du socle reste inchangée.
+    icon:
+      - width: 34px
+      - height: 34px
