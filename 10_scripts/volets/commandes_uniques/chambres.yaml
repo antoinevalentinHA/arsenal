@@ -93,19 +93,3 @@ fermer_volet_matthieu:
     - service: cover.close_cover
       target:
         entity_id: cover.chambre_matthieu
-
-stop_volet_arnaud:
-  alias: "Volets - Stop chambre Arnaud"
-  mode: single
-  sequence:
-    - service: cover.stop_cover
-      target:
-        entity_id: cover.chambre_arnaud
-
-stop_volet_matthieu:
-  alias: "Volets - Stop chambre Matthieu"
-  mode: single
-  sequence:
-    - service: cover.stop_cover
-      target:
-        entity_id: cover.chambre_matthieu
