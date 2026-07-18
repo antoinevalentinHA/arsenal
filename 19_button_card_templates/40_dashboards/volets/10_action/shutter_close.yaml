@@ -27,7 +27,7 @@
 #     - variables.target   : cible (optionnel)
 #     - variables.confirm  : texte de confirmation modale (optionnel)
 #     - variables.name     : libellé (défaut « Fermer »)
-#     - variables.icon     : icône (défaut mdi:window-shutter)
+#     - variables.icon     : icône (défaut mdi:arrow-down-bold — grosse flèche descente)
 #
 # 🧩 USAGE
 #     type: custom:button-card
@@ -43,7 +43,7 @@ shutter_close:
 
   variables:
     name: Fermer
-    icon: mdi:window-shutter
+    icon: mdi:arrow-down-bold
 
   styles:
     card:
