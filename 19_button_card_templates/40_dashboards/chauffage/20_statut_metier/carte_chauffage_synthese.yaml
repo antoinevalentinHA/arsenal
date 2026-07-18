@@ -61,6 +61,11 @@ carte_chauffage_synthese:
   #################################################################
   icon: |
     [[[
+      // C26 — indisponibilité prioritaire (R6) : sources consommées programme + raison
+      const UNAV = ['unknown', 'unavailable', undefined, null, 'none', ''];
+      const raison_u = states['sensor.chauffage_raison_calculee']?.state;
+      if (UNAV.includes(entity.state) || UNAV.includes(raison_u)) return 'mdi:shield-off';
+
       const bruleur = states['binary_sensor.bruleur_mode_chauffage']?.state === 'on';
       const prog = (entity.state || '').toLowerCase();
 
@@ -78,6 +83,12 @@ carte_chauffage_synthese:
       const prog = (entity.state || '').toLowerCase();
       const raison = states['sensor.chauffage_raison_calculee']?.state;
       const bruleur = states['binary_sensor.bruleur_mode_chauffage']?.state === 'on';
+
+      // C26 — indisponibilité prioritaire (R6), avant toute restitution sémantique
+      const UNAV = ['unknown', 'unavailable', undefined, null, 'none', ''];
+      if (UNAV.includes(entity.state) || UNAV.includes(raison)) {
+        return 'Indisponible';
+      }
 
       if (bruleur) {
         return 'Actif';
@@ -160,6 +171,12 @@ carte_chauffage_synthese:
         return '';
       };
 
+      // C26 — indisponibilité prioritaire (R6), avant toute restitution sémantique
+      const UNAV = ['unknown', 'unavailable', undefined, null, 'none', ''];
+      if (UNAV.includes(entity.state) || UNAV.includes(raison)) {
+        return 'Données indisponibles';
+      }
+
       if (bruleur) {
         return `Chauffage actif${fmt_consigne(c)}`;
       }
@@ -226,6 +243,18 @@ carte_chauffage_synthese:
   # 🎨 COULEURS — CHARTE ARSENAL STRICTE
   #################################################################
   state:
+    # ⚪ C26 — Indisponibilité (priorité absolue, R6) : programme OU raison indisponible
+    - operator: template
+      value: |
+        [[[
+          const UNAV = ['unknown', 'unavailable', undefined, null, 'none', ''];
+          const raison = states['sensor.chauffage_raison_calculee']?.state;
+          return UNAV.includes(entity.state) || UNAV.includes(raison);
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.1)
+
     # 🔵 Brûleur actif (Q3.b — information thermique, non décisionnel)
     - operator: template
       value: |

@@ -8,7 +8,7 @@
 |---|---|
 | **Domaine** | Chauffage — exposition diagnostique (UI) |
 | **Priorité** | P2 |
-| **Statut** | Ouverture — cadrage documentaire (aucune correction UI engagée à ce stade) |
+| **Statut** | Correction UI implémentée sur branche — PR en cours ; validation et clôture non engagées |
 | **Base** | `origin/main` @ `29dd98c` |
 | **Source faisant foi** | [`audit_exposition_diagnostics_chauffage.md`](../../01_rapports/chauffage/audit_exposition_diagnostics_chauffage.md) — écart **CH-DIAG-08 / F1** |
 | **Précédent d'implémentation validé** | **C23** (alarme — restitution `triggered` + priorité d'indisponibilité, patch UI mergé #392). *Précédent utile de mise en œuvre et de validation, **non** autorité normative.* |
@@ -117,6 +117,24 @@ Sont **hors périmètre** et **non touchés** :
 - **Observation terrain naturelle — différable et non provoquée.** Consignée explicitement comme différée si elle ne survient pas, à l'image de C23.
 
 **Clôturabilité.** La **clôture documentaire** peut être évaluée à partir des **preuves statiques et visuelles disponibles**, l'observation terrain restant **différable** et explicitement consignée. La distinction preuve statique / visuelle / terrain est explicite. *(Le chantier ne subordonne pas sa clôturabilité documentaire à la survenue d'une indisponibilité réelle.)*
+
+### Trace — correction UI implémentée (preuve statique)
+
+Correction UI **implémentée sur branche** (PR en cours ; **validation et clôture non engagées**). Choix retenus, dérivés de la doctrine UI et de la carte exemplaire `chauffage_diagnostic_global_compact` (patron d'implémentation validé C23) :
+
+- **Ensemble d'indisponibilité** (aligné exemplaire) : `['unknown', 'unavailable', undefined, null, 'none', '']` ;
+- **Fond** : gris indispo `rgba(158, 158, 158, 0.1)`, **prioritaire (R6)** — jamais rouge, jamais gris neutre `0.2` ;
+- **Libellé principal** : `Indisponible` ; **label complémentaire** (quand porté par la carte) : `Données indisponibles` ; **icône** (quand affichée) : `mdi:shield-off`.
+
+Application par carte (garde évaluée **avant** toute restitution sémantique) :
+
+| Carte | Sources gardées | Champs traités |
+|---|---|---|
+| `carte_chauffage_intention` | `sensor.chauffage_mode_calcule` | `icon` (→ `mdi:shield-off`), `state_display` (→ `Indisponible`), règle couleur `state` en tête (→ gris `0.1`) |
+| `carte_chauffage_synthese` | `sensor.programme_chauffage`, `sensor.chauffage_raison_calculee` | `icon`, `state_display`, `label` (→ `Données indisponibles`), règle couleur `state` en tête |
+| `carte_chauffage_decision` | `sensor.programme_chauffage`, `sensor.chauffage_mode_calcule` | `variables.diag.indisponible` (avant cohérence → plus de faux rouge), `state_display`, `label`, fond gris `0.1` |
+
+**États disponibles inchangés** (ajout de branches prioritaires uniquement) ; **F2/F3/F4/O-1 intacts** ; le littéral `Inconnu` de `carte_chauffage_decision` (état disponible) reste hors périmètre. Aucun socle, dashboard parent, entité, runtime, contrat, checker, workflow ou changelog touché.
 
 ## 10. Identifiant proposé — vérifié
 
