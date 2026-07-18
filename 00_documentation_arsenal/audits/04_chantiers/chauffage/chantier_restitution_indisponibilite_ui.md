@@ -8,7 +8,7 @@
 |---|---|
 | **Domaine** | Chauffage — exposition diagnostique (UI) |
 | **Priorité** | P2 |
-| **Statut** | Correction UI implémentée sur branche — PR en cours ; validation et clôture non engagées |
+| **Statut** | Patch UI mergé (#406) — revue de clôturabilité à engager |
 | **Base** | `origin/main` @ `29dd98c` |
 | **Source faisant foi** | [`audit_exposition_diagnostics_chauffage.md`](../../01_rapports/chauffage/audit_exposition_diagnostics_chauffage.md) — écart **CH-DIAG-08 / F1** |
 | **Précédent d'implémentation validé** | **C23** (alarme — restitution `triggered` + priorité d'indisponibilité, patch UI mergé #392). *Précédent utile de mise en œuvre et de validation, **non** autorité normative.* |
@@ -118,13 +118,19 @@ Sont **hors périmètre** et **non touchés** :
 
 **Clôturabilité.** La **clôture documentaire** peut être évaluée à partir des **preuves statiques et visuelles disponibles**, l'observation terrain restant **différable** et explicitement consignée. La distinction preuve statique / visuelle / terrain est explicite. *(Le chantier ne subordonne pas sa clôturabilité documentaire à la survenue d'une indisponibilité réelle.)*
 
-### Trace — correction UI implémentée (preuve statique)
+### Trace — patch UI mergé (#406)
 
-Correction UI **implémentée sur branche** (PR en cours ; **validation et clôture non engagées**). Choix retenus, dérivés de la doctrine UI et de la carte exemplaire `chauffage_diagnostic_global_compact` (patron d'implémentation validé C23) :
+Correction UI **mergée dans `main` via la PR #406** (ouverture documentaire préalable : PR #405). **Revue de clôturabilité à engager ; C26 non clôturé.** Choix retenus, dérivés de la doctrine UI et de la carte exemplaire `chauffage_diagnostic_global_compact` (patron d'implémentation validé C23) :
 
 - **Ensemble d'indisponibilité** (aligné exemplaire) : `['unknown', 'unavailable', undefined, null, 'none', '']` ;
 - **Fond** : gris indispo `rgba(158, 158, 158, 0.1)`, **prioritaire (R6)** — jamais rouge, jamais gris neutre `0.2` ;
 - **Libellé principal** : `Indisponible` ; **label complémentaire** (quand porté par la carte) : `Données indisponibles` ; **icône** (quand affichée) : `mdi:shield-off`.
+
+**Trois fichiers UI réellement modifiés** (mergés via #406) :
+
+- `19_button_card_templates/40_dashboards/chauffage/20_statut_metier/carte_chauffage_intention.yaml`
+- `19_button_card_templates/40_dashboards/chauffage/20_statut_metier/carte_chauffage_synthese.yaml`
+- `19_button_card_templates/40_dashboards/chauffage/30_diagnostic/carte_chauffage_decision.yaml`
 
 Application par carte (garde évaluée **avant** toute restitution sémantique) :
 
@@ -134,7 +140,28 @@ Application par carte (garde évaluée **avant** toute restitution sémantique) 
 | `carte_chauffage_synthese` | `sensor.programme_chauffage`, `sensor.chauffage_raison_calculee` | `icon`, `state_display`, `label` (→ `Données indisponibles`), règle couleur `state` en tête |
 | `carte_chauffage_decision` | `sensor.programme_chauffage`, `sensor.chauffage_mode_calcule` | `variables.diag.indisponible` (avant cohérence → plus de faux rouge), `state_display`, `label`, fond gris `0.1` |
 
-**États disponibles inchangés** (ajout de branches prioritaires uniquement) ; **F2/F3/F4/O-1 intacts** ; le littéral `Inconnu` de `carte_chauffage_decision` (état disponible) reste hors périmètre. Aucun socle, dashboard parent, entité, runtime, contrat, checker, workflow ou changelog touché.
+**États couverts :**
+
+- **sources disponibles** → rendu **inchangé** (ajout de branches prioritaires uniquement) ;
+- **`unknown` / `unavailable` / valeur non exploitable / entité absente / `none` / `''`** → **restitution d'indisponibilité prioritaire** (gris `0.1` + `Indisponible`) ;
+- **absence de faux rouge** : la garde de `carte_chauffage_decision` est évaluée **avant** le calcul de cohérence ;
+- **absence de gris neutre `0.2`** pour une indisponibilité : le gris indispo `0.1` **prime** (R6).
+
+**F2/F3/F4/O-1 intacts** ; le littéral `Inconnu` de `carte_chauffage_decision` (état disponible) reste hors périmètre. Aucun socle, dashboard parent, entité, runtime, contrat, checker, workflow ou changelog touché.
+
+**Contrôles exécutés (base mergée `origin/main`) :**
+
+- **Checkers UI verts** : `check_19_button_card_templates`, `check_ui_couleurs`, `check_ui_runtime_colors`, `check_ui_semantic_colors` (**I1** — garde indisponibilité conforme), `check_ui_semantic_colors_hierarchy` (**I2** — ordre de sévérité des cascades de masquage), `check_lovelace_no_inline_templating` ;
+- **YAML** : les 3 cartes parsent proprement (`yamllint` = lint de style informatif en CI) ;
+- **Documentaire** : `docs_lint`, DOC-CI-1/2/3/5/6, `check_registre_chantiers` — conformes.
+
+**Niveaux de preuve (distinction stricte) :**
+
+- **Preuve statique — ACQUISE.** Établie par lecture du diff et par les checkers UI (I1/I2) : sous source indisponible, chaque carte rend gris `0.1` + `Indisponible` (jamais couleur sémantique / rouge / gris `0.2`) ; branches mutuellement exclusives (indisponibilité prioritaire, R6) ; états disponibles inchangés.
+- **Preuve visuelle — NON encore affirmée.** Aucune capture ni rendu contrôlé n'est produit à ce stade ; elle ne pourra être affirmée que sur un **élément réellement disponible** (capture / rendu contrôlé), **sans provoquer** d'indisponibilité réelle.
+- **Observation terrain naturelle — DIFFÉRÉE, non provoquée.** Consignée comme différée ; **aucun état Home Assistant n'est forcé**.
+
+**C26 n'est pas clôturé** : la revue de clôturabilité (étape distincte) reste à engager.
 
 ## 10. Identifiant proposé — vérifié
 
