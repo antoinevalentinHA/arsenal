@@ -27,12 +27,10 @@
 - binary_sensor:
     - name: "Clim – Seuil extinction COOL atteint"
       unique_id: clim_seuil_extinction_cool_atteint
+      availability: >
+        {{ states('sensor.temperature_min_chambres') | float(none) is not none
+           and states('sensor.seuil_extinction_clim_applique') | float(none) is not none }}
       state: >
         {% set temp_min = states('sensor.temperature_min_chambres') %}
         {% set seuil_off = states('sensor.seuil_extinction_clim_applique') %}
-        {% if temp_min in ['unknown', 'unavailable', ''] or
-              seuil_off in ['unknown', 'unavailable', ''] %}
-          false
-        {% else %}
-          {{ temp_min | float <= seuil_off | float }}
-        {% endif %}
+        {{ temp_min | float <= seuil_off | float }}

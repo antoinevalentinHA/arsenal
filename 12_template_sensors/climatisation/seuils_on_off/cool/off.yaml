@@ -36,13 +36,24 @@
       unique_id: seuil_extinction_clim_applique
       unit_of_measurement: "°C"
       icon: mdi:thermometer-chevron-down
+      availability: >
+        {% set p = states('binary_sensor.presence_confort_thermique_stabilisee') %}
+        {% set n = states('binary_sensor.clim_mode_nuit_effectif') %}
+        {% if p in ['unknown', 'unavailable'] or n in ['unknown', 'unavailable'] %}
+          false
+        {% else %}
+          {% set sel = 'input_number.clim_seuil_extinction_presence'
+                       if (p == 'on' and n != 'on')
+                       else 'input_number.clim_seuil_extinction_absence' %}
+          {{ states(sel) | float(none) is not none }}
+        {% endif %}
       state: >
         {% set presence = is_state('binary_sensor.presence_confort_thermique_stabilisee', 'on') %}
         {% set nuit = is_state('binary_sensor.clim_mode_nuit_effectif', 'on') %}
         {% if presence and not nuit %}
-          {{ states('input_number.clim_seuil_extinction_presence') | float(0) }}
+          {{ states('input_number.clim_seuil_extinction_presence') | float }}
         {% else %}
-          {{ states('input_number.clim_seuil_extinction_absence') | float(0) }}
+          {{ states('input_number.clim_seuil_extinction_absence') | float }}
         {% endif %}
       attributes:
         mode_actif: >
