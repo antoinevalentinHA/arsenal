@@ -8,7 +8,7 @@
 |---|---|
 | **Domaine** | Chauffage — exposition diagnostique (UI) |
 | **Priorité** | P2 |
-| **Statut** | Patch UI mergé (#406) — revue de clôturabilité à engager |
+| **Statut** | Clôturé (documentaire, 2026-07-18) — CLÔTURABLE AVEC OBSERVATION TERRAIN DIFFÉRÉE (ouverture #405 · patch UI #406 · traçabilité #407) |
 | **Base** | `origin/main` @ `29dd98c` |
 | **Source faisant foi** | [`audit_exposition_diagnostics_chauffage.md`](../../01_rapports/chauffage/audit_exposition_diagnostics_chauffage.md) — écart **CH-DIAG-08 / F1** |
 | **Précédent d'implémentation validé** | **C23** (alarme — restitution `triggered` + priorité d'indisponibilité, patch UI mergé #392). *Précédent utile de mise en œuvre et de validation, **non** autorité normative.* |
@@ -161,7 +161,19 @@ Application par carte (garde évaluée **avant** toute restitution sémantique) 
 - **Preuve visuelle — NON encore affirmée.** Aucune capture ni rendu contrôlé n'est produit à ce stade ; elle ne pourra être affirmée que sur un **élément réellement disponible** (capture / rendu contrôlé), **sans provoquer** d'indisponibilité réelle.
 - **Observation terrain naturelle — DIFFÉRÉE, non provoquée.** Consignée comme différée ; **aucun état Home Assistant n'est forcé**.
 
-**C26 n'est pas clôturé** : la revue de clôturabilité (étape distincte) reste à engager.
+### Clôture documentaire — revue de clôturabilité (2026-07-18)
+
+Revue conduite **en lecture seule**, sur les **seuls critères inscrits au §9** (aucune exigence de preuve ajoutée) ; base `origin/main` contenant les merges #405 / #406 / #407.
+
+- **Preuve statique : `ACQUISE`.** Garde d'indisponibilité prioritaire (R6) présente sur les 3 cartes ; **états disponibles inchangés** ; **absence de faux rouge** (garde de `carte_chauffage_decision` évaluée avant la cohérence) ; **absence de gris neutre `0.2`** pour une indisponibilité ; **F2/F3/F4/O-1 intacts**. 6 checkers UI verts (dont **I1** garde indisponibilité / **I2** ordre de masquage) + contrôles documentaires verts.
+- **Preuve visuelle : `NON ACQUISE — NON REQUISE POUR LA CLÔTURE`.** Aucune capture ni rendu contrôlé n'existe à ce jour ; aucune indisponibilité n'a été provoquée. Le §9 qualifie la preuve visuelle de « souhaitée si réalisable » et **ne subordonne pas** la clôturabilité documentaire à une indisponibilité réelle.
+- **Observation terrain naturelle : `DIFFÉRÉE — NON PROVOQUÉE`.** Aucun état Home Assistant n'est forcé ; aucune occurrence réelle attestée n'existe.
+
+**Conclusion : `CLÔTURABLE AVEC OBSERVATION TERRAIN DIFFÉRÉE`.**
+
+**Clôture documentaire prononcée** sur cette base, **sans prétendre qu'une preuve visuelle ou terrain existe**. Une **éventuelle observation terrain future ne conditionne pas la validité de la présente clôture documentaire** : elle pourra la compléter, non l'invalider.
+
+Traçabilité : **PR #405** (ouverture documentaire) · **PR #406** (patch UI — 3 cartes) · **PR #407** (traçabilité). C26 déplacé de **① Actifs** vers **⑤ Clos récents** du registre.
 
 ## 10. Identifiant proposé — vérifié
 
