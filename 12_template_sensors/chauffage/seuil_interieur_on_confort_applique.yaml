@@ -1,0 +1,36 @@
+# ==========================================================
+# 🌡️ TEMPLATE SENSOR — Seuil intérieur ON Chauffage confort appliqué
+# ----------------------------------------------------------
+# 🎯 RÔLE (contrat C27 Lot 2B — restitution_chambres_etage.md §5.1)
+#   Publier l'UNIQUE autorité de la frontière physique basse appliquée :
+#   le seuil intérieur sous lequel le Chauffage confort s'autoriserait.
+#   Ancré sur la consigne confort et son offset ON (INV-RCE-3).
+#
+#   = chauffage_consigne_confort − chauffage_offset_on
+#
+#   La catégorie MIN des chambres consomme ce capteur au lieu de dupliquer
+#   la formule `consigne − offset` dans l'UI.
+#
+# 🧱 NATURE
+#   - Frontière thermique appliquée (valeur de seuil), jamais une
+#     autorisation / décision / franchissement / action.
+#   - Aucun repli numérique : opérande inexploitable → seuil `unavailable`.
+#
+# 🔗 DÉPENDANCES
+#   - input_number.chauffage_consigne_confort
+#   - input_number.chauffage_offset_on
+#
+# 📍 Entité : sensor.seuil_interieur_on_chauffage_applique
+# ==========================================================
+
+- sensor:
+    - name: "Seuil intérieur ON chauffage appliqué"
+      unique_id: seuil_interieur_on_chauffage_applique
+      unit_of_measurement: "°C"
+      device_class: temperature
+      availability: >
+        {{ states('input_number.chauffage_consigne_confort') | float(none) is not none
+           and states('input_number.chauffage_offset_on') | float(none) is not none }}
+      state: >
+        {{ (states('input_number.chauffage_consigne_confort') | float
+            - states('input_number.chauffage_offset_on') | float) | round(1) }}
