@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Arbitrage et contractualisation des agrégats de température MIN/MAX des chambres et de leur restitution sur le dashboard Arsenal. |
 | **Domaine** | TRANSVERSE (Chauffage ↔ Climatisation ↔ production Météo/température intérieure ↔ UI Lovelace). |
-| **Statut** | **ouvert — Lot 1 arbitré ; contractualisation requise (Lot 2).** |
+| **Statut** | **ouvert — Lot 2A contractualisé ; contrat de restitution requis (Lot 2B).** |
 | **Priorité** | **P2** (proposée) — voir justification §Priorité. |
 | **Ouvert le** | 2026-07-18. |
 | **Preuve de départ** | [`01_rapports/transverses/audit_cartes_temperature_min_max_dashboard_arsenal.md`](../../01_rapports/transverses/audit_cartes_temperature_min_max_dashboard_arsenal.md) (mergé par la PR #410). |
-| **Prochain jalon** | **Lot 2 — rédaction et validation des deux contrats** (production/agrégation + sémantique/restitution). |
+| **Prochain jalon** | **Lot 2B — contrat de sémantique et restitution des bornes thermiques des chambres de l'étage**. |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C27 **ne vaut ni arbitrage rendu, ni décision de
 > contractualiser, ni décision de corriger.** Ce document est une **ouverture documentaire de
@@ -207,7 +207,20 @@ Précisions encore ouvertes (reportées au Lot 2, non décidées) :
 - attributs de couverture ;
 - noms et emplacements canoniques des deux contrats.
 
-### Lot 2 — contractualisation (prochain jalon)
+### Lot 2A — contrat de production (terminé)
 
-Rédaction et validation des deux contrats. **Aucun runtime, UI, checker ou CI n'est décidé ou
-engagé à ce stade. C27 reste actif et non clos.**
+Contrat normatif de production consigné :
+[`../../contrats/meteo/temperature_interieure/bornes_thermiques_chambres_etage.md`](../../../contrats/meteo/temperature_interieure/bornes_thermiques_chambres_etage.md).
+Gouverne `sensor.temperature_min_chambres` / `sensor.temperature_max_chambres` comme bornes MIN/MAX
+des **trois chambres de l'étage** uniquement : périmètre souverain (3 façades), calcul sur façades
+exploitables, validité dès une façade, **aucune mémoire/TTL propre**, **abstention à zéro façade
+exploitable**, couverture observable, 12 invariants `INV-BTE-*`. **Exclut** RDC, petite maison,
+catégories thermiques, couleurs et logique HVAC (renvoyés au Lot 2B et aux domaines concernés).
+
+### Lot 2B — contrat de sémantique et restitution (prochain jalon)
+
+Rédaction et validation du contrat de restitution : catégories `froid` / `neutre` / `chaud`,
+références physiques **dédiées** (basse/haute, stables, non contextuelles), catégorie portée par le
+backend, mapping UI vers l'Exception 2, neutre `0.2` / indisponibilité `0.1`. **Dépend du Lot 2A
+mergé.** **Aucun runtime, UI, checker ou CI n'est décidé ou engagé à ce stade. C27 reste actif et
+non clos.**
