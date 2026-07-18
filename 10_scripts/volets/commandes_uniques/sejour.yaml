@@ -95,19 +95,3 @@ fermer_volet_sejour_gauche:
     - service: cover.close_cover
       target:
         entity_id: cover.sejour_gauche
-
-stop_volet_sejour_droit:
-  alias: "Volets - Stop séjour droit"
-  mode: single
-  sequence:
-    - service: cover.stop_cover
-      target:
-        entity_id: cover.sejour_droit
-
-stop_volet_sejour_gauche:
-  alias: "Volets - Stop séjour gauche"
-  mode: single
-  sequence:
-    - service: cover.stop_cover
-      target:
-        entity_id: cover.sejour_gauche
