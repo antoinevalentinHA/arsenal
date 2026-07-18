@@ -489,3 +489,68 @@ canon 0.2) est nouveau ; les autres clés sont du canon Arsenal existant.
   l'humidex.
 - Encoder l'humidex avec une couleur « froid » : l'échelle absolue
   n'a pas de sémantique de froid (`< 30` → `green`).
+
+---
+
+## Exception 9 — Sens de commande des volets (montée / arrêt / descente)
+
+### Objet
+
+Dans les tuiles d'**action** du domaine Volets, la couleur identifie
+visuellement le **sens de la commande** émise (montée, arrêt, descente).
+Elle ne porte **aucun jugement métier** (OK / KO / WARN / INFO) et ne
+reflète **aucun état** du volet.
+
+Cette distinction est nécessaire car les volets Budendorf n'exposent
+**aucun retour d'état** : la tuile ne peut donc traduire qu'une
+**intention de commande**, jamais une position réelle. En l'absence
+d'état, distinguer les trois commandes par la couleur améliore la
+lisibilité et réduit le risque d'erreur de manipulation.
+
+Cette exception est **catégorielle** (strictement Volets / action) et
+**non décisionnelle**, sur le modèle exact de l'**Exception 1 — Modes
+HVAC** : elle réemploie des valeurs RGBA canon pour un usage catégoriel,
+sans introduire ni nuance ni opacité nouvelle.
+
+### Périmètre strict
+
+Réservée aux tuiles d'action volets (spécialisations `shutter_open`,
+`shutter_stop`, `shutter_close` de `shutter_action_base`,
+couche `10_action/` du domaine `40_dashboards/volets/`).
+
+Ne s'applique pas :
+- aux cartes de décision / exposition / KPI pluie (palette sémantique),
+- à toute autre tuile d'action d'un autre domaine,
+- à aucune carte portant un état ou une sévérité.
+
+### Mapping autorisé (uniquement)
+
+| Couleur | Valeur | Sens de commande |
+|---------|--------|------------------|
+| 🟢 Vert | `rgba(76, 175, 80, 0.2)` | `montée` — ouverture |
+| 🟠 Orange | `rgba(255, 152, 0, 0.2)` | `arrêt` — interruption du mouvement |
+| 🔵 Bleu | `rgba(33, 150, 243, 0.2)` | `descente` — fermeture |
+| ⚪ Gris neutre | `rgba(158, 158, 158, 0.2)` | commande volet sans sens directionnel typé |
+
+Le vert ne signifie **jamais** ici « OK / autorisé », l'orange **jamais**
+« avertissement », le bleu **jamais** « information ». Ces couleurs
+encodent exclusivement un **sens de commande**, à l'image des modes HVAC.
+
+### Priorité
+
+La hiérarchie sémantique globale reste inchangée (`05_regles.md`).
+Ces tuiles ne lisant aucun état, elles ne peuvent jamais entrer en
+concurrence avec une couleur sémantique : elles n'expriment qu'une
+intention de commande. Si une tuile d'action venait à lire un état
+(retour de position à l'avenir), l'indisponibilité
+`rgba(158, 158, 158, 0.1)` primerait comme partout.
+
+### 🚫 Interdits
+
+- Utiliser ce mapping pour exprimer un statut (OK / KO / WARN / indispo)
+- Étendre ce mapping hors des tuiles d'action du domaine Volets
+- Introduire d'autres nuances ou d'autres opacités
+- Colorer une tuile d'action volet sans qu'elle corresponde à l'un des
+  trois sens documentés (montée / arrêt / descente)
+- Décrire ces couleurs comme décoratives : elles encodent un sens de
+  commande catégoriel, seule justification recevable
