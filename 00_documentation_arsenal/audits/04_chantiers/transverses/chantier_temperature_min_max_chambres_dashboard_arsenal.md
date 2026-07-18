@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Arbitrage et contractualisation des agrégats de température MIN/MAX des chambres et de leur restitution sur le dashboard Arsenal. |
 | **Domaine** | TRANSVERSE (Chauffage ↔ Climatisation ↔ production Météo/température intérieure ↔ UI Lovelace). |
-| **Statut** | **ouvert — arbitrage requis.** |
+| **Statut** | **ouvert — Lot 1 arbitré ; contractualisation requise (Lot 2).** |
 | **Priorité** | **P2** (proposée) — voir justification §Priorité. |
 | **Ouvert le** | 2026-07-18. |
 | **Preuve de départ** | [`01_rapports/transverses/audit_cartes_temperature_min_max_dashboard_arsenal.md`](../../01_rapports/transverses/audit_cartes_temperature_min_max_dashboard_arsenal.md) (mergé par la PR #410). |
-| **Prochain jalon** | **Lot 1 — arbitrage propriétaire consolidé** (B1–B6 + C-prod-1…6). |
+| **Prochain jalon** | **Lot 2 — rédaction et validation des deux contrats** (production/agrégation + sémantique/restitution). |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C27 **ne vaut ni arbitrage rendu, ni décision de
 > contractualiser, ni décision de corriger.** Ce document est une **ouverture documentaire de
@@ -181,12 +181,33 @@ Bilans du rapport #410 (pour mémoire, non ré-ouverts ici) : `OBJ` 1 CONFORME /
 
 ---
 
-## 12. Prochain jalon
+## 12. Suivi des lots
 
-**Lot 1 — arbitrage propriétaire consolidé.** Réexamen de la note d'arbitrage existante
-(`02_arbitrages/temperature_interieure/arbitrage_temperature_interieure_agregats.md`) et production
-d'une version consolidée intégrant B1–B6, C-prod-1…6, les constats #410 et la distinction
-production / sémantique / restitution.
+### Lot 1 — arbitrage propriétaire consolidé (terminé)
 
-**Au Lot 0, aucune décision, aucun contrat, aucun patch, aucune évolution de production ou d'UI n'est
-produit.**
+Arbitrage rendu et consigné dans la note d'arbitrage, **autorité descriptive de la décision
+propriétaire** :
+[`02_arbitrages/temperature_interieure/arbitrage_temperature_interieure_agregats.md`](../../02_arbitrages/temperature_interieure/arbitrage_temperature_interieure_agregats.md).
+
+Décisions acquises (résumé, sans recopier la note) :
+- **Vision A** — lecture physique thermique ; chaque carte qualifie sa propre grandeur (MIN
+  froid/neutre/indisponible ; MAX chaud/neutre/indisponible) ; ni besoin, ni décision, ni cross-entity.
+- **Restitution** — Exception 2 thermique ; **catégorie thermique portée par le backend**, mapping
+  couleur appliqué par l'UI (**pas de RGBA métier backend**) ; neutre gris `0.2`, indisponibilité
+  `0.1` ; HEAT d'appoint hors restitution.
+- **Production** — **agrégats sans mémoire propre** ; abstention lorsque toutes les façades se sont
+  déjà abstenues ; fraîcheur héritée des façades ; périmètre = 3 chambres ; couverture partielle
+  observable ; pas d'entité compagnon d'emblée.
+- **Contractualisation** — **deux contrats** distincts (production/agrégation + sémantique/restitution).
+
+Précisions encore ouvertes (reportées au Lot 2, non décidées) :
+- références physiques inférieure/supérieure ;
+- forme exacte des catégories thermiques backend ;
+- forme Home Assistant de l'indisponibilité de l'agrégat ;
+- attributs de couverture ;
+- noms et emplacements canoniques des deux contrats.
+
+### Lot 2 — contractualisation (prochain jalon)
+
+Rédaction et validation des deux contrats. **Aucun runtime, UI, checker ou CI n'est décidé ou
+engagé à ce stade. C27 reste actif et non clos.**
