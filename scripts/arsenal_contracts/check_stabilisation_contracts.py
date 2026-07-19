@@ -188,7 +188,15 @@ def test_homeassistant_start_trigger() -> None:
 
 
 # ---------------------------------------------------------------------------
-# T6 — Doctrine d'abstention {{ 'unknown' }} présente (§6)
+# T6 — Doctrine d'abstention NATIVE (§6, chantier C29)
+#
+# Invariant (§6, v1.2) : l'abstention est portée par un bloc `availability`
+# (indisponibilité `unavailable`). L'ancien idiome textuel `{{ 'unknown' }}`
+# en `state` est INTERDIT : sur un capteur numérique il déclenche
+# `template.validators … expected a number`.
+# Test : présence d'au moins un bloc `availability` ET absence de toute
+# émission `{{ 'unknown' }}`. Les gardes `not in ['unknown', …]` restent
+# autorisées (ce ne sont pas des émissions).
 # ---------------------------------------------------------------------------
 
 def test_abstention_doctrine() -> None:
@@ -198,14 +206,21 @@ def test_abstention_doctrine() -> None:
             f"T6 — Fichier inaccessible : {F_STABILISATION.relative_to(REPO_ROOT)}"
         )
         return
-    has_unknown = bool(re.search(r"\{\{\s*'unknown'\s*\}\}", content))
-    if not has_unknown:
+    emits_unknown = bool(re.search(r"\{\{\s*'unknown'\s*\}\}", content))
+    has_availability = bool(re.search(r"(?m)^\s*availability:", content))
+    if emits_unknown:
         ERRORS.append(
-            f"T6 — Doctrine d'abstention non implémentée : "
-            f"{{ 'unknown' }} absent de {F_STABILISATION.relative_to(REPO_ROOT)} (§6)"
+            f"T6 — Idiome d'abstention obsolète : émission textuelle "
+            f"{{ 'unknown' }} interdite en `state` (§6 abstention native) "
+            f"dans {F_STABILISATION.relative_to(REPO_ROOT)}"
         )
-    else:
-        print("✔ T6 — Doctrine d'abstention {{ 'unknown' }} présente (§6)")
+    if not has_availability:
+        ERRORS.append(
+            f"T6 — Abstention native absente : bloc `availability` requis (§6) "
+            f"dans {F_STABILISATION.relative_to(REPO_ROOT)}"
+        )
+    if not emits_unknown and has_availability:
+        print("✔ T6 — Abstention native (`availability`, sans `{{ 'unknown' }}`) présente (§6)")
 
 
 # ---------------------------------------------------------------------------
@@ -374,7 +389,7 @@ TESTS = [
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    print("Arsenal — Validation contractuelle : Stabilisation v1.1\n")
+    print("Arsenal — Validation contractuelle : Stabilisation v1.2\n")
 
     for test_fn in TESTS:
         test_fn()
