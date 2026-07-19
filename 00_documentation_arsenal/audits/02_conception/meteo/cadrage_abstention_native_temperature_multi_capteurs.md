@@ -4,7 +4,7 @@
 |---|---|
 | **Type** | Cadrage / arbitrage de chantier (conception préalable, **sans implémentation**) |
 | **Domaine** | Météo — température intérieure : couche de consolidation + stabilisation multi-capteurs (production des mesures de zone) |
-| **Statut** | **Arbitré (2026-07-19) — Option A retenue.** Mémoire 1800 s **conservée intégralement** ; le chantier porte **uniquement** sur la représentation conforme de l'abstention terminale. Aucun runtime à ce stade, aucune règle opposable. |
+| **Statut** | **Clos (2026-07-19) — documentaire, réserve terrain différée.** Arc complet livré : #432 (ouverture) · #433 (consignation L1, contrats v1.5 / v1.2) · #434 (runtime + checkers L2/L3). Conformité contrat → runtime → checkers ; émission textuelle `{{ 'unknown' }}` **structurellement supprimée** (matrice 19/19, test T6 enforcé) ; TTL 1800 s / fusion / départage / EWMA / restauration / consommateurs aval **inchangés**. **Réserve non bloquante** : confirmation naturelle, non provoquée, de l'absence d'erreur `template.validators` lors d'une prochaine abstention réelle. |
 | **Version** | 0.2 (cadrage, post-arbitrage) |
 | **Date** | 2026-07-19 |
 | **Dépôt** | `antoinevalentinHA/arsenal` @ HEAD `380fc502` |
