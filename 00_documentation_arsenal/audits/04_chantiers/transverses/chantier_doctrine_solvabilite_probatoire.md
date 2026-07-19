@@ -4,18 +4,22 @@
 |---|---|
 | **Chantier** | Poser une doctrine transverse de **solvabilité probatoire** : avant qu'une preuve terrain devienne condition de clôture, vérifier qu'elle est **productible** par le runtime et **conservable** par l'installation. |
 | **Domaine** | Transverse — gouvernance des chantiers, administration de la preuve. |
-| **Statut** | **Ouvert (2026-07-19) — ouverture documentaire.** L'angle mort est démontré ; **aucune doctrine n'est rendue opposable par cette PR**. |
+| **Statut** | **Ouvert — Lot 1 en cours (2026-07-19).** La doctrine est **rédigée** dans ce lot : [`architecture/03_doctrines/solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md) (v1.0, normative et opposable). **Lots 2 et 3 non engagés.** C31 **reste non clôturable** (§9). |
 | **Priorité** | **P1** — non pour un risque technique immédiat, mais parce que des chantiers restent ouverts en attendant des preuves que l'installation ne peut ni produire, ni conserver, ni qualifier correctement. |
 | **Ouvert le** | 2026-07-19. |
-| **Prochain jalon** | **Lot 1 — rédaction de la doctrine** dans `architecture/03_doctrines/solvabilite_probatoire.md` (chemin cible — **fichier non créé à ce jour**, volontairement non lié). |
+| **Prochain jalon** | **Revue de la doctrine**, puis **Lot 2 — raccords** chez leurs propriétaires existants. |
 | **Registre** | Chantier **C31** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 
-> **⚠️ Portée de l'ouverture.** L'ouverture de C31 **ne vaut ni doctrine opposable, ni décision de
-> contractualiser, ni décision de requalifier un chantier existant.** L'échelle L1–L5 et la règle sur les
-> verrous consignées ci-dessous sont de la **matière à contractualiser**, pas une norme en vigueur.
-> **Aucun `recorder.yaml`, runtime, contrat, checker, navigation, workflow ni changelog n'est créé ou
-> modifié.** Aucune procédure d'archivage ou d'extraction n'est créée : celles qui existent restent
-> propriété de leurs détenteurs.
+> **⚠️ Portée — mise à jour du 2026-07-19 (Lot 1).** L'échelle L1–L5, les trois verdicts, la
+> qualification des réserves et la règle sur les verrous **sont désormais opposables** : elles sont
+> portées par [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md)
+> (v1.0), **propriétaire unique** de la règle. Le présent document reste le **cadrage du chantier**, non
+> la norme — en cas de divergence, **la doctrine fait foi**.
+>
+> L'ouverture de C31 **ne vaut toujours ni décision de requalifier un chantier existant, ni engagement
+> des Lots 2 et 3.** **Aucun `recorder.yaml`, runtime, contrat métier, checker, navigation, workflow ni
+> changelog n'est créé ou modifié.** Aucune procédure d'archivage ou d'extraction n'est créée : celles
+> qui existent restent propriété de leurs détenteurs.
 
 ---
 
@@ -159,7 +163,7 @@ Chacun reste chez son **propriétaire existant** ; aucun nouveau document en deh
 2. **Frontière patrimoine / probatoire** — préciser que l'exclusion patrimoniale des bases SQLite **ne
    s'oppose pas** au canal probatoire temporaire. Propriétaire : le document propriétaire de `diff_auto`
    ([`outils_externes/nas_arsenal/diff/diff_auto.md`](../../../outils_externes/nas_arsenal/diff/diff_auto.md)).
-3. **Doctrine** — `architecture/03_doctrines/solvabilite_probatoire.md`, à créer au Lot 1 (chemin cible, non lié tant que le fichier n'existe pas).
+3. **Doctrine** — [`architecture/03_doctrines/solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md) — **créée au Lot 1 (2026-07-19)**.
 
 Les règles internes d'analyse (méthode, scripts, empreintes) **restent propriété du dépôt d'audit
 runtime** et ne sont pas recopiées ici.
@@ -168,13 +172,17 @@ runtime** et ne sont pas recopiées ici.
 
 ## 7. Séquencement
 
-- **Lot 1 — Doctrine.** Rédaction de `solvabilite_probatoire.md` : échelle L1–L5, distinction
-  `states`/`events`, citation des trois notions, règle sur les verrous, exigences au moment de l'ouverture
-  ou du cadrage, frontière SwitchBot. **Livrable central.**
-- **Lot 2 — Raccords.** Les trois extensions courtes du §6, chez leurs propriétaires.
-- **Lot 3 — Application démonstrative.** Qualifier des réserves existantes selon la doctrine, notamment
-  **C29**, **C4** et **C27**. Ce lot **prouve que la doctrine est utilisable** ; sans lui, C31 est un texte
-  non éprouvé.
+- **Lot 1 — Doctrine. ✅ LIVRÉ (2026-07-19).**
+  [`architecture/03_doctrines/solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md)
+  v1.0, normative et opposable : échelle L1–L5 avec la distinction `states`/`events` (R-L2-1, R-L2-2),
+  trois verdicts (R-VERDICT-1), six qualifications de réserve (R-QUALIF-1 à 3), règle centrale
+  (R-VERROU-1), dix exigences d'ouverture (R-OUVERTURE-1), gouvernance de l'instrumentation temporaire
+  (R-INSTR-1), reconnaissance de L4 (R-L4-1), frontière SwitchBot (R-FRONTIERE-1).
+  **Reste à faire : revue de la doctrine.**
+- **Lot 2 — Raccords. Non engagé.** Les trois extensions courtes du §6, chez leurs propriétaires.
+- **Lot 3 — Application démonstrative. Non engagé.** Qualifier des réserves existantes selon la doctrine,
+  notamment **C29**, **C4** et **C27**. Ce lot **prouve que la doctrine est utilisable** ; sans lui, C31
+  est un texte non éprouvé. **Aucune requalification n'est effectuée à ce stade.**
 
 Lots 1 et 2 parallélisables. **C30-A1 et C30-A2 sont traités séparément dans C30**, et n'entrent pas dans
 C31. **Aucune régularisation globale des anciens blocs de gouvernance temporelle du Recorder** n'est
