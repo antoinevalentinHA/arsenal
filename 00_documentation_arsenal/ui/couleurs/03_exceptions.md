@@ -492,24 +492,21 @@ canon 0.2) est nouveau ; les autres clés sont du canon Arsenal existant.
 
 ---
 
-## Exception 9 — Position de commande des volets (ouvert / intermédiaire / fermé)
+## Exception 9 — Sens de commande des volets (ouverture / fermeture)
 
 ### Objet
 
 Dans les tuiles d'**action** du domaine Volets, la couleur identifie
-visuellement la **position visée** par la commande (ouvert, fermé, ou
-position intermédiaire). Elle ne porte **aucun jugement métier**
-(OK / KO / WARN / INFO) et ne reflète **aucun état réel** du volet.
+visuellement le **sens de la commande** émise (ouverture / fermeture).
+Elle ne porte **aucun jugement métier** (OK / KO / WARN / INFO) et ne
+reflète **aucun état** du volet.
 
-Cette distinction est nécessaire car les volets Bubendorff :
-- n'exposent **aucun retour d'état** fiable (état optimiste seulement) ;
-- ne supportent **pas** l'action `stop` (`supported_features = 7` :
-  ouvrir + fermer + position), mais gèrent nativement les **positions**
-  (préréglages 0 / 25 / 75 / 100 %).
-
-La tuile ne peut donc traduire qu'une **intention de position**, jamais
-une position mesurée. En l'absence d'état, distinguer les extrêmes
-(ouvert / fermé) par la couleur améliore la lisibilité et réduit le
+Cette distinction est nécessaire car les volets Bubendorf (via HomeKit)
+n'exposent **aucun retour d'état fiable** et ne supportent que deux
+commandes (`supported_features = 7` : ouvrir / fermer / position ;
+**pas de stop**). La tuile ne peut donc traduire qu'une **intention de
+commande**, jamais une position réelle. En l'absence d'état, distinguer
+les deux commandes par la couleur améliore la lisibilité et réduit le
 risque d'erreur de manipulation.
 
 Cette exception est **catégorielle** (strictement Volets / action) et
@@ -519,8 +516,8 @@ sans introduire ni nuance ni opacité nouvelle.
 
 ### Périmètre strict
 
-Réservée aux tuiles d'action volets (spécialisation `shutter_position`
-de `shutter_action_base`, couche `10_action/` du domaine
+Réservée aux tuiles d'action volets (spécialisations `shutter_open`,
+`shutter_close` de `shutter_action_base`, couche `10_action/` du domaine
 `40_dashboards/volets/`).
 
 Ne s'applique pas :
@@ -530,24 +527,23 @@ Ne s'applique pas :
 
 ### Mapping autorisé (uniquement)
 
-| Couleur | Valeur | Position de commande |
-|---------|--------|----------------------|
-| 🟢 Vert | `rgba(76, 175, 80, 0.2)` | `100 %` — ouvert (position haute) |
-| 🔵 Bleu | `rgba(33, 150, 243, 0.2)` | `0 %` — fermé (position basse) |
-| ⚪ Gris neutre | `rgba(158, 158, 158, 0.2)` | position **intermédiaire** (25 % / 75 %) |
+| Couleur | Valeur | Sens de commande |
+|---------|--------|------------------|
+| 🟢 Vert | `rgba(76, 175, 80, 0.2)` | `montée` — ouverture |
+| 🔵 Bleu | `rgba(33, 150, 243, 0.2)` | `descente` — fermeture |
+| ⚪ Gris neutre | `rgba(158, 158, 158, 0.2)` | commande volet sans sens directionnel typé |
 
 Le vert ne signifie **jamais** ici « OK / autorisé », le bleu **jamais**
-« information ». Ces couleurs encodent exclusivement une **position de
-commande**, à l'image des modes HVAC. Aucune couleur n'est attribuée aux
-positions intermédiaires : elles restent en gris neutre.
+« information ». Ces couleurs encodent exclusivement un **sens de
+commande**, à l'image des modes HVAC.
 
 ### Priorité
 
 La hiérarchie sémantique globale reste inchangée (`05_regles.md`).
 Ces tuiles ne lisant aucun état, elles ne peuvent jamais entrer en
 concurrence avec une couleur sémantique : elles n'expriment qu'une
-intention de position. Si une tuile d'action venait à lire un état
-(retour de position fiable à l'avenir), l'indisponibilité
+intention de commande. Si une tuile d'action venait à lire un état
+(retour de position à l'avenir), l'indisponibilité
 `rgba(158, 158, 158, 0.1)` primerait comme partout.
 
 ### 🚫 Interdits
@@ -555,8 +551,9 @@ intention de position. Si une tuile d'action venait à lire un état
 - Utiliser ce mapping pour exprimer un statut (OK / KO / WARN / indispo)
 - Étendre ce mapping hors des tuiles d'action du domaine Volets
 - Introduire d'autres nuances ou d'autres opacités
-- Colorer une position intermédiaire (interdit : elles restent grises)
-- Réintroduire une tuile / couleur « stop » : le matériel ne supporte
-  pas l'arrêt (`supported_features = 7`)
-- Décrire ces couleurs comme décoratives : elles encodent une position
-  de commande catégorielle, seule justification recevable
+- Colorer une tuile d'action volet sans qu'elle corresponde à l'un des
+  deux sens documentés (montée / descente)
+- Réintroduire une tuile « stop » : le matériel ne supporte pas l'arrêt
+  (`supported_features = 7`) — on n'expose pas une commande qu'on n'a pas
+- Décrire ces couleurs comme décoratives : elles encodent un sens de
+  commande catégoriel, seule justification recevable

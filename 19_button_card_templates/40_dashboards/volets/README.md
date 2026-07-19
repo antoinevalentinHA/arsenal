@@ -21,15 +21,17 @@ Le dossier est organisé en **4 familles UI distinctes** :
 ### A. Actions volets
 
 Socle : `shutter_action_base`
-Spécialisation finale : `shutter_position`
+Spécialisations finales : `shutter_open`, `shutter_close`
 
-- Socle d'action paramétrable (service / cible / data / confirmation) via `variables`
+- Socle d'action paramétrable pour montée / descente via `variables`
 - Aucune lecture d'état
 - **Type UI : action** (proxy UI d'une commande backend)
 
-> `shutter_action_base` est un **socle fonctionnel**, pas une carte métier finale. Il ne doit pas être utilisé directement sans spécialisation. Le traitement de `cover.stop_cover*` reste documenté dans l'entête (convention HA), mais **n'est plus employé** : les volets Bubendorff ne supportent pas l'arrêt (`supported_features = 7`).
+> `shutter_action_base` est un **socle fonctionnel**, pas une carte métier finale. Il ne doit pas être utilisé directement sans spécialisation.
 
-> La spécialisation `shutter_position` pilote un volet (ou un groupe) vers une **position cible** via `cover.set_cover_position` (préréglages 100 / 75 / 25 / 0 %). Elle calcule libellé, icône et couleur à partir de `variables.position`. La couleur est **catégorielle et non décisionnelle** — position **ouvert** 🟢 / **fermé** 🔵 / **intermédiaire** ⚪ gris — encadrée par la charte couleurs, **Exception 9 (position de commande des volets)**, sur le modèle de l'Exception 1 (modes HVAC). Côté Lovelace, `principal.yaml` ne fait que passer `cible` + `position` (aucune couleur ni logique inline).
+> Les deux spécialisations finales `shutter_open` / `shutter_close` fixent le libellé, l'icône (grosses flèches ⬆️ / ⬇️) et la couleur de **sens de commande** (montée 🟢 / descente 🔵). Cette couleur est **catégorielle et non décisionnelle** : elle n'exprime aucun état (les volets Bubendorf n'ont aucun retour d'état). Elle est encadrée par la charte couleurs — **Exception 9 (sens de commande des volets)**, sur le modèle de l'Exception 1 (modes HVAC). Le dashboard `principal.yaml` n'utilise que ces deux spécialisations (aucune couleur ni logique inline côté Lovelace).
+
+> ⚠️ **Pas de tuile « stop »** : ces volets (HomeKit, `supported_features = 7`) ne supportent pas `cover.stop_cover`. On n'expose donc pas de commande d'arrêt — on n'affiche que ce que le matériel sait faire (ouvrir / fermer).
 
 ---
 
@@ -78,7 +80,7 @@ Exemple : `pluie_cibles_volets_kpi_72`
 
 | Type UI        | Signification                                                                                    | Exemples                                                                                     |
 |----------------|--------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| action         | commande utilisateur explicite, socle fonctionnel                                               | `shutter_action_base` (socle), `shutter_position`                                           |
+| action         | commande utilisateur explicite, socle fonctionnel                                               | `shutter_action_base` (socle), `shutter_open`, `shutter_close`                              |
 | interprétative | restitution locale d'une décision ou d'un indicateur métier                                    | `decision_pluie_forte_72`, `decision_pluie_recente_72`, `pluie_decision_72`, `pluie_cibles_volets_kpi_72` |
 | diagnostic     | qualification d'un risque ou d'une exposition                                                   | `exposition_fenetres_concernees_ouvertes_72`, `pluie_exposition_resume_72`                   |
 | pure           | *(non utilisé dans ce domaine)*                                                                  | —                                                                                            |
@@ -108,7 +110,8 @@ Niveau 4 — Ciblage / Protection → 40_kpi_protection/
 
   10_action/
     shutter_action_base.yaml
-    shutter_position.yaml
+    shutter_open.yaml
+    shutter_close.yaml
 
   20_decision_pluie/
     decision_pluie_forte_72.yaml
@@ -141,15 +144,13 @@ Deux approches coexistent — mutuellement exclusives à terme :
 
 ### 2. `shutter_action_base` — socle vs carte finale — ✅ tranchée
 
-La spécialisation finale `shutter_position` existe dans ce même dossier
-et est documentée ci-dessus. Le socle `shutter_action_base` reste réservé
-à l'héritage et n'est plus utilisé directement par les dashboards.
+Les spécialisations finales existent désormais dans ce même dossier
+(`shutter_open`, `shutter_close`) et sont documentées ci-dessus.
+Le socle `shutter_action_base` reste réservé à l'héritage et n'est plus
+utilisé directement par les dashboards.
 
-> Historique : les spécialisations `shutter_open` / `shutter_stop` /
-> `shutter_close` (sens de commande montée/arrêt/descente) ont été
-> supprimées après constat que les volets Bubendorff ne supportent pas
-> l'arrêt (`supported_features = 7`). Elles sont remplacées par
-> `shutter_position` (pilotage par position 0/25/75/100 %).
+> Pas de `shutter_stop` : le matériel ne supporte pas l'arrêt
+> (`supported_features = 7`), on n'expose donc pas cette commande.
 
 ---
 

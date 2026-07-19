@@ -9,8 +9,9 @@
 # 🎯 ROLE
 #     Socle fonctionnel paramétrable pour les tuiles d'action
 #     volets 72px. Expose le service, les données, la cible et
-#     la confirmation via variables. Base pour toutes les
-#     spécialisations volets (montée, descente, stop…).
+#     la confirmation via variables. Base pour les spécialisations
+#     volets (montée, descente). Pas de stop : matériel non capable
+#     (supported_features = 7).
 #
 # 🧱 NATURE
 #     - Template button-card

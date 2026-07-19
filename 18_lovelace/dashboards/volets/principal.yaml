@@ -23,9 +23,9 @@ views:
     ########################################################
     # 🧩 VERTICAL STACK PRINCIPAL
     #
-    #  Volets Bubendorff : pas de STOP (supported_features = 7),
-    #  mais positions natives → préréglages 100 / 75 / 25 / 0 %.
-    #  Couleurs : Exception 9 (position de commande, catégoriel).
+    #  Volets Bubendorff via HomeKit : uniquement ouvrir /
+    #  fermer (supported_features = 7, pas de stop natif).
+    #  On n'expose donc que ces deux commandes.
     ########################################################
     cards:
       - type: vertical-stack
@@ -38,46 +38,19 @@ views:
             name: 🏠 Tous
 
           - type: grid
-            columns: 4
+            columns: 2
             square: false
             cards:
               - type: custom:button-card
-                template: shutter_position
+                template: shutter_open
                 variables:
-                  cible:
-                    - cover.sejour_gauche
-                    - cover.sejour_droit
-                    - cover.chambre_arnaud
-                    - cover.chambre_matthieu
-                  position: 100
+                  service: script.ouvrir_tous_les_volets
                   confirm: Confirmez-vous l’ouverture de tous les volets ?
+
               - type: custom:button-card
-                template: shutter_position
+                template: shutter_close
                 variables:
-                  cible:
-                    - cover.sejour_gauche
-                    - cover.sejour_droit
-                    - cover.chambre_arnaud
-                    - cover.chambre_matthieu
-                  position: 75
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible:
-                    - cover.sejour_gauche
-                    - cover.sejour_droit
-                    - cover.chambre_arnaud
-                    - cover.chambre_matthieu
-                  position: 25
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible:
-                    - cover.sejour_gauche
-                    - cover.sejour_droit
-                    - cover.chambre_arnaud
-                    - cover.chambre_matthieu
-                  position: 0
+                  service: script.fermer_tous_les_volets
                   confirm: Confirmez-vous la fermeture de tous les volets ?
 
           ##################################################
@@ -87,97 +60,66 @@ views:
             template: section_header
             name: 🛋️ Séjour
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: ⬅️ Gauche
-
           - type: grid
-            columns: 4
+            columns: 2
             square: false
             cards:
               - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.sejour_gauche]
-                  position: 100
-                  confirm: Confirmez-vous l’ouverture du volet séjour gauche ?
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.sejour_gauche]
-                  position: 75
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.sejour_gauche]
-                  position: 25
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.sejour_gauche]
-                  position: 0
-                  confirm: Confirmez-vous la fermeture du volet séjour gauche ?
+                template: sub_section_header
+                name: ⬅️ Gauche
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: ➡️ Droit
+              - type: custom:button-card
+                template: sub_section_header
+                name: ➡️ Droit
 
           - type: grid
-            columns: 4
+            columns: 2
             square: false
             cards:
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.sejour_droit]
-                  position: 100
-                  confirm: Confirmez-vous l’ouverture du volet séjour droit ?
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.sejour_droit]
-                  position: 75
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.sejour_droit]
-                  position: 25
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.sejour_droit]
-                  position: 0
-                  confirm: Confirmez-vous la fermeture du volet séjour droit ?
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    template: shutter_open
+                    variables:
+                      service: script.ouvrir_volet_sejour_gauche
+                      confirm: Confirmez-vous l’ouverture du volet séjour gauche ?
+                  - type: custom:button-card
+                    template: shutter_close
+                    variables:
+                      service: script.fermer_volet_sejour_gauche
+                      confirm: Confirmez-vous la fermeture du volet séjour gauche ?
+
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    template: shutter_open
+                    variables:
+                      service: script.ouvrir_volet_sejour_droit
+                      confirm: Confirmez-vous l’ouverture du volet séjour droit ?
+                  - type: custom:button-card
+                    template: shutter_close
+                    variables:
+                      service: script.fermer_volet_sejour_droit
+                      confirm: Confirmez-vous la fermeture du volet séjour droit ?
 
           - type: custom:button-card
             template: sub_section_header
             name: 🛋️ Global
 
           - type: grid
-            columns: 4
+            columns: 2
             square: false
             cards:
               - type: custom:button-card
-                template: shutter_position
+                template: shutter_open
                 variables:
-                  cible: [cover.sejour_gauche, cover.sejour_droit]
-                  position: 100
+                  service: script.ouvrir_volets_sejour
                   confirm: Confirmez-vous l’ouverture des volets du séjour ?
+
               - type: custom:button-card
-                template: shutter_position
+                template: shutter_close
                 variables:
-                  cible: [cover.sejour_gauche, cover.sejour_droit]
-                  position: 75
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.sejour_gauche, cover.sejour_droit]
-                  position: 25
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.sejour_gauche, cover.sejour_droit]
-                  position: 0
+                  service: script.fermer_volets_sejour
                   confirm: Confirmez-vous la fermeture des volets du séjour ?
 
           ######################################################
@@ -187,95 +129,64 @@ views:
             template: section_header
             name: 🛏️ Chambres
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🛏️ Arnaud
-
           - type: grid
-            columns: 4
+            columns: 2
             square: false
             cards:
               - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.chambre_arnaud]
-                  position: 100
-                  confirm: Confirmez-vous l’ouverture du volet de la chambre d’Arnaud ?
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.chambre_arnaud]
-                  position: 75
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.chambre_arnaud]
-                  position: 25
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.chambre_arnaud]
-                  position: 0
-                  confirm: Confirmez-vous la fermeture du volet de la chambre d’Arnaud ?
+                template: sub_section_header
+                name: 🛏️ Arnaud
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🛏️ Matthieu
+              - type: custom:button-card
+                template: sub_section_header
+                name: 🛏️ Matthieu
 
           - type: grid
-            columns: 4
+            columns: 2
             square: false
             cards:
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.chambre_matthieu]
-                  position: 100
-                  confirm: Confirmez-vous l’ouverture du volet de la chambre de Matthieu ?
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.chambre_matthieu]
-                  position: 75
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.chambre_matthieu]
-                  position: 25
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.chambre_matthieu]
-                  position: 0
-                  confirm: Confirmez-vous la fermeture du volet de la chambre de Matthieu ?
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    template: shutter_open
+                    variables:
+                      service: script.ouvrir_volet_arnaud
+                      confirm: Confirmez-vous l’ouverture du volet de la chambre d’Arnaud ?
+                  - type: custom:button-card
+                    template: shutter_close
+                    variables:
+                      service: script.fermer_volet_arnaud
+                      confirm: Confirmez-vous la fermeture du volet de la chambre d’Arnaud ?
+
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    template: shutter_open
+                    variables:
+                      service: script.ouvrir_volet_matthieu
+                      confirm: Confirmez-vous l’ouverture du volet de la chambre de Matthieu ?
+                  - type: custom:button-card
+                    template: shutter_close
+                    variables:
+                      service: script.fermer_volet_matthieu
+                      confirm: Confirmez-vous la fermeture du volet de la chambre de Matthieu ?
 
           - type: custom:button-card
             template: sub_section_header
             name: 🛏 Global
 
           - type: grid
-            columns: 4
+            columns: 2
             square: false
             cards:
               - type: custom:button-card
-                template: shutter_position
+                template: shutter_open
                 variables:
-                  cible: [cover.chambre_arnaud, cover.chambre_matthieu]
-                  position: 100
+                  service: script.ouvrir_volets_enfants
                   confirm: Confirmez-vous l’ouverture des volets des chambres ?
+
               - type: custom:button-card
-                template: shutter_position
+                template: shutter_close
                 variables:
-                  cible: [cover.chambre_arnaud, cover.chambre_matthieu]
-                  position: 75
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.chambre_arnaud, cover.chambre_matthieu]
-                  position: 25
-              - type: custom:button-card
-                template: shutter_position
-                variables:
-                  cible: [cover.chambre_arnaud, cover.chambre_matthieu]
-                  position: 0
+                  service: script.fermer_volets_enfants
                   confirm: Confirmez-vous la fermeture des volets des chambres ?
