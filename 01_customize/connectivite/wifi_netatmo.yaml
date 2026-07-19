@@ -26,8 +26,8 @@
 # 📶 WIFI SCORE
 ############################################################
 
-sensor.wifi_score_chambre_arnaud:
-  friendly_name: "Chambre Arnaud"
+sensor.wifi_score_chambre_enfants:
+  friendly_name: "Chambre Enfants"
 
 sensor.wifi_score_chambre_matthieu:
   friendly_name: "Chambre Matthieu"

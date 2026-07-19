@@ -41,10 +41,10 @@
       state: *deltat_logic
 
     # ------------------------------------------------------
-    #  ΔT CHAMBRE ARNAUD
+    #  ΔT CHAMBRE ENFANTS
     # ------------------------------------------------------
-    - name: "deltaT_chambre_arnaud"
-      unique_id: deltaT_chambre_arnaud
+    - name: "deltaT_chambre_enfants"
+      unique_id: deltaT_chambre_enfants
       unit_of_measurement: "°C"
       state: *deltat_logic
 

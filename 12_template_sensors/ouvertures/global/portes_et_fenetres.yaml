@@ -7,7 +7,7 @@
 #
 # ⚙️ Fonctionnement :
 #   - Regroupe l’ensemble des capteurs d’ouvertures :
-#       • Chambres (Arnaud, Matthieu, Parents)
+#       • Chambres (Enfants, Matthieu, Parents)
 #       • Séjour (4 ouvrants)
 #       • Entrée
 #       • Portes d’entrée et de garage
@@ -35,7 +35,7 @@
 
       state: >
         {% set ouvertures = [
-          'binary_sensor.contact_chambre_arnaud',
+          'binary_sensor.contact_chambre_enfants',
           'binary_sensor.contact_chambre_matthieu',
           'binary_sensor.contact_chambre_parents',
           'binary_sensor.contact_sejour',

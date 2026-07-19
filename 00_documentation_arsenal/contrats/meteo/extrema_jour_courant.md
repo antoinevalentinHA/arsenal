@@ -54,7 +54,7 @@ source canonique** ; son retrait effectif est une dette de migration (DETTE-JC-1
 entree
 sejour
 palier
-chambre_arnaud
+chambre_enfants
 chambre_matthieu
 chambre_parents
 petite_maison

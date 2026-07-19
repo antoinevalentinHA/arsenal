@@ -37,16 +37,16 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidite_absolue_chambre_arnaud
-        - sensor.humidite_absolue_seuil_bas_chambre_arnaud
-        - sensor.humidite_absolue_seuil_haut_chambre_arnaud
+        - sensor.humidite_absolue_chambre_enfants
+        - sensor.humidite_absolue_seuil_bas_chambre_enfants
+        - sensor.humidite_absolue_seuil_haut_chambre_enfants
         - input_number.humidite_absolue_couleur_zone_verte
     - platform: homeassistant
       event: start
 
   sensor:
-    - name: "Couleur Humidité absolue Chambre Arnaud"
-      unique_id: couleur_humidite_absolue_chambre_arnaud
+    - name: "Couleur Humidité absolue Chambre Enfants"
+      unique_id: couleur_humidite_absolue_chambre_enfants
       state: &couleur_humidite_absolue_logic >
         {% set suffixe = this.entity_id | replace('sensor.couleur_humidite_absolue_', '') %}
         {% set src = 'sensor.humidite_absolue_' ~ suffixe %}

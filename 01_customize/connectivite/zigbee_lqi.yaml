@@ -50,12 +50,12 @@ sensor.bouton_entree_linkquality:
 # 🪟 OUVERTURES (FENÊTRES / PORTES)
 ############################################################
 
-sensor.contact_chambre_arnaud_1_linkquality:
-  friendly_name: "Fenêtre Arnaud"
+sensor.contact_chambre_enfants_1_linkquality:
+  friendly_name: "Fenêtre Enfants"
   icon: mdi:window-closed
 
-sensor.contact_chambre_arnaud_2_linkquality:
-  friendly_name: "Fenêtre Arnaud 2"
+sensor.contact_chambre_enfants_2_linkquality:
+  friendly_name: "Fenêtre Enfants 2"
   icon: mdi:window-closed
 
 sensor.contact_chambre_matthieu_1_linkquality:
@@ -182,8 +182,8 @@ sensor.meteo_zigbee_chambre_parents_linkquality:
   friendly_name: "Capteur Zigbee parents"
   icon: mdi:thermometer
 
-sensor.meteo_zigbee_chambre_arnaud_linkquality:
-  friendly_name: "Capteur Zigbee Arnaud"
+sensor.meteo_zigbee_chambre_enfants_linkquality:
+  friendly_name: "Capteur Zigbee Enfants"
   icon: mdi:thermometer
 
 sensor.meteo_zigbee_chambre_matthieu_linkquality:
@@ -218,8 +218,8 @@ sensor.prise_cage_escalier_rdc_linkquality:
   friendly_name: "Prise cage escalier RDC"
   icon: mdi:power-socket-fr
 
-sensor.prise_chambre_arnaud_linkquality:
-  friendly_name: "Prise chambre Arnaud"
+sensor.prise_chambre_enfants_linkquality:
+  friendly_name: "Prise chambre Enfants"
   icon: mdi:power-socket-fr
 
 sensor.prise_chambre_matthieu_linkquality:

@@ -22,7 +22,7 @@
       icon: mdi:window-open-variant
       state: >
         {% set fenetres = [
-          'binary_sensor.contact_chambre_arnaud',
+          'binary_sensor.contact_chambre_enfants',
           'binary_sensor.contact_chambre_matthieu',
           'binary_sensor.contact_sejour_1',
           'binary_sensor.contact_sejour_2',
@@ -33,7 +33,7 @@
       attributes:
         ouvertes_entity_ids: >
           {% set fenetres = [
-            'binary_sensor.contact_chambre_arnaud',
+            'binary_sensor.contact_chambre_enfants',
             'binary_sensor.contact_chambre_matthieu',
             'binary_sensor.contact_sejour_1',
             'binary_sensor.contact_sejour_2',

@@ -28,7 +28,7 @@
 #
 # 🧩 Capteurs / Zones concernées :
 #   ▪️ Résidentiel :
-#      - Chambre Arnaud  
+#      - Chambre Enfants  
 #      - Chambre Matthieu  
 #      - Chambre Parents  
 #      - Entrée  
@@ -75,8 +75,8 @@
 # ==========================================================
 
 - sensor:
-    - name: "Humidité relative Seuil Bas Chambre Arnaud"
-      unique_id: humidite_relative_seuil_bas_chambre_arnaud
+    - name: "Humidité relative Seuil Bas Chambre Enfants"
+      unique_id: humidite_relative_seuil_bas_chambre_enfants
       state: &humidite_relative_seuil_bas_logic >
         {% set periode = states('sensor.periode_meteo') %}
         {% set suffixe = this.entity_id | replace('sensor.humidite_relative_seuil_bas_', '') %}

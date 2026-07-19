@@ -7,9 +7,9 @@
 > **v1.1 (C32 / A2 — déménagement) :** périmètre réduit de **3 à 2 chambres** de l'étage
 > (**Chambre Enfants** + **Chambre Parents**). La **Salle de Jeux** (ex-Chambre Matthieu) est
 > **exclue** : pièce sans usage sommeil, elle ne doit pas piloter le besoin de chauffe nocturne.
-> Les `entity_id` restent en forme **historique** dans ce contrat (`…_chambre_arnaud` = future Chambre
-> Enfants) ; leur **renommage** (`…_chambre_arnaud → …_chambre_enfants`) est porté par **C32/L3**, et
-> l'alignement du **runtime** (retrait de la Salle de Jeux des agrégats) par **C32/L4**. Chantier :
+> Les façades sont désormais nommées `…_chambre_enfants` (ex-`…_chambre_arnaud`, renommage **C32/L3**)
+> et `…_chambre_parents` ; l'alignement du **runtime** (retrait de la Salle de Jeux des agrégats) reste
+> porté par **C32/L4**. Chantier :
 > [`chantier_restructuration_chambres_enfants.md`](../../../audits/04_chantiers/transverses/chantier_restructuration_chambres_enfants.md).
 
 ---
@@ -33,7 +33,7 @@ Les identifiants historiques `sensor.temperature_min_chambres` / `sensor.tempera
 
 L'**ensemble des chambres de l'étage** est composé **exactement** des deux façades suivantes :
 
-- `sensor.temperature_chambre_arnaud` — **Chambre Enfants** (pièce partagée ; `entity_id` renommé `…_chambre_enfants` au **C32/L3**)
+- `sensor.temperature_chambre_enfants` — **Chambre Enfants** (pièce partagée ; `entity_id` renommé `…_chambre_enfants` au **C32/L3**)
 - `sensor.temperature_chambre_parents` — **Chambre Parents**
 
 Sont **explicitement exclus** du calcul, présents ou futurs :
@@ -208,7 +208,7 @@ Ces éléments relèvent du **contrat de restitution** (à venir) ou des **contr
 
 *(Convention d'identifiant : `INV-BTE-*` — Bornes Thermiques Étage ; alignée sur les contrats de production météo à identifiants `INV-*`.)*
 
-- **INV-BTE-1** — Le périmètre est **exactement** les **deux** chambres de l'étage : **Chambre Enfants** (`chambre_arnaud` → `chambre_enfants` au C32/L3) et **Chambre Parents** (`chambre_parents`) ; la **Salle de Jeux** (ex-`chambre_matthieu`) et toute autre façade ne participent pas.
+- **INV-BTE-1** — Le périmètre est **exactement** les **deux** chambres de l'étage : **Chambre Enfants** (`chambre_enfants` → `chambre_enfants` au C32/L3) et **Chambre Parents** (`chambre_parents`) ; la **Salle de Jeux** (ex-`chambre_matthieu`) et toute autre façade ne participent pas.
 - **INV-BTE-2** — Le calcul n'utilise que les **façades exploitables** (valeur numérique) ; les façades non numériques sont exclues.
 - **INV-BTE-3** — Les bornes sont **exploitables dès qu'au moins une** façade du périmètre est exploitable.
 - **INV-BTE-4** — MIN est le **minimum** et MAX le **maximum** des valeurs numériques des façades exploitables.
@@ -266,7 +266,7 @@ Sont **hors** de ce contrat (traités ailleurs) :
 - les **références physiques** basse et haute des catégories ;
 - les **catégories backend** `froid` / `neutre` / `chaud` ;
 - le **mapping UI** et l'Exception 2 thermique ;
-- le **renommage** des entités historiques (`…_chambre_arnaud → …_chambre_enfants`), porté par **C32/L3** — conservées ici en forme historique ;
+- le **renommage** des entités historiques (`…_chambre_enfants → …_chambre_enfants`), porté par **C32/L3** — conservées ici en forme historique ;
 - l'**implémentation runtime**, les **checkers** et la **CI** ;
 - les **autres agrégats spatiaux** (RDC, petite maison, étage élargi) ;
 - le **RDC** et la **petite maison**.

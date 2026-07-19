@@ -18,7 +18,7 @@
 #
 # 📥 ENTRÉES
 #
-#     - sensor.bruit_chambre_arnaud
+#     - sensor.bruit_chambre_enfants
 #     - input_number.seuil_reveil_bruit
 #     - input_boolean.babyphone_arnaud
 #
@@ -44,7 +44,7 @@
   trigger:
     - platform: template
       value_template: >
-        {{ states('sensor.bruit_chambre_arnaud') | float(0)
+        {{ states('sensor.bruit_chambre_enfants') | float(0)
            > states('input_number.seuil_reveil_bruit') | float(0) }}
 
   condition:

@@ -43,8 +43,8 @@ zigbee_linkquality_all:
     - sensor.capteur_mouvements_sejour_2_linkquality
     - sensor.clavier_alarme_1_linkquality
     - sensor.clavier_alarme_2_linkquality
-    - sensor.contact_chambre_arnaud_1_linkquality
-    - sensor.contact_chambre_arnaud_2_linkquality
+    - sensor.contact_chambre_enfants_1_linkquality
+    - sensor.contact_chambre_enfants_2_linkquality
     - sensor.contact_chambre_matthieu_1_linkquality
     - sensor.contact_chambre_matthieu_2_linkquality
     - sensor.contact_chambre_parents_droite_1_linkquality
@@ -67,7 +67,7 @@ zigbee_linkquality_all:
     - sensor.lumiere_entree_linkquality
     - sensor.vmc_linkquality
     - sensor.luminosite_garage_linkquality
-    - sensor.meteo_zigbee_chambre_arnaud_linkquality
+    - sensor.meteo_zigbee_chambre_enfants_linkquality
     - sensor.meteo_zigbee_chambre_matthieu_linkquality
     - sensor.meteo_zigbee_chambre_parents_linkquality
     - sensor.meteo_zigbee_entree_linkquality
@@ -77,7 +77,7 @@ zigbee_linkquality_all:
     - sensor.prise_box_linkquality
     - sensor.prise_buanderie_linkquality
     - sensor.prise_cage_escalier_rdc_linkquality
-    - sensor.prise_chambre_arnaud_linkquality
+    - sensor.prise_chambre_enfants_linkquality
     - sensor.prise_chambre_matthieu_linkquality
     - sensor.prise_deshumidificateur_linkquality
     - sensor.prise_jardin_linkquality

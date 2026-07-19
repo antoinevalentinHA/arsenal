@@ -15,7 +15,7 @@ T_REF figés en M1.
 
 - sensor.deltat_entree
 - sensor.deltat_sejour
-- sensor.deltat_chambre_arnaud
+- sensor.deltat_chambre_enfants
 - sensor.deltat_chambre_matthieu
 - sensor.deltat_chambre_parents
 - sensor.deltat_palier

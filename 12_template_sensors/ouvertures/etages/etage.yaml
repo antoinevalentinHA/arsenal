@@ -7,7 +7,7 @@
 #
 # ⚙️ Fonctionnement :
 #   - Regroupe les capteurs suivants :
-#       • Chambre Arnaud
+#       • Chambre Enfants
 #       • Chambre Matthieu
 #       • Chambre Parents (3 ouvrants)
 #   - Statut :
@@ -33,7 +33,7 @@
 
       state: >
         {% set fenetres_etage = [
-          'binary_sensor.contact_chambre_arnaud',
+          'binary_sensor.contact_chambre_enfants',
           'binary_sensor.contact_chambre_matthieu',
           'binary_sensor.contact_chambre_parents'
         ] %}

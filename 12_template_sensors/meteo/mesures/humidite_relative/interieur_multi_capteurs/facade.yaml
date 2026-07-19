@@ -19,17 +19,17 @@
 
 - sensor:
 
-    - name: "Humidite relative chambre arnaud"
-      unique_id: humidite_relative_chambre_arnaud
+    - name: "Humidite relative chambre enfants"
+      unique_id: humidite_relative_chambre_enfants
       device_class: humidity
       state_class: measurement
       unit_of_measurement: "%"
 
       availability: >
-        {{ states('sensor.humidite_relative_stabilisee_chambre_arnaud') not in ['unknown','unavailable','none'] }}
+        {{ states('sensor.humidite_relative_stabilisee_chambre_enfants') not in ['unknown','unavailable','none'] }}
 
       state: >
-        {{ states('sensor.humidite_relative_stabilisee_chambre_arnaud') | float | round(1) }}
+        {{ states('sensor.humidite_relative_stabilisee_chambre_enfants') | float | round(1) }}
 
     - name: "Humidite relative chambre matthieu"
       unique_id: humidite_relative_chambre_matthieu

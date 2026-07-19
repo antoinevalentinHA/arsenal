@@ -130,11 +130,11 @@ temperature_max_jour_courant_palier:
   icon: mdi:thermometer-chevron-up
 
 ############################################################
-# 🧒 Chambre Arnaud
+# 🧒 Chambre Enfants
 ############################################################
 
-temperature_min_jour_courant_chambre_arnaud:
-  name: Température min jour courant chambre Arnaud
+temperature_min_jour_courant_chambre_enfants:
+  name: Température min jour courant chambre Enfants
   min: -50
   max: 1000
   step: 0.1
@@ -142,8 +142,8 @@ temperature_min_jour_courant_chambre_arnaud:
   mode: box
   icon: mdi:thermometer-low
 
-temperature_max_jour_courant_chambre_arnaud:
-  name: Température max jour courant chambre Arnaud
+temperature_max_jour_courant_chambre_enfants:
+  name: Température max jour courant chambre Enfants
   min: -999
   max: 50
   step: 0.1

@@ -37,25 +37,25 @@
 # ==========================================================
 
 - sensor:
-    - name: "diagnostic_netatmo_arnaud"
-      unique_id: diagnostic_netatmo_arnaud
+    - name: "diagnostic_netatmo_enfants"
+      unique_id: diagnostic_netatmo_enfants
       state: >
         {% set preuves = [
-          states('sensor.temperature_chambre_arnaud_1'),
+          states('sensor.temperature_chambre_enfants_1'),
           states('sensor.temperature_chambre_parents_1'),
           states('sensor.temperature_jardin_1'),
           states('sensor.temperature_petite_maison'),
           states('sensor.temperature_sejour_1'),
-          states('sensor.humidite_relative_chambre_arnaud_1'),
+          states('sensor.humidite_relative_chambre_enfants_1'),
           states('sensor.humidite_relative_chambre_parents_1'),
           states('sensor.humidite_relative_jardin_1'),
           states('sensor.humidite_relative_petite_maison'),
           states('sensor.humidite_relative_sejour_1'),
-          states('sensor.co2_chambre_arnaud'),
+          states('sensor.co2_chambre_enfants'),
           states('sensor.co2_chambre_parents'),
           states('sensor.co2_petite_maison'),
           states('sensor.co2_sejour'),
-          states('sensor.bruit_chambre_arnaud')
+          states('sensor.bruit_chambre_enfants')
         ] %}
         {% set valides = preuves
           | map('float', default=none)

@@ -50,8 +50,8 @@
 # 🏠 Chambres
 # ----------------------------------------------------------
 - platform: statistics
-  name: "Humidité relative filtre jour Moyenne Chambre Arnaud"
-  entity_id: sensor.humidite_relative_filtre_jour_chambre_arnaud
+  name: "Humidité relative filtre jour Moyenne Chambre Enfants"
+  entity_id: sensor.humidite_relative_filtre_jour_chambre_enfants
   state_characteristic: mean
   max_age: &max_age_30d
     days: 30

@@ -15,15 +15,15 @@ Il répond à : **« la station entière est-elle suffisamment vivante pour qu'u
 
 ## 1. Périmètre utile par station
 
-### Station 1 — `diagnostic_netatmo_arnaud`
+### Station 1 — `diagnostic_netatmo_enfants`
 
 | Catégorie | Entités |
 |-----------|---------|
 | **Ping** | `binary_sensor.station_meteo_netatmo_1` |
-| **Températures** | `sensor.temperature_chambre_arnaud_1` · `sensor.temperature_chambre_parents_1` · `sensor.temperature_jardin_1` · `sensor.temperature_petite_maison` · `sensor.temperature_sejour_1` |
-| **Humidités** | `sensor.humidite_relative_chambre_arnaud_1` · `sensor.humidite_relative_chambre_parents_1` · `sensor.humidite_relative_jardin_1` · `sensor.humidite_relative_petite_maison` · `sensor.humidite_relative_sejour_1` |
-| **CO2** | `sensor.co2_chambre_arnaud` · `sensor.co2_chambre_parents` · `sensor.co2_petite_maison` · `sensor.co2_sejour` |
-| **Bruit** | `sensor.bruit_chambre_arnaud` |
+| **Températures** | `sensor.temperature_chambre_enfants_1` · `sensor.temperature_chambre_parents_1` · `sensor.temperature_jardin_1` · `sensor.temperature_petite_maison` · `sensor.temperature_sejour_1` |
+| **Humidités** | `sensor.humidite_relative_chambre_enfants_1` · `sensor.humidite_relative_chambre_parents_1` · `sensor.humidite_relative_jardin_1` · `sensor.humidite_relative_petite_maison` · `sensor.humidite_relative_sejour_1` |
+| **CO2** | `sensor.co2_chambre_enfants` · `sensor.co2_chambre_parents` · `sensor.co2_petite_maison` · `sensor.co2_sejour` |
+| **Bruit** | `sensor.bruit_chambre_enfants` |
 
 ### Station 2 — `diagnostic_netatmo_matthieu`
 
@@ -231,7 +231,7 @@ Il est **interdit** de combiner ping et preuves de vie dans une même condition 
 
 > Cette politique est **externe** au diagnostic : elle est portée par des automatisations dédiées (`11_automations/meteo/reboot_station/*.yaml`) qui *consomment* l'état. Le capteur de diagnostic reste strictement observationnel (§9 « Autorisé ») et les noms d'états restent descriptifs (§10). L'existence de cette section satisfait l'exigence §9 d'une **politique explicite** : la remédiation n'est plus ni implicite ni absente.
 
-Les deux états muets autorisent une remédiation par l'alimentation. L'action est identique — un **unique** power-cycle de la prise de la station concernée (`switch.prise_chambre_arnaud` pour la station 1, `switch.prise_chambre_matthieu` pour la station 2) via `script.reboot_netatmo` — mais leur **déclenchement diffère** selon la force de la preuve :
+Les deux états muets autorisent une remédiation par l'alimentation. L'action est identique — un **unique** power-cycle de la prise de la station concernée (`switch.prise_chambre_enfants` pour la station 1, `switch.prise_chambre_matthieu` pour la station 2) via `script.reboot_netatmo` — mais leur **déclenchement diffère** selon la force de la preuve :
 
 | État | Preuve observée | Déclenchement | Fondement |
 |------|-----------------|---------------|-----------|

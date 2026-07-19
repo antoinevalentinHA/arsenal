@@ -10,7 +10,7 @@
 
 Ce contrat gouverne le sous-domaine **plateaux thermostatiques stricts** des chambres équipées de vannes thermostatiques (TRV) : la **détection** d'un plateau thermique stable, sa **mémoire persistante**, son **écriture** (automatique et manuelle), son **affichage** et son **verdict visuel de stabilité**.
 
-Pièces couvertes : `chambre_arnaud`, `chambre_matthieu`, `chambre_parents`.
+Pièces couvertes : `chambre_enfants`, `chambre_matthieu`, `chambre_parents`.
 
 Hors périmètre : toute décision, autorisation, consigne ou commande de chauffage (gouvernées par les contrats `00`/`30`/`70` et la table canonique `80`).
 
@@ -22,9 +22,9 @@ Le plateau est une **mémoire thermique de diagnostic** : la dernière températ
 
 | Rôle | Entité | Couche runtime |
 |---|---|---|
-| Détection | `sensor.plateau_thermostatique_chambre_{parents,arnaud,matthieu}` | `12_template_sensors/chauffage/vannes_thermostatiques/plateaux_stricts.yaml` |
+| Détection | `sensor.plateau_thermostatique_chambre_{parents,enfants,matthieu}` | `12_template_sensors/chauffage/vannes_thermostatiques/plateaux_stricts.yaml` |
 | Affichage | `sensor.plateau_thermostatique_piece_affichage` | `12_template_sensors/chauffage/vannes_thermostatiques/affichage_plateau.yaml` |
-| Mémoire | `input_number.plateau_chambre_{arnaud,matthieu,parents}` | `03_input_numbers/chauffage/plateau_temperature.yaml` |
+| Mémoire | `input_number.plateau_chambre_{enfants,matthieu,parents}` | `03_input_numbers/chauffage/plateau_temperature.yaml` |
 | Écriture auto | automation `Chauffage – Mémorisation plateaux` | `11_automations/chauffage/update_plateaux_thermostatiques.yaml` |
 | Reset (user) | `script.reset_plateau_piece` | `10_scripts/chauffage/reset_plateau.yaml` |
 | Sélecteur pièce | `input_select.adjustment_piece` | (paramétrage) |
@@ -52,7 +52,7 @@ Règle, par pièce (capteurs `plateau_thermostatique_chambre_*`) :
 
 Trois helpers stockent le dernier plateau strict valide, par pièce :
 
-- `input_number.plateau_chambre_arnaud`
+- `input_number.plateau_chambre_enfants`
 - `input_number.plateau_chambre_matthieu`
 - `input_number.plateau_chambre_parents`
 

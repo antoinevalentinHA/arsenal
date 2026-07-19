@@ -49,7 +49,7 @@ DOCUMENTATION_DIR = ROOT / "00_documentation_arsenal"
 # Constantes contractuelles
 # ---------------------------------------------------------------------------
 UNIQUE_IDS = (
-    "diagnostic_netatmo_arnaud",
+    "diagnostic_netatmo_enfants",
     "diagnostic_netatmo_matthieu",
 )
 

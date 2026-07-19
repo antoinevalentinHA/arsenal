@@ -31,7 +31,7 @@
 #
 # 🧩 Capteurs / Zones concernées :
 #   ▪️ Résidentiel :
-#      - Chambre Arnaud  
+#      - Chambre Enfants  
 #      - Chambre Matthieu  
 #      - Chambre Parents  
 #      - Entrée  
@@ -81,8 +81,8 @@
 # ==========================================================
 
 - sensor:
-    - name: "Humidité Absolue Seuil Haut Chambre Arnaud"
-      unique_id: humidite_absolue_seuil_haut_chambre_arnaud
+    - name: "Humidité Absolue Seuil Haut Chambre Enfants"
+      unique_id: humidite_absolue_seuil_haut_chambre_enfants
       state: &humidite_absolue_seuil_haut_logic >
         {% set periode = states('sensor.periode_meteo') %}
         {% set suffixe = this.entity_id | replace('sensor.humidite_absolue_seuil_haut_', '') %}

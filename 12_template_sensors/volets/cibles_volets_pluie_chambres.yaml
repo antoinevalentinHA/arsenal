@@ -28,7 +28,7 @@
         {% set verrou = is_state('input_boolean.fermeture_volets_pluie','on') %}
         {% if absence and verrou %}
           {% set ns = namespace(n=0) %}
-          {% if is_state('binary_sensor.contact_chambre_arnaud','on') %}
+          {% if is_state('binary_sensor.contact_chambre_enfants','on') %}
             {% set ns.n = ns.n + 1 %}
           {% endif %}
           {% if is_state('binary_sensor.contact_chambre_matthieu','on') %}
@@ -44,8 +44,8 @@
           {% set verrou = is_state('input_boolean.fermeture_volets_pluie','on') %}
           {% if absence and verrou %}
             {% set ns = namespace(lst=[]) %}
-            {% if is_state('binary_sensor.contact_chambre_arnaud','on') %}
-              {% set ns.lst = ns.lst + ['cover.chambre_arnaud'] %}
+            {% if is_state('binary_sensor.contact_chambre_enfants','on') %}
+              {% set ns.lst = ns.lst + ['cover.chambre_enfants'] %}
             {% endif %}
             {% if is_state('binary_sensor.contact_chambre_matthieu','on') %}
               {% set ns.lst = ns.lst + ['cover.chambre_matthieu'] %}

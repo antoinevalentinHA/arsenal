@@ -20,7 +20,7 @@
 #       → conservation de la dernière valeur connue
 #
 # 🧠 Détails techniques :
-#   - Un capteur par pièce ou zone : Chambre Arnaud, Séjour, Jardin, etc.
+#   - Un capteur par pièce ou zone : Chambre Enfants, Séjour, Jardin, etc.
 #   - Chaque capteur inclut en attributs :
 #       • `temperature_source` — l’entité de température utilisée
 #       • `rosee_source` — l’entité du point de rosée associée
@@ -246,19 +246,19 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_arnaud
-        - sensor.point_de_rosee_chambre_arnaud
+        - sensor.temperature_chambre_enfants
+        - sensor.point_de_rosee_chambre_enfants
     - platform: homeassistant
       event: start
 
   sensor:
-    - name: "Humidex Chambre Arnaud"
-      unique_id: humidex_chambre_arnaud
+    - name: "Humidex Chambre Enfants"
+      unique_id: humidex_chambre_enfants
       icon: mdi:thermometer
       state: *humidex_logic
       attributes:
-        temperature_source: sensor.temperature_chambre_arnaud
-        rosee_source: sensor.point_de_rosee_chambre_arnaud
+        temperature_source: sensor.temperature_chambre_enfants
+        rosee_source: sensor.point_de_rosee_chambre_enfants
 
 - trigger:
     - platform: state

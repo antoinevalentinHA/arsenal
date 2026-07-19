@@ -49,8 +49,8 @@ contact_reconciliation_sejour_3:
   duration: "00:00:05"
   restore: false
 
-contact_reconciliation_chambre_arnaud:
-  name: Contact Chambre Arnaud Reconciliation
+contact_reconciliation_chambre_enfants:
+  name: Contact Chambre Enfants Reconciliation
   duration: "00:00:05"
   restore: false
 

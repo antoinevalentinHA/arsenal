@@ -77,10 +77,10 @@ views:
                 template: socle_kpi
                 tap_action:
                   action: none
-                entity: sensor.humidex_chambre_arnaud
-                name: Arnaud
+                entity: sensor.humidex_chambre_enfants
+                name: Enfants
                 triggers_update:
-                  - sensor.couleur_humidex_chambre_arnaud
+                  - sensor.couleur_humidex_chambre_enfants
 
               - type: custom:button-card
                 template: socle_kpi

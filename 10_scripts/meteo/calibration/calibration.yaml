@@ -104,13 +104,13 @@ calibration_capteurs_zigbee:
             calib_t: number.meteo_zigbee_sejour_temperature_calibration
             calib_h: number.meteo_zigbee_sejour_humidity_calibration
 
-          - name: "Chambre Arnaud"
-            hk_temp: sensor.temperature_chambre_arnaud_1
-            zb_temp: sensor.temperature_chambre_arnaud_2
-            hk_hum: sensor.humidite_relative_chambre_arnaud_1
-            zb_hum: sensor.humidite_relative_chambre_arnaud_2
-            calib_t: number.meteo_zigbee_chambre_arnaud_temperature_calibration
-            calib_h: number.meteo_zigbee_chambre_arnaud_humidity_calibration
+          - name: "Chambre Enfants"
+            hk_temp: sensor.temperature_chambre_enfants_1
+            zb_temp: sensor.temperature_chambre_enfants_2
+            hk_hum: sensor.humidite_relative_chambre_enfants_1
+            zb_hum: sensor.humidite_relative_chambre_enfants_2
+            calib_t: number.meteo_zigbee_chambre_enfants_temperature_calibration
+            calib_h: number.meteo_zigbee_chambre_enfants_humidity_calibration
 
           - name: "Chambre Matthieu"
             hk_temp: sensor.temperature_chambre_matthieu_1

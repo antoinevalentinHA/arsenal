@@ -46,8 +46,8 @@ cards:
 
       - type: custom:button-card
         template: diagnostic_redondance_contact
-        entity: sensor.diagnostic_redondance_contact_chambre_arnaud
-        name: Arnaud
+        entity: sensor.diagnostic_redondance_contact_chambre_enfants
+        name: Enfants
 
       - type: custom:button-card
         template: diagnostic_redondance_contact

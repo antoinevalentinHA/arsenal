@@ -45,7 +45,7 @@ telles que définies par le contrat Ouvertures :
 - `binary_sensor.tentative_aeration_en_grace`
 
 ### Contacts pièce (déclencheurs immédiats hors grâce)
-- `binary_sensor.contact_chambre_arnaud`
+- `binary_sensor.contact_chambre_enfants`
 - `binary_sensor.contact_chambre_matthieu`
 - `binary_sensor.contact_entree_fenetre`
 

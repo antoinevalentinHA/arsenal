@@ -38,8 +38,8 @@ sensor.humidite_relative_sejour:
 # 🛏️ CHAMBRES
 ############################################################
 
-sensor.humidite_relative_chambre_arnaud:
-  friendly_name: "Humidité relative Chambre Arnaud"
+sensor.humidite_relative_chambre_enfants:
+  friendly_name: "Humidité relative Chambre Enfants"
   icon: mdi:water-percent
 
 sensor.humidite_relative_chambre_matthieu:

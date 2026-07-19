@@ -17,7 +17,7 @@
 #   - chambre_parents_droite
 #   - garage
 #   - sejour_3
-#   - chambre_arnaud
+#   - chambre_enfants
 #   - chambre_matthieu
 #
 # 🧩 SCRIPTS APPELES
@@ -57,8 +57,8 @@
         - binary_sensor.contact_garage_2
         - binary_sensor.contact_sejour_3_1
         - binary_sensor.contact_sejour_3_2
-        - binary_sensor.contact_chambre_arnaud_1
-        - binary_sensor.contact_chambre_arnaud_2
+        - binary_sensor.contact_chambre_enfants_1
+        - binary_sensor.contact_chambre_enfants_2
         - binary_sensor.contact_chambre_matthieu_1
         - binary_sensor.contact_chambre_matthieu_2
 
@@ -105,7 +105,7 @@
       id: timer_finished
       event_type: timer.finished
       event_data:
-        entity_id: timer.contact_reconciliation_chambre_arnaud
+        entity_id: timer.contact_reconciliation_chambre_enfants
 
     - platform: event
       id: timer_finished

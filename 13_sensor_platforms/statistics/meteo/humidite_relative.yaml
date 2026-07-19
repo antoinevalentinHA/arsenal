@@ -39,8 +39,8 @@
 # 🏠 Chambres et pièces domestiques
 # ----------------------------------------------------------
 - platform: statistics
-  name: "Humidité relative Moyenne Chambre Arnaud"
-  entity_id: sensor.humidite_relative_chambre_arnaud
+  name: "Humidité relative Moyenne Chambre Enfants"
+  entity_id: sensor.humidite_relative_chambre_enfants
   state_characteristic: mean
   max_age: &max_age_30d
     days: 30

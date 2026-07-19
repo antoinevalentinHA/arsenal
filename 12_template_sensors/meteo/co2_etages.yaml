@@ -10,7 +10,7 @@
 
     # -----------------------------------------------------------
     # CO2 moyen — Etage
-    # Sources : chambre_arnaud, chambre_matthieu, chambre_parents
+    # Sources : chambre_enfants, chambre_matthieu, chambre_parents
     # -----------------------------------------------------------
     - name: "CO2 etage"
       unique_id: co2_etage
@@ -19,7 +19,7 @@
       unit_of_measurement: "ppm"
       state: >
         {% set valeurs = [
-          states('sensor.co2_chambre_arnaud') | float(none),
+          states('sensor.co2_chambre_enfants') | float(none),
           states('sensor.co2_chambre_matthieu') | float(none),
           states('sensor.co2_chambre_parents') | float(none)
         ] %}

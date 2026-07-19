@@ -39,8 +39,8 @@
 # 🏠 Chambres
 # ----------------------------------------------------------
 - platform: statistics
-  name: "Température filtre nuit Moyenne Chambre Arnaud"
-  entity_id: sensor.temperature_filtre_nuit_chambre_arnaud
+  name: "Température filtre nuit Moyenne Chambre Enfants"
+  entity_id: sensor.temperature_filtre_nuit_chambre_enfants
   state_characteristic: mean
   max_age: &max_age_30d
     days: 30

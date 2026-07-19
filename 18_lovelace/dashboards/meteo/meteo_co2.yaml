@@ -58,13 +58,13 @@ views:
             cards:
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.co2_chambre_arnaud
-                name: Arnaud
+                entity: sensor.co2_chambre_enfants
+                name: Enfants
                 icon: mdi:molecule-co2
                 variables:
                   ui_profile: arsenal
                 triggers_update:
-                  - sensor.couleur_co2_chambre_arnaud
+                  - sensor.couleur_co2_chambre_enfants
 
               - type: custom:button-card
                 template: socle_kpi

@@ -20,7 +20,7 @@ Les capteurs suivants sont figés :
 
 - sensor.temperature_entree
 - sensor.temperature_sejour
-- sensor.temperature_chambre_arnaud
+- sensor.temperature_chambre_enfants
 - sensor.temperature_chambre_matthieu
 - sensor.temperature_chambre_parents
 - sensor.temperature_palier

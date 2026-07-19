@@ -15,7 +15,7 @@
 
       state: >
         {% set direct = [
-          'binary_sensor.contact_chambre_arnaud',
+          'binary_sensor.contact_chambre_enfants',
           'binary_sensor.contact_chambre_matthieu'
         ] %}
         {% set direct_open = (direct | select('is_state', 'on') | list | length > 0) %}

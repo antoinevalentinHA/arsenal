@@ -31,7 +31,7 @@ netatmo_capteurs:
   name: "Capteurs Netatmo"
   entities:
 
-    - sensor.pression_chambre_arnaud
+    - sensor.pression_chambre_enfants
     - sensor.bruit_bobst
     - sensor.bobst_102_dioxyde_de_carbone
     - sensor.humidite_relative_bobst

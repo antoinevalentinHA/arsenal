@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Restructuration des pièces enfants suite au déménagement : la chambre d'Arnaud devient la **Chambre Enfants** (partagée), la chambre de Matthieu devient une **Salle de Jeux**, la Chambre Parents est inchangée. Passage de **3 chambres → 2 chambres + 1 salle de jeux** dans toute la logique. Dé-identification des prénoms enfants obtenue **en sous-produit**. |
 | **Domaine** | TRANSVERSE (Météo/température intérieure ↔ Chauffage/vannes thermostatiques ↔ Sommeil/réveils ↔ Volets ↔ Aération ↔ UI Lovelace ↔ Doctrine de nommage ↔ Publication/confidentialité). |
-| **Statut** | **ACTIF — Lot 2 livré (périmètre thermique amendé).** Lots 0–1 acquis + Lot 2 (contrats du périmètre « chambres » réduits **3→2**, Salle de Jeux **exclue** du besoin de chauffe — A2). Décisions propriétaire A1–A3 **rendues (2026-07-19)**, consignées §Décisions. **Aucun renommage d'`entity_id` ni changement de runtime** à ce stade (relève de L3/L4). |
+| **Statut** | **ACTIF — Lot 3a livré (renommage Chambre Enfants).** Lots 0–2b acquis + Lot 3a : `chambre_arnaud → chambre_enfants` sur ~167 fichiers (`entity_id`, libellés, chemins, contrats à réf. d'entité, checkers aération, exemple z2m), **behavior-preserving**. Per-child (`reveils`/`babyphone`/`presence`) **intact** (L5). Décisions A1–A3 **rendues (2026-07-19)**. **⚠️ Déploiement à coordonner avec la migration instance (L6)** : recorder/statistics + registre d'entités HA + `friendly_name` Zigbee2MQTT (source des `entity_id` Zigbee). |
 | **Priorité** | **P2** (proposée) — voir §Priorité. |
 | **Ouvert le** | 2026-07-19. |
 | **Preuve de départ** | Besoin propriétaire (déménagement physique **à venir** : enfants regroupés dans l'ex-chambre Arnaud ; ex-chambre Matthieu → salle de jeux) + **inventaire d'impact en lecture seule** consigné §3. Aucun rapport d'audit préalable mergé — l'inventaire est la preuve de départ. |
-| **Prochain jalon** | **L3** — renommage des entités de pièce (`…_chambre_arnaud → …_chambre_enfants`, `…_chambre_matthieu → …_salle_de_jeux`) : runtime + contrats à références d'entité + checkers (aération, homekit, volets…), avec migration d'historique (L6). |
+| **Prochain jalon** | **L3b** — renommage `…_chambre_matthieu → …_salle_de_jeux` (même méthode que L3a), après confirmation du nom `salle_de_jeux`. |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C32 **consigne les décisions propriétaire déjà rendues**
 > (A1–A3, §Décisions) et l'**inventaire d'impact** (§3). Elle **ne crée aucun contrat, aucun runtime,
@@ -282,3 +282,39 @@ du contrat sûr côté CI. **Aucun runtime/checker touché.** `docs_lint` + chec
 
 **Aucun `entity_id` renommé, aucun runtime/template/checker touché.** `docs_lint` + checkers docs verts.
 **C32 actif ; prochain jalon L3 (renommage des entités de pièce).**
+
+### Lot 3a — renommage Chambre Enfants (`chambre_arnaud → chambre_enfants`) (terminé, 2026-07-19)
+
+Renommage **behavior-preserving** de la pièce ex-Arnaud en **Chambre Enfants** (~167 fichiers). La
+distinction pièce/enfant (double fonction du prénom) est le cœur du lot :
+
+- **Renommé (pièce)** : tout `chambre_arnaud` (sous-chaîne non ambiguë) → `chambre_enfants` (température,
+  humidité, CO₂, humidex, bruit, contact, volet, prise, plateau, deltat, ref_temp, stats/filtres/seuils,
+  couleurs, façades multi-capteurs, recorder, groups, dashboards) ; devices à radical nu de la pièce
+  (`netatmo_arnaud`, `ouvrir/fermer_volet_arnaud`, `fenetres_ouvertes_arnaud`, `graph_bruit_arnaud`) ;
+  libellés nus « Arnaud » des devices de pièce ; **checkers aération** (`check_aeration_m1/m2/m3`) ;
+  contrats à réf. d'entité (`homekit_diagnostic`, `volets_pluie`, aération socle, capteurs chauffage,
+  `vannes_thermostatiques_plateaux`, `axe/extrema_temperature`) ; exemple Zigbee2MQTT ; doc archi.
+- **Intact (per-child → L5)** : `reveils_nocturnes_arnaud`, `reveils_arnaud_heures`, `babyphone_arnaud`,
+  `presence_arnaud`, cartes/automations `reveils`/`sommeil`, `contrats/reveils.md`. Leurs **références** au
+  capteur de pièce (`bruit_chambre_arnaud`) ont été **repointées** vers `bruit_chambre_enfants` (aucune
+  référence pendante), **sans** fusionner la logique enfant.
+
+Fichiers renommés / supprimés : `git mv reboot_station/arnaud.yaml → enfants.yaml`,
+`statistics/.../vannes.../chambre_arnaud.yaml → chambre_enfants.yaml`,
+`cartes/meteo/graph_bruit_arnaud.yaml → graph_bruit_enfants.yaml` ;
+`git rm section_headers/chambre_arnaud.yaml` (doublon — `chambre_enfants.yaml` créé en L1).
+
+Validation : **~80 checkers de contrats + docs verts (0 échec)**, includes Lovelace/config résolus, YAML
+parsé, section headers conformes. Bandeaux d'amendement L2/L2b des contrats bornes/intensite recalés
+(le renommage y est désormais **fait**, non « à venir »).
+
+**⚠️ Dépendance opérationnelle (L6) — le merge du repo NE SUFFIT PAS.** Les `entity_id` Zigbee (prise,
+contact, `meteo_zigbee`) dérivent des `friendly_name` **Zigbee2MQTT** ; l'historique est indexé par
+`entity_id`. Au déploiement, **en lockstep** : (1) renommer les `friendly_name` z2m `*_chambre_arnaud →
+*_chambre_enfants` sur l'instance ; (2) renommer les entités dans le **registre HA** ; (3) migrer
+recorder/statistics/LTS (`states_meta`/`statistics_meta`) pour préserver l'historique (A3). Sans cela, les
+entités renommées seront `unavailable` après reload.
+
+**Aucune modification de comportement.** Per-child et Salle de Jeux (`matthieu`) inchangés. **C32 actif ;
+prochain jalon L3b (`chambre_matthieu → salle_de_jeux`).**

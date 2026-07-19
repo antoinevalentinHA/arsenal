@@ -67,12 +67,12 @@ sensor.temperature_max_jour_courant_palier:
 # 🛏️ CHAMBRES
 ############################################################
 
-sensor.temperature_min_jour_courant_chambre_arnaud:
-  friendly_name: "Chambre Arnaud"
+sensor.temperature_min_jour_courant_chambre_enfants:
+  friendly_name: "Chambre Enfants"
   icon: mdi:human-child
 
-sensor.temperature_max_jour_courant_chambre_arnaud:
-  friendly_name: "Chambre Arnaud"
+sensor.temperature_max_jour_courant_chambre_enfants:
+  friendly_name: "Chambre Enfants"
   icon: mdi:human-child
 
 sensor.temperature_min_jour_courant_chambre_matthieu:

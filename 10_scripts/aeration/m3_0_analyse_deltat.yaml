@@ -14,7 +14,7 @@ aeration_m3_analyse_deltat:
             [
               states('sensor.deltat_entree') | float(0),
               states('sensor.deltat_sejour') | float(0),
-              states('sensor.deltat_chambre_arnaud') | float(0),
+              states('sensor.deltat_chambre_enfants') | float(0),
               states('sensor.deltat_chambre_matthieu') | float(0),
               states('sensor.deltat_chambre_parents') | float(0),
               states('sensor.deltat_palier') | float(0)

@@ -126,12 +126,12 @@ sensor.contact_chambre_parents_droite_2_battery:
   friendly_name: "Fenêtre parents droite 2"
   icon: mdi:window-closed
 
-sensor.contact_chambre_arnaud_1_battery:
-  friendly_name: "Fenêtre Arnaud 1"
+sensor.contact_chambre_enfants_1_battery:
+  friendly_name: "Fenêtre Enfants 1"
   icon: mdi:window-closed
 
-sensor.contact_chambre_arnaud_2_battery:
-  friendly_name: "Fenêtre Arnaud 2"
+sensor.contact_chambre_enfants_2_battery:
+  friendly_name: "Fenêtre Enfants 2"
   icon: mdi:window-closed
 
 sensor.contact_chambre_matthieu_1_battery:
@@ -198,8 +198,8 @@ sensor.meteo_zigbee_chambre_parents_battery:
   friendly_name: "Capteur Zigbee parents"
   icon: mdi:thermometer
 
-sensor.meteo_zigbee_chambre_arnaud_battery:
-  friendly_name: "Capteur Zigbee Arnaud"
+sensor.meteo_zigbee_chambre_enfants_battery:
+  friendly_name: "Capteur Zigbee Enfants"
   icon: mdi:thermometer
 
 sensor.meteo_zigbee_chambre_matthieu_battery:

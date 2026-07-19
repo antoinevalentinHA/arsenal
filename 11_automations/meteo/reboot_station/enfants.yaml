@@ -1,11 +1,11 @@
 # ==========================================================
 # 🧠 ARSENAL — AUTOMATISATION
-#     Netatmo – Remédiation station muette (Arnaud)
+#     Netatmo – Remédiation station muette (Enfants)
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #
 #     Exécuter une action corrective ciblée sur la station
-#     Netatmo de la chambre Arnaud lorsqu'un diagnostic
+#     Netatmo de la chambre Enfants lorsqu'un diagnostic
 #     d'observation dédié l'autorise explicitement.
 #
 #     Deux modes de silence déclenchent le redémarrage :
@@ -33,13 +33,13 @@
 # ==========================================================
 
 - id: "10160000000007"
-  alias: "Météo - Netatmo - Redémarrage Arnaud"
+  alias: "Météo - Netatmo - Redémarrage Enfants"
   mode: single
 
   trigger:
     # Boîtier mort / injoignable : redémarrage immédiat.
     - platform: state
-      entity_id: sensor.diagnostic_netatmo_arnaud
+      entity_id: sensor.diagnostic_netatmo_enfants
       to: "muet_ping_ko"
       id: ping_ko
 
@@ -47,7 +47,7 @@
     # confirme la persistance du silence avant de power-cycler,
     # pour ne pas rebooter sur un simple trou de report transitoire.
     - platform: state
-      entity_id: sensor.diagnostic_netatmo_arnaud
+      entity_id: sensor.diagnostic_netatmo_enfants
       to: "muet_ping_ok"
       for: "00:20:00"
       id: ping_ok
@@ -76,14 +76,14 @@
   action:
     - action: script.reboot_netatmo
       data:
-        switch_entity: "switch.prise_chambre_arnaud"
+        switch_entity: "switch.prise_chambre_enfants"
 
     - action: script.notification_envoyer
       data:
         cible: input_text.telephone_antoine_notify
         titre: "🔧 Netatmo – Redémarrage"
         message: >
-          Station Netatmo chambre Arnaud redémarrée après détection
+          Station Netatmo chambre Enfants redémarrée après détection
           {% if trigger.id == 'ping_ok' %}d'une station muette
           joignable (service figé, ping OK){% else %}d'une station
           muette sans ping{% endif %}.

@@ -63,13 +63,13 @@
 # 🧩 USAGE
 #     type: custom:button-card
 #     template: prise_secteur_template
-#     entity: switch.prise_chambre_arnaud
-#     name: Netatmo Arnaud
+#     entity: switch.prise_chambre_enfants
+#     name: Netatmo Enfants
 #
 # 📎 PÉRIMÈTRE ACTUEL (besoin démontré / dépendance secteur prouvée)
 #     Toutes les prises à dépendance secteur PROUVÉE (mains, aucun
 #     secours UPS ni Bluetti) :
-#       - switch.prise_chambre_arnaud, switch.prise_chambre_matthieu
+#       - switch.prise_chambre_enfants, switch.prise_chambre_matthieu
 #         (Netatmo, reboot automatique déjà gaté panne) ;
 #       - switch.prise_bouclage, switch.prise_deshumidificateur ;
 #       - switch.prise_palier, switch.prise_lampe_sejour,

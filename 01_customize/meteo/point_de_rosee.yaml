@@ -38,8 +38,8 @@ sensor.point_de_rosee_sejour:
 # 🛏️ CHAMBRES
 ############################################################
 
-sensor.point_de_rosee_chambre_arnaud:
-  friendly_name: "Point de rosée Chambre Arnaud"
+sensor.point_de_rosee_chambre_enfants:
+  friendly_name: "Point de rosée Chambre Enfants"
   icon: mdi:weather-fog
 
 sensor.point_de_rosee_chambre_matthieu:

@@ -52,7 +52,7 @@
       availability: >
         {% set seuil = states('sensor.seuil_extinction_clim_applique') | float(none) %}
         {% set maxc  = states('sensor.temperature_max_chambres') | float(none) %}
-        {% set fa = states('sensor.temperature_chambre_arnaud')   | float(none) %}
+        {% set fa = states('sensor.temperature_chambre_enfants')   | float(none) %}
         {% set fm = states('sensor.temperature_chambre_matthieu') | float(none) %}
         {% set fp = states('sensor.temperature_chambre_parents')  | float(none) %}
         {% set facade_ok = fa is not none or fm is not none or fp is not none %}
@@ -81,14 +81,14 @@
         contexte_seuil: >
           {{ state_attr('sensor.seuil_extinction_clim_applique', 'mode_actif') }}
         facades_numeriques: >
-          {% set fa = states('sensor.temperature_chambre_arnaud')   | float(none) %}
+          {% set fa = states('sensor.temperature_chambre_enfants')   | float(none) %}
           {% set fm = states('sensor.temperature_chambre_matthieu') | float(none) %}
           {% set fp = states('sensor.temperature_chambre_parents')  | float(none) %}
           {{ [fa is not none, fm is not none, fp is not none] | select | list | count }}
         cause: >
           {% set seuil = states('sensor.seuil_extinction_clim_applique') | float(none) %}
           {% set maxc  = states('sensor.temperature_max_chambres') | float(none) %}
-          {% set fa = states('sensor.temperature_chambre_arnaud')   | float(none) %}
+          {% set fa = states('sensor.temperature_chambre_enfants')   | float(none) %}
           {% set fm = states('sensor.temperature_chambre_matthieu') | float(none) %}
           {% set fp = states('sensor.temperature_chambre_parents')  | float(none) %}
           {% set facade_ok = fa is not none or fm is not none or fp is not none %}

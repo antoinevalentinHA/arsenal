@@ -175,11 +175,11 @@ views:
                     name: Zigbee
 
           # ======================================================
-          # 🧒 CHAMBRE ARNAUD
+          # 🧒 CHAMBRE ENFANTS
           # ======================================================
           - type: vertical-stack
             cards:
-              - !include ../../includes/section_headers/chambre_arnaud.yaml
+              - !include ../../includes/section_headers/chambre_enfants.yaml
 
               - square: false
                 type: grid
@@ -187,12 +187,12 @@ views:
                 cards:
                   - type: custom:button-card
                     template: temperature
-                    entity: sensor.temperature_chambre_arnaud_1
+                    entity: sensor.temperature_chambre_enfants_1
                     name: Netatmo
 
                   - type: custom:button-card
                     template: temperature
-                    entity: sensor.temperature_chambre_arnaud_2
+                    entity: sensor.temperature_chambre_enfants_2
                     name: Zigbee
 
               - square: false
@@ -201,12 +201,12 @@ views:
                 cards:
                   - type: custom:button-card
                     template: humidite
-                    entity: sensor.humidite_relative_chambre_arnaud_1
+                    entity: sensor.humidite_relative_chambre_enfants_1
                     name: Netatmo
 
                   - type: custom:button-card
                     template: humidite
-                    entity: sensor.humidite_relative_chambre_arnaud_2
+                    entity: sensor.humidite_relative_chambre_enfants_2
                     name: Zigbee
 
           # ======================================================

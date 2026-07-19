@@ -25,7 +25,7 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.chambre_arnaud_puissance_du_wi_fi
+        - sensor.chambre_enfants_puissance_du_wi_fi
         - sensor.chambre_matthieu_puissance_du_wi_fi
         - sensor.bobst_102_puissance_du_wi_fi
         - sensor.komori_puissance_du_wi_fi
@@ -36,8 +36,8 @@
 
   sensor:
 
-    - name: "WiFi Score Chambre Arnaud"
-      unique_id: wifi_score_chambre_arnaud
+    - name: "WiFi Score Chambre Enfants"
+      unique_id: wifi_score_chambre_enfants
 
       state: &logic_netatmo_wifi_score >
         {% set prefix = 'sensor.wifi_score_' %}

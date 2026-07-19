@@ -38,8 +38,8 @@ sensor.humidite_absolue_sejour:
 # 🛏️ CHAMBRES
 ############################################################
 
-sensor.humidite_absolue_chambre_arnaud:
-  friendly_name: "Humidité absolue Chambre Arnaud"
+sensor.humidite_absolue_chambre_enfants:
+  friendly_name: "Humidité absolue Chambre Enfants"
   icon: mdi:water
 
 sensor.humidite_absolue_chambre_matthieu:

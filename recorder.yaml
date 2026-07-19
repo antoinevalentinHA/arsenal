@@ -22,7 +22,7 @@ include:
     - sensor.temperature_entree
     - sensor.temperature_sejour
     - sensor.temperature_palier
-    - sensor.temperature_chambre_arnaud
+    - sensor.temperature_chambre_enfants
     - sensor.temperature_chambre_matthieu
     - sensor.temperature_chambre_parents
     - sensor.temperature_petite_maison
@@ -203,7 +203,7 @@ include:
     - sensor.humidite_relative_jardin
     - sensor.humidite_relative_entree
     - sensor.humidite_relative_sejour
-    - sensor.humidite_relative_chambre_arnaud
+    - sensor.humidite_relative_chambre_enfants
     - sensor.humidite_relative_chambre_matthieu
     - sensor.humidite_relative_chambre_parents
     - sensor.humidite_relative_petite_maison
@@ -221,7 +221,7 @@ include:
     - sensor.humidite_absolue_jardin
     - sensor.humidite_absolue_entree
     - sensor.humidite_absolue_sejour
-    - sensor.humidite_absolue_chambre_arnaud
+    - sensor.humidite_absolue_chambre_enfants
     - sensor.humidite_absolue_chambre_matthieu
     - sensor.humidite_absolue_chambre_parents
     - sensor.humidite_absolue_petite_maison
@@ -239,7 +239,7 @@ include:
     # Population A dans ce bloc : co2_sejour uniquement.
     - sensor.co2_entree
     - sensor.co2_sejour
-    - sensor.co2_chambre_arnaud
+    - sensor.co2_chambre_enfants
     - sensor.co2_chambre_matthieu
     - sensor.co2_chambre_parents
     - sensor.co2_petite_maison
@@ -247,7 +247,7 @@ include:
     # =====================================================
     # ==== 🔊 BRUIT ====
     # =====================================================
-    - sensor.bruit_chambre_arnaud
+    - sensor.bruit_chambre_enfants
     - sensor.bruit_chambre_matthieu
 
     # =====================================================
@@ -293,7 +293,7 @@ include:
     - input_datetime.palmares_pluie_journalier_derniere_evaluation
     - sensor.palmares_pluie_journalier
     - binary_sensor.palmares_pluie_journalier_anomalie
-    - sensor.pression_chambre_arnaud
+    - sensor.pression_chambre_enfants
 
     # =====================================================
     # ==== 🌧️ PLUIE — ÉPISODE (INSTRUMENTATION TEMPORAIRE C16) ====

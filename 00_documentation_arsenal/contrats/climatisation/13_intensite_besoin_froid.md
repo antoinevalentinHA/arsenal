@@ -9,8 +9,8 @@ résolution ventilation
 > chambres** (Chambre Enfants + Chambre Parents). La **Salle de Jeux** (ex-Chambre Matthieu) en est
 > **exclue** — cohérent avec la réduction 3→2 de `temperature_max_chambres` (C32/L2) : une pièce sans
 > usage sommeil ne participe ni au besoin de chauffe **ni à la perception du besoin de froid**.
-> `entity_id` en forme historique (`…_chambre_arnaud` = future Chambre Enfants) ; **renommage** porté par
-> C32/L3, **alignement runtime** (retrait de la façade Salle de Jeux de la garde) par C32/L4. Chantier :
+> Façades désormais `…_chambre_enfants` (ex-`…_chambre_arnaud`, renommage **C32/L3**) ; **alignement
+> runtime** (retrait de la façade Salle de Jeux de la garde) reste porté par **C32/L4**. Chantier :
 > [`chantier_restructuration_chambres_enfants.md`](../../audits/04_chantiers/transverses/chantier_restructuration_chambres_enfants.md).
 
 ---
@@ -50,7 +50,7 @@ d'allumer, d'éteindre ou de changer le mode de la climatisation.
 |---|---|---|
 | `sensor.temperature_max_chambres` | **Opérande de déficit** : porte la température de la chambre la plus chaude. | Perception (agrégat) |
 | `sensor.seuil_extinction_clim_applique` | **Référence opérationnelle** de satisfaction froid (voir §1). | Décision d'arrêt / référence |
-| `sensor.temperature_chambre_arnaud` · `_parents` | **Garde anti-gel** : fraîcheur des sources (disponibilité uniquement). Salle de Jeux (ex-`_matthieu`) **exclue** (C32/A2 COOL). | Perception (façades) |
+| `sensor.temperature_chambre_enfants` · `_parents` | **Garde anti-gel** : fraîcheur des sources (disponibilité uniquement). Salle de Jeux (ex-`_matthieu`) **exclue** (C32/A2 COOL). | Perception (façades) |
 | `sensor.clim_intensite_besoin_froid` | **Intensité brute** en °C, plancher 0. | Perception pure |
 | `sensor.clim_intensite_besoin_froid_niveau` | **Niveau** de besoin (5 états). | Perception pure |
 
@@ -152,7 +152,7 @@ information ; une indisponibilité est une absence d'information.
 Le capteur est **disponible si, et seulement si** :
 
 1. `sensor.seuil_extinction_clim_applique` est **numérique** ; **ET**
-2. **au moins une** façade chambre (`sensor.temperature_chambre_arnaud` /
+2. **au moins une** façade chambre (`sensor.temperature_chambre_enfants` /
    `_parents` — Salle de Jeux exclue, C32/A2 COOL) est **numérique** ; **ET**
 3. `sensor.temperature_max_chambres` est **numérique**.
 

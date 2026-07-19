@@ -50,7 +50,7 @@
 adjustment_piece:
   name: "Pièce à analyser"
   options:
-    - chambre_arnaud
+    - chambre_enfants
     - chambre_matthieu
     - chambre_parents
   icon: mdi:home-thermometer

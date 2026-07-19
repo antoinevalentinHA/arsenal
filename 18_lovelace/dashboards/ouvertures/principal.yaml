@@ -127,5 +127,5 @@ views:
 
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.contact_chambre_arnaud
-                    name: Fenêtre Arnaud
+                    entity: binary_sensor.contact_chambre_enfants
+                    name: Fenêtre Enfants

@@ -30,7 +30,7 @@
 #
 # 📦 Capteurs créés :
 #   • sensor.point_de_rosee_sejour
-#   • sensor.point_de_rosee_chambre_arnaud
+#   • sensor.point_de_rosee_chambre_enfants
 #   • sensor.point_de_rosee_chambre_matthieu
 #   • sensor.point_de_rosee_chambre_parents
 #
@@ -73,20 +73,20 @@
 
 
 # ==========================================================
-# 💤 Chambre Arnaud
+# 💤 Chambre Enfants
 # ==========================================================
 
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_arnaud
-        - sensor.humidite_relative_chambre_arnaud
+        - sensor.temperature_chambre_enfants
+        - sensor.humidite_relative_chambre_enfants
     - platform: homeassistant
       event: start
 
   sensor:
-    - name: "Point de rosée chambre Arnaud"
-      unique_id: point_de_rosee_chambre_arnaud
+    - name: "Point de rosée chambre Enfants"
+      unique_id: point_de_rosee_chambre_enfants
       unit_of_measurement: "°C"
       icon: mdi:thermometer-water
 
@@ -94,8 +94,8 @@
       state: *dewpoint_logic
 
       attributes:
-        temperature_source: sensor.temperature_chambre_arnaud
-        humidite_source: sensor.humidite_relative_chambre_arnaud
+        temperature_source: sensor.temperature_chambre_enfants
+        humidite_source: sensor.humidite_relative_chambre_enfants
 
 
 # ==========================================================

@@ -26,7 +26,7 @@ lui délèguent.
 | Secours  | sensor.temperature_<zone>_2 | Zigbee      |
 
 `<zone>` représente l'identifiant de la zone thermique
-(chambre_arnaud, chambre_matthieu, sejour, etc.).
+(chambre_enfants, chambre_matthieu, sejour, etc.).
 
 Les deux sources doivent mesurer la même grandeur physique
 et être situées dans la même zone thermique.

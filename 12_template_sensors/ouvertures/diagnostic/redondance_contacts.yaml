@@ -40,7 +40,7 @@
         - binary_sensor.contact_chambre_parents_gauche
         - binary_sensor.contact_chambre_parents_milieu
         - binary_sensor.contact_chambre_parents_droite
-        - binary_sensor.contact_chambre_arnaud
+        - binary_sensor.contact_chambre_enfants
         - binary_sensor.contact_chambre_matthieu
     - platform: homeassistant
       event: start
@@ -164,8 +164,8 @@
       state: *diagnostic_redondance_logic
       attributes: *diagnostic_redondance_attributes
 
-    - name: "Diagnostic redondance Contact Chambre Arnaud"
-      unique_id: diagnostic_redondance_contact_chambre_arnaud
+    - name: "Diagnostic redondance Contact Chambre Enfants"
+      unique_id: diagnostic_redondance_contact_chambre_enfants
       state: *diagnostic_redondance_logic
       attributes: *diagnostic_redondance_attributes
 

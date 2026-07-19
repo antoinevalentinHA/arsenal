@@ -69,7 +69,7 @@
         - input_number.temperature_max_jour_courant_entree
         - input_number.temperature_max_jour_courant_sejour
         - input_number.temperature_max_jour_courant_palier
-        - input_number.temperature_max_jour_courant_chambre_arnaud
+        - input_number.temperature_max_jour_courant_chambre_enfants
         - input_number.temperature_max_jour_courant_chambre_matthieu
         - input_number.temperature_max_jour_courant_chambre_parents
         - input_number.temperature_max_jour_courant_petite_maison
@@ -127,8 +127,8 @@
       availability: *avail_max_courant
       state: *logic_max_courant
 
-    - name: "Température max jour courant Chambre Arnaud"
-      unique_id: temperature_max_jour_courant_chambre_arnaud
+    - name: "Température max jour courant Chambre Enfants"
+      unique_id: temperature_max_jour_courant_chambre_enfants
       unit_of_measurement: "°C"
       device_class: temperature
       state_class: measurement

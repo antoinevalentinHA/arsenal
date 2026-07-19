@@ -44,8 +44,8 @@ aeration_m1_debut_episode:
             input: input_number.ref_temp_entree
           - sensor: sensor.temperature_sejour
             input: input_number.ref_temp_sejour
-          - sensor: sensor.temperature_chambre_arnaud
-            input: input_number.ref_temp_chambre_arnaud
+          - sensor: sensor.temperature_chambre_enfants
+            input: input_number.ref_temp_chambre_enfants
           - sensor: sensor.temperature_chambre_matthieu
             input: input_number.ref_temp_chambre_matthieu
           - sensor: sensor.temperature_chambre_parents
@@ -93,7 +93,7 @@ aeration_m1_debut_episode:
               [
                 states('input_number.ref_temp_entree') | float(0),
                 states('input_number.ref_temp_sejour') | float(0),
-                states('input_number.ref_temp_chambre_arnaud') | float(0),
+                states('input_number.ref_temp_chambre_enfants') | float(0),
                 states('input_number.ref_temp_chambre_matthieu') | float(0),
                 states('input_number.ref_temp_chambre_parents') | float(0),
                 states('input_number.ref_temp_palier') | float(0)

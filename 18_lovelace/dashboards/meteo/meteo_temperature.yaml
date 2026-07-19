@@ -108,11 +108,11 @@ views:
             cards:
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.temperature_chambre_arnaud
-                name: Arnaud
+                entity: sensor.temperature_chambre_enfants
+                name: Enfants
                 icon: mdi:thermometer
                 triggers_update:
-                  - sensor.couleur_temperature_chambre_arnaud
+                  - sensor.couleur_temperature_chambre_enfants
 
               - type: custom:button-card
                 template: socle_kpi

@@ -42,8 +42,8 @@ ref_temp_sejour:
   max: 40
   step: 0.1
 
-ref_temp_chambre_arnaud:
-  name: "ref_temp_chambre_arnaud"
+ref_temp_chambre_enfants:
+  name: "ref_temp_chambre_enfants"
   min: -10
   max: 40
   step: 0.1
