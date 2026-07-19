@@ -25,35 +25,39 @@
       device_class: presence
 
       state: >
-        {# --- Paramètres zone de sécurité --- #}
-        {% set lat_zone = state_attr('zone.maison_securite', 'latitude')  | float %}
-        {% set lon_zone = state_attr('zone.maison_securite', 'longitude') | float %}
-        {% set radius   = states('input_number.zone_securite_radius') | float %}
+        {# --- Paramètres zone de sécurité (lecture brute, sans fabrication) --- #}
+        {% set lat_zone_raw = state_attr('zone.maison_securite', 'latitude') %}
+        {% set lon_zone_raw = state_attr('zone.maison_securite', 'longitude') %}
+        {% set radius_raw   = states('input_number.zone_securite_radius') %}
+
+        {# --- Validité des données géométriques (aucun repli numérique) --- #}
+        {% set zone_valide   = is_number(lat_zone_raw) and is_number(lon_zone_raw) %}
+        {% set radius_valide = is_number(radius_raw) and (radius_raw | float) > 0 %}
 
         {# --- Entités trackers via helpers --- #}
-        {% set tracker_antoine   = states('input_text.telephone_antoine_tracker') %}
-        {% set tracker_constance = states('input_text.telephone_constance_tracker') %}
-
-        {# --- Coordonnées dynamiques --- #}
-        {% set coords = [
-          [
-            state_attr(tracker_antoine, 'latitude')  | float(0),
-            state_attr(tracker_antoine, 'longitude') | float(0)
-          ],
-          [
-            state_attr(tracker_constance, 'latitude')  | float(0),
-            state_attr(tracker_constance, 'longitude') | float(0)
-          ]
+        {% set trackers = [
+          states('input_text.telephone_antoine_tracker'),
+          states('input_text.telephone_constance_tracker')
         ] %}
 
-        {# --- Détection zone par distance --- #}
+        {# --- Détection zone par distance (branche GPS gardée) --- #}
         {% set inside = namespace(flag=false) %}
-        {% for c in coords %}
-          {% set d = distance(c[0], c[1], lat_zone, lon_zone) * 1000 %}
-          {% if d < radius %}
-            {% set inside.flag = true %}
-          {% endif %}
-        {% endfor %}
+        {% if zone_valide and radius_valide %}
+          {% set lat_zone = lat_zone_raw | float %}
+          {% set lon_zone = lon_zone_raw | float %}
+          {% set radius   = radius_raw | float %}
+          {% for t in trackers %}
+            {% set lat_t = state_attr(t, 'latitude') %}
+            {% set lon_t = state_attr(t, 'longitude') %}
+            {% if t not in ['', 'unknown', 'unavailable']
+                  and is_number(lat_t) and is_number(lon_t) %}
+              {% set d = distance(lat_t | float, lon_t | float, lat_zone, lon_zone) * 1000 %}
+              {% if d < radius %}
+                {% set inside.flag = true %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
 
         {{
           inside.flag
