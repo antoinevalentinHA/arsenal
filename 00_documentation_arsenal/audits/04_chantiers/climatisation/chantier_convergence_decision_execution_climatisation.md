@@ -4,10 +4,10 @@
 |---|---|
 | **Chantier** | Instruire l'écart possible entre la **décision publiée** par la chaîne Climatisation et l'**état physique réel** de l'équipement, lorsque l'état rapporté par l'intégration est dégradé (`off` alors que la machine tourne, `unknown`, `unavailable`, gelé). |
 | **Domaine** | Climatisation — chaîne décision → autorisation → exécution → restitution. |
-| **Statut** | **Ouvert — diagnostic causal NON établi.** Une occurrence réelle a été observée le 2026-07-19 ; sa cause n'est pas démontrée et sa reconstitution exhaustive est **hors périmètre**. |
+| **Statut** | **Ouvert — diagnostic causal NON établi.** Une occurrence réelle a été observée le 2026-07-19 ; sa cause n'est pas démontrée et sa reconstitution exhaustive est **hors périmètre**. **A1 en traitement (contract-first)** ; **A2 requalifié défaut L1, non solvable en l'état, non bloquant** (§4). |
 | **Priorité** | **P1** — impact *fail-open* non borné : la climatisation peut rester physiquement active alors que la décision publiée exige l'arrêt, sans détection, sans notification et sans reprise. |
 | **Ouvert le** | 2026-07-19. |
-| **Prochain jalon** | **Lot 1 — observabilité** : rendre exploitable la **prochaine occurrence naturelle**, sans enquête forensique historique. |
+| **Prochain jalon** | **Lot runtime/UI/checker d'A1**, après merge du présent lot contractuel. |
 | **Registre** | Chantier **C30** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C30 **ne vaut ni validation d'un diagnostic causal complet,
@@ -98,12 +98,51 @@ Aucun de ces axes ne porte de solution retenue. Ils délimitent ce que le chanti
 
 | # | Axe | Question ouverte |
 |---|---|---|
-| **A1** | Véracité de `sensor.clim_action_en_cours` | La restitution doit-elle distinguer « équipement arrêté » de « état non observé » ? Où appartient cette vérité ? |
-| **A2** | Observabilité des abstentions silencieuses | Une commande non émise doit-elle laisser une trace ? Sous quelle forme, avec quel seuil de bruit ? |
+| **A1** | Véracité de `sensor.clim_action_en_cours` | **ARBITRÉ (2026-07-19) — Option 1 : disponibilité native.** Voir §4.1. |
+| **A2** | Observabilité des abstentions silencieuses | **REQUALIFIÉ (2026-07-19) — défaut L1, non solvable en l'état.** Voir §4.2. |
 | **A3** | Qualité et fraîcheur de l'état rapporté Airstage | Quelle est la fiabilité réelle de `climate.clim` / `switch.clim_power` ? Quels signaux de fraîcheur existent et que valent-ils ? |
 | **A4** | Éventuel contre-signal indépendant | Faut-il une observation ne dépendant pas de l'intégration ? **Le choix d'un contre-signal est hors périmètre à l'ouverture.** |
 | **A5** | Stratégie de reprise ou de réassertion | Le système doit-il disposer d'un chemin de retour, et de quelle nature ? Le patron « sur état plutôt que sur front » (précédent aération) est une **piste à évaluer**, pas une décision. |
 | **A6** | Distinction commande impossible / état inconnu / équipement arrêté | Ces trois situations sont aujourd'hui confondues. Doivent-elles être séparées, et à quelle couche ? |
+
+### 4.1 A1 — arbitré : disponibilité native (2026-07-19)
+
+**Défaut démontré statiquement**, sans instrumentation : la cascade de
+[`action_en_cours.yaml`](../../../../12_template_sensors/climatisation/decision/action_en_cours.yaml)
+absorbe dans la branche terminale `arret` six situations distinctes — `off`, `auto`, `fan_only`,
+`unknown`, `unavailable` et l'absence d'entité. Sans bloc `availability`, l'entité **ne peut jamais être
+indisponible** : elle affirme toujours une valeur. La table de vérité du template suffit à l'établir —
+**aucun microscope Recorder, aucun observable HVAC brut, aucune phase d'observation préalable n'est
+nécessaire** pour constater ce que le code établit avec certitude.
+
+**Cible retenue — Option 1, disponibilité native :**
+
+- **vocabulaire inchangé à cinq valeurs** — l'indisponibilité est une **abstention**, pas un sixième état ;
+- **abstention native** quand `climate.clim` est `unknown`, `unavailable`, absent ou non exploitable :
+  ni `arret`, ni `bloquee` ;
+- **ordre opposable : mode HVAC actif rapporté > blocage poêle > arrêt** — c'est le comportement déjà
+  implémenté ; **les contrats le décrivaient à l'envers**, ils sont alignés sur le code ;
+- **terminologie** : ce capteur restitue un **état HVAC rapporté** par l'intégration, jamais un état
+  physique mesuré.
+
+Écartés pour ce traitement : nouvel observable HVAC brut, toute modification de `recorder.yaml`, toute
+instrumentation préalable, tout sixième état.
+
+### 4.2 A2 — requalifié : défaut L1, non solvable en l'état (2026-07-19)
+
+Le **no-op légitime** (décision `off`, équipement réellement éteint) et l'**abstention silencieuse**
+(décision `off`, équipement en marche, état rapporté `off`) produisent une **signature événementielle
+strictement identique** : `script.turn_on{clim_execution}` → `clim_exec_apply_off` → aucune commande →
+post-condition satisfaite → **branche succès**. Aucun filet ne les départage — le Guard exige
+`clim_active` ou `power == 'on'`, le Watchdog s'appuie sur les mêmes sources rapportées.
+
+**Aucune analyse Recorder ni hors ligne ne peut reconstruire une information que le runtime ne produit
+pas.** A2 n'est donc **pas** un défaut d'enregistrement : c'est un défaut de **production**.
+
+Qualification au sens de [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md) :
+**réserve différée non solvable en l'état, explicitement non bloquante**. **Aucun marqueur, compteur,
+journal ni contre-signal n'est créé.** A2 reste ouvert comme **décision d'architecture ultérieure** et
+**ne bloque pas A1**.
 
 ---
 
@@ -147,6 +186,26 @@ Objectif unique : **faire produire une preuve exploitable par une prochaine occu
 - Aucune panne fabriquée, aucune dégradation artificielle, aucun forçage d'état.
 - Observation **naturelle et non provoquée**, conformément au protocole apparié.
 
+> **Inflexion du 2026-07-19 — A1 ne passe pas par ce lot.** Le défaut d'A1 étant **démontré
+> statiquement** (§4.1), l'observation préalable est **sans objet** : instrumenter pour constater ce que
+> le code établit déjà serait contraire à la doctrine de solvabilité probatoire. A1 est traité
+> **contract-first**, puis par un lot runtime/UI/checker. Le protocole apparié conserve sa valeur pour
+> les autres axes.
+
+#### Lot A1 — contract-first *(en cours)*
+
+Alignement des contrats propriétaires : abstention native, ordre `cool/dry/heat > bloquee > arret`,
+correction de la contradiction interne pseudo-code ↔ comportement, borne de la tolérance de divergence,
+terminologie « état HVAC **rapporté** ».
+
+#### Lot A1 — runtime / UI / checker *(non engagé — après merge du contrat)*
+
+Périmètre strictement borné : `availability:` dans `action_en_cours.yaml` · rendu explicite
+« Indisponible » dans `carte_clim_decision.yaml` · **vérification sans modification attendue** de
+`carte_clim_etat.yaml`, dont la branche `UNAV` est déjà écrite et aujourd'hui inatteignable · extension
+**minimale** du checker (présence de l'`availability`, cinq états, ordre sémantique).
+**Aucun sixième état, aucun `recorder.yaml`, aucune refonte du checker.**
+
 ### Lot 2 — Architecture *(non engagé)*
 
 Ouvert **uniquement** sur la base des preuves produites par le Lot 1. Contre-signal, reprise, réassertion
@@ -154,12 +213,26 @@ et évolutions contractuelles restent des **arbitrages futurs**.
 
 ---
 
-## 8. Verrou de clôture
+## 8. Verrous de clôture — par axe
 
-> **C30 n'est pas clôturable tant que la trace d'une prochaine occurrence naturelle reste vide.**
+> **Mise à jour du 2026-07-19.** Le verrou initial — *« C30 n'est pas clôturable tant que la trace d'une
+> prochaine occurrence naturelle reste vide »* — était **global**. Il est **remplacé par des verrous par
+> axe**, conformément à [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md) :
+> un verrou bloquant adossé à une occurrence **non provocable** serait **non solvable**.
 
-L'absence de nouvelle occurrence ne vaut pas résolution. L'absence d'erreur ne prouve rien : c'est
-précisément la propriété défaillante décrite en C30-O1.
+**A1 — clôturable sur preuves statiques.** Le défaut est **démontré statiquement** (§4.1) et le correctif
+est vérifiable de même : rendu Jinja de la table de vérité complète, non-régression du régime nominal,
+garde de checker, conformité contractuelle, implémentation runtime/UI. **A1 est clôturable dès que ces
+preuves sont complètes.** L'observation terrain d'une indisponibilité naturelle est conservée comme
+**confirmation L5 opportuniste, non bloquante** : elle confirme, elle n'établit pas. **Aucune panne
+artificielle, aucune attente obligatoire d'une indisponibilité réelle.**
+
+**A2 — réserve différée non solvable en l'état, explicitement non bloquante** (§4.2). Ne conditionne la
+clôture d'aucun autre axe.
+
+**Autres axes (A3 à A6) — verrou terrain maintenu.** Pour eux, la trace du protocole apparié reste
+requise : l'absence de nouvelle occurrence ne vaut pas résolution, et l'absence d'erreur ne prouve rien —
+c'est précisément la propriété défaillante décrite en C30-O1.
 
 ---
 
