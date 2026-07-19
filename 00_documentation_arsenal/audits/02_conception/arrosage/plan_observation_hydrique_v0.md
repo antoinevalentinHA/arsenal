@@ -120,6 +120,53 @@ Lecture prudente : **une seule occurrence**, par temps chaud, en arrosage
 manuel de 35 min. Ni la cinétique ni le lag ne sont généralisables avant
 d'autres cycles (doux / pluie / durées différentes).
 
+### 2026-07-19 — dose-réponse « 35 min » (4 cycles auto) & non-fiabilité du signal sol médian (T05)
+
+Analyse Recorder (base courante, **lecture seule**) des **4 cycles automatiques**
+(déclenchement 05:30 local, durée **35 min** confirmée par
+`arrosage_session_duree_minutes`), fenêtre d'infiltration **12 h**, juillet 2026 —
+médiane `sensor.jardin_humidite_sol_mediane`, seuil de déclenchement 30 % :
+
+| Cycle | avant | pic 12 h | montée | lag infiltration |
+|---|---|---|---|---|
+| 07-08 | 30,3 | 36,2 | +5,9 | ~5 h 40 |
+| 07-09 | 21,4 | 48,0 | +26,6 | ~4 h 20 |
+| 07-10 | 31,4 | 37,1 | +5,7 | ~2 h 40 |
+| 07-18 | 33,2 | 51,3 | +18,1 | ~36 min |
+
+- **Sur-arrosage constaté** : le pic post-arrosage atteint **36–51 %**,
+  **systématiquement au-dessus du seuil de 30 %** (dépassement +6 à +21 pts) ;
+  montée médiane ~12 pts (moyenne ~14). Même le plus petit effet (+5,7) franchit
+  le seuil ⇒ en régime doux / faible demande, 35 min **remplit au-delà du
+  besoin** (réserve de plusieurs jours ; intervalles observés 24–64 h).
+- **Signal sol non fiable pour une dose-réponse** : pour la **même dose (35 min)**,
+  la montée va de **+5,7 à +26,6** (×4,7) et le lag d'infiltration de **36 min à
+  ~5 h 40**. Une part s'explique (le cycle parti le plus sec, 21,4 %, monte le
+  plus — courbe de mouillage plausible), **mais pas tout** (07-18 part plus humide
+  que 07-08 et monte 3×). Dispersion + lags erratiques ⇒ `…_mediane` n'est **pas
+  encore une dose-réponse reproductible**.
+- **Conséquence C11 (modulation de durée)** : confirme que le prérequis **P2**
+  (capteurs sol à fiabiliser / calibrer — [`12`](../../../contrats/arrosage/12_capteurs_humidite_sol.md) §9,
+  [`14`](../../../contrats/arrosage/14_qualite_donnees_sol.md) §6) **n'est pas
+  réuni** : caler des bornes de modulation sur ce signal serait **cosmétique**
+  (cf. [`cadrage_modulation_duree_arrosage.md`](cadrage_modulation_duree_arrosage.md) §5).
+- **Note annexe (décision)** : trois des quatre cycles se déclenchent à médiane
+  ~30–33 (**au seuil ou au-dessus**) ⇒ la décision ne se réduit pas à
+  « médiane < 30 » — un autre gate joue (point sec / points frais). Observation,
+  pas correction ([`13`](../../../contrats/arrosage/13_observation_hydrique_jardin.md) §4).
+- **Contexte parc capteurs (info opérateur, 2026-07-19)** : le parc sol est passé
+  de **3 à 6 capteurs**. Les constats ci-dessus datent du **parc en cours de
+  fiabilisation** ; la dose-réponse et les fenêtres de fraîcheur (§2.1, §3)
+  devront être **ré-observées sur le parc à 6 capteurs**. *(Les mentions « trois
+  points de mesure » des contrats 12/13/14 et du §1 de ce plan sont désormais en
+  retard sur le runtime — mise à jour documentaire à arbitrer, hors de cette
+  entrée d'observation.)*
+
+Lecture prudente : **petit échantillon** (4 cycles auto), **juillet chaud seul**,
+**médiane seule** (lecture par point non extraite), fenêtre 12 h susceptible de
+capter du bruit diurne. Aucune règle, aucun seuil, aucun runtime ; **durée de
+base inchangée** (réglage opérateur, non touché).
+
 ---
 
 ## 4. Critères de sortie vers v0.5 (indicatifs, **non normatifs**)
