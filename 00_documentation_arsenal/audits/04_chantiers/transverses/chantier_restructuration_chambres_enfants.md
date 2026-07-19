@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Restructuration des pièces enfants suite au déménagement : la chambre d'Arnaud devient la **Chambre Enfants** (partagée), la chambre de Matthieu devient une **Salle de Jeux**, la Chambre Parents est inchangée. Passage de **3 chambres → 2 chambres + 1 salle de jeux** dans toute la logique. Dé-identification des prénoms enfants obtenue **en sous-produit**. |
 | **Domaine** | TRANSVERSE (Météo/température intérieure ↔ Chauffage/vannes thermostatiques ↔ Sommeil/réveils ↔ Volets ↔ Aération ↔ UI Lovelace ↔ Doctrine de nommage ↔ Publication/confidentialité). |
-| **Statut** | **ACTIF — Lot 5 livré (fusion suivi enfants complète).** Lots 0–4 acquis + L5a (présence → `presence_enfants` unique) + L5b (sommeil : `babyphone`, `reveils_nocturnes`, `reveils_heures` uniques ; 6 automations → 3, IDs arnaud conservés / matthieu retirés ; cartes sommeil ; contrat `reveils.md` v1.1). **Dé-identification runtime TERMINÉE** : plus **aucun** prénom d'enfant dans le runtime ni les contrats actifs (seul l'historique Git subsiste → S7 `--history` / L8). **⚠️ Migration instance (L6) au déploiement** (z2m + registre + recorder). |
+| **Statut** | **ACTIF — Lot 8 livré (verrou CI S7) ; L6 migration instance EN COURS.** Lot 8 : contrôle **S7** (prénoms enfants `arnaud`/`matthieu`) dans `audit_publication_git.py` (script v1.5.0) + contrat `securite_publication_git.md` v1.4 — `CRITICAL` en runtime (anti-retour), `WARNING` en doc active, hors historique gelé. **Runtime déjà propre ⇒ scan `PASS`.** Reste **L6** (migration des entités physiques côté instance — voir §Suivi L6) et L9/L10.** Lots 0–4 acquis + L5a (présence → `presence_enfants` unique) + L5b (sommeil : `babyphone`, `reveils_nocturnes`, `reveils_heures` uniques ; 6 automations → 3, IDs arnaud conservés / matthieu retirés ; cartes sommeil ; contrat `reveils.md` v1.1). **Dé-identification runtime TERMINÉE** : plus **aucun** prénom d'enfant dans le runtime ni les contrats actifs (seul l'historique Git subsiste → S7 `--history` / L8). **⚠️ Migration instance (L6) au déploiement** (z2m + registre + recorder). |
 | **Priorité** | **P2** (proposée) — voir §Priorité. |
 | **Ouvert le** | 2026-07-19. |
 | **Preuve de départ** | Besoin propriétaire (déménagement physique **à venir** : enfants regroupés dans l'ex-chambre Arnaud ; ex-chambre Matthieu → salle de jeux) + **inventaire d'impact en lecture seule** consigné §3. Aucun rapport d'audit préalable mergé — l'inventaire est la preuve de départ. |
-| **Prochain jalon** | **L8** — implémenter le contrôle CI **S7** (noms propres nominatifs) dans `audit_publication_git.py` + amender `securite_publication_git.md` v1.4→v1.5, pour **verrouiller** la dé-identification (empêcher tout retour de prénom). Puis L6 (migration instance, au déploiement), L9 (validation), L10 (clôture). |
+| **Prochain jalon** | **L6 — migration instance (EN COURS).** Le repo est déployé ; les entités **physiques** (Netatmo/HomeKit + Zigbee) doivent être renommées côté instance `…_chambre_arnaud → …_chambre_enfants` / `…_chambre_matthieu → …_salle_de_jeux` (sinon consolidations Enfants/Salle de Jeux = `Indisponible`, constaté 2026-07-19). Puis L9 (validation terrain), L10 (clôture). |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C32 **consigne les décisions propriétaire déjà rendues**
 > (A1–A3, §Décisions) et l'**inventaire d'impact** (§3). Elle **ne crée aucun contrat, aucun runtime,
@@ -443,3 +443,40 @@ ne subsiste des prénoms que dans l'**historique Git** (S7 `--history` — L8 ; 
 séparé). Validation : **~80 checkers + docs verts (0 échec)**, includes résolus, YAML parsé.
 
 **C32 actif ; prochain jalon L8 (contrôle CI S7 — verrou anti-retour des prénoms).**
+
+### Lot 8 — contrôle CI S7 (verrou dé-identification) (terminé, 2026-07-19)
+
+Implémentation du contrôle **S7** annoncé en § 9 « prévu » du contrat de publication : détection des
+prénoms enfants `arnaud`/`matthieu` dans `scripts/security/audit_publication_git.py` (script v1.4.0 →
+**v1.5.0**), contrat `securite_publication_git.md` **v1.3 → v1.4** (§ 5/S7 + journal + § 9 « implémenté »).
+
+- **Runtime** (YAML/code) → `CRITICAL` : verrou anti-retour (un prénom qui revient dans la config bloque).
+- **Documentation active** (`.md`/`.txt`) → `WARNING` (mentions historiques « ex- » des contrats).
+- **Historique gelé** (`changelog/`, `audits/`) → hors périmètre. `--history` → `WARNING` (S6/`filter-repo`).
+
+Le runtime étant déjà dé-identifié (L3–L5), le scan retourne **`PASS`** (`rc=0`, seulement 3 `WARNING` doc
+« ex- »). `--selftest` étendu (runtime→CRITICAL, doc→WARNING, gelé→None, pas de FP sur `enfants`). Répond
+directement au constat de départ (« le checker ne s'occupe pas du tout de ça »).
+
+### Lot 6 — migration instance (procédure ; EN COURS 2026-07-19)
+
+**Constat terrain (redémarrage HA avant migration)** : les pièces renommées (Chambre Enfants, Salle de
+Jeux) apparaissent **`Indisponible`** sur température/humidité/CO₂/pression. Cause : la config référence
+`…_chambre_enfants` / `…_salle_de_jeux`, mais les entités **physiques** (Netatmo via HomeKit, Zigbee via
+z2m) portent encore `…_chambre_arnaud` / `…_chambre_matthieu` côté instance. Les entités **définies par la
+config** (templates, helpers, automations) ont pris les nouveaux noms ; seules les **sources physiques**
+restent à aligner.
+
+**Règle uniforme** (préserve l'historique via le renommage du registre HA) :
+`*_chambre_arnaud* → *_chambre_enfants*` · `*_chambre_matthieu* → *_salle_de_jeux*`.
+
+- **Netatmo / HomeKit** — Paramètres → Entités → renommer l'`entity_id` (migre l'historique) :
+  `temperature_chambre_{arnaud,matthieu}_1`, `humidite_relative_…_1`, `co2_…`, `bruit_…`, `pression_…`,
+  `air_quality_…`.
+- **Zigbee2MQTT** — renommer le `friendly_name` du device (source de l'`entity_id`) :
+  `prise_chambre_{arnaud}`(+`_2`), `contact_chambre_{arnaud,matthieu}_{1,2}`, `meteo_zigbee_chambre_…`,
+  `prise_chambre_matthieu`.
+
+Après renommage + reload, les consolidations retrouvent leurs sources. **Rien n'est perdu** : la config
+est saine (L0–L5 mergés, CI verte) ; il s'agit d'aligner les noms physiques. **L6 se clôt à la
+disponibilité confirmée** des pièces Enfants / Salle de Jeux → puis L9 (validation) / L10 (clôture C32).

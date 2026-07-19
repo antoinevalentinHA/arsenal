@@ -314,6 +314,46 @@ def s9_finding_for_line(active: str) -> tuple[str, str] | None:
 
 
 # ---------------------------------------------------------------------------
+# Patterns S7 — Prénoms enfants / dé-identification (C32)
+# ---------------------------------------------------------------------------
+# Contrat § 9 : « S7 — Entités HA nominatives ». Implémenté (script v1.5.0) comme
+# VERROU anti-retour des prénoms d'enfants dé-identifiés par le chantier C32
+# (Chambre Arnaud → Chambre Enfants, Chambre Matthieu → Salle de Jeux ; suivi
+# enfants fusionné). Après C32, aucun prénom d'enfant ne doit revenir dans le
+# RUNTIME.
+#
+# Sévérité contextuelle :
+#   - fichier de RUNTIME (YAML / code) → CRITICAL : un prénom qui réapparaît dans
+#     la configuration est une régression de dé-identification (bloque) ;
+#   - fichier DOCUMENTAIRE actif (.md / .txt) → WARNING : mentions historiques
+#     « ex- » légitimes dans les contrats (à accepter en revue) ;
+#   - HISTORIQUE GELÉ (changelog/, audits/) → hors verrou : le record conserve
+#     légitimement les prénoms ; leur purge relève d'un `git filter-repo` (S6).
+#
+# Le scanner s'auto-exclut (EXCLUDED_PATHS) : la liste de prénoms ci-dessous ne
+# se signale donc pas elle-même.
+S7_NOMS_ENFANTS = re.compile(r"\b(?:arnaud|matthieu)\b", re.I)
+S7_FROZEN_PREFIXES = (
+    "00_documentation_arsenal/changelog/",
+    "00_documentation_arsenal/audits/",
+)
+S7_DOC_SUFFIXES = {".md", ".txt", ".markdown"}
+
+
+def s7_finding_for_line(active: str, rel_path: str) -> tuple[str, str] | None:
+    """(sévérité, motif) S7 pour une ligne active, None si rien.
+    Périmètre gelé (changelog/audits) hors verrou ; documentaire actif = WARNING ;
+    runtime = CRITICAL. Factorisé pour être exercé par --selftest."""
+    if any(rel_path.startswith(p) for p in S7_FROZEN_PREFIXES):
+        return None
+    if not S7_NOMS_ENFANTS.search(active):
+        return None
+    if Path(rel_path).suffix.lower() in S7_DOC_SUFFIXES:
+        return "WARNING", "prénom enfant en documentation active"
+    return "CRITICAL", "prénom enfant en runtime (dé-identification C32)"
+
+
+# ---------------------------------------------------------------------------
 # Structures de données
 # ---------------------------------------------------------------------------
 
@@ -654,6 +694,11 @@ def scan_text_file(path: Path, findings: list[Finding]) -> None:
         if s9 is not None:
             add_once(s9[0], "S9", idx, s9[1])
 
+        # ── S7 — Prénoms enfants (verrou dé-identification C32) ─────────────
+        s7 = s7_finding_for_line(active, label)
+        if s7 is not None:
+            add_once(s7[0], "S7", idx, s7[1])
+
     # S3 — username + password dans le même fichier (CRITICAL)
     # is_placeholder vérifié ligne par ligne : un seul "password: null" ailleurs
     # ne doit pas masquer un vrai mot de passe sur une autre ligne.
@@ -682,6 +727,10 @@ _HISTORY_PATTERNS: list[tuple[str, str, re.Pattern[str]]] = [
     # S9 — clé réseau Zigbee : forme exacte de la fuite historique
     # (network_key en bloc littéral dans zigbee2mqtt/configuration.yaml).
     ("S9", "CRITICAL", re.compile(r"\b(network_key|ext_pan_id)\s*[:=]", re.I)),
+    # S7 — prénoms enfants dé-identifiés (C32). En historique : WARNING (les
+    # prénoms passés subsistent dans l'historique Git ; leur purge relève d'un
+    # `git filter-repo`, hors état courant). Surface l'exposition sans bloquer.
+    ("S7", "WARNING", re.compile(r"\b(arnaud|matthieu)\b", re.I)),
 ]
 
 
@@ -816,6 +865,7 @@ def write_report(findings: list[Finding], verdict: str, history_enabled: bool) -
         "S4": "Sécurité domestique",
         "S5": "Fichiers interdits",
         "S6": "Historique Git",
+        "S7": "Prénoms enfants (dé-identification)",
         "S8": "Coordonnées GPS",
         "S9": "Clés réseau Zigbee",
     }
@@ -967,6 +1017,21 @@ def selftest() -> int:
     ]:
         hit = any(fnmatch.fnmatch(name, p) for p in FORBIDDEN_FILES)
         assert hit == forbidden, f"selftest S5a : {name!r} attendu={forbidden} obtenu={hit}"
+
+    # S7 — verrou prénoms enfants (dé-identification C32)
+    assert s7_finding_for_line("  name: Chambre Arnaud", "12_template_sensors/x.yaml") \
+        == ("CRITICAL", "prénom enfant en runtime (dé-identification C32)"), \
+        "selftest S7 : prénom en runtime → CRITICAL"
+    assert (s7_finding_for_line("ex-Chambre Matthieu",
+            "00_documentation_arsenal/contrats/x.md") or (None,))[0] == "WARNING", \
+        "selftest S7 : prénom en documentation active → WARNING"
+    assert s7_finding_for_line("Arnaud", "00_documentation_arsenal/audits/x.md") is None, \
+        "selftest S7 : historique gelé (audits/) hors verrou"
+    assert s7_finding_for_line("00_documentation_arsenal/changelog/v1.md contient Matthieu",
+            "00_documentation_arsenal/changelog/v1.md") is None, \
+        "selftest S7 : historique gelé (changelog/) hors verrou"
+    assert s7_finding_for_line("temperature_chambre_enfants", "x.yaml") is None, \
+        "selftest S7 : 'enfants' n'est pas un prénom (aucun faux positif)"
 
     print("selftest OK")
     return 0
