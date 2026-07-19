@@ -89,7 +89,6 @@
     - action: input_boolean.turn_off
       target:
         entity_id:
-          - input_boolean.presence_arnaud
-          - input_boolean.presence_matthieu
+          - input_boolean.presence_enfants
 
   mode: single

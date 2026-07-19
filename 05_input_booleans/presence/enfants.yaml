@@ -17,10 +17,6 @@
 #   - Sert aux templates de présence enfants pour dashboards
 # ==========================================================
 
-presence_arnaud:
-  name: Présence Arnaud
+presence_enfants:
+  name: Présence Enfants
   icon: mdi:account-child
-
-presence_matthieu:
-  name: Présence Matthieu
-  icon: mdi:account-child-circle
