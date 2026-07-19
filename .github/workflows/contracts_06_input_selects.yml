@@ -1,0 +1,21 @@
+name: Arsenal Contracts — Structure 06_input_selects
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-06-input-selects-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Selftest checker (on ne juge pas avec un juge défectueux)
+        run: python scripts/arsenal_contracts/check_06_input_selects_contracts.py --selftest
+
+      - name: Validate 06_input_selects structure
+        run: python scripts/arsenal_contracts/check_06_input_selects_contracts.py
