@@ -63,7 +63,9 @@ Trois couches sont à gouverner, à ne pas confondre :
   `temperature_max_chambres`, `humidex_max_chambres`, `humidite_relative_max_chambres`, plateaux
   thermostatiques) et du **groupe volets nuit**. Elle conserve **sa vanne / consigne propre**, **hors
   logique sommeil**. Motif : éviter qu'une pièce non-sommeil, possiblement plus froide, déclenche à tort
-  le besoin de chauffe nocturne.
+  le besoin de chauffe nocturne. **Extension ratifiée (2026-07-19)** : idem pour l'axe **COOL** — la Salle
+  de Jeux sort aussi de la **garde anti-gel** `intensite_besoin_froid` (contrat amendé v1.1, L2b ;
+  alignement runtime L4).
 
 - **A3 — Renommage `entity_id` avec migration d'historique (CAT-A/B).** Les `entity_id` sont renommés
   proprement (`…_chambre_arnaud → …_chambre_enfants` ; `…_chambre_matthieu → …_salle_de_jeux`) **et**
@@ -263,9 +265,20 @@ répartissent en trois familles ; seule (a) relève de L2) :
 - **Vannes / plateaux** (`chauffage/vannes_thermostatiques_plateaux.md`) → **L4** : la Salle de Jeux sort
   des plateaux mais **garde sa vanne/consigne propre** (A2) ; changement co-localisé avec le runtime vannes.
 
-**Sous-décision ouverte, reportée à L4 (mini-arbitrage propriétaire)** : la Salle de Jeux doit-elle aussi
-sortir de la **garde anti-gel COOL** `intensite_besoin_froid` (qui lit les 3 façades chambres) ? A2 n'a
-tranché que le **besoin de chauffe** ; l'axe COOL n'est pas décidé. **Non traité en L2.**
+**Sous-décision tranchée (2026-07-19, ratification propriétaire) — L2b** : **oui**, l'axe **COOL** suit le
+même traitement. La **garde anti-gel** `intensite_besoin_froid` ne lit plus que **2 façades** (Enfants +
+Parents) — contrat `climatisation/13_intensite_besoin_froid.md` amendé **v1.0 → v1.1**. `entity_id` en
+forme historique ; **alignement runtime** de la garde (retrait de la façade Salle de Jeux) porté par **L4**.
+
+### Lot 2b — extension COOL du périmètre (terminé, 2026-07-19)
+
+Ratification propriétaire : la réduction 3→2 s'applique **aussi** à la perception du besoin de **froid**.
+Contrat `climatisation/13_intensite_besoin_froid.md` **v1.0 → v1.1** : garde anti-gel §Rôle + §4.3
+réduites à 2 façades (Enfants + Parents), Salle de Jeux exclue. Cohérent avec `temperature_max_chambres`
+(opérande de déficit, déjà réduit en L2). **`entity_id` historiques conservés** (renommage L3) ;
+**alignement runtime** de la garde (L4). Vérifié : `check_climatisation_ventilation` valide le runtime
+`intensite_besoin_froid.yaml` (unique_ids/seuils) mais **ne fige pas** la liste des façades → amendement
+du contrat sûr côté CI. **Aucun runtime/checker touché.** `docs_lint` + checkers docs verts.
 
 **Aucun `entity_id` renommé, aucun runtime/template/checker touché.** `docs_lint` + checkers docs verts.
 **C32 actif ; prochain jalon L3 (renommage des entités de pièce).**
