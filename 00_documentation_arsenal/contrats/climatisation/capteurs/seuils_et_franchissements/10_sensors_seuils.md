@@ -9,12 +9,12 @@
 | Champ | Valeur |
 |-------|--------|
 | Type | sensor (template) |
-| Nature | déclenché — contextuel (présence) |
+| Nature | déclenché — contextuel (présence thermique stabilisée + mode nuit) |
 | Rôle | Seuil ON COOL en °C, adapté selon la présence |
-| Dépendances | `binary_sensor.presence_famille_unifiee` · `input_number.clim_seuil_declenchement_presence` · `input_number.clim_seuil_declenchement_absence` |
-| Logique | présence = on  → seuil présence<br>présence = off → seuil absence |
+| Dépendances | `binary_sensor.presence_confort_thermique_stabilisee` · `binary_sensor.clim_mode_nuit_effectif` · `input_number.clim_seuil_declenchement_presence` · `input_number.clim_seuil_declenchement_absence` |
+| Logique | présence thermique stabilisée = on **et** mode nuit = off → seuil présence<br>sinon → seuil absence |
 | Attribut | `mode_actif` : `"Présence"` ou `"Absence"` (mode utilisé pour le calcul) |
-| Triggers | `presence_famille_unifiee` · `clim_seuil_declenchement_presence` · `clim_seuil_declenchement_absence` · `homeassistant.start` |
+| Triggers | `presence_confort_thermique_stabilisee` · `clim_mode_nuit_effectif` · `clim_seuil_declenchement_presence` · `clim_seuil_declenchement_absence` · `homeassistant.start` · `event_template_reloaded` |
 | Abstention (C28) | Le seuil est **indisponible** si l'`input_number` **sélectionné** (présence ou absence selon le mode courant) est `unavailable`/`unknown` ou non numérique. **Aucun repli numérique (`float(0)`) ni sentinelle** : un opérande inexploitable produit un **seuil inexploitable**, jamais un `0`. |
 | Position | Observation → seuil COOL |
 
@@ -25,12 +25,12 @@
 | Champ | Valeur |
 |-------|--------|
 | Type | sensor (template) |
-| Nature | déclenché — contextuel (présence) |
+| Nature | déclenché — contextuel (présence thermique stabilisée + mode nuit) |
 | Rôle | Seuil OFF COOL en °C, adapté selon la présence |
-| Dépendances | `binary_sensor.presence_famille_unifiee` · `input_number.clim_seuil_extinction_presence` · `input_number.clim_seuil_extinction_absence` |
-| Logique | présence = on  → seuil présence<br>présence = off → seuil absence |
+| Dépendances | `binary_sensor.presence_confort_thermique_stabilisee` · `binary_sensor.clim_mode_nuit_effectif` · `input_number.clim_seuil_extinction_presence` · `input_number.clim_seuil_extinction_absence` |
+| Logique | présence thermique stabilisée = on **et** mode nuit = off → seuil présence<br>sinon → seuil absence |
 | Attribut | `mode_actif` : `"Présence"` ou `"Absence"` (mode utilisé pour le calcul) |
-| Triggers | `presence_famille_unifiee` · `clim_seuil_extinction_presence` · `clim_seuil_extinction_absence` · `homeassistant.start` |
+| Triggers | `presence_confort_thermique_stabilisee` · `clim_mode_nuit_effectif` · `clim_seuil_extinction_presence` · `clim_seuil_extinction_absence` · `homeassistant.start` · `event_template_reloaded` |
 | Abstention (C28) | Le seuil est **indisponible** si l'`input_number` **sélectionné** (présence ou absence selon le mode courant) est `unavailable`/`unknown` ou non numérique. **Aucun repli numérique (`float(0)`) ni sentinelle** : un opérande inexploitable produit un **seuil inexploitable**, jamais un `0`. |
 | Position | Observation → seuil COOL |
 
