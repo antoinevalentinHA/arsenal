@@ -259,30 +259,20 @@ views:
 
               - type: grid
                 square: false
-                columns: 4
+                columns: 3
                 cards:
-                  # ── Ligne 1 : configuration ──
+                  # ── Ligne 1 : administration ──
+                  # Paramètres = hub /config (contient Intégrations + Entités)
                   - type: custom:button-card
                     template: bouton_navigation
-                    name: Intégrations
-                    icon: mdi:puzzle-outline
+                    name: Paramètres
+                    icon: mdi:cog
                     styles:
                       icon:
                         - color: "rgb(158, 158, 158)"
                     tap_action:
                       action: navigate
-                      navigation_path: /config/integrations/dashboard
-
-                  - type: custom:button-card
-                    template: bouton_navigation
-                    name: Entités
-                    icon: mdi:database-eye
-                    styles:
-                      icon:
-                        - color: "rgb(158, 158, 158)"
-                    tap_action:
-                      action: navigate
-                      navigation_path: /config/entities
+                      navigation_path: /config/dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation
