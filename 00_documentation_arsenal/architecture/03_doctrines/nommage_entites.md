@@ -31,7 +31,7 @@ La recherche utilisateur est prioritaire sur toute autre considération.
 
 ### Exemple générique
 
-Température moyenne Séjour Humidité absolue Seuil Bas Chambre Arnaud Température min jour Jardin
+Température moyenne Séjour Humidité absolue Seuil Bas Chambre Enfants Température min jour Jardin
 
 ---
 
@@ -95,8 +95,8 @@ Température moyenne Séjour Humidité absolue Seuil Bas Chambre Arnaud Tempéra
 - Entrée  
 - Jardin  
 - Palier  
-- Chambre Arnaud  
-- Chambre Matthieu  
+- Chambre Enfants  
+- Salle de Jeux  
 - Chambre Parents  
 - SDB Parents  
 - SDB Enfants  
@@ -162,7 +162,7 @@ température moyenne
 
 ### Résultat attendu
 
-Température moyenne Séjour Température moyenne Chambre Arnaud Température moyenne Jardin Température moyenne Direction Température moyenne Komori ...
+Température moyenne Séjour Température moyenne Chambre Enfants Température moyenne Jardin Température moyenne Direction Température moyenne Komori ...
 
 ➡️ Aucun bruit parasite  
 ➡️ Aucun terme technique (statistics, filtre, proxy, local, etc.)

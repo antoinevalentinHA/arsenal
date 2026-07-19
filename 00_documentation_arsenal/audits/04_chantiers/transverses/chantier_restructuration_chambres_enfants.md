@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Restructuration des pièces enfants suite au déménagement : la chambre d'Arnaud devient la **Chambre Enfants** (partagée), la chambre de Matthieu devient une **Salle de Jeux**, la Chambre Parents est inchangée. Passage de **3 chambres → 2 chambres + 1 salle de jeux** dans toute la logique. Dé-identification des prénoms enfants obtenue **en sous-produit**. |
 | **Domaine** | TRANSVERSE (Météo/température intérieure ↔ Chauffage/vannes thermostatiques ↔ Sommeil/réveils ↔ Volets ↔ Aération ↔ UI Lovelace ↔ Doctrine de nommage ↔ Publication/confidentialité). |
-| **Statut** | **ACTIF — Lot 0 livré (ouverture).** Décisions propriétaire A1–A3 **rendues (2026-07-19)**, consignées §Décisions. Aucun contrat, runtime, template, dashboard, helper ni checker créé au Lot 0. |
+| **Statut** | **ACTIF — Lot 1 livré (canon des pièces).** Lot 0 (ouverture) + Lot 1 (doctrine `nommage_entites.md` alignée sur Chambre Enfants / Salle de Jeux ; header `salle_de_jeux` créé ; `chambre_enfants` déjà présent) acquis. Décisions propriétaire A1–A3 **rendues (2026-07-19)**, consignées §Décisions. **Aucun renommage d'entité runtime** à ce stade (relève de L3). |
 | **Priorité** | **P2** (proposée) — voir §Priorité. |
 | **Ouvert le** | 2026-07-19. |
 | **Preuve de départ** | Besoin propriétaire (déménagement physique **à venir** : enfants regroupés dans l'ex-chambre Arnaud ; ex-chambre Matthieu → salle de jeux) + **inventaire d'impact en lecture seule** consigné §3. Aucun rapport d'audit préalable mergé — l'inventaire est la preuve de départ. |
-| **Prochain jalon** | **L1** — doctrine & canon des pièces (nommage, section headers, groups capteur↔pièce). |
+| **Prochain jalon** | **L2** — amendement contractuel du périmètre « chambres » (contrat C27 `bornes_thermiques_chambres_etage.md`, 3→2 façades). |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C32 **consigne les décisions propriétaire déjà rendues**
 > (A1–A3, §Décisions) et l'**inventaire d'impact** (§3). Elle **ne crée aucun contrat, aucun runtime,
@@ -88,7 +88,7 @@ d'**enfant** (réveils, babyphone, présence) : cette **double fonction** rend l
 | **C** | Entités **par enfant** | `11_automations/reveils/{babyphone,compteurs,reset}/{arnaud,matthieu}.yaml`, `03_input_numbers/reveils/compteurs.yaml`, `04_input_texts/reveils/recap.yaml`, `05_input_booleans/{babyphone/*,presence/enfants.yaml}`, `12_template_sensors/presence/enfants.yaml`, `12_template_sensors/couleurs/meteo/bruit_chambres.yaml`, `11_automations/meteo/reboot_station/{arnaud,matthieu}.yaml` | **Fusion pièce** (**L5**, cf. A1). Les entités lisent `sensor.bruit_chambre_<prénom>` (**pièce**) |
 | **D** | Agrégats **énumérant/comptant les 3 chambres** | `12_template_sensors/meteo/mesures/temperature/chambres/{min,max}/**` (**besoin de chauffe**), `humidex/chambre_max.yaml`, `humidite_relative/max_chambres.yaml`, `chauffage/vannes_thermostatiques/{plateaux_stricts,affichage_plateau,stabilite_globale}.yaml`, `11_automations/chauffage/update_plateaux_thermostatiques.yaml`, `03_input_numbers/chauffage/plateau_temperature.yaml`, `06_input_selects/chauffage/piece_analyse_vanne.yaml`, `10_scripts/volets/commandes_groupees/chambres.yaml`, `12_template_sensors/statistiques/{filtres,seuils_dynamiques/**}`, `12_template_sensors/aeration/*` | **Logique** 3→2 + Salle de Jeux exclue (**L2** contrat, **L4** runtime) |
 | **E** | Documentation / changelog / audits | `00_documentation_arsenal/**` (~240 occ.) | Contrats **actifs** mis à jour (**L7**) ; **changelog/audits historiques gelés** |
-| **F** | Doctrine & canon des pièces | `00_documentation_arsenal/architecture/03_doctrines/nommage_entites.md` (liste `Chambre Arnaud/Matthieu/Parents`), `18_lovelace/includes/section_headers/*` (**`chambre_enfants.yaml` existe déjà** ; **manque `salle_de_jeux`**), `02_groups/integrations/{homekit,netatmo}.yaml` (câblage capteur↔pièce), `02_groups/{batteries,connectivite/*}` | **Canon d'abord** (**L1**) |
+| **F** | Doctrine & canon des pièces | `00_documentation_arsenal/architecture/03_doctrines/nommage_entites.md`, `18_lovelace/includes/section_headers/*` (`chambre_enfants.yaml` + `salle_de_jeux.yaml`), `02_groups/integrations/{homekit,netatmo}.yaml` (câblage capteur↔pièce), `02_groups/{batteries,connectivite/*}` | Doctrine + headers **L1 (fait)** ; `02_groups` câblage → **L3** (couplé aux `entity_id`) |
 
 **Cœur « besoin de chauffage ».** Il n'existe pas d'entité `besoin_chauffage` unique : le besoin repose
 sur `sensor.temperature_min_chambres` (min des 3 chambres, défini dans
@@ -163,9 +163,9 @@ contrôle CI S7 (confidentialité prénoms) **non bloquant**.
 | Lot | Objet | Nature | Dépend de |
 |---|---|---|---|
 | **L0** | Ouverture documentaire (ce dossier + registre + index) + consignation A1–A3 | descriptif | — |
-| **L1** | Canon des pièces : `nommage_entites.md` (zones), section headers (réutiliser `chambre_enfants`, créer `salle_de_jeux`), `02_groups` (câblage capteur↔pièce) | normatif / définition | L0 |
+| **L1** | Canon des pièces : `nommage_entites.md` (zones), section headers (réutiliser `chambre_enfants`, créer `salle_de_jeux`) | normatif / définition | L0 |
 | **L2** | Amendement contractuel du périmètre « chambres » : C27 `bornes_thermiques_chambres_etage.md` (3→2) + contrats chauffage/réveils impactés | normatif | L1 |
-| **L3** | Renommage des entités **de pièce** CAT-A/B (`entity_id`+libellé+chemins) : Arnaud→Enfants, Matthieu→Salle de Jeux (customize, statistics, couleurs, mesures, volets/contacts) | runtime | L2 |
+| **L3** | Renommage des entités **de pièce** CAT-A/B (`entity_id`+libellé+chemins) : Arnaud→Enfants, Matthieu→Salle de Jeux (customize, statistics, couleurs, mesures, volets/contacts) **+ `02_groups` câblage capteur↔pièce** (couplé au renommage des `entity_id`) | runtime | L2 |
 | **L4** | Logique agrégats CAT-D : Salle de Jeux hors 5 agrégats chambres + besoin de chauffe + volets nuit + seuils/aération | runtime | L2, L3 |
 | **L5** | Fusion suivi enfants CAT-C : un jeu « Chambre Enfants » (babyphone/compteurs/réveils/recap/présence) ; suivi sommeil retiré Salle de Jeux | runtime + helpers | L1 |
 | **L6** | Migration d'historique HA (recorder / statistics / LTS) selon A3 | opérationnel (instance) | L3 |
@@ -213,3 +213,23 @@ Ce dossier créé ; décisions A1–A3 consignées (§2) ; inventaire d'impact c
 C27 posée (§4) ; entrées **registre** (§① Actifs) et **index** (§Transverses) ajoutées au **même
 commit**. Aucun contrat, runtime, template, dashboard, helper ni checker. **C32 actif ; prochain jalon
 L1 (canon des pièces).**
+
+### Lot 1 — canon des pièces (terminé, 2026-07-19)
+
+Le **vocabulaire canonique** des zones est aligné sur la cible, **avant** tout renommage runtime :
+
+- **Doctrine `nommage_entites.md`** : liste des zones et exemples migrés `Chambre Arnaud → Chambre
+  Enfants` / `Chambre Matthieu → Salle de Jeux` (`Chambre Parents` inchangée). Aucun checker n'enchaîne
+  cette doctrine à des entités runtime — le canon peut donc précéder le renommage sans faux positif CI.
+- **Section headers** : header `salle_de_jeux.yaml` créé (`🧸 Salle de jeux`) ; header
+  `chambre_enfants.yaml` **déjà présent** (`🛏️ Chambre enfants`, référencé par
+  `dashboards/ouvertures/principal.yaml` — migration réellement amorcée côté ouvertures). Les headers
+  `chambre_arnaud`/`chambre_matthieu` **subsistent** (encore référencés par des dashboards) ; leur
+  retrait relève de **L3/L4**.
+
+**Raffinement de périmètre** : le câblage capteur↔pièce de `02_groups` (listes d'`entity_id`) est
+**couplé au renommage des `entity_id`** ; il est déplacé de L1 vers **L3** pour éviter des références
+pendantes. Décision purement documentaire, sans effet sur A1–A3.
+
+**Aucun `entity_id` renommé, aucun agrégat modifié, aucun contrat touché.** `check_lovelace_section_headers`
++ `docs_lint` verts. **C32 actif ; prochain jalon L2 (amendement contractuel C27).**
