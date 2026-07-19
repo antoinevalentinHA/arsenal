@@ -58,8 +58,7 @@ include:
     # 🧒 ENFANTS / CONFORT
     # =====================================================
     - automation.eclairage_sdb_enfants_charge_veilleuse
-    - automation.reveils_babyphone_arnaud
-    - automation.reveils_babyphone_matthieu
+    - automation.reveils_babyphone_enfants
 
     # =====================================================
     # 🚨 SÉCURITÉ & SUPERVISION

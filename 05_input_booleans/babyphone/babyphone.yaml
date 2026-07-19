@@ -1,0 +1,35 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Babyphone (Chambre Enfants)
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation d’activation du service de surveillance
+#     « babyphone » de la Chambre Enfants (pièce partagée).
+#
+#     Ce booléen détermine si l’automatisation babyphone
+#     est autorisée à fonctionner.
+#
+#  🧱 Nature :
+#     - Paramètre utilisateur
+#     - Commutateur de service
+#
+#  🔄 Fonctionnement :
+#     - ON  : la surveillance babyphone est active
+#     - OFF : aucune automatisation babyphone ne s’exécute
+#
+#  📥 N’effectue PAS :
+#     - aucune détection de bruit ou de mouvement
+#     - aucune analyse du sommeil
+#     - aucune action directe
+#
+#  📤 Utilisation :
+#     - Lue par l’automatisation babyphone
+#     - Pilotée via le dashboard de réglages sommeil
+#
+#  🧠 Principe Arsenal :
+#     - Un service sensible doit pouvoir être
+#       explicitement activé ou désactivé
+# ==========================================================
+
+babyphone:
+  name: "Babyphone"
+  icon: mdi:baby-face

@@ -3,10 +3,18 @@
 
 ---
 
-**Version :** 1.0.0  
-**Statut :** Actif  
-**Domaine :** `reveils` (chambres Arnaud / Matthieu)  
+**Version :** 1.1.0
+**Statut :** Actif
+**Domaine :** `reveils` (Chambre Enfants)
 **Chemin :** `00_documentation_arsenal/contrats/reveils.md`
+
+> **v1.1.0 (C32 / A1 — déménagement) :** les enfants partagent désormais la
+> **Chambre Enfants** (un seul capteur de bruit). Le suivi passe de **deux jeux
+> par enfant à un jeu unique** : `reveils_nocturnes`, `reveils_heures`,
+> `babyphone`, alimentés par `sensor.bruit_chambre_enfants`. Distinguer quel
+> enfant se réveille est **physiquement impossible** avec un micro unique — d'où
+> la fusion. Chantier :
+> [`chantier_restructuration_chambres_enfants.md`](../audits/04_chantiers/transverses/chantier_restructuration_chambres_enfants.md).
 
 ---
 
@@ -29,11 +37,10 @@ identifiant et aucune règle n'ont été inventés.
 ## 🎯 Rôle
 
 Le domaine `reveils` couvre trois fonctions distinctes autour du bruit nocturne
-dans les chambres des enfants (Arnaud, Matthieu), traitées **symétriquement** et
-**par enfant** :
+dans la **Chambre Enfants** (pièce partagée), en un **jeu unique** :
 
-1. **Compteurs nocturnes** — observabilité passive du bruit la nuit.
-2. **Reset quotidien** — cycle de vie des compteurs.
+1. **Compteur nocturne** — observabilité passive du bruit la nuit.
+2. **Reset quotidien** — cycle de vie du compteur.
 3. **Babyphone** — notification opt-in, **expérimentale et non garantie**.
 
 Le domaine est aujourd'hui **autonome** : il ne pilote aucun état, ne décide
@@ -49,12 +56,12 @@ rien au sens d'un moteur d'arbitrage, et n'est couplé à aucun autre domaine
 - `input_datetime.heure_reveil_nuit_debut` / `…_fin` — fenêtre nocturne.
 - `input_datetime.heure_reset_reveils` — heure du reset quotidien.
 
-**État par enfant :**
-- `input_number.reveils_nocturnes_arnaud` / `…_matthieu` — compteur (0–10).
-- `input_text.reveils_arnaud_heures` / `…_matthieu_heures` — historique horaire (texte, max 255).
-- `input_boolean.babyphone_arnaud` / `…_matthieu` — activation babyphone.
+**État (jeu unique Chambre Enfants) :**
+- `input_number.reveils_nocturnes` — compteur (0–10).
+- `input_text.reveils_heures` — historique horaire (texte, max 255).
+- `input_boolean.babyphone` — activation babyphone.
 
-**Perception (hors périmètre, lue) :** `sensor.bruit_chambre_enfants` / `…_matthieu`.
+**Perception (hors périmètre, lue) :** `sensor.bruit_chambre_enfants`.
 **Notification (hors périmètre, appelée) :** `script.notification_envoyer` vers `input_text.telephone_antoine_notify`.
 
 ---
@@ -68,33 +75,34 @@ dans les en-têtes des helpers).
 
 - **INV-REV-1** — Le cadre est non causal : seuil, fenêtre nocturne et heure de
   reset sont des réglages ; ils ne déclenchent par eux-mêmes aucune action.
-- **INV-REV-2** — Le seuil et la fenêtre nocturne sont **partagés** entre
-  enfants ; les compteurs, historiques et activations babyphone sont **par
-  enfant** et isolés.
+- **INV-REV-2** — Le suivi est un **jeu unique** au niveau de la pièce partagée
+  (un seul capteur de bruit) : compteur, historique et activation babyphone ne
+  sont **pas** ventilés par enfant. Distinguer les enfants à partir d'un micro
+  unique n'a pas de sens et n'est pas tenté.
 
-## 2. Compteurs nocturnes (observabilité)
+## 2. Compteur nocturne (observabilité)
 
 Sur dépassement du seuil sonore, **et uniquement dans la fenêtre nocturne**
-(gestion du passage de minuit incluse), le compteur de l'enfant est incrémenté
-(borné à 10) et l'heure est ajoutée à l'historique.
+(gestion du passage de minuit incluse), le compteur est incrémenté (borné à 10)
+et l'heure est ajoutée à l'historique.
 
-- **INV-REV-3** — Les compteurs sont une **observabilité passive** du bruit
-  nocturne. Ils **ne constituent pas une preuve de réveil réel** : un dépassement
-  sonore n'est pas un réveil confirmé.
-- **INV-REV-4** — Aucun compteur ne déclenche de notification, ne pilote un état
-  de présence, ni n'alimente une décision d'un autre domaine.
+- **INV-REV-3** — Le compteur est une **observabilité passive** du bruit
+  nocturne. Il **ne constitue pas une preuve de réveil réel** : un dépassement
+  sonore n'est pas un réveil confirmé, ni l'attribution à un enfant précis.
+- **INV-REV-4** — Le compteur ne déclenche aucune notification, ne pilote aucun
+  état de présence, ni n'alimente une décision d'un autre domaine.
 - **INV-REV-5** — Le compteur est borné à 10 (anti-spam). Au-delà, le bruit
   continue d'être journalisé dans l'historique sans incrémenter le compteur.
 
-> **Historique indicatif.** `input_text.reveils_*_heures` est limité à 255
+> **Historique indicatif.** `input_text.reveils_heures` est limité à 255
 > caractères. Il est **indicatif et non exhaustif** : au-delà de la capacité du
 > champ, l'historique peut être tronqué. Il ne doit pas être traité comme un
 > journal complet ni comme une source de comptage indépendante.
 
 ## 3. Reset quotidien (cycle de vie)
 
-À `input_datetime.heure_reset_reveils`, le compteur et l'historique de chaque
-enfant sont remis à zéro / vidés.
+À `input_datetime.heure_reset_reveils`, le compteur et l'historique sont remis à
+zéro / vidés.
 
 - **INV-REV-6** — Le reset est un **événement de cycle de vie** : il efface les
   données d'observabilité de la journée écoulée et ne fait rien d'autre (aucune
@@ -107,15 +115,15 @@ enfant sont remis à zéro / vidés.
 
 ## 4. Babyphone — notification opt-in, expérimentale et NON garantie
 
-Lorsque `input_boolean.babyphone_<enfant>` est actif, un dépassement du seuil
-sonore déclenche une notification vers Antoine (chemin canonique
+Lorsque `input_boolean.babyphone` est actif, un dépassement du seuil sonore
+déclenche une notification vers Antoine (chemin canonique
 `script.notification_envoyer` → `input_text.telephone_antoine_notify`). Cette
 fonction **n'a pas de condition de fenêtre horaire** : elle opère tant que le
 booléen est actif.
 
 **Statut explicite :**
 
-- **Mécanisme de notification opt-in**, activé manuellement par enfant.
+- **Mécanisme de notification opt-in**, activé manuellement.
 - **Expérimental / non garanti.** Le babyphone **ne constitue pas une
   surveillance fiable** et ne doit pas être présenté ni utilisé comme tel.
 - **Dépendant de capteurs bruit Netatmo insuffisamment réactifs** pour garantir
@@ -124,7 +132,7 @@ booléen est actif.
 - **Aucun invariant de surveillance fiable** n'est défini, volontairement.
 
 - **INV-REV-7** — Le babyphone est **strictement opt-in** : aucune notification
-  sans `input_boolean.babyphone_<enfant>` actif ; il n'est jamais auto-activé.
+  sans `input_boolean.babyphone` actif ; il n'est jamais auto-activé.
 - **INV-REV-8** — Le destinataire **observé** est Antoine via le chemin canonique
   existant. Le contrat n'introduit ni destinataire familial ni destinataire
   configurable.
@@ -153,13 +161,13 @@ Le domaine `reveils` est aujourd'hui **totalement découplé** :
 
 Référencés mais **non définis** par ce contrat :
 
-- la **source** `sensor.bruit_chambre_<enfant>` (perception Netatmo / système) ;
+- la **source** `sensor.bruit_chambre_enfants` (perception Netatmo / système) ;
 - le **mécanisme de notification** `script.notification_envoyer` (voir
   [`notifications.md`](notifications.md)) ;
 - les **capteurs couleur** dérivés du bruit (couche `couleurs` / UI) ;
 - les **surfaces UI** (`18_lovelace/dashboards/sommeil/principal.yaml` et
-  `…/reglages/sommeil.yaml`), co-localisées avec le contexte « sommeil » sans
-  appartenir au domaine `reveils`.
+  `…/reglages.yaml`), co-localisées avec le contexte « sommeil » sans appartenir
+  au domaine `reveils`.
 
 ## 7. Dettes / points à arbitrer
 

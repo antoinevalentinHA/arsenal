@@ -33,15 +33,8 @@
 #   Socle — Arsenal v14.x
 # ==========================================================
 
-reveils_nocturnes_arnaud:
-  name: Réveils Arnaud
-  min: 0
-  max: 10
-  step: 1
-  icon: mdi:bed
-
-reveils_nocturnes_matthieu:
-  name: Réveils Matthieu
+reveils_nocturnes:
+  name: Réveils Enfants
   min: 0
   max: 10
   step: 1

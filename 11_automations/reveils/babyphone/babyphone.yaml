@@ -1,11 +1,11 @@
 # ==========================================================
 # 🧠 ARSENAL — AUTOMATION :
-#     Babyphone – Détection bruit chambre Matthieu
+#     Babyphone – Détection bruit chambre Enfants
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #
 #     Détecter un dépassement de seuil sonore dans la
-#     chambre de Matthieu et notifier l’utilisateur,
+#     chambre des enfants et notifier l’utilisateur,
 #     lorsque la surveillance babyphone est activée.
 #
 # 🧱 PRINCIPE
@@ -18,9 +18,9 @@
 #
 # 📥 ENTRÉES
 #
-#     - sensor.bruit_salle_de_jeux
+#     - sensor.bruit_chambre_enfants
 #     - input_number.seuil_reveil_bruit
-#     - input_boolean.babyphone_matthieu
+#     - input_boolean.babyphone
 #
 # 📤 SORTIE
 #
@@ -37,24 +37,24 @@
 #     Arsenal
 # ==========================================================
 
-- id: '10110000000006'
-  alias: "Réveils - Babyphone Matthieu"
+- id: '10110000000005'
+  alias: "Réveils - Babyphone Enfants"
   mode: single
 
   trigger:
     - platform: template
       value_template: >
-        {{ states('sensor.bruit_salle_de_jeux') | float(0)
+        {{ states('sensor.bruit_chambre_enfants') | float(0)
            > states('input_number.seuil_reveil_bruit') | float(0) }}
 
   condition:
     - condition: state
-      entity_id: input_boolean.babyphone_matthieu
+      entity_id: input_boolean.babyphone
       state: 'on'
 
   action:
     - service: script.notification_envoyer
       data:
         cible: input_text.telephone_antoine_notify
-        titre: "👶 Matthieu"
+        titre: "👶 Enfants"
         message: "🌙 Bruit détecté dans sa chambre"

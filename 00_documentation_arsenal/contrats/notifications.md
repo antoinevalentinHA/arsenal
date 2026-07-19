@@ -103,7 +103,7 @@ ne peut pas être vérifié statiquement ; sa conformité relève de l’automat
 
 Exemples conformes :
 
-- `👶 Matthieu`
+- `👶 Enfants`
 - `🔋 Audi A3 e-tron`
 - `🚨 Badge inconnu`
 
