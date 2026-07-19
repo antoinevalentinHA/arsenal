@@ -162,6 +162,29 @@ médiane `sensor.jardin_humidite_sol_mediane`, seuil de déclenchement 30 % :
   retard sur le runtime — mise à jour documentaire à arbitrer, hors de cette
   entrée d'observation.)*
 
+**Test complémentaire — la bonne métrique : séchage vs demande (lentille déficit).**
+Analyse Recorder de **toute** la série médiane (3365 pts), restreinte aux **319
+échantillons « purs »** (hors arrosage ±3 h, hors pluie) : vitesse de séchage
+(pts/h) binée par VPD. Résultat : **séchage réel minuscule** (±0,2 pt/h, le sol
+**remonte même légèrement** à basse VPD — bruit / rosée / redistribution), et
+**aucune dépendance monotone à la VPD** (pas de « plus chaud → sèche plus vite »).
+Surtout, **les écarts-types (0,2–0,65) sont ≥ aux moyennes** ⇒ **le bruit écrase le
+signal**. Ce n'est **pas une absence de données** (319 échantillons) mais un
+**rapport signal/bruit insuffisant** : médiane de **3 sondes non calibrées**, sur
+un juillet où le sol est resté **souvent arrosé/haut** (peu de vraies phases de
+séchage).
+
+**Requalification du blocage P2 : métrologique, pas doctrinal — et réversible.**
+Le passage à **6 capteurs** (info opérateur) est le **levier direct** (la médiane
+de 6 sondes est bien moins bruitée que celle de 3) et pourrait **faire émerger**
+le séchage aujourd'hui noyé. **Ré-observation à mener (protocole)** : rejouer
+**exactement cette analyse** (séchage/h vs VPD sur échantillons purs) **sur le
+parc à 6 capteurs** ; **déclencheur** = parc 6 sondes calibré **et** au moins une
+**phase de séchage franche multi-jours** observée ; **critère de bascule
+« exploitable »** = tendance séchage croissante avec la VPD **au-dessus du bruit**
+(moyenne de bin > son écart-type). Tant que ce critère n'est pas atteint, **P2
+reste non réuni** et la modulation de durée (C11) **différée**.
+
 Lecture prudente : **petit échantillon** (4 cycles auto), **juillet chaud seul**,
 **médiane seule** (lecture par point non extraite), fenêtre 12 h susceptible de
 capter du bruit diurne. Aucune règle, aucun seuil, aucun runtime ; **durée de
