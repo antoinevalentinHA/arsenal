@@ -1573,6 +1573,19 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Volets — retour aux commandes Ouvrir / Fermer : suppression des préréglages de position (`shutter_position.yaml`) introduits en v16.4.0, ajout de `shutter_open.yaml` / `shutter_close.yaml`, refonte de `dashboards/volets/principal.yaml` (tuiles Ouvrir / Fermer sur `script.ouvrir_*` / `script.fermer_*`).
 - UI — Exception 9 renommée « sens de commande des volets » (vert = ouverture, bleu = fermeture, gris neutre = sans sens typé) ; motif du retrait du stop précisé (non exposé en HAP, `supported_features = 7`).
 
+---
+
+## 🧠 ARSENAL HA — [v16.4.2](changelogs/v16/v16_4_2.md) — STABLE — 2026-07-19
+**Tags :** climatisation, meteo, presence, imprimerie, lovelace, doctrine, ci, checkers, recorder, registres
+
+**Signal net :**
+- Climatisation (C30) — abstention native de l'état rapporté : `availability` sur `clim_mode_local`, `clim_action_en_cours`, `clim_incoherence_decision_reel`, `etat_clim_dashboard` ; suppression des replis `this.state` / `off` ; cartes clim en indisponibilité prioritaire (`rgba(158, 158, 158, 0.1)`).
+- Climatisation (C20) — seuils COOL calés sur `binary_sensor.presence_confort_thermique_stabilisee` + `binary_sensor.clim_mode_nuit_effectif`, ajout du trigger `event_template_reloaded`.
+- Météo (C29) — abstention native des températures intérieures : `availability` sur `temperature_brute_consolidee_*` et `temperature_stabilisee_*` (6 zones), plus d'émission `unknown` en `state`.
+- Présence — gardes de validité GPS sur `binary_sensor.presence_famille_securite` (zone / rayon / trackers), suppression des coordonnées `0,0` fabriquées.
+- Doctrine (C31) — ajout de `solvabilite_probatoire.md` (niveaux L1–L5, qualification des réserves) ; CI (C14) — checker et workflow `06_input_selects` (ISS-000 à ISS-007), recompte checkers 84 → 85 / workflows 89 → 90.
+- Lovelace — refonte de la section Système de la navigation (12 → 6 tuiles, factorisations « Paramètres » / « Outils Dev », icônes en gris).
+
 ==================================================
 FIN INDEX
 ==================================================
