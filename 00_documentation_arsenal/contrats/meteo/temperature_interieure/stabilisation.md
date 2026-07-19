@@ -1,6 +1,6 @@
 # CONTRAT — `sensor.temperature_stabilisee_<zone>`
 
-**Version** : 1.1  
+**Version** : 1.2  
 **Domaine** : Température — couche stabilisation  
 **Statut** : Normatif  
 
@@ -10,6 +10,7 @@
 
 | Version | Modifications |
 |---|---|
+| 1.2 | §6/§7/§9 (chantier C29) : abstention **native** via `availability` (indisponibilité `unavailable`) ; l'obligation `{{ 'unknown' }}` en `state` est **remplacée** (branche d'abstention à rendu vide) ; ajout de l'ancre `availability` ; alignement doctrine C27/C28 (`restitution_chambres_etage.md §8`). Mémoire TTL 1800 s **inchangée** |
 | 1.1 | §7 : clause indicative sur `delta_brute` / `delta_applique` (limite modèle exécution HA) ; `delta_applique` : ajout garde `brute_valide` |
 | 1.0 | Version initiale |
 
@@ -92,7 +93,12 @@ L'arrondi à 0.1°C s'applique **uniquement sur la valeur publiée en sortie**. 
 
 ### Publication de l'abstention
 
-Les branches d'abstention dans le bloc `state` publient explicitement `{{ 'unknown' }}`. L'absence de sortie et `{{ none }}` sont interdits dans ce bloc.
+L'abstention est **native** : elle est portée par un bloc `availability` qui rend l'entité `unavailable` dès qu'aucune valeur numérique ne peut être publiée. Le bloc `state` ne publie **jamais** de chaîne d'abstention.
+
+- **`availability`** : vrai si et seulement si le `state` produirait un nombre — soit `brute_valide`, soit `this.state` exploitable (mémoire vivante) : `availability = brute_valide or this_exploitable`. Faux uniquement au Cas 4 (brute invalide **et** mémoire expirée).
+- **Interdit dans le bloc `state`** : la chaîne littérale `{{ 'unknown' }}` (état textuel sur capteur numérique → `template.validators … expected a number`) et `{{ none }}` (chaîne `"None"`). La branche d'abstention ne produit **aucune sortie** (rendu vide). `{{ none }}` reste acceptable dans les attributs diagnostics.
+
+> **Doctrine C27/C28** : indisponibilité **native** via l'idiome `availability`/`this`, aucun état textuel (cf. [`restitution_chambres_etage.md §8`](restitution_chambres_etage.md)). La **mémoire TTL 1800 s reste `available`** (Cas 3) : l'abstention n'intervient qu'à l'expiration.
 
 ### Cas couverts (ordre d'évaluation strict)
 
@@ -115,7 +121,7 @@ Republier `this.state` arrondi à 0.1°C (`mode = memoire`).
 
 #### Cas 4 — Brute `unknown`, stabilisée précédente expirée
 
-Publier `{{ 'unknown' }}` (`mode = abstention`).
+**Abstention native** : `availability` faux → l'entité est `unavailable` (`mode = abstention`). Le bloc `state` ne produit aucune sortie.
 
 ---
 
@@ -135,6 +141,8 @@ Ces attributs sont passifs et non décisionnels. Ils décrivent le cycle courant
 **Lecture diagnostique clé** :
 - `mode_stabilisation = limitation_delta` signale explicitement que le garde-fou a mordu sur ce cycle
 - `delta_brute > delta_applique` confirme l'amplitude de la limitation
+
+> **Abstention native (C29)** : au Cas 4, l'entité est `unavailable` (bloc `availability` faux). La valeur `abstention` de `mode_stabilisation` décrit le **mode conceptuel** du cycle ; l'**indisponibilité native est le signal**.
 
 **Limite d'implémentation — attributs indicatifs**
 
@@ -164,10 +172,10 @@ Le déclenchement sur `state` capture tout changement de la brute, y compris les
 
 - Arrondi uniquement en sortie, jamais dans les calculs internes
 - Référence temporelle TTL : `this.last_changed` exclusivement
-- `{{ 'unknown' }}` explicite dans les branches d'abstention du bloc `state`
+- Abstention **native** via `availability` (`unavailable`) : aucune chaîne textuelle (`{{ 'unknown' }}`) ni `{{ none }}` dans le bloc `state` (branche d'abstention à rendu vide) ; `availability = brute_valide or this_exploitable`
 - Aucun accès direct aux sources `_1` / `_2`
 - Aucune rétroaction sur `sensor.temperature_brute_consolidee_<zone>`
-- Factorisation par ancres YAML : une ancre `state`, une ancre par attribut diagnostic
+- Factorisation par ancres YAML : une ancre `availability`, une ancre `state`, une ancre par attribut diagnostic
 - `this.entity_id` utilisé dans tous les blocs avec préfixe `sensor.temperature_stabilisee_` pour reconstruction de la source brute
 
 ```jinja

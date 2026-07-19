@@ -136,10 +136,20 @@ terminale**.
 - **Ancres YAML** : traiter **2 blocs** (`consolidation.yaml`,
   `stabilisation.yaml`) couvre les **12 instances** de zone. Pas de
   multiplication par 6.
-- **Contrat** : **aucune consignation requise** — `restitution_chambres_etage.md`
-  §8 couvre déjà l'indisponibilité native, et `bornes_thermiques_chambres_etage.md`
-  (propriétaire de la mémoire) **n'est pas touché** puisque la mémoire est
-  conservée.
+- **Contrat** : **consignation REQUISE** — la doctrine d'abstention de ces deux
+  capteurs est possédée par
+  [`consolidation.md`](../../../contrats/meteo/temperature_interieure/consolidation.md)
+  et [`stabilisation.md`](../../../contrats/meteo/temperature_interieure/stabilisation.md),
+  dont le **§6 imposait l'émission textuelle `{{ 'unknown' }}`** (enforcé par les
+  checkers `check_consolidation_contracts` / `check_stabilisation_contracts`, test
+  **T6**). Ces contrats **doivent être consignés** (abstention native) **avant** le
+  runtime. `restitution_chambres_etage.md §8` (agrégats min/max) et
+  `bornes_thermiques_chambres_etage.md` (mémoire, conservée) ne sont **pas** touchés.
+
+  > **Correction (2026-07-19).** La v0.2 de ce cadrage affirmait à tort « aucun
+  > contrat à modifier » : elle avait **manqué** `consolidation.md` / `stabilisation.md`
+  > §6, propriétaires de l'abstention de ces capteurs. Angle mort levé par les
+  > checkers T6 lors de la préparation du lot runtime.
 - **Interlock C27/C28** : rendre ces producteurs `unavailable` (au lieu de
   `unknown`) est **cohérent** avec l'abstention déjà en place sur
   `temperature_min/max_chambres` ; aucune résurrection d'un besoin COOL/HEAT
@@ -150,11 +160,14 @@ terminale**.
 ## 6. Séquencement proposé (indicatif, non engageant)
 
 1. **L0 — arbitrage** (§4) : **fait** (Option A).
-2. **L1 — consignation contractuelle** : **sans objet** (cf. §5).
-3. **L2 — runtime** : sur les 2 ancres `state`, remplacer les branches terminales
-   `{{ 'unknown' }}` par un bloc `availability` reproduisant la condition
-   d'abstention terminale ; branches mémoire/fusion/EWMA **inchangées** ; preuve
-   de rendu Jinja.
+2. **L1 — consignation contractuelle (PR 1)** : `consolidation.md` **v1.5** +
+   `stabilisation.md` **v1.2** (§6 abstention native) ; correction de ce cadrage
+   et de la ligne registre. Runtime et checkers **inchangés** à ce stade (CI verte :
+   les checkers T6 correspondent encore au runtime `{{ 'unknown' }}`).
+3. **L2 — runtime + checkers (PR 2)** : conversion des 2 ancres `state` (branches
+   d'abstention à rendu vide) + ajout des blocs `availability` ; mise à jour des
+   tests **T6** des 2 checkers (idiome natif) ; branches mémoire/fusion/EWMA
+   **inchangées** ; preuve de rendu Jinja.
 4. **L3 — validation** : matrice de rendu (sources valides / partielles / mortes /
    mémoire vivante / mémoire expirée) ; disparition de l'erreur validateur ;
    non-régression aval ; TTL et comportement nominal inchangés.
