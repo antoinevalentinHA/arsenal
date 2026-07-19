@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Restructuration des pièces enfants suite au déménagement : la chambre d'Arnaud devient la **Chambre Enfants** (partagée), la chambre de Matthieu devient une **Salle de Jeux**, la Chambre Parents est inchangée. Passage de **3 chambres → 2 chambres + 1 salle de jeux** dans toute la logique. Dé-identification des prénoms enfants obtenue **en sous-produit**. |
 | **Domaine** | TRANSVERSE (Météo/température intérieure ↔ Chauffage/vannes thermostatiques ↔ Sommeil/réveils ↔ Volets ↔ Aération ↔ UI Lovelace ↔ Doctrine de nommage ↔ Publication/confidentialité). |
-| **Statut** | **ACTIF — Lot 4 livré (alignement runtime + vannes).** Lots 0–4a acquis + Lot 4b : la Salle de Jeux **garde sa vanne et son plateau individuels** (arbitrage propriétaire 2026-07-19) mais sort du **verdict collectif de stabilité « chambres »** (`vannes_thermostatiques_stabilite_globale` → 2 chambres). **A2 est entièrement appliqué côté runtime** : besoin de chauffe/froid, humidex/humidité max, volets groupés et verdict vannes calculent sur {Enfants, Parents} ; la Salle de Jeux reste une pièce autonome (capteurs, fenêtres, aération, vanne). Per-child **intact** (L5). **⚠️ Migration instance (L6) au déploiement** (z2m + registre + recorder). |
+| **Statut** | **ACTIF — Lot 5a livré (fusion présence enfants).** Lots 0–4 acquis (A2 entièrement appliqué runtime) + Lot 5a : `input_boolean.presence_arnaud` + `presence_matthieu` → **une seule `input_boolean.presence_enfants`** (arbitrage propriétaire : présence fusionnée) ; `binary_sensor.presence_enfants` et le mode babysitting recâblés sur le booléen unique. **Premiers prénoms per-child dé-identifiés.** Reste L5b (fusion sommeil : babyphone + réveils). **⚠️ Migration instance (L6) au déploiement** (z2m + registre + recorder). |
 | **Priorité** | **P2** (proposée) — voir §Priorité. |
 | **Ouvert le** | 2026-07-19. |
 | **Preuve de départ** | Besoin propriétaire (déménagement physique **à venir** : enfants regroupés dans l'ex-chambre Arnaud ; ex-chambre Matthieu → salle de jeux) + **inventaire d'impact en lecture seule** consigné §3. Aucun rapport d'audit préalable mergé — l'inventaire est la preuve de départ. |
-| **Prochain jalon** | **L5** — fusion du suivi enfants : `babyphone_arnaud` + `babyphone_matthieu` → **`babyphone`** unique (ratifié) ; compteurs de réveils et présence ; sur le capteur de bruit unique de la Chambre Enfants. |
+| **Prochain jalon** | **L5b** — fusion du suivi **sommeil** : `babyphone_arnaud`+`babyphone_matthieu` → **`babyphone`** unique ; `reveils_nocturnes_*` → `reveils_nocturnes` ; `reveils_*_heures` → `reveils_heures` ; automations fusionnées (IDs conservés), sur `sensor.bruit_chambre_enfants`. |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C32 **consigne les décisions propriétaire déjà rendues**
 > (A1–A3, §Décisions) et l'**inventaire d'impact** (§3). Elle **ne crée aucun contrat, aucun runtime,
@@ -170,7 +170,8 @@ contrôle CI S7 (confidentialité prénoms) **non bloquant**.
 | **L3** | Renommage des entités **de pièce** CAT-A/B (`entity_id`+libellé+chemins) : Arnaud→Enfants, Matthieu→Salle de Jeux (customize, statistics, couleurs, mesures, volets/contacts) **+ `02_groups` câblage capteur↔pièce** (couplé au renommage des `entity_id`) | runtime | L2 |
 | **L4a** | Retrait Salle de Jeux des agrégats **sommeil/besoin** (temp min/max chambres, humidex/humidité max, garde anti-gel COOL, groupe volets « chambres ») — **fait**. Reste dans les agrégats multi-pièces (ouvertures, aération, capteurs, statistiques) — elle a capteurs/fenêtres | runtime | L2, L3 |
 | **L4b** | Vannes/plateaux : arbitrage vanne de chauffage Salle de Jeux, puis alignement plateaux (`plateaux_stricts`, `stabilite_globale`, `affichage_plateau`, contrat `vannes_thermostatiques_plateaux`) | runtime | L4a |
-| **L5** | Fusion suivi enfants CAT-C : un jeu « Chambre Enfants » (babyphone/compteurs/réveils/recap/présence) ; suivi sommeil retiré Salle de Jeux | runtime + helpers | L1 |
+| **L5a** | Fusion **présence** : `presence_arnaud`+`presence_matthieu` → `presence_enfants` unique ; babysitting + `binary_sensor.presence_enfants` recâblés — **fait** | runtime + helpers | L3 |
+| **L5b** | Fusion **sommeil** : `babyphone`, `reveils_nocturnes`, `reveils_heures` uniques ; automations fusionnées (IDs conservés) ; suivi sommeil retiré Salle de Jeux ; cartes sommeil | runtime + helpers | L3 |
 | **L6** | Migration d'historique HA (recorder / statistics / LTS) selon A3 | opérationnel (instance) | L3 |
 | **L7** | Documentation **active** (contrats CAT-E impactés) + changelog de release ; historique gelé | descriptif | L2–L5 |
 | **L8** | *(parallèle, non bloquant)* Contrôle CI **S7 — noms propres nominatifs** : script `audit_publication_git.py` + amendement contrat `securite_publication_git.md` (v1.4→v1.5) | normatif + CI | L0 |
@@ -399,3 +400,19 @@ Validation : **~80 checkers + docs verts (0 échec)**, YAML parsé.
 
 **A2 est désormais entièrement appliqué côté runtime.** Reste au chantier : **L5** (fusion suivi enfants),
 **L6** (migration instance), **L8** (S7 CI, parallèle), puis L9/L10. **C32 actif ; prochain jalon L5.**
+
+### Lot 5a — fusion de la présence enfants (terminé, 2026-07-19)
+
+Application de A1 (volet présence) : **arbitrage propriétaire** → **une seule présence**. Les deux
+`input_boolean.presence_arnaud` / `presence_matthieu` sont remplacés par **`input_boolean.presence_enfants`**
+(unique) :
+
+- `12_template_sensors/presence/enfants.yaml` (`binary_sensor.presence_enfants`) : l'état passe de l'OR
+  des deux booléens à `is_state('input_boolean.presence_enfants', 'on')`. Ses consommateurs (sécurité,
+  famille) sont **inchangés**.
+- Mode **babysitting** (5 automations : activation + 4 désactivations) recâblé sur le booléen unique
+  (déclencheur et remises à OFF).
+
+**Premiers prénoms per-child dé-identifiés.** Aucun `presence_arnaud/matthieu` résiduel. Validation :
+**~80 checkers + docs verts (0 échec)** (dont `check_presence`, `check_babysitting`, `check_input_booleans`,
+`check_automation_ids`). **C32 actif ; prochain jalon L5b (fusion sommeil : babyphone + réveils).**

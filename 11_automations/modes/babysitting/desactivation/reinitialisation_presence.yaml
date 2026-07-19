@@ -22,8 +22,7 @@
 #
 #     - Exécution quotidienne à 05:00
 #     - Désactivation systématique des booléens :
-#         • presence_arnaud
-#         • presence_matthieu
+#         • presence_enfants
 #
 #  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
@@ -71,5 +70,4 @@
     - action: input_boolean.turn_off
       target:
         entity_id:
-          - input_boolean.presence_arnaud
-          - input_boolean.presence_matthieu
+          - input_boolean.presence_enfants

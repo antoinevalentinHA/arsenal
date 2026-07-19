@@ -27,8 +27,7 @@
 #     - Déclenchement lors du passage du mode
 #       Babysitting de ON à OFF
 #     - Désactivation immédiate des booléens :
-#         • presence_arnaud
-#         • presence_matthieu
+#         • presence_enfants
 #     - Laisse les moteurs supérieurs
 #       recalculer les décisions normalement
 #
@@ -80,8 +79,7 @@
     - action: input_boolean.turn_off
       target:
         entity_id:
-          - input_boolean.presence_arnaud
-          - input_boolean.presence_matthieu
+          - input_boolean.presence_enfants
 
     # ------------------------------------------------------
     # 🔄 Laisse le script recalculer automatiquement

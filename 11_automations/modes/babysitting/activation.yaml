@@ -77,8 +77,7 @@
     - action: input_boolean.turn_on
       target:
         entity_id:
-          - input_boolean.presence_arnaud
-          - input_boolean.presence_matthieu
+          - input_boolean.presence_enfants
 
     # ⏱ Lancer le timer si reset automatique activé
     - choose:

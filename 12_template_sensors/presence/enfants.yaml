@@ -21,9 +21,4 @@
       device_class: presence
 
       state: >
-        {% set enfants = [
-          'input_boolean.presence_arnaud',
-          'input_boolean.presence_matthieu'
-        ] %}
-
-        {{ enfants | select('is_state', 'on') | list | length > 0 }}
+        {{ is_state('input_boolean.presence_enfants', 'on') }}
