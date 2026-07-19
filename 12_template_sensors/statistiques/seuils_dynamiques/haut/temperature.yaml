@@ -32,7 +32,7 @@
 # 🧩 Capteurs / Zones concernées :
 #   ▪️ Résidentiel :
 #      - Chambre Enfants  
-#      - Chambre Matthieu  
+#      - Salle de Jeux  
 #      - Chambre Parents  
 #      - Séjour  
 #      - Entrée  
@@ -119,8 +119,8 @@
       state: *temperature_seuil_haut_logic
 
 - sensor:
-    - name: "Température Seuil Haut Chambre Matthieu"
-      unique_id: temperature_seuil_haut_chambre_matthieu
+    - name: "Température Seuil Haut Salle de Jeux"
+      unique_id: temperature_seuil_haut_salle_de_jeux
       state: *temperature_seuil_haut_logic
 
 - sensor:

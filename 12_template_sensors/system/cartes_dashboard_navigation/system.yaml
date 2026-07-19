@@ -34,7 +34,7 @@
         {% set batterie = states('binary_sensor.batterie_a_remplacer') %}
         {% set boiler_bridge = states('sensor.boiler_bridge_sante') %}
         {% set netatmo_enfants = states('sensor.diagnostic_netatmo_enfants') %}
-        {% set netatmo_matthieu = states('sensor.diagnostic_netatmo_matthieu') %}
+        {% set netatmo_salle_de_jeux = states('sensor.diagnostic_netatmo_salle_de_jeux') %}
         {% set autos_raw = states('sensor.automatisations_desactivees') %}
         {% set autos = autos_raw | int(0) %}
         {% set stable = states('input_boolean.systeme_stable') %}
@@ -53,7 +53,7 @@
               or batterie in indispo
               or boiler_bridge in indispo
               or netatmo_enfants in indispo
-              or netatmo_matthieu in indispo
+              or netatmo_salle_de_jeux in indispo
               or autos_raw in indispo
               or couleurs_indispo | count > 0
               or stable == 'off'
@@ -63,7 +63,7 @@
               or internet != 'ok'
               or boiler_bridge in ['down', 'degraded']
               or netatmo_enfants != 'ok'
-              or netatmo_matthieu != 'ok'
+              or netatmo_salle_de_jeux != 'ok'
               or couleurs_critiques | count > 0 %}
           alert
         {% else %}
@@ -89,7 +89,7 @@
           {% set batterie = states('binary_sensor.batterie_a_remplacer') %}
           {% set boiler_bridge = states('sensor.boiler_bridge_sante') %}
           {% set netatmo_enfants = states('sensor.diagnostic_netatmo_enfants') %}
-          {% set netatmo_matthieu = states('sensor.diagnostic_netatmo_matthieu') %}
+          {% set netatmo_salle_de_jeux = states('sensor.diagnostic_netatmo_salle_de_jeux') %}
           {% set autos_raw = states('sensor.automatisations_desactivees') %}
           {% set autos = autos_raw | int(0) %}
           {% set stable = states('input_boolean.systeme_stable') %}
@@ -114,8 +114,8 @@
             Etat boiler bridge indisponible
           {% elif netatmo_enfants in indispo %}
             Diagnostic Netatmo Enfants indisponible
-          {% elif netatmo_matthieu in indispo %}
-            Diagnostic Netatmo Matthieu indisponible
+          {% elif netatmo_salle_de_jeux in indispo %}
+            Diagnostic Netatmo Salle de Jeux indisponible
           {% elif autos_raw in indispo %}
             Etat automatisations desactivees indisponible
           {% elif couleurs_indispo | count > 0 %}
@@ -138,10 +138,10 @@
             Station Netatmo Enfants sans mesures, ping repond
           {% elif netatmo_enfants == 'muet_ping_ko' %}
             Station Netatmo Enfants sans mesures, ping muet
-          {% elif netatmo_matthieu == 'muet_ping_ok' %}
-            Station Netatmo Matthieu sans mesures, ping repond
-          {% elif netatmo_matthieu == 'muet_ping_ko' %}
-            Station Netatmo Matthieu sans mesures, ping muet
+          {% elif netatmo_salle_de_jeux == 'muet_ping_ok' %}
+            Station Netatmo Salle de Jeux sans mesures, ping repond
+          {% elif netatmo_salle_de_jeux == 'muet_ping_ko' %}
+            Station Netatmo Salle de Jeux sans mesures, ping muet
           {% elif couleurs_critiques | count > 0 %}
             Derive ressources significative
           {% else %}
@@ -155,7 +155,7 @@
         automatisations_desactivees: "{{ states('sensor.automatisations_desactivees') }}"
         boiler_bridge: "{{ states('sensor.boiler_bridge_sante') }}"
         diagnostic_netatmo_enfants: "{{ states('sensor.diagnostic_netatmo_enfants') }}"
-        diagnostic_netatmo_matthieu: "{{ states('sensor.diagnostic_netatmo_matthieu') }}"
+        diagnostic_netatmo_salle_de_jeux: "{{ states('sensor.diagnostic_netatmo_salle_de_jeux') }}"
         memoire_core: "{{ states('sensor.couleur_memoire_moyenne_10_min_core') }}"
         cpu_core: "{{ states('sensor.couleur_cpu_moyenne_10_min_core') }}"
         memoire_supervisor: "{{ states('sensor.couleur_memoire_moyenne_10_min_supervisor') }}"

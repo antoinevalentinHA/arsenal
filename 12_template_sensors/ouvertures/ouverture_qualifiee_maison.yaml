@@ -9,7 +9,7 @@
 # ✅ Définition "ouverture qualifiée" :
 #   - Ouvertures SANS délai (immédiat) :
 #       • Entrée
-#       • Chambres enfants (Enfants / Matthieu)
+#       • Chambres enfants (Enfants / Salle de Jeux)
 #   - Ouvertures AVEC délai (confirmées uniquement) :
 #       • Séjour (après grâce)
 #       • Chambre parents (après grâce)
@@ -35,7 +35,7 @@
         {% set immediat = [
           'binary_sensor.contact_entree_fenetre',
           'binary_sensor.contact_chambre_enfants',
-          'binary_sensor.contact_chambre_matthieu'
+          'binary_sensor.contact_salle_de_jeux'
         ] %}
 
         {% set confirme = [

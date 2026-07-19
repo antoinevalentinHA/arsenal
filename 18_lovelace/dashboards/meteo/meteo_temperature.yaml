@@ -116,11 +116,11 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.temperature_chambre_matthieu
-                name: Matthieu
+                entity: sensor.temperature_salle_de_jeux
+                name: Salle de Jeux
                 icon: mdi:thermometer
                 triggers_update:
-                  - sensor.couleur_temperature_chambre_matthieu
+                  - sensor.couleur_temperature_salle_de_jeux
 
               - type: custom:button-card
                 template: socle_kpi

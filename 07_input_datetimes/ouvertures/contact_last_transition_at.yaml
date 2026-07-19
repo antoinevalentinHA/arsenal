@@ -57,7 +57,7 @@ contact_last_transition_at_chambre_enfants:
   has_date: true
   has_time: true
 
-contact_last_transition_at_chambre_matthieu:
-  name: Contact Chambre Matthieu Derniere Transition
+contact_last_transition_at_salle_de_jeux:
+  name: Contact Salle de Jeux Derniere Transition
   has_date: true
   has_time: true

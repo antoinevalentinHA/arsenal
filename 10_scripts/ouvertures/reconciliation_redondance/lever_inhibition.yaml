@@ -44,7 +44,7 @@ reconciliation_lever_inhibition:
           - garage
           - sejour_3
           - chambre_enfants
-          - chambre_matthieu
+          - salle_de_jeux
         sequence:
           - variables:
               suffixe: "{{ repeat.item }}"

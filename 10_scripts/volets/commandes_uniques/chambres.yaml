@@ -4,7 +4,7 @@
 # 🎯 RÔLE FONDAMENTAL
 #   Fournir des commandes UNITAIRES, déterministes et
 #   strictement exécutives pour les volets des chambres
-#   enfants (Enfants et Matthieu).
+#   enfants (Enfants et Salle de Jeux).
 #
 # ----------------------------------------------------------
 # 🧱 RESPONSABILITÉ
@@ -76,20 +76,20 @@ fermer_volet_enfants:
       target:
         entity_id: cover.chambre_enfants
 
-ouvrir_volet_matthieu:
-  alias: "Volets - Ouvrir chambre Matthieu"
+ouvrir_volet_salle_de_jeux:
+  alias: "Volets - Ouvrir Salle de Jeux"
   mode: single
   sequence:
     - service: cover.set_cover_position
       target:
-        entity_id: cover.chambre_matthieu
+        entity_id: cover.salle_de_jeux
       data:
         position: 100
 
-fermer_volet_matthieu:
-  alias: "Volets - Fermer chambre Matthieu"
+fermer_volet_salle_de_jeux:
+  alias: "Volets - Fermer Salle de Jeux"
   mode: single
   sequence:
     - service: cover.close_cover
       target:
-        entity_id: cover.chambre_matthieu
+        entity_id: cover.salle_de_jeux

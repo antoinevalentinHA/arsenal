@@ -210,11 +210,11 @@ views:
                     name: Zigbee
 
           # ======================================================
-          # 👶 CHAMBRE MATTHIEU
+          # 👶 SALLE DE JEUX
           # ======================================================
           - type: vertical-stack
             cards:
-              - !include ../../includes/section_headers/chambre_matthieu.yaml
+              - !include ../../includes/section_headers/salle_de_jeux.yaml
 
               - square: false
                 type: grid
@@ -222,12 +222,12 @@ views:
                 cards:
                   - type: custom:button-card
                     template: temperature
-                    entity: sensor.temperature_chambre_matthieu_1
+                    entity: sensor.temperature_salle_de_jeux_1
                     name: Netatmo
 
                   - type: custom:button-card
                     template: temperature
-                    entity: sensor.temperature_chambre_matthieu_2
+                    entity: sensor.temperature_salle_de_jeux_2
                     name: Zigbee
 
               - square: false
@@ -236,12 +236,12 @@ views:
                 cards:
                   - type: custom:button-card
                     template: humidite
-                    entity: sensor.humidite_relative_chambre_matthieu_1
+                    entity: sensor.humidite_relative_salle_de_jeux_1
                     name: Netatmo
 
                   - type: custom:button-card
                     template: humidite
-                    entity: sensor.humidite_relative_chambre_matthieu_2
+                    entity: sensor.humidite_relative_salle_de_jeux_2
                     name: Zigbee
 
           # ======================================================

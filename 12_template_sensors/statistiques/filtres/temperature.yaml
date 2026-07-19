@@ -104,11 +104,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_matthieu
+        - sensor.temperature_salle_de_jeux
         - sensor.periode_meteo
   sensor:
-    - name: "Température Filtre Aube Chambre Matthieu"
-      unique_id: temperature_filtre_aube_chambre_matthieu
+    - name: "Température Filtre Aube Salle de Jeux"
+      unique_id: temperature_filtre_aube_salle_de_jeux
       state: *temperature_filtre_logic
 
 - trigger:
@@ -338,11 +338,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_matthieu
+        - sensor.temperature_salle_de_jeux
         - sensor.periode_meteo
   sensor:
-    - name: "Température Filtre Matin Chambre Matthieu"
-      unique_id: temperature_filtre_matin_chambre_matthieu
+    - name: "Température Filtre Matin Salle de Jeux"
+      unique_id: temperature_filtre_matin_salle_de_jeux
       state: *temperature_filtre_logic
 
 - trigger:
@@ -572,11 +572,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_matthieu
+        - sensor.temperature_salle_de_jeux
         - sensor.periode_meteo
   sensor:
-    - name: "Température Filtre Jour Chambre Matthieu"
-      unique_id: temperature_filtre_jour_chambre_matthieu
+    - name: "Température Filtre Jour Salle de Jeux"
+      unique_id: temperature_filtre_jour_salle_de_jeux
       state: *temperature_filtre_logic
 
 - trigger:
@@ -806,11 +806,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_matthieu
+        - sensor.temperature_salle_de_jeux
         - sensor.periode_meteo
   sensor:
-    - name: "Température Filtre Crepuscule Chambre Matthieu"
-      unique_id: temperature_filtre_crepuscule_chambre_matthieu
+    - name: "Température Filtre Crepuscule Salle de Jeux"
+      unique_id: temperature_filtre_crepuscule_salle_de_jeux
       state: *temperature_filtre_logic
 
 - trigger:
@@ -1040,11 +1040,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_matthieu
+        - sensor.temperature_salle_de_jeux
         - sensor.periode_meteo
   sensor:
-    - name: "Température Filtre Nuit Chambre Matthieu"
-      unique_id: temperature_filtre_nuit_chambre_matthieu
+    - name: "Température Filtre Nuit Salle de Jeux"
+      unique_id: temperature_filtre_nuit_salle_de_jeux
       state: *temperature_filtre_logic
 
 - trigger:

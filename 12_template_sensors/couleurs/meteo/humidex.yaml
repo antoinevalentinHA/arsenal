@@ -78,12 +78,12 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidex_chambre_matthieu
+        - sensor.humidex_salle_de_jeux
     - platform: homeassistant
       event: start
   sensor:
-    - name: "Couleur Humidex Chambre Matthieu"
-      unique_id: couleur_humidex_chambre_matthieu
+    - name: "Couleur Humidex Salle de Jeux"
+      unique_id: couleur_humidex_salle_de_jeux
       state: *couleur_humidex_logic
 
 - trigger:

@@ -369,8 +369,8 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_matthieu_1
-        - sensor.temperature_chambre_matthieu_2
+        - sensor.temperature_salle_de_jeux_1
+        - sensor.temperature_salle_de_jeux_2
 
     - platform: time_pattern
       minutes: "/5"
@@ -379,8 +379,8 @@
       event: start
 
   sensor:
-    - name: "Temperature brute consolidee chambre matthieu"
-      unique_id: temperature_brute_consolidee_chambre_matthieu
+    - name: "Temperature brute consolidee Salle de Jeux"
+      unique_id: temperature_brute_consolidee_salle_de_jeux
       device_class: temperature
       unit_of_measurement: "°C"
       availability: *temperature_brute_consolidee_availability

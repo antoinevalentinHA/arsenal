@@ -69,7 +69,7 @@
 # 📎 PÉRIMÈTRE ACTUEL (besoin démontré / dépendance secteur prouvée)
 #     Toutes les prises à dépendance secteur PROUVÉE (mains, aucun
 #     secours UPS ni Bluetti) :
-#       - switch.prise_chambre_enfants, switch.prise_chambre_matthieu
+#       - switch.prise_chambre_enfants, switch.prise_salle_de_jeux
 #         (Netatmo, reboot automatique déjà gaté panne) ;
 #       - switch.prise_bouclage, switch.prise_deshumidificateur ;
 #       - switch.prise_palier, switch.prise_lampe_sejour,

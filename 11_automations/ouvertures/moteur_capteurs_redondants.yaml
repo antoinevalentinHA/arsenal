@@ -18,7 +18,7 @@
 #   - garage
 #   - sejour_3
 #   - chambre_enfants
-#   - chambre_matthieu
+#   - salle_de_jeux
 #
 # 🧩 SCRIPTS APPELES
 #   - script.reconciliation_traiter_source
@@ -59,8 +59,8 @@
         - binary_sensor.contact_sejour_3_2
         - binary_sensor.contact_chambre_enfants_1
         - binary_sensor.contact_chambre_enfants_2
-        - binary_sensor.contact_chambre_matthieu_1
-        - binary_sensor.contact_chambre_matthieu_2
+        - binary_sensor.contact_salle_de_jeux_1
+        - binary_sensor.contact_salle_de_jeux_2
 
     # ----------------------------------------------------------
     # Expirations de timers de corroboration
@@ -111,7 +111,7 @@
       id: timer_finished
       event_type: timer.finished
       event_data:
-        entity_id: timer.contact_reconciliation_chambre_matthieu
+        entity_id: timer.contact_reconciliation_salle_de_jeux
 
     # ----------------------------------------------------------
     # Signal de stabilité système

@@ -54,7 +54,7 @@ contact_reconciliation_chambre_enfants:
   duration: "00:00:05"
   restore: false
 
-contact_reconciliation_chambre_matthieu:
-  name: Contact Chambre Matthieu Reconciliation
+contact_reconciliation_salle_de_jeux:
+  name: Contact Salle de Jeux Reconciliation
   duration: "00:00:05"
   restore: false

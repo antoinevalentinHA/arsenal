@@ -27,7 +27,7 @@
         - sensor.diagnostic_redondance_contact_chambre_parents_milieu
         - sensor.diagnostic_redondance_contact_chambre_parents_droite
         - sensor.diagnostic_redondance_contact_chambre_enfants
-        - sensor.diagnostic_redondance_contact_chambre_matthieu
+        - sensor.diagnostic_redondance_contact_salle_de_jeux
     - platform: homeassistant
       event: start
 
@@ -82,6 +82,6 @@
       unique_id: couleur_diagnostic_redondance_contact_chambre_enfants
       state: *couleur_diagnostic_redondance_logic
 
-    - name: "Couleur diagnostic redondance Contact Chambre Matthieu"
-      unique_id: couleur_diagnostic_redondance_contact_chambre_matthieu
+    - name: "Couleur diagnostic redondance Contact Salle de Jeux"
+      unique_id: couleur_diagnostic_redondance_contact_salle_de_jeux
       state: *couleur_diagnostic_redondance_logic

@@ -212,15 +212,15 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidite_relative_chambre_matthieu
-        - sensor.humidite_relative_seuil_bas_chambre_matthieu
-        - sensor.humidite_relative_seuil_haut_chambre_matthieu
+        - sensor.humidite_relative_salle_de_jeux
+        - sensor.humidite_relative_seuil_bas_salle_de_jeux
+        - sensor.humidite_relative_seuil_haut_salle_de_jeux
         - input_number.humidite_relative_couleur_zone_verte
     - platform: homeassistant
       event: start
   sensor:
-    - name: "Couleur Humidité relative Chambre Matthieu"
-      unique_id: couleur_humidite_relative_chambre_matthieu
+    - name: "Couleur Humidité relative Salle de Jeux"
+      unique_id: couleur_humidite_relative_salle_de_jeux
       state: *couleur_humidite_relative_logic
 
 - trigger:

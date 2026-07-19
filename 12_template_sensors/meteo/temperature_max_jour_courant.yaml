@@ -70,7 +70,7 @@
         - input_number.temperature_max_jour_courant_sejour
         - input_number.temperature_max_jour_courant_palier
         - input_number.temperature_max_jour_courant_chambre_enfants
-        - input_number.temperature_max_jour_courant_chambre_matthieu
+        - input_number.temperature_max_jour_courant_salle_de_jeux
         - input_number.temperature_max_jour_courant_chambre_parents
         - input_number.temperature_max_jour_courant_petite_maison
         - input_number.temperature_max_jour_courant_sdb_parents
@@ -136,8 +136,8 @@
       availability: *avail_max_courant
       state: *logic_max_courant
 
-    - name: "Température max jour courant Chambre Matthieu"
-      unique_id: temperature_max_jour_courant_chambre_matthieu
+    - name: "Température max jour courant Salle de Jeux"
+      unique_id: temperature_max_jour_courant_salle_de_jeux
       unit_of_measurement: "°C"
       device_class: temperature
       state_class: measurement

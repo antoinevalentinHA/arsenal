@@ -31,7 +31,7 @@
           {% if is_state('binary_sensor.contact_chambre_enfants','on') %}
             {% set ns.n = ns.n + 1 %}
           {% endif %}
-          {% if is_state('binary_sensor.contact_chambre_matthieu','on') %}
+          {% if is_state('binary_sensor.contact_salle_de_jeux','on') %}
             {% set ns.n = ns.n + 1 %}
           {% endif %}
           {{ ns.n }}
@@ -47,8 +47,8 @@
             {% if is_state('binary_sensor.contact_chambre_enfants','on') %}
               {% set ns.lst = ns.lst + ['cover.chambre_enfants'] %}
             {% endif %}
-            {% if is_state('binary_sensor.contact_chambre_matthieu','on') %}
-              {% set ns.lst = ns.lst + ['cover.chambre_matthieu'] %}
+            {% if is_state('binary_sensor.contact_salle_de_jeux','on') %}
+              {% set ns.lst = ns.lst + ['cover.salle_de_jeux'] %}
             {% endif %}
             {{ ns.lst }}
           {% else %}

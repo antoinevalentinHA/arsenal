@@ -32,7 +32,7 @@
 # 🧩 Capteurs / Zones concernées :
 #   ▪️ Résidentiel :
 #      - Chambre Enfants  
-#      - Chambre Matthieu  
+#      - Salle de Jeux  
 #      - Chambre Parents  
 #      - Entrée  
 #      - Séjour  
@@ -117,8 +117,8 @@
       state: *humidite_absolue_seuil_haut_logic
 
 - sensor:
-    - name: "Humidité Absolue Seuil Haut Chambre Matthieu"
-      unique_id: humidite_absolue_seuil_haut_chambre_matthieu
+    - name: "Humidité Absolue Seuil Haut Salle de Jeux"
+      unique_id: humidite_absolue_seuil_haut_salle_de_jeux
       state: *humidite_absolue_seuil_haut_logic
 
 - sensor:

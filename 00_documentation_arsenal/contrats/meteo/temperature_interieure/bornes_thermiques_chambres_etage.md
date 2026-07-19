@@ -38,7 +38,7 @@ L'**ensemble des chambres de l'étage** est composé **exactement** des deux fa�
 
 Sont **explicitement exclus** du calcul, présents ou futurs :
 
-- la **Salle de Jeux** (ex-Chambre Matthieu — `sensor.temperature_chambre_matthieu`, future `sensor.temperature_salle_de_jeux`) : pièce **sans usage sommeil**, **retirée** du périmètre par **C32/A2** — elle ne pilote **pas** le besoin de chauffe des chambres ;
+- la **Salle de Jeux** (ex-Chambre Matthieu — `sensor.temperature_salle_de_jeux`) : pièce **sans usage sommeil**, **retirée** du périmètre par **C32/A2** — elle ne pilote **pas** le besoin de chauffe des chambres ;
 - le séjour (`sensor.temperature_sejour`) ;
 - l'entrée (`sensor.temperature_entree`) ;
 - la petite maison (`sensor.temperature_petite_maison`) ;
@@ -208,7 +208,7 @@ Ces éléments relèvent du **contrat de restitution** (à venir) ou des **contr
 
 *(Convention d'identifiant : `INV-BTE-*` — Bornes Thermiques Étage ; alignée sur les contrats de production météo à identifiants `INV-*`.)*
 
-- **INV-BTE-1** — Le périmètre est **exactement** les **deux** chambres de l'étage : **Chambre Enfants** (`chambre_enfants` → `chambre_enfants` au C32/L3) et **Chambre Parents** (`chambre_parents`) ; la **Salle de Jeux** (ex-`chambre_matthieu`) et toute autre façade ne participent pas.
+- **INV-BTE-1** — Le périmètre est **exactement** les **deux** chambres de l'étage : **Chambre Enfants** (`chambre_enfants`, ex-`chambre_arnaud`) et **Chambre Parents** (`chambre_parents`) ; la **Salle de Jeux** (ex-`chambre_matthieu`, désormais `salle_de_jeux`) et toute autre façade ne participent pas.
 - **INV-BTE-2** — Le calcul n'utilise que les **façades exploitables** (valeur numérique) ; les façades non numériques sont exclues.
 - **INV-BTE-3** — Les bornes sont **exploitables dès qu'au moins une** façade du périmètre est exploitable.
 - **INV-BTE-4** — MIN est le **minimum** et MAX le **maximum** des valeurs numériques des façades exploitables.

@@ -104,11 +104,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidite_relative_chambre_matthieu
+        - sensor.humidite_relative_salle_de_jeux
         - sensor.periode_meteo
   sensor:
-    - name: "Humidité Relative Filtre Aube Chambre Matthieu"
-      unique_id: humidite_relative_filtre_aube_chambre_matthieu
+    - name: "Humidité Relative Filtre Aube Salle de Jeux"
+      unique_id: humidite_relative_filtre_aube_salle_de_jeux
       state: *humidite_relative_filtre_logic
 
 - trigger:
@@ -328,11 +328,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidite_relative_chambre_matthieu
+        - sensor.humidite_relative_salle_de_jeux
         - sensor.periode_meteo
   sensor:
-    - name: "Humidité Relative Filtre Matin Chambre Matthieu"
-      unique_id: humidite_relative_filtre_matin_chambre_matthieu
+    - name: "Humidité Relative Filtre Matin Salle de Jeux"
+      unique_id: humidite_relative_filtre_matin_salle_de_jeux
       state: *humidite_relative_filtre_logic
 
 - trigger:
@@ -552,11 +552,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidite_relative_chambre_matthieu
+        - sensor.humidite_relative_salle_de_jeux
         - sensor.periode_meteo
   sensor:
-    - name: "Humidité Relative Filtre Jour Chambre Matthieu"
-      unique_id: humidite_relative_filtre_jour_chambre_matthieu
+    - name: "Humidité Relative Filtre Jour Salle de Jeux"
+      unique_id: humidite_relative_filtre_jour_salle_de_jeux
       state: *humidite_relative_filtre_logic
 
 - trigger:
@@ -776,11 +776,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidite_relative_chambre_matthieu
+        - sensor.humidite_relative_salle_de_jeux
         - sensor.periode_meteo
   sensor:
-    - name: "Humidité Relative Filtre Crepuscule Chambre Matthieu"
-      unique_id: humidite_relative_filtre_crepuscule_chambre_matthieu
+    - name: "Humidité Relative Filtre Crepuscule Salle de Jeux"
+      unique_id: humidite_relative_filtre_crepuscule_salle_de_jeux
       state: *humidite_relative_filtre_logic
 
 - trigger:
@@ -1000,11 +1000,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidite_relative_chambre_matthieu
+        - sensor.humidite_relative_salle_de_jeux
         - sensor.periode_meteo
   sensor:
-    - name: "Humidité Relative Filtre Nuit Chambre Matthieu"
-      unique_id: humidite_relative_filtre_nuit_chambre_matthieu
+    - name: "Humidité Relative Filtre Nuit Salle de Jeux"
+      unique_id: humidite_relative_filtre_nuit_salle_de_jeux
       state: *humidite_relative_filtre_logic
 
 - trigger:

@@ -23,7 +23,7 @@
       state: >
         {% set fenetres = [
           'binary_sensor.contact_chambre_enfants',
-          'binary_sensor.contact_chambre_matthieu',
+          'binary_sensor.contact_salle_de_jeux',
           'binary_sensor.contact_sejour_1',
           'binary_sensor.contact_sejour_2',
           'binary_sensor.contact_sejour_3',
@@ -34,7 +34,7 @@
         ouvertes_entity_ids: >
           {% set fenetres = [
             'binary_sensor.contact_chambre_enfants',
-            'binary_sensor.contact_chambre_matthieu',
+            'binary_sensor.contact_salle_de_jeux',
             'binary_sensor.contact_sejour_1',
             'binary_sensor.contact_sejour_2',
             'binary_sensor.contact_sejour_3',

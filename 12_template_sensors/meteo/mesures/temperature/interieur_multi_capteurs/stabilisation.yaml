@@ -227,15 +227,15 @@
 
 - trigger:
     - platform: state
-      entity_id: sensor.temperature_brute_consolidee_chambre_matthieu
+      entity_id: sensor.temperature_brute_consolidee_salle_de_jeux
     - platform: time_pattern
       minutes: "/5"
     - platform: homeassistant
       event: start
 
   sensor:
-    - name: "Temperature stabilisee chambre matthieu"
-      unique_id: temperature_stabilisee_chambre_matthieu
+    - name: "Temperature stabilisee Salle de Jeux"
+      unique_id: temperature_stabilisee_salle_de_jeux
       device_class: temperature
       unit_of_measurement: "°C"
       availability: *temperature_stabilisee_availability

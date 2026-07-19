@@ -29,8 +29,8 @@
 sensor.wifi_score_chambre_enfants:
   friendly_name: "Chambre Enfants"
 
-sensor.wifi_score_chambre_matthieu:
-  friendly_name: "Chambre Matthieu"
+sensor.wifi_score_salle_de_jeux:
+  friendly_name: "Salle de Jeux"
 
 sensor.wifi_score_bobst_102:
   friendly_name: "Bobst 102"

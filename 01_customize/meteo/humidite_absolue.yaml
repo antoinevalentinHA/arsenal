@@ -42,8 +42,8 @@ sensor.humidite_absolue_chambre_enfants:
   friendly_name: "Humidité absolue Chambre Enfants"
   icon: mdi:water
 
-sensor.humidite_absolue_chambre_matthieu:
-  friendly_name: "Humidité absolue Chambre Matthieu"
+sensor.humidite_absolue_salle_de_jeux:
+  friendly_name: "Humidité absolue Salle de Jeux"
   icon: mdi:water
 
 sensor.humidite_absolue_chambre_parents:

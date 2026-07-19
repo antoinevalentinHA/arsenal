@@ -233,15 +233,15 @@
 
 - trigger:
     - platform: state
-      entity_id: sensor.humidite_relative_brute_consolidee_chambre_matthieu
+      entity_id: sensor.humidite_relative_brute_consolidee_salle_de_jeux
     - platform: time_pattern
       minutes: "/5"
     - platform: homeassistant
       event: start
 
   sensor:
-    - name: "Humidite relative stabilisee chambre matthieu"
-      unique_id: humidite_relative_stabilisee_chambre_matthieu
+    - name: "Humidite relative stabilisee Salle de Jeux"
+      unique_id: humidite_relative_stabilisee_salle_de_jeux
       unit_of_measurement: "%"
       device_class: humidity
       state: *humidite_stabilisee_state

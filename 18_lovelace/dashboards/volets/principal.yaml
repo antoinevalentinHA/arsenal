@@ -139,7 +139,7 @@ views:
 
               - type: custom:button-card
                 template: sub_section_header
-                name: 🛏️ Matthieu
+                name: 🛏️ Salle de Jeux
 
           - type: grid
             columns: 2
@@ -163,13 +163,13 @@ views:
                   - type: custom:button-card
                     template: shutter_open
                     variables:
-                      service: script.ouvrir_volet_matthieu
-                      confirm: Confirmez-vous l’ouverture du volet de la chambre de Matthieu ?
+                      service: script.ouvrir_volet_salle_de_jeux
+                      confirm: Confirmez-vous l’ouverture du volet de la chambre de Salle de Jeux ?
                   - type: custom:button-card
                     template: shutter_close
                     variables:
-                      service: script.fermer_volet_matthieu
-                      confirm: Confirmez-vous la fermeture du volet de la chambre de Matthieu ?
+                      service: script.fermer_volet_salle_de_jeux
+                      confirm: Confirmez-vous la fermeture du volet de la chambre de Salle de Jeux ?
 
           - type: custom:button-card
             template: sub_section_header

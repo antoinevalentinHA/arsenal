@@ -53,7 +53,7 @@
     - platform: state
       entity_id:
         - binary_sensor.contact_chambre_enfants
-        - binary_sensor.contact_chambre_matthieu
+        - binary_sensor.contact_salle_de_jeux
         - binary_sensor.contact_chambre_parents
         - binary_sensor.contact_sejour
         - binary_sensor.contact_entree_fenetre

@@ -64,14 +64,14 @@
 
 # ==========================================================
 # 🧠 ARSENAL — AUTOMATION :
-#     Humidite relative — Mise a jour last_valid_ts chambre matthieu
+#     Humidite relative — Mise a jour last_valid_ts Salle de Jeux
 #
 #  ID : 10160000000015
 # ----------------------------------------------------------
 #  🎯 ROLE
 #
 #     Maintenir a jour le helper technique :
-#       input_datetime.humidite_relative_last_valid_ts_chambre_matthieu
+#       input_datetime.humidite_relative_last_valid_ts_salle_de_jeux
 #
 #     Ce helper porte le timestamp de derniere evaluation valide
 #     de la brute consolidee de la zone.
@@ -95,13 +95,13 @@
 #       - dans la plage [10 ; 100]
 # ==========================================================
 
-- alias: "Météo — HR last_valid_ts chambre matthieu"
+- alias: "Météo — HR last_valid_ts Salle de Jeux"
   id: "10160000000015"
   mode: single
 
   trigger:
     - platform: state
-      entity_id: sensor.humidite_relative_brute_consolidee_chambre_matthieu
+      entity_id: sensor.humidite_relative_brute_consolidee_salle_de_jeux
 
     - platform: time_pattern
       minutes: "/5"
@@ -112,7 +112,7 @@
   condition:
     - condition: template
       value_template: >
-        {% set brute_raw = states('sensor.humidite_relative_brute_consolidee_chambre_matthieu') %}
+        {% set brute_raw = states('sensor.humidite_relative_brute_consolidee_salle_de_jeux') %}
         {% set brute = brute_raw | float(none) %}
         {{ brute_raw not in ['unknown','unavailable','none']
            and brute is not none
@@ -121,7 +121,7 @@
   action:
     - service: input_datetime.set_datetime
       target:
-        entity_id: input_datetime.humidite_relative_last_valid_ts_chambre_matthieu
+        entity_id: input_datetime.humidite_relative_last_valid_ts_salle_de_jeux
       data:
         datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
 

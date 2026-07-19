@@ -58,12 +58,12 @@ sensor.contact_chambre_enfants_2_linkquality:
   friendly_name: "Fenêtre Enfants 2"
   icon: mdi:window-closed
 
-sensor.contact_chambre_matthieu_1_linkquality:
-  friendly_name: "Fenêtre Matthieu"
+sensor.contact_salle_de_jeux_1_linkquality:
+  friendly_name: "Fenêtre Salle de Jeux"
   icon: mdi:window-closed
 
-sensor.contact_chambre_matthieu_2_linkquality:
-  friendly_name: "Fenêtre Matthieu 2"
+sensor.contact_salle_de_jeux_2_linkquality:
+  friendly_name: "Fenêtre Salle de Jeux 2"
   icon: mdi:window-closed
 
 sensor.contact_chambre_parents_gauche_1_linkquality:
@@ -186,8 +186,8 @@ sensor.meteo_zigbee_chambre_enfants_linkquality:
   friendly_name: "Capteur Zigbee Enfants"
   icon: mdi:thermometer
 
-sensor.meteo_zigbee_chambre_matthieu_linkquality:
-  friendly_name: "Capteur Zigbee Matthieu"
+sensor.meteo_zigbee_salle_de_jeux_linkquality:
+  friendly_name: "Capteur Zigbee Salle de Jeux"
   icon: mdi:thermometer
 
 sensor.meteo_zigbee_sdb_parents_linkquality:
@@ -222,8 +222,8 @@ sensor.prise_chambre_enfants_linkquality:
   friendly_name: "Prise chambre Enfants"
   icon: mdi:power-socket-fr
 
-sensor.prise_chambre_matthieu_linkquality:
-  friendly_name: "Prise chambre Matthieu"
+sensor.prise_salle_de_jeux_linkquality:
+  friendly_name: "Prise Salle de Jeux"
   icon: mdi:power-socket-fr
 
 sensor.prise_deshumidificateur_linkquality:

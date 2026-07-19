@@ -10,7 +10,7 @@
 
 Ce contrat gouverne le sous-domaine **plateaux thermostatiques stricts** des chambres équipées de vannes thermostatiques (TRV) : la **détection** d'un plateau thermique stable, sa **mémoire persistante**, son **écriture** (automatique et manuelle), son **affichage** et son **verdict visuel de stabilité**.
 
-Pièces couvertes : `chambre_enfants`, `chambre_matthieu`, `chambre_parents`.
+Pièces couvertes : `chambre_enfants`, `salle_de_jeux`, `chambre_parents`.
 
 Hors périmètre : toute décision, autorisation, consigne ou commande de chauffage (gouvernées par les contrats `00`/`30`/`70` et la table canonique `80`).
 
@@ -22,9 +22,9 @@ Le plateau est une **mémoire thermique de diagnostic** : la dernière températ
 
 | Rôle | Entité | Couche runtime |
 |---|---|---|
-| Détection | `sensor.plateau_thermostatique_chambre_{parents,enfants,matthieu}` | `12_template_sensors/chauffage/vannes_thermostatiques/plateaux_stricts.yaml` |
+| Détection | `sensor.plateau_thermostatique_chambre_{parents,enfants}` · `sensor.plateau_thermostatique_salle_de_jeux` | `12_template_sensors/chauffage/vannes_thermostatiques/plateaux_stricts.yaml` |
 | Affichage | `sensor.plateau_thermostatique_piece_affichage` | `12_template_sensors/chauffage/vannes_thermostatiques/affichage_plateau.yaml` |
-| Mémoire | `input_number.plateau_chambre_{enfants,matthieu,parents}` | `03_input_numbers/chauffage/plateau_temperature.yaml` |
+| Mémoire | `input_number.plateau_chambre_{enfants,parents}` · `input_number.plateau_salle_de_jeux` | `03_input_numbers/chauffage/plateau_temperature.yaml` |
 | Écriture auto | automation `Chauffage – Mémorisation plateaux` | `11_automations/chauffage/update_plateaux_thermostatiques.yaml` |
 | Reset (user) | `script.reset_plateau_piece` | `10_scripts/chauffage/reset_plateau.yaml` |
 | Sélecteur pièce | `input_select.adjustment_piece` | (paramétrage) |
@@ -42,7 +42,7 @@ Ces capteurs sont la **seule** entrée de la détection de plateau.
 
 ## 5. Détection du plateau strict
 
-Règle, par pièce (capteurs `plateau_thermostatique_chambre_*`) :
+Règle, par pièce (capteurs `plateau_thermostatique_*`) :
 
 - **Si** `variance_12h < 0.02` **et** `mean_12h > 0` → plateau = `mean_12h` arrondie à 0,1 °C ;
 - **Sinon** → fallback sur la **valeur mémorisée** dans l'`input_number` correspondant ;
@@ -53,7 +53,7 @@ Règle, par pièce (capteurs `plateau_thermostatique_chambre_*`) :
 Trois helpers stockent le dernier plateau strict valide, par pièce :
 
 - `input_number.plateau_chambre_enfants`
-- `input_number.plateau_chambre_matthieu`
+- `input_number.plateau_salle_de_jeux`
 - `input_number.plateau_chambre_parents`
 
 Bornes : `min: 0`, `max: 30`, `step: 0.1`. **Stockage uniquement** — aucun calcul, aucune logique métier, aucun comportement autonome porté par ces helpers.

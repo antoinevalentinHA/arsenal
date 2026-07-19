@@ -27,7 +27,7 @@
       entity_id:
         - sensor.plateau_thermostatique_chambre_parents
         - sensor.plateau_thermostatique_chambre_enfants
-        - sensor.plateau_thermostatique_chambre_matthieu
+        - sensor.plateau_thermostatique_salle_de_jeux
 
   variables:
     mapping:
@@ -39,9 +39,9 @@
         mem: input_number.plateau_chambre_enfants
         var: sensor.temperature_stats_12h_variance_chambre_enfants
 
-      sensor.plateau_thermostatique_chambre_matthieu:
-        mem: input_number.plateau_chambre_matthieu
-        var: sensor.temperature_stats_12h_variance_chambre_matthieu
+      sensor.plateau_thermostatique_salle_de_jeux:
+        mem: input_number.plateau_salle_de_jeux
+        var: sensor.temperature_stats_12h_variance_salle_de_jeux
 
     current_value: "{{ trigger.to_state.state | float(0) }}"
     memory_value: "{{ states( mapping[trigger.entity_id].mem ) | float(0) }}"

@@ -50,11 +50,11 @@ homekit_capteurs:
     - sensor.humidite_relative_sejour_1
     - sensor.air_quality_sejour
     - sensor.temperature_sejour_1
-    - sensor.air_quality_chambre_matthieu
-    - sensor.co2_chambre_matthieu
-    - sensor.humidite_relative_chambre_matthieu_1
-    - sensor.bruit_chambre_matthieu
-    - sensor.temperature_chambre_matthieu_1
+    - sensor.air_quality_salle_de_jeux
+    - sensor.co2_salle_de_jeux
+    - sensor.humidite_relative_salle_de_jeux_1
+    - sensor.bruit_salle_de_jeux
+    - sensor.temperature_salle_de_jeux_1
     - sensor.air_quality_entree
     - sensor.co2_entree
     - sensor.humidite_relative_entree_1

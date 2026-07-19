@@ -5,7 +5,7 @@
 # 🎯 RÔLE
 #     Dériver, en LECTURE SEULE, un VERDICT GLOBAL de stabilité
 #     thermique des vannes thermostatiques, agrégé sur toutes les
-#     pièces (parents / enfants / matthieu). Sert d'AMORCE au hub
+#     pièces (parents / enfants / salle_de_jeux). Sert d'AMORCE au hub
 #     Diagnostics Chauffage : un coup d'œil unique, le détail par
 #     pièce restant sur le sous-dashboard `diagnostics-vannes`.
 #
@@ -27,7 +27,7 @@
 # 🔗 DÉPENDANCES (lectures)
 #     - sensor.temperature_stats_12h_variance_chambre_parents
 #     - sensor.temperature_stats_12h_variance_chambre_enfants
-#     - sensor.temperature_stats_12h_variance_chambre_matthieu
+#     - sensor.temperature_stats_12h_variance_salle_de_jeux
 #       (statistics 12h par pièce ; suffixes = options de
 #        input_select.adjustment_piece)
 #
@@ -46,7 +46,7 @@
       unique_id: vannes_thermostatiques_stabilite_globale
       icon: mdi:radiator
       state: >
-        {% set pieces = ['chambre_parents', 'chambre_enfants', 'chambre_matthieu'] %}
+        {% set pieces = ['chambre_parents', 'chambre_enfants', 'salle_de_jeux'] %}
         {% set ns = namespace(instables=0, surveiller=0, dispo=0) %}
         {% for p in pieces %}
           {% set v = states('sensor.temperature_stats_12h_variance_' ~ p) | float(-1) %}
@@ -72,21 +72,21 @@
         seuils_variance: "à surveiller ≥ 0.02 · instable ≥ 0.05"
         pieces_a_surveiller: >
           {% set out = namespace(l=[]) %}
-          {% for p in ['chambre_parents', 'chambre_enfants', 'chambre_matthieu'] %}
+          {% for p in ['chambre_parents', 'chambre_enfants', 'salle_de_jeux'] %}
             {% set v = states('sensor.temperature_stats_12h_variance_' ~ p) | float(-1) %}
             {% if v >= 0.02 and v < 0.05 %}{% set out.l = out.l + [p] %}{% endif %}
           {% endfor %}
           {{ out.l | join(', ') if out.l else '—' }}
         pieces_instables: >
           {% set out = namespace(l=[]) %}
-          {% for p in ['chambre_parents', 'chambre_enfants', 'chambre_matthieu'] %}
+          {% for p in ['chambre_parents', 'chambre_enfants', 'salle_de_jeux'] %}
             {% set v = states('sensor.temperature_stats_12h_variance_' ~ p) | float(-1) %}
             {% if v >= 0.05 %}{% set out.l = out.l + [p] %}{% endif %}
           {% endfor %}
           {{ out.l | join(', ') if out.l else '—' }}
         pire_variance: >
           {% set out = namespace(m=-1) %}
-          {% for p in ['chambre_parents', 'chambre_enfants', 'chambre_matthieu'] %}
+          {% for p in ['chambre_parents', 'chambre_enfants', 'salle_de_jeux'] %}
             {% set v = states('sensor.temperature_stats_12h_variance_' ~ p) | float(-1) %}
             {% if v > out.m %}{% set out.m = v %}{% endif %}
           {% endfor %}

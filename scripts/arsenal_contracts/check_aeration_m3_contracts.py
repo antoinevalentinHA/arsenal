@@ -25,7 +25,7 @@ DELTAT_SENSORS = [
     "sensor.deltat_entree",
     "sensor.deltat_sejour",
     "sensor.deltat_chambre_enfants",
-    "sensor.deltat_chambre_matthieu",
+    "sensor.deltat_salle_de_jeux",
     "sensor.deltat_chambre_parents",
     "sensor.deltat_palier",
 ]

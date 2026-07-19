@@ -8,7 +8,7 @@
 # ⚙️ Fonctionnement :
 #   - Déclenchement sur variation de l’humidité absolue :
 #       • sensor.humidite_absolue_chambre_enfants  
-#       • sensor.humidite_absolue_chambre_matthieu  
+#       • sensor.humidite_absolue_salle_de_jeux  
 #       • sensor.humidite_absolue_chambre_parents
 #   - Mise à jour également au démarrage de Home Assistant.
 #
@@ -37,7 +37,7 @@
     - platform: state
       entity_id:
         - sensor.humidite_absolue_chambre_enfants
-        - sensor.humidite_absolue_chambre_matthieu
+        - sensor.humidite_absolue_salle_de_jeux
         - sensor.humidite_absolue_chambre_parents
     - platform: homeassistant
       event: start
@@ -49,7 +49,7 @@
       state: >
         {% set sources = [
           states('sensor.humidite_absolue_chambre_enfants') | float(0),
-          states('sensor.humidite_absolue_chambre_matthieu') | float(0),
+          states('sensor.humidite_absolue_salle_de_jeux') | float(0),
           states('sensor.humidite_absolue_chambre_parents') | float(0)
         ] %}
         {% set valides = sources | select('gt', 0) | select('lt', 30) | list %}
@@ -61,12 +61,12 @@
       attributes:
         sources: >
           - sensor.humidite_absolue_chambre_enfants
-          - sensor.humidite_absolue_chambre_matthieu
+          - sensor.humidite_absolue_salle_de_jeux
           - sensor.humidite_absolue_chambre_parents
         nombre_sources_valides: >
           {% set sources = [
             states('sensor.humidite_absolue_chambre_enfants') | float(0),
-            states('sensor.humidite_absolue_chambre_matthieu') | float(0),
+            states('sensor.humidite_absolue_salle_de_jeux') | float(0),
             states('sensor.humidite_absolue_chambre_parents') | float(0)
           ] %}
           {% set valides = sources | select('gt', 0) | select('lt', 30) | list %}

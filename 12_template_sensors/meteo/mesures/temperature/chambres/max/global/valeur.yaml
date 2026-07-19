@@ -5,7 +5,7 @@
 #   Déterminer la **température la plus élevée** parmi les chambres,
 #   en utilisant directement les capteurs consolidés :
 #     • sensor.temperature_chambre_enfants
-#     • sensor.temperature_chambre_matthieu
+#     • sensor.temperature_salle_de_jeux
 #     • sensor.temperature_chambre_parents
 #
 # ⚙️ Fonctionnement :
@@ -29,7 +29,7 @@
     - platform: state
       entity_id:
         - sensor.temperature_chambre_enfants
-        - sensor.temperature_chambre_matthieu
+        - sensor.temperature_salle_de_jeux
         - sensor.temperature_chambre_parents
     - platform: homeassistant
       event: start
@@ -43,13 +43,13 @@
 
       availability: >
         {{ states('sensor.temperature_chambre_enfants') | float(none) is not none
-           or states('sensor.temperature_chambre_matthieu') | float(none) is not none
+           or states('sensor.temperature_salle_de_jeux') | float(none) is not none
            or states('sensor.temperature_chambre_parents') | float(none) is not none }}
 
       state: >
         {% set brut = {
           'Chambre Enfants': states('sensor.temperature_chambre_enfants'),
-          'Chambre Matthieu': states('sensor.temperature_chambre_matthieu'),
+          'Salle de Jeux': states('sensor.temperature_salle_de_jeux'),
           'Chambre Parents': states('sensor.temperature_chambre_parents')
         } %}
 
@@ -63,7 +63,7 @@
         chambre_la_plus_chaude: >
           {% set brut = {
             'Chambre Enfants': states('sensor.temperature_chambre_enfants'),
-            'Chambre Matthieu': states('sensor.temperature_chambre_matthieu'),
+            'Salle de Jeux': states('sensor.temperature_salle_de_jeux'),
             'Chambre Parents': states('sensor.temperature_chambre_parents')
           } %}
           {% set valides = brut.items() | selectattr('1', 'is_number') | list %}
@@ -75,5 +75,5 @@
 
         sources: >
           - sensor.temperature_chambre_enfants
-          - sensor.temperature_chambre_matthieu
+          - sensor.temperature_salle_de_jeux
           - sensor.temperature_chambre_parents

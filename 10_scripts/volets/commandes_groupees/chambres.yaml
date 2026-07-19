@@ -4,7 +4,7 @@
 # 🎯 RÔLE FONDAMENTAL
 #   Fournir des commandes GROUPÉES, strictement exécutives,
 #   pour l’ouverture et la fermeture complètes des volets
-#   des chambres enfants (Enfants & Matthieu).
+#   des chambres enfants (Enfants & Salle de Jeux).
 #
 # ----------------------------------------------------------
 # 🧱 RESPONSABILITÉ
@@ -18,9 +18,9 @@
 #
 #   - Appel exclusif des scripts unitaires :
 #       • ouvrir_volet_enfants
-#       • ouvrir_volet_matthieu
+#       • ouvrir_volet_salle_de_jeux
 #       • fermer_volet_enfants
-#       • fermer_volet_matthieu
+#       • fermer_volet_salle_de_jeux
 #
 #   - Délai volontaire entre chaque commande
 #     pour éviter pertes ou collisions HomeKit.
@@ -65,7 +65,7 @@ ouvrir_volets_enfants:
   sequence:
     - service: script.ouvrir_volet_enfants
     - delay: "00:00:01"
-    - service: script.ouvrir_volet_matthieu
+    - service: script.ouvrir_volet_salle_de_jeux
 
 fermer_volets_enfants:
   alias: "Volets - Fermer chambres"
@@ -73,4 +73,4 @@ fermer_volets_enfants:
   sequence:
     - service: script.fermer_volet_enfants
     - delay: "00:00:01"
-    - service: script.fermer_volet_matthieu
+    - service: script.fermer_volet_salle_de_jeux

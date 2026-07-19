@@ -33,7 +33,7 @@
       entity_id:
         - sensor.couleur_temperature_min_jour_cave
         - sensor.couleur_temperature_min_jour_chambre_enfants
-        - sensor.couleur_temperature_min_jour_chambre_matthieu
+        - sensor.couleur_temperature_min_jour_salle_de_jeux
         - sensor.couleur_temperature_min_jour_chambre_parents
         - sensor.couleur_temperature_min_jour_entree
         - sensor.couleur_temperature_min_jour_garage
@@ -45,7 +45,7 @@
         - sensor.couleur_temperature_min_jour_sejour
         - sensor.couleur_temperature_max_jour_cave
         - sensor.couleur_temperature_max_jour_chambre_enfants
-        - sensor.couleur_temperature_max_jour_chambre_matthieu
+        - sensor.couleur_temperature_max_jour_salle_de_jeux
         - sensor.couleur_temperature_max_jour_chambre_parents
         - sensor.couleur_temperature_max_jour_entree
         - sensor.couleur_temperature_max_jour_garage
@@ -110,8 +110,8 @@
       state: *logic_couleur_minmax
       attributes: *attrs_couleur_minmax
 
-    - name: "Couleur Temperature MinMax Jour Chambre Matthieu"
-      unique_id: couleur_temperature_minmax_jour_chambre_matthieu
+    - name: "Couleur Temperature MinMax Jour Salle de Jeux"
+      unique_id: couleur_temperature_minmax_jour_salle_de_jeux
       state: *logic_couleur_minmax
       attributes: *attrs_couleur_minmax
 

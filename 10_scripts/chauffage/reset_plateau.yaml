@@ -32,7 +32,7 @@
 # 🏠 PIÈCES SUPPORTÉES
 #
 #   - chambre_enfants
-#   - chambre_matthieu
+#   - salle_de_jeux
 #   - chambre_parents
 #
 # ----------------------------------------------------------
@@ -69,11 +69,11 @@ reset_plateau_piece:
               data:
                 value: 0
 
-        - conditions: "{{ piece == 'chambre_matthieu' }}"
+        - conditions: "{{ piece == 'salle_de_jeux' }}"
           sequence:
             - service: input_number.set_value
               target:
-                entity_id: input_number.plateau_chambre_matthieu
+                entity_id: input_number.plateau_salle_de_jeux
               data:
                 value: 0
 

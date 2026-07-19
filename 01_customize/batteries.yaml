@@ -134,12 +134,12 @@ sensor.contact_chambre_enfants_2_battery:
   friendly_name: "Fenêtre Enfants 2"
   icon: mdi:window-closed
 
-sensor.contact_chambre_matthieu_1_battery:
-  friendly_name: "Fenêtre Matthieu 1"
+sensor.contact_salle_de_jeux_1_battery:
+  friendly_name: "Fenêtre Salle de Jeux 1"
   icon: mdi:window-closed
 
-sensor.contact_chambre_matthieu_2_battery:
-  friendly_name: "Fenêtre Matthieu 2"
+sensor.contact_salle_de_jeux_2_battery:
+  friendly_name: "Fenêtre Salle de Jeux 2"
   icon: mdi:window-closed
 
 ############################################################
@@ -202,8 +202,8 @@ sensor.meteo_zigbee_chambre_enfants_battery:
   friendly_name: "Capteur Zigbee Enfants"
   icon: mdi:thermometer
 
-sensor.meteo_zigbee_chambre_matthieu_battery:
-  friendly_name: "Capteur Zigbee Matthieu"
+sensor.meteo_zigbee_salle_de_jeux_battery:
+  friendly_name: "Capteur Zigbee Salle de Jeux"
   icon: mdi:thermometer
 
 sensor.meteo_zigbee_sdb_parents_battery:

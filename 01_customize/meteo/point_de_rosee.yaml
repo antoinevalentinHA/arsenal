@@ -42,8 +42,8 @@ sensor.point_de_rosee_chambre_enfants:
   friendly_name: "Point de rosée Chambre Enfants"
   icon: mdi:weather-fog
 
-sensor.point_de_rosee_chambre_matthieu:
-  friendly_name: "Point de rosée Chambre Matthieu"
+sensor.point_de_rosee_salle_de_jeux:
+  friendly_name: "Point de rosée Salle de Jeux"
   icon: mdi:weather-fog
 
 sensor.point_de_rosee_chambre_parents:

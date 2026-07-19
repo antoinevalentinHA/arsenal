@@ -83,12 +83,12 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.co2_chambre_matthieu
+        - sensor.co2_salle_de_jeux
     - platform: homeassistant
       event: start
   sensor:
-    - name: "Couleur CO2 Chambre Matthieu"
-      unique_id: couleur_co2_chambre_matthieu
+    - name: "Couleur CO2 Salle de Jeux"
+      unique_id: couleur_co2_salle_de_jeux
       availability: *couleur_co2_availability
       state: *couleur_co2_logic
 

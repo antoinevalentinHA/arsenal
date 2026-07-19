@@ -50,7 +50,7 @@ DOCUMENTATION_DIR = ROOT / "00_documentation_arsenal"
 # ---------------------------------------------------------------------------
 UNIQUE_IDS = (
     "diagnostic_netatmo_enfants",
-    "diagnostic_netatmo_matthieu",
+    "diagnostic_netatmo_salle_de_jeux",
 )
 
 CONTRACT_STATES = ("ok", "muet_ping_ok", "muet_ping_ko")

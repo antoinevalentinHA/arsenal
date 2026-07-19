@@ -12,7 +12,7 @@
 #   - au moins une fenêtre brute Parents est ouverte ET timer parents = active
 #
 # 🚫 Hors périmètre
-#   - Fenêtres enfants (Enfants / Matthieu) : immédiat, donc pas une "tentative"
+#   - Fenêtres enfants (Enfants / Salle de Jeux) : immédiat, donc pas une "tentative"
 #
 # 📍 Entité : binary_sensor.tentative_aeration_en_grace
 # ==========================================================

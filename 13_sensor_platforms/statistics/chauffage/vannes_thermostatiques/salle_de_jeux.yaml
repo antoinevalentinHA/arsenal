@@ -1,10 +1,10 @@
 # ==========================================================
 # 🧠 ARSENAL — STATISTICS SENSOR
-#     Thermique — Stabilité 12h chambre Matthieu
+#     Thermique — Stabilité 12h Salle de Jeux
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #   Exposer la moyenne et la variance glissantes sur 12 h
-#   de la température de la chambre Matthieu, à destination
+#   de la température de la Salle de Jeux, à destination
 #   des couches de diagnostic et d'analyse de stabilité
 #   thermique.
 #
@@ -18,8 +18,8 @@
 #
 # 📋 PARAMÈTRES
 #   state_characteristic :
-#     - mean     (temperature_stats_12h_mean_chambre_matthieu)
-#     - variance (temperature_stats_12h_variance_chambre_matthieu)
+#     - mean     (temperature_stats_12h_mean_salle_de_jeux)
+#     - variance (temperature_stats_12h_variance_salle_de_jeux)
 #   sampling_size        : omis (par défaut HA)
 #   max_age              : 12 h
 #                          justification : fenêtre représentative
@@ -29,7 +29,7 @@
 #   precision            : omis (par défaut HA)
 #
 # 🔗 DÉPENDANCES
-#   Lit : sensor.temperature_chambre_matthieu
+#   Lit : sensor.temperature_salle_de_jeux
 #
 # 🚫 INTERDITS
 #   - Introduire une logique métier
@@ -42,15 +42,15 @@
 # ==========================================================
 
 - platform: statistics
-  name: temperature_stats_12h_mean_chambre_matthieu
-  entity_id: sensor.temperature_chambre_matthieu
+  name: temperature_stats_12h_mean_salle_de_jeux
+  entity_id: sensor.temperature_salle_de_jeux
   state_characteristic: mean
   max_age:
     hours: 12
 
 - platform: statistics
-  name: temperature_stats_12h_variance_chambre_matthieu
-  entity_id: sensor.temperature_chambre_matthieu
+  name: temperature_stats_12h_variance_salle_de_jeux
+  entity_id: sensor.temperature_salle_de_jeux
   state_characteristic: variance
   max_age:
     hours: 12

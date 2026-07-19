@@ -60,11 +60,11 @@
         {{ is_state('binary_sensor.contact_chambre_enfants', 'on') }}
 
     # ------------------------------------------------------
-    #  🪟 Chambre Matthieu
+    #  🪟 Salle de Jeux
     # ------------------------------------------------------
-    - name: "Fenetres ouvertes - Chambre Matthieu"
-      unique_id: fenetres_ouvertes_matthieu
-      default_entity_id: binary_sensor.fenetres_ouvertes_matthieu
+    - name: "Fenetres ouvertes - Salle de Jeux"
+      unique_id: fenetres_ouvertes_salle_de_jeux
+      default_entity_id: binary_sensor.fenetres_ouvertes_salle_de_jeux
       device_class: opening
       state: >
-        {{ is_state('binary_sensor.contact_chambre_matthieu', 'on') }}
+        {{ is_state('binary_sensor.contact_salle_de_jeux', 'on') }}

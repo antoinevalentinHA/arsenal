@@ -66,7 +66,7 @@ T_REF_SNAPSHOTS = [
     "input_number.ref_temp_entree",
     "input_number.ref_temp_sejour",
     "input_number.ref_temp_chambre_enfants",
-    "input_number.ref_temp_chambre_matthieu",
+    "input_number.ref_temp_salle_de_jeux",
     "input_number.ref_temp_chambre_parents",
     "input_number.ref_temp_palier",
     "input_number.chute_temp_reference",

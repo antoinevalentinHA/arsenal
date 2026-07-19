@@ -75,12 +75,12 @@ sensor.temperature_max_jour_courant_chambre_enfants:
   friendly_name: "Chambre Enfants"
   icon: mdi:human-child
 
-sensor.temperature_min_jour_courant_chambre_matthieu:
-  friendly_name: "Chambre Matthieu"
+sensor.temperature_min_jour_courant_salle_de_jeux:
+  friendly_name: "Salle de Jeux"
   icon: mdi:teddy-bear
 
-sensor.temperature_max_jour_courant_chambre_matthieu:
-  friendly_name: "Chambre Matthieu"
+sensor.temperature_max_jour_courant_salle_de_jeux:
+  friendly_name: "Salle de Jeux"
   icon: mdi:teddy-bear
 
 sensor.temperature_min_jour_courant_chambre_parents:

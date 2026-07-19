@@ -68,13 +68,13 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.co2_chambre_matthieu
-                name: Matthieu
+                entity: sensor.co2_salle_de_jeux
+                name: Salle de Jeux
                 icon: mdi:molecule-co2
                 variables:
                   ui_profile: arsenal
                 triggers_update:
-                  - sensor.couleur_co2_chambre_matthieu
+                  - sensor.couleur_co2_salle_de_jeux
 
               - type: custom:button-card
                 template: socle_kpi

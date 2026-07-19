@@ -59,10 +59,10 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.bruit_chambre_matthieu
+        - sensor.bruit_salle_de_jeux
     - platform: homeassistant
       event: start
   sensor:
-    - name: "Couleur Bruit Chambre Matthieu"
-      unique_id: couleur_bruit_chambre_matthieu
+    - name: "Couleur Bruit Salle de Jeux"
+      unique_id: couleur_bruit_salle_de_jeux
       state: *couleur_bruit_logic

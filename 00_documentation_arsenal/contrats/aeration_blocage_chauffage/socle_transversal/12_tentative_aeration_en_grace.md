@@ -19,7 +19,7 @@ Le capteur est `on` si, et seulement si :
 OU
 - (`binary_sensor.contact_chambre_parents` est `on`) ET (le timer Parents de grâce est `active`)
 
-Les fenêtres enfants (Enfants / Matthieu) sont hors périmètre :
+Les fenêtres enfants (Enfants / Salle de Jeux) sont hors périmètre :
 elles déclenchent une aération immédiate et ne constituent pas une "tentative".
 
 ---

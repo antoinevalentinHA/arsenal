@@ -23,7 +23,7 @@
       state: >
         {% set mapping = {
           'binary_sensor.contact_chambre_enfants':'Chambre Enfants',
-          'binary_sensor.contact_chambre_matthieu':'Chambre Matthieu',
+          'binary_sensor.contact_salle_de_jeux':'Salle de Jeux',
           'binary_sensor.contact_sejour_1':'Séjour 1',
           'binary_sensor.contact_sejour_2':'Séjour 2',
           'binary_sensor.contact_sejour_3':'Séjour 3',
@@ -43,7 +43,7 @@
         ouvertes_entity_ids: >
           {% set fenetres = [
             'binary_sensor.contact_chambre_enfants',
-            'binary_sensor.contact_chambre_matthieu',
+            'binary_sensor.contact_salle_de_jeux',
             'binary_sensor.contact_sejour_1',
             'binary_sensor.contact_sejour_2',
             'binary_sensor.contact_sejour_3',

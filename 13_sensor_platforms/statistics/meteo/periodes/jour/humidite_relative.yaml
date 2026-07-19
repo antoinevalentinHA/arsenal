@@ -58,8 +58,8 @@
   sampling_size: &sampling_size_5000 5000
 
 - platform: statistics
-  name: "Humidité relative filtre jour Moyenne Chambre Matthieu"
-  entity_id: sensor.humidite_relative_filtre_jour_chambre_matthieu
+  name: "Humidité relative filtre jour Moyenne Salle de Jeux"
+  entity_id: sensor.humidite_relative_filtre_jour_salle_de_jeux
   state_characteristic: mean
   max_age: *max_age_30d
   sampling_size: *sampling_size_5000

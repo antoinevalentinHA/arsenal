@@ -46,7 +46,7 @@ telles que définies par le contrat Ouvertures :
 
 ### Contacts pièce (déclencheurs immédiats hors grâce)
 - `binary_sensor.contact_chambre_enfants`
-- `binary_sensor.contact_chambre_matthieu`
+- `binary_sensor.contact_salle_de_jeux`
 - `binary_sensor.contact_entree_fenetre`
 
 ### Ouverture qualifiée (frontière aération)

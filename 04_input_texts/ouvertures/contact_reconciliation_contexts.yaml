@@ -55,6 +55,6 @@ contact_reconciliation_context_chambre_enfants:
   name: Contact Chambre Enfants Contexte Reconciliation
   max: 100
 
-contact_reconciliation_context_chambre_matthieu:
-  name: Contact Chambre Matthieu Contexte Reconciliation
+contact_reconciliation_context_salle_de_jeux:
+  name: Contact Salle de Jeux Contexte Reconciliation
   max: 100
