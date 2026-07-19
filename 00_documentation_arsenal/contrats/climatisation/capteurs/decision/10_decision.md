@@ -19,39 +19,57 @@
 ### Nature
 
 Synthèse explicative priorisée.
-L'entité lit un blocage spécifique et l'état réel HVAC de `climate.clim`, puis retourne un état textuel unique.
+L'entité lit un blocage spécifique et l'**état HVAC rapporté** par `climate.clim`, puis retourne un état textuel unique.
 Aucune mémoire, aucune temporisation.
 
 ### Rôle
 
-Indiquer de manière synthétique ce que fait réellement la climatisation à l'instant T pour un usage de survol dashboard.
+Indiquer de manière synthétique **ce que l'intégration rapporte de l'action de la climatisation** à l'instant T, pour un usage de survol dashboard.
+L'entité **ne connaît pas l'état physique de la machine** : elle restitue une **observation rapportée**, jamais une mesure.
 
 ### Dépendances strictes
 
 | Dépendance | Type | Rôle dans la logique |
 |---|---|---|
-| `input_boolean.blocage_clim_poele` | `input_boolean` | Priorité absolue vers `bloquee` si `on` |
-| `climate.clim` | `climate` | Détermine `cool_actif`, `dry_actif`, `heat_actif` ou `arret` |
+| `input_boolean.blocage_clim_poele` | `input_boolean` | Restitue `bloquee` **uniquement en l'absence de mode HVAC actif rapporté** |
+| `climate.clim` | `climate` | **Source observée.** Détermine `cool_actif`, `dry_actif`, `heat_actif` ou `arret` ; son indisponibilité rend l'entité indisponible |
 
 ### Logique
 
 ```text
-SI blocage_clim_poele == on
-  → bloquee
+SI climate.clim ∈ {unknown, unavailable, absent, non exploitable}
+  → INDISPONIBLE (availability = false)
 SINON SI climate.clim == cool
   → cool_actif
 SINON SI climate.clim == dry
   → dry_actif
 SINON SI climate.clim == heat
   → heat_actif
+SINON SI blocage_clim_poele == on
+  → bloquee
 SINON
   → arret
 ```
 
-### Fallback
+**Ordre opposable : mode HVAC actif rapporté > blocage poêle > arrêt.** Un blocage ne
+rend pas faux le fait, observable, que la source rapporte `cool`, `dry` ou `heat`.
 
-Aucun fallback mémoire ni fallback numérique.
-Tout état de `climate.clim` autre que `cool`, `dry` ou `heat` conduit à `arret`, sauf si `blocage_clim_poele` est `on`.
+### Abstention native et fallback
+
+**Aucun fallback mémoire ni fallback numérique. Aucune conversion d'une absence
+d'observation en valeur nominale.**
+
+Lorsque `climate.clim` est `unknown`, `unavailable`, absent ou non exploitable, l'entité
+**s'abstient nativement** (`availability = false`) : elle ne restitue **ni `arret`, ni
+`bloquee`**. Ce capteur porte une **observation rapportée**, non une décision de blocage
+autonome — il ne peut donc affirmer un blocage sur une source qu'il n'observe pas.
+
+Lorsque l'observation est exploitable, tout état de `climate.clim` autre que `cool`,
+`dry` ou `heat` conduit à `arret`, sauf si `blocage_clim_poele` est `on` — auquel cas
+l'entité restitue `bloquee`.
+
+**Vocabulaire fermé, inchangé : `cool_actif`, `dry_actif`, `heat_actif`, `bloquee`,
+`arret`.** L'indisponibilité n'est pas une sixième valeur : c'est une abstention.
 
 ### Position dans l'architecture
 

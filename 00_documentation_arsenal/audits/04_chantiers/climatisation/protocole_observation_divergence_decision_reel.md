@@ -100,7 +100,7 @@ fait sur le filet, distinct de la divergence elle-même.
 
 > **Vide à ce jour.** Aucune occurrence consignée.
 >
-> **C30 n'est pas clôturable tant que cette section reste vide.**
+> **Les axes A3 à A6 de C30 ne sont pas clôturables tant que cette section reste vide.**
 
 | Date/heure | Niveau de preuve | Constat physique | `climate.clim` | `switch.clim_power` | `clim_target_mode` | `action_en_cours` / `raison` | `incoherence_decision_reel` | `execution_echec` | Fraîcheur Airstage | Consommation | Contexte | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -110,7 +110,7 @@ fait sur le filet, distinct de la divergence elle-même.
 
 ## 7. Décision différée
 
-Aucune décision n'est prise avant qu'au moins un relevé de niveau **P1** figure au §6. Les axes A1 à A6
+Aucune décision n'est prise avant qu'au moins un relevé de niveau **P1** figure au §6. Les axes A3 à A6
 du chantier restent ouverts jusque-là, et le **Lot 2 reste non engagé**.
 
 ---

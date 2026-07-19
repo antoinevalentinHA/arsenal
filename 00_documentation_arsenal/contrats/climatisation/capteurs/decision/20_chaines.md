@@ -32,15 +32,15 @@
 
 | Entité | Couche | Condition / rôle |
 |---|---|---|
-| `input_boolean.blocage_clim_poele` | Blocage | priorité absolue vers `bloquee` |
-| `climate.clim` | État réel | mappe vers `cool_actif`, `dry_actif`, `heat_actif` ou `arret` |
+| `input_boolean.blocage_clim_poele` | Blocage | restitue `bloquee` **en l'absence de mode HVAC actif rapporté** |
+| `climate.clim` | **État HVAC rapporté** | source observée ; mappe vers `cool_actif`, `dry_actif`, `heat_actif` ou `arret` |
 | **`sensor.clim_action_en_cours`** | **Explicatif / survol** | **résultat** |
 
 ### Comportement de la chaîne
 
-Le capteur retourne d'abord `bloquee` si le blocage poêle est actif.
-Sinon, il lit l'état réel de `climate.clim`.
-Les modes `cool`, `dry` et `heat` ont chacun une sortie dédiée ; tout autre état retourne `arret`.
+Le capteur **s'abstient nativement** si `climate.clim` est `unknown`, `unavailable`, absent ou non exploitable : il ne restitue alors **ni `arret`, ni `bloquee`**.
+Sinon, il lit l'**état HVAC rapporté** par `climate.clim`. Les modes `cool`, `dry` et `heat` ont chacun une sortie dédiée et **priment sur le blocage poêle**.
+En l'absence de mode actif rapporté, le capteur retourne `bloquee` si le blocage poêle est actif, `arret` sinon.
 
 ---
 
