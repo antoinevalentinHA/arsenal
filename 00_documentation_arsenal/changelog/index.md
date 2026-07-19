@@ -1550,6 +1550,20 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Arrosage (C18) — extension des capteurs d'humidité du sol (3 → 6 points) et retrait du RSSI de l'état de `sensor.rain_bird_pont_sante` (état sur disponibilité/fraîcheur, non-gating), verrou anti-régression dans `check_resilience_integrations_contracts.py`.
 - CI — nouveaux checkers `check_lovelace_no_inline_templating_contracts.py` et `check_prefix_id_contracts.py`, self-tests branchés en workflow, renommage `clim_ventilation_contracts.yml` → `contracts_climatisation_ventilation.yml` ; recompte contrats 291 → 293, checkers 79 → 82, workflows 83 → 87.
 
+---
+
+## 🧠 ARSENAL HA — [v16.4.0](changelogs/v16/v16_4_0.md) — STABLE — 2026-07-19
+**Tags :** ecs, climatisation, chauffage, meteo, volets, alarme, ui, lovelace, ci, checkers, integrite, registres
+
+**Signal net :**
+- ECS (C24) — sécurisation des paramètres : suppression des valeurs fabriquées sur `sensor.ecs_temperature_ballon_securisee` et `sensor.ecs_consigne_chaudiere_securisee` (attribut `provenance`, état `unknown` sans mesure exploitable), garde de fraîcheur en tête de `10_scripts/ecs/cycle.yaml`, test T14 anti-refabrication ; contrats `sensor_ecs_*_securisee.md` ajoutés.
+- Climatisation (C28) — besoin indisponible : `availability` sur `binary_sensor.besoin_clim_{cool,heat}`, trigger `extinction_besoin_indisponible` révoquant l'admissibilité, extinction conservatrice au boot ; retrait des replis `float(...)` sur seuils et franchissements.
+- Chauffage (C26) — agrégats diagnostic `sensor.vannes_thermostatiques_stabilite_globale` et `sensor.diagnostic_chauffage_thermique_synthese`, référence `sensor.seuil_interieur_on_chauffage_applique` ; priorité indisponibilité (gris indispo `0.1`) sur les cartes intention / synthèse / décision.
+- Météo (C27 Lot 2B) — restitution température chambres MIN/MAX : catégories backend `sensor.categorie_thermique_{min,max}_chambres`, abstention des agrégats `temperature_{min,max}_chambres` sans valeur vivante, cartes recâblées sur la catégorie (contrats `bornes_thermiques_*` / `restitution_chambres_etage.md`).
+- Alarme (C23) — restitution `triggered` et indisponibilité : cascade exclusive `INDISPONIBILITÉ > TRIGGERED > NOOP > COHÉRENCE > DIVERGENCE` sur les cartes intention et décision.
+- Volets — préréglages de position (Exception 9) : `shutter_position.yaml` (pilotage `cover.set_cover_position` 100/75/25/0 %), suppression des spécialisations open/stop/close (Bubendorff `supported_features = 7`).
+- UI — deux checkers `check_ui_semantic_colors_contracts.py` (I1, garde d'indisponibilité) et `check_ui_semantic_colors_hierarchy_contracts.py` (I2, anti-masquage) + workflows ; éclatement du dashboard Boiler (`boiler_corps.yaml` + `boiler_{chauffage,ecs}.yaml`) et navigation ECS Maison / Petite maison ; recompte contrats 293 → 297, checkers 82 → 84, workflows 87 → 89.
+
 ==================================================
 FIN INDEX
 ==================================================
