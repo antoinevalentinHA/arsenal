@@ -219,21 +219,25 @@ preuve n'est pas un échec — un maintien non décidé, si.
 
 ---
 
-## 7. L4 — canal probatoire hors ligne
+## 7. L4 — analyses hors ligne
 
-**L4 est un mécanisme existant, éprouvé et outillé.** Cette doctrine le **reconnaît et le
-référence** ; elle **ne le décrit pas** et **ne crée aucune procédure**.
+**L4 s'appuie sur des précédents documentés d'analyse hors ligne de sauvegardes Home
+Assistant.** Les **sauvegardes manuelles produites dans le cadre normal des releases
+Arsenal** constituent la **source durable privilégiée** lorsque leur couverture convient.
+Des **sauvegardes automatiques encore disponibles** peuvent compléter l'analyse de manière
+**opportuniste**. Ces précédents ne constituent **ni une procédure automatisée, ni un canal
+permanent, ni une méthode propriétaire d'`arsenal-runtime`**.
+
+Cette doctrine **référence** ces précédents (§9) ; elle **ne les décrit pas** et **ne crée
+aucune procédure**.
 
 Ce qu'il faut en retenir pour qualifier une preuve :
 
-- des **investigations historiques** ont déjà été menées sur des sauvegardes Home
-  Assistant non chiffrées, avec extraction de la base Recorder et analyse hors ligne en
-  lecture seule (§9) ;
-- **plusieurs sauvegardes peuvent être combinées** pour dépasser la fenêtre de rétention
-  courante — un précédent a produit une couverture continue d'environ cinquante jours ;
-- l'**exécution** de ce canal (méthode, scripts, empreintes, conservation, destruction
-  après usage) est **propriété du dépôt local d'audit runtime** ; le **sens et les
-  verdicts** restent propriété des rapports d'audit Arsenal ;
+- un précédent documenté a **combiné plusieurs sauvegardes** pour couvrir une fenêtre
+  excédant la rétention courante — il établit la **possibilité** d'une telle analyse, non
+  une capacité disponible sur demande ;
+- **aucune sauvegarde ne doit être créée ou renommée pour les besoins d'un chantier** : la
+  production des sauvegardes relève de la gouvernance Arsenal, pas d'un besoin probatoire ;
 - la distinction du §1.1 s'applique **intégralement** à L4 : une sauvegarde restitue les
   `states` **soumis à l'allowlist** et les `events` **présents en base**. Une entité hors
   allowlist est absente de la sauvegarde **comme** de la base courante.

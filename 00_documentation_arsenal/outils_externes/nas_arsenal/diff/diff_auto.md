@@ -154,6 +154,8 @@ utility_meter.yaml
 
 Cette séparation est un invariant : la timeline porte le patrimoine, pas l'état d'exécution.
 
+**Frontière — analyses hors ligne.** L'exclusion des bases SQLite est un invariant de la timeline patrimoniale. L'analyse hors ligne de sauvegardes Home Assistant, dans un cadre d'audit, est un usage distinct : elle ne modifie ni la source unique de la timeline, ni son pipeline, ni l'invariant patrimoine/runtime, et n'est pas alimentée par celui-ci.
+
 ---
 
 ## Fonctionnement incrémental
