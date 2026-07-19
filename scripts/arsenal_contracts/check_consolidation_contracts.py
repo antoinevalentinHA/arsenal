@@ -178,17 +178,15 @@ def test_homeassistant_start_trigger() -> None:
 
 
 # ---------------------------------------------------------------------------
-# T6 — Doctrine d'abstention : {{ 'unknown' }} présent, {{ none }} absent
-#      dans les blocs state (§6)
+# T6 — Doctrine d'abstention NATIVE (§6, chantier C29)
 #
-# Invariant (§6) : les branches d'abstention publient explicitement
-# {{ 'unknown' }}. {{ none }} est interdit dans le bloc state.
-# Test : présence de 'unknown' ET absence de '{{ none }}' dans le fichier.
-# Note : {{ none }} peut apparaître dans les attributs (autorisé) —
-# on ne peut pas distinguer state vs attribut par scan simple.
-# On vérifie uniquement que {{ 'unknown' }} est présent, signe que la
-# doctrine est appliquée. L'absence de {{ none }} dans state est
-# un test candidat (TC-A).
+# Invariant (§6, v1.5) : l'abstention est portée par un bloc `availability`
+# (indisponibilité `unavailable`). L'ancien idiome textuel `{{ 'unknown' }}`
+# en `state` est INTERDIT : sur un capteur numérique il déclenche
+# `template.validators … expected a number`.
+# Test : présence d'au moins un bloc `availability` ET absence de toute
+# émission `{{ 'unknown' }}`. Les gardes `not in ['unknown', …]` ne sont
+# pas des émissions et restent autorisées.
 # ---------------------------------------------------------------------------
 
 def test_abstention_doctrine() -> None:
@@ -198,14 +196,21 @@ def test_abstention_doctrine() -> None:
             f"T6 — Fichier inaccessible : {F_CONSOLIDATION.relative_to(REPO_ROOT)}"
         )
         return
-    has_unknown = bool(re.search(r"\{\{\s*'unknown'\s*\}\}", content))
-    if not has_unknown:
+    emits_unknown = bool(re.search(r"\{\{\s*'unknown'\s*\}\}", content))
+    has_availability = bool(re.search(r"(?m)^\s*availability:", content))
+    if emits_unknown:
         ERRORS.append(
-            f"T6 — Doctrine d'abstention non implémentée : "
-            f"{{ 'unknown' }} absent de {F_CONSOLIDATION.relative_to(REPO_ROOT)} (§6)"
+            f"T6 — Idiome d'abstention obsolète : émission textuelle "
+            f"{{ 'unknown' }} interdite en `state` (§6 abstention native) "
+            f"dans {F_CONSOLIDATION.relative_to(REPO_ROOT)}"
         )
-    else:
-        print("✔ T6 — Doctrine d'abstention {{ 'unknown' }} présente (§6)")
+    if not has_availability:
+        ERRORS.append(
+            f"T6 — Abstention native absente : bloc `availability` requis (§6) "
+            f"dans {F_CONSOLIDATION.relative_to(REPO_ROOT)}"
+        )
+    if not emits_unknown and has_availability:
+        print("✔ T6 — Abstention native (`availability`, sans `{{ 'unknown' }}`) présente (§6)")
 
 
 # ---------------------------------------------------------------------------
@@ -333,7 +338,7 @@ TESTS = [
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    print("Arsenal — Validation contractuelle : Consolidation brute v1.4\n")
+    print("Arsenal — Validation contractuelle : Consolidation brute v1.5\n")
 
     for test_fn in TESTS:
         test_fn()

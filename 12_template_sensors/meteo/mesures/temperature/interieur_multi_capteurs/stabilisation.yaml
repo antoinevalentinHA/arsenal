@@ -10,7 +10,7 @@
 #   - alpha : 0.35
 #   - delta_max : 0.3 °C
 #   - TTL memoire : 1800 s
-#   - Abstention explicite : {{ 'unknown' }}
+#   - Abstention terminale : indisponibilite native (availability)
 #
 # 🧪 OBSERVABILITE
 #   - source_brute
@@ -21,7 +21,7 @@
 #   - delta_max
 #
 # ⚠️ CONTRAINTE HA
-#   Logique recalculee dans chaque bloc (state + attributs)
+#   Logique recalculee dans chaque bloc (availability + state + attributs)
 # ==========================================================
 
 - trigger:
@@ -39,6 +39,39 @@
       unique_id: temperature_stabilisee_chambre_arnaud
       device_class: temperature
       unit_of_measurement: "°C"
+
+      # Indisponibilite NATIVE de l'abstention terminale (idiome C27/C28) :
+      # disponible ssi le state produirait un nombre — brute exploitable OU
+      # memoire vivante. La memoire TTL 1800 s reste donc DISPONIBLE ; seule
+      # l'abstention (ni brute, ni memoire) rend l'entite `unavailable`.
+      availability: &temperature_stabilisee_availability >
+        {% set suffixe = this.entity_id | replace('sensor.temperature_stabilisee_', '') %}
+        {% set src = 'sensor.temperature_brute_consolidee_' ~ suffixe %}
+
+        {% set brute_raw = states(src) %}
+        {% set brute = brute_raw | float(none) %}
+
+        {% set brute_valide =
+          brute_raw not in ['unknown','unavailable','none']
+          and brute is not none
+          and 5 <= brute <= 45
+        %}
+
+        {% set last_raw = this.state %}
+        {% set last_val = last_raw | float(none) %}
+        {% set last_changed_ts = as_timestamp(this.last_changed, none) %}
+        {% set now_ts = as_timestamp(now()) %}
+        {% set age_ok =
+          last_changed_ts is not none
+          and (now_ts - last_changed_ts) <= 1800
+        %}
+        {% set this_exploitable =
+          last_raw not in ['unknown','unavailable','none']
+          and last_val is not none
+          and age_ok
+        %}
+
+        {{ brute_valide or this_exploitable }}
 
       state: &temperature_stabilisee_state >
         {% set suffixe = this.entity_id | replace('sensor.temperature_stabilisee_', '') %}
@@ -88,7 +121,7 @@
           {{ last_val | round(1) }}
 
         {% else %}
-          {{ 'unknown' }}
+          {# abstention terminale : rendu vide -> indisponibilite native (availability) #}
         {% endif %}
 
       attributes:
@@ -205,6 +238,7 @@
       unique_id: temperature_stabilisee_chambre_matthieu
       device_class: temperature
       unit_of_measurement: "°C"
+      availability: *temperature_stabilisee_availability
       state: *temperature_stabilisee_state
       attributes:
         source_brute: *temperature_stabilisee_source_brute
@@ -227,6 +261,7 @@
       unique_id: temperature_stabilisee_chambre_parents
       device_class: temperature
       unit_of_measurement: "°C"
+      availability: *temperature_stabilisee_availability
       state: *temperature_stabilisee_state
       attributes:
         source_brute: *temperature_stabilisee_source_brute
@@ -249,6 +284,7 @@
       unique_id: temperature_stabilisee_sejour
       device_class: temperature
       unit_of_measurement: "°C"
+      availability: *temperature_stabilisee_availability
       state: *temperature_stabilisee_state
       attributes:
         source_brute: *temperature_stabilisee_source_brute
@@ -271,6 +307,7 @@
       unique_id: temperature_stabilisee_entree
       device_class: temperature
       unit_of_measurement: "°C"
+      availability: *temperature_stabilisee_availability
       state: *temperature_stabilisee_state
       attributes:
         source_brute: *temperature_stabilisee_source_brute
@@ -293,6 +330,7 @@
       unique_id: temperature_stabilisee_petite_maison
       device_class: temperature
       unit_of_measurement: "°C"
+      availability: *temperature_stabilisee_availability
       state: *temperature_stabilisee_state
       attributes:
         source_brute: *temperature_stabilisee_source_brute
