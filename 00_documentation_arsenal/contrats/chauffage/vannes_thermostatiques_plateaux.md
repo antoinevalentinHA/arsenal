@@ -10,7 +10,9 @@
 
 Ce contrat gouverne le sous-domaine **plateaux thermostatiques stricts** des chambres équipées de vannes thermostatiques (TRV) : la **détection** d'un plateau thermique stable, sa **mémoire persistante**, son **écriture** (automatique et manuelle), son **affichage** et son **verdict visuel de stabilité**.
 
-Pièces couvertes : `chambre_enfants`, `salle_de_jeux`, `chambre_parents`.
+Pièces couvertes (vannes/plateaux **individuels**) : `chambre_enfants`, `salle_de_jeux`, `chambre_parents`.
+
+> **Verdict collectif de stabilité (C32/A2).** `sensor.vannes_thermostatiques_stabilite_globale` porte sur les **chambres** (Enfants, Parents) uniquement. La **Salle de Jeux** garde sa vanne et son plateau **individuels** (détection, mémoire, affichage, reset par sélecteur), mais — hors logique sommeil — **sort du verdict collectif « chambres »**. Sa stabilité reste consultable par le sélecteur de pièce.
 
 Hors périmètre : toute décision, autorisation, consigne ou commande de chauffage (gouvernées par les contrats `00`/`30`/`70` et la table canonique `80`).
 
