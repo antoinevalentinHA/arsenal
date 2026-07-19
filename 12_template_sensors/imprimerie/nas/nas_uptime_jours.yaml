@@ -39,11 +39,13 @@
     - name: NAS Imprimerie Uptime jours
       unique_id: nas_imprimerie_uptime_jours
       unit_of_measurement: "j"
+
+      # Indisponibilite NATIVE alignee sur la source (nas_mesures.yaml) :
+      # si la source n'est pas numerique, ce derive devient `unavailable`
+      # plutot que d'emettre la chaine `unknown` en `state` d'un capteur
+      # numerique (erreur validateur "expected a number"). Idiome
+      # availability/this de la doctrine C27/C28.
+      availability: >
+        {{ is_number(states('sensor.nas_imprimerie_uptime')) }}
       state: >
-        {% set source = states('sensor.nas_imprimerie_uptime') %}
-        {% if source not in ['unknown', 'unavailable', 'none', ''] %}
-          {% set v = source | float(0) %}
-          {{ (v / 86400) | round(1) }}
-        {% else %}
-          unknown
-        {% endif %}
+        {{ (states('sensor.nas_imprimerie_uptime') | float / 86400) | round(1) }}
