@@ -1,6 +1,6 @@
 # CONTRAT — `sensor.temperature_brute_consolidee_<zone>`
 
-**Version** : 1.4  
+**Version** : 1.5  
 **Domaine** : Température — couche consolidation brute  
 **Statut** : Normatif  
 
@@ -11,6 +11,7 @@
 | Version | Modifications |
 |---|---|
 | 1.0 | Version initiale |
+| 1.5 | §6/§7/§9 (chantier C29) : abstention **native** via `availability` (indisponibilité `unavailable`) ; l'obligation `{{ 'unknown' }}` en `state` est **remplacée** (branches d'abstention à rendu vide) ; ajout de l'ancre `availability` ; alignement doctrine C27/C28 (`restitution_chambres_etage.md §8`). Mémoire TTL 1800 s **inchangée** |
 | 1.4 | §6 : doctrine d'abstention explicite — `{{ 'unknown' }}` obligatoire dans `state` ; `{{ none }}` interdit dans ce bloc |
 | 1.3 | Ajout §9 : duplication Jinja inter-blocs assumée ; factorisation par ancres YAML (state + une ancre par attribut) ; pattern `this.entity_id` avec préfixe `sensor.temperature_brute_consolidee_` |
 | 1.2 | Ajout de `source_unique` dans les valeurs de `mode_resolution` (Cas 2) |
@@ -85,14 +86,20 @@ L'arrondi à 0.1°C s'applique **uniquement sur la valeur publiée en sortie**. 
 
 ### Publication de l'abstention
 
-Les branches d'abstention dans le bloc `state` publient explicitement `{{ 'unknown' }}`. L'absence de sortie et `{{ none }}` sont interdits dans ce bloc : leur comportement en rendu HA est ambigu ou produit la chaîne `"None"` au lieu de l'état `unknown` attendu. Cette règle s'applique au bloc `state` uniquement ; `{{ none }}` reste acceptable dans les attributs diagnostics.
+L'abstention est **native** : elle est portée par un bloc `availability` qui rend l'entité `unavailable` dès qu'aucune valeur numérique ne peut être publiée. Le bloc `state` ne publie **jamais** de chaîne d'abstention.
+
+- **`availability`** : vrai si et seulement si le bloc `state` produirait un nombre — **miroir structurel exact** des branches numériques (source unique, fusion, continuité, mémoire vivante). Faux sur les branches d'abstention (§ Cas 1 et Cas 4), ce qui matérialise l'indisponibilité native.
+- **Interdit dans le bloc `state`** : publier la chaîne littérale `{{ 'unknown' }}` (ou tout autre état textuel). Sur un capteur numérique (`device_class: temperature`), HA journalise `template.validators … expected a number`. Les branches d'abstention du `state` ne produisent **aucune sortie** (rendu vide) ; l'`availability` prime.
+- **Interdit dans le bloc `state`** : `{{ none }}` (produit la chaîne `"None"`). `{{ none }}` reste acceptable dans les attributs diagnostics.
+
+> **Doctrine C27/C28** : indisponibilité **native** via l'idiome `availability`/`this`, **aucun état textuel** (cf. [`restitution_chambres_etage.md §8`](restitution_chambres_etage.md)). La **mémoire TTL 1800 s reste `available`** : tant que `this.state` est exploitable, l'entité republie une valeur numérique — l'abstention n'intervient qu'à l'expiration.
 
 ### Cas couverts (ordre d'évaluation strict)
 
 #### Cas 1 — Aucune source valide
 
 1. Si `this.state` est exploitable (cf. §5) → republier `this.state` arrondi à 0.1°C
-2. Sinon → publier `unknown`
+2. Sinon → **abstention native** : `availability` faux → `unavailable` (le `state` ne produit aucune sortie)
 
 #### Cas 2 — Une seule source valide
 
@@ -106,14 +113,14 @@ Fusion par **moyenne simple**, arrondie à 0.1°C.
 
 Arbitrage par **proximité de continuité** :
 
-1. Si `this.state` n'est pas exploitable → publier `unknown`
+1. Si `this.state` n'est pas exploitable → **abstention native** (`unavailable`)
 2. Si `this.state` est exploitable :
    - calculer `d1 = abs(v1 - this.state)` et `d2 = abs(v2 - this.state)`
    - si `d1 < d2` → retenir `v1`, arrondi à 0.1°C
    - si `d2 < d1` → retenir `v2`, arrondi à 0.1°C
-   - si `d1 == d2` → publier `unknown`
+   - si `d1 == d2` → **abstention native** (`unavailable`)
 
-> **Doctrine** : l'égalité parfaite des distances et l'absence de continuité exploitable produisent toutes deux `unknown`. Ce contrat refuse de fabriquer une vérité sans fondement. L'abstention est préférable à un tie-break implicite.
+> **Doctrine** : l'égalité parfaite des distances et l'absence de continuité exploitable produisent toutes deux l'**abstention native** (`unavailable`). Ce contrat refuse de fabriquer une vérité sans fondement. L'abstention est préférable à un tie-break implicite.
 
 ---
 
@@ -129,6 +136,8 @@ La couche `sensor.temperature_brute_consolidee_<zone>` expose des attributs diag
 
 **Exemple de lecture** :
 - `source_active = 1` + `mode_resolution = continuite` → la source 1 a gagné par arbitrage de proximité, pas parce qu'elle était seule valide
+
+> **Abstention native (C29)** : lorsque l'entité s'abstient, elle est `unavailable` (bloc `availability` faux). La valeur `abstention` de `source_active` / `mode_resolution` décrit le **mode conceptuel** du cycle ; l'**indisponibilité native est le signal**, elle ne dépend pas d'un état textuel publié.
 
 ---
 
@@ -156,11 +165,13 @@ Le déclenchement sur `state` capture tout changement d'état des sources, **y c
 - Référence temporelle TTL : `this.last_changed` exclusivement
 - Aucune hiérarchie implicite entre `_1` et `_2` dans le code
 - Tout tie-break introduit doit être explicitement nommé et documenté
-- Les attributs diagnostics sont mis à jour à chaque cycle, y compris en cas d'abstention
+- Abstention **native** via `availability` (`unavailable`) : aucune chaîne textuelle (`{{ 'unknown' }}`) ni `{{ none }}` dans le bloc `state` (branches d'abstention à rendu vide). L'`availability` est le miroir structurel exact des branches numériques du `state`
+- Les attributs diagnostics sont recalculés à chaque cycle ; en abstention l'entité est `unavailable` (l'indisponibilité native est le signal)
 
 **Factorisation YAML**
 
 L'implémentation utilise des ancres YAML :
+- une ancre sur le bloc `availability`
 - une ancre sur le bloc `state`
 - une ancre par attribut diagnostic (`source_active`, `ecart_sources`, `mode_resolution`)
 
@@ -174,7 +185,7 @@ La reconstruction des sources s'appuie sur `this.entity_id` dans tous les blocs 
 
 **Duplication Jinja inter-blocs**
 
-La logique de validation et de résolution est recalculée indépendamment dans chaque bloc template (`state` et attributs diagnostics). Cette duplication locale résulte d'une contrainte structurelle de Home Assistant, qui ne permet pas le partage natif de variables entre ces blocs au sein d'un même template sensor déclenché. Elle ne constitue pas une violation du principe DRY : le contrat normatif reste l'unique source de cohérence fonctionnelle.
+La logique de validation et de résolution est recalculée indépendamment dans chaque bloc template (`availability`, `state` et attributs diagnostics). Cette duplication locale résulte d'une contrainte structurelle de Home Assistant, qui ne permet pas le partage natif de variables entre ces blocs au sein d'un même template sensor déclenché. Elle ne constitue pas une violation du principe DRY : le contrat normatif reste l'unique source de cohérence fonctionnelle.
 
 ---
 
