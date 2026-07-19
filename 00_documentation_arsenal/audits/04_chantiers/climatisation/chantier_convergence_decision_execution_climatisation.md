@@ -7,7 +7,7 @@
 | **Statut** | **Ouvert — diagnostic causal NON établi.** Une occurrence réelle a été observée le 2026-07-19 ; sa cause n'est pas démontrée et sa reconstitution exhaustive est **hors périmètre**. **A1 en traitement (contract-first)** ; **A2 requalifié défaut L1, non solvable en l'état, non bloquant** (§4). |
 | **Priorité** | **P1** — impact *fail-open* non borné : la climatisation peut rester physiquement active alors que la décision publiée exige l'arrêt, sans détection, sans notification et sans reprise. |
 | **Ouvert le** | 2026-07-19. |
-| **Prochain jalon** | **Lot runtime/UI/checker d'A1**, après merge du présent lot contractuel. |
+| **Prochain jalon** | **A1 : lot contractuel mergé (#443), lot runtime/UI/checker en cours.** Ensuite : axes A3 à A6, sur occurrence naturelle. |
 | **Registre** | Chantier **C30** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C30 **ne vaut ni validation d'un diagnostic causal complet,
@@ -192,19 +192,27 @@ Objectif unique : **faire produire une preuve exploitable par une prochaine occu
 > **contract-first**, puis par un lot runtime/UI/checker. Le protocole apparié conserve sa valeur pour
 > les autres axes.
 
-#### Lot A1 — contract-first *(en cours)*
+#### Lot A1 — contract-first *(✅ mergé — #443)*
 
 Alignement des contrats propriétaires : abstention native, ordre `cool/dry/heat > bloquee > arret`,
 correction de la contradiction interne pseudo-code ↔ comportement, borne de la tolérance de divergence,
-terminologie « état HVAC **rapporté** ».
+terminologie « état HVAC **rapporté** », verrous de clôture requalifiés par axe.
 
-#### Lot A1 — runtime / UI / checker *(non engagé — après merge du contrat)*
+#### Lot A1 — runtime / UI / checker *(en cours)*
 
-Périmètre strictement borné : `availability:` dans `action_en_cours.yaml` · rendu explicite
-« Indisponible » dans `carte_clim_decision.yaml` · **vérification sans modification attendue** de
-`carte_clim_etat.yaml`, dont la branche `UNAV` est déjà écrite et aujourd'hui inatteignable · extension
-**minimale** du checker (présence de l'`availability`, cinq états, ordre sémantique).
-**Aucun sixième état, aucun `recorder.yaml`, aucune refonte du checker.**
+- `action_en_cours.yaml` — bloc `availability:` observant `climate.clim` ; l'entité s'abstient sur
+  `unknown`/`unavailable`/entité absente. **Cascade nominale et vocabulaire inchangés.**
+- `carte_clim_decision.yaml` — rendu explicite « Indisponible » ; ni code brut, ni repli silencieux.
+- `carte_clim_etat.yaml` — **vérifié conforme, non modifié** : sa branche `UNAV` restitue déjà
+  « Indisponible » et le gris d'indisponibilité `rgba(158,158,158,0.1)`. Elle était **structurellement
+  inatteignable** ; l'abstention native la rend atteignable.
+- `check_climatisation_admissibilite_contracts.py` — extension **minimale** de
+  `test_clim_action_en_cours_survol_fige` : présence de l'`availability`, couverture de
+  `unknown`/`unavailable`, observation de `climate.clim`, **ordre sémantique** mode actif > blocage.
+  **Deux mutations tuées** (suppression de l'`availability` ; blocage placé avant les modes actifs).
+
+**Aucun sixième état, aucun `recorder.yaml`, aucun nouvel observable, aucune refonte du checker,
+aucun changement du régime nominal.**
 
 ### Lot 2 — Architecture *(non engagé)*
 

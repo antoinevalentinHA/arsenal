@@ -2,14 +2,19 @@
 # 🧠 TEMPLATE SENSOR — Clim : action en cours
 # ----------------------------------------------------------
 # 💡 Objectif :
-#   Indiquer de manière synthétique ce que fait réellement
-#   la climatisation à l’instant T (survol dashboard).
+#   Indiquer de manière synthétique ce que l’intégration RAPPORTE
+#   de l’action de la climatisation à l’instant T (survol dashboard).
+#   Ce capteur ne connaît pas l’état physique de la machine.
 #
 # 🧱 Principe Arsenal :
 #   - Capteur STRICTEMENT explicatif
-#   - Basé sur l’état réel (HVAC + alimentation)
-#   - Priorité à l’état réel HVAC ; "bloquée" uniquement si le poêle
-#     bloque alors que la clim est à l’arrêt
+#   - Basé sur l’état HVAC RAPPORTÉ par climate.clim (source observée)
+#   - Ordre opposable : mode HVAC actif rapporté > blocage poêle > arrêt
+#     ("bloquée" uniquement en l’absence de mode actif rapporté)
+#   - Abstention native si la source est unknown/unavailable/absente :
+#     ni arret, ni bloquee (aucune valeur nominale fabriquée)
+#   - Vocabulaire fermé à 5 valeurs ; l’indisponibilité est une
+#     abstention, pas un 6e état
 #   - Aucune logique de décision
 #
 # ✅ Usage :
@@ -20,6 +25,12 @@
     - name: "Clim action en cours"
       unique_id: clim_action_en_cours
       icon: mdi:air-conditioner
+      # Abstention native (contrat capteurs/decision/10_decision.md) :
+      # la source observée est climate.clim. Si elle est unknown, unavailable
+      # ou absente, l'entité s'abstient — elle ne restitue ni arret, ni bloquee.
+      # Aucune conversion d'une absence d'observation en valeur nominale.
+      availability: >
+        {{ states('climate.clim') not in ['unknown', 'unavailable'] }}
       state: >
         {% if is_state('climate.clim', 'cool') %}
           cool_actif
