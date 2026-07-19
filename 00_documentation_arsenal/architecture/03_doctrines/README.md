@@ -34,6 +34,7 @@
 | [gestion_du_temps.md](./gestion_du_temps.md) | Doctrine officielle gestion du temps (interdits, autorisé, sobriété) |
 | [git.md](./git.md) | Frontière patrimoine / runtime |
 | [restauration_etat_helpers.md](./restauration_etat_helpers.md) | Restauration d'état des helpers et usage de la clé `initial` — interdits, exceptions, marqueur `initial VOULU` (normatif, écarts connus tracés) |
+| [solvabilite_probatoire.md](./solvabilite_probatoire.md) | Solvabilité probatoire des chantiers — productibilité et conservation des preuves avant tout verrou de clôture (échelle L1–L5, qualification des réserves ; frontières Recorder / L4 / SwitchBot) |
 
 ---
 
