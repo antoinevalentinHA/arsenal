@@ -5,7 +5,6 @@
 #   Identifier **la chambre la plus humide** en s’appuyant sur
 #   les capteurs consolidés (HomeKit + Zigbee fallback) :
 #     • sensor.humidite_relative_chambre_enfants
-#     • sensor.humidite_relative_salle_de_jeux
 #     • sensor.humidite_relative_chambre_parents
 #
 # ⚙️ Fonctionnement :
@@ -27,7 +26,6 @@
     - platform: state
       entity_id:
         - sensor.humidite_relative_chambre_enfants
-        - sensor.humidite_relative_salle_de_jeux
         - sensor.humidite_relative_chambre_parents
     - platform: homeassistant
       event: start
@@ -41,7 +39,6 @@
       state: >
         {% set brut = {
           'Chambre Enfants': states('sensor.humidite_relative_chambre_enfants'),
-          'Salle de Jeux': states('sensor.humidite_relative_salle_de_jeux'),
           'Chambre Parents': states('sensor.humidite_relative_chambre_parents')
         } %}
 
@@ -64,7 +61,6 @@
         chambre_la_plus_humide: >
           {% set brut = {
             'Chambre Enfants': states('sensor.humidite_relative_chambre_enfants'),
-            'Salle de Jeux': states('sensor.humidite_relative_salle_de_jeux'),
             'Chambre Parents': states('sensor.humidite_relative_chambre_parents')
           } %}
 
@@ -85,5 +81,4 @@
 
         sources: >
           - sensor.humidite_relative_chambre_enfants
-          - sensor.humidite_relative_salle_de_jeux
           - sensor.humidite_relative_chambre_parents

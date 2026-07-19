@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Restructuration des pièces enfants suite au déménagement : la chambre d'Arnaud devient la **Chambre Enfants** (partagée), la chambre de Matthieu devient une **Salle de Jeux**, la Chambre Parents est inchangée. Passage de **3 chambres → 2 chambres + 1 salle de jeux** dans toute la logique. Dé-identification des prénoms enfants obtenue **en sous-produit**. |
 | **Domaine** | TRANSVERSE (Météo/température intérieure ↔ Chauffage/vannes thermostatiques ↔ Sommeil/réveils ↔ Volets ↔ Aération ↔ UI Lovelace ↔ Doctrine de nommage ↔ Publication/confidentialité). |
-| **Statut** | **ACTIF — Lot 3b livré (renommage Salle de Jeux).** Lots 0–3a acquis + Lot 3b : `chambre_matthieu → salle_de_jeux` (~166 fichiers ; l'entité **perd le préfixe « chambre »** — ce n'est plus une chambre), **behavior-preserving**. **Les deux renommages de pièce sont faits.** Per-child (`reveils`/`babyphone`/`presence`) **intact** (L5). Décisions A1–A3 **rendues (2026-07-19)**. **⚠️ Migration instance (L6) au déploiement** : recorder/statistics + registre d'entités HA + `friendly_name` Zigbee2MQTT, pour Chambre Enfants **et** Salle de Jeux. |
+| **Statut** | **ACTIF — Lot 4a livré (alignement runtime des agrégats « chambres »).** Lots 0–3b acquis + Lot 4a : la Salle de Jeux **retirée** des agrégats sommeil/besoin — `temperature_min/max_chambres` (besoin de chauffe), `humidex_max_chambres`, `humidite_relative_max_chambres`, garde anti-gel COOL `intensite_besoin_froid`, groupe volets « chambres » — qui calculent désormais sur **2 pièces** (Enfants, Parents), **conformes aux contrats L2/L2b**. La Salle de Jeux **reste** dans les agrégats multi-pièces légitimes (ouvertures, aération, capteurs, statistiques) : elle a bien capteurs/fenêtres. Per-child **intact** (L5). **⚠️ Migration instance (L6) au déploiement** (z2m + registre + recorder). |
 | **Priorité** | **P2** (proposée) — voir §Priorité. |
 | **Ouvert le** | 2026-07-19. |
 | **Preuve de départ** | Besoin propriétaire (déménagement physique **à venir** : enfants regroupés dans l'ex-chambre Arnaud ; ex-chambre Matthieu → salle de jeux) + **inventaire d'impact en lecture seule** consigné §3. Aucun rapport d'audit préalable mergé — l'inventaire est la preuve de départ. |
-| **Prochain jalon** | **L4** — aligner le runtime sur les contrats L2/L2b : retirer la Salle de Jeux des agrégats « chambres » (besoin de chauffe `temperature_min/max_chambres`, humidex/humidité max, garde anti-gel COOL) et statuer sur vannes/plateaux. |
+| **Prochain jalon** | **L4b** — vannes/plateaux : la Salle de Jeux garde-t-elle sa vanne de chauffage (plateau diagnostic individuel, hors agrégat « chambres ») ou sort-elle du chauffage piloté ? (arbitrage propriétaire) — puis **L5** (fusion suivi enfants). |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C32 **consigne les décisions propriétaire déjà rendues**
 > (A1–A3, §Décisions) et l'**inventaire d'impact** (§3). Elle **ne crée aucun contrat, aucun runtime,
@@ -168,7 +168,8 @@ contrôle CI S7 (confidentialité prénoms) **non bloquant**.
 | **L1** | Canon des pièces : `nommage_entites.md` (zones), section headers (réutiliser `chambre_enfants`, créer `salle_de_jeux`) | normatif / définition | L0 |
 | **L2** | Amendement du **périmètre thermique « chambres »** (3→2, Salle de Jeux exclue, A2) : `bornes_thermiques_chambres_etage.md` + `restitution_chambres_etage.md` + `temperature_interieure/README.md` + `tendance_temperature.md`. Contrats chauffage (plateaux) / aération / réveils **voyagent avec leur runtime** (L3/L4/L5) — cf. §Suivi L2 | normatif | L1 |
 | **L3** | Renommage des entités **de pièce** CAT-A/B (`entity_id`+libellé+chemins) : Arnaud→Enfants, Matthieu→Salle de Jeux (customize, statistics, couleurs, mesures, volets/contacts) **+ `02_groups` câblage capteur↔pièce** (couplé au renommage des `entity_id`) | runtime | L2 |
-| **L4** | Logique agrégats CAT-D : Salle de Jeux hors 5 agrégats chambres + besoin de chauffe + volets nuit + seuils/aération | runtime | L2, L3 |
+| **L4a** | Retrait Salle de Jeux des agrégats **sommeil/besoin** (temp min/max chambres, humidex/humidité max, garde anti-gel COOL, groupe volets « chambres ») — **fait**. Reste dans les agrégats multi-pièces (ouvertures, aération, capteurs, statistiques) — elle a capteurs/fenêtres | runtime | L2, L3 |
+| **L4b** | Vannes/plateaux : arbitrage vanne de chauffage Salle de Jeux, puis alignement plateaux (`plateaux_stricts`, `stabilite_globale`, `affichage_plateau`, contrat `vannes_thermostatiques_plateaux`) | runtime | L4a |
 | **L5** | Fusion suivi enfants CAT-C : un jeu « Chambre Enfants » (babyphone/compteurs/réveils/recap/présence) ; suivi sommeil retiré Salle de Jeux | runtime + helpers | L1 |
 | **L6** | Migration d'historique HA (recorder / statistics / LTS) selon A3 | opérationnel (instance) | L3 |
 | **L7** | Documentation **active** (contrats CAT-E impactés) + changelog de release ; historique gelé | descriptif | L2–L5 |
@@ -349,3 +350,34 @@ chambre_enfants` corrigé en `ex-chambre_arnaud`).
 Validation : **~80 checkers de contrats + docs verts (0 échec)**, includes Lovelace/config résolus, YAML
 parsé. **Les deux pièces sont désormais renommées** (Chambre Enfants + Salle de Jeux). **C32 actif ;
 prochain jalon L4 (alignement runtime des agrégats/gardes).**
+
+### Lot 4a — alignement runtime des agrégats « chambres » (terminé, 2026-07-19)
+
+Application runtime de **A2** (et clôture de l'écart contrat↔runtime ouvert en L2/L2b) : la Salle de Jeux
+**sort des agrégats sommeil/besoin**, qui calculent désormais sur **2 pièces** (Chambre Enfants + Chambre
+Parents).
+
+Retraits (façade `salle_de_jeux` retirée de la liste de déclenchement, de la disponibilité, du dict de
+calcul, des attributs et des sources) :
+- `temperature_min_chambres` (`…/chambres/min/valeur.yaml`) — **substrat du besoin de chauffe**, contrat
+  `bornes_thermiques_chambres_etage.md` v1.1 (INV-BTE-1 : exactement 2 façades) ;
+- `temperature_max_chambres` (`…/chambres/max/global/valeur.yaml`) — idem contrat v1.1 ;
+- `humidex_max_chambres` (`…/humidex/chambre_max.yaml`) et `humidite_relative_max_chambres`
+  (`…/humidite_relative/max_chambres.yaml`) — agrégats « chambres » A2 ;
+- garde anti-gel **COOL** `clim_intensite_besoin_froid` (`…/climatisation/ventilation/…`) — retrait de la
+  façade `fm` (définition **et** usages : `facade_ok`, `facades_numeriques`, `cause`), contrat
+  `13_intensite_besoin_froid.md` v1.1 ;
+- groupe volets « chambres » (`…/commandes_groupees/chambres.yaml`) — la Salle de Jeux sort de
+  l'ouverture/fermeture groupée (son volet reste pilotable individuellement).
+
+**La Salle de Jeux reste** dans tous les agrégats **multi-pièces** légitimes (elle a bien capteurs et
+fenêtres) : ouvertures/redondance/fenêtres, aération/delta-T par pièce, consolidation multi-capteurs de sa
+propre température/humidité, statistiques/filtres/seuils, connectivité (LQI/wifi), humidité absolue étage,
+etc. — **non touchés**.
+
+`nom.yaml` (min/max) lisent l'attribut `chambre_la_plus_{froide,chaude}` de l'agrégat, non les façades →
+non impactés. Validation : **~80 checkers + docs verts (0 échec)** (dont `check_ui_runtime_colors` C27,
+`check_climatisation_ventilation` — aucun ne fige l'énumération), YAML parsé.
+
+**Hors périmètre L4a : vannes/plateaux** — la Salle de Jeux garde-t-elle sa vanne de chauffage ? Arbitrage
+propriétaire porté par **L4b**. **C32 actif ; prochain jalon L4b puis L5.**
