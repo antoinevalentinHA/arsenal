@@ -159,33 +159,18 @@ views:
             template: section_header
             name: ⏰ Réveils enfants
 
-          - type: horizontal-stack
-            cards:
-              - type: custom:button-card
-                template: carte_compteur_seuils_variables
-                entity: input_number.reveils_nocturnes_arnaud
-                name: Arnaud
-                icon: mdi:bed
-                variables:
-                  seuil_1: 0
-                  seuil_2: 1
-                  seuil_3: 2
-                  seuil_4: 3
-
-              - type: custom:button-card
-                template: carte_compteur_seuils_variables
-                entity: input_number.reveils_nocturnes_matthieu
-                name: Matthieu
-                icon: mdi:bed
-                variables:
-                  seuil_1: 0
-                  seuil_2: 1
-                  seuil_3: 2
-                  seuil_4: 3
+          - type: custom:button-card
+            template: carte_compteur_seuils_variables
+            entity: input_number.reveils_nocturnes
+            name: Enfants
+            icon: mdi:bed
+            variables:
+              seuil_1: 0
+              seuil_2: 1
+              seuil_3: 2
+              seuil_4: 3
 
           # ======================================================
           # 📝 DÉTAIL HEURES DE RÉVEILS
           # ======================================================
-          - !include ../../includes/cartes/sommeil/reveils_arnaud.yaml
-
-          - !include ../../includes/cartes/sommeil/reveils_matthieu.yaml
+          - !include ../../includes/cartes/sommeil/reveils.yaml

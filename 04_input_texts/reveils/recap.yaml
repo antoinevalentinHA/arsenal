@@ -33,12 +33,7 @@
 #   - Peut être vide sans impact fonctionnel
 # ==========================================================
 
-reveils_arnaud_heures:
-  name: Réveils Arnaud - Heures
-  max: 255
-  mode: text
-
-reveils_matthieu_heures:
-  name: Réveils Matthieu - Heures
+reveils_heures:
+  name: Réveils Enfants - Heures
   max: 255
   mode: text

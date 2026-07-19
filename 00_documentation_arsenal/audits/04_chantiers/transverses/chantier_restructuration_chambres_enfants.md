@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Restructuration des pièces enfants suite au déménagement : la chambre d'Arnaud devient la **Chambre Enfants** (partagée), la chambre de Matthieu devient une **Salle de Jeux**, la Chambre Parents est inchangée. Passage de **3 chambres → 2 chambres + 1 salle de jeux** dans toute la logique. Dé-identification des prénoms enfants obtenue **en sous-produit**. |
 | **Domaine** | TRANSVERSE (Météo/température intérieure ↔ Chauffage/vannes thermostatiques ↔ Sommeil/réveils ↔ Volets ↔ Aération ↔ UI Lovelace ↔ Doctrine de nommage ↔ Publication/confidentialité). |
-| **Statut** | **ACTIF — Lot 5a livré (fusion présence enfants).** Lots 0–4 acquis (A2 entièrement appliqué runtime) + Lot 5a : `input_boolean.presence_arnaud` + `presence_matthieu` → **une seule `input_boolean.presence_enfants`** (arbitrage propriétaire : présence fusionnée) ; `binary_sensor.presence_enfants` et le mode babysitting recâblés sur le booléen unique. **Premiers prénoms per-child dé-identifiés.** Reste L5b (fusion sommeil : babyphone + réveils). **⚠️ Migration instance (L6) au déploiement** (z2m + registre + recorder). |
+| **Statut** | **ACTIF — Lot 5 livré (fusion suivi enfants complète).** Lots 0–4 acquis + L5a (présence → `presence_enfants` unique) + L5b (sommeil : `babyphone`, `reveils_nocturnes`, `reveils_heures` uniques ; 6 automations → 3, IDs arnaud conservés / matthieu retirés ; cartes sommeil ; contrat `reveils.md` v1.1). **Dé-identification runtime TERMINÉE** : plus **aucun** prénom d'enfant dans le runtime ni les contrats actifs (seul l'historique Git subsiste → S7 `--history` / L8). **⚠️ Migration instance (L6) au déploiement** (z2m + registre + recorder). |
 | **Priorité** | **P2** (proposée) — voir §Priorité. |
 | **Ouvert le** | 2026-07-19. |
 | **Preuve de départ** | Besoin propriétaire (déménagement physique **à venir** : enfants regroupés dans l'ex-chambre Arnaud ; ex-chambre Matthieu → salle de jeux) + **inventaire d'impact en lecture seule** consigné §3. Aucun rapport d'audit préalable mergé — l'inventaire est la preuve de départ. |
-| **Prochain jalon** | **L5b** — fusion du suivi **sommeil** : `babyphone_arnaud`+`babyphone_matthieu` → **`babyphone`** unique ; `reveils_nocturnes_*` → `reveils_nocturnes` ; `reveils_*_heures` → `reveils_heures` ; automations fusionnées (IDs conservés), sur `sensor.bruit_chambre_enfants`. |
+| **Prochain jalon** | **L8** — implémenter le contrôle CI **S7** (noms propres nominatifs) dans `audit_publication_git.py` + amender `securite_publication_git.md` v1.4→v1.5, pour **verrouiller** la dé-identification (empêcher tout retour de prénom). Puis L6 (migration instance, au déploiement), L9 (validation), L10 (clôture). |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C32 **consigne les décisions propriétaire déjà rendues**
 > (A1–A3, §Décisions) et l'**inventaire d'impact** (§3). Elle **ne crée aucun contrat, aucun runtime,
@@ -171,7 +171,7 @@ contrôle CI S7 (confidentialité prénoms) **non bloquant**.
 | **L4a** | Retrait Salle de Jeux des agrégats **sommeil/besoin** (temp min/max chambres, humidex/humidité max, garde anti-gel COOL, groupe volets « chambres ») — **fait**. Reste dans les agrégats multi-pièces (ouvertures, aération, capteurs, statistiques) — elle a capteurs/fenêtres | runtime | L2, L3 |
 | **L4b** | Vannes/plateaux : arbitrage vanne de chauffage Salle de Jeux, puis alignement plateaux (`plateaux_stricts`, `stabilite_globale`, `affichage_plateau`, contrat `vannes_thermostatiques_plateaux`) | runtime | L4a |
 | **L5a** | Fusion **présence** : `presence_arnaud`+`presence_matthieu` → `presence_enfants` unique ; babysitting + `binary_sensor.presence_enfants` recâblés — **fait** | runtime + helpers | L3 |
-| **L5b** | Fusion **sommeil** : `babyphone`, `reveils_nocturnes`, `reveils_heures` uniques ; automations fusionnées (IDs conservés) ; suivi sommeil retiré Salle de Jeux ; cartes sommeil | runtime + helpers | L3 |
+| **L5b** | Fusion **sommeil** : `babyphone`, `reveils_nocturnes`, `reveils_heures` uniques ; 6 automations → 3 (IDs conservés) ; cartes sommeil ; contrat `reveils.md` v1.1 — **fait** | runtime + helpers | L3 |
 | **L6** | Migration d'historique HA (recorder / statistics / LTS) selon A3 | opérationnel (instance) | L3 |
 | **L7** | Documentation **active** (contrats CAT-E impactés) + changelog de release ; historique gelé | descriptif | L2–L5 |
 | **L8** | *(parallèle, non bloquant)* Contrôle CI **S7 — noms propres nominatifs** : script `audit_publication_git.py` + amendement contrat `securite_publication_git.md` (v1.4→v1.5) | normatif + CI | L0 |
@@ -416,3 +416,30 @@ Application de A1 (volet présence) : **arbitrage propriétaire** → **une seul
 **Premiers prénoms per-child dé-identifiés.** Aucun `presence_arnaud/matthieu` résiduel. Validation :
 **~80 checkers + docs verts (0 échec)** (dont `check_presence`, `check_babysitting`, `check_input_booleans`,
 `check_automation_ids`). **C32 actif ; prochain jalon L5b (fusion sommeil : babyphone + réveils).**
+
+### Lot 5b — fusion du suivi sommeil (terminé, 2026-07-19)
+
+Application de A1 (volet sommeil) : le suivi passe de **deux jeux par enfant à un jeu unique** « Chambre
+Enfants » (un seul capteur de bruit → distinguer les enfants est physiquement impossible).
+
+- **Helpers fusionnés** : `babyphone_arnaud`/`_matthieu` → **`input_boolean.babyphone`** ;
+  `reveils_nocturnes_arnaud`/`_matthieu` → **`input_number.reveils_nocturnes`** ;
+  `reveils_arnaud_heures`/`_matthieu_heures` → **`input_text.reveils_heures`**.
+- **Automations 6 → 3** (babyphone, compteur, reset), lisant `sensor.bruit_chambre_enfants` : les **IDs
+  arnaud sont conservés** (`…005`/`…001`/`…003`), les **matthieu retirés** (`…006`/`…002`/`…004`) —
+  conforme `check_automation_ids` (AID-005 unicité, aucune réutilisation). Notif babyphone → titre
+  `👶 Enfants`.
+- **Lovelace** : cartes sommeil (compteur + détail heures) fusionnées ; `cartes/sommeil/reveils.yaml`
+  (ex-`reveils_arnaud`), `reveils_matthieu` supprimée, include unique.
+- **Customize** : `input_boolean.babyphone` → « Babyphone » (tout court, ratifié).
+- **Contrats** : `reveils.md` **v1.0 → v1.1** (domaine réécrit « jeu unique Chambre Enfants », entités et
+  invariants alignés) ; `notifications.md` (exemple `👶 Matthieu` → `👶 Enfants`).
+- **`logbook.yaml`** : références d'automations babyphone alignées (`…_arnaud` → `…_enfants`, `…_matthieu`
+  retirée).
+
+**Dé-identification runtime TERMINÉE** : `grep -riE 'arnaud|matthieu'` sur le runtime + contrats actifs ne
+renvoie plus que les mentions **historiques « ex- »** (intentionnelles) des contrats bornes/intensite. Il
+ne subsiste des prénoms que dans l'**historique Git** (S7 `--history` — L8 ; `git filter-repo` = arbitrage
+séparé). Validation : **~80 checkers + docs verts (0 échec)**, includes résolus, YAML parsé.
+
+**C32 actif ; prochain jalon L8 (contrôle CI S7 — verrou anti-retour des prénoms).**

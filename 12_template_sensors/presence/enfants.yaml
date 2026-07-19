@@ -3,7 +3,7 @@
 # ----------------------------------------------------------
 # 💡 Objectif :
 #   Regrouper les présences individuelles des enfants
-#   (Arnaud et Matthieu) dans un capteur unique.
+#   des enfants (Chambre Enfants partagée) dans un capteur unique.
 #
 # ⚙️ Fonctionnement :
 #   - ON  → au moins un enfant est considéré présent

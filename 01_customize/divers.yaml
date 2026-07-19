@@ -86,11 +86,8 @@ input_boolean.auto_lumiere_jardin_soir:
 # 👶 CONFORT / ENFANTS
 ############################################################
 
-input_boolean.babyphone_arnaud:
-  friendly_name: "Babyphone Arnaud"
-
-input_boolean.babyphone_matthieu:
-  friendly_name: "Babyphone Matthieu"
+input_boolean.babyphone:
+  friendly_name: "Babyphone"
 
 ############################################################
 # 🔥♨️ CHAUFFAGE / CLIM — AUTORISATIONS & BLOCAGES

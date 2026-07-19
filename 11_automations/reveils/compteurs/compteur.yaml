@@ -1,11 +1,11 @@
 # ==========================================================
 # 🧠 ARSENAL — AUTOMATION :
-#     Réveils nocturnes – Comptage bruit chambre Matthieu
+#     Réveils nocturnes – Comptage bruit chambre Enfants
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #
 #     Comptabiliser les occurrences de bruit nocturne
-#     dans la chambre de Matthieu lorsque le seuil sonore
+#     dans la chambre des enfants lorsque le seuil sonore
 #     configuré est dépassé.
 #
 #     Chaque occurrence est enregistrée comme un
@@ -21,15 +21,15 @@
 #
 # 📥 ENTRÉES
 #
-#     - sensor.bruit_salle_de_jeux
+#     - sensor.bruit_chambre_enfants
 #     - input_number.seuil_reveil_bruit
 #     - input_datetime.heure_reveil_nuit_debut
 #     - input_datetime.heure_reveil_nuit_fin
 #
 # 📤 SORTIES
 #
-#     - input_number.reveils_nocturnes_matthieu
-#     - input_text.reveils_matthieu_heures
+#     - input_number.reveils_nocturnes
+#     - input_text.reveils_heures
 #
 # 🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
@@ -43,15 +43,15 @@
 #     Arsenal
 # ==========================================================
 
-- id: '10110000000002'
-  alias: "Réveils - Compteur Matthieu"
+- id: '10110000000001'
+  alias: "Réveils - Compteur Enfants"
   mode: single
 
   # 🔔 Trigger : bruit dépassant le seuil
   trigger:
     - platform: template
       value_template: >
-        {{ states('sensor.bruit_salle_de_jeux') | float(0)
+        {{ states('sensor.bruit_chambre_enfants') | float(0)
            > states('input_number.seuil_reveil_bruit') | float(40) }}
 
   # 🎚️ Condition : surveillance active uniquement la nuit
@@ -69,17 +69,17 @@
     # 🔢 Incrément compteur (max 10)
     - service: input_number.set_value
       target:
-        entity_id: input_number.reveils_nocturnes_matthieu
+        entity_id: input_number.reveils_nocturnes
       data:
         value: >
-          {{ [ (states('input_number.reveils_nocturnes_matthieu') | int) + 1, 10 ] | min }}
+          {{ [ (states('input_number.reveils_nocturnes') | int) + 1, 10 ] | min }}
 
-    # 📒 Historique des heures (concaténation propre)
+    # 📒 Historique des heures
     - service: input_text.set_value
       target:
-        entity_id: input_text.reveils_matthieu_heures
+        entity_id: input_text.reveils_heures
       data:
         value: >
-          {% set old = states('input_text.reveils_matthieu_heures') %}
+          {% set old = states('input_text.reveils_heures') %}
           {% set stamp = now().strftime('%H:%M') %}
           {{ old ~ ', ' ~ stamp if old else stamp }}
