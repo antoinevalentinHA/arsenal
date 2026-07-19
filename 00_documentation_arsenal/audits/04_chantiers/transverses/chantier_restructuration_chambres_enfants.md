@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Restructuration des pièces enfants suite au déménagement : la chambre d'Arnaud devient la **Chambre Enfants** (partagée), la chambre de Matthieu devient une **Salle de Jeux**, la Chambre Parents est inchangée. Passage de **3 chambres → 2 chambres + 1 salle de jeux** dans toute la logique. Dé-identification des prénoms enfants obtenue **en sous-produit**. |
 | **Domaine** | TRANSVERSE (Météo/température intérieure ↔ Chauffage/vannes thermostatiques ↔ Sommeil/réveils ↔ Volets ↔ Aération ↔ UI Lovelace ↔ Doctrine de nommage ↔ Publication/confidentialité). |
-| **Statut** | **ACTIF — Lot 1 livré (canon des pièces).** Lot 0 (ouverture) + Lot 1 (doctrine `nommage_entites.md` alignée sur Chambre Enfants / Salle de Jeux ; header `salle_de_jeux` créé ; `chambre_enfants` déjà présent) acquis. Décisions propriétaire A1–A3 **rendues (2026-07-19)**, consignées §Décisions. **Aucun renommage d'entité runtime** à ce stade (relève de L3). |
+| **Statut** | **ACTIF — Lot 2 livré (périmètre thermique amendé).** Lots 0–1 acquis + Lot 2 (contrats du périmètre « chambres » réduits **3→2**, Salle de Jeux **exclue** du besoin de chauffe — A2). Décisions propriétaire A1–A3 **rendues (2026-07-19)**, consignées §Décisions. **Aucun renommage d'`entity_id` ni changement de runtime** à ce stade (relève de L3/L4). |
 | **Priorité** | **P2** (proposée) — voir §Priorité. |
 | **Ouvert le** | 2026-07-19. |
 | **Preuve de départ** | Besoin propriétaire (déménagement physique **à venir** : enfants regroupés dans l'ex-chambre Arnaud ; ex-chambre Matthieu → salle de jeux) + **inventaire d'impact en lecture seule** consigné §3. Aucun rapport d'audit préalable mergé — l'inventaire est la preuve de départ. |
-| **Prochain jalon** | **L2** — amendement contractuel du périmètre « chambres » (contrat C27 `bornes_thermiques_chambres_etage.md`, 3→2 façades). |
+| **Prochain jalon** | **L3** — renommage des entités de pièce (`…_chambre_arnaud → …_chambre_enfants`, `…_chambre_matthieu → …_salle_de_jeux`) : runtime + contrats à références d'entité + checkers (aération, homekit, volets…), avec migration d'historique (L6). |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C32 **consigne les décisions propriétaire déjà rendues**
 > (A1–A3, §Décisions) et l'**inventaire d'impact** (§3). Elle **ne crée aucun contrat, aucun runtime,
@@ -164,7 +164,7 @@ contrôle CI S7 (confidentialité prénoms) **non bloquant**.
 |---|---|---|---|
 | **L0** | Ouverture documentaire (ce dossier + registre + index) + consignation A1–A3 | descriptif | — |
 | **L1** | Canon des pièces : `nommage_entites.md` (zones), section headers (réutiliser `chambre_enfants`, créer `salle_de_jeux`) | normatif / définition | L0 |
-| **L2** | Amendement contractuel du périmètre « chambres » : C27 `bornes_thermiques_chambres_etage.md` (3→2) + contrats chauffage/réveils impactés | normatif | L1 |
+| **L2** | Amendement du **périmètre thermique « chambres »** (3→2, Salle de Jeux exclue, A2) : `bornes_thermiques_chambres_etage.md` + `restitution_chambres_etage.md` + `temperature_interieure/README.md` + `tendance_temperature.md`. Contrats chauffage (plateaux) / aération / réveils **voyagent avec leur runtime** (L3/L4/L5) — cf. §Suivi L2 | normatif | L1 |
 | **L3** | Renommage des entités **de pièce** CAT-A/B (`entity_id`+libellé+chemins) : Arnaud→Enfants, Matthieu→Salle de Jeux (customize, statistics, couleurs, mesures, volets/contacts) **+ `02_groups` câblage capteur↔pièce** (couplé au renommage des `entity_id`) | runtime | L2 |
 | **L4** | Logique agrégats CAT-D : Salle de Jeux hors 5 agrégats chambres + besoin de chauffe + volets nuit + seuils/aération | runtime | L2, L3 |
 | **L5** | Fusion suivi enfants CAT-C : un jeu « Chambre Enfants » (babyphone/compteurs/réveils/recap/présence) ; suivi sommeil retiré Salle de Jeux | runtime + helpers | L1 |
@@ -233,3 +233,39 @@ pendantes. Décision purement documentaire, sans effet sur A1–A3.
 
 **Aucun `entity_id` renommé, aucun agrégat modifié, aucun contrat touché.** `check_lovelace_section_headers`
 + `docs_lint` verts. **C32 actif ; prochain jalon L2 (amendement contractuel C27).**
+
+### Lot 2 — amendement du périmètre thermique « chambres » (terminé, 2026-07-19)
+
+Le **périmètre thermique** de l'agrégat « chambres » passe de **3 à 2 façades** (Chambre Enfants +
+Chambre Parents), la **Salle de Jeux** en étant **exclue** (A2) — un amendement **normatif** du contrat
+C27, **avant** tout changement de runtime (qui reste L4).
+
+Contrats amendés :
+- `bornes_thermiques_chambres_etage.md` **v1.0 → v1.1** : §1, §2 (périmètre 2 façades + Salle de Jeux
+  ajoutée aux exclusions), §4, §7, §8, §9, §12 (INV-BTE-1), §14, §15, §16.
+- `restitution_chambres_etage.md`, `temperature_interieure/README.md`, `meteo/tendance_temperature.md` :
+  mentions « trois chambres » → « deux chambres » alignées.
+
+**`entity_id` conservés en forme historique** dans les contrats (`…_chambre_arnaud` = future Chambre
+Enfants) : le **renommage** est porté par L3, l'**alignement runtime** (retrait de la Salle de Jeux des
+agrégats) par L4. Vérifié : **aucun checker ne fige l'énumération** de `temperature_min_chambres`
+(`check_ui_runtime_colors` contrôle la consommation et l'anti-cross-entity, pas le compte de façades) —
+amender le texte du contrat est donc sûr côté CI.
+
+**Raffinement du mapping contrat → lot** (les ~16 contrats référençant les 3 chambres / prénoms se
+répartissent en trois familles ; seule (a) relève de L2) :
+
+- **(a) Périmètre thermique / besoin de chauffe** → **L2 (fait)** : les 4 contrats ci-dessus.
+- **(b) Références d'`entity_id` par pièce** → **L3** (renommage, avec le runtime) : `homekit_diagnostic.md`,
+  `volets_pluie.md`, `aeration_blocage_chauffage/**` (deltat, snapshots, interfaces), `chauffage/15_capteurs/**`,
+  `chauffage/46_aeration_observation_thermique.md`, `meteo/axe_temperature.md`, `meteo/extrema_jour_courant.md`.
+- **(c) Par enfant** → **L5** (fusion) : `reveils.md`, `notifications.md` (`👶 Matthieu`).
+- **Vannes / plateaux** (`chauffage/vannes_thermostatiques_plateaux.md`) → **L4** : la Salle de Jeux sort
+  des plateaux mais **garde sa vanne/consigne propre** (A2) ; changement co-localisé avec le runtime vannes.
+
+**Sous-décision ouverte, reportée à L4 (mini-arbitrage propriétaire)** : la Salle de Jeux doit-elle aussi
+sortir de la **garde anti-gel COOL** `intensite_besoin_froid` (qui lit les 3 façades chambres) ? A2 n'a
+tranché que le **besoin de chauffe** ; l'axe COOL n'est pas décidé. **Non traité en L2.**
+
+**Aucun `entity_id` renommé, aucun runtime/template/checker touché.** `docs_lint` + checkers docs verts.
+**C32 actif ; prochain jalon L3 (renommage des entités de pièce).**

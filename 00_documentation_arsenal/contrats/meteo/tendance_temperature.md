@@ -65,9 +65,9 @@ réactivité absolue est explicitement secondaire.
 
 | Rôle source | Entité (existante) | Nature |
 |---|---|---|
-| Minimum chambres | `sensor.temperature_min_chambres` | agrégat trigger template (min des 3 chambres) |
+| Minimum chambres | `sensor.temperature_min_chambres` | agrégat trigger template (min des 2 chambres de l'étage — Salle de Jeux exclue, C32/A2) |
 | Moyenne maison | `sensor.temperature_moyenne_maison` | agrégat template (moyenne 8 pièces) |
-| Maximum chambres | `sensor.temperature_max_chambres` | agrégat trigger template (max des 3 chambres) |
+| Maximum chambres | `sensor.temperature_max_chambres` | agrégat trigger template (max des 2 chambres de l'étage — Salle de Jeux exclue, C32/A2) |
 
 Ces trois entités sont des **agrégats déjà qualifiés**. La présente famille les
 consomme **en lecture seule stricte**. Elle ne les modifie pas, ne les renomme

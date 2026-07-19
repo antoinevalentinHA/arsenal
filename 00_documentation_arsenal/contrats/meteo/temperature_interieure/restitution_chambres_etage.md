@@ -53,10 +53,10 @@ Chaque carte qualifie **exclusivement sa propre borne** contre **sa propre front
 Ce contrat **consomme** les bornes définies par
 [`bornes_thermiques_chambres_etage.md`](bornes_thermiques_chambres_etage.md) :
 
-- `sensor.temperature_min_chambres` (MIN des trois chambres de l'étage) ;
-- `sensor.temperature_max_chambres` (MAX des trois chambres de l'étage).
+- `sensor.temperature_min_chambres` (MIN des deux chambres de l'étage) ;
+- `sensor.temperature_max_chambres` (MAX des deux chambres de l'étage).
 
-Il **ne redéfinit pas** leur périmètre (les trois chambres de l'étage), leur calcul, leur mémoire, leur abstention, leur fraîcheur ni leur couverture. Toute question de **production** (dont l'alignement runtime de l'abstention) relève **exclusivement** du contrat de production et n'est **pas** traitée ici.
+Il **ne redéfinit pas** leur périmètre (les deux chambres de l'étage — Chambre Enfants + Chambre Parents, Salle de Jeux exclue par C32/A2), leur calcul, leur mémoire, leur abstention, leur fraîcheur ni leur couverture. Toute question de **production** (dont l'alignement runtime de l'abstention) relève **exclusivement** du contrat de production et n'est **pas** traitée ici.
 
 > **Dépendance normative :** en cas de conflit sur la valeur, la disponibilité ou le périmètre des bornes, **le contrat de production prévaut**.
 
