@@ -2,9 +2,22 @@
 # 🌡️ TEMPLATE TRIGGERED SENSOR — Mode climatisation (local)
 # ----------------------------------------------------------
 # 🎯 Objectif :
-#   Fournir une lecture locale du mode actif de la climatisation
-#   (off / cool / heat / dry / auto), persistante en cas d'arrêt API,
-#   avec icône dynamique compatible Android Auto.
+#   Fournir une lecture locale du mode HVAC RAPPORTÉ par climate.clim
+#   (off / cool / heat / dry / auto / fan_only), avec icône dynamique
+#   compatible Android Auto.
+#
+# 🧱 Doctrine (contrat capteurs/decision/10_decision.md — C30 A6a) :
+#   - Abstention native : si climate.clim est unknown / unavailable /
+#     absent ou non exploitable, l'entité s'abstient (availability false).
+#   - AUCUNE mémoire locale (this.state), AUCUN fallback terminal vers off.
+#     Une observation absente n'est jamais convertie en mode affirmé.
+#   - Vocabulaire nominal inchangé : off, cool, dry, heat, auto, fan_only.
+#     L'indisponibilité est une propriété native, pas une valeur.
+#
+#   ⚠️ Changement de doctrine assumé : l'ancien double repli (this.state,
+#      puis fabrication de off) était contractualisé et le runtime y était
+#      conforme. Il est supprimé volontairement — il présentait une valeur
+#      mémorisée comme une observation actuelle.
 #
 # 📍 Entité : sensor.clim_mode_local
 # ==========================================================
@@ -23,11 +36,19 @@
     - name: "Clim mode (local)"
       unique_id: clim_mode_local
 
+      # Abstention native — source observée : climate.clim.
+      # LISTE BLANCHE stricte des six modes contractuels : unknown,
+      # unavailable, absence, vide, none ET toute valeur inattendue d'une
+      # future version de l'intégration entraînent l'abstention. Aucune
+      # septième valeur ne peut traverser silencieusement le contrat.
+      availability: >
+        {{ states('climate.clim') in ['off', 'cool', 'dry', 'heat', 'auto', 'fan_only'] }}
+
+      # Icône : lecture directe de la source, sans mémoire.
+      # Sous availability false, l'icône n'est pas rendue : aucun mode
+      # n'est affirmé pendant l'indisponibilité.
       icon: >
         {% set mode = states('climate.clim') %}
-        {% if mode in ['unknown','unavailable','none',''] %}
-          {% set mode = this.state %}
-        {% endif %}
 
         {% if mode == 'off' %}
           mdi:power
@@ -46,12 +67,4 @@
         {% endif %}
 
       state: >
-        {% set mode = states('climate.clim') %}
-
-        {% if mode not in ['unknown','unavailable','none',''] %}
-          {{ mode }}
-        {% elif this.state not in ['unknown','unavailable','none',''] %}
-          {{ this.state }}
-        {% else %}
-          off
-        {% endif %}
+        {{ states('climate.clim') }}

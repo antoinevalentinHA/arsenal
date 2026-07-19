@@ -10,12 +10,25 @@
 #     dry  → confort (vert)
 #     heat → alert (rouge)
 #     off  → off (gris)
+#
+#  🧱 Doctrine (contrat capteurs/decision/10_decision.md — C30 A6a) :
+#     Restitution dérivée de sensor.clim_mode_local. Si la source n'est
+#     pas exploitable, ce capteur S'ABSTIENT nativement : il ne fabrique
+#     PAS off. Vocabulaire nominal inchangé (eco / confort / alert / off),
+#     aucune cinquième valeur — l'indisponibilité est une propriété native.
 # ==========================================================
 
 - sensor:
 
     - name: "etat_clim_dashboard"
       unique_id: etat_clim_dashboard
+
+      # Abstention native — source dérivée : sensor.clim_mode_local.
+      # LISTE BLANCHE stricte des six valeurs nominales : toute autre valeur
+      # (sentinelle connue ou inattendue) entraîne l'abstention.
+      availability: >
+        {{ states('sensor.clim_mode_local') in ['off', 'cool', 'dry', 'heat', 'auto', 'fan_only'] }}
+
       state: >
         {% set mode = states('sensor.clim_mode_local') | lower %}
 

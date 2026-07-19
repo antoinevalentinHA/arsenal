@@ -7,7 +7,7 @@
 | **Statut** | **Ouvert — diagnostic causal NON établi.** Une occurrence réelle a été observée le 2026-07-19 ; sa cause n'est pas démontrée et sa reconstitution exhaustive est **hors périmètre**. **A1 en traitement (contract-first)** ; **A2 requalifié défaut L1, non solvable en l'état, non bloquant** (§4). |
 | **Priorité** | **P1** — impact *fail-open* non borné : la climatisation peut rester physiquement active alors que la décision publiée exige l'arrêt, sans détection, sans notification et sans reprise. |
 | **Ouvert le** | 2026-07-19. |
-| **Prochain jalon** | **A6 : arbitrage rendu, lot contract-first en cours ; lot runtime/UI/checker non engagé.** Ensuite : A3 et A4, sur occurrence naturelle. |
+| **Prochain jalon** | **A6 : lot contract-first mergé (#445), lot runtime/UI/checker en cours.** Ensuite : A3 et A4, sur occurrence naturelle. |
 | **Registre** | Chantier **C30** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C30 **ne vaut ni validation d'un diagnostic causal complet,
@@ -272,25 +272,54 @@ terminologie « état HVAC **rapporté** », verrous de clôture requalifiés pa
 **Aucun sixième état, aucun `recorder.yaml`, aucun nouvel observable, aucune refonte du checker,
 aucun changement du régime nominal.**
 
-#### Lot A6 — contract-first *(en cours)*
+#### Lot A6 — contract-first *(✅ mergé — #445)*
 
 Abstention native de `sensor.clim_mode_local` (suppression du double repli, **changement de doctrine
 assumé**), du verdict `binary_sensor.clim_incoherence_decision_reel` et de la restitution dérivée
 `sensor.etat_clim_dashboard` · consignation A6b sans état durable · message de notification neutre.
 
-#### Lot A6 — runtime / UI / checker *(non engagé)*
+#### Lot A6 — runtime / UI / checker *(en cours)*
 
-Périmètre probable : `decision/mode.yaml` · `coherence/incoherence_decision.yaml` ·
-`system/cartes_dashboard_navigation/climatisation.yaml` ·
-`20_statut_metier/carte_clim_synthese.yaml` · `notification_echec_execution.yaml` · checker
-climatisation ciblé.
+- **`decision/mode.yaml`** — `availability` sur l'exploitabilité de `climate.clim` ; **suppression
+  complète** du repli `this.state` (état **et** icône) et du fallback terminal `off` ; état nominal réduit
+  à la lecture directe de la source. Vocabulaire inchangé, aucune septième valeur.
+- **`coherence/incoherence_decision.yaml`** — `availability` exigeant les **trois** opérandes
+  exploitables. Tables nominales, délai anti-bruit 60 s et `device_class` **inchangés**.
+- **`system/cartes_dashboard_navigation/climatisation.yaml`** — `availability` sur `clim_mode_local` ;
+  plus aucun chemin ne convertit l'indisponibilité en `off`. Vocabulaire `eco`/`confort`/`alert`/`off`
+  inchangé.
+- **`20_statut_metier/carte_clim_synthese.yaml`** — libellé **« Indisponible »**, icône neutre
+  `mdi:help-circle-outline` (**jamais le flocon COOL**), fond `rgba(158, 158, 158, 0.1)` **prioritaire**,
+  label « État non observé ». Rendus nominaux inchangés.
+- **`notification_echec_execution.yaml`** — **message seul** modifié : neutre, sans promesse de front de
+  récupération, sans qualification de cause. **Triggers, conditions et `notification_id` inchangés.**
+- **Checker** — quatre tests ajoutés (`clim_mode_local`, verdict de cohérence, restitution dérivée,
+  message de notification). **Six mutations tuées** : suppression de chaque `availability` (×3),
+  réintroduction de `this.state`, du flocon COOL, et de la promesse Airstage.
 
-**Vérifié comme n'exigeant aucune modification** : cumul des durées (garde nominale déjà en place,
-chaîne auto-cicatrisante) · notifications de mode (branche `default` propre) · gardes de consigne HEAT,
-COOL et présence/absence (abstention voulue) · `clim_decision_synthetique_72` (gère déjà l'indisponibilité)
-· `carte_clim_etat` (lit `clim_action_en_cours`).
+**Vérifié comme n'exigeant aucune modification, et non modifié** : cumul des durées (garde nominale déjà
+en place, chaîne auto-cicatrisante) · notifications de mode (branche `default` propre) · gardes de
+consigne HEAT, COOL et présence/absence (abstention voulue) · `clim_decision_synthetique_72` (gère déjà
+l'indisponibilité) · `carte_clim_etat` (lit `clim_action_en_cours`).
 
-**Aucun Recorder, aucun helper, aucun nouveau capteur, aucun changement de la politique de retry.**
+**Aucun Recorder, aucun helper, aucun timer, aucun counter, aucun nouveau capteur, aucun changement de la
+politique de retry.**
+
+##### Effets fonctionnels assumés
+
+- **Abstention des gardes de consigne** pendant l'indisponibilité : les consignes HEAT, COOL et
+  présence/absence ne sont plus poussées tant que le mode n'est pas observable. C'est le comportement
+  voulu — on ne pousse pas une consigne sur un état qu'on n'observe pas — mais c'est un **changement de
+  comportement réel**, contrairement à A1.
+- **Rupture sémantique de l'historique** : les fenêtres jusqu'ici enregistrées `cool` (par repli) ou `off`
+  (par fabrication) deviennent des **trous explicites**. Les séries avant/après ne sont **pas strictement
+  comparables** sur la métrique « temps COOL ». L'historique cesse en revanche de présenter une valeur
+  mémorisée comme une observation actuelle.
+- **Le détecteur d'incohérence sera muet plus souvent** : il cesse d'affirmer sans savoir. Ce silence ne
+  doit pas se lire comme une amélioration de la cohérence.
+- **Le fail-open reste non réparé.** A6 supprime des affirmations non fondées et rend la chaîne lisible ;
+  il ne résout ni A2, ni A5, ni le scénario du Gate.
+- **Confirmation terrain L5 opportuniste et non bloquante** : A6 est clôturable sur ses preuves statiques.
 
 ### Lot 2 — Architecture *(non engagé)*
 

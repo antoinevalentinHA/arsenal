@@ -87,12 +87,17 @@
               data:
                 notification_id: clim_execution_echec
                 title: "⚠️ Clim – Échec d'exécution persistant"
+                # Message NEUTRE (contrat 08_execution.md — C30 A6b) :
+                # aucune promesse de front de récupération, aucune
+                # qualification infra/postcondition, aucune reconstruction
+                # de la cause depuis les états live.
                 message: >
                   L'exécution de la climatisation a échoué de manière
-                  persistante : le budget de reprise différée est épuisé
+                  persistante et le budget de reprise différée est épuisé
                   (cible : {{ states('sensor.clim_target_mode') }}).
-                  Plus aucune reprise automatique n'aura lieu avant un
-                  front de récupération de l'infrastructure Airstage.
+                  Aucune nouvelle reprise automatique n'est programmée
+                  dans l'état courant. Vérifier l'état de l'intégration et
+                  de l'équipement avant une nouvelle tentative.
                   Cette notification disparaîtra d'elle-même dès que
                   l'échec sera purgé.
 
