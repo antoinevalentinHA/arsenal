@@ -553,7 +553,7 @@ intention de commande. Si une tuile d'action venait à lire un état
 - Introduire d'autres nuances ou d'autres opacités
 - Colorer une tuile d'action volet sans qu'elle corresponde à l'un des
   deux sens documentés (montée / descente)
-- Réintroduire une tuile « stop » : le matériel ne supporte pas l'arrêt
-  (`supported_features = 7`) — on n'expose pas une commande qu'on n'a pas
+- Réintroduire une tuile « stop » : l'arrêt n'est pas exposé en HAP
+  (`supported_features = 7`) — seule l'API Netatmo (`target_position: -1`) y donne accès, voie non retenue à ce jour
 - Décrire ces couleurs comme décoratives : elles encodent un sens de
   commande catégoriel, seule justification recevable
