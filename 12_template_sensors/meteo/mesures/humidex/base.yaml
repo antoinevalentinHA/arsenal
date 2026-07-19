@@ -263,19 +263,19 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_matthieu
-        - sensor.point_de_rosee_chambre_matthieu
+        - sensor.temperature_salle_de_jeux
+        - sensor.point_de_rosee_salle_de_jeux
     - platform: homeassistant
       event: start
 
   sensor:
-    - name: "Humidex Chambre Matthieu"
-      unique_id: humidex_chambre_matthieu
+    - name: "Humidex Salle de Jeux"
+      unique_id: humidex_salle_de_jeux
       icon: mdi:thermometer
       state: *humidex_logic
       attributes:
-        temperature_source: sensor.temperature_chambre_matthieu
-        rosee_source: sensor.point_de_rosee_chambre_matthieu
+        temperature_source: sensor.temperature_salle_de_jeux
+        rosee_source: sensor.point_de_rosee_salle_de_jeux
 
 - trigger:
     - platform: state

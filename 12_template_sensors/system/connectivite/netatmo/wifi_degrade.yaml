@@ -23,7 +23,7 @@
     - platform: state
       entity_id:
         - sensor.chambre_enfants_puissance_du_wi_fi
-        - sensor.chambre_matthieu_puissance_du_wi_fi
+        - sensor.salle_de_jeux_puissance_du_wi_fi
         - sensor.bobst_102_puissance_du_wi_fi
         - sensor.komori_puissance_du_wi_fi
         - sensor.media_puissance_du_wi_fi

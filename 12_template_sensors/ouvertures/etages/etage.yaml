@@ -8,7 +8,7 @@
 # ⚙️ Fonctionnement :
 #   - Regroupe les capteurs suivants :
 #       • Chambre Enfants
-#       • Chambre Matthieu
+#       • Salle de Jeux
 #       • Chambre Parents (3 ouvrants)
 #   - Statut :
 #       • ON  → au moins une fenêtre ouverte
@@ -34,7 +34,7 @@
       state: >
         {% set fenetres_etage = [
           'binary_sensor.contact_chambre_enfants',
-          'binary_sensor.contact_chambre_matthieu',
+          'binary_sensor.contact_salle_de_jeux',
           'binary_sensor.contact_chambre_parents'
         ] %}
         {{ fenetres_etage | select('is_state', 'on') | list | length > 0 }}

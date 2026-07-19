@@ -41,7 +41,7 @@
 #       B) Ouverture d’une zone SANS délai (immédiat) :
 #         • binary_sensor.contact_entree_fenetre
 #         • binary_sensor.contact_chambre_enfants
-#         • binary_sensor.contact_chambre_matthieu
+#         • binary_sensor.contact_salle_de_jeux
 #
 #     - Conditions de validité :
 #         • système stable (anti faux-positifs boot)
@@ -124,9 +124,9 @@
       id: enfants
 
     - platform: state
-      entity_id: binary_sensor.contact_chambre_matthieu
+      entity_id: binary_sensor.contact_salle_de_jeux
       to: "on"
-      id: matthieu
+      id: salle_de_jeux
 
   condition:
 
@@ -146,7 +146,7 @@
               id:
                 - entree
                 - enfants
-                - matthieu
+                - salle_de_jeux
 
           sequence:
 

@@ -25,15 +25,15 @@ Il répond à : **« la station entière est-elle suffisamment vivante pour qu'u
 | **CO2** | `sensor.co2_chambre_enfants` · `sensor.co2_chambre_parents` · `sensor.co2_petite_maison` · `sensor.co2_sejour` |
 | **Bruit** | `sensor.bruit_chambre_enfants` |
 
-### Station 2 — `diagnostic_netatmo_matthieu`
+### Station 2 — `diagnostic_netatmo_salle_de_jeux`
 
 | Catégorie | Entités |
 |-----------|---------|
 | **Ping** | `binary_sensor.station_meteo_netatmo_2` |
-| **Températures** | `sensor.temperature_chambre_matthieu_1` · `sensor.temperature_entree_1` · `sensor.temperature_jardin_2` |
-| **Humidités** | `sensor.humidite_relative_chambre_matthieu_1` · `sensor.humidite_relative_entree_1` · `sensor.humidite_relative_jardin_2` |
-| **CO2** | `sensor.co2_chambre_matthieu` · `sensor.co2_entree` |
-| **Bruit** | `sensor.bruit_chambre_matthieu` |
+| **Températures** | `sensor.temperature_salle_de_jeux_1` · `sensor.temperature_entree_1` · `sensor.temperature_jardin_2` |
+| **Humidités** | `sensor.humidite_relative_salle_de_jeux_1` · `sensor.humidite_relative_entree_1` · `sensor.humidite_relative_jardin_2` |
+| **CO2** | `sensor.co2_salle_de_jeux` · `sensor.co2_entree` |
+| **Bruit** | `sensor.bruit_salle_de_jeux` |
 
 ---
 
@@ -231,7 +231,7 @@ Il est **interdit** de combiner ping et preuves de vie dans une même condition 
 
 > Cette politique est **externe** au diagnostic : elle est portée par des automatisations dédiées (`11_automations/meteo/reboot_station/*.yaml`) qui *consomment* l'état. Le capteur de diagnostic reste strictement observationnel (§9 « Autorisé ») et les noms d'états restent descriptifs (§10). L'existence de cette section satisfait l'exigence §9 d'une **politique explicite** : la remédiation n'est plus ni implicite ni absente.
 
-Les deux états muets autorisent une remédiation par l'alimentation. L'action est identique — un **unique** power-cycle de la prise de la station concernée (`switch.prise_chambre_enfants` pour la station 1, `switch.prise_chambre_matthieu` pour la station 2) via `script.reboot_netatmo` — mais leur **déclenchement diffère** selon la force de la preuve :
+Les deux états muets autorisent une remédiation par l'alimentation. L'action est identique — un **unique** power-cycle de la prise de la station concernée (`switch.prise_chambre_enfants` pour la station 1, `switch.prise_salle_de_jeux` pour la station 2) via `script.reboot_netatmo` — mais leur **déclenchement diffère** selon la force de la preuve :
 
 | État | Preuve observée | Déclenchement | Fondement |
 |------|-----------------|---------------|-----------|
@@ -261,7 +261,7 @@ Toute évolution future de ce contrat doit respecter cette règle : si un nouvel
 
 ## 11. Leçon terrain — 2026-05-06
 
-Cas observé sur la station Matthieu :
+Cas observé sur la station Salle de Jeux :
 
 - aucune mesure exploitable
 - ping `on`

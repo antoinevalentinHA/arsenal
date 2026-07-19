@@ -51,5 +51,5 @@ cards:
 
       - type: custom:button-card
         template: diagnostic_redondance_contact
-        entity: sensor.diagnostic_redondance_contact_chambre_matthieu
-        name: Matthieu
+        entity: sensor.diagnostic_redondance_contact_salle_de_jeux
+        name: Salle de Jeux

@@ -82,8 +82,8 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.temperature_minmax_jour_chambre_matthieu
-                name: Matthieu
+                entity: sensor.temperature_minmax_jour_salle_de_jeux
+                name: Salle de Jeux
                 icon: mdi:thermometer
 
               - type: custom:button-card

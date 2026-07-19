@@ -48,8 +48,8 @@ ref_temp_chambre_enfants:
   max: 40
   step: 0.1
 
-ref_temp_chambre_matthieu:
-  name: "ref_temp_chambre_matthieu"
+ref_temp_salle_de_jeux:
+  name: "ref_temp_salle_de_jeux"
   min: -10
   max: 40
   step: 0.1

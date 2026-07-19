@@ -152,11 +152,11 @@ temperature_max_jour_courant_chambre_enfants:
   icon: mdi:thermometer-chevron-up
 
 ############################################################
-# 👶 Chambre Matthieu
+# 👶 Salle de Jeux
 ############################################################
 
-temperature_min_jour_courant_chambre_matthieu:
-  name: Température min jour courant chambre Matthieu
+temperature_min_jour_courant_salle_de_jeux:
+  name: Température min jour courant Salle de Jeux
   min: -50
   max: 1000
   step: 0.1
@@ -164,8 +164,8 @@ temperature_min_jour_courant_chambre_matthieu:
   mode: box
   icon: mdi:thermometer-low
 
-temperature_max_jour_courant_chambre_matthieu:
-  name: Température max jour courant chambre Matthieu
+temperature_max_jour_courant_salle_de_jeux:
+  name: Température max jour courant Salle de Jeux
   min: -999
   max: 50
   step: 0.1

@@ -46,8 +46,8 @@ sensor.temperature_chambre_enfants:
   friendly_name: "Température Chambre Enfants"
   icon: mdi:thermometer
 
-sensor.temperature_chambre_matthieu:
-  friendly_name: "Température Chambre Matthieu"
+sensor.temperature_salle_de_jeux:
+  friendly_name: "Température Salle de Jeux"
   icon: mdi:thermometer
 
 sensor.temperature_chambre_parents:

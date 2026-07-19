@@ -74,7 +74,7 @@
     - variables:
         presence: "{{ is_state('binary_sensor.presence_famille_securite','on') }}"
         fenetres_chambres_ouvertes: >
-          {{ ['binary_sensor.contact_chambre_enfants','binary_sensor.contact_chambre_matthieu']
+          {{ ['binary_sensor.contact_chambre_enfants','binary_sensor.contact_salle_de_jeux']
              | select('is_state','on') | list }}
         cibles_chambres: "{{ state_attr('sensor.cibles_volets_pluie_chambres','entity_ids') or [] }}"
 

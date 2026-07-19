@@ -44,13 +44,13 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.bruit_chambre_matthieu
-                name: Matthieu
+                entity: sensor.bruit_salle_de_jeux
+                name: Salle de Jeux
                 icon: mdi:volume-high
                 variables:
                   ui_profile: arsenal
                 triggers_update:
-                  - sensor.couleur_bruit_chambre_matthieu
+                  - sensor.couleur_bruit_salle_de_jeux
 
           # ======================================================
           # 📈 GRAPHIQUES BRUIT
@@ -58,4 +58,4 @@ views:
 
           - !include ../../includes/cartes/meteo/graph_bruit_enfants.yaml
 
-          - !include ../../includes/cartes/meteo/graph_bruit_matthieu.yaml
+          - !include ../../includes/cartes/meteo/graph_bruit_salle_de_jeux.yaml

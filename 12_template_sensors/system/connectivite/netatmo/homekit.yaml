@@ -69,19 +69,19 @@
           muet_ping_ko
         {% endif %}
 
-    - name: "diagnostic_netatmo_matthieu"
-      unique_id: diagnostic_netatmo_matthieu
+    - name: "diagnostic_netatmo_salle_de_jeux"
+      unique_id: diagnostic_netatmo_salle_de_jeux
       state: >
         {% set preuves = [
-          states('sensor.temperature_chambre_matthieu_1'),
+          states('sensor.temperature_salle_de_jeux_1'),
           states('sensor.temperature_entree_1'),
           states('sensor.temperature_jardin_2'),
-          states('sensor.humidite_relative_chambre_matthieu_1'),
+          states('sensor.humidite_relative_salle_de_jeux_1'),
           states('sensor.humidite_relative_entree_1'),
           states('sensor.humidite_relative_jardin_2'),
-          states('sensor.co2_chambre_matthieu'),
+          states('sensor.co2_salle_de_jeux'),
           states('sensor.co2_entree'),
-          states('sensor.bruit_chambre_matthieu')
+          states('sensor.bruit_salle_de_jeux')
         ] %}
         {% set valides = preuves
           | map('float', default=none)

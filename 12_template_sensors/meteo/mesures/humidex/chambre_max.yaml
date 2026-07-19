@@ -8,7 +8,7 @@
 # ⚙️ Fonctionnement :
 #   - Capte les variations des humidex individuels :
 #       • sensor.humidex_chambre_enfants  
-#       • sensor.humidex_chambre_matthieu  
+#       • sensor.humidex_salle_de_jeux  
 #       • sensor.humidex_chambre_parents
 #   - Se met également à jour au démarrage de Home Assistant.
 #
@@ -34,7 +34,7 @@
     - platform: state
       entity_id:
         - sensor.humidex_chambre_enfants
-        - sensor.humidex_chambre_matthieu
+        - sensor.humidex_salle_de_jeux
         - sensor.humidex_chambre_parents
     - platform: homeassistant
       event: start
@@ -44,7 +44,7 @@
       state: >
         {% set sources = {
           'Chambre Enfants': states('sensor.humidex_chambre_enfants'),
-          'Chambre Matthieu': states('sensor.humidex_chambre_matthieu'),
+          'Salle de Jeux': states('sensor.humidex_salle_de_jeux'),
           'Chambre Parents': states('sensor.humidex_chambre_parents')
         } %}
         {% set ns = namespace(valeurs=[]) %}
@@ -66,7 +66,7 @@
         chambre_max: >
           {% set sources = {
             'Chambre Enfants': states('sensor.humidex_chambre_enfants'),
-            'Chambre Matthieu': states('sensor.humidex_chambre_matthieu'),
+            'Salle de Jeux': states('sensor.humidex_salle_de_jeux'),
             'Chambre Parents': states('sensor.humidex_chambre_parents')
           } %}
           {% set ns = namespace(valeurs=[]) %}

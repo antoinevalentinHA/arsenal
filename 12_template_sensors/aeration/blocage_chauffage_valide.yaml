@@ -116,7 +116,7 @@
 #     - sensor.deltat_sejour
 #     - sensor.deltat_chambre_parents
 #     - sensor.deltat_chambre_enfants
-#     - sensor.deltat_chambre_matthieu
+#     - sensor.deltat_salle_de_jeux
 #
 # ----------------------------------------------------------
 # 🛑 STATUT D’INTÉGRATION ACTUEL
@@ -182,8 +182,8 @@
               {% set zones = zones + ['chambre_enfants'] %}
             {% endif %}
 
-            {% if is_state('binary_sensor.contact_chambre_matthieu', 'on') %}
-              {% set zones = zones + ['chambre_matthieu'] %}
+            {% if is_state('binary_sensor.contact_salle_de_jeux', 'on') %}
+              {% set zones = zones + ['salle_de_jeux'] %}
             {% endif %}
 
             {% if zones | length == 0 %}
@@ -201,8 +201,8 @@
                   {% set dtz = states('sensor.deltat_chambre_parents') | float(0) %}
                 {% elif z == 'chambre_enfants' %}
                   {% set dtz = states('sensor.deltat_chambre_enfants') | float(0) %}
-                {% elif z == 'chambre_matthieu' %}
-                  {% set dtz = states('sensor.deltat_chambre_matthieu') | float(0) %}
+                {% elif z == 'salle_de_jeux' %}
+                  {% set dtz = states('sensor.deltat_salle_de_jeux') | float(0) %}
                 {% else %}
                   {% set dtz = 0 %}
                 {% endif %}

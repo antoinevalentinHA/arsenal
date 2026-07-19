@@ -112,13 +112,13 @@ calibration_capteurs_zigbee:
             calib_t: number.meteo_zigbee_chambre_enfants_temperature_calibration
             calib_h: number.meteo_zigbee_chambre_enfants_humidity_calibration
 
-          - name: "Chambre Matthieu"
-            hk_temp: sensor.temperature_chambre_matthieu_1
-            zb_temp: sensor.temperature_chambre_matthieu_2
-            hk_hum: sensor.humidite_relative_chambre_matthieu_1
-            zb_hum: sensor.humidite_relative_chambre_matthieu_2
-            calib_t: number.meteo_zigbee_chambre_matthieu_temperature_calibration
-            calib_h: number.meteo_zigbee_chambre_matthieu_humidity_calibration
+          - name: "Salle de Jeux"
+            hk_temp: sensor.temperature_salle_de_jeux_1
+            zb_temp: sensor.temperature_salle_de_jeux_2
+            hk_hum: sensor.humidite_relative_salle_de_jeux_1
+            zb_hum: sensor.humidite_relative_salle_de_jeux_2
+            calib_t: number.meteo_zigbee_salle_de_jeux_temperature_calibration
+            calib_h: number.meteo_zigbee_salle_de_jeux_humidity_calibration
 
           - name: "Chambre Parents"
             hk_temp: sensor.temperature_chambre_parents_1

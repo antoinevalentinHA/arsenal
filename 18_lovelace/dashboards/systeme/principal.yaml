@@ -367,5 +367,5 @@ views:
 
               - type: custom:button-card
                 template: netatmo_diagnostic
-                entity: sensor.diagnostic_netatmo_matthieu
-                name: Netatmo – Matthieu
+                entity: sensor.diagnostic_netatmo_salle_de_jeux
+                name: Netatmo – Salle de Jeux

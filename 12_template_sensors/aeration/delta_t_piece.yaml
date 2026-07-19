@@ -49,10 +49,10 @@
       state: *deltat_logic
 
     # ------------------------------------------------------
-    #  ΔT CHAMBRE MATTHIEU
+    #  ΔT SALLE DE JEUX
     # ------------------------------------------------------
-    - name: "deltaT_chambre_matthieu"
-      unique_id: deltaT_chambre_matthieu
+    - name: "deltaT_salle_de_jeux"
+      unique_id: deltaT_salle_de_jeux
       unit_of_measurement: "°C"
       state: *deltat_logic
 

@@ -18,7 +18,7 @@
 #
 # 📥 ENTRÉES
 #
-#     - sensor.bruit_chambre_matthieu
+#     - sensor.bruit_salle_de_jeux
 #     - input_number.seuil_reveil_bruit
 #     - input_boolean.babyphone_matthieu
 #
@@ -44,7 +44,7 @@
   trigger:
     - platform: template
       value_template: >
-        {{ states('sensor.bruit_chambre_matthieu') | float(0)
+        {{ states('sensor.bruit_salle_de_jeux') | float(0)
            > states('input_number.seuil_reveil_bruit') | float(0) }}
 
   condition:

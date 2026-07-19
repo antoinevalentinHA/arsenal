@@ -65,7 +65,7 @@ include:
     # 🚨 SÉCURITÉ & SUPERVISION
     # =====================================================
     - automation.meteo_netatmo_redemarrage_enfants
-    - automation.meteo_netatmo_redemarrage_matthieu
+    - automation.meteo_netatmo_redemarrage_salle_de_jeux
     - automation.panne_detection_coupure_secteur
     - automation.panne_sortie_mode_panne
     - automation.reseau_ouverture_campagne_remediation

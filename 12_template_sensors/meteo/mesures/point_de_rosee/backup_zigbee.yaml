@@ -31,7 +31,7 @@
 # 📦 Capteurs créés :
 #   • sensor.point_de_rosee_sejour
 #   • sensor.point_de_rosee_chambre_enfants
-#   • sensor.point_de_rosee_chambre_matthieu
+#   • sensor.point_de_rosee_salle_de_jeux
 #   • sensor.point_de_rosee_chambre_parents
 #
 # 📊 Type : Trigger Template Sensors
@@ -99,28 +99,28 @@
 
 
 # ==========================================================
-# 💤 Chambre Matthieu
+# 💤 Salle de Jeux
 # ==========================================================
 
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_matthieu
-        - sensor.humidite_relative_chambre_matthieu
+        - sensor.temperature_salle_de_jeux
+        - sensor.humidite_relative_salle_de_jeux
     - platform: homeassistant
       event: start
 
   sensor:
-    - name: "Point de rosée chambre Matthieu"
-      unique_id: point_de_rosee_chambre_matthieu
+    - name: "Point de rosée Salle de Jeux"
+      unique_id: point_de_rosee_salle_de_jeux
       unit_of_measurement: "°C"
       icon: mdi:thermometer-water
 
       state: *dewpoint_logic
 
       attributes:
-        temperature_source: sensor.temperature_chambre_matthieu
-        humidite_source: sensor.humidite_relative_chambre_matthieu
+        temperature_source: sensor.temperature_salle_de_jeux
+        humidite_source: sensor.humidite_relative_salle_de_jeux
 
 
 # ==========================================================

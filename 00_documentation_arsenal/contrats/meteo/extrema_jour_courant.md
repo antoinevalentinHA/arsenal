@@ -55,7 +55,7 @@ entree
 sejour
 palier
 chambre_enfants
-chambre_matthieu
+salle_de_jeux
 chambre_parents
 petite_maison
 sdb_parents

@@ -36,7 +36,7 @@ Alimentées directement par le secteur, **sans secours UPS ni Bluetti**. Pendant
 | Entité | Équipement alimenté | Topologie | Secourue ? | Comportement en panne secteur | Conséquence commandabilité UI | Statut / preuve |
 |---|---|---|---|---|---|---|
 | `switch.prise_chambre_enfants` | Station Netatmo (Enfants) | Secteur direct | Non | Perte d'alimentation ; entité peut rester `on`/`off` transitoirement (latence z2m) | Gatée (`prise_secteur_template`) | Mains prouvé — reboot automatique déjà gaté panne |
-| `switch.prise_chambre_matthieu` | Station Netatmo (Matthieu) | Secteur direct | Non | Perte d'alimentation ; latence z2m | Gatée | Mains prouvé — reboot automatique déjà gaté panne |
+| `switch.prise_salle_de_jeux` | Station Netatmo (Salle de Jeux) | Secteur direct | Non | Perte d'alimentation ; latence z2m | Gatée | Mains prouvé — reboot automatique déjà gaté panne |
 | `switch.prise_bouclage` | Pompe de bouclage ECS | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
 | `switch.prise_deshumidificateur` | Déshumidificateur | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
 | `switch.prise_palier` | Bridge iDiamant (volets) | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |

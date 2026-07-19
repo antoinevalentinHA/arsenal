@@ -100,15 +100,15 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidite_absolue_chambre_matthieu
-        - sensor.humidite_absolue_seuil_bas_chambre_matthieu
-        - sensor.humidite_absolue_seuil_haut_chambre_matthieu
+        - sensor.humidite_absolue_salle_de_jeux
+        - sensor.humidite_absolue_seuil_bas_salle_de_jeux
+        - sensor.humidite_absolue_seuil_haut_salle_de_jeux
         - input_number.humidite_absolue_couleur_zone_verte
     - platform: homeassistant
       event: start
   sensor:
-    - name: "Couleur Humidité absolue Chambre Matthieu"
-      unique_id: couleur_humidite_absolue_chambre_matthieu
+    - name: "Couleur Humidité absolue Salle de Jeux"
+      unique_id: couleur_humidite_absolue_salle_de_jeux
       state: *couleur_humidite_absolue_logic
 
 - trigger:

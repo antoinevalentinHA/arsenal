@@ -31,17 +31,17 @@
       state: >
         {{ states('sensor.temperature_stabilisee_chambre_enfants') | float }}
 
-    - name: "Temperature chambre matthieu"
-      unique_id: temperature_chambre_matthieu
+    - name: "Temperature Salle de Jeux"
+      unique_id: temperature_salle_de_jeux
       device_class: temperature
       state_class: measurement
       unit_of_measurement: "°C"
 
       availability: >
-        {{ states('sensor.temperature_stabilisee_chambre_matthieu') not in ['unknown','unavailable','none'] }}
+        {{ states('sensor.temperature_stabilisee_salle_de_jeux') not in ['unknown','unavailable','none'] }}
 
       state: >
-        {{ states('sensor.temperature_stabilisee_chambre_matthieu') | float }}
+        {{ states('sensor.temperature_stabilisee_salle_de_jeux') | float }}
 
     - name: "Temperature chambre parents"
       unique_id: temperature_chambre_parents

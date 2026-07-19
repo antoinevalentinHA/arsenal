@@ -47,8 +47,8 @@
   sampling_size: &sampling_size_10000 10000
 
 - platform: statistics
-  name: "Température Chambre Moyenne Chambre Matthieu"
-  entity_id: sensor.temperature_chambre_matthieu
+  name: "Température Chambre Moyenne Salle de Jeux"
+  entity_id: sensor.temperature_salle_de_jeux
   state_characteristic: mean
   max_age: *max_age_30d
   sampling_size: *sampling_size_10000

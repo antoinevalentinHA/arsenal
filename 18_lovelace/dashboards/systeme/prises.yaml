@@ -56,14 +56,14 @@ views:
 
               - type: custom:button-card
                 template: prise_secteur_template
-                entity: switch.prise_chambre_matthieu
-                name: Netatmo Matthieu
+                entity: switch.prise_salle_de_jeux
+                name: Netatmo Salle de Jeux
                 icon: mdi:thermometer
                 tap_action:
                   action: toggle
                   confirmation:
                     text: Basculer l'état de la prise ?
-                  entity: switch.prise_chambre_matthieu
+                  entity: switch.prise_salle_de_jeux
 
               - type: custom:button-card
                 template: prise_secteur_template

@@ -1,8 +1,8 @@
 type: custom:mini-graph-card
-name: Matthieu (12h)
+name: Salle de Jeux (12h)
 icon: mdi:volume-high
 entities:
-  - entity: sensor.bruit_chambre_matthieu
+  - entity: sensor.bruit_salle_de_jeux
 hours_to_show: 12
 points_per_hour: 6
 line_width: 3

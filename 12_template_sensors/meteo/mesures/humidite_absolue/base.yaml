@@ -194,19 +194,19 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_matthieu
-        - sensor.humidite_relative_chambre_matthieu
+        - sensor.temperature_salle_de_jeux
+        - sensor.humidite_relative_salle_de_jeux
     - platform: homeassistant
       event: start
   sensor:
-    - name: "Humidité absolue Chambre Matthieu"
-      unique_id: humidite_absolue_chambre_matthieu
+    - name: "Humidité absolue Salle de Jeux"
+      unique_id: humidite_absolue_salle_de_jeux
       unit_of_measurement: "g/m³"
       icon: mdi:water-percent
       state: *absolute_humidity_logic
       attributes:
-        temperature_source: sensor.temperature_chambre_matthieu
-        humidite_source: sensor.humidite_relative_chambre_matthieu
+        temperature_source: sensor.temperature_salle_de_jeux
+        humidite_source: sensor.humidite_relative_salle_de_jeux
 
 - trigger:
     - platform: state

@@ -29,7 +29,7 @@
 # 🧩 Capteurs / Zones concernées :
 #   ▪️ Résidentiel :
 #      - Chambre Enfants  
-#      - Chambre Matthieu  
+#      - Salle de Jeux  
 #      - Chambre Parents  
 #      - Entrée  
 #      - Séjour  
@@ -101,8 +101,8 @@
       state: *humidite_relative_seuil_bas_logic
 
 - sensor:
-    - name: "Humidité relative Seuil Bas Chambre Matthieu"
-      unique_id: humidite_relative_seuil_bas_chambre_matthieu
+    - name: "Humidité relative Seuil Bas Salle de Jeux"
+      unique_id: humidite_relative_seuil_bas_salle_de_jeux
       state: *humidite_relative_seuil_bas_logic
 
 - sensor:

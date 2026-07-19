@@ -10,7 +10,7 @@
 
     # -----------------------------------------------------------
     # CO2 moyen — Etage
-    # Sources : chambre_enfants, chambre_matthieu, chambre_parents
+    # Sources : chambre_enfants, salle_de_jeux, chambre_parents
     # -----------------------------------------------------------
     - name: "CO2 etage"
       unique_id: co2_etage
@@ -20,7 +20,7 @@
       state: >
         {% set valeurs = [
           states('sensor.co2_chambre_enfants') | float(none),
-          states('sensor.co2_chambre_matthieu') | float(none),
+          states('sensor.co2_salle_de_jeux') | float(none),
           states('sensor.co2_chambre_parents') | float(none)
         ] %}
         {% set valides = valeurs | reject('equalto', none) | list %}

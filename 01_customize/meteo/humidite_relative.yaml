@@ -42,8 +42,8 @@ sensor.humidite_relative_chambre_enfants:
   friendly_name: "Humidité relative Chambre Enfants"
   icon: mdi:water-percent
 
-sensor.humidite_relative_chambre_matthieu:
-  friendly_name: "Humidité relative Chambre Matthieu"
+sensor.humidite_relative_salle_de_jeux:
+  friendly_name: "Humidité relative Salle de Jeux"
   icon: mdi:water-percent
 
 sensor.humidite_relative_chambre_parents:

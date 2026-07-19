@@ -122,8 +122,8 @@ views:
                 cards:
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.contact_chambre_matthieu
-                    name: Fenêtre Matthieu
+                    entity: binary_sensor.contact_salle_de_jeux
+                    name: Fenêtre Salle de Jeux
 
                   - type: custom:button-card
                     template: contact_sensor

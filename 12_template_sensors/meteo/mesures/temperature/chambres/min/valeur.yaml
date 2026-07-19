@@ -3,13 +3,13 @@
 # ----------------------------------------------------------
 # 🎯 Objectif :
 #   Identifier la **température la plus basse** parmi les chambres
-#   (Enfants, Matthieu, Parents), en utilisant les capteurs consolidés
+#   (Enfants, Salle de Jeux, Parents), en utilisant les capteurs consolidés
 #   HomeKit + Zigbee.
 #
 # ⚙️ Fonctionnement :
 #   - Analyse les capteurs consolidés :
 #       • sensor.temperature_chambre_enfants
-#       • sensor.temperature_chambre_matthieu
+#       • sensor.temperature_salle_de_jeux
 #       • sensor.temperature_chambre_parents
 #   - Ignore les valeurs non numériques.
 #   - Si aucune valeur vivante ne subsiste, l’agrégat s’abstient (unavailable).
@@ -30,7 +30,7 @@
     - platform: state
       entity_id:
         - sensor.temperature_chambre_enfants
-        - sensor.temperature_chambre_matthieu
+        - sensor.temperature_salle_de_jeux
         - sensor.temperature_chambre_parents
     - platform: homeassistant
       event: start
@@ -44,13 +44,13 @@
 
       availability: >
         {{ states('sensor.temperature_chambre_enfants') | float(none) is not none
-           or states('sensor.temperature_chambre_matthieu') | float(none) is not none
+           or states('sensor.temperature_salle_de_jeux') | float(none) is not none
            or states('sensor.temperature_chambre_parents') | float(none) is not none }}
 
       state: >
         {% set brut = {
           'Chambre Enfants': states('sensor.temperature_chambre_enfants'),
-          'Chambre Matthieu': states('sensor.temperature_chambre_matthieu'),
+          'Salle de Jeux': states('sensor.temperature_salle_de_jeux'),
           'Chambre Parents': states('sensor.temperature_chambre_parents')
         } %}
 
@@ -64,7 +64,7 @@
         chambre_la_plus_froide: >
           {% set brut = {
             'Chambre Enfants': states('sensor.temperature_chambre_enfants'),
-            'Chambre Matthieu': states('sensor.temperature_chambre_matthieu'),
+            'Salle de Jeux': states('sensor.temperature_salle_de_jeux'),
             'Chambre Parents': states('sensor.temperature_chambre_parents')
           } %}
           {% set valides = brut.items() | selectattr('1', 'is_number') | list %}
@@ -76,5 +76,5 @@
 
         capteurs_utilises: >
           - sensor.temperature_chambre_enfants
-          - sensor.temperature_chambre_matthieu
+          - sensor.temperature_salle_de_jeux
           - sensor.temperature_chambre_parents

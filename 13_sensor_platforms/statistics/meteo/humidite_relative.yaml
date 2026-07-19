@@ -47,8 +47,8 @@
   sampling_size: &sampling_size_10000 10000
 
 - platform: statistics
-  name: "Humidité relative Moyenne Chambre Matthieu"
-  entity_id: sensor.humidite_relative_chambre_matthieu
+  name: "Humidité relative Moyenne Salle de Jeux"
+  entity_id: sensor.humidite_relative_salle_de_jeux
   state_characteristic: mean
   max_age: *max_age_30d
   sampling_size: *sampling_size_10000

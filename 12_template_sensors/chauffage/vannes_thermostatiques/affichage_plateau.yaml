@@ -18,7 +18,7 @@
       {% set memories = {
         'chambre_parents':  states('input_number.plateau_chambre_parents'),
         'chambre_enfants':   states('input_number.plateau_chambre_enfants'),
-        'chambre_matthieu': states('input_number.plateau_chambre_matthieu')
+        'salle_de_jeux': states('input_number.plateau_salle_de_jeux')
       } %}
 
       {% if strict not in ['unknown','unavailable',None] %}

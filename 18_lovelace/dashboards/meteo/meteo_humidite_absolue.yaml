@@ -79,11 +79,11 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.humidite_absolue_chambre_matthieu
-                name: Matthieu
+                entity: sensor.humidite_absolue_salle_de_jeux
+                name: Salle de Jeux
                 icon: mdi:water
                 triggers_update:
-                  - sensor.couleur_humidite_absolue_chambre_matthieu
+                  - sensor.couleur_humidite_absolue_salle_de_jeux
 
               - type: custom:button-card
                 template: socle_kpi

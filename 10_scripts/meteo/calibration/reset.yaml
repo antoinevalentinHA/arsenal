@@ -95,8 +95,8 @@ reset_calibration_capteurs_zigbee:
           - number.meteo_zigbee_sejour_humidity_calibration
           - number.meteo_zigbee_chambre_enfants_temperature_calibration
           - number.meteo_zigbee_chambre_enfants_humidity_calibration
-          - number.meteo_zigbee_chambre_matthieu_temperature_calibration
-          - number.meteo_zigbee_chambre_matthieu_humidity_calibration
+          - number.meteo_zigbee_salle_de_jeux_temperature_calibration
+          - number.meteo_zigbee_salle_de_jeux_humidity_calibration
           - number.meteo_zigbee_chambre_parents_temperature_calibration
           - number.meteo_zigbee_chambre_parents_humidity_calibration
           - number.meteo_zigbee_entree_temperature_calibration

@@ -42,8 +42,8 @@ sensor.humidex_chambre_enfants:
   friendly_name: "Humidex Chambre Enfants"
   icon: mdi:thermometer-water
 
-sensor.humidex_chambre_matthieu:
-  friendly_name: "Humidex Chambre Matthieu"
+sensor.humidex_salle_de_jeux:
+  friendly_name: "Humidex Salle de Jeux"
   icon: mdi:thermometer-water
 
 sensor.humidex_chambre_parents:

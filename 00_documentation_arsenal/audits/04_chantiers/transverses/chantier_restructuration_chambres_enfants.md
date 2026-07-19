@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Restructuration des pièces enfants suite au déménagement : la chambre d'Arnaud devient la **Chambre Enfants** (partagée), la chambre de Matthieu devient une **Salle de Jeux**, la Chambre Parents est inchangée. Passage de **3 chambres → 2 chambres + 1 salle de jeux** dans toute la logique. Dé-identification des prénoms enfants obtenue **en sous-produit**. |
 | **Domaine** | TRANSVERSE (Météo/température intérieure ↔ Chauffage/vannes thermostatiques ↔ Sommeil/réveils ↔ Volets ↔ Aération ↔ UI Lovelace ↔ Doctrine de nommage ↔ Publication/confidentialité). |
-| **Statut** | **ACTIF — Lot 3a livré (renommage Chambre Enfants).** Lots 0–2b acquis + Lot 3a : `chambre_arnaud → chambre_enfants` sur ~167 fichiers (`entity_id`, libellés, chemins, contrats à réf. d'entité, checkers aération, exemple z2m), **behavior-preserving**. Per-child (`reveils`/`babyphone`/`presence`) **intact** (L5). Décisions A1–A3 **rendues (2026-07-19)**. **⚠️ Déploiement à coordonner avec la migration instance (L6)** : recorder/statistics + registre d'entités HA + `friendly_name` Zigbee2MQTT (source des `entity_id` Zigbee). |
+| **Statut** | **ACTIF — Lot 3b livré (renommage Salle de Jeux).** Lots 0–3a acquis + Lot 3b : `chambre_matthieu → salle_de_jeux` (~166 fichiers ; l'entité **perd le préfixe « chambre »** — ce n'est plus une chambre), **behavior-preserving**. **Les deux renommages de pièce sont faits.** Per-child (`reveils`/`babyphone`/`presence`) **intact** (L5). Décisions A1–A3 **rendues (2026-07-19)**. **⚠️ Migration instance (L6) au déploiement** : recorder/statistics + registre d'entités HA + `friendly_name` Zigbee2MQTT, pour Chambre Enfants **et** Salle de Jeux. |
 | **Priorité** | **P2** (proposée) — voir §Priorité. |
 | **Ouvert le** | 2026-07-19. |
 | **Preuve de départ** | Besoin propriétaire (déménagement physique **à venir** : enfants regroupés dans l'ex-chambre Arnaud ; ex-chambre Matthieu → salle de jeux) + **inventaire d'impact en lecture seule** consigné §3. Aucun rapport d'audit préalable mergé — l'inventaire est la preuve de départ. |
-| **Prochain jalon** | **L3b** — renommage `…_chambre_matthieu → …_salle_de_jeux` (même méthode que L3a), après confirmation du nom `salle_de_jeux`. |
+| **Prochain jalon** | **L4** — aligner le runtime sur les contrats L2/L2b : retirer la Salle de Jeux des agrégats « chambres » (besoin de chauffe `temperature_min/max_chambres`, humidex/humidité max, garde anti-gel COOL) et statuer sur vannes/plateaux. |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C32 **consigne les décisions propriétaire déjà rendues**
 > (A1–A3, §Décisions) et l'**inventaire d'impact** (§3). Elle **ne crée aucun contrat, aucun runtime,
@@ -318,3 +318,34 @@ entités renommées seront `unavailable` après reload.
 
 **Aucune modification de comportement.** Per-child et Salle de Jeux (`matthieu`) inchangés. **C32 actif ;
 prochain jalon L3b (`chambre_matthieu → salle_de_jeux`).**
+
+### Lot 3b — renommage Salle de Jeux (`chambre_matthieu → salle_de_jeux`) (terminé, 2026-07-19)
+
+Renommage **behavior-preserving** de la pièce ex-Matthieu en **Salle de Jeux** (~166 fichiers), méthode
+symétrique à L3a avec une **asymétrie** : l'entité **perd le préfixe « chambre »** (ce n'est plus une
+chambre) — `chambre_matthieu → salle_de_jeux` (et « chambre matthieu » → « salle de jeux » dans les
+libellés), pas `chambre_salle_de_jeux`.
+
+- **Renommé (pièce)** : tout `chambre_matthieu` → `salle_de_jeux` (mêmes familles qu'en L3a) ; devices à
+  radical nu (`netatmo_matthieu`, `ouvrir/fermer_volet_matthieu`, `fenetres_ouvertes_matthieu`,
+  `graph_bruit_matthieu`) ; libellés « Matthieu » des devices de pièce ; checkers aération ; contrats à
+  réf. d'entité ; exemple z2m ; doc archi. Vannes/plateaux : entité `plateau_salle_de_jeux` /
+  `plateau_thermostatique_salle_de_jeux` (contrat `vannes_thermostatiques_plateaux.md` §3 recalé — la
+  notation `{}` ne pouvait pas porter le préfixe mixte).
+- **Intact (per-child → L5)** : `reveils_nocturnes_matthieu`, `reveils_matthieu_heures`,
+  `babyphone_matthieu`, `presence_matthieu`, cartes/automations `reveils`/`sommeil`, `👶 Matthieu` de
+  `notifications.md`. Leurs références au capteur de pièce ont été repointées (`bruit_salle_de_jeux`),
+  sans fusionner la logique enfant.
+
+Fichiers : `git mv reboot_station/matthieu.yaml → salle_de_jeux.yaml`,
+`statistics/.../vannes.../chambre_matthieu.yaml → salle_de_jeux.yaml`,
+`cartes/meteo/graph_bruit_matthieu.yaml → graph_bruit_salle_de_jeux.yaml` ;
+`git rm section_headers/chambre_matthieu.yaml` (doublon — `salle_de_jeux.yaml` créé en L1).
+
+Recalages contrats : bandeaux L2/L2b (bornes/intensite) — mentions historiques « ex-Chambre Matthieu »
+restaurées (écrasées par le renommage) ; **INV-BTE-1** nettoyé (résidu L3a `chambre_enfants →
+chambre_enfants` corrigé en `ex-chambre_arnaud`).
+
+Validation : **~80 checkers de contrats + docs verts (0 échec)**, includes Lovelace/config résolus, YAML
+parsé. **Les deux pièces sont désormais renommées** (Chambre Enfants + Salle de Jeux). **C32 actif ;
+prochain jalon L4 (alignement runtime des agrégats/gardes).**

@@ -26,7 +26,7 @@
     - platform: state
       entity_id:
         - sensor.chambre_enfants_puissance_du_wi_fi
-        - sensor.chambre_matthieu_puissance_du_wi_fi
+        - sensor.salle_de_jeux_puissance_du_wi_fi
         - sensor.bobst_102_puissance_du_wi_fi
         - sensor.komori_puissance_du_wi_fi
         - sensor.media_puissance_du_wi_fi
@@ -96,8 +96,8 @@
             Indisponible
           {% endif %}
 
-    - name: "WiFi Score Chambre Matthieu"
-      unique_id: wifi_score_chambre_matthieu
+    - name: "WiFi Score Salle de Jeux"
+      unique_id: wifi_score_salle_de_jeux
       state: *logic_netatmo_wifi_score
       icon: *icon_netatmo_wifi_score
       attributes: *attrs_netatmo_wifi_score

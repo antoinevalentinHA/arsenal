@@ -47,8 +47,8 @@
         - sensor.clavier_alarme_2_linkquality
         - sensor.contact_chambre_enfants_1_linkquality
         - sensor.contact_chambre_enfants_2_linkquality
-        - sensor.contact_chambre_matthieu_1_linkquality
-        - sensor.contact_chambre_matthieu_2_linkquality
+        - sensor.contact_salle_de_jeux_1_linkquality
+        - sensor.contact_salle_de_jeux_2_linkquality
         - sensor.contact_chambre_parents_droite_1_linkquality
         - sensor.contact_chambre_parents_droite_2_linkquality
         - sensor.contact_chambre_parents_gauche_1_linkquality
@@ -70,7 +70,7 @@
         - sensor.vmc_linkquality
         - sensor.luminosite_garage_linkquality
         - sensor.meteo_zigbee_chambre_enfants_linkquality
-        - sensor.meteo_zigbee_chambre_matthieu_linkquality
+        - sensor.meteo_zigbee_salle_de_jeux_linkquality
         - sensor.meteo_zigbee_chambre_parents_linkquality
         - sensor.meteo_zigbee_entree_linkquality
         - sensor.meteo_zigbee_sdb_parents_linkquality
@@ -80,7 +80,7 @@
         - sensor.prise_buanderie_linkquality
         - sensor.prise_cage_escalier_rdc_linkquality
         - sensor.prise_chambre_enfants_linkquality
-        - sensor.prise_chambre_matthieu_linkquality
+        - sensor.prise_salle_de_jeux_linkquality
         - sensor.prise_deshumidificateur_linkquality
         - sensor.prise_jardin_linkquality
         - sensor.prise_lampe_parents_linkquality
