@@ -30,7 +30,7 @@
         - binary_sensor.contact_chambre_parents_gauche
         - binary_sensor.contact_chambre_parents_milieu
         - binary_sensor.contact_chambre_parents_droite
-        - binary_sensor.contact_chambre_arnaud
+        - binary_sensor.contact_chambre_enfants
         - binary_sensor.contact_chambre_matthieu
 
     - platform: homeassistant
@@ -72,8 +72,8 @@
       unique_id: resume_diagnostic_redondance_contact_chambre_parents_droite
       state: *resume_diagnostic_redondance_logic
 
-    - name: "Resume diagnostic redondance Contact Chambre Arnaud"
-      unique_id: resume_diagnostic_redondance_contact_chambre_arnaud
+    - name: "Resume diagnostic redondance Contact Chambre Enfants"
+      unique_id: resume_diagnostic_redondance_contact_chambre_enfants
       state: *resume_diagnostic_redondance_logic
 
     - name: "Resume diagnostic redondance Contact Chambre Matthieu"

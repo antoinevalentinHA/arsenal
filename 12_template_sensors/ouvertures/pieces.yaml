@@ -50,14 +50,14 @@
         {{ is_state('binary_sensor.contact_entree_fenetre', 'on') }}
 
     # ------------------------------------------------------
-    #  🪟 Chambre Arnaud
+    #  🪟 Chambre Enfants
     # ------------------------------------------------------
-    - name: "Fenetres ouvertes - Chambre Arnaud"
-      unique_id: fenetres_ouvertes_arnaud
-      default_entity_id: binary_sensor.fenetres_ouvertes_arnaud
+    - name: "Fenetres ouvertes - Chambre Enfants"
+      unique_id: fenetres_ouvertes_enfants
+      default_entity_id: binary_sensor.fenetres_ouvertes_enfants
       device_class: opening
       state: >
-        {{ is_state('binary_sensor.contact_chambre_arnaud', 'on') }}
+        {{ is_state('binary_sensor.contact_chambre_enfants', 'on') }}
 
     # ------------------------------------------------------
     #  🪟 Chambre Matthieu

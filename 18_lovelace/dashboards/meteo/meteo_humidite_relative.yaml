@@ -88,11 +88,11 @@ views:
             cards:
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.humidite_relative_chambre_arnaud
-                name: Arnaud
+                entity: sensor.humidite_relative_chambre_enfants
+                name: Enfants
                 icon: mdi:water-percent
                 triggers_update:
-                  - sensor.couleur_humidite_relative_chambre_arnaud
+                  - sensor.couleur_humidite_relative_chambre_enfants
 
               - type: custom:button-card
                 template: socle_kpi

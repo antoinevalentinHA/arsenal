@@ -38,8 +38,8 @@ sensor.humidex_sejour:
 # 🛏️ CHAMBRES
 ############################################################
 
-sensor.humidex_chambre_arnaud:
-  friendly_name: "Humidex Chambre Arnaud"
+sensor.humidex_chambre_enfants:
+  friendly_name: "Humidex Chambre Enfants"
   icon: mdi:thermometer-water
 
 sensor.humidex_chambre_matthieu:

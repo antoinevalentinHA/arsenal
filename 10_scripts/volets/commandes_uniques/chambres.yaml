@@ -4,7 +4,7 @@
 # 🎯 RÔLE FONDAMENTAL
 #   Fournir des commandes UNITAIRES, déterministes et
 #   strictement exécutives pour les volets des chambres
-#   enfants (Arnaud et Matthieu).
+#   enfants (Enfants et Matthieu).
 #
 # ----------------------------------------------------------
 # 🧱 RESPONSABILITÉ
@@ -58,23 +58,23 @@
 # ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-ouvrir_volet_arnaud:
-  alias: "Volets - Ouvrir chambre Arnaud"
+ouvrir_volet_enfants:
+  alias: "Volets - Ouvrir chambre Enfants"
   mode: single
   sequence:
     - service: cover.set_cover_position
       target:
-        entity_id: cover.chambre_arnaud
+        entity_id: cover.chambre_enfants
       data:
         position: 100
 
-fermer_volet_arnaud:
-  alias: "Volets - Fermer chambre Arnaud"
+fermer_volet_enfants:
+  alias: "Volets - Fermer chambre Enfants"
   mode: single
   sequence:
     - service: cover.close_cover
       target:
-        entity_id: cover.chambre_arnaud
+        entity_id: cover.chambre_enfants
 
 ouvrir_volet_matthieu:
   alias: "Volets - Ouvrir chambre Matthieu"

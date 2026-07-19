@@ -8,7 +8,7 @@
 #
 # ⚙️ Fonctionnement :
 #   - Chaque entité `sensor.humidite_absolue_filtre_<periode>_<zone>` surveille :
-#       • son capteur source (ex : `sensor.humidite_absolue_chambre_arnaud`)
+#       • son capteur source (ex : `sensor.humidite_absolue_chambre_enfants`)
 #       • l’état du capteur `sensor.periode_meteo`
 #   - Lorsque `sensor.periode_meteo` = `<periode>` (période portée par le nom
 #     de l’entité), la valeur courante du capteur source est copiée.
@@ -47,11 +47,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidite_absolue_chambre_arnaud
+        - sensor.humidite_absolue_chambre_enfants
         - sensor.periode_meteo
   sensor:
-    - name: "Humidité Absolue Filtre Aube Chambre Arnaud"
-      unique_id: humidite_absolue_filtre_aube_chambre_arnaud
+    - name: "Humidité Absolue Filtre Aube Chambre Enfants"
+      unique_id: humidite_absolue_filtre_aube_chambre_enfants
       state: &humidite_absolue_filtre_logic >
         {%- set eid = this.entity_id -%}
         {%- set prefix = 'sensor.humidite_absolue_filtre_' -%}
@@ -63,7 +63,7 @@
           {{ states(eid) }}
         {%- endif -%}
       attributes:
-        humidite_absolue_source: sensor.humidite_absolue_chambre_arnaud
+        humidite_absolue_source: sensor.humidite_absolue_chambre_enfants
 
 - trigger:
     - platform: state
@@ -324,14 +324,14 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidite_absolue_chambre_arnaud
+        - sensor.humidite_absolue_chambre_enfants
         - sensor.periode_meteo
   sensor:
-    - name: "Humidité Absolue Filtre Matin Chambre Arnaud"
-      unique_id: humidite_absolue_filtre_matin_chambre_arnaud
+    - name: "Humidité Absolue Filtre Matin Chambre Enfants"
+      unique_id: humidite_absolue_filtre_matin_chambre_enfants
       state: *humidite_absolue_filtre_logic
       attributes:
-        humidite_absolue_source: sensor.humidite_absolue_chambre_arnaud
+        humidite_absolue_source: sensor.humidite_absolue_chambre_enfants
 
 - trigger:
     - platform: state
@@ -592,14 +592,14 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidite_absolue_chambre_arnaud
+        - sensor.humidite_absolue_chambre_enfants
         - sensor.periode_meteo
   sensor:
-    - name: "Humidité Absolue Filtre Jour Chambre Arnaud"
-      unique_id: humidite_absolue_filtre_jour_chambre_arnaud
+    - name: "Humidité Absolue Filtre Jour Chambre Enfants"
+      unique_id: humidite_absolue_filtre_jour_chambre_enfants
       state: *humidite_absolue_filtre_logic
       attributes:
-        humidite_absolue_source: sensor.humidite_absolue_chambre_arnaud
+        humidite_absolue_source: sensor.humidite_absolue_chambre_enfants
 
 - trigger:
     - platform: state
@@ -860,14 +860,14 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidite_absolue_chambre_arnaud
+        - sensor.humidite_absolue_chambre_enfants
         - sensor.periode_meteo
   sensor:
-    - name: "Humidité Absolue Filtre Crepuscule Chambre Arnaud"
-      unique_id: humidite_absolue_filtre_crepuscule_chambre_arnaud
+    - name: "Humidité Absolue Filtre Crepuscule Chambre Enfants"
+      unique_id: humidite_absolue_filtre_crepuscule_chambre_enfants
       state: *humidite_absolue_filtre_logic
       attributes:
-        humidite_absolue_source: sensor.humidite_absolue_chambre_arnaud
+        humidite_absolue_source: sensor.humidite_absolue_chambre_enfants
 
 - trigger:
     - platform: state
@@ -1128,14 +1128,14 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidite_absolue_chambre_arnaud
+        - sensor.humidite_absolue_chambre_enfants
         - sensor.periode_meteo
   sensor:
-    - name: "Humidité Absolue Filtre Nuit Chambre Arnaud"
-      unique_id: humidite_absolue_filtre_nuit_chambre_arnaud
+    - name: "Humidité Absolue Filtre Nuit Chambre Enfants"
+      unique_id: humidite_absolue_filtre_nuit_chambre_enfants
       state: *humidite_absolue_filtre_logic
       attributes:
-        humidite_absolue_source: sensor.humidite_absolue_chambre_arnaud
+        humidite_absolue_source: sensor.humidite_absolue_chambre_enfants
 
 - trigger:
     - platform: state

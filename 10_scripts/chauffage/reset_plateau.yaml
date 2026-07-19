@@ -31,7 +31,7 @@
 # ----------------------------------------------------------
 # 🏠 PIÈCES SUPPORTÉES
 #
-#   - chambre_arnaud
+#   - chambre_enfants
 #   - chambre_matthieu
 #   - chambre_parents
 #
@@ -61,11 +61,11 @@ reset_plateau_piece:
         piece: "{{ states('input_select.adjustment_piece') }}"
 
     - choose:
-        - conditions: "{{ piece == 'chambre_arnaud' }}"
+        - conditions: "{{ piece == 'chambre_enfants' }}"
           sequence:
             - service: input_number.set_value
               target:
-                entity_id: input_number.plateau_chambre_arnaud
+                entity_id: input_number.plateau_chambre_enfants
               data:
                 value: 0
 

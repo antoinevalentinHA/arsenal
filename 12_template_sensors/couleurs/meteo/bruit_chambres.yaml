@@ -21,12 +21,12 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.bruit_chambre_arnaud
+        - sensor.bruit_chambre_enfants
     - platform: homeassistant
       event: start
   sensor:
-    - name: "Couleur Bruit Chambre Arnaud"
-      unique_id: couleur_bruit_chambre_arnaud
+    - name: "Couleur Bruit Chambre Enfants"
+      unique_id: couleur_bruit_chambre_enfants
       state: &couleur_bruit_logic >
         {% set suffixe = this.entity_id | replace('sensor.couleur_bruit_', '') %}
         {% set src = 'sensor.bruit_' ~ suffixe %}

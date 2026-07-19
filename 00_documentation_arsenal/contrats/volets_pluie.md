@@ -32,7 +32,7 @@ La **référence canonique** du périmètre ouvrants pluie est portée par `bina
 
 | Sous-ensemble | Entités contact | Cover associé | Rôle dans la décision |
 |---|---|---|---|
-| Chambre Arnaud | `contact_chambre_arnaud` | `cover.chambre_arnaud` | Conditionne la fermeture chambre |
+| Chambre Enfants | `contact_chambre_enfants` | `cover.chambre_enfants` | Conditionne la fermeture chambre |
 | Chambre Matthieu | `contact_chambre_matthieu` | `cover.chambre_matthieu` | Conditionne la fermeture chambre |
 | Séjour | `contact_sejour_1..4` | `cover.sejour_gauche`, `cover.sejour_droit` | **Ne conditionnent pas** la fermeture séjour |
 | Hors périmètre volets | `contact_entree_fenetre`, `contact_chambre_parents_*` | — | Hors contrat |

@@ -12,8 +12,8 @@
 #   sensor.humidite_relative_stabilisee_<zone> v1.1
 # ==========================================================
 
-humidite_relative_last_valid_ts_chambre_arnaud:
-  name: "HR last valid ts chambre arnaud"
+humidite_relative_last_valid_ts_chambre_enfants:
+  name: "HR last valid ts chambre enfants"
   has_date: true
   has_time: true
 

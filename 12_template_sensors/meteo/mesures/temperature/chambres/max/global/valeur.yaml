@@ -4,7 +4,7 @@
 # 🎯 Objectif :
 #   Déterminer la **température la plus élevée** parmi les chambres,
 #   en utilisant directement les capteurs consolidés :
-#     • sensor.temperature_chambre_arnaud
+#     • sensor.temperature_chambre_enfants
 #     • sensor.temperature_chambre_matthieu
 #     • sensor.temperature_chambre_parents
 #
@@ -28,7 +28,7 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_arnaud
+        - sensor.temperature_chambre_enfants
         - sensor.temperature_chambre_matthieu
         - sensor.temperature_chambre_parents
     - platform: homeassistant
@@ -42,13 +42,13 @@
       device_class: temperature
 
       availability: >
-        {{ states('sensor.temperature_chambre_arnaud') | float(none) is not none
+        {{ states('sensor.temperature_chambre_enfants') | float(none) is not none
            or states('sensor.temperature_chambre_matthieu') | float(none) is not none
            or states('sensor.temperature_chambre_parents') | float(none) is not none }}
 
       state: >
         {% set brut = {
-          'Chambre Arnaud': states('sensor.temperature_chambre_arnaud'),
+          'Chambre Enfants': states('sensor.temperature_chambre_enfants'),
           'Chambre Matthieu': states('sensor.temperature_chambre_matthieu'),
           'Chambre Parents': states('sensor.temperature_chambre_parents')
         } %}
@@ -62,7 +62,7 @@
       attributes:
         chambre_la_plus_chaude: >
           {% set brut = {
-            'Chambre Arnaud': states('sensor.temperature_chambre_arnaud'),
+            'Chambre Enfants': states('sensor.temperature_chambre_enfants'),
             'Chambre Matthieu': states('sensor.temperature_chambre_matthieu'),
             'Chambre Parents': states('sensor.temperature_chambre_parents')
           } %}
@@ -74,6 +74,6 @@
           {% endif %}
 
         sources: >
-          - sensor.temperature_chambre_arnaud
+          - sensor.temperature_chambre_enfants
           - sensor.temperature_chambre_matthieu
           - sensor.temperature_chambre_parents

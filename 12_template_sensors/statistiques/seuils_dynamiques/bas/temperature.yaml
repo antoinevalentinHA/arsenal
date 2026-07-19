@@ -28,7 +28,7 @@
 #
 # 🧩 Capteurs / Zones concernées :
 #   ▪️ Résidentiel :
-#      - Chambre Arnaud  
+#      - Chambre Enfants  
 #      - Chambre Matthieu  
 #      - Chambre Parents  
 #      - Séjour  
@@ -76,8 +76,8 @@
 # ==========================================================
 
 - sensor:
-    - name: "Température Seuil Bas Chambre Arnaud"
-      unique_id: temperature_seuil_bas_chambre_arnaud
+    - name: "Température Seuil Bas Chambre Enfants"
+      unique_id: temperature_seuil_bas_chambre_enfants
       state: &temperature_seuil_bas_logic >
         {% set periode = states('sensor.periode_meteo') %}
         {% set suffixe = this.entity_id | replace('sensor.temperature_seuil_bas_', '') %}

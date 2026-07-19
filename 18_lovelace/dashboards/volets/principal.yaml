@@ -135,7 +135,7 @@ views:
             cards:
               - type: custom:button-card
                 template: sub_section_header
-                name: 🛏️ Arnaud
+                name: 🛏️ Enfants
 
               - type: custom:button-card
                 template: sub_section_header
@@ -150,13 +150,13 @@ views:
                   - type: custom:button-card
                     template: shutter_open
                     variables:
-                      service: script.ouvrir_volet_arnaud
-                      confirm: Confirmez-vous l’ouverture du volet de la chambre d’Arnaud ?
+                      service: script.ouvrir_volet_enfants
+                      confirm: Confirmez-vous l’ouverture du volet de la chambre d’Enfants ?
                   - type: custom:button-card
                     template: shutter_close
                     variables:
-                      service: script.fermer_volet_arnaud
-                      confirm: Confirmez-vous la fermeture du volet de la chambre d’Arnaud ?
+                      service: script.fermer_volet_enfants
+                      confirm: Confirmez-vous la fermeture du volet de la chambre d’Enfants ?
 
               - type: horizontal-stack
                 cards:

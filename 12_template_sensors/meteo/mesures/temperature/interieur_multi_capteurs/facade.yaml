@@ -19,17 +19,17 @@
 
 - sensor:
 
-    - name: "Temperature chambre arnaud"
-      unique_id: temperature_chambre_arnaud
+    - name: "Temperature chambre enfants"
+      unique_id: temperature_chambre_enfants
       device_class: temperature
       state_class: measurement
       unit_of_measurement: "°C"
 
       availability: >
-        {{ states('sensor.temperature_stabilisee_chambre_arnaud') not in ['unknown','unavailable','none'] }}
+        {{ states('sensor.temperature_stabilisee_chambre_enfants') not in ['unknown','unavailable','none'] }}
 
       state: >
-        {{ states('sensor.temperature_stabilisee_chambre_arnaud') | float }}
+        {{ states('sensor.temperature_stabilisee_chambre_enfants') | float }}
 
     - name: "Temperature chambre matthieu"
       unique_id: temperature_chambre_matthieu

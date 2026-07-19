@@ -52,7 +52,7 @@
   trigger:
     - platform: state
       entity_id:
-        - binary_sensor.contact_chambre_arnaud
+        - binary_sensor.contact_chambre_enfants
         - binary_sensor.contact_chambre_matthieu
         - binary_sensor.contact_chambre_parents
         - binary_sensor.contact_sejour

@@ -13,16 +13,16 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidite_relative_chambre_arnaud_1
-        - sensor.humidite_relative_chambre_arnaud_2
+        - sensor.humidite_relative_chambre_enfants_1
+        - sensor.humidite_relative_chambre_enfants_2
     - platform: time_pattern
       minutes: "/5"
     - platform: homeassistant
       event: start
 
   sensor:
-    - name: "Humidite relative brute consolidee chambre arnaud"
-      unique_id: humidite_relative_brute_consolidee_chambre_arnaud
+    - name: "Humidite relative brute consolidee chambre enfants"
+      unique_id: humidite_relative_brute_consolidee_chambre_enfants
       unit_of_measurement: "%"
       device_class: humidity
 

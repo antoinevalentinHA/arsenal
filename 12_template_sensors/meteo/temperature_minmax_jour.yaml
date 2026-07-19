@@ -46,8 +46,8 @@
       entity_id:
         - sensor.temperature_min_jour_courant_cave
         - sensor.temperature_max_jour_courant_cave
-        - sensor.temperature_min_jour_courant_chambre_arnaud
-        - sensor.temperature_max_jour_courant_chambre_arnaud
+        - sensor.temperature_min_jour_courant_chambre_enfants
+        - sensor.temperature_max_jour_courant_chambre_enfants
         - sensor.temperature_min_jour_courant_chambre_matthieu
         - sensor.temperature_max_jour_courant_chambre_matthieu
         - sensor.temperature_min_jour_courant_chambre_parents
@@ -98,8 +98,8 @@
           {% endif %}
         {% endif %}
 
-    - name: "Temperature MinMax Jour Chambre Arnaud"
-      unique_id: temperature_minmax_jour_chambre_arnaud
+    - name: "Temperature MinMax Jour Chambre Enfants"
+      unique_id: temperature_minmax_jour_chambre_enfants
       state: *temperature_minmax_logic
 
     - name: "Temperature MinMax Jour Chambre Matthieu"

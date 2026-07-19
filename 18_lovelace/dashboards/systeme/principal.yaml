@@ -362,8 +362,8 @@ views:
             cards:
               - type: custom:button-card
                 template: netatmo_diagnostic
-                entity: sensor.diagnostic_netatmo_arnaud
-                name: Netatmo – Arnaud
+                entity: sensor.diagnostic_netatmo_enfants
+                name: Netatmo – Enfants
 
               - type: custom:button-card
                 template: netatmo_diagnostic

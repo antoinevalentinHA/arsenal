@@ -48,8 +48,8 @@
 # 🏠 Chambres
 # ----------------------------------------------------------
 - platform: statistics
-  name: "Température filtre aube Moyenne Chambre Arnaud"
-  entity_id: sensor.temperature_filtre_aube_chambre_arnaud
+  name: "Température filtre aube Moyenne Chambre Enfants"
+  entity_id: sensor.temperature_filtre_aube_chambre_enfants
   state_characteristic: mean
   max_age: &max_age_30d
     days: 30

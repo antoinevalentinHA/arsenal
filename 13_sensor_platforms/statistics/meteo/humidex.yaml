@@ -39,8 +39,8 @@
 # 🏠 Chambres
 # ----------------------------------------------------------
 - platform: statistics
-  name: "Humidex Moyenne Chambre Arnaud"
-  entity_id: sensor.humidex_chambre_arnaud
+  name: "Humidex Moyenne Chambre Enfants"
+  entity_id: sensor.humidex_chambre_enfants
   state_characteristic: mean
   max_age: &max_age_30d
     days: 30

@@ -123,7 +123,7 @@ la protection en absence et les diagnostics d'inertie.
 🔗 Dépendances :
 
 Sources amont (capteurs consolidés) :
-- `sensor.temperature_chambre_arnaud` (HomeKit → Zigbee → mémoire)
+- `sensor.temperature_chambre_enfants` (HomeKit → Zigbee → mémoire)
 - `sensor.temperature_chambre_matthieu` (HomeKit → Zigbee → mémoire)
 - `sensor.temperature_chambre_parents` (HomeKit → Zigbee → mémoire)
 

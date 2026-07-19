@@ -35,12 +35,12 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidex_chambre_arnaud
+        - sensor.humidex_chambre_enfants
     - platform: homeassistant
       event: start
   sensor:
-    - name: "Couleur Humidex Chambre Arnaud"
-      unique_id: couleur_humidex_chambre_arnaud
+    - name: "Couleur Humidex Chambre Enfants"
+      unique_id: couleur_humidex_chambre_enfants
       state: &couleur_humidex_logic >
         {% set suffixe = this.entity_id | replace('sensor.couleur_humidex_', '') %}
         {% set src = 'sensor.humidex_' ~ suffixe %}

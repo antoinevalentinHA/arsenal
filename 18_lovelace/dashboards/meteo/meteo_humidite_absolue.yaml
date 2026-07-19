@@ -71,11 +71,11 @@ views:
             cards:
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.humidite_absolue_chambre_arnaud
-                name: Arnaud
+                entity: sensor.humidite_absolue_chambre_enfants
+                name: Enfants
                 icon: mdi:water
                 triggers_update:
-                  - sensor.couleur_humidite_absolue_chambre_arnaud
+                  - sensor.couleur_humidite_absolue_chambre_enfants
 
               - type: custom:button-card
                 template: socle_kpi

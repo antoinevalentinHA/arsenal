@@ -30,8 +30,8 @@
 #   Socle — Arsenal v14.x
 # ==========================================================
 
-plateau_chambre_arnaud:
-  name: plateau_chambre_arnaud
+plateau_chambre_enfants:
+  name: plateau_chambre_enfants
   min: 0
   max: 30
   step: 0.1

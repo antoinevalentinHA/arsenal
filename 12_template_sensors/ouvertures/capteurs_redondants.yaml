@@ -45,7 +45,7 @@
         - input_text.contact_reconciliation_context_chambre_parents_droite
         - input_text.contact_reconciliation_context_garage
         - input_text.contact_reconciliation_context_sejour_3
-        - input_text.contact_reconciliation_context_chambre_arnaud
+        - input_text.contact_reconciliation_context_chambre_enfants
         - input_text.contact_reconciliation_context_chambre_matthieu
 
         - input_datetime.contact_last_transition_at_entree_porte
@@ -54,7 +54,7 @@
         - input_datetime.contact_last_transition_at_chambre_parents_droite
         - input_datetime.contact_last_transition_at_garage
         - input_datetime.contact_last_transition_at_sejour_3
-        - input_datetime.contact_last_transition_at_chambre_arnaud
+        - input_datetime.contact_last_transition_at_chambre_enfants
         - input_datetime.contact_last_transition_at_chambre_matthieu
 
         - binary_sensor.contact_entree_porte_1
@@ -69,8 +69,8 @@
         - binary_sensor.contact_garage_2
         - binary_sensor.contact_sejour_3_1
         - binary_sensor.contact_sejour_3_2
-        - binary_sensor.contact_chambre_arnaud_1
-        - binary_sensor.contact_chambre_arnaud_2
+        - binary_sensor.contact_chambre_enfants_1
+        - binary_sensor.contact_chambre_enfants_2
         - binary_sensor.contact_chambre_matthieu_1
         - binary_sensor.contact_chambre_matthieu_2
 
@@ -248,11 +248,11 @@
       state: *contact_redondant_state_logic
 
     # ----------------------------------------------------------
-    # CHAMBRE ARNAUD
+    # CHAMBRE ENFANTS
     # ----------------------------------------------------------
-    - name: "Contact Chambre Arnaud"
-      unique_id: contact_chambre_arnaud
-      default_entity_id: binary_sensor.contact_chambre_arnaud
+    - name: "Contact Chambre Enfants"
+      unique_id: contact_chambre_enfants
+      default_entity_id: binary_sensor.contact_chambre_enfants
       device_class: opening
       icon: *contact_redondant_icon_logic
       attributes: *contact_redondant_attributes_logic

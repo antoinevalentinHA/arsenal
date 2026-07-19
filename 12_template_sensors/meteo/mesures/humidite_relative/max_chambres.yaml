@@ -4,7 +4,7 @@
 # 🎯 Objectif :
 #   Identifier **la chambre la plus humide** en s’appuyant sur
 #   les capteurs consolidés (HomeKit + Zigbee fallback) :
-#     • sensor.humidite_relative_chambre_arnaud
+#     • sensor.humidite_relative_chambre_enfants
 #     • sensor.humidite_relative_chambre_matthieu
 #     • sensor.humidite_relative_chambre_parents
 #
@@ -26,7 +26,7 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.humidite_relative_chambre_arnaud
+        - sensor.humidite_relative_chambre_enfants
         - sensor.humidite_relative_chambre_matthieu
         - sensor.humidite_relative_chambre_parents
     - platform: homeassistant
@@ -40,7 +40,7 @@
 
       state: >
         {% set brut = {
-          'Chambre Arnaud': states('sensor.humidite_relative_chambre_arnaud'),
+          'Chambre Enfants': states('sensor.humidite_relative_chambre_enfants'),
           'Chambre Matthieu': states('sensor.humidite_relative_chambre_matthieu'),
           'Chambre Parents': states('sensor.humidite_relative_chambre_parents')
         } %}
@@ -63,7 +63,7 @@
       attributes:
         chambre_la_plus_humide: >
           {% set brut = {
-            'Chambre Arnaud': states('sensor.humidite_relative_chambre_arnaud'),
+            'Chambre Enfants': states('sensor.humidite_relative_chambre_enfants'),
             'Chambre Matthieu': states('sensor.humidite_relative_chambre_matthieu'),
             'Chambre Parents': states('sensor.humidite_relative_chambre_parents')
           } %}
@@ -84,6 +84,6 @@
           {% endif %}
 
         sources: >
-          - sensor.humidite_relative_chambre_arnaud
+          - sensor.humidite_relative_chambre_enfants
           - sensor.humidite_relative_chambre_matthieu
           - sensor.humidite_relative_chambre_parents

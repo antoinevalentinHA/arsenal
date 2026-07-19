@@ -70,15 +70,15 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_arnaud
-        - sensor.temperature_seuil_bas_chambre_arnaud
-        - sensor.temperature_seuil_haut_chambre_arnaud
+        - sensor.temperature_chambre_enfants
+        - sensor.temperature_seuil_bas_chambre_enfants
+        - sensor.temperature_seuil_haut_chambre_enfants
         - input_number.temperature_couleur_zone_verte
     - platform: homeassistant
       event: start
   sensor:
-    - name: "Couleur Température Chambre Arnaud"
-      unique_id: couleur_temperature_chambre_arnaud
+    - name: "Couleur Température Chambre Enfants"
+      unique_id: couleur_temperature_chambre_enfants
       state: &couleur_temperature_logic >
         {% set suffixe = this.entity_id | replace('sensor.couleur_temperature_', '') %}
         {% set src = 'sensor.temperature_' ~ suffixe %}

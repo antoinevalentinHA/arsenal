@@ -8,7 +8,7 @@
 #
 # ⚙️ Fonctionnement :
 #   - Chaque entité `sensor.temperature_filtre_<periode>_<zone>` surveille :
-#       • son capteur source (ex : `sensor.temperature_chambre_arnaud`)
+#       • son capteur source (ex : `sensor.temperature_chambre_enfants`)
 #       • l’état du capteur `sensor.periode_meteo`
 #   - Lorsque `sensor.periode_meteo` = `<periode>` (période portée par le nom
 #     de l’entité), la valeur courante du capteur source est copiée.
@@ -45,11 +45,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_arnaud
+        - sensor.temperature_chambre_enfants
         - sensor.periode_meteo
   sensor:
-    - name: "Température Filtre Aube Chambre Arnaud"
-      unique_id: temperature_filtre_aube_chambre_arnaud
+    - name: "Température Filtre Aube Chambre Enfants"
+      unique_id: temperature_filtre_aube_chambre_enfants
       state: &temperature_filtre_logic >
         {%- set eid = this.entity_id -%}
         {%- set prefix = 'sensor.temperature_filtre_' -%}
@@ -288,11 +288,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_arnaud
+        - sensor.temperature_chambre_enfants
         - sensor.periode_meteo
   sensor:
-    - name: "Température Filtre Matin Chambre Arnaud"
-      unique_id: temperature_filtre_matin_chambre_arnaud
+    - name: "Température Filtre Matin Chambre Enfants"
+      unique_id: temperature_filtre_matin_chambre_enfants
       state: *temperature_filtre_logic
 
 - trigger:
@@ -522,11 +522,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_arnaud
+        - sensor.temperature_chambre_enfants
         - sensor.periode_meteo
   sensor:
-    - name: "Température Filtre Jour Chambre Arnaud"
-      unique_id: temperature_filtre_jour_chambre_arnaud
+    - name: "Température Filtre Jour Chambre Enfants"
+      unique_id: temperature_filtre_jour_chambre_enfants
       state: *temperature_filtre_logic
 
 - trigger:
@@ -756,11 +756,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_arnaud
+        - sensor.temperature_chambre_enfants
         - sensor.periode_meteo
   sensor:
-    - name: "Température Filtre Crepuscule Chambre Arnaud"
-      unique_id: temperature_filtre_crepuscule_chambre_arnaud
+    - name: "Température Filtre Crepuscule Chambre Enfants"
+      unique_id: temperature_filtre_crepuscule_chambre_enfants
       state: *temperature_filtre_logic
 
 - trigger:
@@ -990,11 +990,11 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_arnaud
+        - sensor.temperature_chambre_enfants
         - sensor.periode_meteo
   sensor:
-    - name: "Température Filtre Nuit Chambre Arnaud"
-      unique_id: temperature_filtre_nuit_chambre_arnaud
+    - name: "Température Filtre Nuit Chambre Enfants"
+      unique_id: temperature_filtre_nuit_chambre_enfants
       state: *temperature_filtre_logic
 
 - trigger:

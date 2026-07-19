@@ -105,7 +105,7 @@ L’absence totale de chute thermique constitue :
 Seuls sont autorisés comme sources d’observation :
 
 - `sensor.temperature_chambre_parents`
-- `sensor.temperature_chambre_arnaud`
+- `sensor.temperature_chambre_enfants`
 - `sensor.temperature_chambre_matthieu`
 - `sensor.temperature_sejour`
 - `sensor.temperature_entree`

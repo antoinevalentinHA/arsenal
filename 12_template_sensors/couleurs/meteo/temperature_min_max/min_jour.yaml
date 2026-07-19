@@ -36,7 +36,7 @@
     - platform: state
       entity_id:
         - sensor.temperature_min_jour_courant_cave
-        - sensor.temperature_min_jour_courant_chambre_arnaud
+        - sensor.temperature_min_jour_courant_chambre_enfants
         - sensor.temperature_min_jour_courant_chambre_matthieu
         - sensor.temperature_min_jour_courant_chambre_parents
         - sensor.temperature_min_jour_courant_entree
@@ -48,7 +48,7 @@
         - sensor.temperature_min_jour_courant_sdb_parents
         - sensor.temperature_min_jour_courant_sejour
         - sensor.temperature_seuil_bas_cave
-        - sensor.temperature_seuil_bas_chambre_arnaud
+        - sensor.temperature_seuil_bas_chambre_enfants
         - sensor.temperature_seuil_bas_chambre_matthieu
         - sensor.temperature_seuil_bas_chambre_parents
         - sensor.temperature_seuil_bas_entree
@@ -60,7 +60,7 @@
         - sensor.temperature_seuil_bas_sdb_parents
         - sensor.temperature_seuil_bas_sejour
         - sensor.temperature_seuil_haut_cave
-        - sensor.temperature_seuil_haut_chambre_arnaud
+        - sensor.temperature_seuil_haut_chambre_enfants
         - sensor.temperature_seuil_haut_chambre_matthieu
         - sensor.temperature_seuil_haut_chambre_parents
         - sensor.temperature_seuil_haut_entree
@@ -146,8 +146,8 @@
     # INSTANCES
     # ------------------------------------------------------
 
-    - name: "Couleur Temperature Min Jour Chambre Arnaud"
-      unique_id: couleur_temperature_min_jour_chambre_arnaud
+    - name: "Couleur Temperature Min Jour Chambre Enfants"
+      unique_id: couleur_temperature_min_jour_chambre_enfants
       state: *logic_couleur_min
       attributes: *attrs_couleur_min
 

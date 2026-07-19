@@ -1,6 +1,6 @@
 # ==========================================================
 #  TEMPLATE SENSORS — Plateaux thermostatiques stricts
-#  Pieces : parents, arnaud, matthieu
+#  Pieces : parents, enfants, matthieu
 # ----------------------------------------------------------
 #  Role :
 #    Detecter un plateau thermique reel base sur :
@@ -43,10 +43,10 @@
         {% endif %}
 
     # ------------------------------------------------------
-    #  Chambre ARNAUD
+    #  Chambre ENFANTS
     # ------------------------------------------------------
-    - name: "plateau_thermostatique_chambre_arnaud"
-      unique_id: "plateau_thermostatique_chambre_arnaud"
+    - name: "plateau_thermostatique_chambre_enfants"
+      unique_id: "plateau_thermostatique_chambre_enfants"
       unit_of_measurement: "°C"
       icon: mdi:thermometer
       state: *plateau_thermostatique_logic

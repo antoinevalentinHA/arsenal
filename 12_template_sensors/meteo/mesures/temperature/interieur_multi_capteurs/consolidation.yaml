@@ -28,8 +28,8 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_arnaud_1
-        - sensor.temperature_chambre_arnaud_2
+        - sensor.temperature_chambre_enfants_1
+        - sensor.temperature_chambre_enfants_2
 
     - platform: time_pattern
       minutes: "/5"
@@ -38,8 +38,8 @@
       event: start
 
   sensor:
-    - name: "Temperature brute consolidee chambre arnaud"
-      unique_id: temperature_brute_consolidee_chambre_arnaud
+    - name: "Temperature brute consolidee chambre enfants"
+      unique_id: temperature_brute_consolidee_chambre_enfants
       device_class: temperature
       unit_of_measurement: "°C"
 

@@ -58,7 +58,7 @@ La **frontière NIVEAU 1 finale** de qualification thermique est assurée par :
 🔗 Dépendances :
 
 Sources physiques d'ouverture :
-- `binary_sensor.capteur_chambre_arnaud`
+- `binary_sensor.capteur_chambre_enfants`
 - `binary_sensor.capteur_chambre_matthieu`
 - `binary_sensor.capteur_chambre_parents_droite`
 - `binary_sensor.capteur_chambre_parents_gauche`

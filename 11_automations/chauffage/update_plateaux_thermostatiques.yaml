@@ -26,7 +26,7 @@
     - platform: state
       entity_id:
         - sensor.plateau_thermostatique_chambre_parents
-        - sensor.plateau_thermostatique_chambre_arnaud
+        - sensor.plateau_thermostatique_chambre_enfants
         - sensor.plateau_thermostatique_chambre_matthieu
 
   variables:
@@ -35,9 +35,9 @@
         mem: input_number.plateau_chambre_parents
         var: sensor.temperature_stats_12h_variance_chambre_parents
 
-      sensor.plateau_thermostatique_chambre_arnaud:
-        mem: input_number.plateau_chambre_arnaud
-        var: sensor.temperature_stats_12h_variance_chambre_arnaud
+      sensor.plateau_thermostatique_chambre_enfants:
+        mem: input_number.plateau_chambre_enfants
+        var: sensor.temperature_stats_12h_variance_chambre_enfants
 
       sensor.plateau_thermostatique_chambre_matthieu:
         mem: input_number.plateau_chambre_matthieu

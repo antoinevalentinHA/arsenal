@@ -287,7 +287,7 @@ def test_m1_normative_effects_present():
         "input_datetime.aeration_debut",
         "input_number.ref_temp_entree",
         "input_number.ref_temp_sejour",
-        "input_number.ref_temp_chambre_arnaud",
+        "input_number.ref_temp_chambre_enfants",
         "input_number.ref_temp_chambre_matthieu",
         "input_number.ref_temp_chambre_parents",
         "input_number.ref_temp_palier",
@@ -415,7 +415,7 @@ def test_m1_snapshot_sources_present():
     required_sources = [
         "sensor.temperature_entree",
         "sensor.temperature_sejour",
-        "sensor.temperature_chambre_arnaud",
+        "sensor.temperature_chambre_enfants",
         "sensor.temperature_chambre_matthieu",
         "sensor.temperature_chambre_parents",
         "sensor.temperature_palier",
@@ -443,7 +443,7 @@ def test_m1_snapshot_targets_present():
     required_targets = [
         "input_number.ref_temp_entree",
         "input_number.ref_temp_sejour",
-        "input_number.ref_temp_chambre_arnaud",
+        "input_number.ref_temp_chambre_enfants",
         "input_number.ref_temp_chambre_matthieu",
         "input_number.ref_temp_chambre_parents",
         "input_number.ref_temp_palier",
@@ -639,7 +639,7 @@ def test_t_ref_targets_not_written_by_m3_m4_m5_m6():
     protected_targets = [
         "input_number.ref_temp_entree",
         "input_number.ref_temp_sejour",
-        "input_number.ref_temp_chambre_arnaud",
+        "input_number.ref_temp_chambre_enfants",
         "input_number.ref_temp_chambre_matthieu",
         "input_number.ref_temp_chambre_parents",
         "input_number.ref_temp_palier",

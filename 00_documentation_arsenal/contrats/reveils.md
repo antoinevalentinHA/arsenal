@@ -54,7 +54,7 @@ rien au sens d'un moteur d'arbitrage, et n'est couplé à aucun autre domaine
 - `input_text.reveils_arnaud_heures` / `…_matthieu_heures` — historique horaire (texte, max 255).
 - `input_boolean.babyphone_arnaud` / `…_matthieu` — activation babyphone.
 
-**Perception (hors périmètre, lue) :** `sensor.bruit_chambre_arnaud` / `…_matthieu`.
+**Perception (hors périmètre, lue) :** `sensor.bruit_chambre_enfants` / `…_matthieu`.
 **Notification (hors périmètre, appelée) :** `script.notification_envoyer` vers `input_text.telephone_antoine_notify`.
 
 ---

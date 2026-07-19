@@ -52,8 +52,8 @@ contact_last_transition_at_sejour_3:
   has_date: true
   has_time: true
 
-contact_last_transition_at_chambre_arnaud:
-  name: Contact Chambre Arnaud Derniere Transition
+contact_last_transition_at_chambre_enfants:
+  name: Contact Chambre Enfants Derniere Transition
   has_date: true
   has_time: true
 

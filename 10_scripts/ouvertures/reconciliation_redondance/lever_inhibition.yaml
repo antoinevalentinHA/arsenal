@@ -43,7 +43,7 @@ reconciliation_lever_inhibition:
           - chambre_parents_droite
           - garage
           - sejour_3
-          - chambre_arnaud
+          - chambre_enfants
           - chambre_matthieu
         sequence:
           - variables:

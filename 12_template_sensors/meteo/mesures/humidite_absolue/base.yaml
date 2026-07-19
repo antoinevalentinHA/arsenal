@@ -177,19 +177,19 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_chambre_arnaud
-        - sensor.humidite_relative_chambre_arnaud
+        - sensor.temperature_chambre_enfants
+        - sensor.humidite_relative_chambre_enfants
     - platform: homeassistant
       event: start
   sensor:
-    - name: "Humidité absolue Chambre Arnaud"
-      unique_id: humidite_absolue_chambre_arnaud
+    - name: "Humidité absolue Chambre Enfants"
+      unique_id: humidite_absolue_chambre_enfants
       unit_of_measurement: "g/m³"
       icon: mdi:water-percent
       state: *absolute_humidity_logic
       attributes:
-        temperature_source: sensor.temperature_chambre_arnaud
-        humidite_source: sensor.humidite_relative_chambre_arnaud
+        temperature_source: sensor.temperature_chambre_enfants
+        humidite_source: sensor.humidite_relative_chambre_enfants
 
 - trigger:
     - platform: state

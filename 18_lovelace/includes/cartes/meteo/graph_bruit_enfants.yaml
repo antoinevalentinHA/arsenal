@@ -1,8 +1,8 @@
 type: custom:mini-graph-card
-name: Arnaud (12h)
+name: Enfants (12h)
 icon: mdi:volume-high
 entities:
-  - entity: sensor.bruit_chambre_arnaud
+  - entity: sensor.bruit_chambre_enfants
 hours_to_show: 12
 points_per_hour: 6
 line_width: 3

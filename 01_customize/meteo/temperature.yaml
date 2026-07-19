@@ -42,8 +42,8 @@ sensor.temperature_palier:
 # 🛏️ CHAMBRES
 ############################################################
 
-sensor.temperature_chambre_arnaud:
-  friendly_name: "Température Chambre Arnaud"
+sensor.temperature_chambre_enfants:
+  friendly_name: "Température Chambre Enfants"
   icon: mdi:thermometer
 
 sensor.temperature_chambre_matthieu:

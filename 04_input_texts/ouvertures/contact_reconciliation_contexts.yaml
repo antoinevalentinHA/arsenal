@@ -51,8 +51,8 @@ contact_reconciliation_context_sejour_3:
   name: Contact Sejour 3 Contexte Reconciliation
   max: 100
 
-contact_reconciliation_context_chambre_arnaud:
-  name: Contact Chambre Arnaud Contexte Reconciliation
+contact_reconciliation_context_chambre_enfants:
+  name: Contact Chambre Enfants Contexte Reconciliation
   max: 100
 
 contact_reconciliation_context_chambre_matthieu:

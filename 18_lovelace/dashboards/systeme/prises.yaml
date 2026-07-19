@@ -45,14 +45,14 @@ views:
             cards:
               - type: custom:button-card
                 template: prise_secteur_template
-                entity: switch.prise_chambre_arnaud
-                name: Netatmo Arnaud
+                entity: switch.prise_chambre_enfants
+                name: Netatmo Enfants
                 icon: mdi:thermometer
                 tap_action:
                   action: toggle
                   confirmation:
                     text: Basculer l'état de la prise ?
-                  entity: switch.prise_chambre_arnaud
+                  entity: switch.prise_chambre_enfants
 
               - type: custom:button-card
                 template: prise_secteur_template

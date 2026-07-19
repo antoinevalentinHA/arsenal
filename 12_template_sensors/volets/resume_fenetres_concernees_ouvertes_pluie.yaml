@@ -22,7 +22,7 @@
       icon: mdi:message-text
       state: >
         {% set mapping = {
-          'binary_sensor.contact_chambre_arnaud':'Chambre Arnaud',
+          'binary_sensor.contact_chambre_enfants':'Chambre Enfants',
           'binary_sensor.contact_chambre_matthieu':'Chambre Matthieu',
           'binary_sensor.contact_sejour_1':'Séjour 1',
           'binary_sensor.contact_sejour_2':'Séjour 2',
@@ -42,7 +42,7 @@
       attributes:
         ouvertes_entity_ids: >
           {% set fenetres = [
-            'binary_sensor.contact_chambre_arnaud',
+            'binary_sensor.contact_chambre_enfants',
             'binary_sensor.contact_chambre_matthieu',
             'binary_sensor.contact_sejour_1',
             'binary_sensor.contact_sejour_2',

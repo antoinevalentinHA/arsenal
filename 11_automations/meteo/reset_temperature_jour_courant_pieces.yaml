@@ -81,7 +81,7 @@
           - input_number.temperature_min_jour_courant_entree
           - input_number.temperature_min_jour_courant_sejour
           - input_number.temperature_min_jour_courant_palier
-          - input_number.temperature_min_jour_courant_chambre_arnaud
+          - input_number.temperature_min_jour_courant_chambre_enfants
           - input_number.temperature_min_jour_courant_chambre_matthieu
           - input_number.temperature_min_jour_courant_chambre_parents
           - input_number.temperature_min_jour_courant_petite_maison
@@ -98,7 +98,7 @@
           - input_number.temperature_max_jour_courant_entree
           - input_number.temperature_max_jour_courant_sejour
           - input_number.temperature_max_jour_courant_palier
-          - input_number.temperature_max_jour_courant_chambre_arnaud
+          - input_number.temperature_max_jour_courant_chambre_enfants
           - input_number.temperature_max_jour_courant_chambre_matthieu
           - input_number.temperature_max_jour_courant_chambre_parents
           - input_number.temperature_max_jour_courant_petite_maison

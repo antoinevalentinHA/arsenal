@@ -4,7 +4,7 @@
 # 🎯 RÔLE FONDAMENTAL
 #   Fournir des commandes GROUPÉES, strictement exécutives,
 #   pour l’ouverture et la fermeture complètes des volets
-#   des chambres enfants (Arnaud & Matthieu).
+#   des chambres enfants (Enfants & Matthieu).
 #
 # ----------------------------------------------------------
 # 🧱 RESPONSABILITÉ
@@ -17,9 +17,9 @@
 # ⚙️ MODE DE FONCTIONNEMENT
 #
 #   - Appel exclusif des scripts unitaires :
-#       • ouvrir_volet_arnaud
+#       • ouvrir_volet_enfants
 #       • ouvrir_volet_matthieu
-#       • fermer_volet_arnaud
+#       • fermer_volet_enfants
 #       • fermer_volet_matthieu
 #
 #   - Délai volontaire entre chaque commande
@@ -63,7 +63,7 @@ ouvrir_volets_enfants:
   alias: "Volets - Ouvrir chambres"
   mode: single
   sequence:
-    - service: script.ouvrir_volet_arnaud
+    - service: script.ouvrir_volet_enfants
     - delay: "00:00:01"
     - service: script.ouvrir_volet_matthieu
 
@@ -71,6 +71,6 @@ fermer_volets_enfants:
   alias: "Volets - Fermer chambres"
   mode: single
   sequence:
-    - service: script.fermer_volet_arnaud
+    - service: script.fermer_volet_enfants
     - delay: "00:00:01"
     - service: script.fermer_volet_matthieu

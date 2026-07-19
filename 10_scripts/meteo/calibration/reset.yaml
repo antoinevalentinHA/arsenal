@@ -93,8 +93,8 @@ reset_calibration_capteurs_zigbee:
         entity_id:
           - number.meteo_zigbee_sejour_temperature_calibration
           - number.meteo_zigbee_sejour_humidity_calibration
-          - number.meteo_zigbee_chambre_arnaud_temperature_calibration
-          - number.meteo_zigbee_chambre_arnaud_humidity_calibration
+          - number.meteo_zigbee_chambre_enfants_temperature_calibration
+          - number.meteo_zigbee_chambre_enfants_humidity_calibration
           - number.meteo_zigbee_chambre_matthieu_temperature_calibration
           - number.meteo_zigbee_chambre_matthieu_humidity_calibration
           - number.meteo_zigbee_chambre_parents_temperature_calibration

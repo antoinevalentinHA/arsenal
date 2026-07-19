@@ -40,7 +40,7 @@
 #
 #       B) Ouverture d’une zone SANS délai (immédiat) :
 #         • binary_sensor.contact_entree_fenetre
-#         • binary_sensor.contact_chambre_arnaud
+#         • binary_sensor.contact_chambre_enfants
 #         • binary_sensor.contact_chambre_matthieu
 #
 #     - Conditions de validité :
@@ -119,9 +119,9 @@
       id: entree
 
     - platform: state
-      entity_id: binary_sensor.contact_chambre_arnaud
+      entity_id: binary_sensor.contact_chambre_enfants
       to: "on"
-      id: arnaud
+      id: enfants
 
     - platform: state
       entity_id: binary_sensor.contact_chambre_matthieu
@@ -145,7 +145,7 @@
             - condition: trigger
               id:
                 - entree
-                - arnaud
+                - enfants
                 - matthieu
 
           sequence:

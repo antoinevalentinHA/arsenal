@@ -2,7 +2,7 @@ type: custom:mini-graph-card
 name: Pression atmosphérique (24h)
 icon: mdi:gauge
 entities:
-  - entity: sensor.pression_chambre_arnaud
+  - entity: sensor.pression_chambre_enfants
 hours_to_show: 24
 points_per_hour: 6
 line_width: 3

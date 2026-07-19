@@ -31,11 +31,11 @@ homekit_capteurs:
   name: "Capteurs Homekit"
   entities:
 
-    - sensor.bruit_chambre_arnaud
-    - sensor.co2_chambre_arnaud
-    - sensor.humidite_relative_chambre_arnaud_1
-    - sensor.air_quality_chambre_arnaud
-    - sensor.temperature_chambre_arnaud_1
+    - sensor.bruit_chambre_enfants
+    - sensor.co2_chambre_enfants
+    - sensor.humidite_relative_chambre_enfants_1
+    - sensor.air_quality_chambre_enfants
+    - sensor.temperature_chambre_enfants_1
     - sensor.humidite_relative_chambre_parents_1
     - sensor.co2_chambre_parents
     - sensor.air_quality_chambre_parents
