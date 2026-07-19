@@ -31,7 +31,7 @@ Spécialisations finales : `shutter_open`, `shutter_close`
 
 > Les deux spécialisations finales `shutter_open` / `shutter_close` fixent le libellé, l'icône (grosses flèches ⬆️ / ⬇️) et la couleur de **sens de commande** (montée 🟢 / descente 🔵). Cette couleur est **catégorielle et non décisionnelle** : elle n'exprime aucun état (les volets Bubendorf n'ont aucun retour d'état). Elle est encadrée par la charte couleurs — **Exception 9 (sens de commande des volets)**, sur le modèle de l'Exception 1 (modes HVAC). Le dashboard `principal.yaml` n'utilise que ces deux spécialisations (aucune couleur ni logique inline côté Lovelace).
 
-> ⚠️ **Pas de tuile « stop »** : ces volets (HomeKit, `supported_features = 7`) ne supportent pas `cover.stop_cover`. On n'expose donc pas de commande d'arrêt — on n'affiche que ce que le matériel sait faire (ouvrir / fermer).
+> ⚠️ **Pas de tuile « stop »** : ces volets (HomeKit, `supported_features = 7`) ne supportent pas `cover.stop_cover`. On n'expose donc pas de commande d'arrêt. L'arrêt existe au niveau matériel (bouton dédié dans Home + Control) mais n'est pas atteignable par HAP.
 
 ---
 
@@ -149,7 +149,7 @@ Les spécialisations finales existent désormais dans ce même dossier
 Le socle `shutter_action_base` reste réservé à l'héritage et n'est plus
 utilisé directement par les dashboards.
 
-> Pas de `shutter_stop` : le matériel ne supporte pas l'arrêt
+> Pas de `shutter_stop` : l'arrêt n'est pas exposé par la passerelle en HAP
 > (`supported_features = 7`), on n'expose donc pas cette commande.
 
 ---
