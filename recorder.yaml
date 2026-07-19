@@ -535,6 +535,41 @@ include:
     - binary_sensor.autorisation_clim_dry
     - binary_sensor.autorisation_clim_heat
     - binary_sensor.clim_blocage_horaire_reel
+    # ---- Politique d'absence COOL — instrumentation probatoire (C20, Lot 5) ----
+    # RECORDER — Population B
+    # Rôle        : veto composite absence/Vacances, qualification d'absence longue,
+    #               ancre de début d'absence, durée réglable et verdict COOL.
+    # Utilité     : le protocole de validation terrain C20 fonde ses preuves sur
+    #               l'Historique ; sans ces états, 11 de ses 12 scénarios ne sont pas
+    #               exerçables (comparaison avant/après reboot, échéance recalculée,
+    #               attribut de cause). Lecture seule ; aucune logique métier ne lit
+    #               cet historique recorder.
+    # Logbook     : acceptable — transitions rares (absences réelles, actes opérateur).
+    # Cardinalité : finie et énumérable (2 binaires, 1 verdict énuméré, 1 horodatage,
+    #               1 réglage numérique borné).
+    # Fréquence   : très faible, largement en deçà du seuil de 5 changements/heure.
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : C20 — Politique d'absence COOL (Lot 5, validation terrain)
+    # Objet      : rendre exerçables les scénarios S1–S11 du protocole, dont la trace
+    #              §4 exige explicitement l'Historique. Les événements set_datetime /
+    #              set_value sont des preuves complémentaires, jamais un substitut :
+    #              ils datent une écriture, ils ne restituent ni une valeur avant/après
+    #              ni un attribut.
+    # Ajouté     : 2026-07-19 (T0)
+    # Réévaluer  : 2026-11-16 (T0 + 120 j) — RÉÉVALUATION propriétaire OBLIGATOIRE,
+    #              PAS une suppression automatique : maintien motivé · retrait ·
+    #              modification de la stratégie de preuve · autorisation d'un test
+    #              provoqué. Aucun maintien silencieux au-delà. Rejouer la procédure
+    #              de classification (observabilité permanente OU retrait du microscope).
+    # Retrait    : dès trace §4 complète ET chantier C20 clôturé
+    # Rappel     : purge_keep_days = 30 j. Tout scénario observé doit être consigné
+    #              dans la trace §4 sous 30 j ; au-delà, la preuve relève d'une analyse
+    #              hors ligne sur sauvegarde (canal probatoire, dépôt d'audit runtime).
+    - binary_sensor.clim_veto_absence_vacances
+    - binary_sensor.clim_extinction_absence_prolongee_autorisee
+    - input_datetime.clim_debut_absence
+    - input_number.clim_duree_absence_longue
+    - sensor.clim_verdict_cool
     # ---- Intensité du besoin de froid (couche perception, contrat 13) ----
     # Observationnel : caler les bandes et vérifier l'effet nuit (C2) avant
     # tout câblage. Lecture seule, aucun pilotage.
