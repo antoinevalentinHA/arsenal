@@ -1,7 +1,7 @@
 # CONTRAT — Sécurité publication Git
 
 **Référence :** `documentation_arsenal/contrats/publication/securite_publication_git.md`
-**Version :** v1.3.0
+**Version :** v1.4.0
 **Statut :** Normatif
 **Scope :** Arsenal — audit pré-publication
 
@@ -16,6 +16,7 @@
 | v1.1.0 | Annotations `audit:ignore` / `audit:scope=doc` ; placeholders numériques ; S5 affiné ; exclusions de performance formalisées |
 | v1.2.0 | **C14 Lot 1E-c — réduction des faux positifs, sans affaiblir la détection.** S1 : en fichier de **code**, un mot-clé secret n'est `CRITICAL` que si sa valeur est un **littéral chaîne quoté** (les identifiants/types/appels — `token: str`, `_G_TOKEN = re.compile(...)` — ne sont plus des secrets ; les valeurs codées en dur `API_TOKEN = "…"` restent `CRITICAL`). S5a : le contrôle des **fichiers interdits** porte désormais sur les fichiers **versionnés** (`git ls-files`) de tout l'arbre, **indépendamment de `EXCLUDED_DIRS`** — lève l'angle mort `zigbee2mqtt/` (un `.log` suivi y échappait) ; un artefact runtime **non suivi** (gitignoré) n'est pas signalé. S2/S3 : `.home-assistant.io` n'est plus lu comme domaine local ; `synology.<ext>` (nom de fichier) n'est plus lu comme accès distant. Ajout d'un `--selftest`. Script : v1.2.0 → **v1.3.0**. |
 | v1.3.0 | **Incident P0 — secrets Zigbee2MQTT publiés.** Périmètre : `zigbee2mqtt/` **retiré des exclusions § 3.4** — répertoire de configuration porteuse de credentials, classé à tort « tiers » ; cette exclusion a produit un verdict `PASS` sur un mot de passe MQTT littéral et une clé réseau Zigbee versionnés. Nouveau contrôle **S9 — Clés réseau Zigbee** : `network_key` / `ext_pan_id` littéraux (bloc YAML ou inline) → `CRITICAL` ; `pan_id` littéral → `WARNING` ; formes admises : `GENERATE` et `'!secret x'`. Placeholders § 3.5 : ajout de `GENERATE` et de la forme **quotée** `'!secret x'` (syntaxe Zigbee2MQTT). S2 : liste blanche de ports appliquée au **port matché lui-même** (l'ancien lookahead ne neutralisait jamais `:1883`). CI : le workflow d'audit devient **bloquant** (`--fail-on critical`, plus de `continue-on-error`), précédé de `--selftest` et des contrats `check_publication_zigbee2mqtt_contracts.py`. Rapport : `audits/01_rapports/transverses/incident_p0_zigbee2mqtt_secrets_publies.md`. Script : v1.3.0 → **v1.4.0**. |
+| v1.4.0 | **C32 — dé-identification des prénoms enfants.** Nouveau contrôle **S7 — Prénoms enfants** (`arnaud` / `matthieu`), l'un des « noms propres nominatifs » listés en § 9. Après le chantier C32 (Chambre Arnaud → Chambre Enfants, Chambre Matthieu → Salle de Jeux ; suivi enfants fusionné), aucun prénom d'enfant ne doit revenir dans le **runtime** : détection `\b(arnaud\|matthieu)\b` → `CRITICAL` en fichier de runtime (verrou anti-retour), `WARNING` en documentation active (`.md`/`.txt` — mentions historiques « ex- » des contrats), **hors périmètre** pour l'historique gelé (`00_documentation_arsenal/changelog/`, `…/audits/`). En historique Git (`--history`) : `WARNING` — les prénoms passés subsistent, leur purge relève d'un `git filter-repo` (cf. S6). Script : v1.4.0 → **v1.5.0**. |
 
 ---
 
@@ -306,6 +307,25 @@ pour ne pas dépendre de `EXCLUDED_DIRS`.
 
 ---
 
+### S7 — Prénoms enfants (dé-identification) · `CRITICAL` ou `WARNING`
+
+Implémenté en script v1.5.0 (chantier **C32** : dé-identification des prénoms enfants après le renommage
+Chambre Arnaud → Chambre Enfants / Chambre Matthieu → Salle de Jeux et la fusion du suivi enfants).
+Sous-ensemble **concret** des « noms propres nominatifs » de § 9. **Verrou anti-retour** : après C32, aucun
+prénom d'enfant ne doit revenir dans le **runtime**.
+
+| Contexte du fichier | Verdict |
+|---|---|
+| **Runtime** (YAML de config, code) | `CRITICAL` — une régression de dé-identification bloque la publication |
+| **Documentation active** (`.md` / `.txt`) | `WARNING` — mentions historiques « ex- » des contrats, à accepter en revue |
+| **Historique gelé** (`00_documentation_arsenal/changelog/`, `…/audits/`) | hors périmètre — le record conserve légitimement les prénoms |
+
+Détection : `\b(arnaud\|matthieu)\b` (insensible à la casse). En historique Git (`--history`) : `WARNING`
+— les prénoms passés subsistent dans l'historique ; leur purge relève d'un `git filter-repo` (cf. S6),
+arbitrage distinct. Le scanner **s'auto-exclut** (§ 3.3) : sa liste de prénoms ne se signale pas.
+
+---
+
 ### S8 — Coordonnées GPS · `CRITICAL` ou `WARNING`
 
 Implémenté en script v1.2.0 (fuite des coordonnées du domicile dans `17_zones/`).
@@ -415,7 +435,7 @@ Le code de retour `2` fait échouer le pipeline. Le code `1` peut être configur
 
 | Ref | Description | Statut |
 |---|---|---|
-| S7 | Entités HA nominatives (`person:`, `device_tracker:`, noms propres en valeur) | prévu |
+| S7 | Prénoms enfants dé-identifiés (`arnaud` / `matthieu`) — verrou anti-retour ; sous-ensemble concret des « noms propres nominatifs » | **implémenté** (script v1.5.0, § 5/S7) |
 | S8 | Coordonnées GPS (`latitude`, `longitude`, zone `home`) | **implémenté** (script v1.2.0, § 5/S8) |
 | S9 | Clés réseau Zigbee (`network_key`, `ext_pan_id`, `pan_id`) | **implémenté** (script v1.4.0, § 5/S9) |
 | S10 | Intégration `pre-commit` hook local (ex-S9 de v1.1) | prévu |
