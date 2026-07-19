@@ -4,10 +4,11 @@
 |---|---|
 | **Chantier** | Instruire l'écart possible entre la **décision publiée** par la chaîne Climatisation et l'**état physique réel** de l'équipement, lorsque l'état rapporté par l'intégration est dégradé (`off` alors que la machine tourne, `unknown`, `unavailable`, gelé). |
 | **Domaine** | Climatisation — chaîne décision → autorisation → exécution → restitution. |
-| **Statut** | **Ouvert — diagnostic causal NON établi.** Une occurrence réelle a été observée le 2026-07-19 ; sa cause n'est pas démontrée et sa reconstitution exhaustive est **hors périmètre**. **A1 en traitement (contract-first)** ; **A2 requalifié défaut L1, non solvable en l'état, non bloquant** (§4). |
+| **Statut** | **Ouvert — travaux statiques terminés, attente terrain A3/A4.** Une occurrence réelle a été observée le 2026-07-19 ; sa cause n'est pas démontrée et sa reconstitution exhaustive est **hors périmètre**. **A1 et A6 livrés sur preuves statiques** ; **A2 et A5 requalifiés non solvables en l'état, non bloquants** ; **A3 et A4 seuls restent ouverts**, sous verrou terrain (§4, §8). **Aucun travail statique supplémentaire n'est justifié en l'état.** |
 | **Priorité** | **P1** — impact *fail-open* non borné : la climatisation peut rester physiquement active alors que la décision publiée exige l'arrêt, sans détection, sans notification et sans reprise. |
 | **Ouvert le** | 2026-07-19. |
-| **Prochain jalon** | **A6 : lot contract-first mergé (#445), lot runtime/UI/checker en cours.** Ensuite : A3 et A4, sur occurrence naturelle. |
+| **Prochain jalon** | **Occurrence naturelle** — relevé **P1 commun à A3 et A4**, consigné en temps réel dans la trace §6 du protocole apparié. Aucun jalon statique restant. |
+| **Série livrée** | **#443** contract-first A1 · **#444** runtime/UI/checker A1 · **#445** contract-first A6 · **#446** runtime/UI/checker A6. |
 | **Registre** | Chantier **C30** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C30 **ne vaut ni validation d'un diagnostic causal complet,
@@ -106,10 +107,10 @@ Aucun de ces axes ne porte de solution retenue. Ils délimitent ce que le chanti
 |---|---|---|
 | **A1** | Véracité de `sensor.clim_action_en_cours` | **CONFORME ET LIVRÉ (2026-07-19)** sur preuves statiques — #443 contrat, #444 runtime. Voir §4.1. |
 | **A2** | Observabilité des abstentions silencieuses | **REQUALIFIÉ (2026-07-19) — défaut L1, non solvable en l'état, non bloquant.** Voir §4.2. |
-| **A3** | Qualité et fraîcheur de l'état rapporté Airstage | Quelle est la fiabilité réelle de `climate.clim` / `switch.clim_power` ? Quels signaux de fraîcheur existent et que valent-ils ? |
-| **A4** | Éventuel contre-signal indépendant | Faut-il une observation ne dépendant pas de l'intégration ? **Le choix d'un contre-signal est hors périmètre à l'ouverture.** |
+| **A3** | Qualité et fraîcheur de l'état rapporté Airstage | **OUVERT — sous verrou terrain.** Départager « gelé » de « frais mais faux » exige un relevé P1 en temps réel (§8). |
+| **A4** | Éventuel contre-signal indépendant | **OUVERT — sous verrou terrain.** Aucun producteur indépendant n'existe (défaut L1) ; l'évaluation exige la même observation qu'A3 (§8). |
 | **A5** | Stratégie de reprise ou de réassertion | **NON FAISABLE avec les signaux existants (2026-07-19) — différé, non bloquant.** Voir §4.3. |
-| **A6** | Distinction commande impossible / état inconnu / équipement arrêté | **ARBITRÉ (2026-07-19)** — A6a : abstention native conjointe ; A6b : sans état durable. Voir §4.4. |
+| **A6** | Distinction commande impossible / état inconnu / équipement arrêté | **LIVRÉ (2026-07-19)** sur preuves statiques — #445 contrat, #446 runtime/UI/checker. A6a abstention native conjointe ; A6b sans état durable. Voir §4.4. |
 
 ### 4.3 A5 — non faisable avec les signaux existants (2026-07-19)
 
@@ -256,7 +257,7 @@ Alignement des contrats propriétaires : abstention native, ordre `cool/dry/heat
 correction de la contradiction interne pseudo-code ↔ comportement, borne de la tolérance de divergence,
 terminologie « état HVAC **rapporté** », verrous de clôture requalifiés par axe.
 
-#### Lot A1 — runtime / UI / checker *(en cours)*
+#### Lot A1 — runtime / UI / checker — **livré (#444)**
 
 - `action_en_cours.yaml` — bloc `availability:` observant `climate.clim` ; l'entité s'abstient sur
   `unknown`/`unavailable`/entité absente. **Cascade nominale et vocabulaire inchangés.**
@@ -278,7 +279,7 @@ Abstention native de `sensor.clim_mode_local` (suppression du double repli, **ch
 assumé**), du verdict `binary_sensor.clim_incoherence_decision_reel` et de la restitution dérivée
 `sensor.etat_clim_dashboard` · consignation A6b sans état durable · message de notification neutre.
 
-#### Lot A6 — runtime / UI / checker *(en cours)*
+#### Lot A6 — runtime / UI / checker — **livré (#446)**
 
 - **`decision/mode.yaml`** — `availability` sur l'exploitabilité de `climate.clim` ; **suppression
   complète** du repli `this.state` (état **et** icône) et du fallback terminal `off` ; état nominal réduit
@@ -335,7 +336,7 @@ et évolutions contractuelles restent des **arbitrages futurs**.
 > axe**, conformément à [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md) :
 > un verrou bloquant adossé à une occurrence **non provocable** serait **non solvable**.
 
-**A1 — clôturable sur preuves statiques.** Le défaut est **démontré statiquement** (§4.1) et le correctif
+**A1 — LIVRÉ sur preuves statiques** (#443, #444). Le défaut est **démontré statiquement** (§4.1) et le correctif
 est vérifiable de même : rendu Jinja de la table de vérité complète, non-régression du régime nominal,
 garde de checker, conformité contractuelle, implémentation runtime/UI. **A1 est clôturable dès que ces
 preuves sont complètes.** L'observation terrain d'une indisponibilité naturelle est conservée comme
@@ -348,12 +349,16 @@ clôture d'aucun autre axe.
 **A5 — réserve différée non solvable en l'état, explicitement non bloquante** (§4.3). Deux verrous
 démontrés statiquement ; aucune occurrence n'est requise pour l'établir.
 
-**A6 — clôturable sur preuves statiques.** Ses défauts sont établis par lecture (table de vérité, prédicat
+**A6 — LIVRÉ sur preuves statiques** (#445, #446). Ses défauts sont établis par lecture (table de vérité, prédicat
 de cohérence, branche de fabrication de `off`). Confirmation terrain **L5 opportuniste, non bloquante**.
 
-**A3 et A4 — verrou terrain maintenu.** Pour eux seuls, la trace du protocole apparié reste requise :
-l'absence de nouvelle occurrence ne vaut pas résolution, et l'absence d'erreur ne prouve rien — c'est
-précisément la propriété défaillante décrite en C30-O1.
+**A3 et A4 — verrou terrain maintenu, sur une observation commune.** Pour eux seuls, la trace du
+protocole apparié reste requise : l'absence de nouvelle occurrence ne vaut pas résolution, et l'absence
+d'erreur ne prouve rien — c'est précisément la propriété défaillante décrite en C30-O1.
+
+Les deux axes reposent sur **la même observation naturelle synchronisée** (protocole §1 bis) : un unique
+relevé P1 sert simultanément à qualifier « gelé » versus « frais mais faux » (A3) et à rechercher un
+contre-signal réellement indépendant (A4). Ils ne se traitent pas séparément.
 
 ### Résiduel architectural
 
@@ -363,6 +368,17 @@ disqualifiée (C30-O6). Le **cœur du fail-open** — décision `off`, équipeme
 `off` — **n'est réparable par aucun axe autre qu'A4**, dont le producteur n'existe pas.
 
 **C30 ne pourra pas être clos sur son cœur tant que ce constat tient.**
+
+### État des travaux statiques (2026-07-19)
+
+**Tous les travaux statiques sont terminés.** Deux axes livrés (A1, A6), deux requalifiés non solvables
+(A2, A5), deux restants dont la preuve est par nature **L5 et non provocable** (A3, A4).
+
+**Aucun travail statique supplémentaire n'est justifié en l'état.** Une confirmation terrain d'A1 ou d'A6
+reste **opportuniste et non bloquante** : ces axes sont livrés sur preuves statiques.
+
+**C30 ne doit pas être fermé** : le fail-open central demeure, et sa réparation dépend d'A4, dont le
+producteur n'existe pas.
 
 ---
 

@@ -46,6 +46,35 @@
 | **9** | Consommation instantanée / cumul du jour (`…/consommation/`) | **N'est PAS un contre-signal indépendant** *(établi 2026-07-19)* : la chaîne dérive intégralement de `sensor.clim_mode_local`, donc de l'état rapporté. Elle **confirmerait** un `off` faux. Relevé pour contexte uniquement. |
 | **10** | Contexte : fenêtre ouverte concernée, présence, mode nuit, rechargement ou redémarrage récent | Qualifie la situation. |
 
+### 1 bis. Relevé commun à A3 et A4 *(précision du 2026-07-19)*
+
+**A3 et A4 reposent sur la même observation naturelle synchronisée.** Un unique relevé P1 les sert tous
+les deux — ils **ne se traitent pas séparément**. Aucun nouveau protocole, aucune instrumentation
+supplémentaire : il s'agit d'une précision de lecture des relevés §1 déjà prévus.
+
+Éléments à saisir **au même instant** :
+
+| Élément | Repère §1 |
+|---|---|
+| **Constat physique réel** de l'équipement (souffle, bruit, air, voyant) | 1 |
+| État rapporté par **`climate.clim`** | 2 |
+| État de **`switch.clim_power`** | 3 |
+| Valeur instantanée de **`sensor.fujitsu_age_donnees`** | 8 |
+| État de **`binary_sensor.gel_avere_airstage`** | 8 |
+| Les autres éléments P1 déjà prévus | 4 à 7, 9, 10 |
+
+Ce relevé unique doit permettre **simultanément** :
+
+- **A3** — qualifier autant que possible **« gelé » versus « frais mais faux »** : c'est l'âge des données
+  confronté au constat physique qui départage, jamais l'état rapporté seul ;
+- **A4** — **rechercher un contre-signal réellement indépendant** de l'intégration, en confrontant le
+  constat physique à toute grandeur observable ne dérivant pas de `climate.clim`.
+
+**Rappels impératifs.** Relevé **en temps réel**. **Aucune panne fabriquée.** **Aucun rechargement avant
+collecte.** L'**Historique HA ne peut reconstruire ni `climate.clim`, ni `sensor.fujitsu_age_donnees`** —
+tous deux absents du Recorder, donc inatteignables en base courante comme en sauvegarde hors ligne. Le
+niveau **P2 reste inatteignable en l'état**, faute de contre-signal indépendant.
+
 ### Niveau de preuve (obligatoire)
 
 Chaque relevé porte l'une de ces quatre valeurs. **Un relevé sans niveau de preuve est inexploitable.**
