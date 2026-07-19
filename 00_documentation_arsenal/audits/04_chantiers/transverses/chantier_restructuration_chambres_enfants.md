@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Restructuration des pièces enfants suite au déménagement : la chambre d'Arnaud devient la **Chambre Enfants** (partagée), la chambre de Matthieu devient une **Salle de Jeux**, la Chambre Parents est inchangée. Passage de **3 chambres → 2 chambres + 1 salle de jeux** dans toute la logique. Dé-identification des prénoms enfants obtenue **en sous-produit**. |
 | **Domaine** | TRANSVERSE (Météo/température intérieure ↔ Chauffage/vannes thermostatiques ↔ Sommeil/réveils ↔ Volets ↔ Aération ↔ UI Lovelace ↔ Doctrine de nommage ↔ Publication/confidentialité). |
-| **Statut** | **ACTIF — Lot 4a livré (alignement runtime des agrégats « chambres »).** Lots 0–3b acquis + Lot 4a : la Salle de Jeux **retirée** des agrégats sommeil/besoin — `temperature_min/max_chambres` (besoin de chauffe), `humidex_max_chambres`, `humidite_relative_max_chambres`, garde anti-gel COOL `intensite_besoin_froid`, groupe volets « chambres » — qui calculent désormais sur **2 pièces** (Enfants, Parents), **conformes aux contrats L2/L2b**. La Salle de Jeux **reste** dans les agrégats multi-pièces légitimes (ouvertures, aération, capteurs, statistiques) : elle a bien capteurs/fenêtres. Per-child **intact** (L5). **⚠️ Migration instance (L6) au déploiement** (z2m + registre + recorder). |
+| **Statut** | **ACTIF — Lot 4 livré (alignement runtime + vannes).** Lots 0–4a acquis + Lot 4b : la Salle de Jeux **garde sa vanne et son plateau individuels** (arbitrage propriétaire 2026-07-19) mais sort du **verdict collectif de stabilité « chambres »** (`vannes_thermostatiques_stabilite_globale` → 2 chambres). **A2 est entièrement appliqué côté runtime** : besoin de chauffe/froid, humidex/humidité max, volets groupés et verdict vannes calculent sur {Enfants, Parents} ; la Salle de Jeux reste une pièce autonome (capteurs, fenêtres, aération, vanne). Per-child **intact** (L5). **⚠️ Migration instance (L6) au déploiement** (z2m + registre + recorder). |
 | **Priorité** | **P2** (proposée) — voir §Priorité. |
 | **Ouvert le** | 2026-07-19. |
 | **Preuve de départ** | Besoin propriétaire (déménagement physique **à venir** : enfants regroupés dans l'ex-chambre Arnaud ; ex-chambre Matthieu → salle de jeux) + **inventaire d'impact en lecture seule** consigné §3. Aucun rapport d'audit préalable mergé — l'inventaire est la preuve de départ. |
-| **Prochain jalon** | **L4b** — vannes/plateaux : la Salle de Jeux garde-t-elle sa vanne de chauffage (plateau diagnostic individuel, hors agrégat « chambres ») ou sort-elle du chauffage piloté ? (arbitrage propriétaire) — puis **L5** (fusion suivi enfants). |
+| **Prochain jalon** | **L5** — fusion du suivi enfants : `babyphone_arnaud` + `babyphone_matthieu` → **`babyphone`** unique (ratifié) ; compteurs de réveils et présence ; sur le capteur de bruit unique de la Chambre Enfants. |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C32 **consigne les décisions propriétaire déjà rendues**
 > (A1–A3, §Décisions) et l'**inventaire d'impact** (§3). Elle **ne crée aucun contrat, aucun runtime,
@@ -381,3 +381,21 @@ non impactés. Validation : **~80 checkers + docs verts (0 échec)** (dont `chec
 
 **Hors périmètre L4a : vannes/plateaux** — la Salle de Jeux garde-t-elle sa vanne de chauffage ? Arbitrage
 propriétaire porté par **L4b**. **C32 actif ; prochain jalon L4b puis L5.**
+
+### Lot 4b — vannes/plateaux (terminé, 2026-07-19)
+
+**Arbitrage propriétaire rendu** : la Salle de Jeux **garde sa vanne** de chauffage (elle reste chauffée,
+indépendamment de la logique sommeil). Conséquence minimale, le sous-domaine plateaux étant **diagnostic
+non décisionnel** :
+
+- **Conservé** (vanne + plateau **individuels**) : `plateau_thermostatique_salle_de_jeux`,
+  `input_number.plateau_salle_de_jeux`, sélecteur de pièce, affichage, reset, écriture auto — inchangés.
+- **Retiré** du seul **verdict collectif** `sensor.vannes_thermostatiques_stabilite_globale` : il porte
+  désormais sur les **chambres** (Enfants, Parents) ; la stabilité de la Salle de Jeux reste consultable
+  individuellement (sélecteur). Contrat `vannes_thermostatiques_plateaux.md` : note de périmètre ajoutée.
+
+Un seul fichier runtime touché (`stabilite_globale.yaml` : liste des pièces réduite dans les 4 boucles).
+Validation : **~80 checkers + docs verts (0 échec)**, YAML parsé.
+
+**A2 est désormais entièrement appliqué côté runtime.** Reste au chantier : **L5** (fusion suivi enfants),
+**L6** (migration instance), **L8** (S7 CI, parallèle), puis L9/L10. **C32 actif ; prochain jalon L5.**
