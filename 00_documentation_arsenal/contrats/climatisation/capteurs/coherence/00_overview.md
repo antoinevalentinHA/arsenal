@@ -61,6 +61,7 @@ Elle observe une cohérence entre une cible décisionnelle et un état réel.
 
 | Cas | Cohérence attendue |
 |---|---|
+| **un opérande non exploitable** (`unknown`, `unavailable`, absent) | **abstention native — aucun verdict rendu** |
 | `target == off` | `switch.clim_power == off` ET `sensor.clim_mode_local == off` |
 | `target == cool` | `switch.clim_power == on` ET `sensor.clim_mode_local == cool` |
 | `target == dry` | `switch.clim_power == on` ET `sensor.clim_mode_local == dry` |

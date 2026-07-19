@@ -17,7 +17,11 @@
 
 ## 0. Prérequis et rappels
 
-- Outils : **Outils de développement → États** et **Historique** de Home Assistant. Lecture seule.
+- Outils : **Outils de développement → États** de Home Assistant. Lecture seule.
+- **⚠️ L'Historique n'est PAS un instrument disponible pour ce protocole** *(établi 2026-07-19)* :
+  `climate.clim` et `sensor.fujitsu_age_donnees` sont **absents du Recorder** (allowlist stricte par
+  entité). Ils sont donc inatteignables en base courante **comme** en sauvegarde hors ligne. Les relevés
+  du §1 sont **exclusivement en temps réel**, avant tout rechargement.
 - Ne rien redémarrer, ne rien recharger avant d'avoir consigné les relevés du §1 : **un rechargement
   détruit l'état observable**.
 - Le déclencheur d'observation est un **doute**, pas une certitude : toute situation où la restitution
@@ -39,7 +43,7 @@
 | **6** | `sensor.clim_mode_local` et `binary_sensor.clim_incoherence_decision_reel` | Détecteur de divergence (C30-O5). |
 | **7** | `input_boolean.clim_execution_echec` et le compteur de budget de reprise | Vérifie C30-O4 : un échec est-il latché ? |
 | **8** | `sensor.fujitsu_age_donnees`, `binary_sensor.gel_avere_airstage` | Fraîcheur de l'état rapporté (axe A3). |
-| **9** | Consommation instantanée / cumul du jour (`…/consommation/`) | Contre-signal **candidat** — relevé pour évaluation, **sans préjuger** de son adoption (axe A4). |
+| **9** | Consommation instantanée / cumul du jour (`…/consommation/`) | **N'est PAS un contre-signal indépendant** *(établi 2026-07-19)* : la chaîne dérive intégralement de `sensor.clim_mode_local`, donc de l'état rapporté. Elle **confirmerait** un `off` faux. Relevé pour contexte uniquement. |
 | **10** | Contexte : fenêtre ouverte concernée, présence, mode nuit, rechargement ou redémarrage récent | Qualifie la situation. |
 
 ### Niveau de preuve (obligatoire)
@@ -50,7 +54,7 @@ Chaque relevé porte l'une de ces quatre valeurs. **Un relevé sans niveau de pr
 |---|---|
 | **P0 — HA seulement** | États lus dans HA, sans constat physique. **Ne prouve pas la divergence.** |
 | **P1 — HA + constat physique** | États HA **et** vérification directe de la marche de l'appareil. **Niveau minimal pour qualifier une divergence.** |
-| **P2 — P1 + contre-signal concordant** | S'ajoute une grandeur indépendante (consommation) cohérente avec le constat physique. |
+| **P2 — P1 + contre-signal concordant** | S'ajoute une grandeur indépendante cohérente avec le constat physique. **⚠️ INATTEIGNABLE EN L'ÉTAT** *(établi 2026-07-19)* : aucune grandeur indépendante de l'intégration n'existe — aucun capteur de puissance physique, et la consommation estimée dérive de `sensor.clim_mode_local`. |
 | **P3 — non confirmé** | Doute non levé, relevé incomplet, ou occurrence provoquée. **Irrecevable comme preuve.** |
 
 ---
@@ -100,7 +104,10 @@ fait sur le filet, distinct de la divergence elle-même.
 
 > **Vide à ce jour.** Aucune occurrence consignée.
 >
-> **Les axes A3 à A6 de C30 ne sont pas clôturables tant que cette section reste vide.**
+> **Les axes A3 et A4 de C30 ne sont pas clôturables tant que cette section reste vide.**
+>
+> **A5 et A6 ne dépendent pas de cette trace** : leurs constats sont démontrés statiquement (A5 non
+> faisable avec les signaux existants ; A6 arbitré sur table de vérité). A1 est livré et A2 requalifié.
 
 | Date/heure | Niveau de preuve | Constat physique | `climate.clim` | `switch.clim_power` | `clim_target_mode` | `action_en_cours` / `raison` | `incoherence_decision_reel` | `execution_echec` | Fraîcheur Airstage | Consommation | Contexte | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -110,8 +117,11 @@ fait sur le filet, distinct de la divergence elle-même.
 
 ## 7. Décision différée
 
-Aucune décision n'est prise avant qu'au moins un relevé de niveau **P1** figure au §6. Les axes A3 à A6
-du chantier restent ouverts jusque-là, et le **Lot 2 reste non engagé**.
+Aucune décision **relative aux axes A3 et A4** n'est prise avant qu'au moins un relevé de niveau **P1**
+figure au §6. Ces deux axes restent ouverts jusque-là.
+
+**A1, A2, A5 et A6 ne sont pas concernés** : ils ont été tranchés sur preuves statiques ou requalifiés
+comme non solvables en l'état.
 
 ---
 

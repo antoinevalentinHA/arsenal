@@ -7,7 +7,7 @@
 | **Statut** | **Ouvert — diagnostic causal NON établi.** Une occurrence réelle a été observée le 2026-07-19 ; sa cause n'est pas démontrée et sa reconstitution exhaustive est **hors périmètre**. **A1 en traitement (contract-first)** ; **A2 requalifié défaut L1, non solvable en l'état, non bloquant** (§4). |
 | **Priorité** | **P1** — impact *fail-open* non borné : la climatisation peut rester physiquement active alors que la décision publiée exige l'arrêt, sans détection, sans notification et sans reprise. |
 | **Ouvert le** | 2026-07-19. |
-| **Prochain jalon** | **A1 : lot contractuel mergé (#443), lot runtime/UI/checker en cours.** Ensuite : axes A3 à A6, sur occurrence naturelle. |
+| **Prochain jalon** | **A6 : arbitrage rendu, lot contract-first en cours ; lot runtime/UI/checker non engagé.** Ensuite : A3 et A4, sur occurrence naturelle. |
 | **Registre** | Chantier **C30** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C30 **ne vaut ni validation d'un diagnostic causal complet,
@@ -77,10 +77,16 @@ propriétés du code, pas la cause de l'occurrence.
   décision à `sensor.clim_mode_local`, lui-même *trigger-based* avec repli sur sa dernière valeur connue.
   Il ne porte ni trigger de démarrage, ni trigger de rechargement.
 
-- **C30-O6 — Aucun contre-signal indépendant n'est consommé.**
+- **C30-O6 — Aucun contre-signal indépendant n'est consommé.** *(corrigé 2026-07-19)*
   Des signaux de consommation existent (`12_template_sensors/climatisation/consommation/`), ainsi que des
   indicateurs de fraîcheur Airstage (`sensor.fujitsu_age_donnees`, `binary_sensor.gel_avere_airstage`).
-  **Aucune entité de la chaîne d'arrêt ne les lit.**
+  **Correction** : `binary_sensor.retour_ok_airstage`, **dérivé de `sensor.fujitsu_age_donnees`**, **est**
+  consommé — comme trigger de `rearmement_apres_recuperation.yaml`. L'énoncé initial « aucune entité de la
+  chaîne d'arrêt ne les lit » était **inexact**. `gel_avere_airstage` et `fujitsu_age_donnees` eux-mêmes
+  ne sont en revanche lus par aucune entité du domaine climatisation.
+  **La consommation estimée n'est pas un contre-signal indépendant** : elle dérive intégralement de
+  `sensor.clim_mode_local`, donc de l'état rapporté. Elle **confirmerait** un `off` faux au lieu de le
+  contredire.
 
 - **C30-O7 — Aucune réévaluation périodique dans le domaine.**
   Aucun `time_pattern` n'existe dans le runtime climatisation. Toute la convergence est événementielle.
@@ -98,12 +104,64 @@ Aucun de ces axes ne porte de solution retenue. Ils délimitent ce que le chanti
 
 | # | Axe | Question ouverte |
 |---|---|---|
-| **A1** | Véracité de `sensor.clim_action_en_cours` | **ARBITRÉ (2026-07-19) — Option 1 : disponibilité native.** Voir §4.1. |
-| **A2** | Observabilité des abstentions silencieuses | **REQUALIFIÉ (2026-07-19) — défaut L1, non solvable en l'état.** Voir §4.2. |
+| **A1** | Véracité de `sensor.clim_action_en_cours` | **CONFORME ET LIVRÉ (2026-07-19)** sur preuves statiques — #443 contrat, #444 runtime. Voir §4.1. |
+| **A2** | Observabilité des abstentions silencieuses | **REQUALIFIÉ (2026-07-19) — défaut L1, non solvable en l'état, non bloquant.** Voir §4.2. |
 | **A3** | Qualité et fraîcheur de l'état rapporté Airstage | Quelle est la fiabilité réelle de `climate.clim` / `switch.clim_power` ? Quels signaux de fraîcheur existent et que valent-ils ? |
 | **A4** | Éventuel contre-signal indépendant | Faut-il une observation ne dépendant pas de l'intégration ? **Le choix d'un contre-signal est hors périmètre à l'ouverture.** |
-| **A5** | Stratégie de reprise ou de réassertion | Le système doit-il disposer d'un chemin de retour, et de quelle nature ? Le patron « sur état plutôt que sur front » (précédent aération) est une **piste à évaluer**, pas une décision. |
-| **A6** | Distinction commande impossible / état inconnu / équipement arrêté | Ces trois situations sont aujourd'hui confondues. Doivent-elles être séparées, et à quelle couche ? |
+| **A5** | Stratégie de reprise ou de réassertion | **NON FAISABLE avec les signaux existants (2026-07-19) — différé, non bloquant.** Voir §4.3. |
+| **A6** | Distinction commande impossible / état inconnu / équipement arrêté | **ARBITRÉ (2026-07-19)** — A6a : abstention native conjointe ; A6b : sans état durable. Voir §4.4. |
+
+### 4.3 A5 — non faisable avec les signaux existants (2026-07-19)
+
+Gate de faisabilité conduit sur le scénario exact du fail-open : `clim_target_mode == off`,
+équipement physiquement en marche, `climate.clim == off` à tort, `switch.clim_power == off`,
+`clim_mode_local == off`, `clim_incoherence_decision_reel == off`.
+
+**Deux verrous indépendants, chacun suffisant :**
+
+1. **Aucun prédicat d'état ne porte le besoin de reprise.** Le prédicat de cohérence évalue
+   `power == 'on' or mode != 'off'` → `false or false` = **`false`**. Tous les opérandes
+   concordent : aucun état ne contredit la cible. Un prédicat d'état ne peut établir un
+   besoin de reprise que s'il existe un état qui contredit la décision.
+2. **Même réveillée, la couche de commande s'abstient.** `clim_exec_apply_off` conditionne
+   ses deux branches à `clim_active` et `power_on`, tous deux faux dans ce scénario :
+   **aucune commande n'est émise**, et la post-condition `climate off ET power off`
+   **passe** — le système **conclut au succès** d'une commande qu'il n'a pas envoyée.
+
+**Écartés** : réassertion bornée, trigger de boot, trigger de reload, cadence
+supplémentaire. **Inopérants** — ils buteraient sur le second verrou — et **générateurs de
+fausse sécurité** : ils donneraient l'illusion d'une convergence.
+
+> **Différence structurelle avec le précédent aération (C19).** Ce précédent disposait d'un
+> **état courant établissant positivement le besoin** ; seul le front le manquait. Ici,
+> **aucun état ne porte cette preuve**. Le patron « réassertion sur état » **n'est pas
+> transposable**.
+
+**Qualification : réserve différée non solvable en l'état, explicitement non bloquante.**
+Aucune modification runtime A5.
+
+### 4.4 A6 — arbitré (2026-07-19)
+
+**A6a — abstention native conjointe.** `sensor.clim_mode_local` masquait `unknown`/`unavailable`
+par repli sur `this.state`, puis **fabriquait `off`**. La cible retenue supprime les deux
+replis, avec traitement **conjoint de la chaîne aval** : le verdict de cohérence et la
+restitution dérivée s'abstiennent également.
+
+> **Il s'agit d'un changement de doctrine, non de la correction d'un écart.** L'ancien
+> double fallback était **contractualisé** et le runtime y était **conforme**. La règle
+> elle-même est jugée incorrecte : elle présentait une valeur mémorisée comme une
+> observation actuelle.
+
+Point établi par le Gate : l'abstention native **retourne** le défaut au lieu de le
+supprimer si elle est posée seule — le prédicat de cohérence passerait d'un **faux négatif**
+(repli mémoire) à un **faux positif systématique**. D'où le traitement conjoint.
+
+**A6b — sans état durable.** `echec_type` est calculé puis binarisé à sa seule consommation.
+Mais la distinction **n'est pas perdue** : elle est reconstruite par la **topologie des
+reprises**. Aucun consommateur ne déciderait différemment de sa persistance ; celle-ci
+créerait une seconde source de vérité figée. **Aucun helper, attribut ou état durable n'est
+créé.** Seul correctif : le **message** de notification, qui ne doit plus présupposer un
+front de récupération.
 
 ### 4.1 A1 — arbitré : disponibilité native (2026-07-19)
 
@@ -214,6 +272,26 @@ terminologie « état HVAC **rapporté** », verrous de clôture requalifiés pa
 **Aucun sixième état, aucun `recorder.yaml`, aucun nouvel observable, aucune refonte du checker,
 aucun changement du régime nominal.**
 
+#### Lot A6 — contract-first *(en cours)*
+
+Abstention native de `sensor.clim_mode_local` (suppression du double repli, **changement de doctrine
+assumé**), du verdict `binary_sensor.clim_incoherence_decision_reel` et de la restitution dérivée
+`sensor.etat_clim_dashboard` · consignation A6b sans état durable · message de notification neutre.
+
+#### Lot A6 — runtime / UI / checker *(non engagé)*
+
+Périmètre probable : `decision/mode.yaml` · `coherence/incoherence_decision.yaml` ·
+`system/cartes_dashboard_navigation/climatisation.yaml` ·
+`20_statut_metier/carte_clim_synthese.yaml` · `notification_echec_execution.yaml` · checker
+climatisation ciblé.
+
+**Vérifié comme n'exigeant aucune modification** : cumul des durées (garde nominale déjà en place,
+chaîne auto-cicatrisante) · notifications de mode (branche `default` propre) · gardes de consigne HEAT,
+COOL et présence/absence (abstention voulue) · `clim_decision_synthetique_72` (gère déjà l'indisponibilité)
+· `carte_clim_etat` (lit `clim_action_en_cours`).
+
+**Aucun Recorder, aucun helper, aucun nouveau capteur, aucun changement de la politique de retry.**
+
 ### Lot 2 — Architecture *(non engagé)*
 
 Ouvert **uniquement** sur la base des preuves produites par le Lot 1. Contre-signal, reprise, réassertion
@@ -238,9 +316,24 @@ artificielle, aucune attente obligatoire d'une indisponibilité réelle.**
 **A2 — réserve différée non solvable en l'état, explicitement non bloquante** (§4.2). Ne conditionne la
 clôture d'aucun autre axe.
 
-**Autres axes (A3 à A6) — verrou terrain maintenu.** Pour eux, la trace du protocole apparié reste
-requise : l'absence de nouvelle occurrence ne vaut pas résolution, et l'absence d'erreur ne prouve rien —
-c'est précisément la propriété défaillante décrite en C30-O1.
+**A5 — réserve différée non solvable en l'état, explicitement non bloquante** (§4.3). Deux verrous
+démontrés statiquement ; aucune occurrence n'est requise pour l'établir.
+
+**A6 — clôturable sur preuves statiques.** Ses défauts sont établis par lecture (table de vérité, prédicat
+de cohérence, branche de fabrication de `off`). Confirmation terrain **L5 opportuniste, non bloquante**.
+
+**A3 et A4 — verrou terrain maintenu.** Pour eux seuls, la trace du protocole apparié reste requise :
+l'absence de nouvelle occurrence ne vaut pas résolution, et l'absence d'erreur ne prouve rien — c'est
+précisément la propriété défaillante décrite en C30-O1.
+
+### Résiduel architectural
+
+**A2, A4 et A5 butent sur le même défaut L1** : l'absence d'un **signal indépendant de l'intégration**.
+Aucun capteur de puissance physique de la climatisation n'existe, et la consommation estimée est
+disqualifiée (C30-O6). Le **cœur du fail-open** — décision `off`, équipement en marche, tout rapporté
+`off` — **n'est réparable par aucun axe autre qu'A4**, dont le producteur n'existe pas.
+
+**C30 ne pourra pas être clos sur son cœur tant que ce constat tient.**
 
 ---
 

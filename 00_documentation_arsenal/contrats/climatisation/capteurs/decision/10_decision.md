@@ -173,15 +173,16 @@ Le template est recalculé sur changement d'état de `climate.clim` ou sur passa
 
 ### Rôle
 
-Fournir une lecture locale du mode actif de la climatisation (`off / cool / heat / dry / auto / fan_only`), persistante en cas d'arrêt API.
+Fournir une lecture locale du **mode HVAC rapporté** par `climate.clim`
+(`off / cool / heat / dry / auto / fan_only`). **Aucune persistance en cas d'arrêt API** :
+le capteur observe, il ne mémorise pas.
 
 ### Dépendances strictes
 
 | Dépendance | Type | Rôle dans la logique |
 |---|---|---|
-| `climate.clim` | `climate` | Source principale du mode |
+| `climate.clim` | `climate` | **Source observée.** Son indisponibilité rend l'entité indisponible |
 | `input_boolean.systeme_stable` | `input_boolean` | Déclencheur de stabilisation (transition vers `on`) |
-| `this.state` | auto-référence | Fallback sur l'état local précédent (état et icône) |
 
 ### Triggers
 
@@ -220,13 +221,30 @@ auto      → mdi:autorenew
 autre     → mdi:help-circle-outline
 ```
 
-### Fallback
+### Abstention native
 
-Double fallback local :
-- état : `this.state` si `climate.clim` est indisponible
-- icône : `this.state` si `climate.clim` est indisponible
+**Aucun fallback mémoire, aucun fallback terminal.**
 
-Fallback terminal : `off` si ni `climate.clim` ni `this.state` ne sont exploitables.
+Lorsque `climate.clim` est `unknown`, `unavailable`, absent ou non exploitable,
+`sensor.clim_mode_local` **s'abstient nativement** (`availability = false`). Il ne
+restitue **aucune** valeur nominale.
+
+**Une observation absente ne doit jamais être convertie en mode courant affirmé.**
+
+**Vocabulaire nominal inchangé** : `off`, `cool`, `dry`, `heat`, `auto`, `fan_only`.
+**L'indisponibilité n'est pas une valeur supplémentaire** — c'est une propriété native
+de l'entité.
+
+> **⚠️ Changement de doctrine — 2026-07-19 (C30 A6a).**
+> L'ancienne règle prescrivait un **double fallback local** (état et icône repliés sur
+> `this.state` si `climate.clim` était indisponible) puis un **fallback terminal vers
+> `off`**. Cette règle était **contractualisée et le runtime y était conforme** : il ne
+> s'agit **pas** de la correction d'un écart code ↔ contrat.
+>
+> Elle est **jugée incorrecte et supprimée volontairement** : elle présentait une valeur
+> **mémorisée** comme une **observation actuelle**, et sa fabrication terminale de `off`
+> affirmait un arrêt jamais observé. Ce capteur alimentant le verdict de cohérence, la
+> règle propageait une affirmation non fondée jusqu'au diagnostic du domaine.
 
 ### Position dans l'architecture
 
@@ -237,7 +255,25 @@ input_boolean.systeme_stable ─┴──► clim_mode_local  (lecture locale)
 
 ### Consommateurs connus
 
-Non déterminables depuis le YAML fourni.
+Recensés au 2026-07-19 (C30 A6a). **Familles**, non liste exhaustive d'occurrences :
+
+| Famille | Rôle | Comportement attendu sur abstention |
+|---|---|---|
+| **Décision** | verdict de cohérence, cumul des durées, notifications de mode | le verdict de cohérence **s'abstient** à son tour ; le cumul rejette déjà les valeurs non nominales ; les notifications retirent leur projection |
+| **Gardes d'action** | application des consignes HEAT et COOL, mise à jour présence/absence | **s'abstiennent** — aucune consigne poussée sur mode non exploitable |
+| **Restitution** | `sensor.etat_clim_dashboard`, cartes de synthèse et de décision | **s'abstiennent** ou rendent explicitement l'indisponibilité ; **aucune fabrication de valeur nominale** |
+| **Historique** | `recorder.yaml` | l'abstention est enregistrée comme telle |
+
+> **Toute évolution du vocabulaire ou de la disponibilité de cette entité engage ses
+> consommateurs décisionnels, ses gardes d'action, sa restitution et son historique.**
+> Elle ne peut être instruite isolément.
+
+### `sensor.etat_clim_dashboard` — restitution dérivée
+
+Ce capteur dérive de `sensor.clim_mode_local`. Lorsque celui-ci n'est pas exploitable, il
+**s'abstient nativement**. Il **ne fabrique pas `off`** et **ne crée aucune valeur métier
+supplémentaire** : son vocabulaire nominal reste `eco`, `confort`, `alert`, `off`.
+L'indisponibilité est une propriété native, **jamais une cinquième valeur**.
 
 ---
 

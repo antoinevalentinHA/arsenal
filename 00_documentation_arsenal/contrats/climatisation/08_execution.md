@@ -85,6 +85,27 @@ En cas d'échec d'application, trois conclusions sont distinguées :
 | Échec infra | Entités indisponibles au moment de l'appel | Marquage + reprise différée |
 | Échec post-condition | Commande émise mais état cible non atteint | Marquage + reprise différée |
 
+### Cause de l'échec — reconstruction structurelle, sans état durable
+
+Les deux causes reçoivent **volontairement le même traitement initial** : marquage et
+reprise différée. La distinction est **reconstruite par la topologie des reprises**, non
+par un état persisté :
+
+- la **reprise différée** est **agnostique par conception** — elle traite l'incident quel
+  qu'il soit, dans sa borne ;
+- le **réarmement après récupération** distingue **déjà** le cas infrastructure, par ses
+  **déclencheurs** (fronts qui n'existent que si les entités étaient indisponibles) et par
+  ses **conditions live** au moment de la récupération.
+
+> **Aucun helper, attribut ou état durable de cause n'est requis, et aucun n'est créé.**
+> Persister la cause qualifiée à l'instant de l'échec créerait une **seconde source de
+> vérité figée**, potentiellement périmée : un échec post-condition suivi d'une chute
+> réelle de l'intégration serait étiqueté `postcondition` alors que le réarmement est la
+> réponse correcte — que la topologie actuelle produit déjà.
+
+**La politique de reprise est inchangée** : deux reprises différées après la tentative
+initiale, paliers +30 s puis +90 s.
+
 La ré-émission en cas d'échec :
 - est différée (pas de retry immédiat) : +30 s au premier échec, +90 s au deuxième
 - est strictement bornée à deux reprises après la tentative initiale
@@ -231,6 +252,18 @@ Doctrine :
 - **Isolement** : `notification_id` dédié (`clim_execution_echec`), distinct
   de la notification de mode actif (`clim_mode_actif`) ; aucune commande
   matérielle, aucune décision, aucun accès aux entités d'exécution.
+- **Message neutre** : le message **ne présuppose aucune récupération future de
+  l'intégration** et **ne qualifie ni `infra` ni `postcondition`**. Il indique
+  seulement que l'exécution a échoué durablement et que le budget de reprise
+  différée est épuisé. **La cause n'est pas reconstruite depuis les états live au
+  moment de la notification** : ceux-ci ont pu évoluer depuis la qualification
+  initiale et ne constituent pas une preuve rétrospective du type d'échec.
+  Formulation fonctionnelle cible — « L'exécution de la climatisation a échoué de
+  manière persistante et le budget de reprise différée est épuisé. Aucune nouvelle
+  reprise automatique n'est programmée dans l'état courant. Vérifier l'état de
+  l'intégration et de l'équipement avant une nouvelle tentative. » La cible
+  (`sensor.clim_target_mode`) peut être rappelée. **Les conditions de création et
+  de retrait sont inchangées.**
 
 ---
 
