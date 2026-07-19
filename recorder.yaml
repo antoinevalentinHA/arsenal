@@ -626,6 +626,50 @@ include:
     - counter.clim_execution_retry_count
 
     # =====================================================
+    # ==== 💡 ÉCLAIRAGE SÉJOUR — CALIBRATION LUMINOSITÉ (INSTRUMENTATION TEMPORAIRE C22) ====
+    # =====================================================
+    # RECORDER — Population B — DÉROGATION FRÉQUENCE
+    # Rôle      : capteur d'illuminance unique de l'installation (garage),
+    #             réutilisé comme proxy d'ambiance par le séjour (contrat
+    #             eclairage/sejour.md §6bis ; autorité
+    #             binary_sensor.sejour_extinction_luminosite_autorisee).
+    # Utilité   : la validation terrain C22 (§5) exige la COURBE lux jour/nuit
+    #             pour (q1) juger si le proxy garage suit l'ambiance du séjour
+    #             et (q2) calibrer input_number.sejour_seuil_luminosite_extinction_auto
+    #             (seuil au-dessus du niveau d'aube, sous le plein jour). Sans
+    #             historisation, ni la fidélité du proxy ni le seuil ne sont
+    #             établissables. Cible d'analyse = long-term statistics
+    #             (state_class measurement : min/mean/max horaires, non purgées) ;
+    #             les états bruts sont le sous-produit borné par la purge. Lecture
+    #             seule ; aucune logique métier ne lit cet historique recorder
+    #             (invariant d'indépendance préservé — l'autorisation lit l'état LIVE).
+    # Logbook   : acceptable — grandeur physique interprétable (lx).
+    # Cardinalité : continue bornée (physique, lx).
+    # Fréquence : présumée > 5/h (capteur d'illuminance « courant »).
+    # Fréquence observée : NON MESURABLE avant historisation — le capteur n'est
+    #             pas encore recordé, c'est précisément ce que ce microscope
+    #             révélera ; présumée > 5/h par nature d'un capteur d'illuminance
+    #             Zigbee. Dérogation présomptive ; fréquence réelle statuée à la
+    #             réévaluation.
+    # Justification métier : la grandeur courante n'a de valeur d'analyse
+    #             qu'historisée ; une agrégation masquerait la courbe jour/nuit
+    #             nécessaire au calage du seuil. Portée bornée par la purge (brut)
+    #             + LTS horaire conservée.
+    # Critère d'acceptabilité logbook confirmé : oui
+    # Validé le : 2026-07-19
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : C22 — Éclairage séjour, extinction sur luminosité réelle (validation terrain §5)
+    # Objet      : rendre exerçables les deux questions ouvertes du §5 (fidélité
+    #              du proxy garage ; calibration du seuil) qui exigent l'historique lux.
+    # Ajouté     : 2026-07-19 (T0) — activation effective au reload recorder / redémarrage HA
+    # Réévaluer  : à la calibration du seuil (après quelques cycles jour/nuit) —
+    #              RÉÉVALUATION propriétaire OBLIGATOIRE, PAS une suppression
+    #              automatique : rejouer la procédure de classification
+    #              (observabilité permanente OU retrait du microscope).
+    # Retrait    : dès seuil calibré ET chantier C22 clôturé.
+    - sensor.luminosite_garage_illuminance
+
+    # =====================================================
     #  ==== 🪟 AERATION ====
     # =====================================================
     # RECORDER — Population A — OBLIGATOIRE — contrainte HA

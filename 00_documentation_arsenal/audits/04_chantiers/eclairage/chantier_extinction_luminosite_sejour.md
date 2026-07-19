@@ -115,6 +115,14 @@ C22 **ne se clôt pas** tant que ces points ne sont pas tranchés en réel :
    provoque pas de ré-allumage indésirable (attendu : non, car allumage
    période-gaté + transition de mouvement requise).
 
+> **Instrumentation probatoire posée (2026-07-19).** Les points 1 et 2 exigent la
+> **courbe lux jour/nuit**, or `sensor.luminosite_garage_illuminance` **n'était pas
+> historisé** (absent de l'allowlist `recorder.yaml` — angle mort non anticipé ici).
+> Un **microscope recorder** (Population B, dérogation fréquence présomptive) a été
+> ajouté sur le modèle C20 ; cible d'analyse = **long-term statistics** (min/mean/max
+> horaires, non purgées). **Retrait dès seuil calibré ET C22 clôturé.** La
+> calibration attend l'accumulation de quelques cycles jour/nuit.
+
 ---
 
 ## 6. Risques résiduels / dettes
