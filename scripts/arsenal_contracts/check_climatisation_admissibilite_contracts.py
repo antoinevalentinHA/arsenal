@@ -963,9 +963,13 @@ def test_clim_bloquee_survol_fige():
 
 def test_clim_action_en_cours_survol_fige():
     """
-    Contrat F3/D7 — sensor.clim_action_en_cours : survol de l'action réelle,
-    basé sur l'état HVAC RÉEL (climate.clim) + blocage poêle. Non-régression :
-    base « état réel » et vocabulaire fermé figés, aucune logique de décision.
+    Contrat F3/D7 — sensor.clim_action_en_cours : survol de l'action de la clim,
+    basé sur l'état HVAC RAPPORTÉ par climate.clim + blocage poêle. Non-régression :
+    base « état rapporté » et vocabulaire fermé figés, aucune logique de décision.
+
+    C30 A1 — abstention native : l'entité doit s'abstenir (availability) quand la
+    source observée est unknown/unavailable, et tester les modes HVAC actifs AVANT
+    le blocage poêle (ordre opposable : mode actif rapporté > bloquee > arret).
     """
     if not SENSOR_CLIM_ACTION_EN_COURS.is_file():
         fail(
@@ -1007,6 +1011,50 @@ def test_clim_action_en_cours_survol_fige():
             )
         else:
             print(f"  ✔ clim_action_en_cours porte « {v} » (F3)")
+
+    # --- C30 A1 : abstention native sur source HVAC rapportée indisponible ---
+    if "availability:" not in content:
+        fail(
+            f"clim_action_en_cours : bloc « availability: » absent — la source "
+            f"indisponible serait absorbée dans une valeur nominale (C30 A1). "
+            f"Fichier : {rel}"
+        )
+    else:
+        print("  ✔ clim_action_en_cours : abstention native déclarée (C30 A1)")
+        avail = content.split("availability:", 1)[1].split("state:", 1)[0]
+        for token in ("unknown", "unavailable"):
+            if token not in avail:
+                fail(
+                    f"clim_action_en_cours : « {token} » absent du bloc availability "
+                    f"— abstention native incomplète (C30 A1). Fichier : {rel}"
+                )
+            else:
+                print(f"  ✔ clim_action_en_cours : availability couvre « {token} » (C30 A1)")
+        if "climate.clim" not in avail:
+            fail(
+                f"clim_action_en_cours : le bloc availability n'observe pas "
+                f"climate.clim (source observée — C30 A1). Fichier : {rel}"
+            )
+        else:
+            print("  ✔ clim_action_en_cours : availability observe climate.clim (C30 A1)")
+
+    # --- C30 A1 : ordre sémantique mode HVAC actif > blocage poêle ---
+    state_block = content.split("state:", 1)[1] if "state:" in content else ""
+    i_mode = state_block.find("is_state('climate.clim', 'cool')")
+    i_bloc = state_block.find("input_boolean.blocage_clim_poele")
+    if i_mode == -1 or i_bloc == -1:
+        fail(
+            f"clim_action_en_cours : cascade d'état illisible — mode HVAC actif ou "
+            f"blocage poêle introuvable dans le bloc state (C30 A1). Fichier : {rel}"
+        )
+    elif i_mode > i_bloc:
+        fail(
+            f"clim_action_en_cours : le blocage poêle est testé AVANT les modes HVAC "
+            f"actifs — ordre opposable violé (mode actif rapporté > bloquee > arret, "
+            f"C30 A1). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ clim_action_en_cours : ordre mode HVAC actif > blocage poêle (C30 A1)")
 
 
 # ---------------------------------------------------------------------------

@@ -59,6 +59,11 @@ carte_clim_decision:
 
   state_display: |
     [[[
+      // Abstention native du capteur (source HVAC rapportée indisponible) :
+      // rendu explicite, jamais le code brut ni un repli sur un état nominal.
+      const UNAV = ['unknown','unavailable','none','',undefined,null];
+      if (UNAV.includes(entity.state)) return 'Indisponible';
+
       const map = {
         'cool_actif': 'Refroidissement actif',
         'dry_actif': 'Déshumidification active',
