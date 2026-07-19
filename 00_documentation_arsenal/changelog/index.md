@@ -1564,6 +1564,15 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Volets — préréglages de position (Exception 9) : `shutter_position.yaml` (pilotage `cover.set_cover_position` 100/75/25/0 %), suppression des spécialisations open/stop/close (Bubendorff `supported_features = 7`).
 - UI — deux checkers `check_ui_semantic_colors_contracts.py` (I1, garde d'indisponibilité) et `check_ui_semantic_colors_hierarchy_contracts.py` (I2, anti-masquage) + workflows ; éclatement du dashboard Boiler (`boiler_corps.yaml` + `boiler_{chauffage,ecs}.yaml`) et navigation ECS Maison / Petite maison ; recompte contrats 293 → 297, checkers 82 → 84, workflows 87 → 89.
 
+---
+
+## 🧠 ARSENAL HA — [v16.4.1](changelogs/v16/v16_4_1.md) — STABLE — 2026-07-19
+**Tags :** volets, ui, lovelace
+
+**Signal net :**
+- Volets — retour aux commandes Ouvrir / Fermer : suppression des préréglages de position (`shutter_position.yaml`) introduits en v16.4.0, ajout de `shutter_open.yaml` / `shutter_close.yaml`, refonte de `dashboards/volets/principal.yaml` (tuiles Ouvrir / Fermer sur `script.ouvrir_*` / `script.fermer_*`).
+- UI — Exception 9 renommée « sens de commande des volets » (vert = ouverture, bleu = fermeture, gris neutre = sans sens typé) ; motif du retrait du stop précisé (non exposé en HAP, `supported_features = 7`).
+
 ==================================================
 FIN INDEX
 ==================================================
