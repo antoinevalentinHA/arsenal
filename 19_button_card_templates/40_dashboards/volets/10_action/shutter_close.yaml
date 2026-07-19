@@ -1,0 +1,51 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI MÉTIER
+#     Volets — Action « Fermer » (descente) 72px
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI MÉTIER
+#
+# 🎯 RÔLE
+#     Spécialisation « descente / fermeture » de shutter_action_base.
+#     Tuile d'action pure : émet une commande de fermeture.
+#     N'affiche aucun état (volets Budendorf sans retour d'état).
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de shutter_action_base
+#     - UI uniquement (aucune décision, aucune lecture d'état)
+#
+# 🎨 SÉMANTIQUE
+#     - Fond 🔵 bleu rgba(33,150,243,0.2) = sens de commande « descente »
+#     - Couleur CATÉGORIELLE, non décisionnelle
+#       (cf. charte couleurs — Exception 9 : sens de commande volets)
+#     - Le bleu n'exprime PAS « information / technique » ici
+#
+# 🔗 DÉPENDANCES
+#     - variables.service  : service HA à appeler (ex. script.fermer_volet_x)
+#     - variables.target   : cible (optionnel)
+#     - variables.confirm  : texte de confirmation modale (optionnel)
+#     - variables.name     : libellé (défaut « Fermer »)
+#     - variables.icon     : icône (défaut mdi:arrow-down-bold — grosse flèche descente)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: shutter_close
+#     variables:
+#       service: script.fermer_volet_sejour_gauche
+#       confirm: Fermer le volet séjour gauche ?
+#
+# ==========================================================
+
+shutter_close:
+  template: shutter_action_base
+
+  variables:
+    name: Fermer
+    icon: mdi:arrow-down-bold
+
+  styles:
+    card:
+      # Exception 9 — sens de commande « descente » (catégoriel, non décisionnel)
+      - background-color: "rgba(33, 150, 243, 0.2)"
