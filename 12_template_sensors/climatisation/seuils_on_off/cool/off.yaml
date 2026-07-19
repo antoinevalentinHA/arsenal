@@ -30,6 +30,8 @@
         - input_number.clim_seuil_extinction_absence
     - platform: homeassistant
       event: start
+    - platform: event
+      event_type: event_template_reloaded
 
   sensor:
     - name: "Seuil extinction clim appliqué"
