@@ -1,7 +1,7 @@
 # 🎨 Dossier d'arbitrage — Couleurs d'icônes des tuiles de navigation
 
 > **Type :** dossier d'arbitrage Lovelace / UI (non décisionnel). **Document faisant foi** du sujet (pointé par `REGISTRE_CHANTIERS.md`).
-> **ID registre :** `D-NAV-COULEUR`. **Statut :** **exécution incrémentale (Option C dynamisation + Option A neutralisation)** — 5 tuiles dynamisées (Arrosage, Rec. météo, Volets, NAS, Imprimerie — cf. §2 sexies) ; **3 tuiles neutralisées** au gris de base NAV (Prises, Santé, Énergie — cf. §2 quinquies) ; **reliquat dormant** (section ⚙️ Système). L'arbitrage global A/B/C reste ouvert pour le reliquat.
+> **ID registre :** `D-NAV-COULEUR`. **Statut : ✅ SOLDÉ (2026-07-19)** — menu ☰ Navigation : 5 tuiles dynamisées (Option C ; Arrosage, Rec. météo, Volets, NAS, Imprimerie — cf. §2 sexies) + 3 neutralisées au gris de base NAV (Option A ; Prises, Santé, Énergie — cf. §2 quinquies). **Section ⚙️ Système : reliquat résorbé — Option A (neutralisation) au gris de base NAV, combinée à une refonte du menu (12 → 6 tuiles), Reboot HA inclus — cf. §2 septies.** Plus aucune couleur d'icône figée hors palette dans `navigation.yaml`. **Chantier clos** (registre ⑤ Clos récents).
 > **Règle qui fait foi :** [`ui/couleurs/03_exceptions.md`](../../../ui/couleurs/03_exceptions.md) § *Exception 3 — Couleurs dynamiques d'icône en contexte NAV/HUB*.
 > **Discipline :** aucune modification UI d'une tuile tant que son cas n'est pas tranché (cas par cas) ; co-commit du registre à chaque changement d'état.
 
@@ -34,11 +34,13 @@ Deux patterns coexistent dans [`18_lovelace/dashboards/navigation.yaml`](../../.
 | ~~NAS~~ | ~~`#1976D2`~~ | lien dashboard | **✅ résorbé** — bleu interdit retiré, dynamisé sur l'état de sécurité (C-light), cf. §2 quater |
 | ~~Énergie~~ | ~~`#FBC02D`~~ | lien natif HA | **✅ résorbé** — neutralisé au gris de base NAV (lien natif, aucun état latent → Option A), cf. §2 quinquies |
 
-### Section ⚙️ Système (tous `bouton_navigation` figés)
+### Section ⚙️ Système (tous `bouton_navigation` figés) — ✅ RÉSORBÉ (2026-07-19, cf. §2 septies)
 
-Automations `#F9A825` · Scripts `#D84315` · Logs HA `#8E24AA` · Journal `#5D4037` · Historique `#1E88E5` · États `#3949AB` · Entités `#3F51B5` · Sauvegardes `#E53935` · Dashboards `#009688` · Intégrations `#1E88E5` · Templates `#6A1B9A` · YAML `#F4511E` · Reboot HA `#F57C00` *(call-service ; l'orange-rouge fait office d'affordance « action sensible »)*.
+> **✅ Résorbé — Option A (neutralisation) + refonte du menu.** Les 13 tuiles ci-dessous ont été soit **supprimées**, soit **factorisées**, soit **neutralisées** au gris de base NAV. Inventaire historique conservé pour trace :
 
-> **Périmètre à étendre si l'arbitrage est promu :** balayer aussi les tuiles de navigation hors `navigation.yaml` — `18_lovelace/includes/navigation/*` et les en-têtes de retour/hub des autres dashboards.
+~~Automations `#F9A825` · Scripts `#D84315` · Logs HA `#8E24AA` · Journal `#5D4037` · Historique `#1E88E5` · États `#3949AB` · Entités `#3F51B5` · Sauvegardes `#E53935` · Dashboards `#009688` · Intégrations `#1E88E5` · Templates `#6A1B9A` · YAML `#F4511E` · Reboot HA `#F57C00`~~ *(l'orange-rouge de Reboot faisait office d'affordance « action sensible » — annotation renversée en §2 septies)* — **tous résorbés**.
+
+> **Périmètre à étendre si l'arbitrage est promu :** balayer aussi les tuiles de navigation hors `navigation.yaml` — `18_lovelace/includes/navigation/*` et les en-têtes de retour/hub des autres dashboards. *(Reste ouvert — la présente résorption est bornée à `navigation.yaml`.)*
 
 ## 2. Options d'arbitrage
 
@@ -155,10 +157,34 @@ Automations `#F9A825` · Scripts `#D84315` · Logs HA `#8E24AA` · Journal `#5D4
 
 **Ce que ça coûte / ce que ça rapporte.** Coût : un capteur de synthèse (dérivation pure de la synthèse santé existante) + bascule d'une ligne de tuile. Gain : résorbe la non-conformité bleu **et** ajoute une vraie valeur (un défaut du NAS imprimerie → tuile rouge). Reste strictement dans la palette NAV.
 
+## 2 septies. Section ⚙️ Système — *neutralisation (Option A) + refonte du menu*
+
+> **Statut :** **✅ implémenté (runtime, 2026-07-19)** — **Option A retenue** pour les tuiles survivantes, **combinée à une refonte structurelle du menu**. Artefacts : `18_lovelace/dashboards/navigation.yaml` (commits `d9a221b5` → `efd6ae49` → `7756e6d4`), **déployés et vérifiés en direct sur HA**. Solde le **reliquat** du dossier ; le menu principal ☰ Navigation était déjà harmonisé (§2 bis → sexies).
+
+**Pourquoi Option A (et pas C).** La section ⚙️ Système est un **tiroir d'outils d'administration** — de purs lanceurs vers des pages système HA (`/config/*`, `/developer-tools/*`, `/logbook`, `/history`), **sans état latent exploitable**. Aucun signal notable à dériver ⇒ la dynamisation (C) n'a pas d'objet, exactement comme pour Prises / Santé / Énergie (§2 quinquies). De plus, **l'état système réel est déjà porté** par la tuile dynamique « Système » de la section ☰ Navigation (`sensor.etat_systeme_dashboard` → `/system-dashboard`) : la section ⚙️ Système n'a donc aucune vocation à porter de la couleur d'état. Toutes les tuiles survivantes passent au **gris de base NAV** `rgb(158, 158, 158)` (whitelisté CI `ui_runtime_colors`, T2).
+
+**Refonte du menu (12 → 6 tuiles).** La résorption a été l'occasion de trancher aussi la **structure**, redondante et encombrée :
+
+| Devenir | Tuiles | Cible / raison |
+|---|---|---|
+| **Supprimées** | Automations, Scripts | éditées depuis le repo `arsenal` (git), pas depuis l'UI ; accessibles par la barre latérale |
+| **Supprimée** | Dashboards | non utilisée |
+| **Factorisées → « Paramètres »** | Intégrations, Entités | toutes deux vivent sous `/config/dashboard` (Appareils & services / Entités) → une seule tuile `mdi:cog` → `/config/dashboard` |
+| **Factorisées → « Outils Dev »** | États, Templates, YAML | trois onglets d'une même page `/developer-tools` → une seule tuile `mdi:tools` → `/developer-tools/state` |
+| **Conservées (neutralisées)** | Logs HA, Journal, Historique, Sauvegardes | destinations distinctes réellement utilisées ; couleurs figées → gris |
+
+Résultat : grille **3 × 2 pleine** (`columns: 3`), zéro trou, deux rangées thématiques (**administration** : Paramètres · Sauvegardes · Outils Dev — **observation** : Logs HA · Journal · Historique).
+
+**Reboot HA — neutralisation assumée (renversement de doctrine).** L'inventaire §1 annotait l'orange `#F57C00` de Reboot HA comme *« affordance action sensible »*. **Arbitrage propriétaire inverse (2026-07-19)** : pour une **action destructive** (`homeassistant.restart`), une couleur chaude **invite au clic** — précisément l'effet à éviter. La tuile passe au **gris** : présente mais **discrète**, non incitative (le garde-fou reste la `confirmation:` déjà en place). La couleur cesse d'être une affordance d'action et redevient, ici aussi, réservée au **signal d'état**.
+
+**Ce que ça coûte / ce que ça rapporte.** Coût : édition d'un seul fichier. Gain : plus **aucune** couleur d'icône figée hors palette dans `navigation.yaml` (menu **entièrement** conforme à l'Exception 3), section Système densifiée (12 → 6) et hiérarchisée. La grammaire visuelle est désormais stricte sur tout le menu : **gris = repos, couleur = signal d'état dérivé**.
+
 ## 3. Déclencheur de réveil
 
-Refonte de la charte couleurs, refonte du menu de navigation, ou décision explicite d'harmoniser l'UI NAV. En l'absence : dormant (aucun impact runtime, pur cosmétique / cohérence). *(Les non-conformités de charte « bleu hors palette » NAS `#1976D2` et Imprimerie `#1E468C`, qui constituaient des déclencheurs actifs, sont désormais résorbées — cf. §2 quater et §2 sexies.)*
+**Chantier soldé (2026-07-19).** Le déclencheur « refonte du menu de navigation » a été **consommé** : la section ⚙️ Système a été refondue et neutralisée (§2 septies), dernier reliquat du dossier. Il ne reste **aucune** couleur d'icône figée hors palette dans `navigation.yaml`.
+
+Réveil résiduel possible : refonte de la charte couleurs, ou extension du périmètre **hors `navigation.yaml`** (tuiles `18_lovelace/includes/navigation/*` et en-têtes de retour/hub des autres dashboards — cf. §1), non traité ici. En l'absence : clos. *(Non-conformités « bleu hors palette » NAS `#1976D2` / Imprimerie `#1E468C` résorbées — §2 quater / §2 sexies.)*
 
 ---
 
-*Dossier d'arbitrage — non normatif. Exécution cas par cas : 5 tuiles dynamisées (Option C) + 3 tuiles neutralisées au gris de base NAV (Option A) ; reliquat dormant (section ⚙️ Système), arbitrage global ouvert.*
+*Dossier d'arbitrage — non normatif. **Soldé (2026-07-19).** Menu ☰ Navigation : 5 tuiles dynamisées (Option C) + 3 neutralisées au gris de base NAV (Option A). Section ⚙️ Système : reliquat résorbé — Option A + refonte du menu (12 → 6 tuiles, Reboot HA inclus), §2 septies. Plus aucune couleur d'icône figée hors palette dans `navigation.yaml`.*
