@@ -338,7 +338,7 @@ views:
                 icon: mdi:restart
                 styles:
                   icon:
-                    - color: "#F57C00"
+                    - color: "rgb(158, 158, 158)"
                 tap_action:
                   action: call-service
                   service: homeassistant.restart
