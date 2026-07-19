@@ -4,10 +4,10 @@
 |---|---|
 | **Chantier** | Poser une doctrine transverse de **solvabilité probatoire** : avant qu'une preuve terrain devienne condition de clôture, vérifier qu'elle est **productible** par le runtime et **conservable** par l'installation. |
 | **Domaine** | Transverse — gouvernance des chantiers, administration de la preuve. |
-| **Statut** | **Ouvert — Lot 1 en cours (2026-07-19).** La doctrine est **rédigée** dans ce lot : [`architecture/03_doctrines/solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md) (v1.0, normative et opposable). **Lots 2 et 3 non engagés.** C31 **reste non clôturable** (§9). |
+| **Statut** | **Ouvert — Lots 1 et 2 livrés (2026-07-19).** Doctrine [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md) publiée (Lot 1), puis raccords réalisés chez leurs propriétaires et **correction factuelle du §7** (Lot 2). **Lot 3 non engagé.** C31 **reste non clôturable** (§9). |
 | **Priorité** | **P1** — non pour un risque technique immédiat, mais parce que des chantiers restent ouverts en attendant des preuves que l'installation ne peut ni produire, ni conserver, ni qualifier correctement. |
 | **Ouvert le** | 2026-07-19. |
-| **Prochain jalon** | **Revue de la doctrine**, puis **Lot 2 — raccords** chez leurs propriétaires existants. |
+| **Prochain jalon** | **Lot 3 — application démonstrative** de la doctrine à des cas réels (C29, C4, C27). |
 | **Registre** | Chantier **C31** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **⚠️ Portée — mise à jour du 2026-07-19 (Lot 1).** L'échelle L1–L5, les trois verdicts, la
@@ -153,20 +153,23 @@ insolvable devienne **silencieusement** un verrou bloquant.
 
 ---
 
-## 6. Raccords documentaires envisagés — *non réalisés dans cette PR*
+## 6. Raccords documentaires — *réalisés au Lot 2 (2026-07-19)*
 
-Chacun reste chez son **propriétaire existant** ; aucun nouveau document en dehors de la doctrine.
+Chacun est resté chez son **propriétaire existant** ; aucun nouveau document en dehors de la doctrine.
 
-1. **Écosystème des dépôts** — reconnaître le dépôt d'audit runtime : rôle local, absence de remote,
-   frontière (jamais de secret réel, jamais de base ni d'archive suivie). Propriétaire :
-   [`ecosysteme_depots_satellites.md`](../../../architecture/ecosysteme_depots_satellites.md).
-2. **Frontière patrimoine / probatoire** — préciser que l'exclusion patrimoniale des bases SQLite **ne
-   s'oppose pas** au canal probatoire temporaire. Propriétaire : le document propriétaire de `diff_auto`
-   ([`outils_externes/nas_arsenal/diff/diff_auto.md`](../../../outils_externes/nas_arsenal/diff/diff_auto.md)).
-3. **Doctrine** — [`architecture/03_doctrines/solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md) — **créée au Lot 1 (2026-07-19)**.
+1. **Écosystème des dépôts** — ✅ [`ecosysteme_depots_satellites.md`](../../../architecture/ecosysteme_depots_satellites.md)
+   §1.1 : `arsenal-runtime` reconnu comme **dépôt local sans remote**, espace de travail pour analyses
+   hors ligne, **hors** du tableau des satellites gouvernés ; « seul dépôt modifiable » circonscrit aux
+   satellites.
+2. **Frontière patrimoine / analyses hors ligne** — ✅ [`diff_auto.md`](../../../outils_externes/nas_arsenal/diff/diff_auto.md) :
+   l'exclusion des bases SQLite est un invariant **de la timeline patrimoniale** ; l'analyse hors ligne
+   est un **usage distinct** qui ne modifie ni la source unique, ni le pipeline, ni l'invariant.
+3. **Doctrine** — ✅ [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md)
+   créée au Lot 1, **§7 corrigé au Lot 2**.
 
-Les règles internes d'analyse (méthode, scripts, empreintes) **restent propriété du dépôt d'audit
-runtime** et ne sont pas recopiées ici.
+Les **règles internes** du dépôt local (contenu, interdits) sont portées par son propre `README.md` et ne
+sont pas recopiées ici. **Aucune procédure d'acquisition, d'extraction ou d'analyse n'est établie** — le
+corpus ne documente que des **précédents**.
 
 ---
 
@@ -179,7 +182,17 @@ runtime** et ne sont pas recopiées ici.
   (R-VERROU-1), dix exigences d'ouverture (R-OUVERTURE-1), gouvernance de l'instrumentation temporaire
   (R-INSTR-1), reconnaissance de L4 (R-L4-1), frontière SwitchBot (R-FRONTIERE-1).
   **Reste à faire : revue de la doctrine.**
-- **Lot 2 — Raccords. Non engagé.** Les trois extensions courtes du §6, chez leurs propriétaires.
+- **Lot 2 — Raccords. ✅ LIVRÉ (2026-07-19).** Les trois extensions du §6, chez leurs propriétaires :
+  `ecosysteme_depots_satellites.md` (§1.1 — dépôt local hors écosystème satellite, sans remote, espace de
+  travail pour analyses hors ligne ; « seul dépôt modifiable » circonscrit aux satellites gouvernés) ·
+  `diff_auto.md` (frontière — l'exclusion SQLite est un invariant **de la timeline patrimoniale** ;
+  l'analyse hors ligne est un **usage distinct** qui ne l'altère pas) · `arsenal-runtime/README.md`
+  (`analyses/` reconnu ; interdit précisé).
+  **Correction factuelle du §7 de la doctrine** dans le même lot : retrait de « mécanisme existant,
+  éprouvé et outillé », de la propriété d'une méthode ou d'un canal par `arsenal-runtime`, et de toute
+  disponibilité automatique ou permanente de L4. Les sauvegardes manuelles de release sont désignées
+  source durable privilégiée ; les automatiques restent opportunistes ; aucune sauvegarde ne doit être
+  créée ou renommée pour un chantier. **R-L4-1 inchangée.**
 - **Lot 3 — Application démonstrative. Non engagé.** Qualifier des réserves existantes selon la doctrine,
   notamment **C29**, **C4** et **C27**. Ce lot **prouve que la doctrine est utilisable** ; sans lui, C31
   est un texte non éprouvé. **Aucune requalification n'est effectuée à ce stade.**

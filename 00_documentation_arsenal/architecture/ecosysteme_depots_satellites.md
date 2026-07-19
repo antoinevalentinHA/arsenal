@@ -36,9 +36,19 @@ Ce document couvre les six dépôts suivants, tous sous le compte GitHub
 | 5 | [`rainbird-esp32-elegoo`](https://github.com/antoinevalentinHA/rainbird-esp32-elegoo) | Firmware ESP32 (pont matériel) |
 | 6 | [`boiler-bridge`](https://github.com/antoinevalentinHA/boiler-bridge) | Pont matériel Raspberry Pi (service) |
 
-**Le seul dépôt modifiable est Arsenal.** Les dépôts satellites sont décrits, non
-pilotés depuis ce document ; leur code et leurs contrats internes font autorité
-sur eux-mêmes.
+**Parmi les dépôts satellites gouvernés, le seul dépôt modifiable est Arsenal.** Les
+dépôts satellites sont décrits, non pilotés depuis ce document ; leur code et leurs
+contrats internes font autorité sur eux-mêmes.
+
+### 1.1 Dépôt local hors écosystème satellite
+
+`arsenal-runtime` est un dépôt **local, sans remote**, utilisé comme **espace de travail
+pour analyses techniques hors ligne**. Il **n'est ni un composant runtime Arsenal, ni un
+transporteur, ni un exécuteur matériel**, et ne figure donc pas au tableau des dépôts
+satellites gouvernés ci-dessus.
+
+**Arsenal reste propriétaire du sens documentaire et des conclusions opposables** ; les
+**règles internes** de ce dépôt sont portées par son propre `README.md`.
 
 ---
 
