@@ -48,6 +48,11 @@ carte_clim_synthese:
 
   icon: |
     [[[
+      // Abstention native de la source (C30 A6a) : icône neutre, jamais
+      // le flocon COOL par défaut — aucun mode n'est affirmé sans observation.
+      const UNAV = ['unknown','unavailable','none','',undefined,null];
+      if (UNAV.includes(entity.state)) return 'mdi:help-circle-outline';
+
       const mode = (entity.state || '').toLowerCase();
       if (mode === 'dry')  return 'mdi:water-percent';
       if (mode === 'heat') return 'mdi:fire';
@@ -57,6 +62,10 @@ carte_clim_synthese:
 
   state_display: |
     [[[
+      // Rendu explicite de l'indisponibilité — jamais le code brut.
+      const UNAV = ['unknown','unavailable','none','',undefined,null];
+      if (UNAV.includes(entity.state)) return 'Indisponible';
+
       const mode = (entity.state || '').toLowerCase();
       if (mode === 'cool') return 'Actif';
       if (mode === 'dry')  return 'Déshumid.';
@@ -67,6 +76,9 @@ carte_clim_synthese:
 
   label: |
     [[[
+      const UNAV = ['unknown','unavailable','none','',undefined,null];
+      if (UNAV.includes(entity.state)) return 'État non observé';
+
       const consigne = states['sensor.consigne_clim_appliquee']?.state;
       const mode = (entity.state || '').toLowerCase();
 
@@ -80,6 +92,17 @@ carte_clim_synthese:
     ]]]
 
   state:
+    # ⚪ INDISPONIBLE — prime sur toute couleur de mode (02_palette.md)
+    - operator: template
+      value: |
+        [[[
+          const UNAV = ['unknown','unavailable','none','',undefined,null];
+          return UNAV.includes(entity.state);
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.1)
+
     # 🧊 COOL
     - operator: template
       value: |

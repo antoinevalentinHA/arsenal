@@ -30,6 +30,19 @@
     - name: "Clim incoherence decision reel"
       unique_id: clim_incoherence_decision_reel
       device_class: problem
+
+      # Abstention native (contrat capteurs/coherence/10_coherence.md — C30 A6a) :
+      # le verdict exige ses TROIS opérandes exploitables. Si l'un est unknown,
+      # unavailable ou absent, le capteur s'abstient : l'indétermination n'est
+      # convertie ni en cohérence (off), ni en problème (on).
+      # Listes blanches strictes pour la puissance et le mode rapporté ; la
+      # cible conserve la sémantique contractuelle mergée (CAS 3 : une autre
+      # valeur exploitable de target donne un verdict false, pas une abstention).
+      availability: >
+        {{ states('sensor.clim_target_mode') not in ['unknown', 'unavailable', 'none', '']
+           and states('switch.clim_power') in ['on', 'off']
+           and states('sensor.clim_mode_local') in ['off', 'cool', 'dry', 'heat', 'auto', 'fan_only'] }}
+
       state: >
         {% set target = states('sensor.clim_target_mode') %}
         {% set power = states('switch.clim_power') %}

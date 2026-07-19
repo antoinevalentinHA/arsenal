@@ -116,6 +116,51 @@ CLIM_BLOQUEE_SOURCES = [
 # Vocabulaire fermé figé de clim_action_en_cours (survol F3/D7)
 CLIM_ACTION_VOCAB = ["cool_actif", "dry_actif", "heat_actif", "bloquee", "arret"]
 
+# Abstention de l'état rapporté (C30 A6a)
+SENSOR_CLIM_MODE_LOCAL = (
+    ROOT / "12_template_sensors" / "climatisation" / "decision" / "mode.yaml"
+)
+BS_CLIM_INCOHERENCE = (
+    ROOT
+    / "12_template_sensors"
+    / "climatisation"
+    / "coherence"
+    / "incoherence_decision.yaml"
+)
+SENSOR_ETAT_CLIM_DASHBOARD = (
+    ROOT
+    / "12_template_sensors"
+    / "system"
+    / "cartes_dashboard_navigation"
+    / "climatisation.yaml"
+)
+UI_CARTE_CLIM_SYNTHESE = (
+    ROOT
+    / "19_button_card_templates"
+    / "40_dashboards"
+    / "climatisation"
+    / "20_statut_metier"
+    / "carte_clim_synthese.yaml"
+)
+
+# Vocabulaire nominal figé de clim_mode_local (C30 A6a)
+CLIM_MODE_LOCAL_VOCAB = ["off", "cool", "dry", "heat", "auto", "fan_only"]
+
+# Opérandes exigés par le verdict de cohérence (C30 A6a)
+COHERENCE_OPERANDES = [
+    "sensor.clim_target_mode",
+    "switch.clim_power",
+    "sensor.clim_mode_local",
+]
+
+# Gris d'indisponibilité (ui/couleurs — 02_palette.md)
+GRIS_INDISPONIBILITE = "rgba(158, 158, 158, 0.1)"
+
+# Listes blanches strictes exigées par C30 A6a — ferment le vocabulaire
+# exploitable : toute valeur inattendue entraîne l'abstention native.
+VOCAB_WHITELIST = "in ['off', 'cool', 'dry', 'heat', 'auto', 'fan_only']"
+POWER_WHITELIST = "in ['on', 'off']"
+
 # Documentation
 DOC_ADMISSIBILITE = (
     ROOT
@@ -1332,6 +1377,279 @@ def test_boot_fail_closed_besoin_indisponible_c28():
 # Registre des tests
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# C30 A6 — abstention de l'état rapporté
+# ---------------------------------------------------------------------------
+
+
+def test_clim_mode_local_abstention_native():
+    """
+    C30 A6a — sensor.clim_mode_local : abstention native sur source non
+    exploitable. Aucune mémoire this.state, aucun fallback terminal vers off.
+    Vocabulaire nominal figé.
+    """
+    if not SENSOR_CLIM_MODE_LOCAL.is_file():
+        fail(f"clim_mode_local : fichier absent : {SENSOR_CLIM_MODE_LOCAL.relative_to(ROOT)}")
+        return
+    content = read(SENSOR_CLIM_MODE_LOCAL)
+    rel = SENSOR_CLIM_MODE_LOCAL.relative_to(ROOT)
+
+    if "availability:" not in content:
+        fail(
+            f"clim_mode_local : bloc « availability: » absent — une source non "
+            f"exploitable serait convertie en mode affirmé (C30 A6a). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ clim_mode_local : abstention native déclarée (C30 A6a)")
+        avail = content.split("availability:", 1)[1].split("icon:", 1)[0]
+        if VOCAB_WHITELIST not in avail:
+            fail(
+                f"clim_mode_local : availability n'applique pas la LISTE BLANCHE "
+                f"stricte {VOCAB_WHITELIST} — une valeur inattendue de l'intégration "
+                f"traverserait le contrat (C30 A6a). Fichier : {rel}"
+            )
+        else:
+            print("  ✔ clim_mode_local : availability en liste blanche stricte (C30 A6a)")
+        if "not in" in avail:
+            fail(
+                f"clim_mode_local : availability contient « not in » — liste noire "
+                f"interdite, seule la liste blanche ferme le vocabulaire (C30 A6a). "
+                f"Fichier : {rel}"
+            )
+        else:
+            print("  ✔ clim_mode_local : aucune liste noire dans availability (C30 A6a)")
+        if "climate.clim" not in avail:
+            fail(
+                f"clim_mode_local : le bloc availability n'observe pas climate.clim "
+                f"(C30 A6a). Fichier : {rel}"
+            )
+        else:
+            print("  ✔ clim_mode_local : availability observe climate.clim (C30 A6a)")
+
+    # Les commentaires de doctrine citent « this.state » pour expliquer sa
+    # suppression : la garde porte sur le CODE, pas sur la documentation.
+    code = "\n".join(
+        ligne for ligne in content.splitlines() if not ligne.strip().startswith("#")
+    )
+    if "this.state" in code:
+        fail(
+            f"clim_mode_local : « this.state » présent dans le code — le repli "
+            f"mémoire est supprimé par doctrine (C30 A6a). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ clim_mode_local : aucun repli mémoire this.state (C30 A6a)")
+
+    state_block = code.split("state:", 1)[1] if "state:" in code else ""
+    if "off" in state_block:
+        fail(
+            f"clim_mode_local : le bloc state mentionne « off » — fallback terminal "
+            f"fabriquant une valeur nominale (C30 A6a). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ clim_mode_local : aucun fallback terminal vers off (C30 A6a)")
+
+    manquantes = [v for v in CLIM_MODE_LOCAL_VOCAB if v not in content]
+    if manquantes:
+        fail(
+            f"clim_mode_local : valeur(s) nominale(s) absente(s) {manquantes} "
+            f"(vocabulaire figé C30 A6a). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ clim_mode_local : vocabulaire nominal complet (C30 A6a)")
+
+
+def test_coherence_abstention_operandes():
+    """
+    C30 A6a — binary_sensor.clim_incoherence_decision_reel : abstention native
+    si l'un des trois opérandes n'est pas exploitable. Tables nominales, délai
+    anti-bruit et device_class inchangés.
+    """
+    if not BS_CLIM_INCOHERENCE.is_file():
+        fail(f"clim_incoherence : fichier absent : {BS_CLIM_INCOHERENCE.relative_to(ROOT)}")
+        return
+    content = read(BS_CLIM_INCOHERENCE)
+    rel = BS_CLIM_INCOHERENCE.relative_to(ROOT)
+
+    if "availability:" not in content:
+        fail(
+            f"clim_incoherence : bloc « availability: » absent — l'indétermination "
+            f"serait convertie en verdict (C30 A6a). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ clim_incoherence : abstention native déclarée (C30 A6a)")
+        avail = content.split("availability:", 1)[1].split("state:", 1)[0]
+        for ent in COHERENCE_OPERANDES:
+            if ent not in avail:
+                fail(
+                    f"clim_incoherence : opérande « {ent} » absent du bloc "
+                    f"availability (C30 A6a). Fichier : {rel}"
+                )
+            else:
+                print(f"  ✔ clim_incoherence : availability couvre « {ent} » (C30 A6a)")
+        # Listes blanches strictes : puissance et mode rapporté. La cible garde
+        # sa sémantique contractuelle mergée (CAS 3), donc pas de liste blanche.
+        if POWER_WHITELIST not in avail:
+            fail(
+                f"clim_incoherence : switch.clim_power n'est pas fermé par la liste "
+                f"blanche {POWER_WHITELIST} (C30 A6a). Fichier : {rel}"
+            )
+        else:
+            print("  ✔ clim_incoherence : puissance en liste blanche stricte (C30 A6a)")
+        if VOCAB_WHITELIST not in avail:
+            fail(
+                f"clim_incoherence : sensor.clim_mode_local n'est pas fermé par la "
+                f"liste blanche {VOCAB_WHITELIST} (C30 A6a). Fichier : {rel}"
+            )
+        else:
+            print("  ✔ clim_incoherence : mode rapporté en liste blanche stricte (C30 A6a)")
+
+    if 'for: "00:01:00"' not in content:
+        fail(
+            f"clim_incoherence : délai anti-bruit 60 s absent ou modifié "
+            f"(C30 A6a — doit rester inchangé). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ clim_incoherence : délai anti-bruit 60 s inchangé (C30 A6a)")
+
+    if "device_class: problem" not in content:
+        fail(
+            f"clim_incoherence : device_class modifié (C30 A6a — doit rester "
+            f"inchangé). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ clim_incoherence : device_class inchangé (C30 A6a)")
+
+    state_block = content.split("state:", 1)[1] if "state:" in content else ""
+    for frag in ("power == 'on' or mode != 'off'", "power != 'on' or mode != target"):
+        if frag not in state_block:
+            fail(
+                f"clim_incoherence : table nominale altérée — fragment manquant "
+                f"« {frag} » (C30 A6a). Fichier : {rel}"
+            )
+    print("  ✔ clim_incoherence : tables nominales inchangées (C30 A6a)")
+
+
+def test_restitution_derivee_abstention():
+    """
+    C30 A6a — restitution dérivée : etat_clim_dashboard s'abstient et ne fabrique
+    pas off ; carte_clim_synthese rend « Indisponible » en gris d'indisponibilité,
+    jamais le flocon COOL ni le code brut.
+    """
+    if not SENSOR_ETAT_CLIM_DASHBOARD.is_file():
+        fail(
+            f"etat_clim_dashboard : fichier absent : "
+            f"{SENSOR_ETAT_CLIM_DASHBOARD.relative_to(ROOT)}"
+        )
+    else:
+        content = read(SENSOR_ETAT_CLIM_DASHBOARD)
+        rel = SENSOR_ETAT_CLIM_DASHBOARD.relative_to(ROOT)
+        if "availability:" not in content:
+            fail(
+                f"etat_clim_dashboard : bloc « availability: » absent — "
+                f"l'indisponibilité serait convertie en off (C30 A6a). Fichier : {rel}"
+            )
+        else:
+            print("  ✔ etat_clim_dashboard : abstention native déclarée (C30 A6a)")
+            avail = content.split("availability:", 1)[1].split("state:", 1)[0]
+            if "sensor.clim_mode_local" not in avail:
+                fail(
+                    f"etat_clim_dashboard : le bloc availability n'observe pas "
+                    f"sensor.clim_mode_local (C30 A6a). Fichier : {rel}"
+                )
+            else:
+                print("  ✔ etat_clim_dashboard : availability observe clim_mode_local (C30 A6a)")
+            if VOCAB_WHITELIST not in avail:
+                fail(
+                    f"etat_clim_dashboard : availability n'applique pas la LISTE "
+                    f"BLANCHE stricte {VOCAB_WHITELIST} (C30 A6a). Fichier : {rel}"
+                )
+            else:
+                print("  ✔ etat_clim_dashboard : availability en liste blanche stricte (C30 A6a)")
+            if "not in" in avail:
+                fail(
+                    f"etat_clim_dashboard : availability contient « not in » — liste "
+                    f"noire interdite (C30 A6a). Fichier : {rel}"
+                )
+            else:
+                print("  ✔ etat_clim_dashboard : aucune liste noire dans availability (C30 A6a)")
+
+    if not UI_CARTE_CLIM_SYNTHESE.is_file():
+        fail(
+            f"carte_clim_synthese : fichier absent : "
+            f"{UI_CARTE_CLIM_SYNTHESE.relative_to(ROOT)}"
+        )
+        return
+    ui = read(UI_CARTE_CLIM_SYNTHESE)
+    rel_ui = UI_CARTE_CLIM_SYNTHESE.relative_to(ROOT)
+
+    if "Indisponible" not in ui:
+        fail(
+            f"carte_clim_synthese : rendu « Indisponible » absent — "
+            f"l'indisponibilité s'afficherait en code brut (C30 A6a). Fichier : {rel_ui}"
+        )
+    else:
+        print("  ✔ carte_clim_synthese : rendu « Indisponible » présent (C30 A6a)")
+
+    if GRIS_INDISPONIBILITE not in ui:
+        fail(
+            f"carte_clim_synthese : gris d'indisponibilité « {GRIS_INDISPONIBILITE} » "
+            f"absent (C30 A6a). Fichier : {rel_ui}"
+        )
+    else:
+        print("  ✔ carte_clim_synthese : gris d'indisponibilité présent (C30 A6a)")
+
+    icon_block = ""
+    if "icon:" in ui and "state_display:" in ui:
+        icon_block = ui.split("icon:", 1)[1].split("state_display:", 1)[0]
+    i_unav = icon_block.find("UNAV.includes")
+    i_snow = icon_block.find("mdi:snowflake")
+    if i_unav == -1:
+        fail(
+            f"carte_clim_synthese : l'icône ne traite pas l'indisponibilité — "
+            f"flocon COOL par défaut (C30 A6a). Fichier : {rel_ui}"
+        )
+    elif i_snow != -1 and i_unav > i_snow:
+        fail(
+            f"carte_clim_synthese : le flocon COOL est retourné avant le traitement "
+            f"de l'indisponibilité (C30 A6a). Fichier : {rel_ui}"
+        )
+    else:
+        print("  ✔ carte_clim_synthese : icône neutre avant tout mode (C30 A6a)")
+
+
+def test_notification_echec_message_neutre():
+    """
+    C30 A6b — message de la notification d'échec persistant : neutre. Aucune
+    promesse de front de récupération, aucune qualification infra/postcondition.
+    Triggers et conditions inchangés (couverts par le test C13).
+    """
+    if not AUTOMATION_NOTIF_ECHEC.is_file():
+        fail(
+            f"notification échec : fichier absent : "
+            f"{AUTOMATION_NOTIF_ECHEC.relative_to(ROOT)}"
+        )
+        return
+    content = read(AUTOMATION_NOTIF_ECHEC)
+    rel = AUTOMATION_NOTIF_ECHEC.relative_to(ROOT)
+
+    if "front de récupération de l'infrastructure" in content:
+        fail(
+            f"notification échec : le message promet un front de récupération de "
+            f"l'infrastructure — interdit, le cas post-condition n'en produit aucun "
+            f"(C30 A6b). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ notification échec : aucune promesse de récupération (C30 A6b)")
+
+    for frag in ("budget de reprise", "Vérifier l'état de l'intégration"):
+        if frag not in content:
+            fail(
+                f"notification échec : message neutre incomplet — fragment manquant "
+                f"« {frag} » (C30 A6b). Fichier : {rel}"
+            )
+    print("  ✔ notification échec : message neutre conforme (C30 A6b)")
+
+
 TESTS = [
     # Présence
     test_helpers_admissibles_presents,
@@ -1366,6 +1684,11 @@ TESTS = [
     # Observabilité de survol (D13 — F2 / F3)
     test_clim_bloquee_survol_fige,
     test_clim_action_en_cours_survol_fige,
+    # Abstention de l'état rapporté (C30 — A6a / A6b)
+    test_clim_mode_local_abstention_native,
+    test_coherence_abstention_operandes,
+    test_restitution_derivee_abstention,
+    test_notification_echec_message_neutre,
     # Résilience — notification d'échec persistant (C13 — D5)
     test_notification_echec_execution_persistant,
     # Documentation
