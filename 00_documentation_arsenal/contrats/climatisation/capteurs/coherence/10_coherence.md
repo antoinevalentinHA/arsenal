@@ -58,6 +58,9 @@ Lire :
 - power  ← switch.clim_power
 - mode   ← sensor.clim_mode_local
 
+CAS 0 — un opérande non exploitable (unknown, unavailable, absent)
+  → ABSTENTION NATIVE (availability = false) — aucun verdict rendu
+
 CAS 1 — target == off
   incohérence = (power == on) OU (mode != off)
 
@@ -68,10 +71,28 @@ CAS 3 — autre valeur de target
   incohérence = false
 ```
 
+### Abstention native — opérandes exploitables requis
+
+**Le verdict de cohérence exige ses trois opérandes exploitables** :
+`sensor.clim_target_mode`, `switch.clim_power` et `sensor.clim_mode_local`.
+
+Si l'un d'eux est `unknown`, `unavailable` ou absent, le capteur **s'abstient nativement**
+(`availability = false`).
+
+**L'absence de mesure ne doit être convertie ni en cohérence, ni en problème.** Une
+observation absente n'est pas une observation divergente. Sans cette abstention, le
+capteur produit une **affirmation non fondée** — soit un faux négatif (« tout est
+cohérent » alors que rien n'est observé), soit un faux positif escaladé par
+`device_class: problem`.
+
+Les tables nominales ci-dessous **restent inchangées** lorsque les trois opérandes sont
+exploitables.
+
 ### Cas surveillés
 
 | `target` | Condition d'incohérence |
 |---|---|
+| **un opérande non exploitable** | **abstention — aucun verdict** |
 | `off` | `power == on` OU `mode != off` |
 | `cool` | `power != on` OU `mode != cool` |
 | `dry` | `power != on` OU `mode != dry` |
