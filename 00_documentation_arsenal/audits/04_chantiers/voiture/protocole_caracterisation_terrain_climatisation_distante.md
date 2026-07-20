@@ -165,13 +165,35 @@ qu'un `rejected` — l'intégration **ne semble pas** exposer le motif d'un refu
 
 | Essai | `entity_id` observés | État initial | Attributs utiles | Heure émission | Heure 1ʳᵉ transition | Résultat HA | Résultat myAudi | Constat véhicule | Niveau de preuve | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|
-| E1 — minimal | | | | | | | | | | |
+| E1 — minimal | `sensor.audi_e_tron_etat_de_charge_local`, `sensor.audi_e_tron_autonomie_local` (`binary_sensor.*_plug_state` **non historisé**) | Branché (**constat opérateur**) ; `chargePurposeReachedAndNotConservationCharging` depuis 18:36:40 | autonomie **29,0 km** | **2026-07-20 18:43:54** | **aucune** | `ERROR audiconnect` — `Cannot startClimatisation, return code 'failed'` ; **motif non exposé** (exception `audi_services.py:990`) | **Échec ~18:45** — `E.PA.VCF.UND.fail_vehicle_timeout` | non relevé | **HA + myAudi** | **Non confirmé — timeout véhicule** ; ni succès terminal, ni refus fonctionnel |
 | E1b — fin de cycle | | | | | | | | | | |
 | E2 — mode economy | | | | | | | | | | |
 | E3 — siège avant gauche | | | | | | | | | | |
 | E4 — siège avant droit | | | | | | | | | | |
 | E5 — clim à l'ouverture | | | | | | | | | | |
 | E6 — état incompatible | | | | | | | | | | |
+
+> **Essai E1 du 2026-07-20, consigné le 2026-07-21 — premier essai terrain de C25.**
+>
+> **Le motif est exposé par le backend, perdu par l'intégration.** myAudi renvoie
+> `fail_vehicle_timeout` ; `audiconnect` ne remonte qu'un `return code 'failed'` générique.
+> L'hypothèse du §5 est **confirmée** : l'intégration n'expose pas le motif, alors que le backend le
+> fournit.
+>
+> **Le statut honnête est `timeout`, non `rejected`** — exactement ce que le §5 anticipait. Un timeout
+> véhicule n'est **ni un succès terminal, ni un refus fonctionnel** : la faisabilité de la fonction
+> n'est **pas invalidée** par cet essai.
+>
+> **Conditions favorables.** Véhicule branché, charge à l'objectif, 29 km d'autonomie. Les hypothèses
+> « non branché » et « batterie insuffisante » sont **écartées**.
+>
+> **Limite de la trace.** `binary_sensor.audi_a3_sportback_e_tron_plug_state` **n'est pas historisé**
+> (hors allowlist Recorder) : l'état de branchement n'est pas reconstituable *a posteriori* et repose
+> ici sur le **constat opérateur**. La bascule de l'état de charge à `notReadyForCharging` (18:59:05)
+> situe le débranchement **après** l'essai.
+>
+> **Reste à établir** : E1b, E2–E5, et surtout **E6** (état naturellement incompatible), seul essai
+> capable de dire si un refus *fonctionnel* se distingue d'un *timeout* dans la remontée.
 
 ---
 
