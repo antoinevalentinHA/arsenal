@@ -48,13 +48,32 @@ views:
                   - sensor.couleur_co2_sejour
 
           # ======================================================
+          # 🪜 ÉTAGE
+          # ======================================================
+          - !include ../../includes/section_headers/etage.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.co2_salle_de_jeux
+                name: Salle de Jeux
+                icon: mdi:molecule-co2
+                variables:
+                  ui_profile: arsenal
+                triggers_update:
+                  - sensor.couleur_co2_salle_de_jeux
+
+          # ======================================================
           # 🛏️ CHAMBRES
           # ======================================================
           - !include ../../includes/section_headers/chambres.yaml
 
           - square: false
             type: grid
-            columns: 3
+            columns: 2
             cards:
               - type: custom:button-card
                 template: socle_kpi
@@ -68,16 +87,6 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.co2_salle_de_jeux
-                name: Salle de Jeux
-                icon: mdi:molecule-co2
-                variables:
-                  ui_profile: arsenal
-                triggers_update:
-                  - sensor.couleur_co2_salle_de_jeux
-
-              - type: custom:button-card
-                template: socle_kpi
                 entity: sensor.co2_chambre_parents
                 name: Parents
                 icon: mdi:molecule-co2
@@ -87,17 +96,20 @@ views:
                   - sensor.couleur_co2_chambre_parents
 
           # ======================================================
-          # 🛏️ PETITE MAISON
+          # 🏘️ DÉPENDANCES
           # ======================================================
+          - !include ../../includes/section_headers/dependances.yaml
 
-          - !include ../../includes/section_headers/petite_maison.yaml
-
-          - type: custom:button-card
-            template: socle_kpi
-            entity: sensor.co2_petite_maison
-            name: Petite Maison
-            icon: mdi:molecule-co2
-            variables:
-              ui_profile: arsenal
-            triggers_update:
-              - sensor.couleur_co2_petite_maison
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.co2_petite_maison
+                name: Petite Maison
+                icon: mdi:molecule-co2
+                variables:
+                  ui_profile: arsenal
+                triggers_update:
+                  - sensor.couleur_co2_petite_maison
