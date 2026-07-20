@@ -69,18 +69,15 @@ views:
           # ======================================================
           - !include ../../includes/section_headers/etage.yaml
 
-          - square: false
-            type: grid
-            columns: 2
-            cards:
-              - type: custom:button-card
-                template: socle_kpi
-                tap_action:
-                  action: none
-                entity: sensor.humidex_salle_de_jeux
-                name: Salle de Jeux
-                triggers_update:
-                  - sensor.couleur_humidex_salle_de_jeux
+          # Occupant unique : carte pleine largeur, hors grille.
+          - type: custom:button-card
+            template: socle_kpi
+            tap_action:
+              action: none
+            entity: sensor.humidex_salle_de_jeux
+            name: Salle de Jeux
+            triggers_update:
+              - sensor.couleur_humidex_salle_de_jeux
 
           # ======================================================
           # 🛏️ CHAMBRES
