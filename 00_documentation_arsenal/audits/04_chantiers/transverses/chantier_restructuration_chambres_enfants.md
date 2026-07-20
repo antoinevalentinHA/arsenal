@@ -611,12 +611,21 @@ au vu du rayon d'impact fermé, mais à intégrer au cadrage de tout prochain ch
 |---|---|
 | 2026-07-20 09:42 (constat initial) | 32 (16 par pièce) |
 | 2026-07-20 17:10 | **20** (10 par pièce) |
+| 2026-07-20 20:37 | **20** (10 par pièce) — `periode_meteo` = `jour` |
 
 Les 12 résorbés correspondent **exactement** à la période `jour`, atteinte à 13:55. Les 20 restants sont
 les périodes non encore atteintes — `crepuscule` (temp. / HR / hum. absolue et leurs `_moyenne`) — et
 `humidite_absolue` `aube` / `nuit`, en retard d'un cycle parce que sa source n'a été fiabilisée qu'en
 L6b, déployé après L3. Témoin `chambre_parents` : **0 KO / 156**. **Critère de clôture L6c inchangé :
 0 KO le 2026-07-21 au matin.**
+
+**Relevé complémentaire (2026-07-20, 20:37)** — comptage **inchangé à 20**, avec
+`sensor.periode_meteo` = `jour` (élévation 9,67°, azimut 289,5°) : la période `crepuscule` n'était
+**pas encore atteinte**. La stagnation depuis 17:10 est donc **conforme à la prévision**, et non un
+blocage. Éphémérides du soir, qui établissent que le critère reste tenable : coucher **21:41**,
+`crepuscule` (élévation 5° → -6°) ≈ **21:08 → 22:17**, `nuit` ≈ **22:17 → 06:00**, `aube`
+**06:00 → 06:36**. Les trois périodes manquantes sont toutes traversées avant le matin du
+2026-07-21. **Aucun correctif, critère de clôture L6c inchangé.**
 
 ### Lot 9 — validation terrain (partiel, 2026-07-20)
 
