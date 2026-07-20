@@ -97,8 +97,8 @@ La notification est vue comme :
 
 Les téléphones sont référencés par des helpers :
 
-* `input_text.telephone_antoine_notify`
-* `input_text.telephone_constance_notify`
+* `input_text.telephone_parent_1_notify`
+* `input_text.telephone_parent_2_notify`
 
 Chaque helper contient **le nom du service notify réel**.
 
@@ -123,8 +123,8 @@ Cette architecture repose sur une **configuration maître unique par téléphone
 
 Helpers maîtres :
 
-* `input_text.telephone_antoine`
-* `input_text.telephone_constance`
+* `input_text.telephone_parent_1`
+* `input_text.telephone_parent_2`
 
 Ces helpers contiennent **le nom logique brut du téléphone** (ex: `pixel_7a`).
 
@@ -195,8 +195,8 @@ Rôle :
 
 Cibles :
 
-* `input_text.telephone_antoine_notify`
-* `input_text.telephone_constance_notify`
+* `input_text.telephone_parent_1_notify`
+* `input_text.telephone_parent_2_notify`
 
 Usage typique :
 
@@ -293,8 +293,8 @@ Violation de ces règles = dette architecturale.
 
 Helpers associés :
 
-* `input_text.telephone_antoine_notify`
-* `input_text.telephone_constance_notify`
+* `input_text.telephone_parent_1_notify`
+* `input_text.telephone_parent_2_notify`
 
 ---
 
