@@ -4,7 +4,7 @@
 |---|---|
 | **Type** | Cadrage / arbitrage de chantier (conception préalable, **sans implémentation**) |
 | **Domaine** | Météo — précipitations : couche d'acquisition + qualification (production des signaux pluie) |
-| **Statut** | **Arbitré (2026-07-11) — direction incrémentale retenue.** Lot 1 (contrat de production) **lançable** ; lot 2 séquencé. Aucun runtime à ce stade, aucune règle opposable. |
+| **Statut** | **Arbitré (2026-07-11) — direction incrémentale retenue.** **Lot 1 (contrat de production) LIVRÉ** : contrat normatif [`meteo/pluie_production.md`](../../../contrats/meteo/pluie_production.md) + checker CI `contracts_pluie_production.yml` ; la distinction chambres / séjour est désormais **gravée et opposable**. **Lot 2 séquencé, non engagé** (inchangé). Aucun runtime de fusion à ce stade. |
 | **Version** | 0.1 (cadrage) |
 | **Date** | 2026-07-11 |
 | **Dépôt** | `antoinevalentinHA/arsenal` @ HEAD `29a1f20` |
