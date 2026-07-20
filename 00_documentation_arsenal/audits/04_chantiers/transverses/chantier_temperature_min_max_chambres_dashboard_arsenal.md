@@ -8,7 +8,7 @@
 | **Priorité** | **P2** (proposée) — voir justification §Priorité. |
 | **Ouvert le** | 2026-07-18. |
 | **Preuve de départ** | [`01_rapports/transverses/audit_cartes_temperature_min_max_dashboard_arsenal.md`](../../01_rapports/transverses/audit_cartes_temperature_min_max_dashboard_arsenal.md) (mergé par la PR #410). |
-| **Prochain jalon** | **aucun** (chantier clos). **Réserve honnête** : panne réelle simultanée des trois thermomètres **non provoquée, preuve terrain différée** (partagée avec C28) ; conformité de restitution établie par preuve statique + checker T4 + simulation. |
+| **Prochain jalon** | **aucun** (chantier clos). **Réserve honnête** : panne réelle simultanée des trois thermomètres **non provoquée, preuve terrain différée** (partagée avec C28) ; conformité de restitution établie par preuve statique + checker T4 + simulation. **Qualification doctrinale (2026-07-20) : réserve opportuniste / L5 — NON BLOQUANTE** ([`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md) §3). La provoquer violerait la limite « absence de panne fabriquée » (R-VERROU-2) ; l'insolvabilité est donc **légitime**. Qualifiée pour le **périmètre propre de C27** — la restitution des agrégats — conformément à **R-QUALIF-2**, l'héritage ne transportant pas la solvabilité. |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C27 **ne vaut ni arbitrage rendu, ni décision de
 > contractualiser, ni décision de corriger.** Ce document est une **ouverture documentaire de

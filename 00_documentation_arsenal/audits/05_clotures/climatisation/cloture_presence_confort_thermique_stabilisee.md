@@ -6,7 +6,7 @@
 |---|---|
 | **Type** | Clôture de chantier — validation terrain |
 | **Domaine** | Climatisation / Présence — interface de stabilisation COOL/DRY |
-| **Statut** | ✅ CLÔTURÉ sur le périmètre **COOL/DRY** — `T = 120 s` ratifié (réserve de surveillance) |
+| **Statut** | ✅ CLÔTURÉ sur le périmètre **COOL/DRY** — `T = 120 s` ratifié — **réserve de surveillance LEVÉE et CLOSE le 2026-07-20** |
 | **Version** | 1.0 |
 | **Date** | 2026-06-19 |
 | **Chantier** | C4 (registre) — [`suivi_post_deploiement_presence_confort_thermique_stabilisee.md`](../../04_chantiers/climatisation/suivi_post_deploiement_presence_confort_thermique_stabilisee.md) |
@@ -116,8 +116,8 @@ Ventilation : 23/06 (4 ép. cool, 0 impact) · 25/06 · 27/06 · 28/06 (1 ép. c
   absorbé). Elle ne constitue donc **pas** une seconde validation autonome, et n'en
   a pas besoin : le volet A est déjà clos.
 - **Réserve de surveillance (§4) non déclenchée.** Aucun faux-absent n'a approché
-  ou dépassé 120 s ; `T = 120 s` n'est pas remis en cause. La réserve **reste
-  ouverte** (surveillance continue) — ce datapoint ne la solde pas.
+  ou dépassé 120 s ; `T = 120 s` n'est pas remis en cause. ~~La réserve **reste
+  ouverte** (surveillance continue) — ce datapoint ne la solde pas.~~ **✅ Réserve LEVÉE et CLOSE le 2026-07-20** — voir « Levée de la réserve de surveillance » en fin de document.
 - **Impacts longs = comportement attendu, hors périmètre.** Les 3 coupures
   (~70 min à ~2 h 15) relèvent de la **frontière de calibration assumée** (§3 du
   suivi) : une absence > 120 s est traitée comme réelle et coupe par conception
@@ -138,3 +138,33 @@ Ventilation : 23/06 (4 ép. cool, 0 impact) · 25/06 · 27/06 · 28/06 (1 ép. c
 intacts.
 
 *Aucun runtime, contrat ou YAML modifié par ce document (validation lecture seule).*
+
+---
+
+## Levée de la réserve de surveillance — 2026-07-20
+
+**Qualification doctrinale : réserve différée solvable**
+([`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md) §3).
+La preuve était **productible et conservable** — l'outil de lecture existe, les creux de présence sont
+observables, aucune manipulation interdite n'était requise.
+
+**Non-conformité corrigée.** La réserve ne portait **ni date, ni seuil de sortie, ni propriétaire** :
+elle était **perpétuelle par construction**, en violation de **R-QUALIF-3**, et relevait de la *dette
+perpétuelle silencieuse* que R-QUALIF-1 nomme.
+
+**Motif de levée.** La campagne de surveillance du **2026-06-22 au 2026-06-29**, déjà consignée
+ci-dessus, est **achevée** et n'a produit **aucun impact inférieur à `T = 120 s`** — aucun faux-absent
+n'a approché ni dépassé le seuil. Le seuil **reste `120 s`**, inchangé : **aucun nouveau seuil, aucune
+nouvelle durée, aucun nombre de fenêtres supplémentaire** n'est introduit ; la campagne déjà documentée
+**constitue** la preuve de levée.
+
+**Portée.** Cette levée **ne re-valide ni ne rouvre** la clôture fonctionnelle du volet A, déjà
+acquise ; elle solde **uniquement** la réserve de surveillance.
+
+**Écart assumé et tracé.** La rédaction antérieure indiquait que ce datapoint « ne la solde pas ». La
+décision du 2026-07-20 statue en sens inverse, en s'appuyant sur la **fenêtre de surveillance achevée**
+et non sur le seul datapoint météo-conditionnel. La formulation d'origine est **conservée, barrée**,
+au §correspondant.
+
+**Fondement de gouvernance.** Arbitrage propriétaire du 2026-07-20, au titre des suites du **Lot 3 de
+C31** (application démonstrative de la doctrine de solvabilité probatoire).

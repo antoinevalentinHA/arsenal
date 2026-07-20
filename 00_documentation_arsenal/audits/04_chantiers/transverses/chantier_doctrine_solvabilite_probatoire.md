@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Poser une doctrine transverse de **solvabilité probatoire** : avant qu'une preuve terrain devienne condition de clôture, vérifier qu'elle est **productible** par le runtime et **conservable** par l'installation. |
 | **Domaine** | Transverse — gouvernance des chantiers, administration de la preuve. |
-| **Statut** | **Ouvert — Lots 1 et 2 livrés (2026-07-19).** Doctrine [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md) publiée (Lot 1), puis raccords réalisés chez leurs propriétaires et **correction factuelle du §7** (Lot 2). **Lot 3 LIVRÉ (2026-07-20)** (§6 bis). C31 **reste non clôturable** (§9) — clôturabilité non prononcée. |
+| **Statut** | **Ouvert — Lots 1 et 2 livrés (2026-07-19).** Doctrine [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md) publiée (Lot 1), puis raccords réalisés chez leurs propriétaires et **correction factuelle du §7** (Lot 2). **Lot 3 LIVRÉ (2026-07-20)** (§6 bis). **CLOS — conforme (2026-07-20)** : les quatre critères du §9 sont satisfaits (§10). |
 | **Priorité** | **P1** — non pour un risque technique immédiat, mais parce que des chantiers restent ouverts en attendant des preuves que l'installation ne peut ni produire, ni conserver, ni qualifier correctement. |
 | **Ouvert le** | 2026-07-19. |
 | **Prochain jalon** | **Lot 3 — application démonstrative** de la doctrine à des cas réels (C29, C4, C27). |
@@ -304,8 +304,17 @@ C31 **n'est pas clôturable** tant que :
 
 ## 10. Stop point
 
-Ouverture documentaire uniquement. Prochaine étape : **Lot 1**, après arbitrage propriétaire sur le
-périmètre exact de la doctrine.
+**Chantier CLOS — conforme (2026-07-20).** Les quatre critères du §9 sont satisfaits :
+doctrine **rédigée, mergée et propriétaire unique** de sa règle (Lot 1) ; **trois raccords du §6**
+réalisés chez leurs propriétaires (Lot 2) ; doctrine **appliquée à quatre cas réels** — C29, C27,
+C28 et C4 (§6 bis), soit au-delà du minimum de deux ; et **une décision effectivement changée**
+(C29 : réserve requalifiée *sans objet* puis close, là où elle était conservée comme observation
+terrain différée). Aucun verrou terrain ne s'y oppose : le §9 qualifie lui-même ces critères de
+**documentaires, donc solvables sans preuve terrain**.
+
+Suites traitées hors périmètre de clôture, au titre de la régularisation post-Lot 3 : qualification
+portée chez les propriétaires C27 et C28 (R-QUALIF-2), et levée de la réserve de surveillance C4
+(R-QUALIF-3).
 
 ---
 
