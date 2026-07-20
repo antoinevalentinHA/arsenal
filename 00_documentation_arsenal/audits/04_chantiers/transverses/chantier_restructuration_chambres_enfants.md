@@ -511,3 +511,55 @@ attribut.
 **CI** : 85/85 checkers `arsenal_contracts` **PASS**, YAML valide. **Effet** : au prochain
 `homeassistant start` (ou template.reload + un trigger de source), les 6 capteurs s'amorcent seuls ; le
 défaut **ne peut plus se reproduire** à un futur renommage de `unique_id`.
+
+### Lot 6c — réamorçage des filtres de période (constat, sans correctif ; 2026-07-20)
+
+**Constat terrain (vérification runtime post-L6b)** : **16 entités par pièce renommée** restent
+`unknown` — filtres `aube/matin/jour/crepuscule/nuit` sur température / HR / humidité absolue et leurs
+`_moyenne`. **Test de contrôle décisif** : `chambre_parents` = **0 KO / 156**, `sejour` = 7 KO mais tous
+`button.*_identify` (normal Zigbee). L'écart porte **exactement** sur les deux pièces renommées. Sources
+amont saines (`temperature_chambre_enfants` = 23.8, `salle_de_jeux` = 23.6, HR 44.7 / 43.2).
+
+**Cause racine** : à la différence de L6b, la **résolution de source est saine** — ces filtres dérivent
+`src` de `this.entity_id | replace(...)`, donc du bon côté de la ligne de fracture décrite en L6b. Le
+point en défaut est la **branche mémoire** : hors de sa période, le capteur rend `states(this.entity_id)`,
+soit une **auto-référence**. Le renommage du `unique_id` en L3 en a fait des entités **neuves** : une
+entité neuve qui se relit elle-même ne lit rien → `unknown` **jusqu'à ce que `sensor.periode_meteo`
+atteigne sa propre période**. `chambre_parents`, non renommée, a conservé sa mémoire.
+
+**Distinction avec L6b** — L6b était une **boucle fermée jamais auto-réparable** (attributs non commités).
+Ici la boucle **s'ouvre seule** au passage de chaque période : le défaut est **transitoire, borné à un
+cycle de 24 h**, et non un défaut de câblage.
+
+**Preuve (2026-07-20, 09:42, `periode_meteo = matin` depuis 08:43)** :
+
+| Période | Temp. Chambre Enfants | Temp. Chambre Parents (témoin) |
+|---|---|---|
+| nuit | 23.8 ✅ | 24.5 ✅ |
+| aube | 23.9 ✅ | 24.4 ✅ |
+| **matin** *(courante)* | 23.8 ✅ | 24.1 ✅ |
+| jour | `unknown` ⏳ | 24.4 ✅ |
+| crepuscule | `unknown` ⏳ | 24.5 ✅ |
+
+Les seules périodes vides sont **exactement celles non encore atteintes** depuis le déploiement
+(2026-07-19 22:30) : nuit, aube et matin se sont réamorcées au fil de la nuit et de la matinée — le
+mécanisme est **observé en cours de résorption**. L'humidité absolue accuse un cran de retard (seul
+`matin` rempli) : sa source n'a été fiabilisée que par **L6b**, déployé après L3, elle a donc manqué
+nuit et aube.
+
+**Rayon d'impact — fermé** : les seuls consommateurs de ces filtres sont leurs propres moyennes
+statistiques (`13_sensor_platforms/statistics/meteo/periodes/`), soit précisément les 8 entités
+`_moyenne` également en attente. **Aucun consommateur décisionnel.** La plateforme `statistics` ignore
+les sources indisponibles : **pas de calcul silencieux sur valeur nulle**, pas de corruption d'agrégat.
+
+**Décision : aucun correctif.** Le défaut est transitoire, à rayon fermé, et se résorbe seul. Corriger
+la branche mémoire (repli type L6b) reviendrait à **fabriquer une valeur de période non encore observée**
+— une régression de justesse pour un gain nul.
+
+**Critère de clôture L6c** : `chambre_enfants` et `salle_de_jeux` à **0 KO** après un cycle complet de
+périodes, soit **le 2026-07-21 au matin**. Séquence attendue : `jour` (après-midi du 20), `crepuscule`
+(soir du 20), `humidite_absolue` `nuit` + `aube` (nuit du 20 au 21).
+
+**Note structurelle (portée hors C32)** : tout futur renommage de `unique_id` sur une zone rouvrira la
+même **fenêtre aveugle de ≤ 24 h** sur ces filtres. Inhérent au design par auto-référence, **acceptable**
+au vu du rayon d'impact fermé, mais à intégrer au cadrage de tout prochain chantier de nommage.
