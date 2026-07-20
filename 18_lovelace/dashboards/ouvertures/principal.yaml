@@ -114,7 +114,7 @@ views:
             columns: 1
             square: false
             cards:
-              - !include ../../includes/section_headers/chambre_enfants.yaml
+              - !include ../../includes/section_headers/enfants.yaml
 
               - type: grid
                 columns: 2
@@ -122,10 +122,10 @@ views:
                 cards:
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.contact_salle_de_jeux
-                    name: Fenêtre Salle de Jeux
+                    entity: binary_sensor.contact_chambre_enfants
+                    name: Fenêtre Enfants
 
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.contact_chambre_enfants
-                    name: Fenêtre Enfants
+                    entity: binary_sensor.contact_salle_de_jeux
+                    name: Fenêtre Salle de Jeux
