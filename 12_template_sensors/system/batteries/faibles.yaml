@@ -50,6 +50,17 @@
 # 🔗 Dépendances structurantes :
 #   - group.batteries
 #
+# 🧮 Attribut `faibles` — accumulation par `namespace()`
+#   L’attribut doit restituer des **paires** (entité + valeur formatée),
+#   ce qu’une chaîne de filtres ne permet pas de porter simplement : la
+#   boucle est donc conservée, mais l’accumulateur passe par
+#   `namespace()`. Un `{% set acc = acc + [...] %}` nu dans un `{% for %}`
+#   ne survit pas à la sortie de la boucle : l’attribut restituait donc
+#   « Aucune batterie faible » en toute circonstance, y compris lorsque
+#   le `state` (comptage, chaîne de filtres correcte) était non nul.
+#   La comparaison se fait sur `float` : comparer des chaînes classerait
+#   « 9 » au-dessus de « 28 » et manquerait une batterie à 9 %.
+#
 # 🚫 Interdits :
 #   - Toute liste codée en dur d’entités batterie
 #   - Toute duplication du périmètre ailleurs
@@ -77,12 +88,11 @@
       attributes:
         faibles: >
           {% set seuil = 28 %}
-          {% set entites = expand('group.batteries') | map(attribute='entity_id') | list %}
-          {% set faibles = [] %}
-          {% for e in entites %}
-            {% set val = states(e) | float(default=101) %}
+          {% set ns = namespace(faibles=[]) %}
+          {% for e in expand('group.batteries') %}
+            {% set val = e.state | float(default=101) %}
             {% if val < seuil %}
-              {% set faibles = faibles + [e ~ ' : ' ~ val|round(0) ~ '%'] %}
+              {% set ns.faibles = ns.faibles + [e.entity_id ~ ' : ' ~ val|round(0) ~ '%'] %}
             {% endif %}
           {% endfor %}
-          {{ '\n'.join(faibles) if faibles else 'Aucune batterie faible' }}
+          {{ '\n'.join(ns.faibles) if ns.faibles else 'Aucune batterie faible' }}

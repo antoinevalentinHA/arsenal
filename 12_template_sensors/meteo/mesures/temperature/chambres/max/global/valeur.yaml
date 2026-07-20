@@ -45,23 +45,23 @@
 
       state: >
         {% set brut = {
-          'Chambre Enfants': states('sensor.temperature_chambre_enfants'),
-          'Chambre Parents': states('sensor.temperature_chambre_parents')
+          'Chambre Enfants': states('sensor.temperature_chambre_enfants') | float(none),
+          'Chambre Parents': states('sensor.temperature_chambre_parents') | float(none)
         } %}
 
-        {% set valides = brut.items() | selectattr('1', 'is_number') | list %}
+        {% set valides = brut.items() | rejectattr('1', 'none') | list %}
 
         {% if valides %}
-          {{ (valides | sort(attribute=1))[-1][1] | float | round(1) }}
+          {{ (valides | sort(attribute=1))[-1][1] | round(1) }}
         {% endif %}
 
       attributes:
         chambre_la_plus_chaude: >
           {% set brut = {
-            'Chambre Enfants': states('sensor.temperature_chambre_enfants'),
-            'Chambre Parents': states('sensor.temperature_chambre_parents')
+            'Chambre Enfants': states('sensor.temperature_chambre_enfants') | float(none),
+            'Chambre Parents': states('sensor.temperature_chambre_parents') | float(none)
           } %}
-          {% set valides = brut.items() | selectattr('1', 'is_number') | list %}
+          {% set valides = brut.items() | rejectattr('1', 'none') | list %}
           {% if valides %}
             {{ (valides | sort(attribute=1))[-1][0] }}
           {% else %}
