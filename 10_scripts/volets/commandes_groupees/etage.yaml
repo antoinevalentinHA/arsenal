@@ -1,10 +1,24 @@
 # ==========================================================
-# 🧠 ARSENAL — SCRIPTS : Volets enfants (commandes groupées)
+# 🧠 ARSENAL — SCRIPTS : Volets étage (commandes groupées)
 # ----------------------------------------------------------
 # 🎯 RÔLE FONDAMENTAL
 #   Fournir des commandes GROUPÉES, strictement exécutives,
 #   pour l’ouverture et la fermeture complètes des volets
-#   des chambres enfants (Enfants).
+#   de l’étage : Chambre Enfants + Salle de Jeux.
+#
+#   🏠 Périmètre physique — l’installation compte 4 volets automatisés,
+#   tous côté jardin : Séjour gauche et droit au RDC, Chambre Enfants et
+#   Salle de Jeux à l’étage. « Étage » désigne donc exactement ces deux
+#   volets ; il n’en existe pas d’autre à cet étage.
+#
+#   ⚠️ Ne pas confondre avec les agrégats « chambres ». C32/A2 retire la
+#   Salle de Jeux des agrégats THERMIQUES et du besoin de chauffe : elle
+#   n’est plus une chambre au sens du sommeil. Cela ne vaut pas pour la
+#   COMMANDE des volets, qui est purement exécutive et sans effet
+#   thermique décisionnel. Ces scripts alimentent
+#   `ouvrir/fermer_tous_les_volets` : en exclure la Salle de Jeux
+#   revenait à ce que « Fermer tous » ne ferme pas son volet. Voir
+#   l’amendement A2-bis au dossier C32.
 #
 # ----------------------------------------------------------
 # 🧱 RESPONSABILITÉ
@@ -17,8 +31,8 @@
 # ⚙️ MODE DE FONCTIONNEMENT
 #
 #   - Appel exclusif des scripts unitaires :
-#       • ouvrir_volet_enfants
-#       • fermer_volet_enfants
+#       • ouvrir_volet_enfants / ouvrir_volet_salle_de_jeux
+#       • fermer_volet_enfants / fermer_volet_salle_de_jeux
 #
 #   - Délai volontaire entre chaque commande
 #     pour éviter pertes ou collisions HomeKit.
@@ -57,14 +71,18 @@
 # ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-ouvrir_volets_enfants:
-  alias: "Volets - Ouvrir chambres"
+ouvrir_volets_etage:
+  alias: "Volets - Ouvrir étage"
   mode: single
   sequence:
     - service: script.ouvrir_volet_enfants
+    - delay: "00:00:01"
+    - service: script.ouvrir_volet_salle_de_jeux
 
-fermer_volets_enfants:
-  alias: "Volets - Fermer chambres"
+fermer_volets_etage:
+  alias: "Volets - Fermer étage"
   mode: single
   sequence:
     - service: script.fermer_volet_enfants
+    - delay: "00:00:01"
+    - service: script.fermer_volet_salle_de_jeux
