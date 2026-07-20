@@ -90,7 +90,7 @@ Quelques vues réelles, telles qu'elles tournent. Elles sont **denses par concep
 *Eau chaude sanitaire : température, historique et bouclage supervisé.*
 
 ![Vue Système — observabilité de l'infrastructure](00_documentation_arsenal/ui/captures/systeme.png)<br>
-*Système : observabilité de l'infra — Raspberry Pi, systèmes critiques, connectivité, intégrations.*
+*Système : observabilité de l'infra — Raspberry Pi, systèmes critiques, connectivité, intégrations. Capture non mise en scène : l'audit y signale 5 anomalies et deux liens dégradés. C'est précisément ce qu'on attend d'une vue dont le métier est de voir — une page d'observabilité qui n'a jamais rien détecté ne prouve rien.*
 
 ![Menu de navigation Arsenal — accès à tous les domaines](00_documentation_arsenal/ui/captures/navigation.png)<br>
 *Un point d'entrée unique vers tous les domaines et les outils système.*
