@@ -65,13 +65,13 @@ views:
                   - sensor.couleur_temperature_jardin
 
           # ======================================================
-          # 🏠 RDC / PALIER
+          # 🏡 RDC
           # ======================================================
-          - !include ../../includes/section_headers/rdc_palier.yaml
+          - !include ../../includes/section_headers/rdc.yaml
 
           - square: false
             type: grid
-            columns: 3
+            columns: 2
             cards:
               - type: custom:button-card
                 template: socle_kpi
@@ -88,6 +88,23 @@ views:
                 icon: mdi:thermometer
                 triggers_update:
                   - sensor.couleur_temperature_sejour
+
+          # ======================================================
+          # 🪜 ÉTAGE
+          # ======================================================
+          - !include ../../includes/section_headers/etage.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.temperature_salle_de_jeux
+                name: Salle de Jeux
+                icon: mdi:thermometer
+                triggers_update:
+                  - sensor.couleur_temperature_salle_de_jeux
 
               - type: custom:button-card
                 template: socle_kpi
@@ -116,27 +133,11 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.temperature_salle_de_jeux
-                name: Salle de Jeux
-                icon: mdi:thermometer
-                triggers_update:
-                  - sensor.couleur_temperature_salle_de_jeux
-
-              - type: custom:button-card
-                template: socle_kpi
                 entity: sensor.temperature_chambre_parents
                 name: Parents
                 icon: mdi:thermometer
                 triggers_update:
                   - sensor.couleur_temperature_chambre_parents
-
-              - type: custom:button-card
-                template: socle_kpi
-                name: Petite Maison
-                icon: mdi:thermometer
-                entity: sensor.temperature_petite_maison
-                triggers_update:
-                  - sensor.couleur_temperature_petite_maison
 
           # ======================================================
           # 🚿 SALLES DE BAIN
@@ -164,14 +165,22 @@ views:
                   - sensor.couleur_temperature_sdb_enfants
 
           # ======================================================
-          # 🧱 CAVE & GARAGE
+          # 🏘️ DÉPENDANCES
           # ======================================================
-          - !include ../../includes/section_headers/cave_et_garage.yaml
+          - !include ../../includes/section_headers/dependances.yaml
 
           - square: false
             type: grid
-            columns: 2
+            columns: 3
             cards:
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.temperature_petite_maison
+                name: Petite Maison
+                icon: mdi:thermometer
+                triggers_update:
+                  - sensor.couleur_temperature_petite_maison
+
               - type: custom:button-card
                 template: socle_kpi
                 entity: sensor.temperature_garage

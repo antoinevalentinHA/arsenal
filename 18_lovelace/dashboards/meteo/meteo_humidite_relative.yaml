@@ -78,6 +78,23 @@ views:
                   - sensor.couleur_humidite_relative_sejour
 
           # ======================================================
+          # 🪜 ÉTAGE
+          # ======================================================
+          - !include ../../includes/section_headers/etage.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.humidite_relative_salle_de_jeux
+                name: Salle de Jeux
+                icon: mdi:water-percent
+                triggers_update:
+                  - sensor.couleur_humidite_relative_salle_de_jeux
+
+          # ======================================================
           # 🛏️ CHAMBRES
           # ======================================================
           - !include ../../includes/section_headers/chambres.yaml
@@ -96,27 +113,11 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.humidite_relative_salle_de_jeux
-                name: Salle de Jeux
-                icon: mdi:water-percent
-                triggers_update:
-                  - sensor.couleur_humidite_relative_salle_de_jeux
-
-              - type: custom:button-card
-                template: socle_kpi
                 entity: sensor.humidite_relative_chambre_parents
                 name: Parents
                 icon: mdi:water-percent
                 triggers_update:
                   - sensor.couleur_humidite_relative_chambre_parents
-
-              - type: custom:button-card
-                template: socle_kpi
-                entity: sensor.humidite_relative_petite_maison
-                name: Petite Maison
-                icon: mdi:water-percent
-                triggers_update:
-                  - sensor.couleur_humidite_relative_petite_maison
 
           # ======================================================
           # 🚿 SALLES DE BAIN
@@ -144,14 +145,22 @@ views:
                   - sensor.couleur_humidite_relative_sdb_enfants
 
           # ======================================================
-          # 🧱 CAVE & GARAGE
+          # 🏘️ DÉPENDANCES
           # ======================================================
-          - !include ../../includes/section_headers/cave_et_garage.yaml
+          - !include ../../includes/section_headers/dependances.yaml
 
           - square: false
             type: grid
-            columns: 2
+            columns: 3
             cards:
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.humidite_relative_petite_maison
+                name: Petite Maison
+                icon: mdi:water-percent
+                triggers_update:
+                  - sensor.couleur_humidite_relative_petite_maison
+
               - type: custom:button-card
                 template: socle_kpi
                 entity: sensor.humidite_relative_garage
@@ -162,8 +171,8 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
+                entity: sensor.humidite_relative_cave
                 name: Cave
                 icon: mdi:water-percent
-                entity: sensor.humidite_relative_cave
                 triggers_update:
                   - sensor.couleur_humidite_relative_cave
