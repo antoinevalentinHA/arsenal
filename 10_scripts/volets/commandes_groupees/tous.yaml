@@ -38,9 +38,9 @@
 # 🔗 DÉPENDANCES
 #
 #   - Scripts groupés :
-#       • script.ouvrir_volets_enfants
+#       • script.ouvrir_volets_etage
 #       • script.ouvrir_volets_sejour
-#       • script.fermer_volets_enfants
+#       • script.fermer_volets_etage
 #       • script.fermer_volets_sejour
 #
 # ----------------------------------------------------------
@@ -65,7 +65,7 @@ ouvrir_tous_les_volets:
   alias: "Volets - Ouvrir tous"
   mode: single
   sequence:
-    - service: script.ouvrir_volets_enfants
+    - service: script.ouvrir_volets_etage
     - delay: "00:00:01"
     - service: script.ouvrir_volets_sejour
 
@@ -73,6 +73,6 @@ fermer_tous_les_volets:
   alias: "Volets - Fermer tous"
   mode: single
   sequence:
-    - service: script.fermer_volets_enfants
+    - service: script.fermer_volets_etage
     - delay: "00:00:01"
     - service: script.fermer_volets_sejour

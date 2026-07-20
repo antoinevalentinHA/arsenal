@@ -123,11 +123,11 @@ views:
                   confirm: Confirmez-vous la fermeture des volets du séjour ?
 
           ######################################################
-          # 🛏️ CHAMBRES
+          # 👶 ENFANTS
           ######################################################
           - type: custom:button-card
             template: section_header
-            name: 🛏️ Chambres
+            name: 👶 Enfants
 
           - type: grid
             columns: 2
@@ -135,11 +135,11 @@ views:
             cards:
               - type: custom:button-card
                 template: sub_section_header
-                name: 🛏️ Enfants
+                name: 🛏️ Chambre Enfants
 
               - type: custom:button-card
                 template: sub_section_header
-                name: 🛏️ Salle de Jeux
+                name: 🧸 Salle de Jeux
 
           - type: grid
             columns: 2
@@ -151,12 +151,12 @@ views:
                     template: shutter_open
                     variables:
                       service: script.ouvrir_volet_enfants
-                      confirm: Confirmez-vous l’ouverture du volet de la chambre d’Enfants ?
+                      confirm: Confirmez-vous l’ouverture du volet de la Chambre Enfants ?
                   - type: custom:button-card
                     template: shutter_close
                     variables:
                       service: script.fermer_volet_enfants
-                      confirm: Confirmez-vous la fermeture du volet de la chambre d’Enfants ?
+                      confirm: Confirmez-vous la fermeture du volet de la Chambre Enfants ?
 
               - type: horizontal-stack
                 cards:
@@ -164,16 +164,16 @@ views:
                     template: shutter_open
                     variables:
                       service: script.ouvrir_volet_salle_de_jeux
-                      confirm: Confirmez-vous l’ouverture du volet de la chambre de Salle de Jeux ?
+                      confirm: Confirmez-vous l’ouverture du volet de la Salle de Jeux ?
                   - type: custom:button-card
                     template: shutter_close
                     variables:
                       service: script.fermer_volet_salle_de_jeux
-                      confirm: Confirmez-vous la fermeture du volet de la chambre de Salle de Jeux ?
+                      confirm: Confirmez-vous la fermeture du volet de la Salle de Jeux ?
 
           - type: custom:button-card
             template: sub_section_header
-            name: 🛏 Global
+            name: 👶 Global
 
           - type: grid
             columns: 2
@@ -182,11 +182,11 @@ views:
               - type: custom:button-card
                 template: shutter_open
                 variables:
-                  service: script.ouvrir_volets_enfants
-                  confirm: Confirmez-vous l’ouverture des volets des chambres ?
+                  service: script.ouvrir_volets_etage
+                  confirm: Confirmez-vous l’ouverture des volets Enfants (Chambre + Salle de Jeux) ?
 
               - type: custom:button-card
                 template: shutter_close
                 variables:
-                  service: script.fermer_volets_enfants
-                  confirm: Confirmez-vous la fermeture des volets des chambres ?
+                  service: script.fermer_volets_etage
+                  confirm: Confirmez-vous la fermeture des volets Enfants (Chambre + Salle de Jeux) ?
