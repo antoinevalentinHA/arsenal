@@ -10,8 +10,8 @@
 # 🧩 PRINCIPE CONTRACTUEL
 #
 #     Cohérence source ↔ personne :
-#     - téléphone Antoine  → person.valentin
-#     - téléphone Constance → person.constance
+#     - Téléphone Parent 1  → person.parent_1
+#     - Téléphone Parent 2 → person.parent_2
 #
 #     Aucun BSSID ne peut être candidat si la personne couplée
 #     à sa source n'est pas dans 'Maison securite'.
@@ -44,15 +44,15 @@
           {% endif %}
         {% endfor %}
 
-        {% if states('person.valentin') == 'Maison securite' %}
-          {% set b = states('sensor.telephone_antoine_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
+        {% if states('person.parent_1') == 'Maison securite' %}
+          {% set b = states('sensor.telephone_parent_1_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
           {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') and b not in ns.maison %}
             {% set ns.candidats = ns.candidats + [b] %}
           {% endif %}
         {% endif %}
 
-        {% if states('person.constance') == 'Maison securite' %}
-          {% set b = states('sensor.telephone_constance_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
+        {% if states('person.parent_2') == 'Maison securite' %}
+          {% set b = states('sensor.telephone_parent_2_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
           {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') and b not in ns.maison and b not in ns.candidats %}
             {% set ns.candidats = ns.candidats + [b] %}
           {% endif %}
@@ -73,15 +73,15 @@
             {% endif %}
           {% endfor %}
 
-          {% if states('person.valentin') == 'Maison securite' %}
-            {% set b = states('sensor.telephone_antoine_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
+          {% if states('person.parent_1') == 'Maison securite' %}
+            {% set b = states('sensor.telephone_parent_1_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
             {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') and b not in ns.maison %}
               {% set ns.candidats = ns.candidats + [b] %}
             {% endif %}
           {% endif %}
 
-          {% if states('person.constance') == 'Maison securite' %}
-            {% set b = states('sensor.telephone_constance_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
+          {% if states('person.parent_2') == 'Maison securite' %}
+            {% set b = states('sensor.telephone_parent_2_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
             {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') and b not in ns.maison and b not in ns.candidats %}
               {% set ns.candidats = ns.candidats + [b] %}
             {% endif %}
@@ -89,7 +89,7 @@
 
           {{ ns.candidats | sort | join(', ') }}
 
-        candidats_antoine: >
+        candidats_parent_1: >
           {% set raw_maison = states('input_text.bssid_maison') | string %}
           {% set ns = namespace(maison=[], candidats=[]) %}
 
@@ -100,8 +100,8 @@
             {% endif %}
           {% endfor %}
 
-          {% if states('person.valentin') == 'Maison securite' %}
-            {% set b = states('sensor.telephone_antoine_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
+          {% if states('person.parent_1') == 'Maison securite' %}
+            {% set b = states('sensor.telephone_parent_1_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
             {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') and b not in ns.maison %}
               {% set ns.candidats = ns.candidats + [b] %}
             {% endif %}
@@ -109,7 +109,7 @@
 
           {{ ns.candidats | sort | join(', ') }}
 
-        candidats_constance: >
+        candidats_parent_2: >
           {% set raw_maison = states('input_text.bssid_maison') | string %}
           {% set ns = namespace(maison=[], candidats=[]) %}
 
@@ -120,8 +120,8 @@
             {% endif %}
           {% endfor %}
 
-          {% if states('person.constance') == 'Maison securite' %}
-            {% set b = states('sensor.telephone_constance_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
+          {% if states('person.parent_2') == 'Maison securite' %}
+            {% set b = states('sensor.telephone_parent_2_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
             {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') and b not in ns.maison %}
               {% set ns.candidats = ns.candidats + [b] %}
             {% endif %}
@@ -132,12 +132,12 @@
         sources_eligibles: >
           {% set ns = namespace(sources=[]) %}
 
-          {% if states('person.valentin') == 'Maison securite' %}
-            {% set ns.sources = ns.sources + ['antoine'] %}
+          {% if states('person.parent_1') == 'Maison securite' %}
+            {% set ns.sources = ns.sources + ['parent_1'] %}
           {% endif %}
 
-          {% if states('person.constance') == 'Maison securite' %}
-            {% set ns.sources = ns.sources + ['constance'] %}
+          {% if states('person.parent_2') == 'Maison securite' %}
+            {% set ns.sources = ns.sources + ['parent_2'] %}
           {% endif %}
 
           {{ ns.sources | sort | join(', ') }}
@@ -145,12 +145,12 @@
         sources_inertes: >
           {% set ns = namespace(sources=[]) %}
 
-          {% if states('person.valentin') != 'Maison securite' %}
-            {% set ns.sources = ns.sources + ['antoine'] %}
+          {% if states('person.parent_1') != 'Maison securite' %}
+            {% set ns.sources = ns.sources + ['parent_1'] %}
           {% endif %}
 
-          {% if states('person.constance') != 'Maison securite' %}
-            {% set ns.sources = ns.sources + ['constance'] %}
+          {% if states('person.parent_2') != 'Maison securite' %}
+            {% set ns.sources = ns.sources + ['parent_2'] %}
           {% endif %}
 
           {{ ns.sources | sort | join(', ') }}

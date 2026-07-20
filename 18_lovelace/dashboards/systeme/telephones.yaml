@@ -31,9 +31,9 @@ views:
             name: 📱 Téléphones
 
           - type: tile
-            entity: input_text.telephone_antoine
-            name: Téléphone Antoine
+            entity: input_text.telephone_parent_1
+            name: Téléphone Parent 1
 
           - type: tile
-            entity: input_text.telephone_constance
-            name: Téléphone Constance
+            entity: input_text.telephone_parent_2
+            name: Téléphone Parent 2

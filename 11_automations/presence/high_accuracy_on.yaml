@@ -36,14 +36,14 @@
 
   trigger:
     - platform: zone
-      id: valentin
-      entity_id: person.valentin
+      id: parent_1
+      entity_id: person.parent_1
       zone: zone.approche_securite
       event: enter
 
     - platform: zone
-      id: constance
-      entity_id: person.constance
+      id: parent_2
+      entity_id: person.parent_2
       zone: zone.approche_securite
       event: enter
 
@@ -55,7 +55,7 @@
   action:
     - variables:
         cible_notify: >-
-          {% if trigger.id == 'valentin' %}input_text.telephone_antoine_notify{% elif trigger.id == 'constance' %}input_text.telephone_constance_notify{% else %}none{% endif %}
+          {% if trigger.id == 'parent_1' %}input_text.telephone_parent_1_notify{% elif trigger.id == 'parent_2' %}input_text.telephone_parent_2_notify{% else %}none{% endif %}
 
     - condition: template
       value_template: "{{ cible_notify != 'none' }}"

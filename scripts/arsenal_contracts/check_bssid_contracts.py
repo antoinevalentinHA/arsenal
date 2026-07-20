@@ -149,10 +149,10 @@ def test_nouveau_bssid_enforces_source_person_coupling() -> None:
     content = read(FILE_NOUVEAU_BSSID)
 
     REQUIRED = [
-        (r'telephone_antoine_bssid_dynamic', "source antoine"),
-        (r'telephone_constance_bssid_dynamic', "source constance"),
-        (r'person\.valentin', "person.valentin"),
-        (r'person\.constance', "person.constance"),
+        (r'telephone_parent_1_bssid_dynamic', "source Parent 1"),
+        (r'telephone_parent_2_bssid_dynamic', "source Parent 2"),
+        (r'person\.parent_1', "person.parent_1"),
+        (r'person\.parent_2', "person.parent_2"),
         (r'Maison securite', "zone Maison securite"),
     ]
     for pattern, label in REQUIRED:
@@ -257,8 +257,8 @@ def test_apprentissage_enforces_source_person_coupling() -> None:
         return
     content = read(FILE_BSSID_WIFI_AUTO)
     for pattern, label in [
-        (r'person\.valentin', "person.valentin"),
-        (r'person\.constance', "person.constance"),
+        (r'person\.parent_1', "person.parent_1"),
+        (r'person\.parent_2', "person.parent_2"),
         (r'Maison securite', "zone Maison securite"),
     ]:
         if not re.search(pattern, content):
@@ -272,7 +272,7 @@ def test_apprentissage_enforces_source_person_coupling() -> None:
 def test_apprentissage_consumes_candidats_par_source() -> None:
     """
     T13 — L'automation d'apprentissage consomme les attributs candidats par source
-    (candidats_antoine, candidats_constance) — pas la fusion globale (§7.4, §16).
+    (candidats_parent_1, candidats_parent_2) — pas la fusion globale (§7.4, §16).
     Scope : 11_automations/system/bssid_wifi.yaml
     """
     if not FILE_BSSID_WIFI_AUTO.is_file():
@@ -280,8 +280,8 @@ def test_apprentissage_consumes_candidats_par_source() -> None:
         return
     content = read(FILE_BSSID_WIFI_AUTO)
     for attr, label in [
-        (r'candidats_antoine', "attribut candidats_antoine"),
-        (r'candidats_constance', "attribut candidats_constance"),
+        (r'candidats_parent_1', "attribut candidats_parent_1"),
+        (r'candidats_parent_2', "attribut candidats_parent_2"),
     ]:
         if not re.search(attr, content):
             error(

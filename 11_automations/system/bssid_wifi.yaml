@@ -15,8 +15,8 @@
 # 🧩 PRINCIPE CONTRACTUEL
 #
 #     Cohérence source ↔ personne :
-#     - téléphone Antoine  → person.valentin
-#     - téléphone Constance → person.constance
+#     - Téléphone Parent 1  → person.parent_1
+#     - Téléphone Parent 2 → person.parent_2
 #
 #     Un BSSID ne peut être appris que si la personne couplée à
 #     sa source est dans 'Maison securite' au moment de l'écriture.
@@ -85,8 +85,8 @@
         candidats: >-
           {% set ns = namespace(result=[]) %}
 
-          {% if is_state('person.valentin', 'Maison securite') %}
-            {% set csv = state_attr('binary_sensor.wifi_nouveau_bssid', 'candidats_antoine') | default('', true) | string %}
+          {% if is_state('person.parent_1', 'Maison securite') %}
+            {% set csv = state_attr('binary_sensor.wifi_nouveau_bssid', 'candidats_parent_1') | default('', true) | string %}
             {% for item in csv.split(',') %}
               {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
               {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
@@ -95,8 +95,8 @@
             {% endfor %}
           {% endif %}
 
-          {% if is_state('person.constance', 'Maison securite') %}
-            {% set csv = state_attr('binary_sensor.wifi_nouveau_bssid', 'candidats_constance') | default('', true) | string %}
+          {% if is_state('person.parent_2', 'Maison securite') %}
+            {% set csv = state_attr('binary_sensor.wifi_nouveau_bssid', 'candidats_parent_2') | default('', true) | string %}
             {% for item in csv.split(',') %}
               {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
               {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}

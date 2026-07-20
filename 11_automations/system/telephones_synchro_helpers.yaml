@@ -43,8 +43,8 @@
   trigger:
     - platform: state
       entity_id:
-        - input_text.telephone_antoine
-        - input_text.telephone_constance
+        - input_text.telephone_parent_1
+        - input_text.telephone_parent_2
 
   variables:
     # Nom du téléphone (défini dans le helper maître)
@@ -52,7 +52,7 @@
 
     # Détermine à qui appartient le téléphone modifié
     prefix: >
-      {{ 'antoine' if trigger.entity_id.endswith('_antoine') else 'constance' }}
+      {{ 'parent_1' if trigger.entity_id.endswith('_parent_1') else 'parent_2' }}
 
     # Construit les entités dérivées automatiquement
     notify_entity: "notify.mobile_app_{{ tel }}"
