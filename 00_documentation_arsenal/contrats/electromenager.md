@@ -35,7 +35,7 @@ Automations (préfixe d'identifiant `1008` — registre `prefix_id.yaml`) :
 | Buanderie | `10080000000003` | `10080000000004` |
 
 Canal de notification mobile : `script.notification_envoyer` vers
-`input_text.telephone_antoine_notify`.
+`input_text.telephone_parent_1_notify`.
 
 ## 1. Détection de début
 
@@ -72,7 +72,7 @@ confirmé immédiatement : l'automation attend (`wait_for_trigger` +
   `notification_id` = nom du flag).
 - **Fin confirmée** : suppression de la notification persistante
   (`persistent_notification.dismiss`) **et** notification **mobile**
-  (`script.notification_envoyer`, cible `input_text.telephone_antoine_notify`).
+  (`script.notification_envoyer`, cible `input_text.telephone_parent_1_notify`).
 
 La notification n'est qu'un effet ; elle ne porte aucune décision.
 

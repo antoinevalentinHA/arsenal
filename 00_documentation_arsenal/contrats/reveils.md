@@ -62,7 +62,7 @@ rien au sens d'un moteur d'arbitrage, et n'est couplé à aucun autre domaine
 - `input_boolean.babyphone` — activation babyphone.
 
 **Perception (hors périmètre, lue) :** `sensor.bruit_chambre_enfants`.
-**Notification (hors périmètre, appelée) :** `script.notification_envoyer` vers `input_text.telephone_antoine_notify`.
+**Notification (hors périmètre, appelée) :** `script.notification_envoyer` vers `input_text.telephone_parent_1_notify`.
 
 ---
 
@@ -116,8 +116,8 @@ zéro / vidés.
 ## 4. Babyphone — notification opt-in, expérimentale et NON garantie
 
 Lorsque `input_boolean.babyphone` est actif, un dépassement du seuil sonore
-déclenche une notification vers Antoine (chemin canonique
-`script.notification_envoyer` → `input_text.telephone_antoine_notify`). Cette
+déclenche une notification vers Parent 1 (chemin canonique
+`script.notification_envoyer` → `input_text.telephone_parent_1_notify`). Cette
 fonction **n'a pas de condition de fenêtre horaire** : elle opère tant que le
 booléen est actif.
 
@@ -133,7 +133,7 @@ booléen est actif.
 
 - **INV-REV-7** — Le babyphone est **strictement opt-in** : aucune notification
   sans `input_boolean.babyphone` actif ; il n'est jamais auto-activé.
-- **INV-REV-8** — Le destinataire **observé** est Antoine via le chemin canonique
+- **INV-REV-8** — Le destinataire **observé** est Parent 1 via le chemin canonique
   existant. Le contrat n'introduit ni destinataire familial ni destinataire
   configurable.
 - **INV-REV-9** — Le babyphone **n'offre aucune garantie** de détection, de

@@ -50,7 +50,7 @@ mobile informative** signalant que la batterie du contrôleur Rain Bird franchit
   **option future** (cf. § Entités dérivées prévues).
 - **Couche notification mobile** : l'automation, événementielle, délègue l'envoi au
   canal central `script.notification_envoyer`.
-- **Destinataire** : `input_text.telephone_antoine_notify` (canal déjà utilisé par
+- **Destinataire** : `input_text.telephone_parent_1_notify` (canal déjà utilisé par
   les notifications santé et arrosage existantes).
 
 > Les deux couches sont **séparées** (décision/diagnostic ≠ notification), conformément
@@ -121,7 +121,7 @@ Paramètres **validés** (opérateur) et matérialisés dans l'automation
 | `seuil_critique` | Bande critique sur `battery_level` (%) | **`niveau <= 10`** (prioritaire) |
 | `duree_stabilisation` | `for:` avant déclenchement | **non retenue** |
 | `seuil_retour` | Hystérésis de retour à la normale | **sans objet** (retour normal non retenu) |
-| `destinataire` | Cible mobile | `input_text.telephone_antoine_notify` |
+| `destinataire` | Cible mobile | `input_text.telephone_parent_1_notify` |
 | `emoji_titre` | Emoji de domaine du titre | `🔋` |
 | `id_automation` | ID de l'automation runtime | **`10270000000004`** |
 
@@ -202,7 +202,7 @@ corrigé).
   (emoji à arbitrer, cf. § Seuils et paramètres).
 - **Message** : informatif, sans référence temporelle ni confirmation d'action ;
   décrit la situation (« batterie du contrôleur Rain Bird sous le seuil bas »).
-- **Destinataire** : `input_text.telephone_antoine_notify`.
+- **Destinataire** : `input_text.telephone_parent_1_notify`.
 
 ---
 
@@ -210,7 +210,7 @@ corrigé).
 
 Le lot runtime, lorsqu'il sera ouvert, devra démontrer :
 
-1. **ID d'automation fourni par Antoine** — **aucun ID inventé**. Le runtime n'est pas
+1. **ID d'automation fourni par Parent 1** — **aucun ID inventé**. Le runtime n'est pas
    créé tant que l'ID n'est pas explicitement attribué.
 2. **Reload templates / redémarrage HA** : aucune notification émise, même si la
    batterie était déjà faible avant (garde `from_state` numérique ≥ seuil).
@@ -249,5 +249,5 @@ Le lot runtime, lorsqu'il sera ouvert, devra démontrer :
 
 | Version | Date | Modification |
 |---|---|---|
-| 0.1 | 2026-06-29 | Création du contrat (spécification, **aucun runtime**). Architecture en deux couches (diagnostic d'interprétation + notification mobile), sources `battery_level` (principale, %) / `battery_voltage` (diagnostic), déclencheur futur `numeric_state below` avec garde `from_state` numérique ≥ seuil, exclusions `unknown`/`unavailable`/`none`/non numérique, anti-reload/anti-restart et anti-répétition, garde de disponibilité du pont, retour à la normale non retenu par défaut. Seuils laissés en paramètres à arbitrer ; ID d'automation runtime à fournir par Antoine. |
+| 0.1 | 2026-06-29 | Création du contrat (spécification, **aucun runtime**). Architecture en deux couches (diagnostic d'interprétation + notification mobile), sources `battery_level` (principale, %) / `battery_voltage` (diagnostic), déclencheur futur `numeric_state below` avec garde `from_state` numérique ≥ seuil, exclusions `unknown`/`unavailable`/`none`/non numérique, anti-reload/anti-restart et anti-répétition, garde de disponibilité du pont, retour à la normale non retenu par défaut. Seuils laissés en paramètres à arbitrer ; ID d'automation runtime à fournir par Parent 1. |
 | 0.2 | 2026-06-29 | **Runtime livré** : automation `10270000000004` ([`batterie_faible_notification.yaml`](../../../../11_automations/arrosage/batterie_faible_notification.yaml)). Paramètres figés : faible `10 < niveau <= 20`, critique `niveau <= 10` (prioritaire), retour normal **non retenu**, `for:` **non retenu**, emoji `🔋`. Mécanisme retenu : trigger `state` + gardes numériques `from_state`/`to_state` (au lieu de `numeric_state below`, pour couvrir un franchissement critique déjà sous 20, ex. `19 → 9`) ; détection **inline** (aucun capteur dérivé créé) ; tension ajoutée au message si numérique, sans bloquer l'envoi. |
