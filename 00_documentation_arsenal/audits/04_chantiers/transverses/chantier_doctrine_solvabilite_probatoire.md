@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Poser une doctrine transverse de **solvabilité probatoire** : avant qu'une preuve terrain devienne condition de clôture, vérifier qu'elle est **productible** par le runtime et **conservable** par l'installation. |
 | **Domaine** | Transverse — gouvernance des chantiers, administration de la preuve. |
-| **Statut** | **Ouvert — Lots 1 et 2 livrés (2026-07-19).** Doctrine [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md) publiée (Lot 1), puis raccords réalisés chez leurs propriétaires et **correction factuelle du §7** (Lot 2). **Lot 3 non engagé.** C31 **reste non clôturable** (§9). |
+| **Statut** | **Ouvert — Lots 1 et 2 livrés (2026-07-19).** Doctrine [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md) publiée (Lot 1), puis raccords réalisés chez leurs propriétaires et **correction factuelle du §7** (Lot 2). **Lot 3 LIVRÉ (2026-07-20)** (§6 bis). C31 **reste non clôturable** (§9) — clôturabilité non prononcée. |
 | **Priorité** | **P1** — non pour un risque technique immédiat, mais parce que des chantiers restent ouverts en attendant des preuves que l'installation ne peut ni produire, ni conserver, ni qualifier correctement. |
 | **Ouvert le** | 2026-07-19. |
 | **Prochain jalon** | **Lot 3 — application démonstrative** de la doctrine à des cas réels (C29, C4, C27). |
@@ -173,6 +173,75 @@ corpus ne documente que des **précédents**.
 
 ---
 
+## 6 bis. Lot 3 — application démonstrative (2026-07-20)
+
+**Objet.** Éprouver la doctrine sur des réserves réellement existantes. Trois cas, **trois
+qualifications distinctes** : la grille du §3 discrimine, elle n'est pas décorative.
+
+### C29 — abstention textuelle `unknown` → indisponibilité native
+
+Réserve initiale : *confirmation naturelle, non provoquée, de l'absence d'erreur
+`template.validators` lors d'une prochaine abstention réelle*.
+
+**Qualification : réserve sans objet** (doctrine §3). Le document propriétaire établit que
+l'émission textuelle `{{ 'unknown' }}` est **structurellement supprimée** (matrice 19/19,
+test T6 enforcé). La cause ayant disparu, la preuve attendue **n'a plus d'objet** : elle ne
+peut plus survenir, donc son observation ne prouverait rien. Effet doctrinal : **close**.
+
+**Requalification effective — décision de gouvernance propriétaire du 2026-07-20.** La
+réserve est **close** au document propriétaire de C29, dont le statut passe de « clos —
+réserve terrain différée » à « clos — sans réserve ». L'ancienne réserve est **conservée en
+historique**, explicitement close, datée et motivée.
+
+### C27 et C28 — panne réelle simultanée des trois thermomètres
+
+Réserve **partagée** : *panne réelle simultanée des trois thermomètres, non provoquée,
+preuve terrain différée*. **R-QUALIF-2** impose une qualification **par périmètre propre**
+— l'héritage ne transporte pas la solvabilité. D'où deux qualifications distinctes :
+
+- **C27** (agrégats MIN/MAX des chambres et restitution dashboard) — **réserve
+  opportuniste / L5**, non bloquante. La conformité est déjà établie par preuve statique,
+  checker et simulation ; la panne réelle n'ajouterait qu'une confirmation.
+- **C28** (admissibilité et seuils climatisation) — **réserve opportuniste / L5**, non
+  bloquante. Même occurrence physique, **périmètre distinct** : elle y porte sur
+  l'interlock et l'abstention aval, non sur la restitution.
+
+Dans les deux cas **R-VERROU-2** est déterminant : provoquer la panne violerait la limite
+« absence de panne fabriquée » posée par les chantiers eux-mêmes. La preuve est donc **non
+solvable dans le cadre**, et cette insolvabilité est **légitime** — elle ne deviendrait
+fautive qu'en restant silencieusement bloquante.
+
+**Aucun des deux documents n'est modifié par ce lot.** Leur régularisation documentaire
+éventuelle est un acte distinct, à traiter explicitement et séparément.
+
+### C4 — présence confort thermique stabilisée
+
+Réserve initiale : *`T = 120 s` ratifié avec réserve de surveillance* (marge ~13 s) ;
+surveillance post-clôture du 2026-06-22→29 sans impact < 120 s, réserve **non déclenchée,
+« reste ouverte »**.
+
+**Qualification : réserve différée solvable.** La preuve est productible et conservable :
+l'outil de lecture existe (`valider_presence_stabilisee_c4.py`), les creux de présence sont
+observables, aucune manipulation interdite n'est requise.
+
+**Non conforme à R-QUALIF-3** : la réserve ne porte **ni date, ni seuil de sortie, ni
+propriétaire**. « Reste ouverte » ne dit pas à quelle condition elle se ferme : elle est
+**perpétuelle par construction**, soit exactement la *dette perpétuelle silencieuse* que
+R-QUALIF-1 nomme.
+
+**Le critère de levée est un arbitrage requis, non fixé ici.** Aucune valeur n'est proposée
+— fixer un seuil serait une décision de fond, hors périmètre de ce lot. **C4 n'est pas
+modifié.**
+
+### Ce que le lot établit
+
+La doctrine a **changé une décision réelle** : C29 conservait une observation terrain
+différée devenue sans objet. Les trois cas relèvent de **trois qualifications différentes**
+du §3, et deux règles distinctes (**R-QUALIF-2**, **R-QUALIF-3**) ont produit des effets
+opposables. **La clôturabilité de C31 n'est pas prononcée ici.**
+
+---
+
 ## 7. Séquencement
 
 - **Lot 1 — Doctrine. ✅ LIVRÉ (2026-07-19).**
@@ -193,9 +262,9 @@ corpus ne documente que des **précédents**.
   disponibilité automatique ou permanente de L4. Les sauvegardes manuelles de release sont désignées
   source durable privilégiée ; les automatiques restent opportunistes ; aucune sauvegarde ne doit être
   créée ou renommée pour un chantier. **R-L4-1 inchangée.**
-- **Lot 3 — Application démonstrative. Non engagé.** Qualifier des réserves existantes selon la doctrine,
+- **Lot 3 — Application démonstrative. ✅ Livré le 2026-07-20 (§6 bis).** Qualifier des réserves existantes selon la doctrine,
   notamment **C29**, **C4** et **C27**. Ce lot **prouve que la doctrine est utilisable** ; sans lui, C31
-  est un texte non éprouvé. **Aucune requalification n'est effectuée à ce stade.**
+  est un texte non éprouvé. ~~**Aucune requalification n'est effectuée à ce stade.**~~ **✅ C29 requalifié effectivement (2026-07-20) ; C27, C28 et C4 qualifiés à titre démonstratif, documents propres inchangés.**
 
 Lots 1 et 2 parallélisables. **C30-A1 et C30-A2 sont traités séparément dans C30**, et n'entrent pas dans
 C31. **Aucune régularisation globale des anciens blocs de gouvernance temporelle du Recorder** n'est
