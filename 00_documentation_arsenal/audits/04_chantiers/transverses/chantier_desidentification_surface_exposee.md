@@ -404,7 +404,7 @@ le runtime propre (L2/L2b) et l'instance migrée (L5), faute de quoi la CI casse
 | Critère | État |
 |---|---|
 | **R4 — réception d'alerte** | ✅ **levé** — notification de test émise sur `parent_1` et **réception confirmée par le propriétaire**. Les 62 automatisations d'alerte partageant cette cible unique, le canal est rétabli dans son ensemble. |
-| **R1 — chaîne d'alarme** | ⏳ partiel — `presence_famille_securite` = `on`, 0 automatisation et 0 script indisponible, `sensor.telephone_parent_1_bssid_dynamic` = BSSID nominal. **Manque** l'observation d'une transition de présence réelle. |
+| **R1 — chaîne d'alarme** | ⏳ partiel — `presence_famille_securite` = `on`, 0 automatisation et 0 script indisponible, `sensor.telephone_parent_1_bssid_dynamic` = BSSID nominal. **Manque** l'observation d'une transition de présence réelle. **✅ Levé le 2026-07-20 à 19:03 — voir infra.** |
 | Entités portant un prénom | ✅ **0** hors `nas_valentin*` / `linky_antoine*` (D3) |
 
 **L6 reste ouvert** jusqu'à observation d'une transition `not_home → Maison securite` confirmant la
@@ -431,3 +431,29 @@ Audit en lecture seule sur l'instance. Ce qu'il **ajoute** à L6 :
 **Ce qu'il n'établit pas.** Le sens **entrant** (`not_home → Maison securite`) n'a pas été observé : seul
 le relâchement l'a été. R1 reste donc `⏳ partiel` et **L6 n'est pas soldé**. La distinction est
 délibérée — un agrégat qui retombe correctement ne prouve pas qu'il se lève correctement.
+
+#### Observation du sens entrant (2026-07-20, 19:00→19:03) — R1 levé
+
+**Occurrence naturelle, aucune panne fabriquée.** Relevé en lecture seule de la base recorder :
+
+| Heure | Entité | Transition |
+|---|---|---|
+| 19:00:43 | `binary_sensor.presence_famille_unifiee` | `off` → `on` |
+| **19:02:37** | `binary_sensor.presence_famille_securite` | `off` → **`on`** |
+| 19:02:43 | `binary_sensor.presence_famille_securite` | `on` → `off` (6 s) |
+| **19:03:12** | `binary_sensor.presence_famille_securite` | `off` → **`on`** (stable) |
+
+Le sens **entrant** est donc observé : l'agrégat de sécurité **se lève**, et pas seulement
+il retombe. **Arbitrage propriétaire (2026-07-20) : R1 est levé.**
+
+**Portée exacte de la preuve — limite consignée.** Le recorder n'historise que
+`presence_famille_securite` et `presence_famille_unifiee` ; `presence_enfants`,
+`presence_famille` et `presence_famille_securite_confirmee_alarme` **en sont absents**.
+L'établissement est donc établi **à son aboutissement**, et non maillon par maillon comme
+l'avait été le relâchement (cascade milliseconde du 16:56:31). Les deux preuves ne sont pas
+de même nature ; celle-ci est jugée **suffisante par arbitrage propriétaire**.
+
+**Micro-oscillation notée, sans suite.** Le `on → off → on` de 6 s à 19:02:43 est le yoyo
+décrit en `D-PRES`, que `presence_famille_securite_confirmee_alarme` (`delay_on 15 s`)
+absorbe par construction — un pic de 6 s ne franchit pas 15 s. Ce capteur n'étant pas
+historisé, le fait est **attendu, non vérifié**. Aucun travail ouvert à ce titre.
