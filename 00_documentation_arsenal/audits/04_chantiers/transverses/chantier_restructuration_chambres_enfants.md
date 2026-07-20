@@ -67,6 +67,27 @@ Trois couches sont à gouverner, à ne pas confondre :
   de Jeux sort aussi de la **garde anti-gel** `intensite_besoin_froid` (contrat amendé v1.1, L2b ;
   alignement runtime L4).
 
+- **A2-bis — La commande groupée des volets reste sur les 2 pièces enfants (amendement, rendu
+  2026-07-20).** A2 retirait la Salle de Jeux « des agrégats chambres **et du groupe volets nuit ». La
+  seconde clause est **amendée** : les commandes groupées pilotent de nouveau **Chambre Enfants + Salle
+  de Jeux**. Le script n'aurait pas dû être **vidé** mais **adapté** — le regroupement des volets de
+  l'étage reste pertinent, seul son nom était devenu faux. Renommé en conséquence :
+  `commandes_groupees/chambres.yaml` → `etage.yaml`, `ouvrir/fermer_volets_enfants` →
+  `ouvrir/fermer_volets_etage`. **Périmètre physique** : l'installation compte 4 volets automatisés, tous
+  côté jardin — Séjour gauche et droit au RDC, Chambre Enfants et Salle de Jeux à l'étage ; « étage »
+  désigne donc exactement ces deux volets.
+
+  **Motif.** L'application de la clause en L4a a produit une **régression** : ces scripts ne servent pas
+  qu'au dashboard, ils sont la **seule brique appelée par `ouvrir/fermer_tous_les_volets`** pour l'étage.
+  « Fermer tous les volets » ne fermait donc plus la Salle de Jeux — et ces commandes globales alimentent
+  les scénarios de départ et de nuit. La protection **pluie** n'était pas concernée
+  (`pluie_volets_chambres` délègue à `sensor.cibles_volets_pluie_chambres`, qui inclut la Salle de Jeux).
+
+  **Frontière posée.** Commander un volet est un acte **exécutif**, sans effet thermique décisionnel :
+  cela ne relève pas du même registre qu'un agrégat de température. **Le volet thermique de A2 est
+  intégralement maintenu** — la Salle de Jeux reste hors de `temperature_min/max_chambres`, hors du
+  besoin de chauffe, hors de la garde anti-gel COOL et hors du verdict collectif des vannes.
+
 - **A3 — Renommage `entity_id` avec migration d'historique (CAT-A/B).** Les `entity_id` sont renommés
   proprement (`…_chambre_arnaud → …_chambre_enfants` ; `…_chambre_matthieu → …_salle_de_jeux`) **et**
   l'historique (recorder / statistics / LTS) est **migré** côté instance pour préserver les séries des
@@ -371,6 +392,12 @@ calcul, des attributs et des sources) :
   `13_intensite_besoin_froid.md` v1.1 ;
 - groupe volets « chambres » (`…/commandes_groupees/chambres.yaml`) — la Salle de Jeux sort de
   l'ouverture/fermeture groupée (son volet reste pilotable individuellement).
+  > **⛔ ANNULÉ le 2026-07-20 — voir A2-bis (§2).** Ce retrait était une **erreur d'application** : ces
+  > scripts sont la seule brique appelée par `ouvrir/fermer_tous_les_volets`, de sorte que « Fermer
+  > tous » ne fermait plus la Salle de Jeux. Rétabli sur les 2 pièces, et le fichier renommé
+  > `commandes_groupees/etage.yaml` (`ouvrir/fermer_volets_etage`) — il fallait **adapter** le script,
+  > pas le vider. **Les cinq retraits thermiques ci-dessus sont maintenus** — seule cette sixième ligne
+  > est amendée.
 
 **La Salle de Jeux reste** dans tous les agrégats **multi-pièces** légitimes (elle a bien capteurs et
 fenêtres) : ouvertures/redondance/fenêtres, aération/delta-T par pièce, consolidation multi-capteurs de sa
@@ -625,6 +652,20 @@ première passe.
 - **Groupe volets chambres** — câblage correct au source, exécution non observée.
 - **Couverture de journal** — la fenêtre 2026-07-19 22:30 → 2026-07-20 08:40, qui couvre le déploiement
   initial, a été purgée au redémarrage. **Absence de preuve, non preuve d'absence.**
+
+**Régression trouvée et corrigée (2026-07-20).** L'application de la clause « groupe volets » de A2 en
+L4a avait retiré la Salle de Jeux des commandes groupées de l'étage, seule brique appelée par
+`ouvrir/fermer_tous_les_volets` : **« Fermer tous les volets » ne fermait plus la Salle de Jeux**, y
+compris dans les scénarios de départ et de nuit. Défaut **silencieux** — aucune erreur, aucune entité
+indisponible, le bouton répondait normalement. Trouvé en remontant les appelants du script, non par
+observation d'état. Circuit pluie non concerné. Corrigé par **A2-bis**, le volet thermique de A2 restant
+entier ; le fichier est renommé `commandes_groupees/etage.yaml` et les scripts
+`ouvrir/fermer_volets_etage`.
+
+> **⚠️ Migration d'instance au déploiement.** La clé d'un script YAML **est** son `entity_id` :
+> `script.ouvrir_volets_enfants` et `script.fermer_volets_enfants` deviendront **orphelins au registre**
+> et devront être purgés, comme les 4 orphelins traités en C33/L5. Même phénomène qu'un `unique_id`
+> renommé.
 
 **Anomalies relevées, hors périmètre C32 :** `sensor.humidite_relative_max_chambres` figé sur sa branche
 mémoire — défaut **antérieur de cinq mois** à C32 (accumulateur Jinja sans portée dans une boucle, présent
