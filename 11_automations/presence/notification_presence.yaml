@@ -13,8 +13,8 @@
 #     d’une personne, strictement alignées sur le Contrat
 #     Notifications Arsenal.
 #
-#     - Une notification pour Antoine
-#     - Une notification pour Constance
+#     - Une notification pour Parent 1
+#     - Une notification pour Parent 2
 #
 #     Chaque notification :
 #       - apparaît si la personne est considérée présente
@@ -26,8 +26,8 @@
 #  🧩 PÉRIMÈTRE
 #
 #     - Entités observées :
-#         • person.valentin
-#         • person.constance
+#         • person.parent_1
+#         • person.parent_2
 #
 #     - États interprétés :
 #
@@ -73,10 +73,10 @@
   trigger:
     # Présence individuelle : tout changement d’état
     - platform: state
-      entity_id: person.valentin
+      entity_id: person.parent_1
 
     - platform: state
-      entity_id: person.constance
+      entity_id: person.parent_2
 
     # Stabilisation post-démarrage : re-projection depuis l’état courant
     - platform: state
@@ -90,26 +90,26 @@
   # ======================================================
   action:
 
-    # ---- Antoine (person.valentin) ----
+    # ---- Parent 1 (person.parent_1) ----
     - choose:
         # Présent → création
         - conditions:
             - condition: template
               value_template: >
-                {{ states('person.valentin') not in
+                {{ states('person.parent_1') not in
                    ['not_home', 'unknown', 'unavailable', 'none'] }}
           sequence:
             - action: persistent_notification.create
               data:
                 notification_id: presence_valentin
-                title: "👤 Présence Antoine"
+                title: "👤 Présence Parent 1"
                 message: >
-                  Antoine est présent.
+                  Parent 1 est présent.
 
         # Absent explicite → disqualification
         - conditions:
             - condition: state
-              entity_id: person.valentin
+              entity_id: person.parent_1
               state: "not_home"
           sequence:
             - action: persistent_notification.dismiss
@@ -117,29 +117,29 @@
                 notification_id: presence_valentin
       default: []
 
-    # ---- Constance (person.constance) ----
+    # ---- Parent 2 (person.parent_2) ----
     - choose:
-        # Présente → création
+        # Présent → création
         - conditions:
             - condition: template
               value_template: >
-                {{ states('person.constance') not in
+                {{ states('person.parent_2') not in
                    ['not_home', 'unknown', 'unavailable', 'none'] }}
           sequence:
             - action: persistent_notification.create
               data:
-                notification_id: presence_constance
-                title: "👤 Présence Constance"
+                notification_id: presence_parent_2
+                title: "👤 Présence Parent 2"
                 message: >
-                  Constance est présente.
+                  Parent 2 est présent.
 
         # Absente explicite → disqualification
         - conditions:
             - condition: state
-              entity_id: person.constance
+              entity_id: person.parent_2
               state: "not_home"
           sequence:
             - action: persistent_notification.dismiss
               data:
-                notification_id: presence_constance
+                notification_id: presence_parent_2
       default: []

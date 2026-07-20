@@ -6,7 +6,7 @@
 #   "10120000000028"
 #
 # 🎯 RÔLE
-#   Notifier le téléphone d'Antoine des occurrences release_diff
+#   Notifier le téléphone d'Parent 1 des occurrences release_diff
 #   (couple produit / échec) relayées par le NAS sur
 #   arsenal/nas/release_diff/event.
 #
@@ -31,7 +31,7 @@
 # 🔗 DÉPENDANCES
 #   Lit     : trigger.payload_json (champ event + champs métier)
 #   Appelle : script.notification_envoyer
-#             (cible : input_text.telephone_antoine_notify)
+#             (cible : input_text.telephone_parent_1_notify)
 #   Écrit   : rien
 #
 # 🧠 AUTORITÉ
@@ -55,7 +55,7 @@
 
 - id: "10120000000028"
   alias: "Système - arsenal_nas - Notification Release Diff"
-  description: "Notifie le téléphone d'Antoine des événements release_diff (généré / échec)."
+  description: "Notifie le téléphone d'Parent 1 des événements release_diff (généré / échec)."
   mode: queued
 
   trigger:
@@ -73,7 +73,7 @@
           sequence:
             - service: script.notification_envoyer
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "🧾 Nouveau diff de release"
                 message: |
                   Diff géneré : {{ trigger.payload_json.from_version }} → {{ trigger.payload_json.to_version }}
@@ -89,7 +89,7 @@
           sequence:
             - service: script.notification_envoyer
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "⚠️ Release Diff à vérifier"
                 message: |
                   Release Diff à signaler.

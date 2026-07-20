@@ -119,6 +119,56 @@ Température moyenne Séjour Humidité absolue Seuil Bas Chambre Enfants Tempér
 
 ---
 
+## 👤 PERSONNES — DÉSIGNATION NON NOMINATIVE
+
+Certaines entités ne désignent pas un **lieu** mais un **sujet** : une personne du
+foyer (présence, téléphone, approche, suivi). Elles occupent la **même position
+terminale** qu'une zone, et obéissent à un canon distinct.
+
+**Règle fondamentale — aucun prénom.** Le dépôt est **public**. Aucune entité,
+aucun libellé, aucun commentaire, aucun chemin ne désigne une personne du foyer
+par son **prénom**, son **patronyme** ou toute autre donnée identifiante.
+
+| Sujet | Désignation canonique | Portée |
+|---|---|---|
+| Adulte 1 | `parent_1` | Individuelle — index **stable** |
+| Adulte 2 | `parent_2` | Individuelle — index **stable** |
+| Enfants | `enfants` | **Collective** — aucun index individuel |
+
+- `person.parent_1`  
+- `input_text.telephone_parent_1_notify`  
+- `binary_sensor.approche_securite_parent_2`  
+- `binary_sensor.presence_enfants`  
+
+➡️ La **désignation du sujet est le dernier élément porteur de sens** du nom ; seuls
+les **suffixes techniques** normalisés (`_notify`, `_tracker`, `_dynamic`…) peuvent
+la suivre.
+
+⚠️ **L'index `1` / `2` est arbitraire mais STABLE.** Il n'encode aucune hiérarchie,
+aucun ordre alphabétique, aucune propriété de la personne : c'est un **identifiant
+opaque**. Une fois attribué, **il ne se réassigne jamais** — un échange d'index
+briserait silencieusement l'historique long (recorder, statistics, LTS) sans
+qu'aucun contrôle ne le détecte.
+
+⚠️ **La correspondance index → personne n'est PAS documentée dans le dépôt.**
+C'est ce qui donne sa valeur à la règle : un canon non nominatif accompagné de sa
+table de correspondance ne dé-identifie rien. La correspondance se lit **sur
+l'instance** (libellés du registre HA, appareils rattachés), jamais ici.
+
+ℹ️ **Enfants : désignation collective, par construction.** L'absence d'index
+individuel n'est pas une commodité de nommage mais une **conséquence physique**
+actée en **C32/A1** : un capteur de bruit **unique** dans une pièce partagée ne
+permet pas de distinguer les occupants. Deux index nominatifs sur la même source
+seraient **redondants et faussement précis**.
+
+ℹ️ **Frontière du canon.** Cette règle porte sur les entités **définies par le
+dépôt**. Les entités issues d'**intégrations et d'appareils** (hostname d'un NAS,
+entrée d'intégration tierce) ne sont pas gouvernées ici : elles relèvent d'un
+renommage **d'appareil**, hors dépôt — et ne participent pas à la surface exposée
+tant que le dépôt ne les référence pas.
+
+---
+
 ## 🧭 ZONES EXTÉRIEURES — DÉSAMBIGUÏSATION DE PÉRIMÈTRE
 
 Deux zones désignent un **extérieur**, sur **deux périmètres géographiques

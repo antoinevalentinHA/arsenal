@@ -21,19 +21,19 @@
 #   mobile.high_accuracy.contextuel v2.1 — §5
 #
 # 📍 Entités générées
-#   - binary_sensor.approche_securite_antoine
-#   - binary_sensor.approche_securite_constance
+#   - binary_sensor.approche_securite_parent_1
+#   - binary_sensor.approche_securite_parent_2
 # ==========================================================
 
 - binary_sensor:
-    - name: "Approche sécurité Antoine"
-      unique_id: approche_securite_antoine
+    - name: "Approche sécurité Parent 1"
+      unique_id: approche_securite_parent_1
       device_class: presence
       state: >
-        {{ is_state('person.valentin', 'Zone approche securite') }}
+        {{ is_state('person.parent_1', 'Zone approche securite') }}
 
-    - name: "Approche sécurité Constance"
-      unique_id: approche_securite_constance
+    - name: "Approche sécurité Parent 2"
+      unique_id: approche_securite_parent_2
       device_class: presence
       state: >
-        {{ is_state('person.constance', 'Zone approche securite') }}
+        {{ is_state('person.parent_2', 'Zone approche securite') }}

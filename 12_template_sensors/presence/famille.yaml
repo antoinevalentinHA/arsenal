@@ -53,8 +53,8 @@
 
       state: >
         {% set entites_presence = [
-          'person.valentin',
-          'person.constance',
+          'person.parent_1',
+          'person.parent_2',
           'binary_sensor.presence_enfants',
           'input_boolean.presence_visiteur'
         ] %}

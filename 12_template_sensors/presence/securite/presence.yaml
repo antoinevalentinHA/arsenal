@@ -36,8 +36,8 @@
 
         {# --- Entités trackers via helpers --- #}
         {% set trackers = [
-          states('input_text.telephone_antoine_tracker'),
-          states('input_text.telephone_constance_tracker')
+          states('input_text.telephone_parent_1_tracker'),
+          states('input_text.telephone_parent_2_tracker')
         ] %}
 
         {# --- Détection zone par distance (branche GPS gardée) --- #}
@@ -61,8 +61,8 @@
 
         {{
           inside.flag
-          or is_state('person.valentin', 'Maison securite')
-          or is_state('person.constance', 'Maison securite')
+          or is_state('person.parent_1', 'Maison securite')
+          or is_state('person.parent_2', 'Maison securite')
           or is_state('binary_sensor.presence_wifi_maison', 'on')
           or is_state('binary_sensor.presence_enfants', 'on')
           or is_state('input_boolean.presence_visiteur', 'on')

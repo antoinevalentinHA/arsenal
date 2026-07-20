@@ -68,8 +68,8 @@
 #   - script.notification_envoyer_avance
 #
 # 🔗 Dépendances :
-#   - input_text.telephone_antoine_notify
-#   - input_text.telephone_constance_notify
+#   - input_text.telephone_parent_1_notify
+#   - input_text.telephone_parent_2_notify
 #   - Services notify Home Assistant
 #
 # 🧩 Pipeline :
@@ -86,7 +86,7 @@ notification_envoyer:
   fields:
     cible:
       description: "Helper contenant le service notify"
-      example: "input_text.telephone_antoine_notify"
+      example: "input_text.telephone_parent_1_notify"
     titre:
       description: "Titre de la notification"
       example: "Aération"
@@ -119,17 +119,17 @@ notification_envoyer_famille:
       description: "Message de la notification"
   sequence:
     # ------------------------------------------------------
-    # Téléphone Antoine
+    # Téléphone Parent 1
     # ------------------------------------------------------
-    - service: "{{ states('input_text.telephone_antoine_notify') }}"
+    - service: "{{ states('input_text.telephone_parent_1_notify') }}"
       data:
         title: "{{ titre }}"
         message: "{{ message }}"
 
     # ------------------------------------------------------
-    # Téléphone Constance
+    # Téléphone Parent 2
     # ------------------------------------------------------
-    - service: "{{ states('input_text.telephone_constance_notify') }}"
+    - service: "{{ states('input_text.telephone_parent_2_notify') }}"
       data:
         title: "{{ titre }}"
         message: "{{ message }}"

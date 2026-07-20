@@ -12,13 +12,13 @@
 #     Changer de téléphone ⇒ changer 1 valeur seulement.
 # ==============================================================
 
-telephone_antoine:
-  name: Telephone Antoine
+telephone_parent_1:
+  name: Telephone Parent 1
   max: 50
   icon: mdi:cellphone
 
-telephone_constance:
-  name: Telephone Constance
+telephone_parent_2:
+  name: Telephone Parent 2
   max: 50
   icon: mdi:cellphone
 
@@ -31,21 +31,21 @@ telephone_constance:
 #     les automatisations lors d’un changement d’appareil.
 #
 #  🛠️ Usage :
-#     - input_text.telephone_antoine_notify
-#     - input_text.telephone_constance_notify
+#     - input_text.telephone_parent_1_notify
+#     - input_text.telephone_parent_2_notify
 #
 #     Dans les automatisations :
-#       service: "{{ states('input_text.telephone_antoine_notify') }}"
+#       service: "{{ states('input_text.telephone_parent_1_notify') }}"
 #
 #  ✅ Arsenal Ready
 # ==========================================================
 
-telephone_antoine_notify:
-  name: "Telephone Antoine - Notify service"
+telephone_parent_1_notify:
+  name: "Telephone Parent 1 - Notify service"
   icon: mdi:cellphone-text
 
-telephone_constance_notify:
-  name: "Telephone Constance - Notify service"
+telephone_parent_2_notify:
+  name: "Telephone Parent 2 - Notify service"
   icon: mdi:cellphone-text
 
 # ==========================================================
@@ -57,12 +57,12 @@ telephone_constance_notify:
 #     les templates.
 # ==========================================================
 
-telephone_antoine_tracker:
-  name: "Telephone Antoine - Tracker entity_id"
+telephone_parent_1_tracker:
+  name: "Telephone Parent 1 - Tracker entity_id"
   icon: mdi:crosshairs-gps
 
-telephone_constance_tracker:
-  name: "Telephone Constance - Tracker entity_id"
+telephone_parent_2_tracker:
+  name: "Telephone Parent 2 - Tracker entity_id"
   icon: mdi:crosshairs-gps
 
 # ==========================================================
@@ -73,10 +73,10 @@ telephone_constance_tracker:
 #     Permet de changer de smartphone sans modifier le YAML.
 # ==========================================================
 
-telephone_antoine_wifi_bssid:
-  name: "Telephone Antoine - WiFi BSSID entity_id"
+telephone_parent_1_wifi_bssid:
+  name: "Telephone Parent 1 - WiFi BSSID entity_id"
   icon: mdi:wifi
 
-telephone_constance_wifi_bssid:
-  name: "Telephone Constance - WiFi BSSID entity_id"
+telephone_parent_2_wifi_bssid:
+  name: "Telephone Parent 2 - WiFi BSSID entity_id"
   icon: mdi:wifi

@@ -90,12 +90,26 @@ Trois couches, à ne pas confondre :
 | `binary_sensor` | `approche_securite_{antoine,constance}` | `12_template_sensors/presence/securite/approche.yaml` |
 | Libellés UI | « 👤 Présence Antoine », « Téléphone Constance », « 💤 Antoine » | `18_lovelace/dashboards/{sommeil/principal,systeme/telephones}.yaml` |
 
-**11 fichiers runtime porteurs** : `11_automations/presence/{high_accuracy_on,notification_presence}.yaml` ·
-`11_automations/system/{bssid_wifi,telephones_synchro_helpers}.yaml` ·
-`11_automations/system/release_diff/notification.yaml` ·
-`12_template_sensors/presence/{famille,securite/approche,securite/presence}.yaml` ·
-`12_template_sensors/system/bssid/nouveau.yaml` ·
-`18_lovelace/dashboards/{sommeil/principal,systeme/telephones}.yaml`.
+**15 fichiers porteurs** :
+
+| Emplacement | Occ. | Fichiers |
+|---|---|---|
+| `11_automations` | 28 | `presence/{high_accuracy_on,notification_presence}.yaml` · `system/{bssid_wifi,telephones_synchro_helpers}.yaml` · `system/release_diff/notification.yaml` |
+| `12_template_sensors` | 24 | `presence/{famille,securite/approche,securite/presence}.yaml` · `system/bssid/nouveau.yaml` |
+| `04_input_texts` | 8 | `system/telephones.yaml` — **définitions** des helpers |
+| `scripts/arsenal_contracts` | 6 | `check_bssid_contracts.py` — **checker CI** |
+| `18_lovelace` | 4 | `dashboards/{sommeil/principal,systeme/telephones}.yaml` |
+| `10_scripts` | 3 | `system/notifications_mobiles.yaml` · `chauffage/REVUE_CLOTURE_CH2.md` |
+| `LICENSE` | 1 | `Copyright (c) 2026 …` — **hors périmètre (D4)** |
+
+> **⚠️ Correction d'inventaire (2026-07-20).** Le relevé initial du Lot 0 annonçait **11 fichiers**. Il
+> était **incomplet** : le balayage ne couvrait que `05_`, `11_`–`14_`, `18_`, `19_`, et omettait
+> `01_`–`10_`, `15_`–`17_`, `scripts/` et la racine. Trois manques **matériels** en découlaient :
+> **(a)** `04_input_texts/system/telephones.yaml` porte les **définitions** des 8 helpers — sans lui, le
+> renommage des références aurait pointé dans le vide ; **(b)** `scripts/arsenal_contracts/check_bssid_contracts.py`
+> **code les noms d'entités en dur** — renommer le runtime sans le checker **casse la CI** ;
+> **(c)** `LICENSE` porte le copyright de l'auteur, **hors périmètre par D4**. Périmètre corrigé :
+> **11 → 15 fichiers** (dont 1 exclu).
 
 **Documentation active porteuse** (hors historique gelé) : `contrats/arrosage/18_notification_batterie.md`
 (2 occurrences « Antoine ») + les **3 annotations transitoires C32** (`contrats/climatisation/13_intensite_besoin_froid.md`,

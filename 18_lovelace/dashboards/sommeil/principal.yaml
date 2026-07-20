@@ -31,11 +31,11 @@ views:
       - type: vertical-stack
         cards:
           ########################################################
-          # 💤 ANTOINE
+          # 💤 Parent 1
           ########################################################
           - type: custom:button-card
             template: section_header
-            name: 💤 Antoine
+            name: 💤 Parent 1
 
           # Durée totale (texte)
           - type: custom:button-card
