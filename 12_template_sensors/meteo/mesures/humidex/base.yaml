@@ -34,6 +34,16 @@
 #
 # 📊 Type : Trigger Template Sensors
 # 📍 Regroupe plusieurs entités similaires (une par zone)
+#
+# 🧷 Amorçage (robustesse) :
+#   La source est lue depuis l'attribut `*_source` (traçabilité, indépendance
+#   vis-à-vis de l'entity_id). En REPLI — attribut absent, cas d'une entité
+#   NEUVE (unique_id renommé) dont le premier rendu n'a pas encore committé ses
+#   attributs — la source est dérivée de `this.entity_id`
+#   (`sensor.temperature_<zone>` / `sensor.point_de_rosee_<zone>`). Sans ce
+#   repli, une entité neuve reste `unavailable` indéfiniment (state None →
+#   attributs jamais écrits → boucle fermée). Aligné sur les couches
+#   consolidee/stabilisee, déjà dérivées de `this.entity_id`.
 # ==========================================================
 
 - trigger:
@@ -47,8 +57,13 @@
     - name: "Humidex Entrée"
       unique_id: humidex_entree
       state: &humidex_logic >
-        {% set T_raw = states(this.attributes.temperature_source) %}
-        {% set Td_raw = states(this.attributes.rosee_source) %}
+        {# Source via attribut (traçabilité) ; repli sur l'entity_id pour l'amorçage
+           à froid d'une entité neuve — voir en-tête « Amorçage ». #}
+        {% set zone = this.entity_id | replace('sensor.humidex_', '') %}
+        {% set temp_src  = this.attributes.temperature_source | default('sensor.temperature_' ~ zone, true) %}
+        {% set rosee_src = this.attributes.rosee_source       | default('sensor.point_de_rosee_' ~ zone, true) %}
+        {% set T_raw = states(temp_src) %}
+        {% set Td_raw = states(rosee_src) %}
         {% if T_raw not in ['unknown','unavailable','none',None]
               and Td_raw not in ['unknown','unavailable','none',None] %}
           {% set T = T_raw | float %}

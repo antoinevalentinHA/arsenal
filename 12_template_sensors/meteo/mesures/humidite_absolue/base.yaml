@@ -30,9 +30,19 @@
 #   - Chaque entité conserve ses attributs `temperature_source` et `humidite_source`
 #     pour la traçabilité des données.
 #
-# 📊 Type : Trigger Template Sensors (un par pièce)  
-# 📏 Unité : g/m³  
-# 🪶 Icône : mdi:water-percent  
+# 📊 Type : Trigger Template Sensors (un par pièce)
+# 📏 Unité : g/m³
+# 🪶 Icône : mdi:water-percent
+#
+# 🧷 Amorçage (robustesse) :
+#   La source est lue depuis l'attribut `*_source` (traçabilité, indépendance
+#   vis-à-vis de l'entity_id). En REPLI — attribut absent, cas d'une entité
+#   NEUVE (unique_id renommé) dont le premier rendu n'a pas encore committé ses
+#   attributs — la source est dérivée de `this.entity_id`
+#   (`sensor.temperature_<zone>` / `sensor.humidite_relative_<zone>`). Sans ce
+#   repli, une entité neuve reste `unavailable` indéfiniment (state None →
+#   attributs jamais écrits → boucle fermée). Aligné sur les couches
+#   consolidee/stabilisee, déjà dérivées de `this.entity_id`.
 # ==========================================================
 
 - trigger:
@@ -48,8 +58,13 @@
       unit_of_measurement: "g/m³"
       icon: mdi:water-percent
       state: &absolute_humidity_logic >
-        {% set T = states(this.attributes.temperature_source) | float(none) %}
-        {% set RH_raw = states(this.attributes.humidite_source) | float(none) %}
+        {# Source via attribut (traçabilité) ; repli sur l'entity_id pour l'amorçage
+           à froid d'une entité neuve — voir en-tête « Amorçage ». #}
+        {% set zone = this.entity_id | replace('sensor.humidite_absolue_', '') %}
+        {% set temp_src = this.attributes.temperature_source | default('sensor.temperature_' ~ zone, true) %}
+        {% set hum_src  = this.attributes.humidite_source  | default('sensor.humidite_relative_' ~ zone, true) %}
+        {% set T = states(temp_src) | float(none) %}
+        {% set RH_raw = states(hum_src) | float(none) %}
         {% if T is not none and RH_raw is not none %}
           {% set RH = 1 if RH_raw <= 0 else (100 if RH_raw > 100 else RH_raw) %}
           {% set svp = 6.112 * (10 ** ((7.5 * T) / (237.7 + T))) %}

@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Restructuration des pièces enfants suite au déménagement : la chambre d'Arnaud devient la **Chambre Enfants** (partagée), la chambre de Matthieu devient une **Salle de Jeux**, la Chambre Parents est inchangée. Passage de **3 chambres → 2 chambres + 1 salle de jeux** dans toute la logique. Dé-identification des prénoms enfants obtenue **en sous-produit**. |
 | **Domaine** | TRANSVERSE (Météo/température intérieure ↔ Chauffage/vannes thermostatiques ↔ Sommeil/réveils ↔ Volets ↔ Aération ↔ UI Lovelace ↔ Doctrine de nommage ↔ Publication/confidentialité). |
-| **Statut** | **ACTIF — Lot 8 livré (verrou CI S7) ; L6 migration instance EN COURS.** Lot 8 : contrôle **S7** (prénoms enfants `arnaud`/`matthieu`) dans `audit_publication_git.py` (script v1.5.0) + contrat `securite_publication_git.md` v1.4 — `CRITICAL` en runtime (anti-retour), `WARNING` en doc active, hors historique gelé. **Runtime déjà propre ⇒ scan `PASS`.** Reste **L6** (migration des entités physiques côté instance — voir §Suivi L6) et L9/L10.** Lots 0–4 acquis + L5a (présence → `presence_enfants` unique) + L5b (sommeil : `babyphone`, `reveils_nocturnes`, `reveils_heures` uniques ; 6 automations → 3, IDs arnaud conservés / matthieu retirés ; cartes sommeil ; contrat `reveils.md` v1.1). **Dé-identification runtime TERMINÉE** : plus **aucun** prénom d'enfant dans le runtime ni les contrats actifs (seul l'historique Git subsiste → S7 `--history` / L8). **⚠️ Migration instance (L6) au déploiement** (z2m + registre + recorder). |
+| **Statut** | **ACTIF — L8 livré (verrou CI S7) + L6b livré (correctif amorçage capteurs dérivés) ; L6 migration instance EN COURS.** Lot 8 : contrôle **S7** (prénoms enfants `arnaud`/`matthieu`) dans `audit_publication_git.py` (script v1.5.0) + contrat `securite_publication_git.md` v1.4 — `CRITICAL` en runtime (anti-retour), `WARNING` en doc active, hors historique gelé. **Runtime déjà propre ⇒ scan `PASS`.** Reste **L6** (migration des entités physiques côté instance — voir §Suivi L6) et L9/L10.** Lots 0–4 acquis + L5a (présence → `presence_enfants` unique) + L5b (sommeil : `babyphone`, `reveils_nocturnes`, `reveils_heures` uniques ; 6 automations → 3, IDs arnaud conservés / matthieu retirés ; cartes sommeil ; contrat `reveils.md` v1.1). **Dé-identification runtime TERMINÉE** : plus **aucun** prénom d'enfant dans le runtime ni les contrats actifs (seul l'historique Git subsiste → S7 `--history` / L8). **⚠️ Migration instance (L6) au déploiement** (z2m + registre + recorder). |
 | **Priorité** | **P2** (proposée) — voir §Priorité. |
 | **Ouvert le** | 2026-07-19. |
 | **Preuve de départ** | Besoin propriétaire (déménagement physique **à venir** : enfants regroupés dans l'ex-chambre Arnaud ; ex-chambre Matthieu → salle de jeux) + **inventaire d'impact en lecture seule** consigné §3. Aucun rapport d'audit préalable mergé — l'inventaire est la preuve de départ. |
-| **Prochain jalon** | **L6 — migration instance (EN COURS).** Le repo est déployé ; les entités **physiques** (Netatmo/HomeKit + Zigbee) doivent être renommées côté instance `…_chambre_arnaud → …_chambre_enfants` / `…_chambre_matthieu → …_salle_de_jeux` (sinon consolidations Enfants/Salle de Jeux = `Indisponible`, constaté 2026-07-19). Puis L9 (validation terrain), L10 (clôture). |
+| **Prochain jalon** | **L6 — migration instance (EN COURS).** Le repo est déployé ; les entités **physiques** (Netatmo/HomeKit + Zigbee) doivent être renommées côté instance `…_chambre_arnaud → …_chambre_enfants` / `…_chambre_matthieu → …_salle_de_jeux` (sinon consolidations Enfants/Salle de Jeux = `Indisponible`, constaté 2026-07-19). **L6b livré** (correctif amorçage humidex / point de rosée / humidité absolue) : après déploiement, un `homeassistant start` amorce les 6 capteurs dérivés. Puis L9 (validation terrain), L10 (clôture). |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C32 **consigne les décisions propriétaire déjà rendues**
 > (A1–A3, §Décisions) et l'**inventaire d'impact** (§3). Elle **ne crée aucun contrat, aucun runtime,
@@ -173,6 +173,7 @@ contrôle CI S7 (confidentialité prénoms) **non bloquant**.
 | **L5a** | Fusion **présence** : `presence_arnaud`+`presence_matthieu` → `presence_enfants` unique ; babysitting + `binary_sensor.presence_enfants` recâblés — **fait** | runtime + helpers | L3 |
 | **L5b** | Fusion **sommeil** : `babyphone`, `reveils_nocturnes`, `reveils_heures` uniques ; 6 automations → 3 (IDs conservés) ; cartes sommeil ; contrat `reveils.md` v1.1 — **fait** | runtime + helpers | L3 |
 | **L6** | Migration d'historique HA (recorder / statistics / LTS) selon A3 | opérationnel (instance) | L3 |
+| **L6b** | **Correctif d'amorçage** des capteurs dérivés (humidex / point de rosée / humidité absolue) : dérivation de repli `this.entity_id` dans les 3 ancres, pour l'amorçage à froid d'une entité **neuve** (`unique_id` renommé en L3) — défaut révélé par L6 | runtime | L3 |
 | **L7** | Documentation **active** (contrats CAT-E impactés) + changelog de release ; historique gelé | descriptif | L2–L5 |
 | **L8** | *(parallèle, non bloquant)* Contrôle CI **S7 — noms propres nominatifs** : script `audit_publication_git.py` + amendement contrat `securite_publication_git.md` (v1.4→v1.5) | normatif + CI | L0 |
 | **L9** | Validation statique (checkers de domaine, `yamllint`, chargement HA, rendu Jinja) puis terrain | contrôle / preuve | L3–L6 |
@@ -480,3 +481,33 @@ restent à aligner.
 Après renommage + reload, les consolidations retrouvent leurs sources. **Rien n'est perdu** : la config
 est saine (L0–L5 mergés, CI verte) ; il s'agit d'aligner les noms physiques. **L6 se clôt à la
 disponibilité confirmée** des pièces Enfants / Salle de Jeux → puis L9 (validation) / L10 (clôture C32).
+
+### Lot 6b — correctif d'amorçage des capteurs dérivés (livré, 2026-07-20)
+
+**Constat terrain (post-renommage sources)** : sources amont **toutes valides** (feuilles `_1`/`_2`,
+consolidée, stabilisée, façades température **et** humidité = valeurs numériques, vérifié par modèle de
+diagnostic), mais `sensor.humidex_*`, `sensor.point_de_rosee_*`, `sensor.humidite_absolue_*` des deux
+pièces restent **`unavailable` > 8 h**, avec attributs `*_source` = `None`.
+
+**Cause racine** : le renommage du `unique_id` en **L3** (`humidex_chambre_arnaud → humidex_chambre_enfants`,
+etc.) a fait de ces capteurs des entités **neuves** pour HA (le `unique_id` **est** l'identité). Or ces
+trigger template sensors lisent leur source via `states(this.attributes.temperature_source)` ; sur une
+entité neuve, `this.attributes` est **vide** → `states(None)` → `state` rend `None` → HA **ne committe pas**
+les attributs statiques quand le `state` est `None` → le rendu suivant relit des attributs vides :
+**boucle fermée, jamais auto-réparable** (d'où les 8 h). Les couches basses (`consolidee`/`stabilisee`) ont
+**survécu au même renommage** parce qu'elles dérivent leur source de `this.entity_id | replace(...)`
+(toujours présent) — c'est la ligne de fracture.
+
+**Correctif (runtime, 3 ancres)** — `&dewpoint_logic`, `&humidex_logic`, `&absolute_humidity_logic` :
+la source reste lue depuis l'attribut `*_source` (traçabilité, indépendance vis-à-vis de l'entity_id
+conservée en régime établi) **avec un repli** `default('sensor.<grandeur>_' ~ zone, true)` où
+`zone = this.entity_id | replace('sensor.<prefixe>_', '')`. Le repli ne s'active **que** pour une entité
+neuve sans attributs (cas des seules pièces renommées, au câblage régulier vérifié par audit) ; en régime
+établi, l'attribut prime. Mise en cohérence avec les couches basses, **sans** perdre la déclaration par
+attribut.
+
+**Fichiers** : `12_template_sensors/meteo/mesures/point_de_rosee/backup_zigbee.yaml`,
+`.../humidex/base.yaml`, `.../humidite_absolue/base.yaml` (en-tête « 🧷 Amorçage » ajouté aux trois).
+**CI** : 85/85 checkers `arsenal_contracts` **PASS**, YAML valide. **Effet** : au prochain
+`homeassistant start` (ou template.reload + un trigger de source), les 6 capteurs s'amorcent seuls ; le
+défaut **ne peut plus se reproduire** à un futur renommage de `unique_id`.
