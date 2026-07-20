@@ -77,7 +77,7 @@
     # il ne doit pas être projeté en persistant (audit Notifications, NOTIF-06).
     - service: script.notification_envoyer
       data:
-        cible: input_text.telephone_antoine_notify
+        cible: input_text.telephone_parent_1_notify
         titre: "🌦️ Saison"
         message: >
           Changement de saison : {{ saison_precedente }} → {{ saison_calculee | trim }}.

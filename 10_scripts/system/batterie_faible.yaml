@@ -86,6 +86,6 @@ notification_batteries_faibles:
 
     - action: script.notification_envoyer
       data:
-        cible: input_text.telephone_antoine_notify
+        cible: input_text.telephone_parent_1_notify
         titre: "🔋 Batterie faible détectée"
         message: "{{ batterie_liste }}"

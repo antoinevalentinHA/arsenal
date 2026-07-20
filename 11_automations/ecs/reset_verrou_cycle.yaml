@@ -71,7 +71,7 @@
     # persistant (audit Notifications, NOTIF-06 — événement déguisé).
     - service: script.notification_envoyer
       data:
-        cible: input_text.telephone_antoine_notify
+        cible: input_text.telephone_parent_1_notify
         titre: "🔄 ECS – Verrou cycle levé"
         message: >
           Verrou cycle ECS levé automatiquement au démarrage

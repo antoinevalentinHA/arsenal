@@ -101,7 +101,7 @@
           sequence:
             - action: persistent_notification.create
               data:
-                notification_id: presence_valentin
+                notification_id: presence_parent_1
                 title: "👤 Présence Parent 1"
                 message: >
                   Parent 1 est présent.
@@ -114,7 +114,7 @@
           sequence:
             - action: persistent_notification.dismiss
               data:
-                notification_id: presence_valentin
+                notification_id: presence_parent_1
       default: []
 
     # ---- Parent 2 (person.parent_2) ----

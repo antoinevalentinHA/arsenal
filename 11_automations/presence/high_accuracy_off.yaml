@@ -43,11 +43,11 @@
   action:
     - service: script.mobile_high_accuracy_off
       data:
-        cible: input_text.telephone_antoine_notify
+        cible: input_text.telephone_parent_1_notify
 
     - service: script.mobile_high_accuracy_off
       data:
-        cible: input_text.telephone_constance_notify
+        cible: input_text.telephone_parent_2_notify
 
     - choose:
         - conditions:

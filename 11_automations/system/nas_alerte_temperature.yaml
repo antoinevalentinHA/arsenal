@@ -54,7 +54,7 @@
   action:
     - service: script.notification_envoyer_avance
       data:
-        cible: input_text.telephone_antoine_notify
+        cible: input_text.telephone_parent_1_notify
         titre: "💽 NAS – Température disque élevée"
         message: >
           ⚠️ Température moyenne du disque : {{ states('sensor.nas_valentin_volume_1_temperature_moyenne_du_disque') }} °C (≥ 40 °C).  

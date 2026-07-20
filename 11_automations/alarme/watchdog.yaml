@@ -60,7 +60,7 @@
 
             - action: script.notification_envoyer_avance
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "⚠️ Anomalie blocage alarme"
                 message: >-
                   Incohérence détectée — blocage_orphelin.
@@ -77,7 +77,7 @@
 
             - action: script.notification_envoyer_avance
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "⚠️ Anomalie blocage alarme"
                 message: >-
                   Incohérence détectée — timer_orphelin.

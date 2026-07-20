@@ -91,7 +91,7 @@
 
             - action: script.notification_envoyer_avance
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "🚨 Intrusion détectée"
                 message: >
                   Intrusion confirmée à {{ now().strftime('%H:%M') }}  
@@ -106,7 +106,7 @@
       default:
         - action: script.notification_envoyer_avance
           data:
-            cible: input_text.telephone_antoine_notify
+            cible: input_text.telephone_parent_1_notify
             titre: "🔕 Intrusion simulée (mode test)"
             message: >
               Déclenchement de test à {{ now().strftime('%H:%M') }}  

@@ -67,7 +67,7 @@
           sequence:
             - service: script.notification_envoyer
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "🔋 Rain Bird — Batterie critique"
                 message: >-
                   Le contrôleur Rain Bird est à {{ trigger.to_state.state }} %.
@@ -83,7 +83,7 @@
           sequence:
             - service: script.notification_envoyer
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "🔋 Rain Bird — Batterie faible"
                 message: >-
                   Le contrôleur Rain Bird est à {{ trigger.to_state.state }} %.

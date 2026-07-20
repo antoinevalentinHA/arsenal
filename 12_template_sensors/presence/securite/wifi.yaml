@@ -28,15 +28,15 @@
         {% set bssids_maison = raw.split(',') | map('trim') | list %}
 
         {# --- Entités des capteurs Wi-Fi via helpers --- #}
-        {% set wifi_antoine   = states('input_text.telephone_antoine_wifi_bssid') %}
-        {% set wifi_constance = states('input_text.telephone_constance_wifi_bssid') %}
+        {% set wifi_parent_1   = states('input_text.telephone_parent_1_wifi_bssid') %}
+        {% set wifi_parent_2 = states('input_text.telephone_parent_2_wifi_bssid') %}
 
         {# --- BSSID actuels des téléphones --- #}
-        {% set bssid_antoine   = states(wifi_antoine)   | lower %}
-        {% set bssid_constance = states(wifi_constance) | lower %}
+        {% set bssid_parent_1   = states(wifi_parent_1)   | lower %}
+        {% set bssid_parent_2 = states(wifi_parent_2) | lower %}
 
         {# --- Présence si un téléphone est connecté à un BSSID "maison" --- #}
         {{
-          bssid_antoine in bssids_maison
-          or bssid_constance in bssids_maison
+          bssid_parent_1 in bssids_maison
+          or bssid_parent_2 in bssids_maison
         }}
