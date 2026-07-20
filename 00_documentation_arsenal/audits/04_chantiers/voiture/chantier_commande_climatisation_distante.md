@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Caractérisation terrain — et **éventuelle** commande — du **démarrage de la climatisation distante** de l'Audi via le service `audiconnect.start_climate_control`. |
 | **Domaine** | Voiture — Audi A3 Sportback e-tron PHEV, **API level 0**. |
-| **Statut** | **Ouvert — faisabilité fonctionnelle NON démontrée.** Aucune preuve terrain à ce jour. |
+| **Statut** | **Ouvert — faisabilité fonctionnelle NON démontrée.** **Premier essai terrain consigné (E1, 2026-07-20)** : `fail_vehicle_timeout` **concordant sur les deux canaux** (HA + myAudi), en conditions favorables (véhicule branché, charge à l'objectif). **Ni succès terminal, ni refus fonctionnel** — la faisabilité reste **non tranchée**. Apport : le **motif est exposé par le backend et perdu par l'intégration** (`return code 'failed'` générique). Restent E1b, E2–E5 et **E6**. |
 | **Priorité** | **P3** — confort ; conditionné à la preuve de faisabilité. |
 | **Intégration** | Intégration custom `audiconnect`, synchronisée sur la beta upstream officielle **`v2.2.1b1`**, avec authentification **device-code** fonctionnelle. |
 | **Service cible** | `audiconnect.start_climate_control` (S-PIN non requis). |
