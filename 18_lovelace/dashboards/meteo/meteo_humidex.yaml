@@ -111,16 +111,13 @@ views:
           # ======================================================
           - !include ../../includes/section_headers/dependances.yaml
 
-          - square: false
-            type: grid
-            columns: 2
-            cards:
-              - type: custom:button-card
-                template: socle_kpi
-                tap_action:
-                  action: none
-                entity: sensor.humidex_petite_maison
-                name: Petite Maison
-                icon: mdi:thermometer-water
-                triggers_update:
-                  - sensor.couleur_humidex_petite_maison
+          # Occupant unique : carte pleine largeur, hors grille.
+          - type: custom:button-card
+            template: socle_kpi
+            tap_action:
+              action: none
+            entity: sensor.humidex_petite_maison
+            name: Petite Maison
+            icon: mdi:thermometer-water
+            triggers_update:
+              - sensor.couleur_humidex_petite_maison
