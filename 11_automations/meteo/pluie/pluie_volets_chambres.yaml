@@ -92,7 +92,7 @@
               value_template: "{{ fenetres_chambres_ouvertes | length > 0 }}"
             - service: script.notification_envoyer
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "🌧️ Pluie – fenêtres chambres ouvertes"
                 message: >
                   Pluie détectée.
@@ -113,7 +113,7 @@
                 covers: "{{ cibles_chambres }}"
             - service: script.notification_envoyer_avance
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "🌧️ Pluie – Protection chambres traitée"
                 message: >
                   Pluie détectée.

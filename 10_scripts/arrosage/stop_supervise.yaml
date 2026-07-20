@@ -69,7 +69,7 @@ arrosage_rain_bird_stop_supervise:
       default:
         - service: script.notification_envoyer
           data:
-            cible: input_text.telephone_antoine_notify
+            cible: input_text.telephone_parent_1_notify
             titre: "💧 Arrosage – Stop Rain Bird impossible"
             message: >-
               Stop Rain Bird impossible : le pont est indisponible
@@ -110,7 +110,7 @@ arrosage_rain_bird_stop_supervise:
       default:
         - service: script.notification_envoyer
           data:
-            cible: input_text.telephone_antoine_notify
+            cible: input_text.telephone_parent_1_notify
             titre: "💧 Arrosage – Stop Rain Bird non confirmé"
             message: >-
               Stop Rain Bird NON confirmé après {{ max_tentatives }} tentatives :

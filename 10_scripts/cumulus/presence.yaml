@@ -125,7 +125,7 @@ ecs_petite_maison_mode_eco:
             - delay: "00:01:00"
             - service: script.notification_envoyer
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "⚠️ ECS Petite Maison – Échec passage mode Éco"
                 message: >
                   Tentative échouée, relance envoyée à {{ now().strftime('%H:%M') }}.

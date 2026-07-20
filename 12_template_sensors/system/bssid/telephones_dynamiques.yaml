@@ -8,14 +8,14 @@
 
 - sensor:
 
-    - name: "telephone_antoine_bssid_dynamic"
-      unique_id: telephone_antoine_bssid_dynamic
+    - name: "telephone_parent_1_bssid_dynamic"
+      unique_id: telephone_parent_1_bssid_dynamic
       state: >
-        {% set ent = states('input_text.telephone_antoine_wifi_bssid') %}
+        {% set ent = states('input_text.telephone_parent_1_wifi_bssid') %}
         {{ states(ent) }}
 
-    - name: "telephone_constance_bssid_dynamic"
-      unique_id: telephone_constance_bssid_dynamic
+    - name: "telephone_parent_2_bssid_dynamic"
+      unique_id: telephone_parent_2_bssid_dynamic
       state: >
-        {% set ent = states('input_text.telephone_constance_wifi_bssid') %}
+        {% set ent = states('input_text.telephone_parent_2_wifi_bssid') %}
         {{ states(ent) }}

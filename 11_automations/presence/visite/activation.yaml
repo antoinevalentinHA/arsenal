@@ -77,7 +77,7 @@
     - alias: Notification mobile
       action: script.notification_envoyer_avance
       data:
-        cible: input_text.telephone_antoine_notify
+        cible: input_text.telephone_parent_1_notify
         titre: "🔐 Mode visiteur activé"
         message: >
           Le mode visiteur a été activé à {{ now().strftime('%H:%M') }}.

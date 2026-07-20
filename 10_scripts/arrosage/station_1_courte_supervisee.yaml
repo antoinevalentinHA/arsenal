@@ -116,7 +116,7 @@ arrosage_rain_bird_station_1_courte_supervisee:
           sequence:
             - service: script.notification_envoyer
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "💧 Arrosage – Station 1 refusée"
                 message: >-
                   Lancement station 1 refusé : aucune commande native envoyée.
@@ -193,7 +193,7 @@ arrosage_rain_bird_station_1_courte_supervisee:
             - service: script.arrosage_rain_bird_stop_supervise
             - service: script.notification_envoyer
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "💧 Arrosage – Station 1 démarrage non confirmé"
                 message: >-
                   Démarrage station 1 NON confirmé : le switch natif n'est pas

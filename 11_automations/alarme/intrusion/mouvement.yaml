@@ -90,7 +90,7 @@
 
             - action: script.notification_envoyer_avance
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "🚨 Mouvement detecte"
                 message: >
                   {% set zones = {
@@ -114,7 +114,7 @@
           sequence:
             - action: script.notification_envoyer_avance
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "🔕 Mouvement simule (mode test)"
                 message: >
                   {% set zones = {

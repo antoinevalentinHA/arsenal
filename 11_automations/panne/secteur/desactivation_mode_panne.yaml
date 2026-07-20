@@ -159,7 +159,7 @@
     # 4) Notification mobile de fin d’épisode
     - service: script.notification_envoyer_avance
       data:
-        cible: input_text.telephone_antoine_notify
+        cible: input_text.telephone_parent_1_notify
         titre: "✅ Courant rétabli"
         message: >
           Alimentation rétablie à {{ now().strftime('%H:%M') }}.

@@ -78,7 +78,7 @@
         covers: "{{ cibles_sejour }}"
     - service: script.notification_envoyer_avance
       data:
-        cible: input_text.telephone_antoine_notify
+        cible: input_text.telephone_parent_1_notify
         titre: "🌧️ Pluie forte – Volets séjour fermés"
         message: >
           Pluie forte détectée.

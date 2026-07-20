@@ -90,7 +90,7 @@ lancer_vaisselle_et_bouclage:
 
         - action: script.notification_envoyer
           data:
-            cible: input_text.telephone_antoine_notify
+            cible: input_text.telephone_parent_1_notify
             titre: "🍽 ECS – Vaisselle en cours"
             message: >
               Cycle ECS (mode vaisselle) lancé à {{ now().strftime('%H:%M') }}.
@@ -113,7 +113,7 @@ lancer_vaisselle_et_bouclage:
     # ======================================================
     - action: script.notification_envoyer
       data:
-        cible: input_text.telephone_antoine_notify
+        cible: input_text.telephone_parent_1_notify
         titre: "🍽 ECS – Vaisselle terminée"
         message: >
           {% if wait.completed %}

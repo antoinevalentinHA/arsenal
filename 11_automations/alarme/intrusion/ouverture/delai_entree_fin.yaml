@@ -91,7 +91,7 @@
             # 📲 Notification critique
             - action: script.notification_envoyer_avance
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "🚨 Alarme déclenchée"
                 message: >
                   Aucun désarmement détecté après expiration
@@ -104,7 +104,7 @@
       default:
         - action: script.notification_envoyer_avance
           data:
-            cible: input_text.telephone_antoine_notify
+            cible: input_text.telephone_parent_1_notify
             titre: "🔕 Fin de délai simulée (mode test)"
             message: >
               Délai d'entrée expiré sans désarmement.

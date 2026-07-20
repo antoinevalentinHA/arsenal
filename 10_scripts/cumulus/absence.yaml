@@ -148,7 +148,7 @@ ecs_petite_maison_arret_absence:
           sequence:
             - service: script.notification_envoyer
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "⚠️ ECS Petite Maison – Absence non confirmée"
                 message: >
                   La mise en mode absence n’a pas pu être confirmée

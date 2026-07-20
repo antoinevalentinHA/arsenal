@@ -56,7 +56,7 @@
           sequence:
             - service: script.notification_envoyer
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "💧 Arrosage – pont Rain Bird indisponible"
                 message: >-
                   Le pont Rain Bird ne remonte plus de données exploitables depuis 30 minutes.
@@ -67,7 +67,7 @@
           sequence:
             - service: script.notification_envoyer
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "💧 Arrosage – pont Rain Bird de nouveau observable"
                 message: >-
                   Les données du pont Rain Bird sont de nouveau disponibles.

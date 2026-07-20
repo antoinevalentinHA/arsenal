@@ -65,7 +65,7 @@
   action:
     - action: script.notification_envoyer_avance
       data:
-        cible: input_text.telephone_antoine_notify
+        cible: input_text.telephone_parent_1_notify
         titre: "🛑 Échec système alarme"
         message: >
           Le système d’alarme n’a pas réussi à appliquer

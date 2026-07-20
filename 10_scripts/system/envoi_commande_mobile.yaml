@@ -78,7 +78,7 @@ mobile_high_accuracy_on:
   fields:
     cible:
       description: "Helper contenant le service notify de la cible"
-      example: "input_text.telephone_constance_notify"
+      example: "input_text.telephone_parent_2_notify"
   sequence:
     # ------------------------------------------------------
     # Résolution du service depuis le helper
@@ -108,7 +108,7 @@ mobile_high_accuracy_off:
   fields:
     cible:
       description: "Helper contenant le service notify de la cible"
-      example: "input_text.telephone_constance_notify"
+      example: "input_text.telephone_parent_2_notify"
   sequence:
     # ------------------------------------------------------
     # Résolution du service depuis le helper
@@ -138,7 +138,7 @@ mobile_update_sensors:
   fields:
     cible:
       description: "Helper contenant le service notify de la cible"
-      example: "input_text.telephone_constance_notify"
+      example: "input_text.telephone_parent_2_notify"
   sequence:
     # ------------------------------------------------------
     # Résolution du service depuis le helper

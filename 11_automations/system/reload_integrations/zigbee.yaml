@@ -123,7 +123,7 @@
 
             - service: script.notification_envoyer
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "⛔ Zigbee2MQTT — blocage sécurité"
                 message: >
                   {{ now().strftime('%d/%m %H:%M') }}
@@ -185,7 +185,7 @@
 
             - service: script.notification_envoyer
               data:
-                cible: input_text.telephone_antoine_notify
+                cible: input_text.telephone_parent_1_notify
                 titre: "✅ Zigbee2MQTT relancé"
                 message: >
                   {{ now().strftime('%d/%m %H:%M') }}
@@ -203,7 +203,7 @@
 
         - service: script.notification_envoyer
           data:
-            cible: input_text.telephone_antoine_notify
+            cible: input_text.telephone_parent_1_notify
             titre: "🚨 Zigbee2MQTT hors-ligne"
             message: >
               {{ now().strftime('%d/%m %H:%M') }}
