@@ -85,19 +85,19 @@ views:
             cards:
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.humidite_absolue_chambre_enfants
-                name: Enfants
-                icon: mdi:water
-                triggers_update:
-                  - sensor.couleur_humidite_absolue_chambre_enfants
-
-              - type: custom:button-card
-                template: socle_kpi
                 entity: sensor.humidite_absolue_chambre_parents
                 name: Parents
                 icon: mdi:water
                 triggers_update:
                   - sensor.couleur_humidite_absolue_chambre_parents
+
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.humidite_absolue_chambre_enfants
+                name: Enfants
+                icon: mdi:water
+                triggers_update:
+                  - sensor.couleur_humidite_absolue_chambre_enfants
 
           # ======================================================
           # 🚿 SALLES DE BAIN
@@ -119,7 +119,7 @@ views:
               - type: custom:button-card
                 template: socle_kpi
                 entity: sensor.humidite_absolue_sdb_enfants
-                name: SDB Enfants
+                name: Enfants
                 icon: mdi:water
                 triggers_update:
                   - sensor.couleur_humidite_absolue_sdb_enfants

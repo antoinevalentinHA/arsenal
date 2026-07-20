@@ -91,14 +91,14 @@ views:
             cards:
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.temperature_minmax_jour_chambre_enfants
-                name: Enfants
+                entity: sensor.temperature_minmax_jour_chambre_parents
+                name: Parents
                 icon: mdi:thermometer
 
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.temperature_minmax_jour_chambre_parents
-                name: Parents
+                entity: sensor.temperature_minmax_jour_chambre_enfants
+                name: Enfants
                 icon: mdi:thermometer
 
           # ======================================================

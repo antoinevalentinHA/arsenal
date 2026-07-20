@@ -92,19 +92,19 @@ views:
                 template: socle_kpi
                 tap_action:
                   action: none
-                entity: sensor.humidex_chambre_enfants
-                name: Enfants
+                entity: sensor.humidex_chambre_parents
+                name: Parents
                 triggers_update:
-                  - sensor.couleur_humidex_chambre_enfants
+                  - sensor.couleur_humidex_chambre_parents
 
               - type: custom:button-card
                 template: socle_kpi
                 tap_action:
                   action: none
-                entity: sensor.humidex_chambre_parents
-                name: Parents
+                entity: sensor.humidex_chambre_enfants
+                name: Enfants
                 triggers_update:
-                  - sensor.couleur_humidex_chambre_parents
+                  - sensor.couleur_humidex_chambre_enfants
 
           # ======================================================
           # 🏘️ DÉPENDANCES
