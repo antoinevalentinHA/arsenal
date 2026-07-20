@@ -246,7 +246,7 @@ n'est introduit qu'**une fois le runtime propre**, faute de quoi la CI casse pen
    *Formulation en liste positive et non en « 0 occurrence » : un compteur nul se satisfait aussi d'un
    motif qui ne matche rien — c'est précisément le défaut qui a produit L2b.*
 3. **0 entité live** portant un prénom, **hors** entités d'intégration listées hors périmètre (§5).
-4. **R1 levé** : `presence_famille_securite` réagit correctement aux deux personnes (preuve terrain).
+4. **R1 levé** : `presence_famille_securite` réagit correctement aux deux personnes (preuve terrain). **⚠️ Non satisfait au 2026-07-20** : l'établissement observé n'a mobilisé qu'**un seul contributeur** ; le second n'est **pas observable à court terme**. À trancher — attendre l'occurrence, ou **requalifier le critère** (précédent : correction du critère 5 le 2026-07-20).
 5. **R4 levé** : notification effectivement **reçue** sur le téléphone `parent_1` (preuve terrain).
 
 > **⚠️ Correction du critère 2 (2026-07-20).** Sa rédaction initiale — `\b(antoine|valentin|constance)\b`,
