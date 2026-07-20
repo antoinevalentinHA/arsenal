@@ -86,7 +86,7 @@ A few real views, as they run. They are **dense by design**: the UI observes sta
 *Domestic hot water: temperature, history and supervised recirculation loop.*
 
 ![System view — infrastructure observability](00_documentation_arsenal/ui/captures/systeme.png)<br>
-*System: infrastructure observability — Raspberry Pi, critical systems, connectivity, integrations.*
+*System: infrastructure observability — Raspberry Pi, critical systems, connectivity, integrations. Unstaged: the audit is flagging 5 anomalies and two degraded links. That is exactly what a view whose job is to see is supposed to do — an observability page that has never caught anything proves nothing.*
 
 ![Boiler bridge — combustion, acknowledged transactions and supervision](00_documentation_arsenal/ui/captures/systeme-boiler-bridge.png)<br>
 *Boiler bridge: every physical command is transactional — acknowledgement, guard and supervision.*
