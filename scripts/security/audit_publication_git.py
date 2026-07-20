@@ -332,7 +332,42 @@ def s9_finding_for_line(active: str) -> tuple[str, str] | None:
 #
 # Le scanner s'auto-exclut (EXCLUDED_PATHS) : la liste de prénoms ci-dessous ne
 # se signale donc pas elle-même.
-S7_NOMS_ENFANTS = re.compile(r"\b(?:arnaud|matthieu)\b", re.I)
+#
+# ── v1.6.0 — extension C33 : frontière SUJETS / AUTEUR ─────────────────────
+#
+# 1. PLUS DE FRONTIÈRES DE MOT. La v1.5.0 utilisait `\b(arnaud|matthieu)\b`.
+#    Dans `telephone_arnaud_notify`, le prénom est encadré d'UNDERSCORES, qui
+#    sont des caractères de mot : il n'existe donc AUCUNE frontière `\b` et le
+#    motif ne matche pas. Ce défaut a réellement coûté 50 fichiers non détectés
+#    au chantier C33 (lot L2b, notifications rompues en production). Le verrou
+#    cherche désormais la sous-chaîne nue.
+#
+# 2. DEUX CLASSES DE NOMS, décision propriétaire C33/D3–D4 :
+#    « les SUJETS du système sont dé-identifiés, l'AUTEUR est assumé ».
+#
+#    - SUJETS (`arnaud`, `matthieu`, `constance`) — personnes du foyer désignées
+#      par le système, dont des mineurs. Aucune exclusion : ces chaînes n'ont
+#      aucune présence légitime dans le dépôt.
+#    - AUTEUR (`antoine`, `valentin`) — nom du propriétaire du dépôt, déjà public
+#      par l'URL et le LICENSE (D4). Présences LÉGITIMES à tolérer : hostname du
+#      NAS, entrée d'intégration Linky, compte GitHub, fichier de licence. Le
+#      verrou neutralise ces occurrences AVANT de tester, afin qu'un `valentin`
+#      illégitime sur la même ligne reste détecté.
+# 3. FRONTIÈRES DE LETTRE, ni `\b` ni sous-chaîne nue. `\b` ne voit pas
+#    `_arnaud_` (l'underscore est un caractère de mot) ; la sous-chaîne nue
+#    produit des faux positifs sur des mots français — « cirCONSTANCEs »,
+#    « inCONSTANCE ». La bonne frontière est la LETTRE : on exige que le prénom
+#    ne soit ni précédé ni suivi d'une lettre. `[^\W\d_]` = caractère de mot qui
+#    n'est ni chiffre ni underscore, donc une lettre (unicode-aware).
+_L = r"[^\W\d_]"                       # une lettre, accents compris
+S7_SUJETS = re.compile(rf"(?<!{_L})(?:arnaud|matthieu|constance)(?!{_L})", re.I)
+S7_AUTEUR = re.compile(rf"(?<!{_L})(?:antoine|valentin)(?!{_L})", re.I)
+# Occurrences légitimes du nom de l'auteur, neutralisées avant test (D3/D4).
+S7_AUTEUR_LEGITIME = re.compile(
+    r"nas[_.-]?valentin|linky[_.-]?antoine|antoinevalentin", re.I
+)
+# Fichiers intégralement hors verrou pour le nom de l'auteur (D4).
+S7_AUTEUR_FICHIERS_EXCLUS = ("LICENSE",)
 S7_FROZEN_PREFIXES = (
     "00_documentation_arsenal/changelog/",
     "00_documentation_arsenal/audits/",
@@ -342,15 +377,33 @@ S7_DOC_SUFFIXES = {".md", ".txt", ".markdown"}
 
 def s7_finding_for_line(active: str, rel_path: str) -> tuple[str, str] | None:
     """(sévérité, motif) S7 pour une ligne active, None si rien.
-    Périmètre gelé (changelog/audits) hors verrou ; documentaire actif = WARNING ;
-    runtime = CRITICAL. Factorisé pour être exercé par --selftest."""
+
+    Périmètre gelé (changelog/audits) hors verrou ; documentaire actif =
+    WARNING ; runtime = CRITICAL. Deux classes : SUJETS sans exclusion, AUTEUR
+    avec neutralisation préalable des occurrences légitimes (C33/D3–D4).
+    Factorisé pour être exercé par --selftest."""
     if any(rel_path.startswith(p) for p in S7_FROZEN_PREFIXES):
         return None
-    if not S7_NOMS_ENFANTS.search(active):
+
+    est_doc = Path(rel_path).suffix.lower() in S7_DOC_SUFFIXES
+
+    # ── Sujets du système : aucune tolérance ──────────────────────────────
+    if S7_SUJETS.search(active):
+        if est_doc:
+            return "WARNING", "prénom de sujet en documentation active"
+        return "CRITICAL", "prénom de sujet en runtime (dé-identification C32/C33)"
+
+    # ── Nom de l'auteur : tolérer les présences légitimes (D4) ────────────
+    if Path(rel_path).name in S7_AUTEUR_FICHIERS_EXCLUS:
         return None
-    if Path(rel_path).suffix.lower() in S7_DOC_SUFFIXES:
-        return "WARNING", "prénom enfant en documentation active"
-    return "CRITICAL", "prénom enfant en runtime (dé-identification C32)"
+    # Neutraliser AVANT de tester : une ligne peut porter à la fois une
+    # occurrence légitime (`nas_valentin_...`) et une occurrence illégitime.
+    residuel = S7_AUTEUR_LEGITIME.sub("", active)
+    if not S7_AUTEUR.search(residuel):
+        return None
+    if est_doc:
+        return "WARNING", "nom de l'auteur en documentation active (hors usage légitime)"
+    return "CRITICAL", "nom de l'auteur en runtime (hors usage légitime — C33/D4)"
 
 
 # ---------------------------------------------------------------------------
@@ -535,6 +588,17 @@ def _git_tracked_files() -> list[str]:
     return out.splitlines() if out else []
 
 
+_TRACKED_CACHE: set[str] | None = None
+
+
+def _tracked_files_set() -> set[str]:
+    """Ensemble des chemins versionnés, mémoïsé (S7 interroge par ligne)."""
+    global _TRACKED_CACHE
+    if _TRACKED_CACHE is None:
+        _TRACKED_CACHE = set(_git_tracked_files())
+    return _TRACKED_CACHE
+
+
 def scan_forbidden_files(findings: list[Finding]) -> None:
     """Détecte les fichiers interdits par nom/extension (S5a).
 
@@ -694,10 +758,14 @@ def scan_text_file(path: Path, findings: list[Finding]) -> None:
         if s9 is not None:
             add_once(s9[0], "S9", idx, s9[1])
 
-        # ── S7 — Prénoms enfants (verrou dé-identification C32) ─────────────
-        s7 = s7_finding_for_line(active, label)
-        if s7 is not None:
-            add_once(s7[0], "S7", idx, s7[1])
+        # ── S7 — Dé-identification (sujets C32/C33, auteur D4) ──────────────
+        # Limité aux fichiers VERSIONNÉS, comme S5a et pour la même raison :
+        # un fichier local non suivi ne sera pas publié, le signaler serait un
+        # faux positif (cas réel : .claude/settings.local.json).
+        if label in _tracked_files_set():
+            s7 = s7_finding_for_line(active, label)
+            if s7 is not None:
+                add_once(s7[0], "S7", idx, s7[1])
 
     # S3 — username + password dans le même fichier (CRITICAL)
     # is_placeholder vérifié ligne par ligne : un seul "password: null" ailleurs
@@ -730,7 +798,7 @@ _HISTORY_PATTERNS: list[tuple[str, str, re.Pattern[str]]] = [
     # S7 — prénoms enfants dé-identifiés (C32). En historique : WARNING (les
     # prénoms passés subsistent dans l'historique Git ; leur purge relève d'un
     # `git filter-repo`, hors état courant). Surface l'exposition sans bloquer.
-    ("S7", "WARNING", re.compile(r"\b(arnaud|matthieu)\b", re.I)),
+    ("S7", "WARNING", re.compile(r"arnaud|matthieu|constance", re.I)),
 ]
 
 
@@ -1018,13 +1086,13 @@ def selftest() -> int:
         hit = any(fnmatch.fnmatch(name, p) for p in FORBIDDEN_FILES)
         assert hit == forbidden, f"selftest S5a : {name!r} attendu={forbidden} obtenu={hit}"
 
-    # S7 — verrou prénoms enfants (dé-identification C32)
+    # S7 — verrou dé-identification (C32 sujets enfants, C33 sujets + auteur)
     assert s7_finding_for_line("  name: Chambre Arnaud", "12_template_sensors/x.yaml") \
-        == ("CRITICAL", "prénom enfant en runtime (dé-identification C32)"), \
-        "selftest S7 : prénom en runtime → CRITICAL"
+        == ("CRITICAL", "prénom de sujet en runtime (dé-identification C32/C33)"), \
+        "selftest S7 : prénom de sujet en runtime → CRITICAL"
     assert (s7_finding_for_line("ex-Chambre Matthieu",
             "00_documentation_arsenal/contrats/x.md") or (None,))[0] == "WARNING", \
-        "selftest S7 : prénom en documentation active → WARNING"
+        "selftest S7 : prénom de sujet en documentation active → WARNING"
     assert s7_finding_for_line("Arnaud", "00_documentation_arsenal/audits/x.md") is None, \
         "selftest S7 : historique gelé (audits/) hors verrou"
     assert s7_finding_for_line("00_documentation_arsenal/changelog/v1.md contient Matthieu",
@@ -1032,6 +1100,63 @@ def selftest() -> int:
         "selftest S7 : historique gelé (changelog/) hors verrou"
     assert s7_finding_for_line("temperature_chambre_enfants", "x.yaml") is None, \
         "selftest S7 : 'enfants' n'est pas un prénom (aucun faux positif)"
+
+    # ── C33 — le défaut qui a coûté 50 fichiers (L2b) ─────────────────────
+    # Régression cardinale : sans frontières de mot, le prénom encapsulé DOIT
+    # être vu. Avec `\b…\b`, ces trois cas passaient au travers.
+    assert s7_finding_for_line("      cible: input_text.telephone_constance_notify",
+            "11_automations/x.yaml") is not None, \
+        "selftest S7 : prénom ENCAPSULÉ en runtime doit être détecté (défaut L2b)"
+    assert s7_finding_for_line("  unique_id: temperature_filtre_nuit_chambre_arnaud",
+            "12_template_sensors/x.yaml") is not None, \
+        "selftest S7 : prénom encapsulé dans un unique_id doit être détecté"
+    assert s7_finding_for_line("{% set b = states('sensor.telephone_matthieu_bssid') %}",
+            "12_template_sensors/x.yaml") is not None, \
+        "selftest S7 : prénom encapsulé dans un template Jinja doit être détecté"
+
+    # ── C33 — sujet sans exclusion (Constance) ────────────────────────────
+    assert s7_finding_for_line("  name: Telephone Constance", "04_input_texts/x.yaml") \
+        == ("CRITICAL", "prénom de sujet en runtime (dé-identification C32/C33)"), \
+        "selftest S7 : 'constance' est un SUJET, aucune tolérance"
+
+    # ── C33 — frontière de LETTRE, pas de sous-chaîne nue ─────────────────
+    # Faux positifs réels rencontrés à la mise en service du verrou étendu :
+    # des mots français contiennent « constance ». La frontière est la lettre.
+    for mot in ("REJECT-not-clamp en toutes circonstances.",
+                "une inconstance de la mesure",
+                "les circonstances atténuantes"):
+        assert s7_finding_for_line(mot, "00_documentation_arsenal/contrats/x.md") is None, \
+            f"selftest S7 : {mot!r} ne doit PAS matcher (frontière de lettre)"
+    # …mais la forme encapsulée par des non-lettres doit rester détectée.
+    assert s7_finding_for_line("input_text.telephone_constance_notify",
+            "11_automations/x.yaml") is not None, \
+        "selftest S7 : underscore n'est pas une lettre — doit matcher"
+    assert s7_finding_for_line("graph_bruit_arnaud.yaml", "18_lovelace/x.yaml") is not None, \
+        "selftest S7 : point et underscore ne sont pas des lettres — doit matcher"
+
+    # ── C33/D4 — nom de l'auteur : présences légitimes tolérées ───────────
+    assert s7_finding_for_line("  - sensor.nas_valentin_utilisation_du_processeur_totale",
+            "02_groups/x.yaml") is None, \
+        "selftest S7/D4 : hostname NAS de l'auteur = usage légitime"
+    assert s7_finding_for_line("  entity: sensor.linky_antoine_fork_version",
+            "18_lovelace/x.yaml") is None, \
+        "selftest S7/D4 : entrée d'intégration Linky = usage légitime"
+    assert s7_finding_for_line("dépôt public `antoinevalentinHA/arsenal`, branche main",
+            "10_scripts/x.md") is None, \
+        "selftest S7/D4 : compte GitHub de l'auteur = usage légitime"
+    assert s7_finding_for_line("Copyright (c) 2026 Antoine Valentin", "LICENSE") is None, \
+        "selftest S7/D4 : LICENSE intégralement hors verrou"
+
+    # ── C33/D4 — l'auteur reste détecté hors usage légitime ───────────────
+    assert s7_finding_for_line("  cible: input_text.telephone_antoine_notify",
+            "11_automations/x.yaml") \
+        == ("CRITICAL", "nom de l'auteur en runtime (hors usage légitime — C33/D4)"), \
+        "selftest S7/D4 : nom de l'auteur en entité runtime → CRITICAL"
+    # Cardinal : la neutralisation ne doit pas blanchir toute la ligne.
+    assert s7_finding_for_line(
+            "  # nas_valentin voisine de input_text.telephone_valentin_notify",
+            "11_automations/x.yaml") is not None, \
+        "selftest S7/D4 : occurrence illégitime sur la MÊME ligne qu'une légitime"
 
     print("selftest OK")
     return 0
