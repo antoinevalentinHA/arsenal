@@ -4,13 +4,16 @@ content: >
   {% set actuel = (states('sensor.autonomie_audi_e_tron_mensuelle') | float(0)) | round(1) %}
   {% set historique = states('input_text.historique_autonomie_audi_etron') %}
   {% set lignes = historique.split('\n') if historique else [] %}
-  {% set valeurs = [] %}
+  {# Accumulation par namespace() : un `set` nu dans un `for` ne survit pas
+     à la boucle, la liste restait vide et le bilan sans historique. #}
+  {% set ns = namespace(valeurs=[]) %}
   {% for ligne in lignes %}
     {% set match = ligne | regex_search('([0-9]+\\.?[0-9]*)') %}
     {% if match %}
-      {% set valeurs = valeurs + [match | float] %}
+      {% set ns.valeurs = ns.valeurs + [match | float] %}
     {% endif %}
   {% endfor %}
+  {% set valeurs = ns.valeurs %}
   {% if valeurs|length > 0 %}
     {% set maxv = valeurs|max %}
     {% set perte = ((maxv - actuel) / maxv * 100) | round(1) %}

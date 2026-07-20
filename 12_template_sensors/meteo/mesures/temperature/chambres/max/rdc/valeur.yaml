@@ -42,15 +42,15 @@
 
       state: >
         {% set brut = {
-          'Entrée': states('sensor.temperature_entree'),
-          'Séjour': states('sensor.temperature_sejour')
+          'Entrée': states('sensor.temperature_entree') | float(none),
+          'Séjour': states('sensor.temperature_sejour') | float(none)
         } %}
 
-        {% set valides = brut.items() | selectattr('1', 'is_number') | list %}
+        {% set valides = brut.items() | rejectattr('1', 'none') | list %}
         {% set last = this.state %}
 
         {% if valides %}
-          {{ (valides | sort(attribute=1))[-1][1] | float | round(1) }}
+          {{ (valides | sort(attribute=1))[-1][1] | round(1) }}
         {% else %}
           {{ last }}
         {% endif %}
@@ -58,10 +58,10 @@
       attributes:
         piece_rdc_la_plus_chaude: >
           {% set brut = {
-            'Entrée': states('sensor.temperature_entree'),
-            'Séjour': states('sensor.temperature_sejour')
+            'Entrée': states('sensor.temperature_entree') | float(none),
+            'Séjour': states('sensor.temperature_sejour') | float(none)
           } %}
-          {% set valides = brut.items() | selectattr('1', 'is_number') | list %}
+          {% set valides = brut.items() | rejectattr('1', 'none') | list %}
           {% if valides %}
             {{ (valides | sort(attribute=1))[-1][0] }}
           {% else %}

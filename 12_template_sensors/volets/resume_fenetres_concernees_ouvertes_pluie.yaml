@@ -13,6 +13,14 @@
 # 🚫 NE FAIT PAS
 #   - aucun service
 #   - aucune temporisation active
+#
+# 🧮 Construction de la liste — chaîne de filtres, jamais d'accumulateur
+#   Les noms sont sélectionnés par `selectattr | map`, **pas** par
+#   `{% set acc = acc + [...] %}` dans un `{% for %}` : en Jinja, une
+#   affectation faite dans le corps d'une boucle ne survit pas à la sortie
+#   de cette boucle. Le capteur restituait donc « Aucune » même lorsque des
+#   fenêtres étaient ouvertes — vérifié : avec deux capteurs à `on`, la
+#   boucle rendait une chaîne vide.
 # ==========================================================
 
 - sensor:
@@ -29,16 +37,10 @@
           'binary_sensor.contact_sejour_3':'Séjour 3',
           'binary_sensor.contact_sejour_4':'Séjour 4'
         } %}
-        {% set ouvertes = mapping.keys() | select('is_state','on') | list %}
-        {% if ouvertes | length == 0 %}
-          Aucune
-        {% else %}
-          {% set noms = [] %}
-          {% for e in ouvertes %}
-            {% set noms = noms + [mapping[e]] %}
-          {% endfor %}
-          {{ noms | join(', ') }}
-        {% endif %}
+        {% set noms = mapping.items()
+          | selectattr('0', 'is_state', 'on')
+          | map(attribute='1') | list %}
+        {{ noms | join(', ') if noms else 'Aucune' }}
       attributes:
         ouvertes_entity_ids: >
           {% set fenetres = [
