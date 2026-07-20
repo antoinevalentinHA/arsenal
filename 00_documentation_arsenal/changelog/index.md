@@ -1586,6 +1586,28 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Doctrine (C31) — ajout de `solvabilite_probatoire.md` (niveaux L1–L5, qualification des réserves) ; CI (C14) — checker et workflow `06_input_selects` (ISS-000 à ISS-007), recompte checkers 84 → 85 / workflows 89 → 90.
 - Lovelace — refonte de la section Système de la navigation (12 → 6 tuiles, factorisations « Paramètres » / « Outils Dev », icônes en gris).
 
+---
+
+## 🧠 ARSENAL HA — [v17.0.0](changelogs/v17/v17_0_0.md) — STABLE — 2026-07-20
+**Tags :** desidentification, chambres, sommeil, presence, meteo, chauffage, climatisation, volets, lovelace, doctrine, ci, checkers, contrats
+
+**Signal net :**
+- Chambres enfants (C32) — restructuration : renommage `chambre_arnaud` → `chambre_enfants` (pièce partagée) et `chambre_matthieu` → `salle_de_jeux` (~167 fichiers, comportement préservé) ; périmètre « chambres » réduit de 3 à 2 pièces.
+- Sommeil (C32/A1) — fusion du suivi enfants : `presence_enfants`, `input_number.reveils_nocturnes`, `input_text.reveils_heures`, `input_boolean.babyphone` uniques ; 6 automations → 3 (`10110000000005` / `10110000000001` / `10110000000003`) ; contrat `reveils.md` v1.0.0 → v1.1.0.
+- Dé-identification des personnes — canon `parent_1` / `parent_2` inscrit à `nommage_entites.md` et appliqué au runtime : `person.valentin` → `person.parent_1`, `person.constance` → `person.parent_2`, helpers `telephone_antoine*` / `telephone_constance*` → `telephone_parent_1*` / `telephone_parent_2*`, `sensor.telephone_*_bssid_dynamic`, cibles de notification.
+- Thermique (C32/A2) — Salle de Jeux exclue des agrégats « chambres » et du besoin de chauffe : `temperature_min/max_chambres` sur 2 façades, garde anti-gel COOL et verdict `vannes_thermostatiques_stabilite_globale` à 2 pièces ; contrats `bornes_thermiques_chambres_etage.md` et `climatisation/13_intensite_besoin_froid.md` v1.0 → v1.1.
+- Météo — stations Netatmo chambres renommées : `diagnostic_netatmo_enfants` / `diagnostic_netatmo_salle_de_jeux`, prises `switch.prise_chambre_enfants` / `switch.prise_salle_de_jeux`, automations de reboot `10160000000007` / `10160000000008`.
+- CI (S7) — verrou de dé-identification dans `audit_publication_git.py` v1.4.0 → v1.6.0 (contrat `securite_publication_git.md` v1.3.0 → v1.5.0) : prénoms enfants `CRITICAL` runtime / `WARNING` doc, extension adultes, détection par frontière de lettre.
+- Lovelace — refonte de la section Système de la navigation (12 → 6 tuiles) ; ouverture du chantier C33 (dé-identification des adultes, documentaire) ; solde de D-NAV-COULEUR.
+
+---
+
+## 🧠 ARSENAL HA — [v17.0.1](changelogs/v17/v17_0_1.md) — STABLE — 2026-07-20
+**Tags :** registres, migration, instance
+
+**Signal net :**
+- Registre HA (C32/L6) — migration d'instance : renommage des entités physiques (Netatmo / Zigbee) au registre Home Assistant (`.storage/core.entity_registry`), historique préservé, sans changement de configuration YAML.
+
 ==================================================
 FIN INDEX
 ==================================================
