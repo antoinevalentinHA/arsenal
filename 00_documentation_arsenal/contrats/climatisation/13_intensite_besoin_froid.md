@@ -6,10 +6,10 @@
 résolution ventilation
 
 > **v1.1 (C32 / A2 étendu COOL — déménagement) :** la garde anti-gel ne lit plus que **deux façades
-> chambres** (Chambre Enfants + Chambre Parents). La **Salle de Jeux** (ex-Chambre Matthieu) en est
+> chambres** (Chambre Enfants + Chambre Parents). La **Salle de Jeux** en est
 > **exclue** — cohérent avec la réduction 3→2 de `temperature_max_chambres` (C32/L2) : une pièce sans
 > usage sommeil ne participe ni au besoin de chauffe **ni à la perception du besoin de froid**.
-> Façades désormais `…_chambre_enfants` (ex-`…_chambre_arnaud`, renommage **C32/L3**) ; **alignement
+> Façades désormais `…_chambre_enfants` ; **alignement
 > runtime** (retrait de la façade Salle de Jeux de la garde) reste porté par **C32/L4**. Chantier :
 > [`chantier_restructuration_chambres_enfants.md`](../../audits/04_chantiers/transverses/chantier_restructuration_chambres_enfants.md).
 
@@ -50,7 +50,7 @@ d'allumer, d'éteindre ou de changer le mode de la climatisation.
 |---|---|---|
 | `sensor.temperature_max_chambres` | **Opérande de déficit** : porte la température de la chambre la plus chaude. | Perception (agrégat) |
 | `sensor.seuil_extinction_clim_applique` | **Référence opérationnelle** de satisfaction froid (voir §1). | Décision d'arrêt / référence |
-| `sensor.temperature_chambre_enfants` · `_parents` | **Garde anti-gel** : fraîcheur des sources (disponibilité uniquement). Salle de Jeux (ex-`_matthieu`) **exclue** (C32/A2 COOL). | Perception (façades) |
+| `sensor.temperature_chambre_enfants` · `_parents` | **Garde anti-gel** : fraîcheur des sources (disponibilité uniquement). Salle de Jeux **exclue** (C32/A2 COOL). | Perception (façades) |
 | `sensor.clim_intensite_besoin_froid` | **Intensité brute** en °C, plancher 0. | Perception pure |
 | `sensor.clim_intensite_besoin_froid_niveau` | **Niveau** de besoin (5 états). | Perception pure |
 
