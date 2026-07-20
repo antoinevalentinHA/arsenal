@@ -160,6 +160,27 @@ Quelques **axes ordonnés**, pas un backlog. Chaque lot sera **audité avant YAM
 
 > **Observation terrain (2026-07-19, lecture Historique recorder) — orchestration de session confirmée nominale sur plusieurs cycles.** Sur la fenêtre **~5 → 19 juillet**, l'historique recordé montre **une dizaine de sessions d'arrosage**, **toutes verdict `close_nominale`** — **0** `stop_incertain`, `close_watchdog` ou `close_reprise`. L'orchestration Lot D (start court → fin à échéance → stop supervisé → clôture) est donc **confirmée nominale sur la durée**, en cohérence météo (suspension pluie fin juin ⇒ pas d'arrosage ; juillet sec ⇒ arrosages quasi quotidiens). **Portée exacte de la preuve** : ces sessions **mélangent** des déclenchements **manuels** (démonstration / tests opérateur) et l'occurrence **automatique** du 05/07 ; la **source du déclenchement n'étant pas historisée**, cette observation valide l'**exécution / orchestration multi-cycle**, **pas** un décompte de décisions automatiques. La **décision automatique V1** reste donc étayée par la **seule occurrence du 05/07** — validée, mais **pas encore multi-cycle**. Lecture seule ; **aucun forçage, aucune simulation**. *(Comptage « une dizaine » = lecture UI Historique ; décompte exact via requête recorder disponible si besoin.)*
 
+> **Observation terrain (2026-07-20, requête recorder + arbitrage propriétaire)** — **la décision
+> automatique devient multi-cycle.** Deux sessions supplémentaires depuis le point du 2026-07-19,
+> toutes deux `close_nominale` :
+>
+> | Session | Ouverture | Fin prévue | Fin observée | Écart | Verdict |
+> |---|---|---|---|---|---|
+> | 2026-07-18 | 05:30:00 | 06:05:00 | 06:05:03 | +3 s | `close_nominale` |
+> | 2026-07-20 | 05:30:00 | 05:55:00 | 05:55:02 | +2 s | `close_nominale` |
+>
+> `sensor.arrosage_dernier_effectif` confirme les arrosages (12/07, 18/07, 20/07) ; la durée réglée
+> passe de 35 à 25 min entre les deux. **La source du déclenchement n'est toujours pas historisée** :
+> elle est établie ici par **arbitrage propriétaire (2026-07-20) — ces deux cycles sont automatiques**.
+> La **décision automatique V1** compte donc **trois occurrences** (05/07, 18/07, 20/07) : la réserve
+> « validée, mais pas encore multi-cycle » **tombe**. L'écart fin prévue → fin observée de **2 à 3 s**
+> mesure la précision de la clôture à échéance. Lecture seule ; **aucun forçage, aucune simulation**.
+>
+> **Constat annexe, sans travail ouvert** : `sensor.rain_bird_pont_sante` bascule entre `ok` et
+> `inconnu` **34 fois en 48 h**, sans qu'aucune session en soit affectée (les deux sont
+> `close_nominale`). Consigné comme observation ; se rattache au dossier dormant `D-C18-CD`
+> (sens positif de `degrade`) **sans le rouvrir**.
+
 > **Observation hydrique (2026-07-19, lecture Recorder) — 35 min sur-arrose ; signal sol pas encore fiable (prérequis C11-P2).** Sur les **4 cycles auto (35 min)** : pic sol **36–51 %** (≫ seuil 30 %) ⇒ **sur-arrosage confirmé** (baisser la durée de base serait factuellement justifié — geste opérateur, **non touché ici**). **Mais** dose-réponse **très dispersée** (+5,7 à +26,6 pts pour la **même** dose ; lags 36 min → 5 h 40) ⇒ **signal sol non fiable** : le prérequis **P2** de la modulation de durée (C11) **n'est pas réuni**. Parc capteurs passé à **6** (info opérateur) → ré-observation requise. Détail : [`plan d'observation hydrique v0 §3 bis (T05)`](../../02_conception/arrosage/plan_observation_hydrique_v0.md).
 
 ## 9. Éléments explicitement différés
