@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Restructuration des pièces enfants suite au déménagement : la chambre d'Arnaud devient la **Chambre Enfants** (partagée), la chambre de Matthieu devient une **Salle de Jeux**, la Chambre Parents est inchangée. Passage de **3 chambres → 2 chambres + 1 salle de jeux** dans toute la logique. Dé-identification des prénoms enfants obtenue **en sous-produit**. |
 | **Domaine** | TRANSVERSE (Météo/température intérieure ↔ Chauffage/vannes thermostatiques ↔ Sommeil/réveils ↔ Volets ↔ Aération ↔ UI Lovelace ↔ Doctrine de nommage ↔ Publication/confidentialité). |
-| **Statut** | **ACTIF — L8 livré (verrou CI S7) + L6b livré (correctif amorçage capteurs dérivés) ; L6 migration instance EN COURS.** Lot 8 : contrôle **S7** (prénoms enfants `arnaud`/`matthieu`) dans `audit_publication_git.py` (script v1.5.0) + contrat `securite_publication_git.md` v1.4 — `CRITICAL` en runtime (anti-retour), `WARNING` en doc active, hors historique gelé. **Runtime déjà propre ⇒ scan `PASS`.** Reste **L6** (migration des entités physiques côté instance — voir §Suivi L6) et L9/L10.** Lots 0–4 acquis + L5a (présence → `presence_enfants` unique) + L5b (sommeil : `babyphone`, `reveils_nocturnes`, `reveils_heures` uniques ; 6 automations → 3, IDs arnaud conservés / matthieu retirés ; cartes sommeil ; contrat `reveils.md` v1.1). **Dé-identification runtime TERMINÉE** : plus **aucun** prénom d'enfant dans le runtime ni les contrats actifs (seul l'historique Git subsiste → S7 `--history` / L8). **⚠️ Migration instance (L6) au déploiement** (z2m + registre + recorder). |
+| **Statut** | **ACTIF — L0 à L8 livrés ; L6 (migration instance) soldé le 2026-07-20 ; L9 en première passe. Reste L6c (résorption au 2026-07-21) puis L10 (clôture).** Lot 8 : contrôle **S7** (prénoms enfants `arnaud`/`matthieu`) dans `audit_publication_git.py` (script v1.5.0) + contrat `securite_publication_git.md` v1.4 — `CRITICAL` en runtime (anti-retour), `WARNING` en doc active, hors historique gelé. **Runtime déjà propre ⇒ scan `PASS`.** Reste **L6** (migration des entités physiques côté instance — voir §Suivi L6) et L9/L10.** Lots 0–4 acquis + L5a (présence → `presence_enfants` unique) + L5b (sommeil : `babyphone`, `reveils_nocturnes`, `reveils_heures` uniques ; 6 automations → 3, IDs arnaud conservés / matthieu retirés ; cartes sommeil ; contrat `reveils.md` v1.1). **Dé-identification runtime TERMINÉE** : plus **aucun** prénom d'enfant dans le runtime ni les contrats actifs (seul l'historique Git subsiste → S7 `--history` / L8). **⚠️ Migration instance (L6) au déploiement** (z2m + registre + recorder). |
 | **Priorité** | **P2** (proposée) — voir §Priorité. |
 | **Ouvert le** | 2026-07-19. |
 | **Preuve de départ** | Besoin propriétaire (déménagement physique **à venir** : enfants regroupés dans l'ex-chambre Arnaud ; ex-chambre Matthieu → salle de jeux) + **inventaire d'impact en lecture seule** consigné §3. Aucun rapport d'audit préalable mergé — l'inventaire est la preuve de départ. |
-| **Prochain jalon** | **L6 — migration instance (EN COURS).** Le repo est déployé ; les entités **physiques** (Netatmo/HomeKit + Zigbee) doivent être renommées côté instance `…_chambre_arnaud → …_chambre_enfants` / `…_chambre_matthieu → …_salle_de_jeux` (sinon consolidations Enfants/Salle de Jeux = `Indisponible`, constaté 2026-07-19). **L6b livré** (correctif amorçage humidex / point de rosée / humidité absolue) : après déploiement, un `homeassistant start` amorce les 6 capteurs dérivés. Puis L9 (validation terrain), L10 (clôture). |
+| **Prochain jalon** | **L9 — validation terrain (première passe faite, 2026-07-20).** **L6 soldé** : toutes les sources physiques (Netatmo/HomeKit + Zigbee) sont alignées, le dernier résidu (`prise_chambre_enfants_2`) ayant été renommé le 2026-07-20 à 17:10 ; **0 entité `unavailable`** sur l'instance. **L6b vérifié** (les 6 capteurs dérivés sont alimentés ; erreurs `temperature_source` réduites à 221 ms au démarrage). Restent : **L6c** (20 filtres de période encore `unknown`, résorption attendue le **2026-07-21 au matin**) puis **L10** (clôture). Scénarios non observables sans action : reboot de remédiation Netatmo, babyphone, groupe volets. |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C32 **consigne les décisions propriétaire déjà rendues**
 > (A1–A3, §Décisions) et l'**inventaire d'impact** (§3). Elle **ne crée aucun contrat, aucun runtime,
@@ -482,6 +482,20 @@ Après renommage + reload, les consolidations retrouvent leurs sources. **Rien n
 est saine (L0–L5 mergés, CI verte) ; il s'agit d'aligner les noms physiques. **L6 se clôt à la
 disponibilité confirmée** des pièces Enfants / Salle de Jeux → puis L9 (validation) / L10 (clôture C32).
 
+**Solde du renommage des sources (2026-07-20, 17:10).** Le dernier device restant portait
+`switch.prise_chambre_enfants_2` côté instance, là où le dépôt référence `switch.prise_chambre_enfants`
+(`11_automations/meteo/reboot_station/enfants.yaml`, `18_lovelace/dashboards/systeme/prises.yaml`). Le
+suffixe `_2` a été retiré par le propriétaire ; le registre ne porte plus aucun résidu `_2` et les 8
+entités du device sont homogènes.
+
+**L'écart n'a produit aucune panne** : l'automatisation de remédiation `meteo_netatmo_redemarrage_enfants`
+n'a pas été déclenchée depuis le 2026-07-15, soit **avant** le renommage. La défaillance était **latente,
+jamais réalisée** — et elle était **silencieuse** : la tuile Lovelace s'affichait verte, liée à une entité
+inexistante. Même famille de défaut que C33/R4 : une liaison rompue qui ne produit ni erreur ni entité
+indisponible ne peut être détectée que par confrontation dépôt ↔ instance.
+
+**Toutes les sources physiques sont désormais alignées** ; le critère de disponibilité de L6 est atteint.
+
 ### Lot 6b — correctif d'amorçage des capteurs dérivés (livré, 2026-07-20)
 
 **Constat terrain (post-renommage sources)** : sources amont **toutes valides** (feuilles `_1`/`_2`,
@@ -563,3 +577,58 @@ périodes, soit **le 2026-07-21 au matin**. Séquence attendue : `jour` (après-
 **Note structurelle (portée hors C32)** : tout futur renommage de `unique_id` sur une zone rouvrira la
 même **fenêtre aveugle de ≤ 24 h** sur ces filtres. Inhérent au design par auto-référence, **acceptable**
 au vu du rayon d'impact fermé, mais à intégrer au cadrage de tout prochain chantier de nommage.
+
+**Vérification de résorption (2026-07-20, 17:10)** — conforme à la prévision, à mi-parcours :
+
+| Relevé | Filtres `unknown` (2 pièces) |
+|---|---|
+| 2026-07-20 09:42 (constat initial) | 32 (16 par pièce) |
+| 2026-07-20 17:10 | **20** (10 par pièce) |
+
+Les 12 résorbés correspondent **exactement** à la période `jour`, atteinte à 13:55. Les 20 restants sont
+les périodes non encore atteintes — `crepuscule` (temp. / HR / hum. absolue et leurs `_moyenne`) — et
+`humidite_absolue` `aube` / `nuit`, en retard d'un cycle parce que sa source n'a été fiabilisée qu'en
+L6b, déployé après L3. Témoin `chambre_parents` : **0 KO / 156**. **Critère de clôture L6c inchangé :
+0 KO le 2026-07-21 au matin.**
+
+### Lot 9 — validation terrain (partiel, 2026-07-20)
+
+Audit fonctionnel post-migration en lecture seule (17:05–17:25). **Ne solde pas L9** : il en constitue la
+première passe.
+
+**Acquis — preuves runtime :**
+
+- **0 entité `unavailable`** sur 3891 · 0 automatisation `off` · 0 script indisponible · 0
+  `Entity not found` / `Service not found` / `TemplateError` dans les journaux disponibles.
+- **A2 prouvé par le calcul** : la Salle de Jeux est la pièce la plus chaude (25,4 °C) et au plus haut
+  humidex (28,1) ; `temperature_max_chambres` = 24,6 (Chambre Parents) et `humidex_max_chambres` = 27,2.
+  Si elle entrait encore dans les agrégats, les maxima vaudraient 25,4 et 28,1. Elle **conserve** vanne et
+  plateau individuels (`plateau_salle_de_jeux` = 24,1, alimenté) — elle n'est pas orpheline.
+- **Suivi sommeil fusionné opérant** : `reveils_compteur_enfants` déclenchée le 2026-07-20 à 03:59 sur
+  `sensor.bruit_chambre_enfants`, sans erreur de trace. Les 3 automatisations sont chargées et actives.
+- **Présence enfants fusionnée** : cascade complète observée à 16:56:31 jusqu'à
+  `presence_famille_securite` (détail en C33/L6).
+- **L6b vérifié** : les 6 capteurs dérivés des 2 pièces sont alimentés. La seule salve d'erreurs
+  `temperature_source` du journal dure **221 ms au démarrage** (08:40:00.249 → .470) — le repli
+  `this.entity_id` prend ensuite le relais. Défaut **corrigé**, pas actif.
+- **Lovelace** : 9 vues ouvertes et inspectées. Aucune carte cassée, aucun ancien nom visible, ordre
+  Parents → Enfants respecté, Salle de Jeux à l'Étage, Petite Maison en Dépendances, règles de pleine
+  largeur vérifiées au rendu sur la vue CO₂.
+
+**Reste à établir :**
+
+- **L6c** — 20 filtres encore `unknown`, résorption attendue le 2026-07-21 au matin.
+- **Remédiation Netatmo** — la cible est correcte depuis le solde de L6, mais l'automatisation n'a **pas
+  été exercée** depuis la migration. Non observable sans couper une prise.
+- **Babyphone** — `last_triggered` nul, jamais déclenchée. Non observable sans provoquer une alerte
+  sonore.
+- **Groupe volets chambres** — câblage correct au source, exécution non observée.
+- **Couverture de journal** — la fenêtre 2026-07-19 22:30 → 2026-07-20 08:40, qui couvre le déploiement
+  initial, a été purgée au redémarrage. **Absence de preuve, non preuve d'absence.**
+
+**Anomalies relevées, hors périmètre C32 :** `sensor.humidite_relative_max_chambres` figé sur sa branche
+mémoire — défaut **antérieur de cinq mois** à C32 (accumulateur Jinja sans portée dans une boucle, présent
+depuis le commit `BASELINE` du 2026-02-11), corrigé séparément. Deux résidus de présentation imputables à
+C32 : le `unknown` en tête de `input_text.reveils_heures` (helper neuf sans état à restaurer au
+redémarrage du 19/07 ; purgé au reset quotidien) et l'en-tête « Chambre enfants » couvrant la Salle de
+Jeux sur la vue Ouvertures.
