@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Retirer les **prénoms adultes** (`antoine`, `valentin`, `constance`) de la **surface exposée** du dépôt public : runtime, libellés UI, contrats actifs. Canon retenu : **`parent_1` / `parent_2`**. Solde des annotations transitoires « ex-… » héritées de C32. Extension du verrou CI **S7** aux prénoms adultes. **Le résidu historique Git est assumé et non traité** (voir D1). |
 | **Domaine** | TRANSVERSE (Présence ↔ Sécurité/Alarme ↔ Notifications mobiles ↔ BSSID/Wi-Fi ↔ UI Lovelace ↔ Doctrine de nommage ↔ Publication/confidentialité). |
-| **Statut** | **OUVERT (2026-07-20) — ouverture documentaire.** Aucun runtime, contrat, template, dashboard, helper ni checker modifié par le présent lot. |
+| **Statut** | **ACTIF (2026-07-20) — L0 à L5 livrés ; L6 (validation terrain) partiel.** Runtime dé-identifié (L2 + correctif L2b), documentation active soldée (L2c, L3a, L3c), instance migrée (L5), verrou S7 étendu aux adultes (L4, mergé en dernier). **R4 levé** (notification reçue et confirmée) ; **R1 partiel** — le relâchement de la chaîne présence → sécurité a été observé, pas son établissement. |
 | **Priorité** | **P2** (proposée) — voir §Priorité. |
 | **Ouvert le** | 2026-07-20. |
 | **Preuve de départ** | Décision propriétaire (le dépôt **reste public**, sa surface exposée doit être assainie) + **inventaire d'impact en lecture seule** §3 + rapport `audit_publication_git.py` du 2026-07-20 (0 `CRITICAL`, 3 `WARNING` S7 en documentation active) + **constat d'exposition** : dépôt public depuis le 2026-05-23, **fork tiers** (`kloggy`, 2026-06-08), star tierce (`aruesberg`). |
-| **Prochain jalon** | **L1 — canon des personnes** (doctrine de nommage `parent_1` / `parent_2`). |
+| **Prochain jalon** | **L6 — clôture de la validation terrain.** Reste à observer une transition de présence **entrante** (`not_home → Maison securite`) confirmant la chaîne présence → alarme dans le sens de l'établissement. **Aucune panne fabriquée** : attendre une occurrence naturelle. Puis **L7** (clôture). |
 
 > **⚠️ Portée de l'ouverture.** Le présent dossier est **descriptif**. Il consigne la décision
 > propriétaire (§2) et l'inventaire (§3). Il **ne crée aucun contrat, aucun runtime, aucun template,
@@ -321,6 +321,46 @@ de présence saine — **aucun indicateur ne signale une notification qui ne par
 défaillance est silencieuse ne peut être validée que par **preuve de réception**, jamais par absence
 d'erreur.
 
+### Lot 2c — solde documentaire des dettes de L2b (terminé, 2026-07-20, #463)
+
+Les deux dettes ouvertes par le défaut d'inventaire de L2b sont soldées, dans le dossier lui-même :
+
+- **Critère de clôture 2 — était intestable.** Rédigé `\b(antoine|valentin|constance)\b` sur un périmètre
+  partiel, il aurait été déclaré **satisfait** alors que 50 fichiers portaient encore l'ancien nommage et
+  que les notifications étaient rompues. Réécrit **sans frontières de mot**, sur le dépôt complet, et
+  surtout en **liste positive d'exclusions attendues** plutôt qu'en « 0 occurrence » : un compteur nul se
+  satisfait aussi d'un motif qui ne matche rien — précisément le défaut à l'origine de L2b.
+- **Critère de clôture 5 — était factuellement faux.** Il exigeait la réception « sur les deux
+  téléphones ». Le comptage donne **62** références à `telephone_parent_1_notify` contre **1** à
+  `telephone_parent_2_notify`, et cette unique référence est un **canal de commande**
+  (`script.mobile_high_accuracy_off`), jamais une notification à lire.
+- **Justification de D3 corrigée** : la conclusion tient, sa motivation était fausse (voir l'encart §2).
+
+**Leçon opposable** : un critère de clôture qui repose sur un motif de recherche doit être **éprouvé sur
+un cas connu positif** avant d'être opposé.
+
+### Lot 3a — réparation des références mortes (terminé, 2026-07-20, #464)
+
+**25 références mortes** introduites par L2/L2b dans la documentation active : les contrats et documents
+d'architecture continuaient de citer les anciens `entity_id` (`telephone_antoine_*`,
+`sensor.telephone_constance_bssid_dynamic`…) alors que le runtime portait déjà le canon
+`parent_1`/`parent_2`. Cinq fichiers réalignés — `architecture/notifications_mobiles.md`,
+`contrats/bssid.md`, `contrats/arrosage/18_notification_batterie.md`, `contrats/electromenager.md`,
+`contrats/reveils.md`.
+
+### Lot 3c — solde des annotations transitoires « ex-… » de C32 (terminé, 2026-07-20, #465)
+
+Retrait des **7 dernières annotations** « ex-Chambre Matthieu » / « ex-chambre_arnaud » des 2 contrats
+actifs (`bornes_thermiques_chambres_etage.md`, `climatisation/13_intensite_besoin_froid.md`). Elles ont
+servi la migration C32 ; le canon étant établi, elles n'ont plus d'objet — c'est le **périmètre B** de D3.
+
+**Effet mesuré** : `audit_publication_git.py` ne remonte plus **aucun** signal S7 (678 → 675 `WARNING`,
+soit exactement les 3 occurrences détectées). C'était le dernier résidu de prénom d'enfant en
+documentation active ; le reste est en **historique gelé** (`changelog/`, `audits/`), exempté par D1.
+
+**Traçabilité (mitigation R5)** : la correspondance ancien/nouveau nommage demeure dans le dossier C32,
+le changelog et l'historique Git — aux emplacements dont c'est le rôle, et non dans un contrat normatif.
+
 ### Lot 5 — migration instance (terminé, 2026-07-20)
 
 Exécuté sur l'instance, dans l'ordre imposé par R2/R3/R4 :
@@ -341,6 +381,24 @@ Exécuté sur l'instance, dans l'ordre imposé par R2/R3/R4 :
 au registre **ne préserve pas** l'état, d'où les étapes 1 et 4. Pour `person.*` (storage-managed), le
 renommage au registre **préserve** l'historique.
 
+### Lot 4 — verrou S7 étendu aux adultes (terminé, 2026-07-20, #466)
+
+Extension du contrôle **S7** créé par C32/L8 : aux prénoms enfants s'ajoutent les **adultes**, avec la
+**frontière sujets / auteur** posée par D4.
+
+- **Sujets** (`arnaud`, `matthieu`, `constance`) : sans exclusion.
+- **Auteur** (`antoine`, `valentin`) : neutralisation des usages légitimes — `nas_valentin*`,
+  `linky_antoine*`, compte GitHub, `LICENSE`.
+- **Détection** : abandon de `\b…\b` au profit d'une **frontière de lettre**. `\b` laissait passer
+  `telephone_arnaud_notify`, l'underscore étant un caractère de mot — c'est la cause racine de L2b,
+  désormais verrouillée en CI. Sous-chaîne nue écartée (`constance` est un nom commun).
+- **Gradation** conservée : `CRITICAL` en runtime, `WARNING` en documentation active, hors périmètre pour
+  l'historique gelé.
+
+Script `audit_publication_git.py` v1.5.0 → **v1.6.0**, contrat `securite_publication_git.md` v1.4.0 →
+**v1.5.0**. Mergé **en dernier**, conformément à §7 : le `CRITICAL` runtime n'est introduit qu'une fois
+le runtime propre (L2/L2b) et l'instance migrée (L5), faute de quoi la CI casse pendant le chantier.
+
 ### Lot 6 — validation terrain (partiel, 2026-07-20)
 
 | Critère | État |
@@ -352,3 +410,24 @@ renommage au registre **préserve** l'historique.
 **L6 reste ouvert** jusqu'à observation d'une transition `not_home → Maison securite` confirmant la
 chaîne présence → alarme de bout en bout. **Aucune panne fabriquée** : attendre une occurrence
 naturelle.
+
+#### Apport de l'audit fonctionnel post-migration v17 (2026-07-20, 17:05–17:25)
+
+Audit en lecture seule sur l'instance. Ce qu'il **ajoute** à L6 :
+
+- **Sens sortant de la chaîne observé de bout en bout**, à 16:56:31, en millisecondes :
+  `timer.babysitting → idle` (.001) · `mode_babysitting → off` (.006) · `presence_enfants → off` (.009) ·
+  `binary_sensor.presence_enfants → off` (.010) · `presence_famille → off` (.010) ·
+  **`presence_famille_securite → off`** (.010). L'agrégat de sécurité retombe correctement quand son
+  dernier contributeur se libère, `person.parent_1` et `person.parent_2` étant déjà `not_home`.
+- **Transition `person.*` réelle post-migration** : `person.parent_1 → not_home` à 14:06, sur l'entité
+  renommée au registre en L5.
+- **Cibles de notification** : les 6 helpers téléphone sont correctement restaurés et les deux services
+  `notify.mobile_app_*` **existent** — la restauration L5 étape 4 est vérifiée.
+- **Critère de clôture 3** : **0 entité live** portant un prénom, hors `nas_valentin*` / `linky_antoine*`
+  (D3/D4). 29 entrées subsistent au **registre**, toutes `disabled_by` et **sans état** — elles ne
+  participent donc pas à la surface exposée.
+
+**Ce qu'il n'établit pas.** Le sens **entrant** (`not_home → Maison securite`) n'a pas été observé : seul
+le relâchement l'a été. R1 reste donc `⏳ partiel` et **L6 n'est pas soldé**. La distinction est
+délibérée — un agrégat qui retombe correctement ne prouve pas qu'il se lève correctement.
