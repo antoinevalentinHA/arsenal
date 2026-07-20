@@ -107,7 +107,7 @@ C22 **ne se clôt pas** tant que ces points ne sont pas tranchés en réel :
 1. **Qualité du proxy garage** (point dur) — le capteur est **physiquement dans
    le garage**. Il n'est un proxy fidèle de la luminosité du séjour **que s'il
    voit la lumière extérieure**. À confirmer par observation de la valeur lux
-   live aux heures concernées.
+   live aux heures concernées. **✅ Soldé (2026-07-20)** — voir le relevé ci-dessous.
 2. **Calibration du seuil** — relever la luminosité aux moments gênants, régler
    le seuil **au-dessus du niveau d'aube** et **sous celui du plein jour**.
    Tant que le seuil reste à 0, aucun changement de comportement.
@@ -122,6 +122,39 @@ C22 **ne se clôt pas** tant que ces points ne sont pas tranchés en réel :
 > ajouté sur le modèle C20 ; cible d'analyse = **long-term statistics** (min/mean/max
 > horaires, non purgées). **Retrait dès seuil calibré ET C22 clôturé.** La
 > calibration attend l'accumulation de quelques cycles jour/nuit.
+
+### 5 bis. Relevé de calibration (2026-07-20) — point 1 soldé, point 2 en cours
+
+**Source** : `statistics` (LTS horaires) et `statistics_short_term` de
+`sensor.luminosite_garage_illuminance`, lecture seule de la base recorder. Plage
+**2026-07-19 18:00 → 2026-07-20 20:20** : 26 relevés horaires, 315 points 5 min.
+
+**Point 1 — le capteur voit bien la lumière extérieure : soldé.** La courbe est une
+signature solaire, bornée par deux repères indépendants : décollage du plancher à **06:35**
+(lever du soleil **06:36**) et retour au plancher à **21:40** (coucher **21:41**). Le palier
+nocturne est **plat à 1,0 lx sur ~9 h**, sans une seule excursion. **Arbitrage propriétaire
+(2026-07-20)** : le garage est fenêtré et sensible à la luminosité extérieure ; l'éclairage
+du séjour ne l'atteint pas. Le critère du point 1 est donc rempli.
+
+**Point 2 — calibration : valeur de départ proposée `50` lx.** Régimes mesurés :
+
+| Régime | Plage observée |
+|---|---|
+| nuit (21:40 → 06:35) | **1,0 lx** constant |
+| aube | 06:35 décollage · 5 lx (07:00) · 20 lx (08:00) · 42-56 lx (09:00) |
+| plein jour | 60 → 254 lx, **creux nuageux 33-43 lx** (11:00-11:35) |
+| crépuscule | 44 lx (19:00) → 14 lx (20:15) |
+
+**Limite structurelle relevée** : le creux nuageux de midi (min **33 lx**) **chevauche**
+l'aube de 9 h (42-56 lx). Aucun seuil unique ne sépare proprement les deux régimes — c'est
+une propriété du site, non un défaut du capteur. À `50`, l'autorisation s'établit vers
+**09:05** puis retombe par intermittence sous les passages nuageux : sans conséquence
+fonctionnelle (elle n'allume rien, le défaut est fail-safe).
+
+**Le point 2 n'est pas soldé.** Un seul cycle jour/nuit, en juillet, sous une seule météo.
+Le capteur suivant l'extérieur, un seuil calé en été sera **trop haut en hiver**. Laisser
+accumuler quelques cycles de météo variée avant de figer. **Le helper reste à `0`
+(désactivé) : aucun changement de comportement à ce stade.**
 
 ---
 
