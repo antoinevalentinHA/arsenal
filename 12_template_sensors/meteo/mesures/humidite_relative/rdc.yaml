@@ -12,6 +12,16 @@
 #   - Retourne l’humidité maximale.
 #   - Fallback : conserve la dernière valeur connue si aucune donnée n’est valide.
 #
+# 🧮 Sélection des valides — chaîne de filtres, jamais d’accumulateur
+#   La sélection se fait par chaîne `rejectattr | selectattr | sort`,
+#   **pas** par `{% set acc = acc + [...] %}` dans une boucle `{% for %}` :
+#   en Jinja, une affectation faite dans le corps d’une boucle ne survit
+#   pas à la sortie de cette boucle. L’accumulateur restait donc vide et
+#   l’agrégat tombait en permanence sur la branche mémoire (état figé,
+#   attribut « Mémoire »).
+#   Les valeurs sont converties en `float` **avant** le tri : trier des
+#   chaînes classerait « 9.5 » après « 10.2 » (ordre lexicographique).
+#
 # 🧠 Déclencheurs :
 #   - Variation de l’humidité dans Séjour ou Entrée.
 #   - Démarrage de Home Assistant.
@@ -38,21 +48,18 @@
 
       state: >
         {% set brut = {
-          'Séjour': states('sensor.humidite_relative_sejour'),
-          'Entrée': states('sensor.humidite_relative_entree')
+          'Séjour': states('sensor.humidite_relative_sejour') | float(none),
+          'Entrée': states('sensor.humidite_relative_entree') | float(none)
         } %}
 
-        {% set valides = [] %}
-        {% for nom, v in brut.items() %}
-          {% set value = v | float(none) %}
-          {% if value is not none and 0 < value <= 100 %}
-            {% set valides = valides + [[nom, value]] %}
-          {% endif %}
-        {% endfor %}
+        {% set valides = brut.items()
+          | rejectattr('1', 'none')
+          | selectattr('1', 'gt', 0)
+          | selectattr('1', 'le', 100)
+          | sort(attribute=1) | list %}
 
         {% if valides %}
-          {% set sorted = valides | sort(attribute=1) %}
-          {{ sorted[-1][1] | round(0) }}
+          {{ valides[-1][1] | round(0) }}
         {% else %}
           {{ states(this.entity_id) }}
         {% endif %}
@@ -60,21 +67,18 @@
       attributes:
         piece_la_plus_humide: >
           {% set brut = {
-            'Séjour': states('sensor.humidite_relative_sejour'),
-            'Entrée': states('sensor.humidite_relative_entree')
+            'Séjour': states('sensor.humidite_relative_sejour') | float(none),
+            'Entrée': states('sensor.humidite_relative_entree') | float(none)
           } %}
 
-          {% set valides = [] %}
-          {% for nom, v in brut.items() %}
-            {% set value = v | float(none) %}
-            {% if value is not none and 0 < value <= 100 %}
-              {% set valides = valides + [[nom, value]] %}
-            {% endif %}
-          {% endfor %}
+          {% set valides = brut.items()
+            | rejectattr('1', 'none')
+            | selectattr('1', 'gt', 0)
+            | selectattr('1', 'le', 100)
+            | sort(attribute=1) | list %}
 
           {% if valides %}
-            {% set sorted = valides | sort(attribute=1) %}
-            {{ sorted[-1][0] }}
+            {{ valides[-1][0] }}
           {% else %}
             {{ state_attr(this.entity_id, 'piece_la_plus_humide') or 'Mémoire' }}
           {% endif %}
