@@ -1,7 +1,7 @@
 # CONTRAT — Sécurité publication Git
 
 **Référence :** `documentation_arsenal/contrats/publication/securite_publication_git.md`
-**Version :** v1.4.0
+**Version :** v1.5.0
 **Statut :** Normatif
 **Scope :** Arsenal — audit pré-publication
 
@@ -17,6 +17,7 @@
 | v1.2.0 | **C14 Lot 1E-c — réduction des faux positifs, sans affaiblir la détection.** S1 : en fichier de **code**, un mot-clé secret n'est `CRITICAL` que si sa valeur est un **littéral chaîne quoté** (les identifiants/types/appels — `token: str`, `_G_TOKEN = re.compile(...)` — ne sont plus des secrets ; les valeurs codées en dur `API_TOKEN = "…"` restent `CRITICAL`). S5a : le contrôle des **fichiers interdits** porte désormais sur les fichiers **versionnés** (`git ls-files`) de tout l'arbre, **indépendamment de `EXCLUDED_DIRS`** — lève l'angle mort `zigbee2mqtt/` (un `.log` suivi y échappait) ; un artefact runtime **non suivi** (gitignoré) n'est pas signalé. S2/S3 : `.home-assistant.io` n'est plus lu comme domaine local ; `synology.<ext>` (nom de fichier) n'est plus lu comme accès distant. Ajout d'un `--selftest`. Script : v1.2.0 → **v1.3.0**. |
 | v1.3.0 | **Incident P0 — secrets Zigbee2MQTT publiés.** Périmètre : `zigbee2mqtt/` **retiré des exclusions § 3.4** — répertoire de configuration porteuse de credentials, classé à tort « tiers » ; cette exclusion a produit un verdict `PASS` sur un mot de passe MQTT littéral et une clé réseau Zigbee versionnés. Nouveau contrôle **S9 — Clés réseau Zigbee** : `network_key` / `ext_pan_id` littéraux (bloc YAML ou inline) → `CRITICAL` ; `pan_id` littéral → `WARNING` ; formes admises : `GENERATE` et `'!secret x'`. Placeholders § 3.5 : ajout de `GENERATE` et de la forme **quotée** `'!secret x'` (syntaxe Zigbee2MQTT). S2 : liste blanche de ports appliquée au **port matché lui-même** (l'ancien lookahead ne neutralisait jamais `:1883`). CI : le workflow d'audit devient **bloquant** (`--fail-on critical`, plus de `continue-on-error`), précédé de `--selftest` et des contrats `check_publication_zigbee2mqtt_contracts.py`. Rapport : `audits/01_rapports/transverses/incident_p0_zigbee2mqtt_secrets_publies.md`. Script : v1.3.0 → **v1.4.0**. |
 | v1.4.0 | **C32 — dé-identification des prénoms enfants.** Nouveau contrôle **S7 — Prénoms enfants** (`arnaud` / `matthieu`), l'un des « noms propres nominatifs » listés en § 9. Après le chantier C32 (Chambre Arnaud → Chambre Enfants, Chambre Matthieu → Salle de Jeux ; suivi enfants fusionné), aucun prénom d'enfant ne doit revenir dans le **runtime** : détection `\b(arnaud\|matthieu)\b` → `CRITICAL` en fichier de runtime (verrou anti-retour), `WARNING` en documentation active (`.md`/`.txt` — mentions historiques « ex- » des contrats), **hors périmètre** pour l'historique gelé (`00_documentation_arsenal/changelog/`, `…/audits/`). En historique Git (`--history`) : `WARNING` — les prénoms passés subsistent, leur purge relève d'un `git filter-repo` (cf. S6). Script : v1.4.0 → **v1.5.0**. |
+| v1.5.0 | **C33 — dé-identification des adultes et frontière sujets/auteur.** S7 devient **« Dé-identification des personnes »** et distingue deux classes, selon la décision propriétaire **C33/D3–D4** — *les sujets du système sont dé-identifiés, l'auteur est assumé* : **sujets** (`arnaud`/`matthieu`/`constance`) sans aucune exclusion ; **auteur** (`antoine`/`valentin`) avec neutralisation préalable des usages légitimes (`nas_valentin*`, `linky_antoine*`, compte GitHub, fichier `LICENSE`), la neutralisation portant sur l'**occurrence** et non sur la ligne, afin qu'un usage illégitime voisin reste détecté. **Correction cardinale de détection** : `\b…\b` est **abandonné** au profit d'une **frontière de LETTRE** — l'underscore étant un caractère de mot, `telephone_arnaud_notify` ne comportait aucune frontière `\b` et **échappait au verrou** ; ce défaut a laissé passer **50 fichiers** au lot C33/L2b (rupture des notifications en production). La sous-chaîne nue est **également écartée** : `constance` est un nom commun français (« circonstance », « inconstance »). Périmètre : S7 se limite désormais aux fichiers **versionnés**, par la même doctrine que **S5a** (un fichier local non suivi ne sera pas publié). Autotests étendus aux trois régressions cardinales : prénom encapsulé, faux positif lexical, usage illégitime sur la même ligne qu'un usage légitime. Script : v1.5.0 → **v1.6.0**. |
 
 ---
 
@@ -307,22 +308,54 @@ pour ne pas dépendre de `EXCLUDED_DIRS`.
 
 ---
 
-### S7 — Prénoms enfants (dé-identification) · `CRITICAL` ou `WARNING`
+### S7 — Dé-identification des personnes · `CRITICAL` ou `WARNING`
 
-Implémenté en script v1.5.0 (chantier **C32** : dé-identification des prénoms enfants après le renommage
-Chambre Arnaud → Chambre Enfants / Chambre Matthieu → Salle de Jeux et la fusion du suivi enfants).
-Sous-ensemble **concret** des « noms propres nominatifs » de § 9. **Verrou anti-retour** : après C32, aucun
-prénom d'enfant ne doit revenir dans le **runtime**.
+Implémenté en script v1.5.0 (**C32** — prénoms enfants), **étendu en v1.6.0** (**C33** — prénoms adultes
+et frontière sujets/auteur). Sous-ensemble **concret** des « noms propres nominatifs » de § 9.
+**Verrou anti-retour** : aucun nom de personne du foyer ne doit revenir dans le **runtime**.
+
+#### Deux classes de noms — décision propriétaire C33/D3–D4
+
+> **Les sujets du système sont dé-identifiés ; l'auteur du système est assumé.**
+
+| Classe | Noms | Exclusions |
+|---|---|---|
+| **Sujets** — personnes du foyer désignées par le système, dont des mineurs | `arnaud`, `matthieu`, `constance` | **aucune** — ces chaînes n'ont aucune présence légitime |
+| **Auteur** — propriétaire du dépôt, déjà public par l'URL et le `LICENSE` (D4) | `antoine`, `valentin` | `nas_valentin*`, `linky_antoine*`, `antoinevalentin*` (compte GitHub), fichier `LICENSE` |
+
+Les occurrences légitimes du nom de l'auteur sont **neutralisées avant test**, afin qu'une occurrence
+illégitime présente **sur la même ligne** reste détectée.
+
+#### Sévérité contextuelle
 
 | Contexte du fichier | Verdict |
 |---|---|
 | **Runtime** (YAML de config, code) | `CRITICAL` — une régression de dé-identification bloque la publication |
-| **Documentation active** (`.md` / `.txt`) | `WARNING` — mentions historiques « ex- » des contrats, à accepter en revue |
-| **Historique gelé** (`00_documentation_arsenal/changelog/`, `…/audits/`) | hors périmètre — le record conserve légitimement les prénoms |
+| **Documentation active** (`.md` / `.txt`) | `WARNING` — à arbitrer en revue |
+| **Historique gelé** (`00_documentation_arsenal/changelog/`, `…/audits/`) | hors périmètre — le record conserve légitimement les noms |
+| **Fichier non versionné** | hors périmètre — il ne sera pas publié (même doctrine que **S5a**) |
 
-Détection : `\b(arnaud\|matthieu)\b` (insensible à la casse). En historique Git (`--history`) : `WARNING`
-— les prénoms passés subsistent dans l'historique ; leur purge relève d'un `git filter-repo` (cf. S6),
-arbitrage distinct. Le scanner **s'auto-exclut** (§ 3.3) : sa liste de prénoms ne se signale pas.
+#### Détection — frontière de LETTRE
+
+Le motif exige que le nom ne soit **ni précédé ni suivi d'une lettre** (`(?<![^\W\d_])…(?![^\W\d_])`,
+insensible à la casse). Ce choix est **normatif**, et les deux alternatives sont **explicitement
+écartées** :
+
+- **`\b…\b` (v1.5.0) — insuffisant.** L'underscore étant un caractère de mot, `telephone_arnaud_notify`
+  ne comporte **aucune** frontière `\b` autour du prénom : le motif ne matche pas. Ce défaut a
+  réellement laissé passer **50 fichiers** au chantier C33 (lot L2b — rupture des notifications en
+  production).
+- **Sous-chaîne nue — trop large.** `constance` est aussi un **nom commun français** : « cir*constance* »,
+  « in*constance* » produisent des faux positifs. La frontière de lettre les écarte tout en conservant
+  la détection de `_constance_`, `.constance`, `-constance`.
+
+> ⚠️ **Limite assumée.** `constance` restant un nom commun, un usage lexical légitime en documentation
+> active produira un `WARNING`. C'est le comportement voulu : la gradation réserve le `CRITICAL` au
+> **runtime**, où l'emploi du nom commun est implausible.
+
+En historique Git (`--history`) : `WARNING` — les noms passés subsistent dans l'historique ; leur purge
+relève d'un `git filter-repo` (cf. S6), **écartée par C33/D1**. Le scanner **s'auto-exclut** (§ 3.3) :
+sa liste de noms ne se signale pas.
 
 ---
 
@@ -435,7 +468,7 @@ Le code de retour `2` fait échouer le pipeline. Le code `1` peut être configur
 
 | Ref | Description | Statut |
 |---|---|---|
-| S7 | Prénoms enfants dé-identifiés (`arnaud` / `matthieu`) — verrou anti-retour ; sous-ensemble concret des « noms propres nominatifs » | **implémenté** (script v1.5.0, § 5/S7) |
+| S7 | Dé-identification des personnes (sujets `arnaud`/`matthieu`/`constance` ; auteur `antoine`/`valentin` hors usages légitimes) — verrou anti-retour ; sous-ensemble concret des « noms propres nominatifs » | **implémenté** (script v1.5.0, § 5/S7) |
 | S8 | Coordonnées GPS (`latitude`, `longitude`, zone `home`) | **implémenté** (script v1.2.0, § 5/S8) |
 | S9 | Clés réseau Zigbee (`network_key`, `ext_pan_id`, `pan_id`) | **implémenté** (script v1.4.0, § 5/S9) |
 | S10 | Intégration `pre-commit` hook local (ex-S9 de v1.1) | prévu |
