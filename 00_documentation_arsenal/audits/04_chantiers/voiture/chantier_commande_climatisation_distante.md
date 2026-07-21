@@ -4,12 +4,12 @@
 |---|---|
 | **Chantier** | Caractérisation terrain — et **éventuelle** commande — du **démarrage de la climatisation distante** de l'Audi via le service `audiconnect.start_climate_control`. |
 | **Domaine** | Voiture — Audi A3 Sportback e-tron PHEV, **API level 0**. |
-| **Statut** | **Ouvert — faisabilité fonctionnelle NON démontrée.** **Premier essai terrain consigné (E1, 2026-07-20)** : `fail_vehicle_timeout` **concordant sur les deux canaux** (HA + myAudi), en conditions favorables (véhicule branché, charge à l'objectif). **Ni succès terminal, ni refus fonctionnel** — la faisabilité reste **non tranchée**. Apport : le **motif est exposé par le backend et perdu par l'intégration** (`return code 'failed'` générique). Restent E1b, E2–E5 et **E6**. |
+| **Statut** | **Ouvert — faisabilité fonctionnelle DÉMONTRÉE (2026-07-21).** Après un premier essai en timeout (E1, 2026-07-20), la **reprise E1 du 2026-07-21** établit un **succès terminal** : `climatisation_state = cooling` (HA) **et** Climatiseur « Actif » (myAudi), avec **corroboration physique** (SoC 64 %→41 %, autonomie 21→12 km sur ~50 min), en **config minimale**. **Intermittence confirmée d'origine backend** : le même matin, un essai a de nouveau échoué en `fail_vehicle_timeout` (09:48) avant que la répétition n'aboutisse. Question centrale de E1 tranchée **OUI**. Restent E1b, E2–E5 et **E6** (périmètre / fin de cycle / refus). **La décision de suite (contrat, architecture, ou solution simple) est désormais ouverte.** |
 | **Priorité** | **P3** — confort ; conditionné à la preuve de faisabilité. |
 | **Intégration** | Intégration custom `audiconnect`, synchronisée sur la beta upstream officielle **`v2.2.1b1`**, avec authentification **device-code** fonctionnelle. |
 | **Service cible** | `audiconnect.start_climate_control` (S-PIN non requis). |
 | **Ouvert le** | 2026-07-17. |
-| **Prochain jalon** | Caractérisation terrain (protocole ci-dessous), **exécutée par l'opérateur**. |
+| **Prochain jalon** | **Cadrage contractuel** du franchissement de la frontière observationnelle (le contrat précède le runtime), en parallèle des essais résiduels E1b / E2–E5 / E6. |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C25 **ne vaut ni validation de faisabilité, ni décision de
 > contractualiser, ni décision d'implémenter.** Ce document est une **ouverture documentaire de
@@ -17,6 +17,13 @@
 > (preuve terrain). **L'architecture cible reste à déterminer en fonction des résultats terrain** —
 > une solution simple pourrait suffire, ou aucune implémentation ne serait justifiée. Aucun runtime,
 > contrat, helper, script, automation, dashboard ni checker n'est créé par ce chantier à ce stade.
+
+> **Mise à jour 2026-07-21 — portée de l'ouverture partiellement levée.** La **faisabilité fonctionnelle
+> est désormais démontrée** (reprise E1, cf. Statut et trace terrain §6 du protocole). Restent
+> **délibérément non décidés** : la **contractualisation** de la commande, l'**architecture cible** et
+> l'**implémentation**. Ces décisions relèvent des étapes suivantes de la feuille de route (**cadrage
+> contractuel → runtime → UI → clôture**), traitées **dans l'ordre**. Aucun runtime, contrat, helper,
+> script, automation, dashboard ni checker n'est créé par la présente mise à jour documentaire.
 
 ---
 
@@ -121,12 +128,18 @@ Faits établis par lecture du code local de l'intégration :
 
 ## 7. Stop point & prochaine étape
 
-Le prochain jalon est la **caractérisation terrain** décrite dans
-[`protocole_caracterisation_terrain_climatisation_distante.md`](protocole_caracterisation_terrain_climatisation_distante.md).
-Elle est **exécutée par l'opérateur**, qui fournit les résultats.
+La trace terrain n'est **plus vide** : la **reprise E1 du 2026-07-21** y consigne un **succès terminal**
+(cf. [`protocole_caracterisation_terrain_climatisation_distante.md`](protocole_caracterisation_terrain_climatisation_distante.md) §6).
+**La faisabilité fonctionnelle est démontrée**, ce qui **ouvre la décision de suite**.
 
-**C25 n'est pas clôturable, et aucune suite (contrat, architecture, implémentation, ou solution simple)
-n'est décidée, tant que la trace terrain du protocole est vide.**
+Le prochain jalon devient le **cadrage contractuel** du franchissement de la frontière observationnelle
+(« le contrat précède l'implémentation », cf. R6). Les essais résiduels — **E1b** (fin de cycle),
+**E2–E5** (options, dont E5 seulement *composé* à ce jour) et **E6** (refus sur état naturellement
+incompatible) — restent **exécutés par l'opérateur** et affinent le **périmètre réellement supporté**,
+sans bloquer l'ouverture du cadrage.
+
+**C25 n'est pas clôturable** tant que le périmètre supporté n'est pas arrêté et que la suite (contrat,
+architecture, implémentation, ou solution simple) n'est pas décidée puis, le cas échéant, livrée.
 
 ---
 
