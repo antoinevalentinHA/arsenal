@@ -2,7 +2,7 @@
 # 📛 Domaine : Ventilation mécanique contrôlée (VMC)
 # 🧠 Nature : Pilotage automatique contractuel
 #
-# Version : v2.0
+# Version : v2.1
 # Statut  : Cible contractuelle validée — implémentation à mettre en conformité
 #
 # Ce document définit EXHAUSTIVEMENT le comportement attendu
@@ -115,7 +115,7 @@ instantanées ne peut la produire.
 - instant de début ;
 - durée écoulée ;
 - valeur de pic ;
-- historique de mesures ;
+- **historique de mesures**, sauf sous la forme strictement encadrée du §2.2 bis ;
 - compteur ;
 - timer ;
 - dépendance à l'état physique de l'actionneur.
@@ -124,7 +124,69 @@ instantanées ne peut la produire.
 comme « décision sans mémoire », formulation inexacte. Il s'énonce :
 
 > **Décision sans mémoire d'épisode, avec état courant minimal nécessaire à
-> l'hystérésis.**
+> l'hystérésis et, le cas échéant, observation glissante bornée d'entrée
+> (§2.2 bis).**
+
+### 2.2 bis Observation glissante bornée — condition d'entrée uniquement
+
+> **Un besoin humidité peut utiliser une observation glissante récente, courte et
+> strictement bornée, exclusivement pour constater une évolution locale de la
+> mesure.**
+
+**Motif de cette autorisation.** Reconnaître un épisode local dont le niveau
+reste sous une frontière absolue élevée (§6.2) suppose de comparer la mesure
+courante à une mesure antérieure. Aucune fonction des seules valeurs
+instantanées ne peut le faire. Sans cette autorisation, l'obligation du §6.2
+serait inapplicable.
+
+#### Ce que cette observation est, et n'est pas
+
+Cette observation :
+
+- **n'est pas une mémoire d'épisode** ;
+- ne mémorise **ni instant de début, ni valeur de pic, ni durée d'épisode** ;
+- **n'est pas persistée au redémarrage** (§9.1 bis) ;
+- **ne participe pas** au **maintien** du besoin (§6.3) ;
+- **ne participe pas** à sa **libération** (§6.4) ;
+- sert **uniquement** comme **condition possible d'entrée** dans le besoin ;
+- **ne remplace pas** l'état booléen hystérétique par pièce (§2.3) ;
+- **ne doit pas devenir une seconde mémoire de maintien**.
+
+#### Frontière normative
+
+> Une observation glissante est **bornée** : elle porte sur une profondeur
+> temporelle fixe et courte, sans accumulation au-delà. Elle ne conserve aucune
+> caractéristique d'un épisode — seulement de quoi établir une évolution entre
+> une valeur de référence et la valeur courante.
+>
+> Dès lors qu'une grandeur dérivée de cette observation survit à l'entrée dans
+> le besoin, ou influence son maintien ou sa libération, **la frontière est
+> franchie** : il s'agit alors d'une mémoire d'épisode, prohibée.
+
+#### Quatre objets distincts
+
+Le contrat distingue, et interdit de confondre :
+
+| # | Objet | Nature |
+|---|---|---|
+| 1 | **État booléen du besoin**, par pièce | Persistant, hystérétique (§2.3, §9.1) |
+| 2 | **Critère dynamique d'entrée** | Dérivé de l'observation glissante ; **jamais** un état de besoin |
+| 3 | **Mesure courante** | Instantanée |
+| 4 | **Profondeur temporelle disponible** | Caractéristique de l'observation, **non une mesure métier** |
+
+> **Le critère dynamique ne devient jamais l'état du besoin.** Il peut l'ouvrir ;
+> il ne le porte pas.
+
+#### Absence de garantie de faisabilité
+
+Le présent article rend cette famille de solutions **contractuellement
+admissible**. Il **n'affirme pas** qu'elle soit calibrable avec l'instrumentation
+disponible.
+
+> Si aucune formule admissible ne s'avérait exploitable avec les mesures
+> réellement disponibles, **l'obligation du §6.2 devrait être réexaminée
+> explicitement**. Aucun seuil, aucune durée et aucun paramètre ne doit être
+> inventé pour éviter ce constat.
 
 ### 2.3 Localisation de l'état — granularité obligatoire
 
@@ -256,6 +318,35 @@ numérique de repli, ni produire silencieusement une libération.
   (§10.2) : un besoin maintenu faute de mesure ne doit pas être présenté comme un
   besoin observé.
 
+### 4.4 bis Profondeur temporelle insuffisante — situation distincte
+
+> **Une profondeur temporelle insuffisante n'est pas une mesure inexploitable.**
+> Les confondre est une non-conformité (§12.3).
+
+Trois situations doivent être distinguées et ne jamais être traitées de la même
+manière :
+
+| # | Situation | Nature | Effet |
+|---|---|---|---|
+| **A** | **Mesure métier indisponible** | La grandeur elle-même est inexploitable | §4.4 s'applique intégralement |
+| **B** | **Profondeur temporelle insuffisante** | La mesure est exploitable, mais l'observation glissante (§2.2 bis) n'a pas encore la profondeur requise | Le **critère dynamique** est **non calculable** ; le critère de niveau reste opérant |
+| **C** | **Critère calculable mais non satisfait** | Tout est disponible ; l'évolution n'atteint pas la frontière | Le besoin n'est simplement pas déclenché par cette voie |
+
+**Règles pour la situation B :**
+
+- le critère dynamique **ne peut pas créer** de besoin tant que la profondeur est
+  insuffisante ;
+- il **ne révoque jamais** un besoin déjà actif — le maintien et la libération ne
+  dépendent pas de lui (§2.2 bis) ;
+- le **critère de niveau**, s'il est satisfait, **reste immédiatement opérant** ;
+- l'état « non calculable faute de profondeur » doit être **explicable** (§10.2),
+  et **distinct** de « calculable mais non satisfait » ;
+- **aucune valeur inventée, aucun faux zéro, aucun repli silencieux** n'est
+  autorisé pour combler l'absence de profondeur.
+
+> Une profondeur insuffisante est une **incapacité temporaire à conclure sur une
+> voie d'entrée**, jamais une information sur le besoin.
+
 ### 4.5 Contrepartie explicitement assumée
 
 > **Une panne durable du capteur ayant établi un besoin peut maintenir la VMC en
@@ -345,6 +436,12 @@ Le besoin devient actif lorsque la pièce présente :
   agrégation ;
 - la frontière d'entrée est **configurable** ;
 - les conditions d'entrée doivent être **exposables** (§10.2).
+
+**Critère d'évolution.** Lorsqu'une évolution locale est retenue comme condition
+d'entrée, elle s'appuie sur l'observation glissante bornée du **§2.2 bis** et en
+respecte toutes les limites. Elle **ouvre** le besoin ; elle ne le maintient ni
+ne le libère (§6.3, §6.4). Si sa profondeur temporelle est insuffisante, le
+**§4.4 bis** s'applique.
 
 > **Paramètres ouverts §14.2.**
 
@@ -544,6 +641,26 @@ lecture inverse : l'état de l'actionneur ne peut alimenter la décision (§2.1,
 - aucune restauration ne concerne les niveaux d'agrégation, qui n'ont pas d'état
   (§2.4).
 
+#### 9.1 bis Observation glissante au redémarrage
+
+> **L'observation glissante du §2.2 bis n'est pas restaurée.** Elle repart vide.
+
+| Situation au redémarrage | Comportement |
+|---|---|
+| **Besoin restauré actif** | Conserve son état selon §9.1. Il reste gouverné par les règles de **maintien** (§6.3) et de **libération** (§6.4). **L'absence de profondeur ne le révoque pas** |
+| **Besoin inactif** | Le **critère dynamique ne peut pas l'activer** tant que la profondeur est insuffisante (§4.4 bis, situation B) |
+| **Critère de niveau satisfait** | Reste **immédiatement opérant**, indépendamment de la profondeur |
+
+**Invariants :**
+
+- le remplissage de l'observation **ne fait perdre aucun besoin restauré** ;
+- il **ne crée aucun faux besoin** ;
+- l'indisponibilité temporaire du critère dynamique est **exposable** (§10.2) et
+  ne se confond ni avec une mesure indisponible, ni avec un critère non satisfait
+  (§4.4 bis) ;
+- aucune valeur de remplissage n'est fabriquée pour accélérer la disponibilité du
+  critère.
+
 ### 9.2 Déterminisme
 
 À contexte identique — mesures courantes et états de besoins identiques — la
@@ -582,6 +699,26 @@ Le système doit pouvoir exposer, au niveau métier ou diagnostique approprié :
 | 8 | l'état d'**indisponibilité ou d'abstention**, distinct de l'état métier actif | par besoin |
 | 9 | la **composition globale** lorsque plusieurs besoins sont actifs | global |
 | 10 | la **situation de reconstruction** lorsqu'aucun état n'a pu être restauré (§9.1, cas 4) | par besoin |
+
+**Exigences propres à l'observation glissante** (§2.2 bis), lorsqu'un critère
+d'évolution est retenu. Le système doit pouvoir exposer ou rendre disponible au
+diagnostic :
+
+| # | Élément |
+|---|---|
+| 11 | **durée nominale** de la fenêtre |
+| 12 | **profondeur temporelle réellement disponible** |
+| 13 | **valeur courante** |
+| 14 | **valeur de référence** utilisée |
+| 15 | **évolution calculée**, si calculable |
+| 16 | **frontière d'évolution** configurée |
+| 17 | statut **calculable / non calculable** |
+| 18 | condition dynamique **satisfaite / non satisfaite** |
+| 19 | **raison de non-calculabilité**, le cas échéant |
+
+> L'affichage de l'historique brut en UI n'est **pas** exigé. Ce qui est exigé,
+> c'est que l'on puisse établir **pourquoi** le critère dynamique conclut, ou
+> pourquoi il ne peut pas conclure.
 
 La répartition entre niveau métier et niveau diagnostique relève de
 l'architecture et n'est pas fixée ici.
@@ -683,6 +820,16 @@ non une prédiction.
   granularité par pièce (§2.3) ;
 - un état détenu par un niveau d'agrégation (§2.4) ;
 - un besoin maintenu faute de mesure présenté comme un besoin observé (§10.2) ;
+- une observation glissante **persistée au redémarrage** (§9.1 bis) ;
+- une observation glissante participant au **maintien** ou à la **libération**
+  d'un besoin (§2.2 bis) ;
+- une grandeur dérivée de l'observation glissante **survivant à l'entrée** dans
+  le besoin (§2.2 bis) ;
+- une **profondeur temporelle insuffisante traitée comme une mesure
+  inexploitable**, ou l'inverse (§4.4 bis) ;
+- une **valeur fabriquée** pour combler une profondeur insuffisante (§4.4 bis) ;
+- un besoin **révoqué** au motif que le critère dynamique est devenu non
+  calculable (§9.1 bis) ;
 - un besoin subordonné à un critère relevant de O3 (§1.2, §4.3) ;
 - une durée d'exécution tenant lieu de condition de libération (§8.3) ;
 - une décision lisant l'état physique de l'actionneur (§2.1, §8.4) ;
@@ -811,9 +958,13 @@ Ne sont **pas** arrêtés :
 - la formule de reconnaissance du besoin ;
 - la hauteur de la frontière de niveau ;
 - les paramètres d'un éventuel critère d'évolution ;
+- la **durée nominale de l'observation glissante** (§2.2 bis) ;
+- la **frontière d'évolution** ;
+- la **profondeur minimale** requise pour juger le critère calculable ;
 - la combinaison entre niveau et évolution ;
 - la définition de « suffisamment assaini » ;
-- la largeur de la bande morte.
+- la largeur de la bande morte ;
+- le caractère **commun ou différencié par pièce** de ces paramètres.
 
 > **Interdiction explicite.** Les valeurs actuellement en vigueur dans
 > l'implémentation ne valent pas décision. Elles ne doivent pas être reconduites
@@ -866,6 +1017,6 @@ observé et cet ordre de grandeur devra être **expliqué avant clôture**. Un t
 
 # ==========================================================
 # FIN DU CONTRAT — VMC
-# Version v2.0 — cible contractuelle validée
+# Version v2.1 — cible contractuelle validée
 # Implémentation à mettre en conformité
 # ==========================================================
