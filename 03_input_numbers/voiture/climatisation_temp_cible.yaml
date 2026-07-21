@@ -31,4 +31,3 @@ audi_climatisation_temp_cible:
   unit_of_measurement: "°C"
   mode: slider
   icon: mdi:thermometer
-  initial: 21

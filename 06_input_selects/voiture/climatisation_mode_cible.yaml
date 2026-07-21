@@ -28,4 +28,3 @@ audi_climatisation_mode_cible:
   options:
     - comfort
     - economy
-  initial: comfort
