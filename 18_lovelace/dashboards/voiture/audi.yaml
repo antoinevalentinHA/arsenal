@@ -40,10 +40,11 @@ views:
               # ==========================================================
               # ❄️ SECTION : Commande climatisation distante
               # ----------------------------------------------------------
-              # Affordance MANUELLE (contrat voiture.md — COUCHE ACTION, A1).
-              # L'UI n'introduit aucune logique : réglages → bouton → script.
-              # Restitution honnête via input_select.audi_climatisation_commande_etat
-              # (l'UI observe l'état de commande, elle ne décide pas — INV-CMD-7).
+              # Affordance MANUELLE compacte (contrat voiture.md — COUCHE ACTION,
+              # A1) : un bouton qui déclenche, un état qui restitue. Aucune logique
+              # UI (INV-CMD-7 — l'UI observe, elle ne décide pas). Température et
+              # mode = défauts du script (21 °C / comfort) ; non exposés ici (le
+              # dashboard principal reste compact — pas un dashboard de réglages).
               # ==========================================================
               - type: custom:button-card
                 template: section_header
@@ -53,48 +54,26 @@ views:
                 columns: 2
                 square: false
                 cards:
-                  # 🌡️ Température cible (15–30 °C)
-                  - type: tile
-                    entity: input_number.audi_climatisation_temp_cible
-                    name: Température cible
-                    features_position: inline
-                    features:
-                      - type: numeric-input
-                        style: buttons
+                  # ▶️ Bouton d'action : lance le script (défauts 21 °C / comfort),
+                  #    confirmation obligatoire (commande physique du véhicule).
+                  - type: custom:button-card
+                    template: carte_action_standard
+                    name: Lancer la climatisation
+                    icon: mdi:air-conditioner
+                    variables:
+                      service: script.audi_climatisation_distante
+                      data: |
+                        [[[ return {}; ]]]
+                      confirmation: "❄️ Lancer la climatisation distante ?"
 
-                  # 🎚️ Mode (comfort prouvé / economy sous réserve E2)
-                  - type: tile
-                    entity: input_select.audi_climatisation_mode_cible
-                    name: Mode
-                    features_position: bottom
-                    features:
-                      - type: select-options
-
-              # ▶️ Bouton d'action : appelle le script avec les réglages ci-dessus.
-              #    Confirmation obligatoire (commande physique du véhicule).
-              - type: custom:button-card
-                template: carte_action_standard
-                name: Lancer la climatisation
-                icon: mdi:air-conditioner
-                variables:
-                  service: script.audi_climatisation_distante
-                  data: |
-                    [[[
-                      return {
-                        temp_c: Number(states['input_number.audi_climatisation_temp_cible'].state),
-                        climatisation_mode: states['input_select.audi_climatisation_mode_cible'].state
-                      };
-                    ]]]
-                  confirmation: "❄️ Lancer la climatisation distante ?"
-
-              # 🔎 État de la dernière commande (lecture seule, honnête)
-              - type: custom:button-card
-                template: audi_etat_info
-                entity: input_select.audi_climatisation_commande_etat
-                name: État commande
-                icon: mdi:car-connected
-                tap_action: none
-                hold_action: none
+                  # 🔎 État de la dernière commande (lecture seule, honnête)
+                  - type: custom:button-card
+                    template: audi_etat_info
+                    entity: input_select.audi_climatisation_commande_etat
+                    name: État commande
+                    icon: mdi:car-connected
+                    tap_action: none
+                    hold_action: none
 
               # ==========================================================
               # ⚡ SECTION : Batterie & Autonomie
