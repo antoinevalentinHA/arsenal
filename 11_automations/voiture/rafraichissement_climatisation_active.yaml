@@ -1,0 +1,45 @@
+# ==========================================================
+#  AUTOMATION : Voiture — Rafraîchissement pendant climatisation active
+#  ----------------------------------------------------------
+#  🧠 Rôle :
+#     Détecter PROMPTEMENT la fin naturelle de la climatisation.
+#     `climatisation_state` (état brut véhicule) ne se met à jour qu'au polling
+#     du coordinateur ; à la fin auto (hors commande), rien ne le rafraîchit et
+#     l'état reste périmé sur `cooling` → dashboard + notification faussement
+#     « actifs ». On force donc un refresh véhicule TANT QUE la clim est active,
+#     bornant la latence de détection de sa fin.
+#
+#  🧩 Périmètre :
+#     - Backstop de fraîcheur, borné à la fenêtre « clim active »
+#     - Ne pilote PAS le véhicule, ne décide RIEN, n'écrit aucun helper
+#
+#  ⚙️ Cadence : toutes les 5 min tant que clim active (≈ quelques appels par
+#     cycle). Consommateur : refresh_vehicle_data (ciblage portable).
+#
+#  🏷️ Domaine Voiture / Climatisation (support de INV-CMD-8)
+# ==========================================================
+
+- id: "10150000000007"
+  alias: Voiture - Rafraichissement pendant climatisation active
+  description: >
+    Force un refresh véhicule régulier tant que la climatisation est active, pour
+    détecter promptement sa fin naturelle (climatisation_state dépend du polling).
+  mode: single
+
+  trigger:
+    - platform: time_pattern
+      minutes: "/5"
+
+  condition:
+    - condition: state
+      entity_id: binary_sensor.audi_climatisation_active
+      state: "on"
+
+  action:
+    - variables:
+        vehicule: "{{ device_id('Audi A3 Sportback e-tron') }}"
+    - condition: template
+      value_template: "{{ vehicule | default('', true) | length > 0 }}"
+    - service: audiconnect.refresh_vehicle_data
+      data:
+        device_id: "{{ vehicule }}"
