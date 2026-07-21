@@ -870,8 +870,9 @@ chaine capable de lever :
 ```
 
 aucune valeur par defaut n'y est fournie. Les proxys energie du meme depot
-emploient au contraire `float(-1)` et `float(0)` de facon systematique : la
-convention existe dans Arsenal, et `etat.yaml` ne la suit pas.
+emploient au contraire `float(-1)` et `float(0)`. **Cette formulation est
+rectifiee au paragraphe 10.1** : le `float` nu derriere garde constitue une
+seconde convention du depot, que `etat.yaml` respecte.
 
 Classe de cause demontree : exception de rendu, et non propagation
 d'indisponibilite.
@@ -915,3 +916,132 @@ Les trois corrections vont dans le meme sens : le raisonnement statique a produi
 des conclusions plus affirmatives que les sources ne le permettaient. Cette
 regularite est elle-meme un resultat, et justifie de subordonner toute conclusion
 de comportement a une verification runtime lorsque celle-ci est possible.
+---
+
+## 10. Cloture de la vague 1
+
+### 10.1 Rectification du paragraphe 9.6
+
+Le paragraphe 9.6 affirmait que la convention `float(defaut)` existe dans Arsenal
+et que `etat.yaml` ne la suit pas. Cette affirmation est fausse et est retiree.
+
+Un inventaire cible du depot donne :
+
+| Motif | Occurrences |
+|---|---|
+| `\| float(defaut)` | 1307 |
+| `\| float` nu | 217 |
+
+Le motif nu n'est pas un ecart : il constitue une seconde convention, employee
+derriere une garde de validite explicite. Elle est documentee en toutes lettres
+dans `11_automations/chauffage/courbe_de_chauffe/auto_ajustement.yaml`, sous le
+titre VERROU DE DECISION, ou les predicats sont reproduits verbatim en `float`
+nu, precedes d'un court-circuit.
+
+`etat.yaml` releve de cette seconde convention. Son defaut n'est donc pas de
+l'ignorer, mais que sa garde `invalides` ne couvre pas la valeur qui declenche
+l'exception. La classe de cause etablie au 9.6 reste valide ; seule son
+imputation a un ecart de convention est retiree.
+
+Cette rectification est la septieme correction du raisonnement statique sur ce
+dossier, dans le meme sens que les six precedentes.
+
+### 10.2 Lecture contractuelle
+
+| Reference | Contenu etabli |
+|---|---|
+| `guard.md` G3 | La seule source de verite est `binary_sensor.deshumidificateur_actif` |
+| `guard.md` G7 | Source indisponible : verdict `command_error`, cloture immediate |
+| `guard.md` 9 | `last_observed_state` valeurs possibles : `on`, `off`, `unknown`, `unavailable` |
+| `deshumidificateur.md` | Doctrine d'ouverture : gouverner par observation, jamais par supposition |
+
+Le contrat declare donc explicitement l'indisponibilite comme valeur attendue de
+la source de verite, et lui reserve deux motifs normalises dans `last_reason`.
+
+Il en resulte une contradiction entre un fichier et le contrat de son domaine :
+l'en-tete de `etat.yaml` assume un repli sur OFF en cas d'indisponibilite, ce que
+la doctrine du domaine interdit. Cette contradiction est active, et non
+theorique.
+
+### 10.3 Consommateurs de la source de verite
+
+Quatorze consommateurs ont ete recenses. Quatre traitent deja explicitement
+`unknown` / `unavailable` :
+
+| Consommateur | Traitement existant |
+|---|---|
+| `10_scripts/deshumidificateur/guard_deshumidificateur.yaml` | deux branches G7 dediees |
+| `11_automations/deshumidificateur/reconciliation_demarrage.yaml` | garde `not in ['unknown','unavailable']` |
+| `10_scripts/deshumidificateur/forcer_etat.yaml` | `stop` sur source indisponible |
+| `19_button_card_templates/.../carte_deshumidificateur_etat_reel.yaml` | etat Inconnu et gris indisponibilite |
+
+La garde de `forcer_etat.yaml` avait ete qualifiee de morte dans un audit
+anterieur. Elle ne l'est pas : elle est inactive parce que la source ne remonte
+pas l'indisponibilite, et redeviendrait active si elle le faisait.
+
+Un point de vigilance a ete identifie : `blocage_redemarrage.yaml` declenche sur
+`from: 'on'` vers `to: 'off'`. Toute solution rendant la source franchement
+indisponible doit traiter ce declencheur, sous peine de manquer un arret reel
+survenant pendant une coupure de mesure.
+
+### 10.4 Mesure des faux arrets
+
+Interrogation en lecture seule du recorder, sequences `on` vers `off` vers `on`
+sur 30 jours.
+
+| Indicateur | Valeur |
+|---|---|
+| Sequences totales | 130 |
+| Duree mediane de l'arret | 10833 s, soit environ 3 h |
+| Arrets de moins de 60 s | 20 |
+| Arrets entre 60 s et 900 s | 0 |
+| Parmi les 20, coincidant avec une chute de la prise | 13 |
+
+La distribution est bimodale : aucun cas intermediaire entre 60 s et les cycles
+de plusieurs heures. La separation entre faux arrets et cycles physiques ne
+repose donc sur aucun seuil arbitraire. Une signature de 37 a 39 s se repete sur
+sept occurrences.
+
+Reserve : `sensor.prise_deshumidificateur_power` n'etant pas historise, la
+correlation a ete etablie avec le capteur d'energie de la meme prise. Le taux de
+13 sur 20 est un indicateur indirect. Les 7 cas restants ne sont pas expliques ;
+ils peuvent correspondre a de vraies chutes de puissance sous le seuil de 100 W.
+
+Effet operationnel : chaque faux arret declenche a tort `blocage_redemarrage` et
+`fermeture_cycle`, ce qui maintient l'appareil a l'arret plus longtemps que
+voulu. L'effet est de confort, non materiel.
+
+### 10.5 Decision d'orientation
+
+Deux branches ont ete instruites sans arbitrage prealable :
+
+- branche A, mise en conformite de `etat.yaml` par une `availability` explicite ;
+- branche B, ratification du repli sur OFF et amendement du contrat.
+
+**La branche B est retenue.** Elle conserve les 20 faux arrets mensuels comme
+comportement assume, et deplace l'effort du code vers le contrat.
+
+### 10.6 Lot restant
+
+| # | Contenu | Nature |
+|---|---|---|
+| 1 | `etat.yaml` : valeur par defaut au filtre `float` | code |
+| 2 | `guard.md` : G7 rendu inoperant, 9 ampute de deux valeurs et deux motifs | contrat |
+| 3 | `deshumidificateur.md` : exception ecrite a la doctrine d'observation | doctrine |
+| 4 | Sort du code rendu inerte, recense au 10.3 | arbitrage |
+| 5 | Checker interdisant un `float` nu non garde sur une source de verite | CI |
+
+Deux questions restent ouvertes et conditionnent le lot :
+
+- le code rendu inerte est-il supprime, ou conserve et documente comme neutralise
+  afin de preserver la reversibilite vers la branche A ;
+- les deux fichiers `criteres/humidite_absolue.yaml` et
+  `criteres/humidite_relative.yaml` presentent le meme motif aux memes lignes et
+  alimentent le decisionnel : leur exposition n'a pas ete verifiee.
+
+### 10.7 Etat de cloture
+
+La vague 1 est close en tant qu'audit. Aucune modification runtime n'a ete
+effectuee sur l'installation : ni redemarrage, ni rechargement, ni appel de
+service. Les vagues 2 a 4 et l'instrumentation probatoire de la VMC restent a
+ouvrir, cette derniere conditionnant tout redemarrage provoque.
