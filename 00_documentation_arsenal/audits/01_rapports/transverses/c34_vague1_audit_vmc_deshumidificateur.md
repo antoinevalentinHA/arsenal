@@ -596,13 +596,18 @@ l'attente, le `wait_template` rompant explicitement sur ces deux valeurs.
 Le guard est donc localement conforme a `guard.md`. Aucune violation ne lui est
 imputable.
 
-#### Neutralisation de G7 en composition
+#### Neutralisation de G7 en composition - RETIRE, voir 9.2
 
 `12_template_sensors/deshumidificateur/etat.yaml` transforme en amont
 l'indisponibilite physique de la prise en `false`. En regime etabli, la situation
 prevue par G7 n'atteint donc jamais le guard : l'invariant est structurellement
 neutralise par la composition de la chaine, sans qu'aucun de ses deux maillons ne
 soit individuellement en faute.
+
+> **Conclusion retiree.** Cette affirmation est contredite par les preuves runtime
+> consignees au paragraphe 9.3 : `binary_sensor.deshumidificateur_actif` atteint un
+> etat non qualifiable 105 fois sur 30 jours, dont 68 en transition hors de tout
+> redemarrage. G7 n'est pas neutralise, il est regulierement franchi. Voir 9.2.
 
 #### Lacune contractuelle demontree
 
@@ -773,3 +778,140 @@ les trois evenements et posait correctement que l'absence de declencheur dedie n
 vaut pas preuve d'absence d'effet. Il y ajoute une seule regle : aucune conclusion
 etablie pour un evenement ne peut etre transposee a un autre, meme lorsque le
 mecanisme sous-jacent parait identique.
+
+---
+## 9. Rectification runtime
+
+### 9.1 Origine de la rectification
+
+Les sections 1 a 8 reposent exclusivement sur la lecture statique des sources.
+Une fois l'acces aux preuves runtime ouvert, l'interrogation de la base du
+recorder a produit des observations qui contredisent une conclusion du
+contre-audit. La presente section rectifie ce point. Les sections anterieures
+sont conservees inchangees, hormis un marquage de renvoi.
+
+### 9.2 Conclusion retiree : la neutralisation structurelle de G7
+
+Le paragraphe 8.4 affirmait que l'invariant G7 etait structurellement neutralise
+par la composition de la chaine, la situation prevue par G7 n'atteignant jamais
+le guard en regime etabli.
+
+Cette affirmation est retiree. Elle est contredite par l'observation directe.
+
+### 9.3 Preuves runtime : 105 occurrences sur 30 jours
+
+Interrogation en lecture seule de la base du recorder, sur
+`binary_sensor.deshumidificateur_actif`, couverture du 2026-06-21 au 2026-07-21.
+
+| Etat observe | Occurrences | Nature |
+|---|---|---|
+| `unknown` | 37 | exclusivement a la creation de l'entite, aucune transition |
+| `unavailable` | 68 | exclusivement en transition, aucune creation |
+| Total | 105 | |
+
+Caracterisation des 68 episodes `unavailable` : duree mediane 2,2 s, bornes
+1,2 s et 5,0 s, aucun episode au-dela de 5 s, aucun en dessous de 1 s. Repartis
+sur la plage 9 h - 0 h, aucun entre 1 h et 8 h. Tous clos par un retour a `on`
+ou `off`.
+
+Ces durees excluent la panne d'integration et la perte reseau, qui produisent
+des episodes longs et de duree variable.
+
+### 9.4 L'indisponibilite de la prise ne se propage pas
+
+Un point du contre-audit est au contraire confirme par la meme interrogation.
+
+| Entite | Occurrences NA | Coincidence avec le binary_sensor a 10 s pres |
+|---|---|---|
+| `sensor.prise_deshumidificateur_energy` | 203 | 37 sur 105 |
+| `sensor.deshumidificateur_energy_proxy` | 105 | 105 sur 105 |
+
+La prise chute 203 fois. Hors des 37 coincidences, qui correspondent exactement
+aux creations d'entite donc aux redemarrages, ces chutes n'entrainent jamais le
+binary_sensor. La conversion de l'indisponibilite en `false` par `etat.yaml`
+opere donc reellement.
+
+La coincidence avec le proxy energie est en revanche totale, alors que les deux
+entites resident dans des fichiers distincts, consomment des sources distinctes
+et suivent des conceptions opposees, le proxy declarant une `availability`
+explicite que `etat.yaml` ne possede pas.
+
+### 9.5 Rendu logique et etat effectif de l'entite
+
+Le contre-audit affirmait que `etat.yaml` ne peut produire que `true` ou `false`.
+Cette affirmation est exacte pour le rendu du template, et fausse pour l'etat de
+l'entite. Les deux notions doivent etre distinguees.
+
+- Rendu logique : le corps de `state:` ne peut evaluer que vers `true` ou
+  `false`, la garde `invalides` interceptant `unknown`, `unavailable`, `none` et
+  la chaine vide.
+- Etat effectif : si le rendu leve une exception, il n'y a pas de valeur rendue.
+  Home Assistant place alors l'entite en `unavailable`, quel que soit ce que le
+  corps du template aurait produit en cas de succes.
+
+Raisonner sur le seul rendu logique conduit donc a conclure a tort qu'une entite
+sans `availability` ne peut jamais etre indisponible.
+
+### 9.6 Classe de cause demontree
+
+Le comportement du filtre `float` sans valeur par defaut a ete verifie
+directement dans l'editeur de modeles :
+
+```
+ValueError: Template error: float got invalid input 'unavailable'
+when rendering template ... but no default was specified
+```
+
+Le filtre leve une exception. Or `etat.yaml` contient la seule expression de la
+chaine capable de lever :
+
+```jinja
+{{ (p_raw | float) > 100 }}
+```
+
+aucune valeur par defaut n'y est fournie. Les proxys energie du meme depot
+emploient au contraire `float(-1)` et `float(0)` de facon systematique : la
+convention existe dans Arsenal, et `etat.yaml` ne la suit pas.
+
+Classe de cause demontree : exception de rendu, et non propagation
+d'indisponibilite.
+
+### 9.7 Ce qui reste indetermine
+
+La valeur d'entree exacte qui declenche l'exception n'est pas etablie. Les quatre
+valeurs interceptees par la garde `invalides` ne peuvent pas atteindre le filtre.
+La valeur fautive est donc autre chose, et deux obstacles interdisent de
+l'observer :
+
+- `sensor.prise_deshumidificateur_power` n'est pas dans l'allowlist du recorder,
+  son historique n'existe pas ;
+- aucun `home-assistant.log` vivant n'est present dans `/config`, seul subsiste un
+  `home-assistant.log.fault` anterieur a la periode etudiee.
+
+Aucune hypothese de valeur n'est retenue ici. Le correctif eventuel releve d'un
+chantier distinct et ne doit pas etre traite dans le present rapport.
+
+### 9.8 Statut consolide de G7
+
+| Enonce | Statut |
+|---|---|
+| Le guard implemente G7 fidelement sur son entree contractuelle | Confirme |
+| Aucun contrat n'impose a `etat.yaml` de propager l'indisponibilite | Confirme |
+| `command_error` est reellement et regulierement atteignable | Etabli par 105 occurrences sur 30 jours |
+| G7 est structurellement neutralise en composition | Retire |
+| La cause des indisponibilites est identifiee | Classe de cause seulement |
+
+### 9.9 Troisieme correction du raisonnement statique
+
+La qualification de la garde du deshumidificateur a ete corrigee trois fois.
+
+| Passe | Enonce | Correction |
+|---|---|---|
+| Audit initial | Garde inoperante, defaut d'implementation | Requalifie en ecart contractuel au 4 quater |
+| Contre-audit | Ecart contractuel demontre sur G7 | Reduit en lacune contractuelle et neutralisation en composition au 8.4 |
+| Rectification runtime | G7 structurellement neutralise | Retire : G7 est franchi 105 fois en 30 jours |
+
+Les trois corrections vont dans le meme sens : le raisonnement statique a produit
+des conclusions plus affirmatives que les sources ne le permettaient. Cette
+regularite est elle-meme un resultat, et justifie de subordonner toute conclusion
+de comportement a une verification runtime lorsque celle-ci est possible.
