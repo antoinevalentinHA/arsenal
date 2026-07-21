@@ -473,12 +473,15 @@ l'intégration (arrêt, charge, préchauffage, chauffage vitrage…) reste **hor
 7. **INV-CMD-7 — UI : affordance, jamais décision.** Une éventuelle commande depuis un dashboard est une
    **affordance manuelle légitime** (doctrine `commandabilite.md` §6.2). Les invariants des Couches 5 et
    6 restent entiers : **l'UI n'introduit aucune logique métier et ne décide jamais**.
-8. **INV-CMD-8 — Restitution non figée.** L'état de commande restitué **ne fige jamais un état périmé** :
-   il est **refermé** (→ « Au repos ») dès que `climatisation_state` **repasse inactif**. La vérité unique
-   « clim active » est portée par `binary_sensor.audi_climatisation_active` (couche observation, dérivée
-   de l'état brut véhicule), et une **notification persistante** matérialise cet état — **créée** tant que
-   la climatisation est active, **dismissée** dès qu'elle s'arrête (patron « matérialisation d'état » de la
-   Couche 3, sans logique métier).
+8. **INV-CMD-8 — Restitution non figée, auto-expirante.** L'état de commande restitué **ne fige jamais un
+   état périmé**. La vérité « clim active » est **auto-expirante** : `binary_sensor.audi_climatisation_active`
+   = état brut cloud (`…_brut`) **ET** avant l'**échéance de fin prévue** (= début + `remaining_climatisation_time`,
+   mémorisée dans `input_datetime.audi_climatisation_fin_prevue`). Elle retombe donc **d'elle-même** à
+   l'échéance, **sans dépendre d'une remontée cloud** — qui peut être en retard, voire **gelée** si le
+   climater se verrouille (403/404 → `support_climater=False`) ; le cloud reste en **confirmation** (arrêt
+   anticipé réel). À ce retour à l'inactif : l'état de commande est **refermé** (→ « Au repos ») et la
+   **notification persistante** (créée tant qu'actif) est **dismissée** — patron « matérialisation d'état »
+   de la Couche 3, sans logique métier.
 
 ### 🚫 Hors périmètre de l'amendement A1
 

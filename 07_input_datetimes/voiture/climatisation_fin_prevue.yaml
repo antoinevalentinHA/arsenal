@@ -1,0 +1,29 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Audi — Fin prévue de la climatisation
+# ----------------------------------------------------------
+# 🎯 Rôle
+#     Mémoriser l'heure de fin PRÉVUE de la climatisation stationnaire,
+#     calculée au démarrage = maintenant + remaining_climatisation_time.
+#     Sert de SOURCE DE VÉRITÉ à l'auto-expiration : le binary_sensor retombe
+#     de lui-même à cette échéance, sans dépendre d'une remontée cloud (qui peut
+#     être en retard, voire gelée si le climater est verrouillé sur 403/404).
+#
+# 🧩 Périmètre
+#     - Écrit UNIQUEMENT par l'automation de capture (10150000000007)
+#       au front montant de binary_sensor.audi_climatisation_active_brut
+#     - Le cloud reste en simple confirmation (arrêt anticipé réel)
+#
+# 🚫 Interdits
+#     - Aucune modification manuelle
+#     - Ne pilote rien, ne décide rien
+#
+# 🧠 Statut
+#     Référence temporelle — support de INV-CMD-8 (restitution non figée)
+# ==========================================================
+
+audi_climatisation_fin_prevue:
+  name: "Audi - fin prevue climatisation"
+  has_date: true
+  has_time: true
+  icon: mdi:timer-sand
