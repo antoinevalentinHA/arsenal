@@ -262,6 +262,21 @@ Vérification directe du code de l'intégration (le dépôt fait foi) :
    (`remaining_climatisation_time`). C'est l'essai **E6** du protocole, à moitié réalisé involontairement
    lors du premier test raté — à refaire en notant l'état avant/après.
 
+### Validation end-to-end du runtime — NOMINALE (2026-07-21, ~15:54)
+
+Premier déclenchement via la **surface Arsenal** (bouton « Lancer la climatisation » du dashboard →
+`script.audi_climatisation_distante`, après le correctif `temp_c`/mode) : **`input_select.audi_climatisation_commande_etat`
+= « Confirmée »**. Ce verdict n'est **jamais** posé sur l'absence d'erreur — le script ne l'écrit
+qu'après avoir **observé** `climatisation_state` basculer vers un état actif dans la fenêtre. La **chaîne
+complète bouton → commande → observation honnête est donc validée en conditions réelles** (véhicule
+branché, 30 % / 3 km, dernière MAJ 15:54).
+
+**Non capturés** (l'opérateur a lancé la commande réelle, non l'outil d'observation) : la **valeur
+littérale** de `climatisation_state` (l'un de `cooling` / `heating` / `ventilation`) et la **latence**
+exacte (< fenêtre ~3 min). **Reste surtout E6** (échec véhicule non branché), seul essai capable de
+confirmer qu'un échec ne produit **pas** un faux « Confirmée » — l'outil d'observation
+`script.audi_climatisation_observation` est **conservé** pour le réaliser.
+
 ---
 
 ## 7. Décision différée
