@@ -627,6 +627,28 @@ blocage. Éphémérides du soir, qui établissent que le critère reste tenable 
 **06:00 → 06:36**. Les trois périodes manquantes sont toutes traversées avant le matin du
 2026-07-21. **Aucun correctif, critère de clôture L6c inchangé.**
 
+**Relevé de clôture (2026-07-21, 14:29:50, `periode_meteo = jour`) — critère SATISFAIT, L6c SOLDÉ :**
+
+| Pièce | Filtres | Moyennes | KO (`unknown`/`unavailable`) |
+|---|---|---|---|
+| `chambre_enfants` | 30 | 19 | **0** |
+| `salle_de_jeux` | 30 | 19 | **0** |
+| `chambre_parents` *(témoin)* | 30 | 19 | 0 |
+
+Vérification élargie au même relevé : **0 KO sur l'intégralité des capteurs des trois pièces**
+(89 / 89 / 98 entités `sensor.*`), soit un sur-ensemble strict du critère.
+
+Trajectoire complète : **32** KO (20/07 09:42) → **20** (20/07 17:10) → **20** (20/07 20:37,
+`crepuscule` non encore atteinte) → **0** (21/07 14:29). Les 20 derniers se sont résorbés au passage de
+`crepuscule` (≈ 21:08 → 22:17), `nuit` (≈ 22:17 → 06:00) et `aube` (06:00 → 06:36) dans la nuit du 20 au
+21, **exactement la séquence prévue au constat du 2026-07-20**.
+
+**La prévision est vérifiée sur les deux volets** : le défaut était bien transitoire et auto-réparable, et
+la décision de ne pas corriger était bonne — aucun correctif n'a été appliqué, la résorption s'est faite
+seule par auto-réamorçage de la branche mémoire à chaque passage de période. **La note structurelle
+ci-dessus (fenêtre aveugle de ≤ 24 h à tout futur renommage de `unique_id`) reste valable** et demeure à
+intégrer au cadrage de tout prochain chantier de nommage.
+
 ### Lot 9 — validation terrain (partiel, 2026-07-20)
 
 Audit fonctionnel post-migration en lecture seule (17:05–17:25). **Ne solde pas L9** : il en constitue la
@@ -653,7 +675,8 @@ première passe.
 
 **Reste à établir :**
 
-- **L6c** — 20 filtres encore `unknown`, résorption attendue le 2026-07-21 au matin.
+- ~~**L6c** — 20 filtres encore `unknown`, résorption attendue le 2026-07-21 au matin.~~ **✅ SOLDÉ le
+  2026-07-21** — 0 KO sur les deux pièces (relevé 14:29:50, cf. Lot 6c).
 - **Remédiation Netatmo** — la cible est correcte depuis le solde de L6, mais l'automatisation n'a **pas
   été exercée** depuis la migration. Non observable sans couper une prise.
 - **Babyphone** — `last_triggered` nul, jamais déclenchée. Non observable sans provoquer une alerte
