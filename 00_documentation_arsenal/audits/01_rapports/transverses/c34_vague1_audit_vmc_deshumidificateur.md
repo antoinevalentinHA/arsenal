@@ -517,3 +517,259 @@ conduire le **contre-audit** prévu par C34. Le défaut du §4.2 devra être con
 contrats `contrats/deshumidificateur/` avant toute orientation corrective.
 
 ---
+
+## 8. Contre-audit de la vague 1
+
+### 8.1 Perimetre et methode
+
+Ce contre-audit porte sur les conclusions des sections 1 a 7 du present rapport,
+telles que mergees en PR1. Il ne rejoue pas la cartographie : il attaque les
+conclusions sensibles, cherche les contre-exemples, et produit la version
+consolidee.
+
+Methode : recherche exhaustive des ecrivains de `switch.deshumidificateur`,
+`switch.vmc_l1` et `switch.vmc_l2` sur la totalite de l'arborescence de
+configuration (YAML et `.storage`), et non plus sur le seul corpus metier ;
+lecture integrale des fichiers decisifs ; confrontation des invariants
+contractuels a la chaine reellement composee.
+
+Limite constitutive : aucun redemarrage, aucun rechargement et aucun appel de
+service n'a ete provoque. Tout point dont la causalite exige une de ces actions
+est classe indeterminable, et non plausible.
+
+### 8.2 Conclusions confirmees
+
+- `12_template_sensors/vmc/coherence.yaml` ne declare pas d'`availability` : les
+  deux relais indisponibles produisent `false and false`, soit un etat `off`
+  interprete comme coherence satisfaite alors qu'aucune mesure n'a eu lieu.
+- L'asymetrie avec `12_template_sensors/vmc/conformite_decision.yaml` est reelle :
+  ce dernier declare une `availability` qui exige `l1` et `l2` dans `['on','off']`.
+  Deux capteurs du meme domaine traitent donc l'indisponibilite de facon opposee.
+- `10_scripts/vmc/basse_vitesse.yaml` et `10_scripts/vmc/haute_vitesse.yaml`
+  s'abstiennent explicitement (`sequence: []`) lorsque l'un des relais est
+  `unavailable` ou `unknown`.
+- `12_template_sensors/deshumidificateur/etat.yaml` convertit l'indisponibilite de
+  la prise en `false`.
+
+### 8.3 Conclusions refutees
+
+Deux affirmations de la PR1 sont refutees ou reduites par le present contre-audit.
+Elles sont conservees ici en tant qu'historique, et non effacees.
+
+#### Refutation 1 : l'auteur unique
+
+La PR1 affirmait que chaque domaine possedait un auteur unique de la commande
+physique. Cette affirmation reposait sur une recherche limitee au corpus metier.
+Elargie a l'ensemble de l'arborescence, elle est fausse.
+
+Deux ecrivains supplementaires existent :
+
+- `10_scripts/system/transactions_bots.yaml` construit `entity: switch.deshumidificateur`
+  lorsque `target_bot == 'deshumidificateur'`, puis emet en phase 2 un
+  `switch.turn_on` ou un `switch.turn_off` sur cette entite.
+- `18_lovelace/dashboards/vmc/diagnostic.yaml` expose deux `custom:button-card`
+  heritant de `socle_toggle_confirme_indispo`, lies a `switch.vmc_l1` et
+  `switch.vmc_l2`, dont le `tap_action` est un `toggle` reel.
+
+La formulation correcte n'est donc pas auteur unique, mais auteur automatique
+unique par domaine dans les scenarios etudies. Voir la taxinomie en 8.5.
+
+#### Refutation 2 : l'ecart contractuel G7
+
+La PR1 qualifiait la situation du deshumidificateur d'ecart contractuel demontre
+sur l'invariant G7. Cette qualification est trop forte et est reduite en 8.4.
+
+### 8.4 Conclusions requalifiees : G7 et command_error
+
+La requalification procede en trois temps distincts, a ne pas confondre.
+
+#### Conformite locale du guard
+
+`10_scripts/deshumidificateur/guard_deshumidificateur.yaml` declare en en-tete
+lire exclusivement `binary_sensor.deshumidificateur_actif` et ne jamais lire
+`switch.deshumidificateur` comme preuve. Sur cette entree contractuelle, il
+implemente G7 fidelement : verdict `command_error` avec raison
+`unavailable_at_open` si l'etat observe a l'ouverture vaut `unknown` ou
+`unavailable`, et `unavailable_during_wait` si l'indisponibilite survient pendant
+l'attente, le `wait_template` rompant explicitement sur ces deux valeurs.
+
+Le guard est donc localement conforme a `guard.md`. Aucune violation ne lui est
+imputable.
+
+#### Neutralisation de G7 en composition
+
+`12_template_sensors/deshumidificateur/etat.yaml` transforme en amont
+l'indisponibilite physique de la prise en `false`. En regime etabli, la situation
+prevue par G7 n'atteint donc jamais le guard : l'invariant est structurellement
+neutralise par la composition de la chaine, sans qu'aucun de ses deux maillons ne
+soit individuellement en faute.
+
+#### Lacune contractuelle demontree
+
+La recherche d'un contrat imposant la conservation de `unknown` / `unavailable`
+en amont du guard n'a produit aucune clause applicable. La seule clause voisine,
+`contrats/deshumidificateur/deshumidificateur.md` ligne 136, prescrit la
+conservation de l'etat courant en cas d'indisponibilite d'un critere : elle porte
+sur les criteres de decision, non sur la source de verite.
+
+Verdict : lacune contractuelle demontree. Aucun contrat n'assigne a `etat.yaml`
+la responsabilite de propager l'indisponibilite. Il ne s'agit donc pas d'un ecart
+a `guard.md`, contrairement a ce qu'affirmait la PR1.
+
+#### Couverture partielle de command_error
+
+`command_error` n'est pas inatteignable. Un capteur template sans valeur calculee
+expose `unknown` avant sa premiere evaluation. La branche `unavailable_at_open`
+reste donc atteignable dans cette fenetre, notamment au demarrage et lors d'un
+rechargement des templates.
+
+Verdict : couverture partielle de G7, et non inatteignabilite absolue.
+Atteignable en fenetre transitoire ; inatteignable en regime etabli pour le
+scenario que G7 vise reellement, a savoir l'indisponibilite physique de la prise.
+L'etendue exacte de cette fenetre n'a pas ete mesuree, faute de pouvoir provoquer
+un demarrage.
+
+### 8.5 Taxinomie des writers
+
+La notion d'auteur unique employee en PR1 confondait trois natures d'ecrivains.
+Elles sont ici separees.
+
+#### Writers automatiques
+
+Ecrivains susceptibles d'emettre une commande sans intention utilisateur, sur
+declencheur. Pour les deux domaines, ce sont les automatisations et scripts
+metier deja cartographies en sections 4 et 7.
+
+Conclusion confirmee : aucun d'eux ne produit d'action physique automatique au
+demarrage. Les scripts VMC s'abstiennent explicitement sur relais indisponibles,
+et la chaine deshumidificateur ne comporte pas d'emission declenchee par le seul
+demarrage.
+
+#### Writers manuels
+
+Ecrivains exigeant une intention utilisateur explicite.
+
+`18_lovelace/dashboards/vmc/diagnostic.yaml` expose deux boutons lies a
+`switch.vmc_l1` et `switch.vmc_l2`. Le socle `socle_toggle_confirme_indispo`
+porte un `tap_action` de type `toggle` : la commande est reelle, et elle
+contourne les scripts VMC et leurs gardes d'abstention.
+
+Deux limitations sont toutefois etablies par lecture du socle :
+
+- une confirmation modale est obligatoire avant bascule ;
+- le bloc `state` applique `pointer-events: none` des que l'entite vaut
+  `unknown`, `unavailable` ou `none`.
+
+Verdict final sur les commandes manuelles VMC : chemin de commande manuel
+demontre, mais fonctionnellement neutralise pendant la fenetre transitoire
+d'indisponibilite. Ce writer ne peut donc pas agir dans la phase que la vague 1
+etudie. Il ne constitue en aucun cas un writer automatique au demarrage.
+
+#### Writers transactionnels
+
+`10_scripts/system/transactions_bots.yaml` constitue une categorie propre.
+
+Chaine etablie par lecture integrale du fichier :
+
+- phase 0 : `entity` resolue en `switch.deshumidificateur` lorsque
+  `target_bot == 'deshumidificateur'`, avec `proof_level: B` ;
+- garde d'autorisation fonctionnelle : `action not in ['turn_on', 'turn_off']`
+  pour le niveau B produit `rejected_precondition` / `invalid_action` ;
+- phase 2 : emission d'un `switch.turn_on` ou `switch.turn_off` sur `{{ entity }}`.
+  Aucune branche `switch.toggle` n'existe.
+
+Le lock et le cooldown produisent `rejected_busy` et `rejected_cooldown` : ils
+limitent l'execution, ils ne constituent pas l'autorisation fonctionnelle, qui
+releve de la matrice `proof_level` / `action`.
+
+Recherche des appelants sur l'ensemble de l'arborescence, YAML et `.storage` :
+aucune invocation. Les seules autres occurrences sont la definition elle-meme et
+deux commentaires d'en-tete dans les helpers de verrou. Le script est par ailleurs
+depourvu de declencheur, comme tout script.
+
+Verdict final sur `transactions_bots.yaml` : writer supplementaire demontre, la
+chaine etant suivie jusqu'a un service de commutation visant effectivement
+`switch.deshumidificateur` ; mais non instrumente, faute d'appelant. Il ne peut
+etre emprunte que par instruction externe explicite. Il ne peut pas s'activer
+seul au demarrage ni lors d'un rechargement.
+
+### 8.6 Points indeterminables
+
+Les points suivants etaient qualifies de plausibles en PR1. Aucun ne peut etre
+etabli sans provoquer un redemarrage ou un rechargement, ce que le cadre de la
+vague 1 interdit. Ils sont donc requalifies en indeterminables, et non conserves
+comme risques par prudence rhetorique.
+
+- Rejeu de commande a partir d'un `input_text` restaure. Le comportement de
+  restauration effectif n'a pas ete observe.
+- Timers observes a l'etat `idle`. L'etat constate ne renseigne pas sur la
+  trajectoire suivie lors d'un demarrage.
+- Fenetre aveugle de l'auto-reference du deshumidificateur. Son existence decoule
+  de la lecture du code, sa duree et ses effets non.
+- Contournement de `input_boolean.systeme_stable` par la branche
+  `trigger.platform == 'homeassistant'` de `11_automations/vmc/gestion_auto.yaml`.
+  Le contournement est ecrit et lisible ; ses consequences runtime ne le sont pas.
+
+Ces quatre points restent des objets de chantier valides. Ils ne sont pas des
+constats.
+
+### 8.7 Separation reboot, reload YAML, reload d'integration
+
+La PR1 traitait ces trois scenarios de facon insuffisamment separee. Le
+contre-audit impose la distinction suivante.
+
+- Redemarrage complet. Recreation de toutes les entites, phase transitoire
+  d'indisponibilite, puis recalcul. C'est le seul scenario pour lequel la vague 1
+  produit des conclusions positives, et uniquement par lecture statique.
+- Rechargement YAML. Recreation des seules entites du domaine recharge. Les
+  entites d'integration ne sont pas recreees. L'absence de declencheur dedie ne
+  vaut pas preuve d'absence d'effet : ce point n'a pas ete instruit.
+- Rechargement d'integration. Recreation des entites portees par l'integration,
+  sans recreation des entites template qui les consomment. La combinaison des deux
+  n'a pas ete cartographiee.
+
+Aucune conclusion de la vague 1 ne doit etre transposee d'un scenario a l'autre.
+
+### 8.8 Consequences sur l'orientation des chantiers
+
+- L'absence d'`availability` sur `12_template_sensors/vmc/coherence.yaml` reste le
+  constat le plus solide de la vague 1, et le seul directement actionnable.
+- La lacune contractuelle etablie en 8.4 releve d'une decision de doctrine sur la
+  responsabilite de propagation de l'indisponibilite dans une chaine composee.
+  Elle ne se corrige pas par un correctif local.
+- La taxinomie des writers etablie en 8.5 doit etre etendue aux cinq domaines
+  restants avant toute conclusion transverse sur la commandabilite.
+- Les vagues suivantes doivent traiter separement les trois scenarios de 8.7.
+
+### 8.9 Incoherences internes levees et lignes remplacees
+
+#### Contradiction entre le paragraphe 4 quater et le paragraphe 6
+
+Le rapport se contredisait. Le paragraphe 4 quater qualifiait la garde inoperante
+d'ecart contractuel demontre. Le paragraphe 6 constatait au contraire que les
+trois contrats du domaine n'avaient pas ete lus, et que le defaut du paragraphe
+4.2 etait donc decrit, non qualifie en ecart contractuel.
+
+Les contrats ayant desormais ete lus, la contradiction est levee en faveur de la
+prudence du paragraphe 6, et non de l'affirmation du paragraphe 4 quater. La
+qualification retenue est celle du paragraphe 8.4 : conformite locale du guard,
+neutralisation de G7 en composition, lacune contractuelle demontree.
+
+#### Lignes du paragraphe 4 quater remplacees
+
+Le tableau des corrections successives du paragraphe 4 quater est conserve tel
+quel a titre d'historique. Deux de ses lignes sont remplacees par le present
+contre-audit et ne doivent plus etre citees comme conclusions :
+
+| Ligne du 4 quater | Statut apres contre-audit | Renvoi |
+|---|---|---|
+| Passe 2 vers 3 : unicite de l'auteur etablie | Refutee. Deux ecrivains supplementaires demontres | 8.3 et 8.5 |
+| Passe 3 vers 4 : ecart contractuel demontre sur G7 | Reduite. Lacune contractuelle, sans ecart a `guard.md` | 8.4 |
+
+#### Articulation avec le paragraphe 4 quinquies
+
+Le paragraphe 8.7 ne remplace pas le paragraphe 4 quinquies, qui distinguait deja
+les trois evenements et posait correctement que l'absence de declencheur dedie ne
+vaut pas preuve d'absence d'effet. Il y ajoute une seule regle : aucune conclusion
+etablie pour un evenement ne peut etre transposee a un autre, meme lorsque le
+mecanisme sous-jacent parait identique.
