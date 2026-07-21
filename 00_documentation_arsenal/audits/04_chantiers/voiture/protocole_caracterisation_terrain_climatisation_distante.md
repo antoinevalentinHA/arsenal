@@ -5,7 +5,7 @@
 | **Chantier** | [C25 — Climatisation distante Audi](chantier_commande_climatisation_distante.md). |
 | **Nature** | **Protocole documentaire, lecture-guidée.** Exécution manuelle via **Outils de développement → Actions**. |
 | **Exécutant** | L'opérateur. Il exécute les essais et remplit la trace (§6). |
-| **Statut** | **Aucune preuve recueillie.** C25 non clôturable tant que la trace §6 est vide. |
+| **Statut** | **Faisabilité DÉMONTRÉE (2026-07-21).** Succès terminal E1 confirmé (HA `cooling` + myAudi « Actif », corroboration physique SoC/autonomie). Restent E1b, E2–E5 et E6 pour caractériser périmètre, fin de cycle et refus. |
 | **Sécurité** | Aucune dégradation artificielle, manipulation risquée ni panne simulée n'est demandée. |
 
 > **Objectif.** Répondre par des preuves aux inconnues de C25 : le service fonctionne-t-il réellement sur
@@ -166,6 +166,7 @@ qu'un `rejected` — l'intégration **ne semble pas** exposer le motif d'un refu
 | Essai | `entity_id` observés | État initial | Attributs utiles | Heure émission | Heure 1ʳᵉ transition | Résultat HA | Résultat myAudi | Constat véhicule | Niveau de preuve | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|
 | E1 — minimal | `sensor.audi_e_tron_etat_de_charge_local`, `sensor.audi_e_tron_autonomie_local` (`binary_sensor.*_plug_state` **non historisé**) | Branché (**constat opérateur**) ; `chargePurposeReachedAndNotConservationCharging` depuis 18:36:40 | autonomie **29,0 km** | **2026-07-20 18:43:54** | **aucune** | `ERROR audiconnect` — `Cannot startClimatisation, return code 'failed'` ; **motif non exposé** (exception `audi_services.py:990`) | **Échec ~18:45** — `E.PA.VCF.UND.fail_vehicle_timeout` | non relevé | **HA + myAudi** | **Non confirmé — timeout véhicule** ; ni succès terminal, ni refus fonctionnel |
+| **E1 — minimal (reprise 2026-07-21)** | « Climatisation state » (device Audi ; `entity_id` runtime exact **non capturé** à l'écran) ; télémétrie SoC / autonomie myAudi | échec 09:48 : **branché, en charge**, 64 %, 21 km → succès observé **débranché** (HA `notReadyForCharging`), 41 %, 12 km | config **minimale** : `temp_c 21`, `comfort`, tous booléens `false` (capture 11:06) ; un appel ultérieur `climatisation_at_unlock: true` **composé** (12:33, résultat non capturé) | **non capturée** (entre 09:51 et 10:44) | **≤ 10:44** (myAudi « Actif ») / **10:49** (HA `cooling`) | `climatisation_state = **cooling**` (10:49) | **Climatiseur « Actif »** (10:44) ; échec antérieur **09:48** `E.PA.VCF.UND.fail_vehicle_timeout (2607210948)` | **Chute SoC 64 %→41 % + autonomie 21→12 km en ~50 min**, cohérente avec une clim stationnaire sur batterie | **HA + myAudi** (+ corroboration physique) | **Succès terminal CONFIRMÉ** — la climatisation a réellement démarré |
 | E1b — fin de cycle | | | | | | | | | | |
 | E2 — mode economy | | | | | | | | | | |
 | E3 — siège avant gauche | | | | | | | | | | |
@@ -194,6 +195,37 @@ qu'un `rejected` — l'intégration **ne semble pas** exposer le motif d'un refu
 >
 > **Reste à établir** : E1b, E2–E5, et surtout **E6** (état naturellement incompatible), seul essai
 > capable de dire si un refus *fonctionnel* se distingue d'un *timeout* dans la remontée.
+
+> **Reprise E1 du 2026-07-21 — faisabilité DÉMONTRÉE.**
+>
+> **Le niveau 3 de la grille §5 (succès terminal de l'action véhicule) est atteint.** La climatisation
+> a **réellement démarré** : `climatisation_state = cooling` en HA (10:49) **et** Climatiseur « Actif »
+> dans myAudi (10:44), avec une **corroboration physique indépendante** — la charge est passée de
+> **64 % à 41 %** et l'autonomie de **21 à 12 km en ~50 min**, cohérent avec une climatisation
+> stationnaire alimentée par la batterie (l'intégration émet `climatisationWithoutHVpower/…WithoutExternalPower: True`).
+> La question centrale de E1 (« le service démarre-t-il réellement ? ») est donc tranchée **OUI**, avec
+> le **jeu de paramètres minimal** (`temp_c 21`, `comfort`, tous booléens `false`).
+>
+> **L'intermittence est confirmée et reste d'origine backend.** Le **même matin**, un essai a échoué à
+> **09:48** sur le **même** `E.PA.VCF.UND.fail_vehicle_timeout (2607210948)` que E1 la veille, avant que
+> les essais suivants n'aboutissent. Un timeout véhicule est donc un **état transitoire**, non une
+> incompatibilité de la fonction : la répétition finit par réussir. Ceci **confirme** l'expérience
+> opérateur (« Audi capricieux »).
+>
+> **Piste, non établie (n=1).** L'échec 09:48 est survenu **en charge**, le succès véhicule
+> **débranché** (`notReadyForCharging` en HA à 10:49). Une éventuelle corrélation « démarrage refusé
+> pendant une session de charge active » est **une hypothèse, pas un fait** — un seul couple
+> d'observations, et l'ordre temporel (répétition) suffit à l'expliquer. À ne pas ériger en règle.
+>
+> **Périmètre de preuve.** L'opérateur rapporte **3 essais concluants** ce matin ; **un seul** est
+> étayé par capture indépendante (HA + myAudi ci-dessus), les **deux autres** restent au niveau de
+> preuve **opérateur**. Un appel `climatisation_at_unlock: true` a été **composé** à 12:33 (proche de
+> E5) mais son **résultat n'est pas capturé** — E5 reste donc **à confirmer**.
+>
+> **Lecture §5 inchangée sur la remontée.** L'échec 09:48 n'apparaît toujours, côté HA, que comme un
+> `failed` générique tandis que myAudi porte le code `fail_vehicle_timeout` : le motif reste **exposé
+> par le backend et perdu par l'intégration**. Le statut honnête d'un échec demeure `timeout`, non
+> `rejected`.
 
 ---
 
