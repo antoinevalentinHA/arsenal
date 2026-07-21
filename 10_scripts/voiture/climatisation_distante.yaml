@@ -65,8 +65,11 @@ audi_climatisation_distante:
           - ventilation
         # INV-CMD-4 : bornes gardées côté Arsenal (le schéma de l'intégration ne
         # garde ni temp_c ni l'énumération de mode).
-        temp_gardee: "{{ [15, [30, (temp_c | int(21))] | min] | max }}"
-        mode_garde: "{{ climatisation_mode if climatisation_mode in ['comfort', 'economy'] else 'comfort' }}"
+        # NB : les `default:` des `fields` ne sont PAS injectés au runtime quand le
+        # script est appelé sans data (bouton `data: {}`, ou script.turn_on) — on
+        # applique donc les défauts ici via `| default(...)`.
+        temp_gardee: "{{ [15, [30, (temp_c | default(21) | int(21))] | min] | max }}"
+        mode_garde: "{{ (climatisation_mode | default('comfort')) if (climatisation_mode | default('comfort')) in ['comfort', 'economy'] else 'comfort' }}"
 
     # ── Garde INV-CMD-6 : véhicule résolu de façon portable ────────────────
     - choose:
