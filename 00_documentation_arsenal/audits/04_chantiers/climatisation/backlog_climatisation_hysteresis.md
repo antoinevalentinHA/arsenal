@@ -47,12 +47,16 @@ Tout le reste relève de gouvernance, d'explicabilité ou de maintenabilité —
 - Complexité faible (deux assertions à ajouter). Régression nulle. **P2** — complète le
   filet CI sur les deux derniers artefacts d'observabilité non couverts.
 
-**H2 — VMC : seuils OFF morts mais validés**
+**~~H2 — VMC : seuils OFF morts mais validés~~ — absorbé par C35 (2026-07-21)**
 - Type : **gouvernance** (faux sens de contrôle). Proba incident : nulle (le verrou
   temporel de 15 min fonctionne). Impact : un réglage UI validé sans effet réel.
   Énergie : marginale (run-on temporel ≠ vraie hystérésis). Complexité faible (câbler
   `seuil_off` à la libération, ou supprimer le paramètre + sa validation). Régression
   faible. **P2.**
+- **Absorbé par le chantier C35** (mise en conformité VMC avec le contrat cible v2.0) :
+  la frontière de libération y devient une obligation contractuelle et non plus une
+  dette isolée. **Ce backlog n'en est plus propriétaire.** Source faisant foi :
+  [`../vmc/chantier_mise_en_conformite_vmc_v2.md`](../vmc/chantier_mise_en_conformite_vmc_v2.md).
 
 **H3a — Aération : seuil unique sans bande morte**
 - Type : bug potentiel / explicabilité. Proba : oscillation de la recommandation si bruit
@@ -100,7 +104,7 @@ s'applique pas. Laisser tel quel.
 |---|---|---|---|---|---|
 | P2 | D5 — notif échec persistant | Gouvernance | Échec exécution silencieux | Visibilité des pannes | Faible |
 | ✅ | D13 — CI partielle *(traité)* | Gouvernance | ~~Filet incomplet (`clim_bloquee` F2, `clim_action_en_cours` F3)~~ | F2/F3 figés en CI (2026-07-03) | Faible |
-| P2 | H2 — VMC seuils OFF morts | Gouvernance | Réglage UI sans effet | Contrôle réel ou param supprimé | Faible |
+| ➜ | H2 — VMC seuils OFF morts *(absorbé)* | Gouvernance | ~~Réglage UI sans effet~~ | Porté par **C35** (2026-07-21) | Faible |
 | P2 | H3a — aération sans deadband | Bug potentiel | Oscillation recommandation | Stabilité du conseil | Moyen |
 | P2 | D-tuile — polarité status_72 | Explicabilité | Tuile diagnostic inversée | Diagnostic COOL/HEAT correct | Moyen |
 | P2/P3 | D10 — duplication humidex DRY | Maintenabilité | Confusion capteur orphelin | Domaine DRY lisible | Faible |
