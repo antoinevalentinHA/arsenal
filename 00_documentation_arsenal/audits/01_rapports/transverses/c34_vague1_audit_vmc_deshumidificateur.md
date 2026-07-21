@@ -117,13 +117,30 @@ condition:
 `input_boolean.systeme_stable` **existe et est utilisé** — mais le trigger de démarrage
 **contourne délibérément la garde** par le premier terme du `or`.
 
-De plus, la branche `default` du `choose` — atteinte lorsque
-`binary_sensor.vmc_haute_vitesse_requise` n'est ni `on` ni `off`, donc `unknown` au
-démarrage — appelle `script.vmc_basse_vitesse`.
+**Correction du premier passage — lecture de `haute_vitesse_requise.yaml`.** Une version
+antérieure de ce rapport affirmait que la branche `default` du `choose` était atteinte au
+démarrage, le capteur décisionnel étant `unknown`. **C'est faux.**
+`binary_sensor.vmc_haute_vitesse_requise` **ne porte aucun bloc `availability`** et calcule
+son état avec `| float(0)` et `is_state()` : sources indisponibles ⇒ humidités à `0`,
+`aeration_favorable` à `False`, `co2_valide` à `False` ⇒ l'état vaut **`off`**, jamais
+`unknown`. La branche `default` n'est donc **pas** atteinte.
 
-**Conséquence** : au redémarrage, si les relais sont déjà disponibles alors que le capteur
-décisionnel n'est pas encore calculé, une action physique peut être émise **sur la base d'un
-état décisionnel non encore établi**, sans que `systeme_stable` ne s'y oppose.
+**Comportement réel au démarrage** : la branche « basse vitesse » s'exécute, sur une décision
+`off` **calculée à partir de valeurs de repli** — comportement documenté dans l'en-tête du
+capteur (« Capteurs HR indisponibles : interprétés comme non déclenchants »). Le trigger
+étant `homeassistant`, le `delay` d'hystérésis est sauté et `script.vmc_basse_vitesse` est
+appelé, lequel s'abstient si les relais sont indisponibles (§3.2).
+
+**Qualification révisée : recalcul fonctionnel sur valeurs de repli**, et non action sur
+décision non établie. La nuance est importante : le système ne « manque » pas de décision,
+il en produit une avec des défauts documentés.
+
+**Asymétrie relevée entre les deux capteurs de diagnostic VMC** :
+`binary_sensor.vmc_conformite_decision` **porte une `availability`** exigeant
+`decision`, `l1` et `l2` dans `['on','off']` — il devient donc `unavailable` au démarrage,
+ce qui est correct. `binary_sensor.vmc_coherence_physique` **n'en porte aucune** et produit
+un `off` trompeur (§3.2). Deux capteurs voisins, deux traitements opposés de
+l'indisponibilité.
 
 **Qualification : révocation de sécurité justifiée**, avec une **réserve** — le déclencheur
 est l'absence de donnée (`unknown`), non une incohérence constatée. L'en-tête du fichier
