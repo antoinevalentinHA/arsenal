@@ -473,6 +473,12 @@ l'intégration (arrêt, charge, préchauffage, chauffage vitrage…) reste **hor
 7. **INV-CMD-7 — UI : affordance, jamais décision.** Une éventuelle commande depuis un dashboard est une
    **affordance manuelle légitime** (doctrine `commandabilite.md` §6.2). Les invariants des Couches 5 et
    6 restent entiers : **l'UI n'introduit aucune logique métier et ne décide jamais**.
+8. **INV-CMD-8 — Restitution non figée.** L'état de commande restitué **ne fige jamais un état périmé** :
+   il est **refermé** (→ « Au repos ») dès que `climatisation_state` **repasse inactif**. La vérité unique
+   « clim active » est portée par `binary_sensor.audi_climatisation_active` (couche observation, dérivée
+   de l'état brut véhicule), et une **notification persistante** matérialise cet état — **créée** tant que
+   la climatisation est active, **dismissée** dès qu'elle s'arrête (patron « matérialisation d'état » de la
+   Couche 3, sans logique métier).
 
 ### 🚫 Hors périmètre de l'amendement A1
 
