@@ -6,7 +6,7 @@
 | **Domaines** | VMC · déshumidificateur |
 | **Date** | 2026-07-21 |
 | **Nature** | Audit statique. **Aucun reboot, reload, appel de service ou changement d'état n'a été provoqué.** |
-| **Couverture** | **20 fichiers lus sur 26** + `vmc.md` + `resilience_integrations.md` + `ups_arret_ha.md`. Les 3 contrats du déshumidificateur restent non lus. Couverture **assumée et bornée** (§6). |
+| **Couverture** | **26 / 26 fichiers runtime lus**, plus `vmc.md`, les **3 contrats du déshumidificateur**, `resilience_integrations.md` et `ups_arret_ha.md`. **Corpus complet.** |
 
 > **Règle appliquée.** Une affirmation sur l'action physique n'est marquée *démontrée
 > statiquement* que si la chaîne a été suivie **jusqu'au service appelé** et que les triggers
@@ -331,6 +331,116 @@ pas calculés**, ce qui rend la réconciliation `…010` inopérante dans cette 
 
 **Qualification : abstention temporaire — démontrée statiquement.** Effet protecteur ici, mais
 par un mécanisme dont C32 a établi qu'il crée une **fenêtre aveugle** de durée non bornée.
+
+---
+
+## 4 ter. Qualification contractuelle — lecture des 3 contrats
+
+### Écart contractuel **démontré** — invariant G7 inapplicable
+
+`guard.md` **v1.0.2, statut « Stable — approuvé pour implémentation »**, pose :
+
+> **G7** — « Si la source de vérité est **indisponible** à l'ouverture ou devient indisponible
+> pendant l'attente, le guard interrompt immédiatement toute attente en cours et produit
+> `command_error`. »
+
+Le §6 définit `command_error` comme « la source de vérité est **indisponible** au moment de
+l'observation », et le §9 déclare `last_observed_state` avec « valeurs possibles : `on`, `off`,
+**`unknown`, `unavailable`** ».
+
+Le §4 désigne `binary_sensor.deshumidificateur_actif` comme **seule** source de vérité. Or ce
+capteur **ne peut jamais valoir `unknown` ni `unavailable`** (§4.2).
+
+**Conséquences, toutes démontrées statiquement :**
+
+| Élément contractuel | État réel |
+|---|---|
+| **G7** (invariant) | **structurellement inapplicable** — sa condition ne peut jamais être vraie |
+| Verdict `command_error` (§6) | **inatteignable** |
+| `last_observed_state` ∈ {`unknown`,`unavailable`} (§9) | **impossible** |
+| Garde de `set_deshumidificateur_state` | morte (§4.2) |
+
+**Qualification : écart contractuel démontré.** L'exigence violée est **G7**, ainsi que la
+grammaire de verdict du §6. La cause racine est unique : `etat.yaml` **absorbe**
+l'indisponibilité en `false` au lieu de la propager.
+
+**Ce n'est pas une action physique démontrée.** L'effet matériel d'un `switch.turn_on` sur un
+appareil déjà en marche est vraisemblablement nul. Le défaut est **de représentation et de
+garde**, et il se propage au diagnostic (ci-dessous).
+
+### Propagation au diagnostic — branche morte
+
+`conformite_execution.yaml` prévoit explicitement :
+
+```
+{% elif verdict == 'command_error' %}
+  unknown            (niveau)
+  source_indisponible  (cause)
+```
+
+Cette branche est **morte** : le verdict qu'elle traite est inatteignable. Le capteur est
+**conçu pour révéler** l'indisponibilité de la source et **ne le pourra jamais**.
+
+**Trois niveaux affectés par une cause unique** : contrat (G7), exécution (garde), diagnostic
+(branche morte).
+
+### Ce qui n'est **pas** un écart — correction d'une lecture antérieure
+
+`deshumidificateur.md` prescrit, pour les critères : **« en cas d'indisponibilité d'un
+critère : conservation de l'état courant »**.
+
+L'auto-référence `{{ is_state(this.entity_id, 'on') }}` de `demarrage_recommande`, de
+`critere_deshumidification_cave` et de `critere_deshumidification_ha_cave` est donc
+**contractuellement conforme**. Le §4 bis la rapprochait du mécanisme de C32 / L6c : le
+rapprochement **technique** reste exact, mais **il ne s'agit pas d'un défaut ici** — c'est le
+comportement exigé. Seule subsiste la remarque de C32 sur la fenêtre aveugle d'une entité
+neuve, qui relève du mécanisme, non d'une non-conformité.
+
+### VMC — les fichiers restants ne modifient pas la conclusion
+
+`haute_vitesse.yaml` porte **la même garde de disponibilité** que `basse_vitesse.yaml`
+(première branche `choose`, `sequence: []` sur `unavailable`/`unknown`). **Aucun writer, aucune
+autorisation ni action physique supplémentaire.** Les deux scripts sont les seuls writers de
+`switch.vmc_l1` / `switch.vmc_l2` : **auteur unique VMC confirmé**.
+
+`delta_humidite_absolue_favorable.yaml` est un capteur dérivé (`| float(0)`), **sans effet de
+bord**.
+
+`alerte_nc_decision.yaml` (`10190000000005`) ne pilote aucun relais : il crée et retire une
+notification persistante. Il apporte cependant un élément sur `systeme_stable` — il l'utilise
+comme **trigger de re-projection post-démarrage** (« HA ne restaure pas les persistantes »), et
+traite explicitement `unknown` / `unavailable` pour éteindre la notification. **Usage correct,
+sans action physique.**
+
+**Conclusion VMC inchangée par cette passe** — actée sans extrapolation.
+
+---
+
+## 4 quater. Corrections successives de l'audit
+
+| Passe | Conclusion initiale | Correction |
+|---|---|---|
+| 1 → 2 | « branche `default` atteinte au démarrage, décisionnel `unknown` » | **Faux.** `vmc_haute_vitesse_requise` n'a pas d'`availability` : il vaut `off`. Branche « basse vitesse », décision sur valeurs de repli |
+| 2 → 3 | « unicité de l'auteur non établie » | **Établie** après lecture des 8 automatisations et 2 scripts |
+| 3 → 4 | « auto-référence = mécanisme de C32/L6c, fenêtre aveugle » | **Contractuellement conforme** — le contrat impose la conservation de l'état courant |
+| 3 → 4 | « garde inopérante = défaut d'implémentation » | **Écart contractuel démontré** — G7 de `guard.md` rendu inapplicable |
+
+---
+
+## 4 quinquies. Distinction des trois événements — état final
+
+| Événement | VMC | Déshumidificateur |
+|---|---|---|
+| **Reboot HA** | Chaîne watchdog armée sur fausse incohérence, **abstention** en bout de chaîne. Décision sur valeurs de repli. *Démontré statiquement.* | Réconciliation à +90 s, **recalcul fonctionnel**. Timers non restaurés → vecteurs de déclenchement. *Démontré / plausible.* |
+| **Reload YAML** | **Aucun trigger dédié** dans les 11 fichiers. | **Aucun trigger dédié** dans les 15 fichiers. |
+| **Reload d'intégration** | **Aucun trigger dédié.** | **Aucun trigger dédié.** |
+
+> **L'absence de trigger dédié n'est pas une preuve d'absence d'effet.** Un reload rend les
+> entités momentanément indisponibles ; les templates sans `availability` (`vmc_coherence_physique`,
+> `vmc_haute_vitesse_requise`, `deshumidificateur_actif`) produiront alors les **mêmes valeurs de
+> repli qu'au démarrage**, et les automatisations déclenchant sur *changement d'état* peuvent
+> s'armer. **Ces effets restent indéterminables** : ils exigeraient un reload provoqué, interdit
+> par le cadre du chantier.
 
 ---
 
