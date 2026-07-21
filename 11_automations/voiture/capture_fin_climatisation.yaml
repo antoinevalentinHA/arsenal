@@ -1,0 +1,45 @@
+# ==========================================================
+#  AUTOMATION : Voiture — Capture de la fin prévue de climatisation
+#  ----------------------------------------------------------
+#  🧠 Rôle :
+#     Au FRONT MONTANT de la climatisation (cloud), mémoriser l'heure de fin
+#     PRÉVUE = maintenant + remaining_climatisation_time. Cette échéance est la
+#     SOURCE DE VÉRITÉ de l'auto-expiration : binary_sensor.audi_climatisation_active
+#     retombe seul à ce moment, sans dépendre d'une remontée cloud (retard, ou gel
+#     du climater sur 403/404). Le cloud reste en simple confirmation.
+#
+#  🧩 Périmètre :
+#     - Écrit uniquement input_datetime.audi_climatisation_fin_prevue
+#     - Lit la durée restante via l'ATTRIBUT du binary_sensor brut (Couche 1),
+#       jamais le capteur cloud brut directement
+#     - Ne pilote rien, ne décide rien
+#
+#  🛟 Robustesse : durée bornée [1, 60] min ; défaut 30 min si `remaining`
+#     absent/0 au moment du démarrage.
+#
+#  🏷️ Domaine Voiture / Climatisation (support de INV-CMD-8)
+# ==========================================================
+
+- id: "10150000000007"
+  alias: Voiture - Capture fin prevue climatisation
+  description: >
+    Au demarrage de la climatisation, memorise l'heure de fin prevue
+    (maintenant + remaining_climatisation_time) pour l'auto-expiration.
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.audi_climatisation_active_brut
+      to: "on"
+
+  action:
+    - variables:
+        reste_brut: "{{ state_attr('binary_sensor.audi_climatisation_active_brut', 'remaining') | int(0) }}"
+        # Bornage [1, 60] min ; defaut 30 si absent/0.
+        reste_min: "{{ [[reste_brut, 60] | min, 1] | max if reste_brut > 0 else 30 }}"
+
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.audi_climatisation_fin_prevue
+      data:
+        timestamp: "{{ as_timestamp(now()) + reste_min * 60 }}"

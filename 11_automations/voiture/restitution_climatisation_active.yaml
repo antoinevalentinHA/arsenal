@@ -61,7 +61,7 @@
                 notification_id: voiture_climatisation_active
                 title: "❄️ Audi A3 e-tron"
                 message: >
-                  Climatisation active : {{ state_attr('binary_sensor.audi_climatisation_active', 'etat') }}
+                  Climatisation active : {{ state_attr('binary_sensor.audi_climatisation_active_brut', 'etat') }}
 
       # Climatisation inactive → dismiss + referme l'état de commande
       default:

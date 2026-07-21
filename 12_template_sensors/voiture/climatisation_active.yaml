@@ -1,24 +1,25 @@
 # ==========================================================
-# ❄️ TEMPLATE BINARY SENSOR — Audi : climatisation active
+# ❄️ TEMPLATE BINARY SENSORS — Audi : climatisation active
 # ----------------------------------------------------------
 # 🎯 Objectif :
-#   Vérité UNIQUE « la climatisation stationnaire est active »,
-#   dérivée de l'état brut véhicule climatisation_state.
-#   Consommée par la restitution (notification + état de commande).
+#   Vérité « la climatisation stationnaire est active », robuste au retard (voire
+#   au gel) de la remontée cloud de climatisation_state (INV-CMD-8, auto-expiration).
 #
-# ⚙️ Fonctionnement :
-#   - actif  = climatisation_state ∈ {cooling, heating, ventilation}
-#   - indisponible si la source est unknown/unavailable (pas de faux « off »)
+#   • ..._brut  = ce que le cloud rapporte (peut être périmé / gelé sur 403/404) ;
+#   • (sans suffixe) = vérité EFFECTIVE = brut ET avant l'échéance de fin prévue.
+#     → retombe de lui-même à `input_datetime.audi_climatisation_fin_prevue`,
+#       sans attendre le cloud ; le cloud confirme (arrêt anticipé réel).
 #
-# 🧩 Nature : couche décision/observation (INV-CMD-7). Ne pilote rien.
-# 📍 Entité générée : binary_sensor.audi_climatisation_active
-# 🧮 Source : sensor.audi_a3_sportback_e_tron_climatisation_state
+# 🧩 Nature : couche décision/observation (INV-CMD-7/8). Ne pilote rien.
+# 📍 Entités : binary_sensor.audi_climatisation_active_brut, .audi_climatisation_active
+# 🧮 Source : sensor.audi_a3_sportback_e_tron_climatisation_state (+ remaining)
 # ==========================================================
 
+# ── Vérité CLOUD brute (peut être périmée) ─────────────────────────────────
 - binary_sensor:
-    - name: "Audi climatisation active"
-      unique_id: audi_climatisation_active
-      default_entity_id: binary_sensor.audi_climatisation_active
+    - name: "Audi climatisation active (brut)"
+      unique_id: audi_climatisation_active_brut
+      default_entity_id: binary_sensor.audi_climatisation_active_brut
       device_class: running
       icon: mdi:air-conditioner
       state: >
@@ -27,8 +28,21 @@
       availability: >
         {{ states('sensor.audi_a3_sportback_e_tron_climatisation_state')
            not in ['unknown', 'unavailable'] }}
-      # Transit de la valeur brute (Couche 1) : les consommateurs (automation de
-      # restitution) lisent l'état littéral ICI, jamais le capteur cloud brut.
+      # Transit Couche 1 : les consommateurs lisent la valeur brute ICI.
       attributes:
         etat: >
           {{ states('sensor.audi_a3_sportback_e_tron_climatisation_state') }}
+        remaining: >
+          {{ states('sensor.audi_a3_sportback_e_tron_remaining_climatisation_time') }}
+
+# ── Vérité EFFECTIVE = brut ET avant l'échéance (auto-expiration) ───────────
+- binary_sensor:
+    - name: "Audi climatisation active"
+      unique_id: audi_climatisation_active
+      default_entity_id: binary_sensor.audi_climatisation_active
+      device_class: running
+      icon: mdi:air-conditioner
+      state: >
+        {{ is_state('binary_sensor.audi_climatisation_active_brut', 'on')
+           and as_timestamp(now())
+               < as_timestamp(states('input_datetime.audi_climatisation_fin_prevue'), 0) }}
