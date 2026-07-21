@@ -45,6 +45,13 @@ Aucune couche ne peut se substituer à une autre.
 > Le recorder historise.
 > L'UI observe.**
 
+> **Amendement A1 (2026-07-21) — pilotage borné.** Le domaine reste **observationnel par défaut**. Il
+> admet **une seule** surface de pilotage : une **commande manuelle et explicite** de climatisation
+> distante, **sans aucune décision métier automatique** (aucun préconditionnement, aucun déclenchement
+> horaire/météo/présence). Le décideur est l'**humain** ; le système n'est qu'un **exécutant technique
+> borné**. Voir la [COUCHE ACTION — COMMANDE DISTANTE](#-couche-action--commande-distante-de-climatisation-amendement-a1) et le
+> cadrage [`audits/02_conception/voiture/cadrage_commande_climatisation_distante.md`](../audits/02_conception/voiture/cadrage_commande_climatisation_distante.md).
+
 ---
 
 ## 🧱 PÉRIMÈTRE COUVERT
@@ -62,6 +69,7 @@ Le présent contrat couvre :
 6. Dashboards Voiture
 7. Templates UI normatifs
 8. Politique officielle de persistance Recorder
+9. **Commande distante de climatisation** (couche action bornée, **manuelle** — amendement A1, 2026-07-21)
 
 Il ne couvre pas :
 
@@ -410,6 +418,67 @@ Les templates UI suivants sont **contractuellement intégrés** au domaine Voitu
 - sensor.audi_temperature_charge
 - sensor.audi_autonomie_corrigee_temperature
 ```
+
+---
+
+## 🕹️ COUCHE ACTION — COMMANDE DISTANTE DE CLIMATISATION (AMENDEMENT A1)
+
+> **Amendement A1 — 2026-07-21.** Franchissement **assumé et borné** de la frontière observationnelle,
+> justifié par la faisabilité démontrée au terrain (chantier **C25**, trace E1 du 2026-07-21) et un
+> **arbitrage propriétaire**. Cadrage complet des décisions D1–D8 :
+> [`audits/02_conception/voiture/cadrage_commande_climatisation_distante.md`](../audits/02_conception/voiture/cadrage_commande_climatisation_distante.md).
+> **Cet amendement pose les invariants ; il ne décrit aucune implémentation** (runtime/UI livrés aux
+> étapes suivantes).
+
+### 🎯 Objet
+
+Autoriser une **unique** surface de pilotage dans le domaine Voiture : le **démarrage manuel** de la
+climatisation stationnaire via le service `audiconnect.start_climate_control`. Toute autre commande de
+l'intégration (arrêt, charge, préchauffage, chauffage vitrage…) reste **hors contrat**.
+
+### 🧭 Nature de la couche
+
+- **Manuelle et explicite.** Le déclenchement est un **geste humain**. Il n'existe **aucune** décision
+  métier automatique : ni préconditionnement, ni horaire, ni météo, ni présence.
+- **Exécutant borné** (doctrine `separation_decision_action.md`) : la décision est **exogène (humaine)**,
+  la couche ne fait qu'**exécuter et observer**. Elle ne recalcule aucune condition métier.
+
+### 🔒 Invariants normatifs
+
+1. **INV-CMD-1 — Honnêteté terminale (central).** La couche ne conclut **jamais** au succès sur la seule
+   absence d'exception Home Assistant : l'intégration **absorbe les erreurs** et **ignore le retour**,
+   donc *l'absence d'erreur ne prouve rien*. Le **succès terminal** n'est établi que par une **preuve
+   indépendante de l'émission** — une **transition observée** de `climatisation_state` vers un état actif
+   (`cooling`/`heating`/`ventilation`) dans une **fenêtre de latence bornée**.
+2. **INV-CMD-2 — Statut honnête d'échec.** À défaut de transition observée dans la fenêtre, le statut
+   restitué est **`non confirmé` / `timeout`**, **jamais** `rejected` : l'intégration **n'expose pas** le
+   motif d'un refus (il est perdu entre le backend et Home Assistant).
+3. **INV-CMD-3 — Périmètre gradué par la preuve.** Seuls sont exposés `temp_c` (**15–30 °C**) et
+   `climatisation_mode`. `comfort` est **prouvé** ; `economy` est offert **sous réserve** tant que
+   l'essai E2 ne l'a pas observé sur ce véhicule. Les booléens sièges (`seat_fl/fr/rl/rr`), chauffage
+   vitrage (`glass_heating`) et climatisation-à-l'ouverture (`climatisation_at_unlock`) sont **hors
+   périmètre**, forcés à `false` et **non exposés**, tant que leur observabilité n'est pas prouvée
+   (E3–E5). *L'élargissement suit la preuve, sans réécriture de doctrine.*
+4. **INV-CMD-4 — Bornes gardées côté Arsenal.** Les bornes de `temp_c` et l'énumération de
+   `climatisation_mode` sont gardées **par la surface Arsenal** ; le schéma de l'intégration ne les garde
+   pas.
+5. **INV-CMD-5 — Aucun *gate* de commandabilité, aucun capteur dédié.** Un échec véhicule est un
+   **timeout transitoire et imprévisible**, non une impossibilité de **catégorie A connue à l'avance**
+   (doctrine `commandabilite.md` §5/§8) : rien n'est calculable pré-exécution pour inhiber honnêtement la
+   commande, et la **joignabilité Home Assistant de l'intégration n'est pas de la commandabilité**.
+   L'honnêteté se joue **après** l'appel (INV-CMD-1), non avant.
+6. **INV-CMD-6 — Ancrage véhicule portable.** Le véhicule est ciblé par une **résolution portable et
+   versionnable** (nom stable du device registry ou équivalent), **jamais** par un `device_id` opaque
+   figé en dur (dette **AUDI-11**).
+7. **INV-CMD-7 — UI : affordance, jamais décision.** Une éventuelle commande depuis un dashboard est une
+   **affordance manuelle légitime** (doctrine `commandabilite.md` §6.2). Les invariants des Couches 5 et
+   6 restent entiers : **l'UI n'introduit aucune logique métier et ne décide jamais**.
+
+### 🚫 Hors périmètre de l'amendement A1
+
+- Toute **décision automatique** de climatiser (préconditionnement, scénarios) — chantier distinct.
+- Les commandes `stop_climatisation`, charge, préchauffage, chauffage vitrage — hors contrat.
+- Les capacités non prouvées (sièges, vitrage, clim-à-l'ouverture) — subordonnées à E3–E5.
 
 ---
 

@@ -9,7 +9,8 @@
 | **Intégration** | Intégration custom `audiconnect`, synchronisée sur la beta upstream officielle **`v2.2.1b1`**, avec authentification **device-code** fonctionnelle. |
 | **Service cible** | `audiconnect.start_climate_control` (S-PIN non requis). |
 | **Ouvert le** | 2026-07-17. |
-| **Prochain jalon** | **Cadrage contractuel** du franchissement de la frontière observationnelle (le contrat précède le runtime), en parallèle des essais résiduels E1b / E2–E5 / E6. |
+| **Cadrage contractuel** | **Livré (2026-07-21).** Décisions D1–D8 : [`cadrage_commande_climatisation_distante.md`](../../02_conception/voiture/cadrage_commande_climatisation_distante.md) ; contrat **amendé** (A1) — couche action bornée, manuelle, sans décision automatique, périmètre `temp_c` + `climatisation_mode` (`comfort` prouvé, `economy` sous réserve E2). |
+| **Prochain jalon** | **Runtime** — exécutant borné + **observation terminale** (`climatisation_state`) + restitution honnête (`non confirmé`/`timeout`), ancrage véhicule portable. En parallèle : essais résiduels E1b / E2–E5 / E6. |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C25 **ne vaut ni validation de faisabilité, ni décision de
 > contractualiser, ni décision d'implémenter.** Ce document est une **ouverture documentaire de
@@ -56,6 +57,11 @@ Hors périmètre initial (documentés comme disponibles dans le service, **non e
 - Une commande de climatisation **franchirait donc la frontière observationnelle** du domaine — décision
   d'architecture qui, si elle est prise un jour, relèvera d'un amendement de contrat (différé, hors de ce
   chantier tant que la faisabilité n'est pas établie).
+
+> **Mise à jour 2026-07-21 — franchissement acté.** La faisabilité étant démontrée, l'**arbitrage
+> propriétaire** a décidé de franchir la frontière et de **contractualiser** la commande. Le contrat
+> `voiture.md` porte désormais l'**amendement A1** (couche action bornée, manuelle). Le §2 ci-dessus
+> décrit l'**état antérieur** à cet amendement.
 
 ---
 
