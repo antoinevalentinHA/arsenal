@@ -4,10 +4,10 @@
 |---|---|
 | **Chantier** | Mettre l'implémentation VMC en conformité avec la **cible contractuelle v2.0**, dont le modèle de décision a été révisé : retrait du rôle décisionnel du verdict d'aération, besoins hystérétiques autonomes, état par pièce, frontières ON/OFF réellement exercées, restauration au redémarrage, maintien du besoin sur mesure inexploitable, explicabilité. |
 | **Domaine** | VMC. |
-| **Statut** | **Ouvert — Lot 1 intégré ; L2a acquis ; L2c préparé — amendement contractuel v2.1 en attente de commit et de merge.** **Le verrou demeure actif dans `main`, où `vmc.md` v2.0 reste normatif.** L'amendement proposé (§2.2 bis) autoriserait une **observation glissante bornée** en condition d'entrée, levant l'incompatibilité entre la décision B et l'interdiction d'historique de mesures — **après merge uniquement**. Aucune calibration n'est acquise, aucune faisabilité du critère dynamique n'est présumée. Les cinq divergences du §2 restent des **écarts contractuels formels**. Aucun runtime, UI ni checker modifié. |
+| **Statut** | **Ouvert — Lots 1 et 2c intégrés ; L2a acquis.** `vmc.md` **v2.1** est **normatif dans `main`** : le §2.2 bis autorise l'**observation glissante bornée** en condition d'entrée, dans les limites qu'il fixe. **Le verrou entre la décision B et le §2.2 est levé contractuellement.** **Aucune calibration n'est pour autant acquise, et la calibrabilité avec les capteurs existants reste à démontrer.** Les cinq divergences du §2 restent des **écarts contractuels formels**. Aucun runtime, UI ni checker modifié. |
 | **Priorité** | **P2** — l'écart n'expose à aucun risque de sûreté : le fail-safe physique et l'invariant XOR des relais sont inchangés et hors périmètre. L'enjeu est fonctionnel (besoin d'extraction non servi) et de gouvernance (contrat non implémenté). |
 | **Ouvert le** | 2026-07-21. |
-| **Prochain jalon** | 🔒 **Lot 2c — co-changement contractuel autorisant et encadrant la fenêtre glissante** (§5 bis). **L3 deviendra le prochain jalon après intégration de l'amendement v2.1 dans `main`.** **L2b (calibration finale) reste ordonnancé après L5**, et **aucune correction runtime n'est autorisée tant qu'il n'est pas soldé**. |
+| **Prochain jalon** | **L3 — définition des preuves attendues** (§5). **L2b (calibration finale) reste ordonnancé après L5** ; **aucune correction runtime n'est autorisée tant que la séquence probatoire et L2b ne sont pas soldées**. |
 | **Registre** | Chantier **C35** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi du chantier.** |
 
 > **Ce document n'établit aucun comportement et ne calibre aucun paramètre.**
@@ -23,14 +23,16 @@
 | Élément | Statut |
 |---|---|
 | **Le présent document** | **Source faisant foi du chantier C35** |
-| `contrats/vmc.md` **v2.0**, tel que présent sur **`main`** | **Contrat normatif actuellement opposable.** **Verrou L2c actif** |
-| `contrats/vmc.md` **v2.1**, tel que présent sur la **branche du Lot 2c** | **Amendement proposé** (§2.2 bis, §4.4 bis, §9.1 bis). **Aucune autorité normative avant merge** |
+| [`contrats/vmc.md`](../../../contrats/vmc.md) **v2.1** | **Contrat normatif opposable.** v2.0 au Lot 1, amendé en **v2.1** au Lot 2c (§2.2 bis, §4.4 bis, §9.1 bis) |
+| **Observation glissante bornée** | **Admissible** comme condition d'entrée, selon les limites du §2.2 bis |
+| **Faisabilité et calibration** | **Encore ouvertes**, à démontrer par L3 à L5 puis L2b |
 | [`contrats/aeration_recommandation.md`](../../../contrats/aeration_recommandation.md) | **Contrat normatif**, modifié au Lot 1 : la VMC y est qualifiée de consommateur **non décisionnel** |
 | Implémentation VMC | **Non conforme.** Cinq écarts contractuels formels ouverts (§2) |
 
 > **La révision contractuelle est acquise ; la mise en conformité ne l'est pas.**
-> Les renvois de section (§4.3, §6.4, §9.1, §14, §15.1…) du présent document
-> pointent vers `contrats/vmc.md` **v2.0**, normatif dans `main`.
+> Les renvois de section (§2.2 bis, §4.3, §4.4 bis, §6.4, §9.1, §9.1 bis, §14,
+> §15.1…) du présent document pointent vers `contrats/vmc.md` **v2.1**,
+> normatif dans `main`.
 
 ---
 
@@ -113,8 +115,7 @@ pas ordonnancé. Le tableau de couverture de C34 constate d'ailleurs
 
 | Dépendance | Nature |
 |---|---|
-| [`contrats/vmc.md`](../../../contrats/vmc.md) **v2.0** (sur `main`) | **Autorité.** Contrat normatif, intégré au Lot 1 |
-| **Amendement v2.1** (sur la branche du Lot 2c) | **Proposé**, non intégré. Aucune autorité avant merge |
+| [`contrats/vmc.md`](../../../contrats/vmc.md) **v2.1** | **Autorité.** Contrat normatif — v2.0 au Lot 1, amendé en v2.1 au Lot 2c |
 | [`contrats/aeration_recommandation.md`](../../../contrats/aeration_recommandation.md) | **Autorité** du domaine aération. Co-changement intégré au Lot 1 ; propriétaire distinct |
 | Décision métier consolidée | Hors dépôt. Source de décision, **non destinée à intégration** |
 | C34 | **Intersection partielle** sur le comportement au redémarrage. Aucune subordination : C34 audite, C35 met en conformité |
@@ -131,7 +132,7 @@ Les lots sont **ordonnés**. Aucun ne peut être anticipé.
 |---|---|---|
 | ~~**L1**~~ ✅ | ~~Intégration des contrats validés~~ **soldé (2026-07-21)** — VMC v2.0 + co-changement aération, co-commités et mergés | Co-commit respecté |
 | **L2a** | Décisions de calibration §14 **déjà démontrables** — seuil absolu seul écarté, aucun modulateur retenu | Aucune valeur reconduite par défaut au motif qu'elle existe |
-| **L2c** | **Co-changement contractuel — autorisation et encadrement de la fenêtre glissante** (§5 bis) — **préparé sur la branche le 2026-07-21, en attente de commit et de merge** | 🔒 **VERROU ACTIF. Bloque L3.** Dans `main`, v2.0 interdit encore tout historique de mesures |
+| ~~**L2c**~~ ✅ | ~~Co-changement contractuel — fenêtre glissante~~ **soldé (2026-07-21)** — `vmc.md` v2.0 → **v2.1** intégré et normatif, §2.2 bis / §4.4 bis / §9.1 bis (§5 bis) | 🔓 **Verrou levé.** L3 est engageable |
 | **L3** | Définition précise des preuves attendues | **Aucune correction runtime avant ce lot** |
 | **L4** | Audit de `C:\dev\arsenal-runtime` — outils, procédures, sauvegardes, mécanismes d'analyse existants | Aucune solution d'instrumentation conçue avant |
 | **L5** | Acquisition d'une référence **avant** changement | Sans référence, l'effet du changement ne sera pas mesurable |
@@ -144,12 +145,15 @@ Les lots sont **ordonnés**. Aucun ne peut être anticipé.
 
 ---
 
-## 5 bis. L2c — verrou contractuel préalable à L3
+## 5 bis. L2c — verrou contractuel préalable à L3 — ✅ **soldé (2026-07-21)**
 
-### 5bis.1 Pourquoi ce lot existe
+### 5bis.1 Pourquoi ce lot a existé
 
-L'audit de calibrabilité du Lot 2 a mis au jour une **incompatibilité interne au
-contrat v2.0, désormais normatif** :
+*Section conservée au passé : elle documente le motif du verrou, utile à la
+compréhension du chantier. Le verrou est levé depuis le 2026-07-21 (§5bis.4 bis).*
+
+L'audit de calibrabilité du Lot 2 avait mis au jour une **incompatibilité interne
+au contrat v2.0** :
 
 1. la **décision B** exige de reconnaître un épisode local qui peut rester sous
    une frontière absolue élevée ;
@@ -159,18 +163,18 @@ contrat v2.0, désormais normatif** :
 3. toute solution restante suppose donc une **comparaison temporelle** ;
 4. or le **§2.2 interdit actuellement tout historique de mesures**.
 
-> **Ce n'est pas la faiblesse d'un scénario particulier.** Dès lors que le niveau
-> seul est écarté, **toute** formule satisfaisant B franchit le §2.2. La seule
-> variante conforme — une référence figée — redevient un seuil absolu et retombe
-> sous l'objection (2).
+> **Ce n'était pas la faiblesse d'un scénario particulier.** Dès lors que le
+> niveau seul est écarté, **toute** formule satisfaisant B franchissait le §2.2.
+> La seule variante conforme — une référence figée — redevenait un seuil absolu
+> et retombait sous l'objection (2).
 
-**Conséquence de séquencement** : la clarification doit **précéder L3**. Définir
-des preuves pour une architecture que le contrat interdit encore reviendrait à
-instrumenter une solution inadmissible.
+**Conséquence de séquencement** : la clarification devait **précéder L3**. Définir
+des preuves pour une architecture que le contrat interdisait encore serait revenu
+à instrumenter une solution inadmissible.
 
 **Conséquence de forme** : le contrat v2.0 étant **déjà normatif**, cette
-clarification exige un **co-changement contractuel formel**, et non une note dans
-un document de travail.
+clarification a exigé un **co-changement contractuel formel**, et non une note
+dans un document de travail.
 
 ### 5bis.2 Contenu à porter au contrat
 
@@ -234,13 +238,12 @@ en UI. Le diagnostic doit pouvoir exposer au minimum :
 
 Ces exigences s'ajoutent aux dix du §10.2 du contrat.
 
-### 5bis.4 bis État de préparation
+### 5bis.4 bis Réalisation
 
-**L2c est préparé, non intégré (2026-07-21).** Un amendement portant `vmc.md` de
-**v2.0** à **v2.1** existe **sur la branche du Lot 2c**. Dans `main`, **v2.0
-demeure le contrat normatif et le verrou reste actif**.
+**L2c est soldé (2026-07-21).** `vmc.md` est passé de **v2.0** à **v2.1**, et
+cette version est **intégrée et normative dans `main`**.
 
-Contenu de l'amendement proposé :
+Contenu de l'amendement intégré :
 
 | Section | Apport |
 |---|---|
@@ -253,8 +256,13 @@ Contenu de l'amendement proposé :
 | **§12.3** | Six non-conformités caractérisées supplémentaires |
 | **§14.2** | Quatre paramètres ouverts supplémentaires — **aucune valeur arrêtée** |
 
-**Le verrou ne sera levé qu'au merge de l'amendement dans `main`.** Tant que
-l'intégration n'est pas intervenue, L3 ne peut pas être engagé.
+**Le verrou contractuel est levé : L3 est engageable.**
+
+> **Ce qui est levé, et ce qui ne l'est pas.** L'amendement rend l'observation
+> glissante bornée **contractuellement admissible**. Il ne démontre **ni** qu'un
+> critère d'évolution sera retenu, **ni** qu'il soit calibrable avec
+> l'instrumentation disponible (§5bis.6). Cette démonstration relève de L3 à L5,
+> puis de L2b.
 
 ### 5bis.5 Périmètre de L2c
 
@@ -329,9 +337,9 @@ Réunis à l'ouverture :
 C35 ne peut être clos que si **tous** les points suivants sont satisfaits :
 
 1. ~~les deux contrats sont intégrés et co-commités~~ **✅ acquis (2026-07-21, Lot 1)** ;
-1 bis. l'amendement levant l'incompatibilité entre la décision B et
-   l'interdiction d'historique de mesures est intégré — **préparé, prêt à être
-   acquis après intégration de `vmc.md` v2.1 dans `main`** ;
+1 bis. ~~l'amendement levant l'incompatibilité entre la décision B et
+   l'interdiction d'historique de mesures est intégré~~ **✅ acquis (2026-07-21,
+   Lot 2c)** — `vmc.md` v2.1 intégré et normatif dans `main` ;
 2. les paramètres du §14 sont calibrés et tracés, aucune valeur reconduite par
    défaut sans décision ;
 3. le dispositif de preuve est défini avant toute correction runtime ;
