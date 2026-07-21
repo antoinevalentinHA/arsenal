@@ -98,7 +98,7 @@ Son utilisation hors domaine aération est **intentionnelle** :
 | Domaine consommateur | Rôle |
 |---|---|
 | Climatisation | Contrainte inhibitrice (veto autorisation cool / dry) |
-| VMC | Source d'information contextuelle |
+| VMC | **Information contextuelle non décisionnelle** — affichage possible ; **n'autorise, ne conditionne ni ne bloque aucune voie de décision VMC** |
 | Agrégation globale | Composante de `binary_sensor.aeration_conseillee` |
 
 ### Invariant de comportement
@@ -107,7 +107,14 @@ Ce capteur :
 
 - **ne déclenche jamais** d'action directe,
 - **n'impose jamais** un mode opérationnel,
-- peut uniquement **autoriser ou inhiber** des comportements dans les domaines consommateurs.
+- lorsqu'il est consommé à titre **décisionnel**, peut uniquement **autoriser ou
+  inhiber** des comportements dans le domaine consommateur,
+- peut par ailleurs être consommé à titre **purement informatif**, sans aucune
+  conséquence décisionnelle.
+
+👉 Ces deux modes de consommation sont **distincts et non interchangeables**.
+Une consommation informative ne vaut ni autorisation, ni inhibition ;
+un domaine consommateur ne peut pas la convertir en condition décisionnelle.
 
 ### Position vis-à-vis de la décomposition
 

@@ -4,10 +4,10 @@
 |---|---|
 | **Chantier** | Mettre l'implémentation VMC en conformité avec la **cible contractuelle v2.0**, dont le modèle de décision a été révisé : retrait du rôle décisionnel du verdict d'aération, besoins hystérétiques autonomes, état par pièce, frontières ON/OFF réellement exercées, restauration au redémarrage, maintien du besoin sur mesure inexploitable, explicabilité. |
 | **Domaine** | VMC. |
-| **Statut** | **Ouvert — ouverture documentaire uniquement.** Aucun contrat, runtime, UI ou checker modifié par ce lot. |
+| **Statut** | **Ouvert — Lot 1 préparé (2026-07-21) : intégration contractuelle en attente de commit et de merge.** Les deux contrats v2.0 existent sur la branche de travail ; ils **ne sont pas encore normatifs dans `main`**. Aucun runtime, UI ni checker modifié. |
 | **Priorité** | **P2** — l'écart n'expose à aucun risque de sûreté : le fail-safe physique et l'invariant XOR des relais sont inchangés et hors périmètre. L'enjeu est fonctionnel (besoin d'extraction non servi) et de gouvernance (contrat non implémenté). |
 | **Ouvert le** | 2026-07-21. |
-| **Prochain jalon** | **Lot 1 — intégration des contrats validés** (§5). Aucune correction runtime avant le Lot 3. |
+| **Prochain jalon** | **Lot 1 — intégration des contrats** (§5), tant que le merge n'est pas intervenu. Le **Lot 2 (calibration §14)** deviendra le jalon actif **après** intégration. Aucune correction runtime avant le Lot 3. |
 | **Registre** | Chantier **C35** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi du chantier.** |
 
 > **Ce document n'établit aucun comportement et ne calibre aucun paramètre.**
@@ -18,28 +18,28 @@
 
 ## 0. Autorité contractuelle à ce stade
 
-Trois statuts distincts, à ne pas confondre :
+**Le Lot 1 est préparé, non intégré.** Trois états doivent être distingués :
 
 | Élément | Statut |
 |---|---|
 | **Le présent document** | **Source faisant foi du chantier C35** |
-| [`contrats/vmc.md`](../../../contrats/vmc.md) **v1.3** | **Contrat normatif actuellement opposable** dans le dépôt. Il le reste jusqu'au Lot 1 |
-| **Cible contractuelle v2.0** | **Validée sur le fond, hors dépôt.** Entrée préparatoire du chantier. **Aucune autorité normative dans Arsenal à ce stade** |
-| [`contrats/aeration_recommandation.md`](../../../contrats/aeration_recommandation.md) | Contrat normatif en vigueur. Son co-changement est préparé hors dépôt, non intégré |
+| `contrats/vmc.md` **v1.3**, tel que présent sur **`main`** | **Contrat normatif actuellement opposable.** Il le reste jusqu'au merge du Lot 1 |
+| `contrats/vmc.md` **v2.0**, tel que présent sur la **branche du Lot 1** | **Version proposée pour intégration.** Aucune autorité normative tant que le merge n'est pas intervenu |
+| `contrats/aeration_recommandation.md` | Contrat normatif en vigueur. Son co-changement est **proposé** sur la même branche, non intégré |
 
-> **La cible v2.0 ne devient normative qu'après son intégration au Lot 1.**
-> Toute référence à « v2.0 » dans le présent document désigne un **contenu
-> attendu du Lot 1**, jamais une autorité actuelle. Les renvois de section
-> (§4.3, §6.4, §9.1…) pointent vers cette cible préparée, non vers le contrat
-> v1.3 présent au dépôt.
+> **La cible v2.0 ne deviendra normative qu'après le merge du Lot 1 dans `main`.**
+> Toute référence à « v2.0 » dans le présent document désigne la **version
+> proposée**, jamais une autorité actuelle. Les renvois de section (§4.3, §6.4,
+> §9.1, §14, §15.1…) pointent vers cette cible, non vers le contrat v1.3
+> actuellement normatif.
 
 ---
 
 ## 1. Objet
 
 Mettre l'implémentation du domaine VMC en conformité avec la **cible
-contractuelle v2.0** — validée hors dépôt, à intégrer au Lot 1 — sur les points
-suivants :
+contractuelle v2.0** — préparée au Lot 1, normative après son merge — sur les
+points suivants :
 
 - **retrait du rôle décisionnel** de `binary_sensor.aeration_preferable_etage` ;
 - **mise en œuvre réelle des frontières ON/OFF**, aujourd'hui définies mais non
@@ -60,11 +60,10 @@ suivants :
 
 ## 2. Problème
 
-La décision métier VMC a été révisée et la cible contractuelle validée hors
-dépôt (§0). **Le runtime en vigueur contredit cette cible sur cinq points**,
-constatés :
+La décision métier VMC a été révisée et la cible v2.0 préparée au Lot 1 (§0).
+**Le runtime en vigueur contredit cette cible sur cinq points**, constatés :
 
-| # | Écart constaté | Section de la cible v2.0 |
+| # | Divergence établie | Section de la cible v2.0 |
 |---|---|---|
 | 1 | `aeration_preferable_etage` conditionne la voie humidité | §4.3, §6 |
 | 2 | Frontières de libération définies mais non consommées | §6.4, §6.6, §10.4 |
@@ -72,12 +71,13 @@ constatés :
 | 4 | Aucun état humidité par pièce | §2.3, §7.1 |
 | 5 | Aucune restauration ni gestion d'indisponibilité conformes | §9.1, §4.4 |
 
+**Les cinq divergences sont établies vis-à-vis de la cible v2.0 et deviendront
+des écarts contractuels formels dès l'intégration du Lot 1 dans `main`.**
 Conformément à la doctrine Arsenal — *« si le YAML contredit le contrat, c'est
-l'implémentation qui est fausse »* —, **c'est l'implémentation qui sera en
-écart** dès l'intégration de la cible au Lot 1. Tant que celle-ci n'est pas
-intégrée, le contrat opposable demeure v1.3 et **aucun écart formel n'est
-constitué au sens du dépôt** : les cinq points ci-dessus décrivent l'écart
-**attendu** vis-à-vis de la cible validée.
+l'implémentation qui est fausse »* —, c'est alors l'implémentation qui sera en
+écart, et non le contrat. Tant que le merge n'est pas intervenu, le contrat
+opposable demeure v1.3 et **aucun écart formel n'est constitué au sens du
+dépôt**.
 
 **Aucun chantier existant ne portait ce périmètre.** C34 traite du comportement
 sous opération technique (reboot, reload) et non d'une révision de modèle de
@@ -116,9 +116,9 @@ pas ordonnancé. Le tableau de couverture de C34 constate d'ailleurs
 
 | Dépendance | Nature |
 |---|---|
-| [`contrats/vmc.md`](../../../contrats/vmc.md) **v1.3** | **Contrat normatif en vigueur.** Reste opposable jusqu'au Lot 1 |
-| **Cible contractuelle v2.0** | Hors dépôt, validée sur le fond. **Entrée préparatoire** et **contenu attendu du Lot 1**. Aucune autorité actuelle (§0) |
-| **Co-changement d'aération** | Hors dépôt, préparé. Porte sur la ligne VMC de la table des consommateurs et sur l'invariant de comportement. Propriétaire distinct |
+| `contrats/vmc.md` **v1.3** (sur `main`) | **Contrat normatif en vigueur.** Reste opposable jusqu'au merge du Lot 1 |
+| **Cible contractuelle v2.0** (sur la branche du Lot 1) | Version **proposée** pour intégration. Aucune autorité actuelle (§0) |
+| **Co-changement d'aération** | Proposé sur la même branche, non intégré. Propriétaire distinct |
 | Décision métier consolidée | Hors dépôt. Source de décision, **non destinée à intégration** |
 | C34 | **Intersection partielle** sur le comportement au redémarrage. Aucune subordination : C34 audite, C35 met en conformité |
 | Backlog hystérésis, item VMC | **Absorbé** par ce chantier : l'écart n° 2 y est traité |
@@ -132,7 +132,7 @@ Les lots sont **ordonnés**. Aucun ne peut être anticipé.
 
 | Lot | Objet | Verrou |
 |---|---|---|
-| **L1** | Intégration des contrats validés (VMC v2.0 + co-changement aération) | Co-commit obligatoire des deux contrats |
+| **L1** | Intégration des contrats validés (VMC v2.0 + co-changement aération) — **préparé le 2026-07-21, en attente de commit et de merge** | Co-commit obligatoire des deux contrats |
 | **L2** | Calibration des paramètres §14 de la cible | Aucune valeur reconduite par défaut au motif qu'elle existe |
 | **L3** | Définition précise des preuves attendues | **Aucune correction runtime avant ce lot** |
 | **L4** | Audit de `C:\dev\arsenal-runtime` — outils, procédures, sauvegardes, mécanismes d'analyse existants | Aucune solution d'instrumentation conçue avant |
@@ -191,7 +191,7 @@ Réunis à l'ouverture :
 
 C35 ne peut être clos que si **tous** les points suivants sont satisfaits :
 
-1. les deux contrats sont intégrés et co-commités ;
+1. les deux contrats sont intégrés et co-commités — **préparé, prêt à être acquis après intégration dans `main`** ;
 2. les paramètres du §14 sont calibrés et tracés, aucune valeur reconduite par
    défaut sans décision ;
 3. le dispositif de preuve est défini avant toute correction runtime ;
