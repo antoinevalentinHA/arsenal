@@ -4,10 +4,10 @@
 |---|---|
 | **Chantier** | Mettre l'implémentation VMC en conformité avec la **cible contractuelle v2.0**, dont le modèle de décision a été révisé : retrait du rôle décisionnel du verdict d'aération, besoins hystérétiques autonomes, état par pièce, frontières ON/OFF réellement exercées, restauration au redémarrage, maintien du besoin sur mesure inexploitable, explicabilité. |
 | **Domaine** | VMC. |
-| **Statut** | **Ouvert — Lot 1 intégré (2026-07-21).** Les contrats `vmc.md` **v2.0** et `aeration_recommandation.md` (co-changement) sont **normatifs dans `main`**. **Les cinq divergences du §2 sont désormais des écarts contractuels formels du runtime.** Aucun runtime, UI ni checker modifié. |
+| **Statut** | **Ouvert — Lot 1 intégré (2026-07-21) ; audit de calibrabilité du Lot 2 réalisé (2026-07-21).** Les contrats `vmc.md` **v2.0** et `aeration_recommandation.md` sont **normatifs dans `main`** ; les cinq divergences du §2 sont des **écarts contractuels formels** du runtime. L'audit a mis au jour une **incompatibilité interne au contrat** (§5 bis) : le Lot 2 se scinde en **L2a** (acquis), **L2c** (verrou contractuel, bloque L3) et **L2b** (calibration finale, après L5). Aucun runtime, UI ni checker modifié. |
 | **Priorité** | **P2** — l'écart n'expose à aucun risque de sûreté : le fail-safe physique et l'invariant XOR des relais sont inchangés et hors périmètre. L'enjeu est fonctionnel (besoin d'extraction non servi) et de gouvernance (contrat non implémenté). |
 | **Ouvert le** | 2026-07-21. |
-| **Prochain jalon** | **Lot 2 — calibration des paramètres §14 du contrat** (§5). Aucune correction runtime avant le Lot 3. |
+| **Prochain jalon** | 🔒 **Lot 2c — co-changement contractuel encadrant la fenêtre glissante** (§5 bis). **Verrou bloquant L3** : le contrat v2.0 interdit aujourd'hui tout historique de mesures, sans lequel aucune formule satisfaisant la décision B n'est admissible. Aucune correction runtime avant le Lot 3. |
 | **Registre** | Chantier **C35** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi du chantier.** |
 
 > **Ce document n'établit aucun comportement et ne calibre aucun paramètre.**
@@ -128,15 +128,133 @@ Les lots sont **ordonnés**. Aucun ne peut être anticipé.
 | Lot | Objet | Verrou |
 |---|---|---|
 | ~~**L1**~~ ✅ | ~~Intégration des contrats validés~~ **soldé (2026-07-21)** — VMC v2.0 + co-changement aération, co-commités et mergés | Co-commit respecté |
-| **L2** | Calibration des paramètres §14 du contrat | Aucune valeur reconduite par défaut au motif qu'elle existe |
+| **L2a** | Décisions de calibration §14 **déjà démontrables** — seuil absolu seul écarté, aucun modulateur retenu | Aucune valeur reconduite par défaut au motif qu'elle existe |
+| **L2c** | **Co-changement contractuel — autorisation et encadrement de la fenêtre glissante** (§5 bis) | 🔒 **VERROU. Bloque L3.** Sans lui, aucune formule satisfaisant la décision B n'est contractuellement admissible |
 | **L3** | Définition précise des preuves attendues | **Aucune correction runtime avant ce lot** |
 | **L4** | Audit de `C:\dev\arsenal-runtime` — outils, procédures, sauvegardes, mécanismes d'analyse existants | Aucune solution d'instrumentation conçue avant |
 | **L5** | Acquisition d'une référence **avant** changement | Sans référence, l'effet du changement ne sera pas mesurable |
+| **L2b** | **Calibration finale** à partir des preuves — frontières, « suffisamment assaini », bande morte, durée minimale | Lot distinct, **ordonnancé après L5**. Aucune correction runtime tant qu'il n'est pas soldé |
 | **L6** | Analyse d'impact runtime, UI et CI | Aucun patch produit à ce stade |
 | **L7** | Correction **par lots** | Chaque lot avec son propre stop point |
 | **L8** | Preuve **après** changement | Comparaison avec la référence L5 |
 | **L9** | Vérification de l'effet attendu §15.1 du contrat | Un écart substantiel doit être expliqué |
 | **L10** | Passe documentaire finale et clôture | Registre, index, changelog de release le cas échéant |
+
+---
+
+## 5 bis. L2c — verrou contractuel préalable à L3
+
+### 5bis.1 Pourquoi ce lot existe
+
+L'audit de calibrabilité du Lot 2 a mis au jour une **incompatibilité interne au
+contrat v2.0, désormais normatif** :
+
+1. la **décision B** exige de reconnaître un épisode local qui peut rester sous
+   une frontière absolue élevée ;
+2. le **critère de niveau seul est écarté** — les épisodes vespéraux culminent
+   dans une plage où la pièce séjourne 20 à 44 % du temps ; une frontière assez
+   basse pour les capter ne distinguerait plus un épisode d'un état ordinaire ;
+3. toute solution restante suppose donc une **comparaison temporelle** ;
+4. or le **§2.2 interdit actuellement tout historique de mesures**.
+
+> **Ce n'est pas la faiblesse d'un scénario particulier.** Dès lors que le niveau
+> seul est écarté, **toute** formule satisfaisant B franchit le §2.2. La seule
+> variante conforme — une référence figée — redevient un seuil absolu et retombe
+> sous l'objection (2).
+
+**Conséquence de séquencement** : la clarification doit **précéder L3**. Définir
+des preuves pour une architecture que le contrat interdit encore reviendrait à
+instrumenter une solution inadmissible.
+
+**Conséquence de forme** : le contrat v2.0 étant **déjà normatif**, cette
+clarification exige un **co-changement contractuel formel**, et non une note dans
+un document de travail.
+
+### 5bis.2 Contenu à porter au contrat
+
+**Autorisation retenue :**
+
+> Un besoin humidité peut utiliser une **observation glissante récente, courte et
+> strictement bornée**, exclusivement pour constater une **évolution locale de la
+> mesure**.
+
+Cette observation :
+
+- **n'est pas une mémoire d'épisode** ;
+- ne mémorise **ni début d'épisode, ni pic, ni durée écoulée** ;
+- **n'est pas persistée au redémarrage** ;
+- **ne participe ni au maintien ni à la libération** ;
+- sert **uniquement** comme condition possible d'**entrée** ;
+- doit rester **explicable** par la valeur courante, la valeur de référence et la
+  fenêtre utilisée.
+
+> **Invariant associé** : la machine hystérétique conserve ensuite le besoin. La
+> fenêtre glissante **ne doit pas devenir une seconde mémoire de maintien**.
+
+### 5bis.3 Comportement au redémarrage
+
+Une fenêtre vide après redémarrage **ne doit pas** être traitée comme une mesure
+métier indisponible au sens du §4.4. Deux objets distincts :
+
+| Objet | Traitement |
+|---|---|
+| **État du besoin** | Restauré conformément au §9.1 |
+| **Critère dynamique d'entrée** | Temporairement **non calculable**, faute de profondeur temporelle |
+
+Règles :
+
+- **besoin restauré actif** → reste gouverné par les règles de **maintien et de
+  libération**, jamais par la fenêtre d'entrée ;
+- **besoin inactif** → le critère dynamique **ne peut pas créer** de besoin tant
+  que la fenêtre n'est pas suffisamment remplie ;
+- le **critère de niveau**, s'il est franchi, peut néanmoins créer le besoin
+  **immédiatement** ;
+- cette **indisponibilité partielle** du critère dynamique doit être **exposable**.
+
+> Ainsi, le remplissage de la fenêtre **ne fait pas perdre un besoin restauré** et
+> **ne crée pas de faux besoin**.
+
+### 5bis.4 Exigences d'explicabilité
+
+L'explicabilité couvre **la fenêtre elle-même**, sans imposer d'historique complet
+en UI. Le diagnostic doit pouvoir exposer au minimum :
+
+| # | Élément |
+|---|---|
+| 1 | durée **nominale** de la fenêtre |
+| 2 | profondeur **réellement disponible** |
+| 3 | valeur **courante** |
+| 4 | valeur de **référence** utilisée |
+| 5 | **évolution calculée** |
+| 6 | **frontière d'évolution** |
+| 7 | statut **calculable / non calculable** |
+| 8 | condition dynamique **actuellement satisfaite ou non** |
+
+Ces exigences s'ajoutent aux dix du §10.2 du contrat.
+
+### 5bis.5 Périmètre de L2c
+
+**Inclus** : amendement du §2.2 du contrat `vmc.md` portant l'autorisation
+(§5bis.2), son articulation au redémarrage (§5bis.3) et les exigences
+d'explicabilité (§5bis.4).
+
+**Exclu** : toute valeur de fenêtre, toute frontière d'évolution, toute formule.
+L2c autorise et encadre ; **il ne calibre pas**. La calibration reste au L2b,
+postérieur à L5.
+
+### 5bis.6 Ce que L2c ne présume pas
+
+L2c rend une famille de solutions **contractuellement admissible**. Il ne
+présume pas :
+
+- qu'un critère d'évolution sera effectivement retenu ;
+- que les mesures disponibles permettront de le calibrer — la granularité d'une
+  des pièces surveillées est **quantifiée au point entier**, avec un intervalle
+  médian de 12 minutes ;
+- que la décision B sera satisfaite au terme du chantier.
+
+Si L2b démontrait qu'aucune formule admissible n'est calibrable avec
+l'instrumentation disponible, **la décision B devrait être rouverte**.
 
 ---
 
