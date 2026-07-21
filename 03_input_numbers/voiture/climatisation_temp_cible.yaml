@@ -1,0 +1,33 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Audi A3 e-tron — Température cible de la climatisation distante
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Intention utilisateur : température cible passée à
+#   script.audi_climatisation_distante lors d'une commande manuelle.
+#
+# 🧩 PÉRIMÈTRE
+#   - Réglage d'interface uniquement (affordance manuelle)
+#   - Bornes 15–30 °C (contrat voiture.md — INV-CMD-3/4)
+#   - Aucun calcul, aucune logique, aucun pilotage direct
+#
+# 🏷️ NATURE
+#   Paramètre utilisateur (helper de réglage)
+#
+# 🚫 INTERDITS
+#   - Ne pilote PAS le véhicule directement
+#   - Ne décide RIEN
+#   - N'est consommé QUE par le bouton de commande → le script
+#
+# 🏷️ STATUT
+#   UI C25 — couche action bornée (amendement A1)
+# ==========================================================
+
+audi_climatisation_temp_cible:
+  name: "Audi — température climatisation cible"
+  min: 15
+  max: 30
+  step: 1
+  unit_of_measurement: "°C"
+  mode: slider
+  icon: mdi:thermometer
