@@ -4,10 +4,10 @@
 |---|---|
 | **Chantier** | Mettre l'implémentation VMC en conformité avec la **cible contractuelle v2.0**, dont le modèle de décision a été révisé : retrait du rôle décisionnel du verdict d'aération, besoins hystérétiques autonomes, état par pièce, frontières ON/OFF réellement exercées, restauration au redémarrage, maintien du besoin sur mesure inexploitable, explicabilité. |
 | **Domaine** | VMC. |
-| **Statut** | **Ouvert — Lots 1 et 2c intégrés ; L2a acquis.** `vmc.md` **v2.1** est **normatif dans `main`** : le §2.2 bis autorise l'**observation glissante bornée** en condition d'entrée, dans les limites qu'il fixe. **Le verrou entre la décision B et le §2.2 est levé contractuellement.** **Aucune calibration n'est pour autant acquise, et la calibrabilité avec les capteurs existants reste à démontrer.** Les cinq divergences du §2 restent des **écarts contractuels formels**. Aucun runtime, UI ni checker modifié. |
+| **Statut** | **Ouvert — Lots 1 et 2c intégrés ; L2a acquis ; L3 défini — dispositif de preuve préparé, en attente de commit et de merge.** `vmc.md` **v2.1** est normatif dans `main`. Le dispositif de preuve est défini par [`protocole_dispositif_preuve_vmc.md`](protocole_dispositif_preuve_vmc.md), avec la frontière de propriété **Arsenal = définition/interprétation ; `arsenal-runtime` = acquisition/extraction/reproductibilité**. **Aucune calibration n'est acquise ; certaines preuves (haute vitesse, débit) sont explicitement reportées à L4.** Aucun runtime, UI ni checker modifié. |
 | **Priorité** | **P2** — l'écart n'expose à aucun risque de sûreté : le fail-safe physique et l'invariant XOR des relais sont inchangés et hors périmètre. L'enjeu est fonctionnel (besoin d'extraction non servi) et de gouvernance (contrat non implémenté). |
 | **Ouvert le** | 2026-07-21. |
-| **Prochain jalon** | **L3 — définition des preuves attendues** (§5). **L2b (calibration finale) reste ordonnancé après L5** ; **aucune correction runtime n'est autorisée tant que la séquence probatoire et L2b ne sont pas soldées**. |
+| **Prochain jalon** | **L3 — définition du dispositif de preuve**, porté par le présent lot (en attente de merge) ; **L4 deviendra le jalon actif après intégration**. **L2b (calibration finale) reste ordonnancé après L5** ; **aucune correction runtime n'est autorisée tant que la séquence probatoire et L2b ne sont pas soldées**. |
 | **Registre** | Chantier **C35** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi du chantier.** |
 
 > **Ce document n'établit aucun comportement et ne calibre aucun paramètre.**
@@ -133,8 +133,8 @@ Les lots sont **ordonnés**. Aucun ne peut être anticipé.
 | ~~**L1**~~ ✅ | ~~Intégration des contrats validés~~ **soldé (2026-07-21)** — VMC v2.0 + co-changement aération, co-commités et mergés | Co-commit respecté |
 | **L2a** | Décisions de calibration §14 **déjà démontrables** — seuil absolu seul écarté, aucun modulateur retenu | Aucune valeur reconduite par défaut au motif qu'elle existe |
 | ~~**L2c**~~ ✅ | ~~Co-changement contractuel — fenêtre glissante~~ **soldé (2026-07-21)** — `vmc.md` v2.0 → **v2.1** intégré et normatif, §2.2 bis / §4.4 bis / §9.1 bis (§5 bis) | 🔓 **Verrou levé.** L3 est engageable |
-| **L3** | Définition précise des preuves attendues | **Aucune correction runtime avant ce lot** |
-| **L4** | Audit de `C:\dev\arsenal-runtime` — outils, procédures, sauvegardes, mécanismes d'analyse existants | Aucune solution d'instrumentation conçue avant |
+| **L3** | Définition du dispositif de preuve — [`protocole_dispositif_preuve_vmc.md`](protocole_dispositif_preuve_vmc.md) **(préparé, en attente de merge)** | Documentaire ; ne crée aucun outil ni instrumentation |
+| **L4** | **Audit des moyens d'observation** — corroboration de la haute vitesse (R6 : décision et relais non historisés) + **matériel VMC** (identification du moteur, spécification du module) | Conclut : moyens suffisants / exposition diagnostique minimale / mesure terrain indispensable. `arsenal-runtime` déjà audité au L3 |
 | **L5** | Acquisition d'une référence **avant** changement | Sans référence, l'effet du changement ne sera pas mesurable |
 | **L2b** | **Calibration finale** à partir des preuves — frontières, « suffisamment assaini », bande morte, durée minimale | Lot distinct, **ordonnancé après L5**. Aucune correction runtime tant qu'il n'est pas soldé |
 | **L6** | Analyse d'impact runtime, UI et CI | Aucun patch produit à ce stade |

@@ -1,0 +1,316 @@
+# Protocole de preuve VMC (C35 — Lot 3)
+
+| Champ | Valeur |
+|---|---|
+| **Chantier** | C35 — Mise en conformité du domaine VMC avec le contrat v2.1 |
+| **Lot** | **L3 — définition du dispositif de preuve** |
+| **Nature** | Document **normatif de définition des preuves**. Il ne produit aucune preuve, ne calibre aucun paramètre, ne crée aucun outil |
+| **Frontière de propriété** | **Arsenal définit et interprète les preuves ; `arsenal-runtime` les acquiert, les extrait et en assure la reproductibilité opérationnelle** (§6) |
+| **Contrat de référence** | [`../../../contrats/vmc.md`](../../../contrats/vmc.md) **v2.1** (§14 paramètres ouverts, §2.2 bis observation glissante, §9.1 bis, §15) |
+
+> **Ce document définit les questions probatoires, les preuves attendues, les
+> critères de suffisance et les propriétaires.** Il n'exécute aucune campagne, ne
+> télécharge aucune sauvegarde, ne commande jamais la VMC. La calibration relève
+> du L2b, postérieur à L5.
+
+---
+
+## 1. Objet
+
+Répondre à une question unique :
+
+> **Quelles observations minimales permettront de trancher chaque paramètre
+> encore ouvert du §14, avec quelle méthode, quelle durée et quel critère
+> d'acceptation ?**
+
+Ce document est **auto-suffisant sur la définition**. Ce qu'il ne peut pas
+trancher est **explicitement reporté à L4** (§8).
+
+---
+
+## 2. Constat structurant — observabilité actuelle
+
+Établi par observation Home Assistant en lecture seule (rétention Recorder
+≈ 30,8 jours, `purge_keep_days: 30`).
+
+| Entité | Historisée ? | Rôle probatoire |
+|---|---|---|
+| `sensor.humidite_relative_sdb_parents` | Oui (pas 0,1 ; réémission ~1 pt) | Entrée — épisodes SdB parents |
+| `sensor.humidite_relative_sdb_enfants` | Oui (**valeurs entières**) | Entrée — granularité dégradée |
+| `sensor.humidite_relative_sejour` | Oui | Entrée — séjour |
+| `sensor.humidite_absolue_sdb_parents` | Oui | Test psychrométrique |
+| `sensor.co2_sejour` | Oui | Voie CO₂ |
+| `input_boolean.vmc_haute_vitesse` | Oui | **Voir §2.1** |
+| `switch.vmc_l1` / `switch.vmc_l2` | **Non** | Sorties relais non reconstituables |
+| `binary_sensor.vmc_haute_vitesse_requise` | **Non** | Décision métier non historisée |
+
+### 2.1 Statut exact de `input_boolean.vmc_haute_vitesse`
+
+> **Cette entité n'est pas une « preuve d'exécution ».** C'est une **trace
+> déclarative de l'état de haute vitesse, actuellement non corroborée par la
+> décision ni par les sorties relais historisées.**
+
+La concordance **décision → commande → exécution** ne peut donc **pas** être
+démontrée par plusieurs sources indépendantes dans l'état actuel. Toute preuve
+portant sur le comportement en haute vitesse repose sur cette trace unique.
+
+> **Exigence posée par L3, décision reportée à L4.** L4 devra déterminer si cette
+> trace est **suffisamment autoritative par construction**, ou si une
+> **exposition diagnostique supplémentaire** est nécessaire. **L3 formalise
+> l'exigence ; il ne choisit pas la correction.**
+
+### 2.2 Statistiques long-terme
+
+Non confirmées (l'API WebSocket Recorder a échoué sur la session d'observation).
+À supposer présentes, leur granularité horaire/quotidienne serait **trop
+grossière** pour des pics de douche dont la montée dure 3 à 35 minutes. **Elles
+ne résolvent pas la libération (§5.E).**
+
+---
+
+## 3. Matrice décision → preuve
+
+Pour chaque paramètre ouvert : preuve suffisante / méthode / critère
+d'acceptation / propriétaire de l'acquisition.
+
+### A — Périmètre des pièces (§14.1)
+
+| Pièce | Bouche | Capteur | Preuve suffisante | Critère |
+|---|---|---|---|---|
+| **SdB parents** | Oui | Oui | Déjà admissible ; épisodes majeurs observés | Aucune preuve neuve |
+| **SdB enfants** | Oui | Oui (entiers) | Salle de douche → admissible **par nature** | ≥ 1 usage réel étiqueté produisant un pic mesurable |
+| **Séjour** | Oui | Oui | Existence d'un besoin humidité **local** relevant d'O1/O2, distinct du fond diurne | Montées rapides propres au séjour sur 30 j → justifier ; sinon **classer O3, retirer de la voie humidité** |
+| **WC étage** | Oui | **Non** | — | Hors périmètre : aucun capteur d'humidité |
+
+> Une bouche d'extraction ne prouve pas un besoin humidité autonome. Le séjour
+> est le cas test de cette règle.
+
+### B — Critère de niveau (§14.2)
+
+| Sous-question | Preuve suffisante | Critère |
+|---|---|---|
+| Seuil absolu seul insuffisant | **Acquis** (audit de calibrabilité L2) | — |
+| Niveau comme voie d'entrée forte | Part des épisodes captés par un niveau haut, sur épisodes étiquetés | Décision métier sur le taux visé |
+| Distinguer épisode / régime diurne | Profil diurne sur journées calmes | Amplitude diurne caractérisée avec incertitude |
+| Frontière de libération | Voir E |
+
+### C — Critère d'évolution (§14.2, §2.2 bis)
+
+| Paramètre | Preuve suffisante | Méthode | Réserve |
+|---|---|---|---|
+| Durée nominale de fenêtre | Séparation nette épisodes / bruit, stable sur plusieurs largeurs | Rejeu hors ligne 15/30/60 min | — |
+| Profondeur minimale | Idem, avec cas de fenêtre partielle (§9.1 bis) | Rejeu | — |
+| Valeur de référence | Référence glissante vs figée | Rejeu | Glissante = historique borné (§2.2 bis) ; figée = seuil absolu |
+| Grandeur + frontière d'évolution | Courbe détection/faux positifs par seuil, sur épisodes **étiquetés** | Rejeu | Indécidable sans étiquetage |
+| Sensibilité au pas de restitution | Effet mesuré SdB parents vs SdB enfants (entiers) | Rejeu comparatif | **SdB enfants : critère possiblement inopérant** — 1 point/fenêtre de 15 min |
+| Intervalles irréguliers | Robustesse aux trous d'échantillonnage | Rejeu | Intervalle médian SdB parents 4 min, p90 24,7 min |
+
+**La preuve doit séparer quatre causes** : bruit/réémission, évolution physique
+réelle, variation diurne, épisode humide réel. Cela **exige l'étiquetage** (§4.D).
+
+### D — Combinaison « niveau OU évolution »
+
+| Preuve suffisante | Méthode |
+|---|---|
+| Le scénario domine les alternatives sur épisodes étiquetés | Rejeu comparant, sur le **même jeu étiqueté** : taux de détection, épisodes manqués, faux positifs, durée d'activation théorique, comportement au redémarrage avec fenêtre insuffisante |
+
+Critère : détecter les épisodes vespéraux modestes **sans** dépasser un plafond
+de faux positifs, fixé une fois la variabilité connue.
+
+### E — « Suffisamment assaini » et frontière OFF (§14.2)
+
+> **Bloqué par §2.1.** La libération se calibre sur une redescente **en haute
+> vitesse** — non observée à ce jour.
+
+| À distinguer | Preuve suffisante |
+|---|---|
+| Chute rapide vs traîne | Déjà visible, mais **en basse vitesse** |
+| Cycle diurne | Profil sur journées calmes |
+| Désorption vs dilution | **≥ 1 redescente complète en haute vitesse** |
+| Effet propre de la haute vitesse | Comparaison basse vs haute vitesse sur épisodes appariés |
+
+**Garde-fou normatif** : un épisode n'est *exploitable pour E* que si la haute
+vitesse a couvert sa phase de redescente. **Interdiction de calibrer la
+libération sur des redescentes de basse vitesse.**
+
+### F — Écart de débit basse/haute vitesse (**preuve prioritaire**)
+
+Quatre grandeurs à ne pas confondre :
+
+| Grandeur | Source | Suffit pour |
+|---|---|---|
+| **Débit nominal constructeur** (L / H) | Fiche du moteur | Première qualification aéraulique |
+| **Débit réel de l'installation** | Mesure in situ | Qualification réelle |
+| **Gain relatif L → H** | Constructeur ou mesure | Amplitude de l'effet |
+| **Effet observé sur l'humidité** | Recorder + épisodes HV | Calibrer « assaini » dans le logement réel |
+
+> **Une fiche constructeur peut suffire pour une première qualification
+> aéraulique, mais pas nécessairement pour calibrer « suffisamment assaini » dans
+> le logement réel** — cela dépend de l'effet observé, qui suppose des épisodes
+> en haute vitesse (§E, L4).
+
+Méthodes, par sobriété décroissante :
+
+| Rang | Méthode | Intrusif | Propriétaire | Discrimine L/H ? |
+|---|---|---|---|---|
+| 1 | **Documentation constructeur** | Non | Terrain → consignation Arsenal | Oui si fiche donne les deux débits |
+| 2 | Mesure anémométrique ponctuelle | Faible | Terrain | Oui, directement |
+| 3 | Proxy par cinétique d'assèchement | Non | arsenal-runtime | **Partiel — voir réserve** |
+| 4 | Puissance électrique par régime | Faible | Terrain | Oui si écart mesurable |
+
+> **Réserve dirimante.** Un proxy de cinétique **ne mesure pas un débit** : il
+> mêle débit, conditions de l'épisode, hygrométrie extérieure et désorption. Il
+> peut **corroborer** un écart établi par les rangs 1/2, **jamais l'établir
+> seul**.
+
+**Prérequis** : identifier le moteur VMC. Le dépôt ne le documente pas (seul le
+module de commande Zigbee `0x8c73dafffe0388a2` est connu). **Identification
+prioritaire — reportée à L4.**
+
+### G — Durée minimale d'exécution (§14.4)
+
+| Composante | Preuve suffisante | Propriétaire |
+|---|---|---|
+| Protection du relais | **Spécification de cyclage du module** | Terrain — fiche module |
+| Stabilité de la commande | Absence de battement sur `input_boolean.vmc_haute_vitesse` | arsenal-runtime |
+| Bénéfice aéraulique | Dépend de E | — |
+| Coût acoustique / énergétique | Mesure ponctuelle (dB, W) | Terrain |
+
+> La spécification du module doit être auditée avant toute décision de durée de
+> protection. À défaut, 15 min ne peut être ni reconduit ni supprimé.
+
+---
+
+## 4. Sources de données
+
+### A — Recorder actuel
+Rétention ≈ 30,8 j. **Ne pas augmenter `purge_keep_days` de façon permanente et
+large.** Relais et décision hors historique (§2).
+
+### B — Sauvegardes Home Assistant non chiffrées — **voie privilégiée**
+Voie éprouvée par `arsenal-runtime` : sauvegarde `.tar` non chiffrée → NAS →
+extraction hors ligne de `home-assistant_v2.db` → analyse `mode=ro` → provenance
+SHA-256 → base **non versionnée, supprimée après usage**. Aucun accès API/SSH,
+aucune charge durable sur Recorder.
+
+> **Fenêtre de purge** : une sauvegarde fraîche contient 30 jours ; elle doit
+> être prise **avant qu'un épisode ne sorte de cette fenêtre**.
+
+### C — Mesure physique ponctuelle
+Nécessaire uniquement pour F (débit) et une partie de G, **et seulement si** la
+fiche constructeur est introuvable. **Aucun achat recommandé** avant
+identification du moteur et détermination de la grandeur nécessaire.
+
+### D — Étiquetage manuel minimal — **nécessaire**
+Sans lui, C/D indécidables. Journal sobre, une ligne par épisode : date/heure
+approx. début-fin, type (douche/bain), pièce, porte (ouverte/fermée), haute
+vitesse constatée (oui/non), note atypique. Réaliste en usage domestique ;
+aucune action artificielle.
+
+---
+
+## 5. Critères de suffisance — définis à l'avance
+
+| Paramètre | Preuve suffisante | Seulement indicatif | Non concluant si |
+|---|---|---|---|
+| Séjour dans le périmètre | Montées locales rapides observées **ou** leur absence nette sur 30 j | Une montée ambiguë | Données trop rares |
+| Forme du critère d'évolution | Séparation nette sur épisodes étiquetés, stable sur plusieurs largeurs | Bon score sur une seule largeur | Étiquetage insuffisant |
+| « Assaini » / OFF | ≥ 1 redescente **complète en haute vitesse**, désorption vs dilution départagées | Redescentes basse vitesse seules | Aucune redescente HV |
+| Débit L/H | Deux valeurs constructeur **ou** deux mesures | Proxy de cinétique seul | Moteur non identifié |
+| Durée minimale | Spécification de cyclage | Absence de battement | Fiche introuvable |
+
+**Minima opérationnels — proposés, motivés, non figés** : profil diurne sur
+plusieurs journées calmes de météos variées (le L2 n'en avait que 2, insuffisant) ;
+étiquetage couvrant matin marqué / soir modeste / ≥ 1 passage haute vitesse. Le
+nombre exact dépend de la variabilité constatée, **révisable en cours de
+collecte**. Aucune taille d'échantillon arbitraire.
+
+---
+
+## 6. Répartition des propriétaires
+
+> **Frontière tranchée (gouvernance C35) :** *Arsenal est propriétaire de la
+> définition des preuves et de leur interprétation métier ; `arsenal-runtime` est
+> propriétaire de leur acquisition, extraction et reproductibilité
+> opérationnelle.* Cohérent avec le précédent C15 et la doctrine « HA =
+> intégration/UI ; Arsenal = sens/décision ».
+
+| Élément | Propriétaire |
+|---|---|
+| Définition normative de la preuve, critères, confondants | **Arsenal** (le présent document) |
+| Protocole d'observation | **Arsenal** |
+| Sauvegardes, extraction de `home-assistant_v2.db` | **arsenal-runtime** |
+| Scripts d'analyse hors ligne (`mode=ro`) | **arsenal-runtime** |
+| Empreintes SHA-256, résultats reproductibles, conservation | **arsenal-runtime** |
+| **Synthèse normative** des constats utiles au chantier, **après** campagne | **Arsenal** — sans recopier outils ni bases |
+| Identification matériel, doc constructeur, mesures physiques | **Terrain** |
+| Journal d'étiquetage des épisodes | **Terrain** |
+
+> **Rien de ce qui appartient déjà à `arsenal-runtime` ne doit être déposé dans
+> `arsenal`** : ni procédure d'extraction, ni script SQLite, ni base. `arsenal`
+> reçoit la définition, le protocole et la synthèse consignée.
+
+---
+
+## 7. Facteurs confondants et garde-fous
+
+| # | Confondant | Neutralisation |
+|---|---|---|
+| R1 | Variation diurne ≈ épisode vespéral (~6,8 pts) | Profil diurne établi **avant** tout seuil |
+| R2 | Pas de restitution pris pour du signal | Mesure de bruit à pas homogène ; cas SdB enfants isolé |
+| R3 | Proxy de cinétique pris pour un débit | Réserve dirimante (§3.F) |
+| R4 | Redescente basse vitesse prise pour cible | Garde-fou : E-exploitable seulement si HV couvre la redescente |
+| R5 | Épisode non étiqueté pris pour bruit (ou l'inverse) | Journal d'étiquetage |
+| R6 | **Décision et relais non historisés** | **Non neutralisable par la conception — objet de L4** |
+| R7 | Sauvegarde trop tardive (épisode purgé) | Cadence de sauvegarde < 30 j |
+
+---
+
+## 8. Ce qui est reporté à L4
+
+L3 définit le dispositif **y compris les preuves actuellement impossibles**. Les
+dépendances suivantes sont **explicitement reportées à L4** :
+
+1. **Corroboration de la haute vitesse (R6).** L4 déterminera si la trace
+   `input_boolean.vmc_haute_vitesse` est suffisamment autoritative par
+   construction, ou si une exposition diagnostique minimale est nécessaire. L3
+   pose l'exigence, ne choisit pas la correction.
+2. **Identification du moteur VMC** et recherche de sa documentation
+   constructeur (débits, cyclage).
+3. **Spécification du module de commande** (cyclage max), préalable à la durée
+   minimale (§3.G).
+
+**L4 pourra conclure** en l'une de trois issues : moyens suffisants / exposition
+diagnostique minimale nécessaire / mesure terrain indispensable.
+
+> **L'exclusion actuelle d'une commande artificielle de la VMC reste intacte.**
+> L'absence de voie passive fiable pour capturer des épisodes en haute vitesse
+> **ne présume pas** qu'une activation manuelle sera nécessaire : L4 déterminera
+> d'abord si les épisodes naturels futurs, une trace autoritative et un étiquetage
+> minimal suffisent.
+
+---
+
+## 9. Séquencement
+
+| Étape | Objet | Verrou |
+|---|---|---|
+| **L3** | Le présent dispositif | Documentaire ; ne crée aucun outil ni instrumentation |
+| **L4** | Audit des moyens d'observation — **R6** (corroboration HV) + **matériel VMC** (moteur, module) | Conclut : suffisant / exposition diagnostique / mesure terrain |
+| **L5** | Référence terrain — protocoles Recorder puis épisodes HV | Après L4 |
+| **L2b** | Calibration, **uniquement** à partir de la référence L5 | Aucune correction runtime avant L2b soldé |
+
+---
+
+## 10. Ce que L3 solde, ce qui reste ouvert
+
+**Soldé par L3** : matrice décision → preuve, critères de suffisance,
+propriétaires, voie d'extraction privilégiée, garde-fous, séquencement,
+formalisation de l'exigence de corroboration.
+
+**Reporté à L4** : R6 (corroboration), identification moteur, spécification
+module. **Reporté à L5** : la campagne. **Reporté à L2b** : toute valeur.
+
+> **L3 ne prétend pas que toutes les preuves sont obtenables dans l'état
+> actuel.** Il définit ce qu'il faut prouver et par quels moyens, en nommant
+> explicitement ce que l'observabilité actuelle ne permet pas encore.
