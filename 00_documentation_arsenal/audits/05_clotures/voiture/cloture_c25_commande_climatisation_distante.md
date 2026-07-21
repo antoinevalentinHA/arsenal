@@ -43,6 +43,22 @@ reste à consigner pour qualifier pleinement le détecteur.
 - **Validation end-to-end NOMINALE (2026-07-21, ~15:54)** : bouton Arsenal → **`Confirmée`** (le script a
   observé une transition réelle de `climatisation_state`). *(§6.)*
 
+## 2 bis. Durcissement de la restitution (2026-07-21, post-clôture)
+
+Défaut relevé au terrain juste après clôture : l'état de commande **restait figé sur « Confirmée »**
+(en bleu) même après l'arrêt de la climatisation — l'UI mentait sur la réalité. Correctif conforme
+doctrine (matérialisation d'état, Couche 3) et gravé **INV-CMD-8** :
+
+- **Vérité unique** `binary_sensor.audi_climatisation_active` (`12_template_sensors/voiture/climatisation_active.yaml`)
+  — dérivée de l'état brut véhicule (`climatisation_state ∈ {cooling,heating,ventilation}`), avec
+  disponibilité native ; **transit Couche 1** de la valeur littérale via son attribut `etat`.
+- **Automation de restitution** `10150000000006`
+  (`11_automations/voiture/restitution_climatisation_active.yaml`) : **notification persistante** tant que
+  la clim est active (dismissée après) **+** réconciliation de l'état de commande (« Confirmée » → « Au
+  repos ») au retour à l'inactif ; re-projection boot via `systeme_stable`. **Aucune décision, aucun
+  calcul.**
+- Contrat **A1** étendu : **INV-CMD-8 — restitution non figée**.
+
 ## 3. Réserve — condition de levée
 
 - **E6 — comportement en échec (non fait)** : exécuter la commande en état **naturellement incompatible**

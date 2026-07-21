@@ -1,0 +1,34 @@
+# ==========================================================
+# ❄️ TEMPLATE BINARY SENSOR — Audi : climatisation active
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Vérité UNIQUE « la climatisation stationnaire est active »,
+#   dérivée de l'état brut véhicule climatisation_state.
+#   Consommée par la restitution (notification + état de commande).
+#
+# ⚙️ Fonctionnement :
+#   - actif  = climatisation_state ∈ {cooling, heating, ventilation}
+#   - indisponible si la source est unknown/unavailable (pas de faux « off »)
+#
+# 🧩 Nature : couche décision/observation (INV-CMD-7). Ne pilote rien.
+# 📍 Entité générée : binary_sensor.audi_climatisation_active
+# 🧮 Source : sensor.audi_a3_sportback_e_tron_climatisation_state
+# ==========================================================
+
+- binary_sensor:
+    - name: "Audi climatisation active"
+      unique_id: audi_climatisation_active
+      default_entity_id: binary_sensor.audi_climatisation_active
+      device_class: running
+      icon: mdi:air-conditioner
+      state: >
+        {{ states('sensor.audi_a3_sportback_e_tron_climatisation_state')
+           in ['cooling', 'heating', 'ventilation'] }}
+      availability: >
+        {{ states('sensor.audi_a3_sportback_e_tron_climatisation_state')
+           not in ['unknown', 'unavailable'] }}
+      # Transit de la valeur brute (Couche 1) : les consommateurs (automation de
+      # restitution) lisent l'état littéral ICI, jamais le capteur cloud brut.
+      attributes:
+        etat: >
+          {{ states('sensor.audi_a3_sportback_e_tron_climatisation_state') }}

@@ -1,0 +1,82 @@
+# ==========================================================
+#  AUTOMATION : Voiture — Restitution climatisation active
+#  ----------------------------------------------------------
+#  🧠 Rôle :
+#     Matérialiser l'état live « climatisation active » :
+#       - notification persistante TANT QUE la clim est active,
+#         dismissée dès qu'elle s'arrête ;
+#       - referme l'état de commande (Confirmée → Au repos) quand la
+#         climatisation repasse inactive (l'UI ne fige plus « Confirmée »).
+#
+#  🧩 Périmètre :
+#     - Apparition de la notification quand l'état devient vrai
+#     - Extinction quand l'état devient faux
+#     - Réconciliation de l'état de commande sur retour à l'inactif
+#
+#  🚫 Interdits (matérialisation d'état, cf. contrat voiture.md Couche 3) :
+#     - Aucune décision métier, aucun calcul, aucune référence temporelle
+#     - Ne pilote PAS le véhicule
+#
+#  🧠 Statut architectural : Application — matérialisation d'état
+#  🏷️ Domaine Voiture / Climatisation (INV-CMD-7/8)
+# ==========================================================
+
+- id: "10150000000006"
+  alias: Voiture - Restitution climatisation active
+  description: >
+    Notification persistante tant que la climatisation est active (dismissée
+    après) et remise à « Au repos » de l'état de commande quand elle s'arrête.
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — transitions de la vérité « clim active »
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.audi_climatisation_active
+      to: "on"
+
+    - platform: state
+      entity_id: binary_sensor.audi_climatisation_active
+      to: "off"
+
+    # Re-projection post-démarrage : HA ne restaure pas les persistantes
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  # ======================================================
+  # 🔄 Actions — notification + réconciliation de l'état
+  # ======================================================
+  action:
+    - choose:
+        # Climatisation active → notification présente
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.audi_climatisation_active
+              state: "on"
+          sequence:
+            - service: persistent_notification.create
+              data:
+                notification_id: voiture_climatisation_active
+                title: "❄️ Audi A3 e-tron"
+                message: >
+                  Climatisation active : {{ state_attr('binary_sensor.audi_climatisation_active', 'etat') }}
+
+      # Climatisation inactive → dismiss + referme l'état de commande
+      default:
+        - service: persistent_notification.dismiss
+          data:
+            notification_id: voiture_climatisation_active
+
+        - choose:
+            - conditions:
+                - condition: state
+                  entity_id: input_select.audi_climatisation_commande_etat
+                  state: "Confirmée"
+              sequence:
+                - service: input_select.select_option
+                  target:
+                    entity_id: input_select.audi_climatisation_commande_etat
+                  data:
+                    option: "Au repos"
