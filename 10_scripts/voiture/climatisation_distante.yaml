@@ -1,0 +1,145 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Voiture — Commande de climatisation distante Audi (single-shot honnête)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Démarrer MANUELLEMENT la climatisation stationnaire de l'Audi via
+#   audiconnect.start_climate_control, puis établir HONNÊTEMENT le résultat
+#   par OBSERVATION TERMINALE — jamais sur la seule absence d'erreur.
+#
+# 🧱 PRINCIPE (contrat voiture.md — COUCHE ACTION, amendement A1)
+#   - action pure, déclenchée par un geste humain (aucune décision métier)
+#   - INV-CMD-1 : succès = transition observée de climatisation_state
+#   - INV-CMD-2 : sinon « Non confirmée (timeout) », jamais « rejected »
+#   - INV-CMD-3 : périmètre minimal — temp_c + climatisation_mode ; tous les
+#                 booléens (sièges, vitrage, clim-à-l'ouverture) forcés false
+#   - INV-CMD-5 : aucun gate de commandabilité (timeout backend imprévisible)
+#   - INV-CMD-6 : ciblage PORTABLE via device_id(nom), jamais d'id figé
+#
+# ⏱️ LATENCE
+#   climatisation_state ne se met à jour qu'au polling du coordinateur audiconnect
+#   (pas instantané). Le script NUDGE refresh_vehicle_data et observe dans une
+#   fenêtre bornée (~3 min).
+#
+# 🔁 SINGLE-SHOT
+#   Un seul appel. Aucune relance automatique (la relance est un geste humain).
+#
+# 🚫 HORS PÉRIMÈTRE
+#   - aucun arrêt distant, aucune charge, aucun préchauffage
+#   - aucune décision automatique (préconditionnement, horaire, météo)
+# ==========================================================
+
+audi_climatisation_distante:
+  alias: "Voiture – Démarrer climatisation distante (Audi)"
+  mode: single
+  max_exceeded: silent
+
+  fields:
+    temp_c:
+      description: "Température cible en °C (15–30). Défaut 21."
+      example: 21
+      default: 21
+      selector:
+        number:
+          min: 15
+          max: 30
+          step: 1
+          unit_of_measurement: "°C"
+    climatisation_mode:
+      description: "Mode : comfort (prouvé) ou economy (sous réserve E2)."
+      example: comfort
+      default: comfort
+      selector:
+        select:
+          options:
+            - comfort
+            - economy
+
+  sequence:
+    - variables:
+        vehicule: "{{ device_id('Audi A3 Sportback e-tron') }}"
+        capteur_etat: sensor.audi_a3_sportback_e_tron_climatisation_state
+        etats_actifs:
+          - cooling
+          - heating
+          - ventilation
+        # INV-CMD-4 : bornes gardées côté Arsenal (le schéma de l'intégration ne
+        # garde ni temp_c ni l'énumération de mode).
+        temp_gardee: "{{ [15, [30, (temp_c | int(21))] | min] | max }}"
+        mode_garde: "{{ climatisation_mode if climatisation_mode in ['comfort', 'economy'] else 'comfort' }}"
+
+    # ── Garde INV-CMD-6 : véhicule résolu de façon portable ────────────────
+    - choose:
+        - conditions: "{{ not vehicule }}"
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                message: >
+                  Climatisation distante Audi — device « Audi A3 Sportback e-tron »
+                  introuvable au registre : commande NON émise (ancrage portable).
+            - stop: "Véhicule introuvable — commande non émise"
+
+    # ── Ouverture de la transaction : En cours ─────────────────────────────
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.audi_climatisation_commande_etat
+      data:
+        option: "En cours"
+
+    # ── Émission de l'appel (booléens forcés false — INV-CMD-3) ────────────
+    - service: audiconnect.start_climate_control
+      data:
+        device_id: "{{ vehicule }}"
+        temp_c: "{{ temp_gardee | int }}"
+        climatisation_mode: "{{ mode_garde }}"
+        seat_fl: false
+        seat_fr: false
+        seat_rl: false
+        seat_rr: false
+        glass_heating: false
+        climatisation_at_unlock: false
+
+    # ── Observation terminale bornée (nudge + attente) — INV-CMD-1 ─────────
+    #   ~6 itérations × ~30 s ≈ 3 min. On force un refresh à chaque tour pour
+    #   hâter la mise à jour du capteur (dépendante du polling coordinateur).
+    - repeat:
+        while:
+          - condition: template
+            value_template: >
+              {{ repeat.index <= 6
+                 and states(capteur_etat) not in etats_actifs }}
+        sequence:
+          - delay: "00:00:20"
+          - service: audiconnect.refresh_vehicle_data
+            data:
+              device_id: "{{ vehicule }}"
+          - wait_template: "{{ states(capteur_etat) in etats_actifs }}"
+            timeout: "00:00:10"
+            continue_on_timeout: true
+
+    # ── Conclusion transactionnelle honnête — INV-CMD-1/2 ──────────────────
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ states(capteur_etat) in etats_actifs }}"
+          sequence:
+            - service: input_select.select_option
+              target:
+                entity_id: input_select.audi_climatisation_commande_etat
+              data:
+                option: "Confirmée"
+      default:
+        - service: system_log.write
+          data:
+            level: warning
+            message: >
+              Climatisation distante Audi — NON CONFIRMÉE (timeout d'observation) :
+              climatisation_state='{{ states(capteur_etat) }}' après la fenêtre.
+              Statut honnête « timeout » (le motif d'un éventuel refus n'est pas
+              exposé par l'intégration).
+        - service: input_select.select_option
+          target:
+            entity_id: input_select.audi_climatisation_commande_etat
+          data:
+            option: "Non confirmée (timeout)"

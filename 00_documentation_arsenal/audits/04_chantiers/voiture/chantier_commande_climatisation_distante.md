@@ -10,7 +10,8 @@
 | **Service cible** | `audiconnect.start_climate_control` (S-PIN non requis). |
 | **Ouvert le** | 2026-07-17. |
 | **Cadrage contractuel** | **Livré (2026-07-21).** Décisions D1–D8 : [`cadrage_commande_climatisation_distante.md`](../../02_conception/voiture/cadrage_commande_climatisation_distante.md) ; contrat **amendé** (A1) — couche action bornée, manuelle, sans décision automatique, périmètre `temp_c` + `climatisation_mode` (`comfort` prouvé, `economy` sous réserve E2). |
-| **Prochain jalon** | **Runtime** — exécutant borné + **observation terminale** (`climatisation_state`) + restitution honnête (`non confirmé`/`timeout`), ancrage véhicule portable. En parallèle : essais résiduels E1b / E2–E5 / E6. |
+| **Runtime** | **Livré (2026-07-21), validation terrain en attente.** Script `script.audi_climatisation_distante` (`10_scripts/voiture/climatisation_distante.yaml`) — **single-shot honnête** : appel `start_climate_control` (ciblage portable `device_id('Audi A3 Sportback e-tron')`, `temp_c` + `climatisation_mode`, booléens forcés `false`), **nudge** `refresh_vehicle_data`, puis **observation terminale bornée** (~3 min) de `sensor.audi_a3_sportback_e_tron_climatisation_state` → état de commande honnête `input_select.audi_climatisation_commande_etat` (Au repos / En cours / Confirmée / Non confirmée (timeout)). Entité d'observation **confirmée live par l'opérateur** (elle bascule après activation, non instantanément) ⇒ R3/AUDI-11 levé pour cette entité. **Les fichiers ne valent pas validation terrain end-to-end.** |
+| **Prochain jalon** | **UI** — affordance manuelle (bouton + réglages temp/mode) + restitution de l'état de commande, sans logique métier. En parallèle : essais résiduels E1b / E2–E5 / E6 et **validation terrain du script**. |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C25 **ne vaut ni validation de faisabilité, ni décision de
 > contractualiser, ni décision d'implémenter.** Ce document est une **ouverture documentaire de

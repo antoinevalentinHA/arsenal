@@ -1,0 +1,40 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : État de la commande de climatisation distante (Audi)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Restituer honnêtement l'état de la DERNIÈRE commande de
+#   climatisation distante émise via script.audi_climatisation_distante.
+#
+# 🧩 NATURE
+#   Registre d'état transactionnel (écrit par le script exécutant).
+#   Ce n'est PAS l'état réel du climatiseur (état réel =
+#   sensor.audi_a3_sportback_e_tron_climatisation_state).
+#
+# 🔁 CYCLE DE VIE (contrat voiture.md — COUCHE ACTION, INV-CMD-1/2)
+#   Au repos              → aucune commande en cours
+#   En cours              → appel émis, en attente d'observation terminale
+#   Confirmée             → transition observée de climatisation_state (succès)
+#   Non confirmée (timeout) → aucune transition dans la fenêtre de latence
+#
+#   ⚠️ « Confirmée » n'est JAMAIS posée sur la seule absence d'erreur de l'appel
+#   Home Assistant (l'intégration absorbe les erreurs) : elle exige une transition
+#   observée. « Non confirmée » n'est PAS « rejetée » : l'intégration n'expose pas
+#   le motif d'un refus, donc l'honnêteté impose « timeout », jamais « rejected ».
+#
+# ❌ NE FAIT PAS
+#   - Ne décide RIEN, ne pilote RIEN
+#   - Ne représente PAS l'état réel du véhicule
+#   - N'est écrit QUE par script.audi_climatisation_distante
+#
+# 🏷️ STATUT
+#   Runtime C25 — couche action bornée (amendement A1)
+# ==========================================================
+
+audi_climatisation_commande_etat:
+  name: "Audi — état commande climatisation"
+  icon: mdi:car-connected
+  options:
+    - "Au repos"
+    - "En cours"
+    - "Confirmée"
+    - "Non confirmée (timeout)"
