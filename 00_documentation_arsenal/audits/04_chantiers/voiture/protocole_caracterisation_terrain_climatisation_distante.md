@@ -227,6 +227,41 @@ qu'un `rejected` — l'intégration **ne semble pas** exposer le motif d'un refu
 > par le backend et perdu par l'intégration**. Le statut honnête d'un échec demeure `timeout`, non
 > `rejected`.
 
+### Chaîne de détection — vérifiée dans le code vendorisé (2026-07-21)
+
+Vérification directe du code de l'intégration (le dépôt fait foi) :
+
+- **Origine de `climatisation_state`** : valeur **brute renvoyée par le véhicule**, extraite de
+  l'endpoint `climater` (chemin MBB, celui réparé avec le scope `mbb`) —
+  `custom_components/audiconnect/audi_connect_account.py:906-908`
+  (`get_attr(..., "climater.status.climatisationStatusData.climatisationState.content")`). Ce n'est
+  **pas** un état calculé par HA : c'est un **témoin côté véhicule**, indépendant de la commande.
+  `remaining_climatisation_time` a la même origine (`:923`).
+- **Rafraîchissement post-action garanti (succès ET échec)** : `AudiConnectAccount.start_climate_control`
+  place la notification de rafraîchissement dans un **`finally`** (`audi_connect_account.py:451-453` →
+  `notify(vin, ACTION_CLIMATISATION)`) — le refresh a donc lieu **quel que soit l'aboutissement**. Le
+  handler `handle_notification` (`audi_account.py:247-257`) attend **`update_sleep` = 5 s par défaut**
+  (`const.py:28`, configurable ; immédiat si l'option `refresh_after_action`) puis déclenche un **refresh
+  dédié** (pas l'intervalle de scan).
+- **Conséquence** : ~5 s après la commande, `climatisation_state` reflète ce que la voiture rapporte
+  réellement — y compris en cas d'échec. Fenêtre courte et prévisible : c'est exactement le témoin
+  recherché par INV-CMD-1. *(Le `refresh_vehicle_data` explicite du script devient de ce fait un filet
+  redondant mais inoffensif.)*
+
+### Ce qui reste pour verrouiller C25 — mesure, pas code (opérateur)
+
+1. **Valeurs littérales avant → après** : le code **n'énumère pas** les états (chaînes brutes Audi) ;
+   seule l'observation fait foi (ex. `off → cooling` / `heating` / `ventilation` / `on`…). À noter au
+   littéral.
+2. **Latence réelle** : 5 s (`update_sleep`) + temps du refresh + temps de remontée véhicule.
+   Chronométrer *commande → changement d'état* pour fixer le **timeout à retenir (avec marge)** ; la
+   fenêtre runtime actuelle (~3 min) est large, à confirmer ou resserrer.
+3. **Comportement en échec = essai E6** : en état naturellement incompatible (véhicule non branché,
+   comme l'essai raté du 2026-07-20), `climatisation_state` **reste-t-il inchangé** ? **Si oui →
+   discriminant fiable** (le détecteur est valide). **S'il bouge aussi → basculer sur un autre témoin**
+   (`remaining_climatisation_time`). C'est l'essai **E6** du protocole, à moitié réalisé involontairement
+   lors du premier test raté — à refaire en notant l'état avant/après.
+
 ---
 
 ## 7. Décision différée

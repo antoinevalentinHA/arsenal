@@ -1,0 +1,66 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT [TEMPORAIRE — À RETIRER À LA CLÔTURE C25]
+#     Voiture — Observation clim distante (caractérisation terrain)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Outil de LECTURE-GUIDÉE (protocole C25) : lance la commande réelle puis
+#   journalise l'état brut véhicule toutes les 5 s pendant ~2 min, pour remplir
+#   en un essai les 3 inconnues de mesure du §6 :
+#     1. valeurs littérales avant → après de climatisation_state ;
+#     2. latence réelle commande → changement d'état ;
+#     3. comportement en échec (E6 — véhicule non branché) : l'état bouge-t-il ?
+#
+# 🧩 NATURE
+#   Diagnostic terrain TEMPORAIRE. N'implémente rien en dur, ne décide rien.
+#   Trace dans le Logbook (aucun helper écrit). À SUPPRIMER une fois C25 clôturé.
+#
+# 📖 USAGE
+#   Outils de développement → Actions → script.audi_climatisation_observation.
+#   Puis lire le Logbook (entités « Obs clim Audi » / capteur climatisation_state).
+#   Pour l'essai E6 : exécuter véhicule NON branché et comparer avant/après.
+#
+# 🔗 Capteurs bruts (endpoint climater, MBB) : résolus dynamiquement via le device
+#   (pas d'entity_id supposé — dette AUDI-11).
+# ==========================================================
+
+audi_climatisation_observation:
+  alias: "Voiture – [TEMP] Observation clim distante (2 min)"
+  mode: single
+  max_exceeded: silent
+
+  sequence:
+    - variables:
+        vehicule: "{{ device_id('Audi A3 Sportback e-tron') }}"
+        capteur_etat: >
+          {{ (device_entities(vehicule) | select('search', 'climatisation_state') | list | first)
+             if vehicule else 'sensor.audi_a3_sportback_e_tron_climatisation_state' }}
+        capteur_temps: >
+          {{ (device_entities(vehicule) | select('search', 'remaining_climatisation_time') | list | first)
+             if vehicule else 'sensor.audi_a3_sportback_e_tron_remaining_climatisation_time' }}
+
+    # ── T0 : état AVANT commande (le « avant » du avant → après) ────────────
+    - service: logbook.log
+      data:
+        name: "Obs clim Audi"
+        entity_id: "{{ capteur_etat }}"
+        message: >
+          T0 (avant commande) — climatisation_state='{{ states(capteur_etat) }}',
+          remaining='{{ states(capteur_temps) }}'
+
+    # ── Lancement de la commande RÉELLE (défauts 21 °C / comfort), sans bloquer ─
+    - service: script.turn_on
+      target:
+        entity_id: script.audi_climatisation_distante
+
+    # ── Trace toutes les 5 s pendant ~2 min (24 tours) ─────────────────────
+    - repeat:
+        count: 24
+        sequence:
+          - delay: "00:00:05"
+          - service: logbook.log
+            data:
+              name: "Obs clim Audi"
+              entity_id: "{{ capteur_etat }}"
+              message: >
+                T+{{ repeat.index * 5 }}s — climatisation_state='{{ states(capteur_etat) }}',
+                remaining='{{ states(capteur_temps) }}'
