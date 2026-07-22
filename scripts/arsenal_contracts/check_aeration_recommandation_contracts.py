@@ -52,18 +52,23 @@ LEGITIMATE_CONSUMERS = {
     DIR_TEMPLATE_SENSORS / "climatisation" / "autorisation" / "cool.yaml",
     DIR_TEMPLATE_SENSORS / "climatisation" / "autorisation" / "dry.yaml",
     DIR_TEMPLATE_SENSORS / "climatisation" / "blocages" / "blocage_aeration_etage_reel.yaml",
-    # C35 L7.1 — `vmc/intention.yaml` SORT de cette liste : sa cause est
-    # desormais derivee de l'attribut autoritatif `composition` de la
-    # decision (§11.2), et il ne lit plus le verdict d'aeration.
-    DIR_TEMPLATE_SENSORS / "vmc" / "delta_humidite_absolue_favorable.yaml",
-    # C35 L7.2 — les deux besoins locaux VMC sont SORTIS de cette liste :
-    # le verrou d'aeration a ete RETIRE de la voie humidite, resorbant l'ecart
-    # contractuel n° 1 du chantier C35. Aucun fichier DECISIONNEL de la VMC ne
-    # consomme plus le verdict d'aeration.
+    # C35 L7.7 — PLUS AUCUN FICHIER DU DOMAINE VMC dans cette liste.
     #
-    # Subsiste `vmc/delta_humidite_absolue_favorable.yaml`, seul fichier VMC
-    # encore listee : c'est un REFLET UI non decisionnel (§4.3, §10.5), qui ne
-    # conditionne aucune extraction.
+    # L7.1 en avait sorti `vmc/intention.yaml`, dont la cause derive desormais
+    # de l'attribut autoritatif `composition` de la decision (§11.2).
+    # L7.2 en avait sorti les deux besoins locaux, le verrou d'aeration ayant
+    # ete RETIRE de la voie humidite — ecart contractuel n° 1 resorbe.
+    #
+    # Subsistait `vmc/delta_humidite_absolue_favorable.yaml`, REFLET UI non
+    # decisionnel (§4.3, §10.5) : la REDACTION LITTERALE du critere de cloture
+    # 8 de C35 — « la liste ne reference plus la VMC » — n'etait donc pas
+    # atteinte, alors que sa substance l'etait.
+    #
+    # Ce reflet a ete DEPLACE sous `aeration/`, dont il releve reellement :
+    # `unique_id` inchange, `entity_id` conserve, aucune migration
+    # d'historique. Le critere 8 est desormais satisfait a la lettre comme au
+    # fond.
+    DIR_TEMPLATE_SENSORS / "aeration" / "delta_humidite_absolue_favorable.yaml",
     FILE_GLOBAL,
 }
 

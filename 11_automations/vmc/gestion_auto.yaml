@@ -58,7 +58,23 @@
           state: "on"
 
   variables:
-    duree_min_minutes: "{{ states('input_number.vmc_duree_min_haute') | int(15) }}"
+    # §14.4 — duree minimale EXECUTIVE. Aucun repli silencieux : le
+    # helper est le proprietaire de la valeur, et une valeur illisible
+    # doit etre traitee comme telle, non remplacee en silence.
+    #
+    # Le repli `| int(15)` retire ici etait ANTERIEUR au chantier et
+    # contraire a la doctrine arretee en passe 5. La valeur de 15 min
+    # demeure celle qu'AMORCE L7.0 ; elle n'est plus refabriquee a
+    # chaque evaluation.
+    duree_min_minutes: >
+      {{ states('input_number.vmc_duree_min_haute') | float(none) }}
+
+    # Une duree illisible ne doit ni prolonger indefiniment la haute
+    # vitesse, ni la couper sans delai. La descente est donc SUSPENDUE :
+    # le systeme demeure dans son etat courant, et
+    # `binary_sensor.parametres_invalides_vmc` en expose la cause.
+    duree_min_lisible: >
+      {{ duree_min_minutes is not none and duree_min_minutes > 0 }}
 
   action:
     - choose:
@@ -81,6 +97,12 @@
               entity_id: binary_sensor.vmc_haute_vitesse_requise
               state: "off"
           sequence:
+            # Duree illisible : aucune descente. Le §12.3 proscrit une
+            # mesure inexploitable traitee comme une valeur numerique ;
+            # le meme principe vaut pour un parametre executif.
+            - condition: template
+              value_template: "{{ duree_min_lisible }}"
+
             - if:
                 - condition: template
                   value_template: >

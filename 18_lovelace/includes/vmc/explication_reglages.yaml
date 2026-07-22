@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — INCLUDE LOVELACE
+#     VMC — Explication des réglages
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Décrire ce que le système fait RÉELLEMENT, et rien d'autre.
+#
+# 📌 POURQUOI CE FICHIER EXISTE — C35 L7.7
+#   Le texte précédent annonçait « passage en haute vitesse
+#   au-dessus du seuil de déclenchement, retour sous le seuil
+#   d'arrêt », alors que le seuil d'arrêt n'était consommé par
+#   AUCUNE décision. Le §10.4 du contrat qualifie une telle
+#   promesse de non-conformité : « un réglage affiché, validé
+#   ou modifiable sans effet sur le comportement ».
+#
+#   Chaque phrase ci-dessous décrit une règle EFFECTIVEMENT
+#   appliquée.
+# ==========================================================
+
+type: markdown
+content: >-
+  **Salles d'eau.** La haute vitesse est demandée lorsque l'humidité dépasse le
+  niveau de déclenchement, **ou** lorsqu'elle monte d'au moins l'évolution
+  indiquée sur la fenêtre indiquée, à condition de se situer au-dessus de la
+  frontière d'arrêt. Elle est relâchée lorsque l'humidité repasse sous cette
+  frontière.
+
+
+  **La frontière d'arrêt n'est pas fixe** : elle suit la température extérieure,
+  entre la borne basse et la borne haute. Sa valeur courante est affichée
+  au-dessus. Une pièce plus sèche en été n'a pas les mêmes repères qu'en hiver.
+
+
+  **La borne haute n'est pas un simple garde-fou** : l'écart entre le niveau de
+  déclenchement et elle constitue la bande morte. Trop proche du niveau, la
+  demande se relâcherait aussitôt formée.
+
+
+  **CO₂.** Demande au-dessus du seuil de déclenchement, relâchement sous le
+  seuil d'arrêt.
+
+
+  **Durée minimale.** Elle ne prolonge pas la demande : elle empêche seulement
+  la VMC de redescendre trop vite après un besoin bref.
+
+
+  **Si une mesure ou une frontière devient illisible**, une demande en cours est
+  **maintenue** — jamais relâchée par défaut.

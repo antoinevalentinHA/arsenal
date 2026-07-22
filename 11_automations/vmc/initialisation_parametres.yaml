@@ -186,8 +186,12 @@
     # 🔔 TRACABILITE — l'initialisation n'est pas silencieuse
     # ==================================================
     # Le parametre historique `vmc_seuil_on` etait GLOBAL ; il
-    # devient differencie par piece. Sa valeur est rappelee
-    # ici afin que la bascule soit constatable, et non subie.
+    # devient differencie par piece.
+    #
+    # NOTE C35 L7.7 : ce helper global a ete RETIRE, n'etant plus
+    # consomme par aucune decision (§10.4). Sa valeur n'est donc
+    # plus lisible au moment de l'amorcage, et la notification ne
+    # la rapporte plus — elle signale la bascule elle-meme.
     - action: persistent_notification.create
       data:
         notification_id: "vmc_initialisation_parametres"
@@ -200,9 +204,9 @@
           - {{ a.entite }} → {{ a.valeur }}
           {% endfor %}
 
-          Le seuil historique global input_number.vmc_seuil_on vaut
-          {{ states('input_number.vmc_seuil_on') }} et n'a pas été modifié.
-          Il est désormais remplacé par un seuil par pièce.
+          Le seuil historique global input_number.vmc_seuil_on a été RETIRÉ :
+          il n'était plus consommé par aucune décision. Chaque pièce possède
+          désormais son propre seuil, visible dans les réglages.
 
           Ces valeurs sont provisoires et révisables. Elles ne seront plus
           jamais réécrites automatiquement.

@@ -55,23 +55,22 @@ views:
               - !include ../../includes/section_headers/conditions_actuelles.yaml
 
               - type: grid
-                columns: 3
+                columns: 2
                 square: false
                 cards:
                   - type: custom:button-card
                     template: vmc_capteur
                     entity: sensor.humidite_relative_sdb_parents
                     name: SDB Parents
+                    variables:
+                      piece: sdb_parents
 
                   - type: custom:button-card
                     template: vmc_capteur
                     entity: sensor.humidite_relative_sdb_enfants
                     name: SDB Enfants
-
-                  - type: custom:button-card
-                    template: vmc_capteur
-                    entity: sensor.humidite_relative_sejour
-                    name: Séjour
+                    variables:
+                      piece: sdb_enfants
 
               - type: grid
                 columns: 2
@@ -81,16 +80,22 @@ views:
                     template: vmc_capteur
                     entity: sensor.co2_sejour
                     name: CO₂ Séjour
+                    variables:
+                      piece: co2
 
+                  # §10.5 — contexte NON DECISIONNEL, presente comme tel.
+                  # Ce verdict n'entre dans AUCUNE decision VMC depuis L7.2 ;
+                  # le libeller « extraction utile / inutile » laissait croire
+                  # l'inverse.
                   - type: custom:button-card
                     template: carte_etat_binaire_interprete_inverse
                     entity: binary_sensor.delta_ha_favorable_etage
-                    name: Extraction
+                    name: Air extérieur
                     icon: mdi:weather-windy
                     tap_action: none
                     variables:
-                      label_on: Extraction inutile
-                      label_off: Extraction utile
+                      label_on: Plus humide dehors
+                      label_off: Plus sec dehors
 
           ####################################################
           # 📝 HISTORIQUE

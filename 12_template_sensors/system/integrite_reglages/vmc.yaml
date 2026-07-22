@@ -4,8 +4,8 @@
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #
-#     Détecter toute incohérence de configuration des seuils
-#     d'humidité relative et de CO₂ pilotant la VMC.
+#     Détecter toute incohérence de configuration des
+#     paramètres pilotant la VMC.
 #
 # ----------------------------------------------------------
 # 🧱 PRINCIPE
@@ -13,38 +13,68 @@
 #     - Lecture pure
 #     - Aucune action, aucune correction
 #     - Toute source indisponible est considérée comme
-#       rendant les invariants violés (pas d'optimisme silencieux).
+#       rendant les invariants violés (pas d'optimisme
+#       silencieux).
+#
+# ----------------------------------------------------------
+# 📌 REFONTE C35 L7.7
+#
+#     Les invariants surveillés jusqu'ici portaient sur les
+#     seuils GLOBAUX `vmc_seuil_on` / `vmc_seuil_off`, que la
+#     mise en conformité a supprimés : la voie humidité est
+#     désormais LOCALE et sa libération est MODULÉE.
+#
+#     Les invariants ci-dessous sont ceux de l'architecture
+#     RÉELLEMENT LIVRÉE.
 #
 # ----------------------------------------------------------
 # 🚨 INVARIANTS SURVEILLÉS
 #
-#     1) vmc_seuil_on > vmc_seuil_off
-#        (hystérésis HR : déclenchement au-dessus,
-#        arrêt au-dessous)
+#     Par pièce (salle de bain parents, salle de douche
+#     enfants) :
 #
-#     2) vmc_co2_seuil_on > vmc_co2_seuil_off
-#        (hystérésis CO₂ : idem)
+#     1) borne basse < borne haute
+#        La frontière modulée doit demeurer entre DEUX valeurs
+#        distinctes (§7.4 bis, condition 1 — bornage à double
+#        sens).
+#
+#     2) seuil de niveau > borne haute
+#        INVARIANT DÉCOUVERT EN CALIBRATION : la borne haute
+#        fixe la BANDE MORTE de la voie de niveau, égale à
+#        `S - borne haute`. Une borne haute supérieure ou égale
+#        au seuil annule cette bande morte : un besoin ouvert
+#        au niveau serait libéré immédiatement, ce que le
+#        §7.4 bis condition 2 proscrit.
+#
+#     3) fenêtre d'observation > 0
+#     4) évolution minimale > 0
+#        Une fenêtre ou une évolution nulle rendrait la voie
+#        d'évolution inopérante ou permanente.
+#
+#     Voie CO₂ :
+#
+#     5) seuil de déclenchement > seuil d'arrêt
+#        Hystérésis de la voie CO₂ (§5.1). Cet invariant
+#        existait déjà, mais portait sur une frontière d'arrêt
+#        CONSOMMÉE PAR RIEN avant L7.6.
+#
+#     Exécutif :
+#
+#     6) durée minimale > 0
 #
 #     Toute violation = paramètres INVALIDES
 #
 # ----------------------------------------------------------
-# 🔗 DÉPENDANCES
-#
-#     - input_number.vmc_seuil_on
-#     - input_number.vmc_seuil_off
-#     - input_number.vmc_co2_seuil_on
-#     - input_number.vmc_co2_seuil_off
-#
-# ----------------------------------------------------------
 # 📊 ATTRIBUTS EXPOSÉS
 #
-#     - seuils_hr_invalides     : invariant 1 violé
-#     - seuils_co2_invalides    : invariant 2 violé
-#     - hr_on_indisponible      : helper vmc_seuil_on indispo
-#     - hr_off_indisponible     : helper vmc_seuil_off indispo
-#     - co2_on_indisponible     : helper vmc_co2_seuil_on indispo
-#     - co2_off_indisponible    : helper vmc_co2_seuil_off indispo
-#     - cause                   : énumération priorisée
+#     - bornes_invalides           : invariant 1 violé
+#     - bande_morte_niveau_nulle   : invariant 2 violé
+#     - observation_invalide       : invariants 3 ou 4 violés
+#     - seuils_co2_invalides       : invariant 5 violé
+#     - duree_minimale_invalide    : invariant 6 violé
+#     - parametres_indisponibles   : au moins un helper illisible
+#     - cause                      : énumération priorisée
+#     - detail                     : première violation localisée
 #
 # ----------------------------------------------------------
 # 🚫 INTERDITS
@@ -52,6 +82,7 @@
 #     - Aucun pilotage des relais VMC
 #     - Aucune logique d'aération
 #     - Aucune correction automatique
+#     - Aucun repli numérique : `float(none)` uniquement
 #
 # ----------------------------------------------------------
 # 📍 ENTITÉ
@@ -70,51 +101,133 @@
       default_entity_id: binary_sensor.parametres_invalides_vmc
       icon: >
         mdi:alert-circle-outline
+
       state: >
-        {% set hr_on = states('input_number.vmc_seuil_on') | float(none) %}
-        {% set hr_off = states('input_number.vmc_seuil_off') | float(none) %}
-        {% set co2_on = states('input_number.vmc_co2_seuil_on') | float(none) %}
-        {% set co2_off = states('input_number.vmc_co2_seuil_off') | float(none) %}
-        {% set indisponible =
-             hr_on is none
-          or hr_off is none
-          or co2_on is none
-          or co2_off is none %}
-        {% set seuils_hr_invalides = indisponible or not (hr_on > hr_off) %}
-        {% set seuils_co2_invalides = indisponible or not (co2_on > co2_off) %}
-        {{ seuils_hr_invalides or seuils_co2_invalides }}
-      attributes:
-        seuils_hr_invalides: >
-          {% set hr_on = states('input_number.vmc_seuil_on') | float(none) %}
-          {% set hr_off = states('input_number.vmc_seuil_off') | float(none) %}
-          {{ hr_on is none or hr_off is none or not (hr_on > hr_off) }}
-        seuils_co2_invalides: >
-          {% set co2_on = states('input_number.vmc_co2_seuil_on') | float(none) %}
-          {% set co2_off = states('input_number.vmc_co2_seuil_off') | float(none) %}
-          {{ co2_on is none or co2_off is none or not (co2_on > co2_off) }}
-        hr_on_indisponible: >
-          {{ states('input_number.vmc_seuil_on')
-             in ['unknown', 'unavailable', 'none', ''] }}
-        hr_off_indisponible: >
-          {{ states('input_number.vmc_seuil_off')
-             in ['unknown', 'unavailable', 'none', ''] }}
-        co2_on_indisponible: >
-          {{ states('input_number.vmc_co2_seuil_on')
-             in ['unknown', 'unavailable', 'none', ''] }}
-        co2_off_indisponible: >
-          {{ states('input_number.vmc_co2_seuil_off')
-             in ['unknown', 'unavailable', 'none', ''] }}
-        cause: >
-          {% set hr_on = states('input_number.vmc_seuil_on') | float(none) %}
-          {% set hr_off = states('input_number.vmc_seuil_off') | float(none) %}
-          {% set co2_on = states('input_number.vmc_co2_seuil_on') | float(none) %}
-          {% set co2_off = states('input_number.vmc_co2_seuil_off') | float(none) %}
-          {% if hr_on is none or hr_off is none or co2_on is none or co2_off is none %}
-            helpers_indisponibles
-          {% elif not (hr_on > hr_off) %}
-            seuils_hr_invalides
-          {% elif not (co2_on > co2_off) %}
-            seuils_co2_invalides
-          {% else %}
-            none
+        {% set ns = namespace(invalide=false) %}
+        {% for p in ['sdb_parents', 'sdb_enfants'] %}
+          {% set s = states('input_number.vmc_seuil_on_' ~ p) | float(none) %}
+          {% set lo = states('input_number.vmc_borne_basse_' ~ p) | float(none) %}
+          {% set hi = states('input_number.vmc_borne_haute_' ~ p) | float(none) %}
+          {% set w = states('input_number.vmc_fenetre_' ~ p) | float(none) %}
+          {% set d = states('input_number.vmc_evolution_' ~ p) | float(none) %}
+          {% if s is none or lo is none or hi is none or w is none or d is none %}
+            {% set ns.invalide = true %}
+          {% elif not (lo < hi) or not (s > hi) or not (w > 0) or not (d > 0) %}
+            {% set ns.invalide = true %}
           {% endif %}
+        {% endfor %}
+        {% set con = states('input_number.vmc_co2_seuil_on') | float(none) %}
+        {% set cof = states('input_number.vmc_co2_seuil_off') | float(none) %}
+        {% set dm = states('input_number.vmc_duree_min_haute') | float(none) %}
+        {% if con is none or cof is none or dm is none %}
+          {% set ns.invalide = true %}
+        {% elif not (con > cof) or not (dm > 0) %}
+          {% set ns.invalide = true %}
+        {% endif %}
+        {{ ns.invalide }}
+
+      attributes:
+
+        parametres_indisponibles: >
+          {% set ns = namespace(manquants=[]) %}
+          {% for e in ['vmc_seuil_on_sdb_parents', 'vmc_borne_basse_sdb_parents',
+                       'vmc_borne_haute_sdb_parents', 'vmc_fenetre_sdb_parents',
+                       'vmc_evolution_sdb_parents', 'vmc_seuil_on_sdb_enfants',
+                       'vmc_borne_basse_sdb_enfants', 'vmc_borne_haute_sdb_enfants',
+                       'vmc_fenetre_sdb_enfants', 'vmc_evolution_sdb_enfants',
+                       'vmc_co2_seuil_on', 'vmc_co2_seuil_off',
+                       'vmc_duree_min_haute'] %}
+            {% if states('input_number.' ~ e) | float(none) is none %}
+              {% set ns.manquants = ns.manquants + [e] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.manquants | join(', ') if ns.manquants else 'none' }}
+
+        bornes_invalides: >
+          {% set ns = namespace(liste=[]) %}
+          {% for p in ['sdb_parents', 'sdb_enfants'] %}
+            {% set lo = states('input_number.vmc_borne_basse_' ~ p) | float(none) %}
+            {% set hi = states('input_number.vmc_borne_haute_' ~ p) | float(none) %}
+            {% if lo is not none and hi is not none and not (lo < hi) %}
+              {% set ns.liste = ns.liste + [p] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.liste | join(', ') if ns.liste else 'none' }}
+
+        # Invariant découvert en calibration : la borne haute fixe la
+        # bande morte de la voie de niveau (`S - borne haute`).
+        bande_morte_niveau_nulle: >
+          {% set ns = namespace(liste=[]) %}
+          {% for p in ['sdb_parents', 'sdb_enfants'] %}
+            {% set s = states('input_number.vmc_seuil_on_' ~ p) | float(none) %}
+            {% set hi = states('input_number.vmc_borne_haute_' ~ p) | float(none) %}
+            {% if s is not none and hi is not none and not (s > hi) %}
+              {% set ns.liste = ns.liste + [p] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.liste | join(', ') if ns.liste else 'none' }}
+
+        bande_morte_niveau: >
+          {% set ns = namespace(liste=[]) %}
+          {% for p in ['sdb_parents', 'sdb_enfants'] %}
+            {% set s = states('input_number.vmc_seuil_on_' ~ p) | float(none) %}
+            {% set hi = states('input_number.vmc_borne_haute_' ~ p) | float(none) %}
+            {% if s is not none and hi is not none %}
+              {% set ns.liste = ns.liste + [p ~ ' : ' ~ (s - hi) | round(1)] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.liste | join(' | ') if ns.liste else 'non calculable' }}
+
+        observation_invalide: >
+          {% set ns = namespace(liste=[]) %}
+          {% for p in ['sdb_parents', 'sdb_enfants'] %}
+            {% set w = states('input_number.vmc_fenetre_' ~ p) | float(none) %}
+            {% set d = states('input_number.vmc_evolution_' ~ p) | float(none) %}
+            {% if (w is not none and not (w > 0)) or (d is not none and not (d > 0)) %}
+              {% set ns.liste = ns.liste + [p] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.liste | join(', ') if ns.liste else 'none' }}
+
+        seuils_co2_invalides: >
+          {% set on = states('input_number.vmc_co2_seuil_on') | float(none) %}
+          {% set off = states('input_number.vmc_co2_seuil_off') | float(none) %}
+          {{ on is not none and off is not none and not (on > off) }}
+
+        duree_minimale_invalide: >
+          {% set d = states('input_number.vmc_duree_min_haute') | float(none) %}
+          {{ d is not none and not (d > 0) }}
+
+        cause: >
+          {% set ns = namespace(c='none') %}
+          {% for p in ['sdb_parents', 'sdb_enfants'] %}
+            {% set s = states('input_number.vmc_seuil_on_' ~ p) | float(none) %}
+            {% set lo = states('input_number.vmc_borne_basse_' ~ p) | float(none) %}
+            {% set hi = states('input_number.vmc_borne_haute_' ~ p) | float(none) %}
+            {% set w = states('input_number.vmc_fenetre_' ~ p) | float(none) %}
+            {% set d = states('input_number.vmc_evolution_' ~ p) | float(none) %}
+            {% if ns.c == 'none' %}
+              {% if s is none or lo is none or hi is none or w is none or d is none %}
+                {% set ns.c = 'parametres_indisponibles' %}
+              {% elif not (lo < hi) %}
+                {% set ns.c = 'bornes_invalides' %}
+              {% elif not (s > hi) %}
+                {% set ns.c = 'bande_morte_niveau_nulle' %}
+              {% elif not (w > 0) or not (d > 0) %}
+                {% set ns.c = 'observation_invalide' %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {% set con = states('input_number.vmc_co2_seuil_on') | float(none) %}
+          {% set cof = states('input_number.vmc_co2_seuil_off') | float(none) %}
+          {% set dm = states('input_number.vmc_duree_min_haute') | float(none) %}
+          {% if ns.c == 'none' %}
+            {% if con is none or cof is none or dm is none %}
+              {% set ns.c = 'parametres_indisponibles' %}
+            {% elif not (con > cof) %}
+              {% set ns.c = 'seuils_co2_invalides' %}
+            {% elif not (dm > 0) %}
+              {% set ns.c = 'duree_minimale_invalide' %}
+            {% endif %}
+          {% endif %}
+          {{ ns.c }}
