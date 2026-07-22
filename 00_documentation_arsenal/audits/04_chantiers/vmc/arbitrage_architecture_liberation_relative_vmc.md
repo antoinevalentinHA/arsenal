@@ -4,15 +4,22 @@
 |---|---|
 | **Chantier** | C35 — Mise en conformité du domaine VMC avec le contrat v2.1 |
 | **Lot** | **L2b — calibration finale**, **passe 3 : architecture de la libération** |
-| **Statut** | **Préparé sur branche.** Une **famille d'architecture** est retenue ; la variante et les paramètres ne sont **pas** départagés. **L2b n'est pas soldé** |
+| **Statut** | **Première version intégrée dans `main` (PR #517).** **Révision préparée sur branche** : la famille « référence physique instantanée », que cette première version retenait, est **RÉFUTÉE** par les preuves depuis acquises ; le **plancher instantané** devient le **repli retenu**, avec réouverture contrôlée de la passe 1. **L2b n'est pas soldé** |
 | **Nature** | Document d'**arbitrage architectural et contractuel**. Il **ne modifie aucun contrat** et **ne modifie aucun runtime** |
 | **Décision métier amont** | Instruire **prioritairement** un mécanisme de libération ne reposant **pas** sur un niveau absolu. Le plancher instantané reste un **repli**, à ne retenir que si aucune libération relative simple, robuste et explicable n'est définissable |
 | **Amont intégré dans `main`** | [`arbitrage_calibration_entree_vmc.md`](arbitrage_calibration_entree_vmc.md) passe 1 · [`arbitrage_liberation_vmc.md`](arbitrage_liberation_vmc.md) passe 2 · [`reference_terrain_partielle_vmc.md`](reference_terrain_partielle_vmc.md) L5 |
-| **Preuves opérationnelles** | `arsenal-runtime` : `37a6bd69` · `76451bf` · `625a349` · `132072bf` · **`8849a054315d591983a86a94ac92b350b79721c2`** |
+| **Preuves opérationnelles** | `arsenal-runtime` : `37a6bd69` · `76451bf` · `625a349` · `132072bf` · `8849a054` · **`9723a5bd565d80ab8794af93f767222db444fefa`** — mesures de l'écart d'humidité absolue, qui **réfutent** la famille relative |
 | **Contrat de référence** | [`../../../contrats/vmc.md`](../../../contrats/vmc.md) **v2.1** — §1.3, §1.4, §2.2, §2.2 bis, §2.3, §4.3, §4.4, §6.2, §6.3, §6.4, §7.4, §8.3, §9.1, §10.2, §14. **Non modifié par ce lot** |
 
 > **Aucun runtime dans ce lot** : aucun helper, aucune automatisation, aucun
 > template, aucune UI, aucun checker. Aucune entité n'est créée.
+
+> **Révision du 2026-07-22.** La version intégrée en #517 retenait la famille
+> « référence physique instantanée » **sous réserve** du travail probatoire de son §12.
+> Ce travail a été conduit — `arsenal-runtime` **`9723a5bd`** — et **réfute cette
+> famille**. Le présent document est révisé en conséquence : §6.7, §10, §11, §12,
+> §15, §16 et §17 sont réécrits. Aucun chiffre antérieur n'est effacé sans motif ;
+> la piste à référence intérieure est **conservée** au §6.7.2.
 
 ---
 
@@ -234,133 +241,144 @@ sonde 62, la durée médiane d'un besoin reste de 803 minutes en hiver contre 7 
 **Décision : maintenue comme repli**, non retenue en premier choix conformément
 à la décision métier.
 
-### 6.7 Option G — écart d'humidité absolue intérieur / extérieur *(issue des preuves)*
+### 6.7 Option G — écart d'humidité absolue par rapport à une référence physique instantanée — **RÉFUTÉE**
 
-**Principe.**
+**Principe testé.**
 
-> Libérer lorsque **l'excès d'humidité absolue de la pièce sur l'air extérieur**
-> est revenu à son niveau ordinaire.
+> Libérer lorsque **l'excès d'humidité absolue de la pièce sur une référence
+> physique** est revenu à son niveau ordinaire.
 
-**Pourquoi cette option découle des preuves, et n'est pas une invention.** Le
-contre-audit `625a349` a employé l'humidité absolue comme **instrument de
-rupture** pour distinguer un ajout réel de vapeur d'un simple artefact
-thermique — une hausse d'humidité relative sans qu'aucune eau n'entre dans la
-pièce. C'est exactement la grandeur qui manque à la libération : la frontière
-absolue en humidité **relative** dérive de ≈ 20 points sur l'année (`37a6bd69`)
-précisément parce qu'elle mélange l'eau présente et la température.
+**Pourquoi elle a été instruite.** Le contre-audit `625a349` avait employé
+l'humidité absolue comme **instrument de rupture** pour distinguer un ajout réel
+de vapeur d'un artefact thermique. La frontière absolue en humidité **relative**
+dérive de ≈ 20 points sur l'année (`37a6bd69`) précisément parce qu'elle mélange
+l'eau présente et la température. Sur un réseau simple flux (§1.4), l'extraction
+ne peut que rapprocher l'air de la pièce de l'air de remplacement : l'excès
+mesure donc l'eau que la ventilation a encore à retirer. Grandeur **instantanée**,
+sans mémoire — nature 7 du §5.
 
-**Pourquoi cette grandeur est *relative* sans être *mémorisée*.** La référence
-n'est pas un passé de la pièce : c'est **l'air extérieur au même instant**. Un
-réseau simple flux (§1.4) ne peut que remplacer l'air de la pièce par de l'air
-extérieur ; l'excès `HA_pièce − HA_extérieur` mesure donc **exactement l'eau que
-la ventilation a encore à retirer**. Quand cet excès est résorbé, l'extraction
-n'a plus rien à apporter — c'est une **preuve de résorption au sens du §1.3**,
-et non un constat de niveau.
+**Résultat : la famille est réfutée.** Les six mesures du §12 ont été conduites
+et sont propriété du commit **`9723a5bd565d80ab8794af93f767222db444fefa`**
+(`arsenal-runtime`, dossier `analyses/c35_l2b_ecart_absolu_20260722/`).
 
-**Mémoire requise : aucune.** Deux mesures instantanées, comparées à un
-paramètre. **Nature 7.**
+#### 6.7.1 Référence extérieure — interdite par le §7.4
 
-**Auto-normalisation saisonnière.** L'humidité absolue extérieure est basse en
-hiver et haute en été. L'écart est donc **naturellement recentré** par la
-saison, sans paramètre calendaire, sans segmentation, sans seconde année
-d'observation pour établir des paliers.
+Le signe de l'écart **s'inverse avec la saison**. Salle de bain parents, hors
+épisode, en g/m³ :
 
-**Disponibilité runtime — fait vérifié.** Les trois grandeurs nécessaires
-existent déjà comme capteurs modèles :
-`sensor.humidite_absolue_sdb_parents`, `sensor.humidite_absolue_sdb_enfants` et
-`sensor.humidite_absolue_jardin`
-([`12_template_sensors/meteo/mesures/humidite_absolue/base.yaml`](../../../../12_template_sensors/meteo/mesures/humidite_absolue/base.yaml)),
-chacune calculée à partir d'un couple température + humidité relative
-instantané. **Aucune création d'entité n'est nécessaire pour évaluer cette
-option.**
-
-**Risques et points à instruire.**
-
-- **Dépendance à un capteur extérieur.** L'indisponibilité de la mesure
-  extérieure rendrait le critère incalculable. Le §4.4 impose alors le
-  **maintien** du besoin, jamais sa libération silencieuse. Une garde de
-  libération devrait être définie pour éviter un besoin indéfiniment actif sur
-  panne durable — question ouverte, à ne pas confondre avec une temporisation.
-- **Dérivation.** L'humidité absolue est **calculée** à partir de l'humidité
-  relative et de la température de la même pièce : elle n'est pas un capteur
-  indépendant. Sa disponibilité suit celle de ses deux sources.
-- **Quantification.** L'humidité relative de la salle de douche enfants est
-  restituée **au point entier** ; l'humidité absolue qui en dérive hérite de
-  cette granularité. Le pas effectif de l'écart doit être établi.
-- **Nuits d'été.** Lorsque l'air extérieur est très humide, l'excès peut être
-  faible alors que la pièce est objectivement humide. Le §7.4 interdit tout
-  mécanisme rendant la voie humidité **inopérante** dans un régime durable : ce
-  point doit être vérifié avant toute adoption.
-
-**Conformité contractuelle.**
-
-| Clause | Verdict |
+| Saison | p10 / p50 / p90 |
 |---|---|
-| **§2.2** — mesures courantes et état booléen seuls | **Compatible** : aucune mémoire, aucun pic, aucun historique, aucun timer, aucun compteur |
-| **§2.2 bis** — fenêtre glissante d'entrée | **Non concernée** : aucune fenêtre n'est employée |
-| **§6.3 / §6.4** — maintien et libération | **Co-changement ciblé requis** : le §6.4 énonce que la libération dépend « **exclusivement de la mesure de la pièce** ». L'air extérieur est une mesure **externe** |
-| **§4.3** — contexte d'aération non décisionnel | **Non concernée** : l'humidité absolue extérieure est une **mesure physique brute**, non un verdict composite d'opportunité à l'échelle d'un volume. Le motif du §4.3 — ne pas subordonner O1/O2 à un jugement relevant d'O3 — ne s'y applique pas |
-| **§7.4** — interdiction déguisée | **À vérifier** : le mécanisme ne doit rendre la voie humidité inopérante dans aucun régime durable |
-| **§1.3** — persistance du besoin | **Renforcée** : l'écart exprime une preuve physique de résorption |
+| Hiver | 0,00 / 2,03 / 3,77 |
+| Printemps | −3,43 / 0,51 / 3,31 |
+| **Été** | **−9,02 / −3,97 / 0,37** |
 
-> **Le co-changement requis est étroit et localisé** : admettre au §6.4 une
-> **référence physique extérieure non décisionnelle**, distincte d'une
-> agrégation entre pièces et d'un verdict d'aération. Il ne touche **pas** à
-> l'invariant central du §2.2 — à la différence des options A à E.
+En été, **l'air extérieur contient plus d'eau par mètre cube que la salle de
+bain** — physiquement attendu : l'air chaud porte davantage de vapeur qu'un
+intérieur plus frais. Un épisode dont l'écart au pic est déjà sous la frontière
+serait **libéré d'emblée**, reproduisant exactement le défaut structurel du §3 :
 
-**Décision : retenue comme famille d'architecture**, sous réserve du travail
-probatoire du §12.
+| Régime | n | **Déjà sous 1,5 g/m³ au pic** |
+|---|---:|---:|
+| Tous épisodes | 138 | 51 (**37 %**) |
+| **Été** | 42 | 34 (**81 %**) |
+| **Air extérieur très humide** | 8 | 8 (**100 %**) |
+
+Salle de douche enfants : écart au pic médian **−2,98 g/m³**, **96 %** des
+épisodes déjà sous toutes les sondes — inopérant toute l'année.
+
+> **Le §7.4 interdit explicitement tout modulateur qui, dans une plage de
+> conditions durables — une saison — rendrait la voie humidité inopérante : il
+> constitue une interdiction déguisée.** Une libération sur l'écart à l'air
+> extérieur serait inopérante **tout l'été**. Elle est donc **contractuellement
+> interdite, indépendamment de sa valeur**.
+
+Confirmations : retour médian sous 1,5 g/m³ en **1 minute** — libération quasi
+immédiate, comme le niveau absolu ; **418 franchissements descendants** hors
+épisode dont **232 battements** de moins de 30 minutes. Le pas effectif
+(0,01 g/m³) et l'amplitude courte (p99 0,64 g/m³) **ne sont pas l'obstacle** :
+l'obstacle est le **signe** de l'écart en été.
+
+#### 6.7.2 Référence intérieure — piste parents, non généralisable
+
+La réfutation ci-dessus désignait une variante : sur un simple flux, l'air de
+remplacement vient d'abord du **reste du logement**. Elle a été sondée
+(`HA_pièce − HA_séjour`).
+
+> **Piste parents techniquement intéressante, mais contractuellement
+> incompatible et non généralisable.** Conservée ici pour ne pas perdre
+> l'information ; **non retenue comme cible principale**.
+
+**Sur la salle de bain parents, elle fonctionne** : écart au pic p10 **0,82**,
+médiane **1,90 g/m³** ; à la sonde 0,5, **7 %** seulement des épisodes sont déjà
+libérés au pic ; retour médian **41 min** à 93 % d'atteinte, **23 min** à 100 %
+pour la sonde 1,0. **C'est la première option testée produisant une libération
+qui prend un temps réel et qui finit par se produire.**
+
+**Elle n'est pas retenue**, pour cinq motifs cumulés :
+
+1. **elle échoue en salle de douche enfants** — 52 à 67 % des épisodes déjà sous
+   la sonde au pic ;
+2. elle ne fournit donc **aucun mécanisme général** pour les deux salles d'eau ;
+3. elle introduit une **dépendance inter-pièces** contraire à la **localité
+   actuelle du besoin** (§2.3, §6.2, §6.4) ;
+4. elle imposerait un **co-changement contractuel plus large** pour un résultat
+   **seulement partiel** ;
+5. son **battement reste élevé** — 243 franchissements courts à la sonde 0,5.
+
+Si la localité du besoin devait un jour être rouverte pour d'autres motifs,
+cette piste mériterait d'être réexaminée.
+
+**Décision : option G écartée.**
 
 ---
 
 ## 7. Mémoire, propriété et cycle de vie
 
-Pour l'option G, **aucune mémoire n'est requise** : il n'y a donc ni propriétaire
-de référence, ni cycle de création, de mise à jour ou d'effacement à définir.
-C'est son avantage architectural décisif.
+L'option retenue — le plancher, §11 — **ne requiert aucune mémoire**. Il n'y a
+donc ni propriétaire de référence, ni cycle de création, de mise à jour ou
+d'effacement à définir.
 
-Le seul état persistant reste **l'état booléen du besoin, par pièce**, déjà
-prévu par les §2.3 et §9.1, à **auteur unique**. Aucun état supplémentaire n'est
-introduit.
+Le seul état persistant demeure **l'état booléen du besoin, par pièce**, déjà
+prévu par les §2.3 et §9.1, à **auteur unique**. **Aucun état supplémentaire
+n'est introduit, aucune entité n'est créée.**
 
 Pour mémoire, si une option à mémoire devait un jour être instruite après
 co-changement du §2.2, il faudrait définir : l'entité autoritative et son
 **writer unique**, l'événement de création, la règle de mise à jour pendant
-l'épisode, l'effacement à la libération, l'annulation, la réouverture, et la
-persistance au redémarrage. **Aucune entité n'est créée dans ce lot.**
+l'épisode, l'effacement à la libération, l'annulation, la réouverture et la
+persistance au redémarrage.
 
 ---
 
 ## 8. Redémarrage et indisponibilité
 
-### 8.1 Redémarrage
-
-Le §9.1 s'applique **inchangé** à l'option G, et c'est un point fort : la
-libération étant une **fonction des mesures courantes**, les règles 1 et 2 du
-§9.1 — les mesures priment inconditionnellement hors bande morte — restent
-directement applicables. Il n'y a **aucune référence à restaurer**, donc aucun
-cas « référence perdue ».
+Le plancher étant une **fonction de l'état instantané**, le §9.1 s'applique
+**inchangé** : les mesures priment inconditionnellement hors bande morte, et il
+n'y a **aucune référence à restaurer**.
 
 | Situation au redémarrage | Comportement attendu |
 |---|---|
-| Besoin restauré actif, écart calculable | Confrontation immédiate aux mesures courantes (§9.1) |
-| Besoin restauré actif, écart **non calculable** | **Maintien** (§4.4) — l'absence de mesure ne prouve pas la résorption |
+| Besoin restauré actif, mesure exploitable | Confrontation immédiate aux mesures courantes (§9.1) |
+| Besoin restauré actif, mesure **inexploitable** | **Maintien** (§4.4) — l'absence de mesure ne prouve pas la résorption |
 | Aucun état valide restaurable | Besoin **initialisé inactif**, situation **exposable** (§9.1 règle 4) |
 | Relais déjà en haute vitesse | Sans effet sur la décision : le §8.4 interdit la lecture inverse |
 
 Aucun `initial:` n'est présumé pour aucun helper.
 
-### 8.2 Indisponibilité
-
-`unknown` / `unavailable` ≠ `false` ≠ besoin résorbé.
+**Indisponibilité** — `unknown` / `unavailable` ≠ `false` ≠ besoin résorbé :
 
 | Situation | Comportement attendu |
 |---|---|
 | Sonde locale indisponible | Besoin actif **maintenu** (§4.4) |
-| Mesure extérieure indisponible | Écart **non calculable** → **maintien**. Une garde de libération sur panne durable reste à définir |
 | Valeur courante indisponible | Maintien |
 | Durée minimale exécutive active | Sans rapport avec le besoin — voir §9 |
 | État de besoin incohérent | Reconstruction **exposable** (§9.1 règle 4) |
+
+**Observabilité conceptuelle attendue**, sans que l'UI ne décide quoi que ce
+soit : raison d'ouverture — niveau ou évolution — et, si évolution, franchissement
+du plancher ; frontière de libération applicable ; progression vers la
+libération ; raison de maintien ; raison de libération ; état dégradé ; dernière
+preuve valide.
 
 ---
 
@@ -375,10 +393,10 @@ décision métier ».
 > temporisation, mais **le besoin ne doit pas être artificiellement maintenu**
 > pour servir la protection exécutive.
 
-**Cette séparation est déjà pleinement compatible** avec les contrats en
+Cette séparation est **déjà pleinement compatible** avec les contrats en
 vigueur : le §8.2 prévoit le retour différé, le §8.3 en fixe la nature exécutive,
 le §8.4 précise qu'un retour différé légitime n'est pas une divergence. **Aucun
-co-changement n'est nécessaire** sur ce point.
+co-changement n'est nécessaire sur ce point.**
 
 **Le §14.4 reste non soldé** et les 15 minutes ne sont **pas** calibrées.
 
@@ -386,129 +404,148 @@ co-changement n'est nécessaire** sur ce point.
 
 ## 10. Matrice comparative
 
-| Critère | **A** ouverture | **B** base pré-épisode | **C** pic | **D** phases | **E** relatif + garde | **F** plancher *(repli)* | **G** écart absolu int./ext. |
+| Critère | **A** ouverture | **B** base pré-épisode | **C** pic | **D** phases | **E** relatif + garde | **G** écart absolu | **F** plancher **retenu** |
 |---|---|---|---|---|---|---|---|
-| Fidélité au besoin métier | forte | forte | forte | forte | forte | **faible** | **forte** |
-| Couverture des épisodes | à établir | à établir | à établir | à établir | à établir | **−20 à −35 pts** *(mesuré)* | à établir |
-| Risque de libération prématurée | **élevé** si ouverture basse | moyen | moyen | moyen | **élevé** via la garde | moyen | à établir |
-| Risque de non-libération | **élevé** si la mesure remonte | **élevé** | moyen | moyen | faible | faible | **à établir** — panne du capteur extérieur |
-| Robustesse saisonnière | bonne | moyenne | bonne | bonne | moyenne | **mauvaise** *(803 min hiver / 7 min été)* | **bonne par construction** |
-| Sensibilité au bruit | moyenne | moyenne | **élevée** | élevée | moyenne | faible | à établir |
-| Sensibilité à la quantification | moyenne | moyenne | **élevée** | élevée | moyenne | faible | **à établir** — enfants au point entier |
-| Dépendance au rythme de publication | faible | **élevée** | moyenne | moyenne | faible | **nulle** | **nulle** |
-| Complexité | moyenne | élevée | moyenne | **très élevée** | élevée | **très faible** | **faible** |
-| Sobriété | moyenne | faible | moyenne | **faible** | faible | **maximale** | **élevée** |
-| Explicabilité | bonne | moyenne | bonne | faible | moyenne | **maximale** | **bonne** |
-| Restauration | référence à persister | idem | idem | plusieurs états | idem | **rien à restaurer** | **rien à restaurer** |
-| Indisponibilité | référence absente | idem | idem | idem | idem | **simple** | dépendance extérieure |
-| Observabilité | bonne | moyenne | bonne | complexe | moyenne | **triviale** | **bonne** |
-| **Conformité contractuelle** | **incompatible §2.2** | **incompatible §2.2 / §2.2 bis** | **incompatible §2.2 / §6.3** | **incompatible** | **incompatible** | **compatible** | **co-changement ciblé §6.4** |
-| Ampleur du co-changement | **invariant central** | **invariant central** | **invariant central** | **invariant central** | **invariant central** | **aucun** | **une clause, périmètre étroit** |
-| Coût runtime futur | état + writer + restauration | idem, plus lourd | idem | **le plus lourd** | idem | **le plus faible** | **faible** — capteurs existants |
+| Fidélité au besoin métier | forte | forte | forte | forte | forte | forte | **faible** |
+| Couverture des épisodes | à établir | à établir | à établir | à établir | à établir | inopérante en été | **−20 à −35 pts** *(mesuré)* |
+| Risque de libération prématurée | **élevé** | moyen | moyen | moyen | **élevé** | **37 à 81 %** *(mesuré)* | moyen |
+| Risque de non-libération | **élevé** | **élevé** | moyen | moyen | faible | faible | faible |
+| Robustesse saisonnière | bonne | moyenne | bonne | bonne | moyenne | **nulle** *(mesurée)* | **mauvaise** *(803 min hiver / 7 min été)* |
+| Sensibilité au bruit | moyenne | moyenne | **élevée** | élevée | moyenne | faible | faible |
+| Sensibilité à la quantification | moyenne | moyenne | **élevée** | élevée | moyenne | faible | faible |
+| Dépendance au rythme de publication | faible | **élevée** | moyenne | moyenne | faible | nulle | **nulle** |
+| Complexité | moyenne | élevée | moyenne | **très élevée** | élevée | faible | **très faible** |
+| Sobriété | moyenne | faible | moyenne | **faible** | faible | élevée | **maximale** |
+| Explicabilité | bonne | moyenne | bonne | faible | moyenne | bonne | **maximale** |
+| Restauration | référence à persister | idem | idem | plusieurs états | idem | rien | **rien à restaurer** |
+| Indisponibilité | référence absente | idem | idem | idem | idem | dépendance externe | **simple** |
+| Observabilité | bonne | moyenne | bonne | complexe | moyenne | bonne | **triviale** |
+| **Conformité contractuelle** | **incompatible §2.2** | **incompatible §2.2 / §2.2 bis** | **incompatible §2.2 / §6.3** | **incompatible** | **incompatible** | **interdite §7.4** | **compatible** |
+| Ampleur du co-changement | **invariant central** | **invariant central** | **invariant central** | **invariant central** | **invariant central** | sans objet | **aucun** |
+| Coût runtime futur | état + writer + restauration | idem, plus lourd | idem | **le plus lourd** | idem | faible | **le plus faible** |
 
 ---
 
 ## 11. Arbitrage
 
-> **Résultat retenu : famille d'architecture retenue, variante et paramètres non
-> départagés.**
+> **Résultat retenu : aucune libération relative n'est viable. Le plancher
+> instantané sur la voie d'évolution est retenu comme repli.**
 
-**Famille retenue : libération relative à une référence physique instantanée,
-sans mémoire — option G.** C'est la seule qui satisfasse simultanément le
-principe métier du §4, l'invariant du §2.2 et l'exigence de sobriété.
+**Énoncé opposable :**
 
-**Pourquoi elle respecte mieux le besoin métier que les autres.** Elle exprime
-une **preuve physique de résorption** — l'eau que la ventilation a encore à
-retirer — au lieu d'un constat de niveau qui dérive de 20 points sur l'année, ou
-d'un écoulement de temps que le §8.3 refuse de confondre avec le besoin. Elle
-est en outre la seule option relative qui **ne requiert aucune mémoire**, donc
-qui ne touche pas à l'invariant central du contrat.
+> **La famille « référence physique instantanée » est réfutée comme architecture
+> générale. Le plancher instantané sur la voie d'évolution devient le repli
+> retenu, faute de mécanisme relatif général compatible, robuste et explicable.**
 
-**Pourquoi le plancher n'est pas retenu en premier choix.** Il est simple et
-sans co-changement, mais il **ne résout pas le problème saisonnier** — la durée
-médiane d'un besoin reste de 803 minutes en hiver contre 7 en été (`8849a054`) —
-il **coûte 20 à 35 points de couverture d'épisodes**, et il **rouvre le critère
-d'entrée arbitré en passe 1**. Il traite le symptôme, non la cause. Il **reste le
-repli** si l'option G ne résiste pas au travail probatoire.
+### 11.1 Chemin de la réfutation
 
-**Ce qui n'est pas départagé** : la définition exacte de l'écart, la forme du
-critère de libération, sa valeur, et le comportement à retenir sur panne du
-capteur extérieur.
+| Famille | Motif de rejet |
+|---|---|
+| Options **à mémoire** — A, B, C, D, E | **Incompatibles avec le §2.2**, qui interdit nommément mémoire d'épisode, instant de début, durée écoulée, **valeur de pic**, historique de mesures, compteur et timer. Les instruire supposerait de modifier l'**invariant central** du contrat |
+| Option **G, référence extérieure** | **Interdite par le §7.4** : inopérante tout l'été — 81 % des épisodes estivaux déjà libérés au pic, 100 % par air extérieur très humide |
+| Option **G, référence intérieure** | Fonctionne pour les **parents seulement** ; échoue pour les **enfants** ; dépendance inter-pièces contraire à la localité du besoin ; co-changement plus large pour un résultat partiel ; battement élevé |
+
+### 11.2 Qualifications obligatoires du repli
+
+Le plancher **n'est pas un progrès gratuit**. Il est retenu **faute de mieux**,
+et les cinq points suivants sont indissociables de la décision :
+
+1. **Il ne constitue pas une amélioration gratuite** : c'est un repli assumé.
+2. **Il réduit la couverture des épisodes de 20 à 35 points** — mesure établie
+   par `8849a054`.
+3. **Il rouvre explicitement l'arbitrage d'entrée de la passe 1**, puisqu'il
+   modifie le critère d'entrée.
+4. **Les valeurs du plancher restent à calibrer**, par pièce.
+5. **Les triplets `74 / 20 / 5` (parents) et `74 / 30 / 5` (enfants) ne sont
+   pas réécrits ici**, ni silencieusement ni autrement : ils demeurent en
+   vigueur tant que la réouverture n'a pas produit de nouvel arbitrage.
+
+**Il ne résout pas non plus le problème saisonnier** : avec plancher et une
+sonde OFF de 62, la durée médiane d'un besoin reste de **803 minutes en hiver
+contre 7 en été** (`8849a054`).
+
+### 11.3 Réouverture contrôlée de la passe 1
+
+La réouverture est **circonscrite** :
+
+- **ce qui est rouvert** : la **forme** du critère d'entrée, par l'ajout d'une
+  condition de plancher sur la **seule voie d'évolution** ;
+- **ce qui n'est pas rouvert** : la voie de niveau ; le principe de paramètres
+  différenciables par pièce ; l'obligation d'une machine locale complète pour les
+  deux salles d'eau ; l'exclusion du séjour ; le retrait du veto d'aération ; la
+  conservation du mécanisme de durée minimale ;
+- **ce qui reste provisoire et inchangé jusqu'à nouvel arbitrage** : les deux
+  triplets d'entrée.
 
 ---
 
-## 12. Preuves encore nécessaires
+## 12. Preuves acquises et preuves encore nécessaires
 
-Aucun chiffre nouveau n'est produit ici : **rien de ce qui suit n'a de
-propriétaire probatoire versionné à ce jour.** Le travail est à conduire dans
-`arsenal-runtime`, à y versionner, puis seulement à reporter ici.
+**Acquises**, propriété du commit `9723a5bd565d80ab8794af93f767222db444fefa` :
+distribution de l'écart par pièce et par saison · trajectoire après le pic ·
+franchissements hors épisode · régimes défavorables et contrôle du §7.4 · pas
+effectif et bruit de l'écart · disponibilité des grandeurs. **Les six preuves du
+§12 antérieur sont donc closes.**
 
-1. **Distribution de l'écart d'humidité absolue intérieur / extérieur**, par
-   pièce et par saison, hors épisode et pendant les épisodes.
-2. **Trajectoire de l'écart après le pic** : se résorbe-t-il, à quelle vitesse,
-   et retrouve-t-il un niveau ordinaire ?
-3. **Franchissements hors épisode** d'un écart candidat, pour mesurer le risque
-   de battement — le contrôle réalisé pour les frontières absolues, transposé.
-4. **Régimes défavorables** : nuits d'été à air extérieur très humide, et
-   vérification du §7.4 — le mécanisme ne doit rendre la voie humidité
-   inopérante dans aucun régime durable.
-5. **Pas effectif et bruit de l'écart**, notamment en salle de douche enfants où
-   l'humidité relative source est restituée au point entier.
-6. **Disponibilité réelle** des trois grandeurs sur la période couverte.
+**Encore nécessaires**, pour la suite :
+
+1. **calibration du plancher par pièce** — hauteur, effet sur la couverture,
+   effet sur le battement ;
+2. **frontière de libération associée**, une fois le plancher fixé ;
+3. **largeur de bande morte** dans le référentiel retenu ;
+4. **§14.4** — durée minimale.
 
 ---
 
 ## 13. Paramètres restant à calibrer
 
-Frontière de libération exprimée en écart · caractère commun ou différencié par
-pièce · largeur de la bande morte, dans le référentiel qui sera retenu · garde
-de libération sur indisponibilité durable de la référence extérieure ·
-**§14.4**, durée minimale.
+Hauteur du plancher, par pièce · frontière de libération associée · largeur de
+la bande morte · **§14.4**, durée minimale · caractère commun ou différencié par
+pièce de ces paramètres.
 
 ---
 
 ## 14. Bande morte
 
-La bande morte **ne peut être définie qu'après le choix du modèle de
-libération**, dont elle est l'écart constitutif. Selon l'option retenue, elle
-prendra la forme d'une bande morte **absolue**, d'une **baisse relative**, d'une
-**tolérance autour d'une référence**, ou d'un **seuil de résorption exprimé en
-écart d'humidité absolue** — les quatre ne sont pas commensurables.
+La bande morte **ne peut être définie qu'après** la fixation du couple
+(plancher, frontière de libération), dont elle est l'écart constitutif.
 
 Les valeurs de **1,8** et **3,0 points** demeurent des **repères probatoires de
 conception** exprimés en humidité relative. Elles ne constituent **aucun minimum
-acquis**, et **ne se transposent pas** telles quelles dans un référentiel
-d'humidité absolue.
+acquis**. Toute frontière de la salle de douche enfants doit rester
+**représentable au point entier**.
 
 ---
 
-## 15. Co-changement contractuel — périmètre proposé, non appliqué
+## 15. Co-changement contractuel — aucun requis
 
-Si l'option G résiste au travail probatoire, un **lot contractuel distinct**
-devra être ouvert. Périmètre pressenti, **à confirmer** :
+> **Le repli retenu ne nécessite aucun co-changement contractuel.** Le plancher
+> est une fonction de l'état instantané, compatible avec les §2.2 et §2.2 bis ;
+> la libération demeure une frontière absolue, déjà prévue par le §6.4.
 
-- **§6.4** — admettre une **référence physique extérieure non décisionnelle**
-  dans la condition de libération, en la distinguant explicitement d'une
-  agrégation entre pièces et du contexte d'aération du §4.3 ;
-- **§6.3** — alignement symétrique pour le maintien ;
-- **§14.2** — actualisation des paramètres ouverts.
+Le co-changement du §6.4 envisagé par la version antérieure de ce document
+— admettre une référence physique extérieure — **est abandonné** : la famille
+qu'il devait servir est réfutée.
 
-**Le §2.2 n'est pas concerné** : c'est l'intérêt principal de cette famille.
-**Aucun contrat n'est modifié par le présent lot**, et le co-changement ne doit
-pas être porté dans le même lot que l'arbitrage.
+**Le point de clarification consigné à la passe 2 demeure ouvert** : le §6.4 vise
+« la frontière d'entrée » **au singulier** alors que l'entrée comporte deux
+branches. L'ajout d'un plancher rend cette clarification **plus utile encore**,
+l'entrée devenant `niveau ≥ S` **OU** `(montée ≥ D **ET** niveau ≥ plancher)`.
+Ce point relève d'un lot documentaire distinct et **n'est pas traité ici**.
 
 ---
 
 ## 16. Conséquences pour L2b et prochain jalon
 
-**L2b n'est pas soldé.** Restent ouverts : la forme et la valeur du critère de
-libération, la bande morte, le §14.4, la calibration définitive de la salle de
-douche enfants, et le mode d'exposition des paramètres.
+**L2b n'est pas soldé.** Il ne le sera pas tant que ne seront pas arrêtés :
 
-**Prochain jalon : acquérir les preuves du §12 dans `arsenal-runtime`.** Selon
-leur résultat : ouvrir le lot contractuel du §15, ou basculer sur le repli F en
-assumant explicitement la perte de couverture et la réouverture contrôlée de la
-passe 1.
+- le **plancher par pièce** ;
+- la **frontière de libération** associée ;
+- la **largeur de bande morte** ;
+- le **§14.4**.
+
+**Prochain jalon : passe 4 — réouverture contrôlée de l'entrée et calibration du
+plancher**, sur les preuves de `8849a054`, complétées si nécessaire.
 
 **Aucune correction runtime n'est autorisée** tant que la séquence probatoire et
 L2b ne sont pas soldées.
@@ -517,12 +554,13 @@ L2b ne sont pas soldées.
 
 ## 17. Ce que ce lot ne décide pas
 
-- il **ne choisit aucune valeur** de frontière, d'écart ou de bande morte ;
-- il **ne modifie aucun contrat**, et ne préjuge pas de l'acceptation du
-  co-changement du §15 ;
-- il **ne retient pas** le plancher, qui reste un repli ;
-- il **ne rouvre pas** le critère d'entrée de la passe 1 ;
-- il **ne calibre pas** les 15 minutes et ne solde pas le §14.4 ;
-- il **n'affirme pas** que l'option G fonctionnera : elle est retenue comme
-  famille **sous réserve** du travail probatoire du §12 ;
+- il **ne calibre aucune valeur** — ni plancher, ni frontière, ni bande morte ;
+- il **ne réécrit pas** les triplets d'entrée `74 / 20 / 5` et `74 / 30 / 5` ;
+- il **ne modifie aucun contrat** ;
+- il **ne solde pas L2b** et **ne calibre pas** les 15 minutes ;
+- il **ne rouvre** de la passe 1 que la **forme** du critère d'entrée, à
+  l'exclusion de toute autre décision ;
+- il **n'écarte pas définitivement** la référence intérieure pour la salle de
+  bain parents : il constate qu'elle n'est **pas généralisable** et qu'elle est
+  **contractuellement incompatible en l'état** ;
 - il **ne crée aucune entité** et **n'engage aucun runtime**.
