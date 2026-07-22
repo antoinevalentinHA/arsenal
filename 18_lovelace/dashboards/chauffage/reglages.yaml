@@ -93,25 +93,25 @@ views:
             card:
               type: vertical-stack
               cards:
-                - type: grid
-                  square: false
-                  columns: 2
-                  cards:
-                    - type: tile
-                      entity: input_number.chauffage_consigne_confort
-                      name: Confort
-                      features_position: inline
-                      features:
-                        - type: numeric-input
-                          style: buttons
+                # Pleine largeur : la section est courte depuis la
+                # mise en place du sélecteur, la place gagnée sert la
+                # lisibilité des trois consignes plutôt qu'une grille
+                # à deux colonnes qui comprimait Confort et Réduite.
+                - type: tile
+                  entity: input_number.chauffage_consigne_confort
+                  name: Confort
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-                    - type: tile
-                      entity: input_number.chauffage_consigne_reduite
-                      name: Réduite
-                      features_position: inline
-                      features:
-                        - type: numeric-input
-                          style: buttons
+                - type: tile
+                  entity: input_number.chauffage_consigne_reduite
+                  name: Réduite
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
                 - type: tile
                   entity: input_number.chauffage_consigne_vacances
