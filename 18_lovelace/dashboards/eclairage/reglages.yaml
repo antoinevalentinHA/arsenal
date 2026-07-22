@@ -70,6 +70,16 @@ views:
           # --------------------------------------------------
           # Cartes reprises verbatim (aucune entité, aucun
           # libellé ni alias modifié).
+          #
+          # 🪜 HIÉRARCHIE DES EN-TÊTES
+          # Le sélecteur porte le titre de la section : aucun
+          # `section_header` ne le répète à l'intérieur du bloc
+          # conditionnel. Le niveau immédiatement inférieur est
+          # donc promu `section_header`, et `sub_section_header`
+          # reste réservé au niveau encore en dessous.
+          # Les libellés sont inchangés : seuls les includes
+          # `sub_section_headers/` ↔ `section_headers/` sont
+          # permutés (même `name`, template différent).
           # ==================================================
           - type: conditional
             conditions:
@@ -78,11 +88,7 @@ views:
             card:
               type: vertical-stack
               cards:
-                - type: custom:button-card
-                  template: section_header
-                  name: 💡 Éclairage auto
-
-                - !include ../../includes/sub_section_headers/garage.yaml
+                - !include ../../includes/section_headers/garage.yaml
 
                 - type: tile
                   entity: input_boolean.garage_auto_light
@@ -104,7 +110,7 @@ views:
                     - type: numeric-input
                       style: buttons
 
-                - !include ../../includes/sub_section_headers/entree.yaml
+                - !include ../../includes/section_headers/entree.yaml
 
                 - type: tile
                   entity: input_boolean.entree_auto_light
@@ -118,7 +124,7 @@ views:
                     - type: numeric-input
                       style: buttons
 
-                - !include ../../includes/sub_section_headers/sejour.yaml
+                - !include ../../includes/section_headers/sejour.yaml
 
                 - type: tile
                   entity: input_boolean.sejour_auto_light
@@ -145,7 +151,7 @@ views:
                   name: Extinction luminosité autorisée
 
                 - type: custom:button-card
-                  template: sub_section_header
+                  template: section_header
                   name: Sapin 🎄
 
                 - type: tile
@@ -167,10 +173,8 @@ views:
             card:
               type: vertical-stack
               cards:
-                - !include ../../includes/section_headers/jardin.yaml
-
                 - type: custom:button-card
-                  template: sub_section_header
+                  template: section_header
                   name: 🔘 Activation des automatismes
 
                 - type: grid
@@ -186,7 +190,7 @@ views:
                       name: Soir
 
                 - type: custom:button-card
-                  template: sub_section_header
+                  template: section_header
                   name: 🌅 Matin
 
                 - type: tile
@@ -206,7 +210,7 @@ views:
                   name: Heure d’extinction fixe
 
                 - type: custom:button-card
-                  template: sub_section_header
+                  template: section_header
                   name: 🌇 Soir
 
                 - type: tile
@@ -232,9 +236,13 @@ views:
             card:
               type: vertical-stack
               cards:
+                # Réglages transverses de la simulation. Le titre
+                # « Simulation de présence » est porté par le
+                # sélecteur ; cet en-tête ne couvre donc que les
+                # réglages généraux, avant le détail par pièce.
                 - type: custom:button-card
                   template: section_header
-                  name: 🛏️ Simulation de présence
+                  name: ⚙️ Général
 
                 - type: tile
                   entity: input_boolean.activation_simulation_presence_vacances
