@@ -1,0 +1,131 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION : VMC – Maintien prolonge
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Projeter en notification persistante l'etat courant d'un
+#   besoin MAINTENU faute de mesure exploitable ou faute de
+#   frontiere calculable, lorsque cette situation dure.
+#
+# 🛡️ POURQUOI CETTE AUTOMATISATION EXISTE — RISQUE R4
+#   Le contrat impose de MAINTENIR un besoin actif sur mesure
+#   inexploitable (§4.4) et sur frontiere non calculable
+#   (§7.4 bis condition 4). Le chantier C35 a inscrit la
+#   contrepartie en risque R4 : sur panne durable, la VMC peut
+#   demeurer en haute vitesse SANS DISPOSITIF DE SORTIE.
+#
+#   Cette contrepartie est ASSUMEE. Elle ne doit pas pour
+#   autant etre INVISIBLE : une immobilisation silencieuse est
+#   indiscernable d'un fonctionnement normal.
+#
+# 🚫 CE N'EST PAS UN DISPOSITIF DE SORTIE
+#   Cette automatisation NE LIBERE RIEN, NE PILOTE RIEN et
+#   N'ECRIT AUCUN ETAT DE BESOIN. Elle observe et signale.
+#
+#   Le §8.3 interdit qu'une duree tienne lieu de condition
+#   metier : c'est precisement pourquoi le delai ci-dessous
+#   n'agit PAS sur la decision. Il ne fait que retarder un
+#   AFFICHAGE, afin qu'une indisponibilite passagere ne
+#   produise pas de bruit.
+#
+# 📌 DELAI — DIAGNOSTIC, NON METIER
+#   2 heures. Cette valeur n'est PAS calibree et n'a pas a
+#   l'etre : elle ne gouverne aucune decision. Elle separe le
+#   transitoire du durable pour l'oeil humain, rien de plus.
+#
+# 🔁 CYCLE DE VIE
+#   - apparition : situation maintenue depuis plus de 2 h
+#   - extinction : retour a une mesure exploitable et a une
+#     frontiere calculable, ou liberation du besoin
+#
+# 🔁 MODE
+#   mode: restart — recalcule proprement la persistance de
+#   l'etat en cas d'oscillation.
+# ==========================================================
+
+- id: "10190000000009"
+  alias: "VMC - Maintien prolongé sans mesure exploitable"
+  description: >
+    Signale, sans agir, qu'un besoin est maintenu depuis plus de deux
+    heures faute de mesure exploitable ou de frontiere calculable.
+    N'est PAS un dispositif de sortie : le risque R4 demeure assume.
+  mode: restart
+  max_exceeded: silent
+
+  trigger:
+    - platform: template
+      value_template: >
+        {{ state_attr('binary_sensor.vmc_besoin_humidite_sdb_parents',
+                      'maintenu_faute_de_mesure') == true
+           or state_attr('binary_sensor.vmc_besoin_humidite_sdb_parents',
+                         'maintenu_faute_de_frontiere') == true
+           or state_attr('binary_sensor.vmc_besoin_humidite_sdb_enfants',
+                         'maintenu_faute_de_mesure') == true
+           or state_attr('binary_sensor.vmc_besoin_humidite_sdb_enfants',
+                         'maintenu_faute_de_frontiere') == true }}
+      for: "02:00:00"
+
+    - platform: template
+      value_template: >
+        {{ not (state_attr('binary_sensor.vmc_besoin_humidite_sdb_parents',
+                           'maintenu_faute_de_mesure') == true
+                or state_attr('binary_sensor.vmc_besoin_humidite_sdb_parents',
+                              'maintenu_faute_de_frontiere') == true
+                or state_attr('binary_sensor.vmc_besoin_humidite_sdb_enfants',
+                              'maintenu_faute_de_mesure') == true
+                or state_attr('binary_sensor.vmc_besoin_humidite_sdb_enfants',
+                              'maintenu_faute_de_frontiere') == true) }}
+
+    # Re-projection post-demarrage : HA ne restaure pas les persistantes.
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  variables:
+    concernees: >
+      {% set ns = namespace(liste=[]) %}
+      {% for e, nom in [
+           ('binary_sensor.vmc_besoin_humidite_sdb_parents', 'SdB parents'),
+           ('binary_sensor.vmc_besoin_humidite_sdb_enfants', 'SdB enfants')] %}
+        {% if state_attr(e, 'maintenu_faute_de_mesure') == true %}
+          {% set ns.liste = ns.liste + [nom ~ ' — mesure inexploitable'] %}
+        {% elif state_attr(e, 'maintenu_faute_de_frontiere') == true %}
+          {% set ns.liste = ns.liste + [nom ~ ' — frontière non calculable'] %}
+        {% endif %}
+      {% endfor %}
+      {{ ns.liste }}
+
+  action:
+    - choose:
+
+        # ==================================================
+        # 🟧 SITUATION PRESENTE ET DURABLE
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: "{{ concernees | count > 0 }}"
+          sequence:
+            - action: persistent_notification.create
+              data:
+                notification_id: "vmc_maintien_prolonge"
+                title: "💨 VMC – Besoin maintenu sans mesure"
+                message: >
+                  Un besoin d'extraction est maintenu depuis plus de deux heures
+                  sans mesure exploitable ni frontière calculable.
+
+                  {% for c in concernees %}
+                  - {{ c }}
+                  {% endfor %}
+
+                  Le contrat impose ce maintien : une mesure inexploitable ne
+                  vaut jamais libération. La VMC peut donc rester en haute
+                  vitesse tant que la situation dure.
+
+                  Ce signalement n'agit pas : il rend la situation visible.
+
+        # ==================================================
+        # 🟩 SITUATION DISPARUE
+        # ==================================================
+      default:
+        - action: persistent_notification.dismiss
+          data:
+            notification_id: "vmc_maintien_prolonge"

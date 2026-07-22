@@ -150,7 +150,7 @@
           {% elif off is none %}
             Frontière non calculable — le besoin est maintenu (§7.4 bis)
           {% elif v is none %}
-            Mesure inexploitable — le besoin est maintenu
+            Mesure inexploitable — le besoin est maintenu (§4.4)
           {% elif v > off %}
             Mesure au-dessus de la frontière de libération
           {% else %}
@@ -180,6 +180,20 @@
         frontiere_calculable: >
           {{ state_attr('sensor.vmc_frontiere_liberation_sdb_parents',
                         'calculable') }}
+
+        # §10.2 exigence 8 — un besoin MAINTENU faute de MESURE
+        # exploitable doit etre distinguable d'un besoin OBSERVE.
+        # Les deux sont `actif`, mais l'un repose sur une observation
+        # et l'autre sur l'absence de preuve de liberation. Les
+        # confondre est une non-conformite (§12.3).
+        maintenu_faute_de_mesure: >
+          {% set v = states('sensor.humidite_relative_sdb_parents') | float(none) %}
+          {{ is_state('input_boolean.vmc_etat_besoin_sdb_parents', 'on')
+             and v is none }}
+
+        mesure_exploitable: >
+          {{ states('sensor.humidite_relative_sdb_parents') | float(none)
+             is not none }}
 
         # §10.2 exigence 8 — un besoin MAINTENU faute de frontiere
         # calculable doit etre distinguable d'un besoin dont la
