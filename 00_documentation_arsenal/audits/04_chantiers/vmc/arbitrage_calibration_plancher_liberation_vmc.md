@@ -347,9 +347,12 @@ vitesse jusqu'à l'échéance **sans que le besoin soit artificiellement mainten
 - les **valeurs de la salle de douche enfants** ;
 - le **§14.4**.
 
-**Prochain jalon : lot contractuel de clarification du §7.4**, pour un modulateur
-de **libération**. Il conditionne l'adoption de la famille retenue et doit
-précéder toute calibration définitive.
+**Clarification instruite** — [`arbitrage_modulateur_liberation_vmc.md`](arbitrage_modulateur_liberation_vmc.md),
+préparée sur branche. Elle établit que **le §7.4 n'est pas le seul obstacle, ni le
+principal** : le §6.4, qui réserve la libération à « exclusivement la mesure de la
+pièce », est la clause décisive. Une rédaction est proposée — §6.4, §7.4 bis,
+§12.3, §14.3 — **sans être appliquée**. **Prochain jalon : lot contractuel
+d'amendement**, si l'arbitrage le retient.
 
 **Aucune correction runtime n'est autorisée** tant que la séquence probatoire et
 L2b ne sont pas soldées.
