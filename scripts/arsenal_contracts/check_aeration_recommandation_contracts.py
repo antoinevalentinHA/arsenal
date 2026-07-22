@@ -56,18 +56,14 @@ LEGITIMATE_CONSUMERS = {
     # desormais derivee de l'attribut autoritatif `composition` de la
     # decision (§11.2), et il ne lit plus le verdict d'aeration.
     DIR_TEMPLATE_SENSORS / "vmc" / "delta_humidite_absolue_favorable.yaml",
-    # C35 L7.1 — le verrou d'aeration a QUITTE l'agregation
-    # `vmc/haute_vitesse_requise.yaml`, qui sort donc de cette liste, et vit
-    # desormais dans les deux besoins locaux ci-dessous.
+    # C35 L7.2 — les deux besoins locaux VMC sont SORTIS de cette liste :
+    # le verrou d'aeration a ete RETIRE de la voie humidite, resorbant l'ecart
+    # contractuel n° 1 du chantier C35. Aucun fichier DECISIONNEL de la VMC ne
+    # consomme plus le verdict d'aeration.
     #
-    # ⚠️ ENTREES TEMPORAIRES — RETRAIT PREVU EN C35 L7.2.
-    # Elles couvrent l'ECART CONTRACTUEL n° 1 du chantier, que le §4.3 de
-    # `contrats/vmc.md` proscrit deja : le verdict d'aeration ne doit pas
-    # conditionner la voie humidite. Leur retrait, avec celui du verrou dans
-    # les deux fichiers, est la PREUVE du lot L7.2 et sert le critere de
-    # cloture 8 de C35.
-    DIR_TEMPLATE_SENSORS / "vmc" / "besoins" / "humidite_sdb_parents.yaml",
-    DIR_TEMPLATE_SENSORS / "vmc" / "besoins" / "humidite_sdb_enfants.yaml",
+    # Subsiste `vmc/delta_humidite_absolue_favorable.yaml`, seul fichier VMC
+    # encore listee : c'est un REFLET UI non decisionnel (§4.3, §10.5), qui ne
+    # conditionne aucune extraction.
     FILE_GLOBAL,
 }
 
