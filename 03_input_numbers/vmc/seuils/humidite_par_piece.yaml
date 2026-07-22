@@ -1,0 +1,117 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     VMC — Paramètres d'entrée de la voie humidité, PAR PIÈCE
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker, par pièce, les trois paramètres de la voie
+#   d'entrée du besoin humidité :
+#     - S : frontière de niveau ;
+#     - W : durée nominale de l'observation glissante ;
+#     - D : évolution minimale sur cette fenêtre.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Un jeu de valeurs par pièce, la différenciation étant
+#     établie sur preuves (C35 L2b, passe 1)
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
+#
+# 🔗 PROPRIÉTÉ
+#   Structure arrêtée par l'arbitrage C35 du 2026-07-22 :
+#   `00_documentation_arsenal/audits/04_chantiers/vmc/
+#    arbitrage_propriete_parametres_vmc.md`
+#
+#   Ces trois paramètres sont OPÉRATIONNELLEMENT CONFIGURABLES
+#   et vivent donc dans des helpers persistants.
+#
+#   Les coefficients de calibration `A`, `B` et `H` ne sont
+#   PAS ici : ce sont des constantes versionnées, portées par
+#   l'entité qui calcule la frontière. Les loger dans des
+#   curseurs les rendrait modifiables hors Git, sans revue et
+#   sans trace.
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces helpers comme capteurs d'humidité
+#   - Déclencher directement une action
+#   - Commander directement la VMC
+#   - Implémenter l'hystérèse dans ces helpers
+#   - Modifier automatiquement ces valeurs après leur
+#     initialisation contrôlée (C35 L7.0) : aucun writer
+#     permanent n'est admis, l'utilisateur en demeure le seul
+#     auteur
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# ⚠️ ABSENCE DE CLÉ `initial:`
+#   Conforme à la doctrine du dépôt. La sortie de l'état
+#   `unknown` est assurée UNE FOIS par l'automatisation
+#   `10190000000006`, jamais par un repli numérique silencieux.
+#
+# 🏷️ STATUT
+#   Socle — C35 L7.0
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🚿 Salle de bain parents
+# ----------------------------------------------------------
+vmc_seuil_on_sdb_parents:
+  name: "VMC - SdB parents - Seuil de niveau"
+  min: 50
+  max: 90
+  step: 1
+  unit_of_measurement: "%"
+  icon: mdi:water-percent
+  mode: box
+
+vmc_fenetre_sdb_parents:
+  name: "VMC - SdB parents - Fenêtre d'observation"
+  min: 5
+  max: 60
+  step: 5
+  unit_of_measurement: "min"
+  icon: mdi:timer-sand
+  mode: box
+
+vmc_evolution_sdb_parents:
+  name: "VMC - SdB parents - Évolution minimale"
+  min: 1
+  max: 15
+  step: 0.5
+  unit_of_measurement: "%"
+  icon: mdi:trending-up
+  mode: box
+
+# ----------------------------------------------------------
+# 🚿 Salle de douche enfants
+# ----------------------------------------------------------
+vmc_seuil_on_sdb_enfants:
+  name: "VMC - SdB enfants - Seuil de niveau"
+  min: 50
+  max: 90
+  step: 1
+  unit_of_measurement: "%"
+  icon: mdi:water-percent
+  mode: box
+
+vmc_fenetre_sdb_enfants:
+  name: "VMC - SdB enfants - Fenêtre d'observation"
+  min: 5
+  max: 60
+  step: 5
+  unit_of_measurement: "min"
+  icon: mdi:timer-sand
+  mode: box
+
+vmc_evolution_sdb_enfants:
+  name: "VMC - SdB enfants - Évolution minimale"
+  min: 1
+  max: 15
+  step: 0.5
+  unit_of_measurement: "%"
+  icon: mdi:trending-up
+  mode: box
