@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | C35 — Mise en conformité du domaine VMC avec le contrat v2.1 |
 | **Nature** | **Instruction d'une question contractuelle.** Ce document **ne modifie pas le contrat** : il établit ce que le contrat dit, ce qu'il ne dit pas, et propose une rédaction. L'amendement relève d'un **lot contractuel distinct** |
-| **Statut** | **Préparé sur branche.** Aucun amendement appliqué. **L2b n'est pas soldé** |
+| **Statut** | **Intégré dans `main` (PR #520).** L'arbitrage propriétaire a **accepté le co-changement** ; l'amendement `vmc.md` **v2.1 → v2.2** est **préparé sur branche**, dans un lot distinct. **L2b n'est pas soldé** |
 | **Origine** | Passe 4 ([`arbitrage_calibration_plancher_liberation_vmc.md`](arbitrage_calibration_plancher_liberation_vmc.md), PR #519) : la famille retenue — frontière de libération modulée par la température extérieure instantanée — ne peut être adoptée sans clarification préalable |
 | **Preuves opérationnelles** | `arsenal-runtime` : `47fa8a49` grille du plancher · `2aeaa237` frontière OFF saisonnière · `37a6bd69` référence terrain partielle |
 | **Contrat concerné** | [`../../../contrats/vmc.md`](../../../contrats/vmc.md) **v2.1** — §1.2, §2.2, §2.4, §4.3, §4.4, §6.4, §7.4, §12.3, §14.3. **Non modifié par ce lot** |
@@ -287,8 +287,15 @@ et ne conclut donc pas à une impossibilité générale.
 comportement sur indisponibilité, les valeurs de la salle de douche enfants et
 le **§14.4**.
 
-**Prochain jalon : lot contractuel d'amendement**, distinct du présent document,
-portant les §6.4, §7.4 bis, §12.3 et §14.3 — **si l'arbitrage le retient**.
+**Arbitrage rendu (2026-07-22) : le co-changement est accepté.** Le lot
+contractuel d'amendement porte `vmc.md` **v2.1 → v2.2** sur les §6.4, **§7.4
+bis**, §10.2, §12.3 et §14.3 — **préparé sur branche, non intégré**.
+
+> **Une cinquième modification s'est ajoutée aux quatre proposées** : le §10.2.
+> La condition 3 du §7.4 bis exige l'exposabilité de la frontière modulée ; le
+> §10.2 étant une énumération numérotée, la référence serait restée pendante
+> sans un bloc dédié. Cinq exigences y sont ajoutées, et la non-conformité
+> correspondante au §12.3.
 
 ---
 

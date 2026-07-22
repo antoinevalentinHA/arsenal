@@ -2,7 +2,7 @@
 # 📛 Domaine : Ventilation mécanique contrôlée (VMC)
 # 🧠 Nature : Pilotage automatique contractuel
 #
-# Version : v2.1
+# Version : v2.2
 # Statut  : Cible contractuelle validée — implémentation à mettre en conformité
 #
 # Ce document définit EXHAUSTIVEMENT le comportement attendu
@@ -477,12 +477,32 @@ assaini, selon une frontière **distincte de celle de l'entrée**.
 - la frontière de libération est **configurable** et **effectivement
   consommée** ; un paramètre de libération exposé mais non consommé constitue
   une non-conformité (§12.3) ;
-- la libération dépend **exclusivement de la mesure de la pièce** ;
+- la libération dépend **exclusivement de la mesure de la pièce**, dans les
+  termes précisés ci-dessous ;
 - elle ne dépend d'**aucun contexte d'aération globale** ;
 - elle exige une **mesure exploitable** (§4.4) ;
 - elle est **distincte** de la temporisation d'exécution (§8.3).
 
+#### Mesure comparée et point de comparaison
+
+> La libération porte **exclusivement sur la mesure de la pièce** : c'est elle,
+> et elle seule, qui est **comparée** à la frontière. La **valeur de la
+> frontière** peut en revanche être **paramétrée** par une **mesure physique
+> instantanée extérieure au logement**, dans les limites du **§7.4 bis**.
+
+Cette faculté ne vaut que pour une **mesure physique brute**. Elle ne s'étend :
+
+- **ni à la mesure d'une autre pièce** — ce serait une agrégation, prohibée par
+  le §2.4 ;
+- **ni à un verdict composite** relevant d'un objectif secondaire, dont le §4.3
+  écarte nommément l'usage décisionnel.
+
+**Ce que cette faculté ne change pas.** La grandeur comparée demeure la seule
+mesure de la pièce. Le point de comparaison n'est pas une seconde condition :
+c'est un paramètre. Aucune mémoire n'est introduite — le §2.2 n'est pas concerné.
+
 > **Paramètre ouvert §14.2** — la largeur de la bande morte n'est pas arrêtée.
+> **Paramètre ouvert §14.3** — aucun modulateur n'est retenu.
 
 ### 6.5 Voie humidité — agrégation
 
@@ -554,6 +574,49 @@ Tout modulateur retenu doit être **borné** : il peut rendre le déclenchement 
 exigeant, jamais impossible.
 
 > **Paramètre ouvert §14.3** — aucun modulateur n'est retenu à ce stade.
+
+### 7.4 bis Modulateur de la frontière de libération
+
+> **Une frontière de libération peut être modulée par une mesure physique
+> instantanée extérieure au logement.**
+
+**Motif.** Le régime ambiant d'une pièce humide dérive au cours de l'année. Une
+frontière de libération fixe n'y conserve pas une signification constante : trop
+basse, elle n'est jamais atteinte une partie de l'année ; assez haute pour être
+atteinte, elle rend la voie humidité inopérante dans un autre régime — ce que le
+§7.4 qualifie d'interdiction déguisée.
+
+**Quatre conditions cumulatives :**
+
+| # | Condition |
+|---|---|
+| **1** | **Bornage à double sens** — la frontière modulée demeure comprise entre deux valeurs fixes, **configurables** et **exposables** |
+| **2** | **Ni immédiate, ni impossible** — le mécanisme ne doit, dans **aucune plage de conditions durables**, rendre la libération immédiate ni impossible |
+| **3** | **Explicabilité** — la valeur courante de la frontière, la grandeur modulante et sa valeur courante sont **exposables** (§10.2) |
+| **4** | **Indisponibilité** — si la grandeur modulante est inexploitable, la frontière est **non calculable** : le besoin actif est **maintenu** (§4.4), et la situation est **exposable** |
+
+**Symétrie de l'interdiction déguisée.** Le §7.4 proscrit un modulateur qui
+rendrait la voie humidité inopérante dans une plage de conditions durables. Le
+contrôle vaut **dans les deux sens** :
+
+- une libération **rendue immédiate** viderait le besoin de sa substance : il
+  serait ouvert puis refermé sans qu'aucun assainissement ait eu lieu ;
+- une libération **rendue impossible** immobiliserait le besoin.
+
+> **Les deux constituent une interdiction déguisée** au sens du §7.4, et sont
+> contractuellement interdites.
+
+**Garde d'indisponibilité durable.** Une garde de libération **peut** être
+définie pour une indisponibilité durable de la grandeur modulante. Elle **ne
+peut pas** prendre la forme d'une temporisation tenant lieu de condition métier,
+ce que le §8.3 interdit.
+
+**Aucune mémoire.** La frontière modulée est une **fonction de l'état
+instantané**. Elle n'introduit ni mémoire d'épisode, ni historique de mesures,
+ni compteur, ni timer : le **§2.2 n'est pas concerné**.
+
+> **Paramètre ouvert §14.3** — la grandeur modulante, la loi de modulation et
+> ses bornes ne sont pas arrêtées.
 
 
 ---
@@ -720,6 +783,23 @@ diagnostic :
 > c'est que l'on puisse établir **pourquoi** le critère dynamique conclut, ou
 > pourquoi il ne peut pas conclure.
 
+**Exigences propres à un modulateur de la frontière de libération** (§7.4 bis),
+lorsqu'un tel modulateur est retenu. Le système doit pouvoir exposer ou rendre
+disponible au diagnostic :
+
+| # | Élément |
+|---|---|
+| 20 | la **grandeur modulante** employée |
+| 21 | sa **valeur courante** |
+| 22 | la **valeur courante de la frontière** de libération qui en résulte |
+| 23 | les **bornes** entre lesquelles cette frontière demeure |
+| 24 | le statut **calculable / non calculable** de la frontière, et sa raison |
+
+> Un besoin **maintenu parce que la frontière n'est pas calculable** (§7.4 bis,
+> condition 4) doit être distinguable d'un besoin dont la condition de
+> libération est **calculée et non satisfaite**. Les confondre dans l'exposition
+> est une non-conformité (§12.3).
+
 La répartition entre niveau métier et niveau diagnostique relève de
 l'architecture et n'est pas fixée ici.
 
@@ -821,6 +901,12 @@ non une prédiction.
 - un état détenu par un niveau d'agrégation (§2.4) ;
 - un besoin maintenu faute de mesure présenté comme un besoin observé (§10.2) ;
 - une observation glissante **persistée au redémarrage** (§9.1 bis) ;
+- une frontière de libération modulée **non bornée**, ou rendant la libération
+  **immédiate** ou **impossible** dans un régime durable (§7.4 bis) ;
+- la libération d'un besoin actif alors que la **grandeur modulante** est
+  inexploitable (§7.4 bis, condition 4) ;
+- un besoin maintenu faute de **frontière calculable** présenté comme un besoin
+  dont la condition de libération est calculée et non satisfaite (§10.2) ;
 - une observation glissante participant au **maintien** ou à la **libération**
   d'un besoin (§2.2 bis) ;
 - une grandeur dérivée de l'observation glissante **survivant à l'entrée** dans
@@ -979,6 +1065,17 @@ est large, plus souvent l'état restauré prévaudra.
 Aucun modulateur n'est retenu à ce stade. Tout modulateur ultérieur devra
 respecter le §7.4.
 
+**Modulateur de la frontière de libération.** Le §7.4 bis rend un tel modulateur
+**admissible**. Ne sont **pas** arrêtés :
+
+- la **grandeur modulante** ;
+- la **loi de modulation** et ses coefficients ;
+- les **bornes** entre lesquelles la frontière modulée demeure ;
+- le comportement de la **garde d'indisponibilité durable**.
+
+> **L'admissibilité n'est pas une obligation.** Aucun modulateur n'est retenu
+> tant qu'aucun n'est calibré.
+
 ### 14.4 Durée minimale d'exécution
 
 La valeur de la durée minimale (§8.2) devra être réexaminée une fois la condition
@@ -1017,6 +1114,6 @@ observé et cet ordre de grandeur devra être **expliqué avant clôture**. Un t
 
 # ==========================================================
 # FIN DU CONTRAT — VMC
-# Version v2.1 — cible contractuelle validée
+# Version v2.2 — cible contractuelle validée
 # Implémentation à mettre en conformité
 # ==========================================================
