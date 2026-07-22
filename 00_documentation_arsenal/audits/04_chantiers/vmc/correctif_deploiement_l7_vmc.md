@@ -192,9 +192,53 @@ l'emploie pas.
 | **VINIT-004** | table d'amorce **complète** : tout helper déclaré y figure | un helper manquant fait échouer |
 | **§UI (a)** | **aucune carte native** dans le diagnostic VMC | ✅ établie |
 | **§UI (b)** | **aucune grille > 2 colonnes** dans les réglages VMC | ✅ établie |
+| **§UI (c)** | **tout template appelé par un dashboard VMC résout, par héritage, vers un `background-color`** de la palette | l'appel direct du socle fait échouer le checker |
 
 Le checker `check_vmc_initialisation_contracts.py` **change d'objet** : il
 vérifiait le comportement d'un mécanisme ; il garde désormais **son absence**.
+
+---
+
+## 4 bis. Correctif de couleur — deux cartes sans fond
+
+**Constaté après déploiement du correctif UI** : les deux cartes de frontière
+modulée s'affichaient **blanches**.
+
+`ui/couleurs/02_palette.md` définit **sept couleurs** — vert, rouge, orange,
+jaune, bleu, gris neutre `rgba(158,158,158,0.2)`, gris indisponibilité
+`rgba(158,158,158,0.1)`. **Le blanc n'en fait pas partie.**
+
+**Cause** : `socle_kpi_label_72` définit une **forme** — hauteur contractuelle,
+typographie — et **aucun `background-color`**. Appelé directement depuis le
+dashboard, il tombe sur le fond de thème. Une carte sans fond n'est pas
+« neutre » : **elle est hors doctrine**, aucun des deux gris contractuels ne se
+confondant avec une absence de fond.
+
+**Correction conforme à la convention du dépôt** : la couleur appartient à un
+**template de domaine** spécialisant le socle — **15 templates procèdent ainsi**
+(boiler, chauffage, climatisation, meteo, sante, volets) — et non à un style
+local au site d'appel.
+
+`19_button_card_templates/40_dashboards/vmc/50_kpi/carte_vmc_frontiere_liberation.yaml` :
+
+| État de la frontière | Fond |
+|---|---|
+| calculable | 🔵 bleu information `rgba(33, 150, 243, 0.2)` — « information système / diagnostic informatif / ventilation, extraction, supervision » |
+| non calculable | ⚪ gris indisponibilité `rgba(158, 158, 158, 0.1)`, **prioritaire** (`couleurs/05_regles.md`, R6) |
+
+**Audit d'extension** : les **11 templates** employés par le diagnostic VMC
+portent désormais un fond de la palette.
+
+Quatre appels directs à un socle subsistent — `socle_info_72` et
+`socle_toggle_confirme_indispo` — et c'est **légitime** : ces deux socles
+définissent **eux-mêmes** leur `background-color`. Le défaut ne tenait pas au
+fait d'appeler un socle, mais d'appeler **un socle qui ne porte pas de fond**.
+La garde **§UI (c)** vise donc la propriété réelle — *résoudre, par héritage,
+vers un `background-color`* — et non la forme de l'appel.
+
+> **Ce que ce correctif ne fait pas** : il ne crée qu'un template, la doctrine
+> exigeant une preuve de répétition — ici, **deux cartes** de même nature
+> sémantique, plus **15 précédents** de la même construction.
 
 ---
 

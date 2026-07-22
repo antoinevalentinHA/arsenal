@@ -210,30 +210,14 @@ views:
             columns: 2
             cards:
               - type: custom:button-card
-                template: socle_kpi_label_72
+                template: carte_vmc_frontiere_liberation
                 entity: sensor.vmc_frontiere_liberation_sdb_parents
                 name: SdB parents
-                icon: mdi:arrow-collapse-horizontal
-                label: |
-                  [[[
-                    const p = entity?.attributes?.plancher_evolution;
-                    return (p === null || p === undefined || p === 'None')
-                      ? 'Plancher : —'
-                      : `Plancher : ${p} %`;
-                  ]]]
 
               - type: custom:button-card
-                template: socle_kpi_label_72
+                template: carte_vmc_frontiere_liberation
                 entity: sensor.vmc_frontiere_liberation_sdb_enfants
                 name: SdB enfants
-                icon: mdi:arrow-collapse-horizontal
-                label: |
-                  [[[
-                    const p = entity?.attributes?.plancher_evolution;
-                    return (p === null || p === undefined || p === 'None')
-                      ? 'Plancher : —'
-                      : `Plancher : ${p} %`;
-                  ]]]
 
           - type: grid
             square: false

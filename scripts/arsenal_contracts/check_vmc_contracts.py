@@ -8,6 +8,7 @@
 # ==========================================================
 
 from pathlib import Path
+import re
 import sys
 
 import yaml
@@ -684,9 +685,66 @@ else:
                 "libellés"
             )
 
+# ----------------------------------------------------------------------
+# §UI (c) — toute carte porte un fond de la palette officielle.
+# ----------------------------------------------------------------------
+# `ui/couleurs/02_palette.md` définit SEPT couleurs : vert, rouge, orange,
+# jaune, bleu, gris neutre, gris indisponibilité. **Le blanc n'en fait pas
+# partie.**
+#
+# Un socle Arsenal définit une FORME (hauteur, typographie), pas une couleur.
+# L'appeler directement depuis un dashboard produit une carte au fond de
+# thème — blanche en clair — c'est-à-dire HORS DOCTRINE : une carte sans fond
+# n'est pas « neutre », le gris neutre étant `rgba(158,158,158,0.2)` et le
+# gris indisponibilité `rgba(158,158,158,0.1)`.
+#
+# La convention du dépôt place la couleur dans un TEMPLATE DE DOMAINE
+# spécialisant le socle — 15 templates procèdent ainsi. Ce contrôle vérifie
+# que chaque template appelé par un dashboard VMC résout, par héritage, vers
+# un `background-color`.
+
+TEMPLATES_DIR = ROOT / "19_button_card_templates"
+_HERITE = re.compile(r"template:\s*-?\s*([a-z_0-9]+)")
+
+
+def _corps_template(nom: str):
+    for path in TEMPLATES_DIR.rglob("*.yaml"):
+        contenu = read(path)
+        m = re.search(rf"^{re.escape(nom)}:", contenu, re.M)
+        if m:
+            return contenu[m.start():]
+    return None
+
+
+def _porte_un_fond(nom: str, vus: set | None = None) -> bool:
+    vus = vus or set()
+    if nom in vus:
+        return False
+    vus.add(nom)
+    corps = _corps_template(nom)
+    if corps is None:
+        return False
+    if "background-color" in corps:
+        return True
+    parent = _HERITE.search(corps)
+    return _porte_un_fond(parent.group(1), vus) if parent else False
+
+
+for dash in sorted(DASH_VMC.glob("*.yaml")):
+    for nom in sorted(set(re.findall(r"template: ([a-z_0-9]+)", read(dash)))):
+        if nom.startswith("bouton_") or "header" in nom:
+            continue                      # badges et en-têtes : pas de fond
+        if not _porte_un_fond(nom):
+            fail(
+                f"§UI — `{nom}` appelé par {dash.name} ne porte aucun "
+                "`background-color` : la carte tombe sur le fond de thème, "
+                "or le blanc ne figure pas dans la palette officielle. "
+                "Spécialiser le socle dans un template de domaine"
+            )
+
 if not [e for e in ERRORS if "§UI" in e]:
     print("✔ Dashboards VMC — aucune carte native directe, grilles ≤ 2 "
-          "colonnes (doctrine `ui/`)")
+          "colonnes, tout fond issu de la palette (doctrine `ui/`)")
 
 
 # ==========================================================
