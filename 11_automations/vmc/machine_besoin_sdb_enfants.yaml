@@ -50,8 +50,11 @@
 #   restaure ; dans la bande morte (cas 3), aucune branche ne
 #   s'active et l'etat restaure est conserve.
 #
-#   Le cas 4 — aucun etat valide restaurable — et son
-#   exposition (§10.2 exigence 10) relevent de L7.5.
+#   CAS 4 — aucun etat valide restaurable : le besoin est
+#   initialise INACTIF, ce que la plateforme produit deja sans
+#   mecanisme. Sa DETECTION est en revanche IMPOSSIBLE avec ce
+#   porteur, et l'exposabilite du §10.2 exigence 10 demeure
+#   NON SERVIE — verifie, cf. le corps de l'action.
 #
 # ✅ RELOAD-SAFE
 # ==========================================================
@@ -108,6 +111,13 @@
                     'plancher_evolution') | float(none) }}
     actif: "{{ is_state('input_boolean.vmc_etat_besoin_sdb_enfants', 'on') }}"
 
+    # §4.4 — MESURE INEXPLOITABLE. Rendue explicite plutot que
+    # subie : elle rend l'entree ET la liberation impossibles, donc
+    # le besoin actif est MAINTENU par construction. Le §12.3 range
+    # parmi les non-conformites « la liberation d'un besoin actif sur
+    # mesure inexploitable ».
+    mesure_exploitable: "{{ mesure is not none }}"
+
     # Voie de NIVEAU : ne depend d'aucune frontiere modulee.
     entree_niveau: >
       {{ mesure is not none and seuil is not none and mesure >= seuil }}
@@ -142,6 +152,32 @@
          and mesure <= off_frontiere }}
 
   action:
+
+    # ==================================================
+    # 🧩 §9.1 CAS 4 — aucun etat valide restaurable
+    # ==================================================
+    # Le comportement prescrit — besoin INITIALISE INACTIF — est
+    # acquis SANS aucun mecanisme : un `input_boolean` sans etat
+    # restaurable apparait a `off`.
+    #
+    # VERIFIE, ET NON SUPPOSE (arsenal-runtime 704a056) : sur les
+    # 38 bases, 18 helpers booleens et 21 964 lignes d'etat — dont
+    # des helpers crees en cours de periode, donc necessairement
+    # apparus sans etat restaurable —, `unknown` et `unavailable`
+    # n'apparaissent JAMAIS.
+    #
+    # CONSEQUENCE : le cas 4 n'est PAS DETECTABLE avec ce porteur.
+    # Aucun indicateur n'est donc pose ici : un indicateur qui ne
+    # se declencherait jamais afficherait en permanence l'absence
+    # de reconstruction, ce qui serait une affirmation non fondee
+    # plutot qu'une exposition.
+    #
+    # L'exposabilite du §10.2 exigence 10 demeure donc NON SERVIE,
+    # et c'est declare comme tel dans le lot L7.5.
+
+    # ==================================================
+    # 🔁 MACHINE — §9.1 cas 1 a 3 au demarrage, nominal ensuite
+    # ==================================================
     - choose:
 
         # ==================================================

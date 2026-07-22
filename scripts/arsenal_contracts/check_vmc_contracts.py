@@ -467,6 +467,86 @@ for path in MACHINES:
             f"{path.name}"
         )
 
+# ==========================================================
+# TEST 8 — Indisponibilité et reconstruction (§4.4, §9.1 cas 4, §10.2)
+# ==========================================================
+#
+# §4.4 : un besoin actif est MAINTENU sur mesure inexploitable. §12.3 range
+# parmi les non-conformités « la libération d'un besoin actif sur mesure
+# inexploitable » et « un besoin maintenu faute de mesure présenté comme un
+# besoin observé ».
+#
+# §9.1 cas 4 : lorsqu'aucun état valide n'a pu être restauré, le besoin est
+# initialisé inactif, et la situation doit être EXPOSABLE (§10.2 exigence 10).
+
+EXPOSITIONS_INDISPONIBILITE = [
+    "maintenu_faute_de_mesure",      # §10.2 exigence 8, §4.4 cas 2
+    "maintenu_faute_de_frontiere",   # §10.2 exigence 8, §7.4 bis
+    "mesure_exploitable",
+]
+
+# §10.2 exigence 10 — situation de reconstruction (§9.1 cas 4) : NON SERVIE.
+# Vérifié sur les 38 bases (`arsenal-runtime` 704a056) : un `input_boolean`
+# sans état restaurable apparaît à `off`, jamais à `unknown`/`unavailable` —
+# 0 occurrence sur 21 964 lignes d'état. Le cas 4 n'est donc pas détectable
+# avec ce porteur, et aucun indicateur n'est exigé ici : un indicateur qui ne
+# se déclencherait jamais serait une affirmation non fondée.
+#
+# Ce test GARDE l'absence : aucun indicateur de reconstruction ne doit être
+# réintroduit sans une preuve de détectabilité.
+INDICATEUR_NON_FONDE = "vmc_reconstruction_"
+
+for path in besoins:
+    try:
+        entite = yaml.safe_load(path.read_text(encoding="utf-8"))[0]["binary_sensor"][0]
+    except Exception:                                     # noqa: BLE001
+        continue
+    attributs = entite.get("attributes") or {}
+    manquants = [e for e in EXPOSITIONS_INDISPONIBILITE if e not in attributs]
+    if manquants:
+        fail(
+            f"§4.4 / §9.1 — situations d'indisponibilité non exposées par "
+            f"{path.name} : {manquants}"
+        )
+
+# Aucun indicateur de reconstruction ne doit être écrit : il ne pourrait pas
+# se déclencher, et afficherait donc en permanence une absence non établie.
+for path in MACHINES:
+    contenu = read(path)
+    for ligne in contenu.splitlines():
+        nu = ligne.strip()
+        if nu.startswith("#"):
+            continue
+        if INDICATEUR_NON_FONDE in nu:
+            fail(
+                f"§10.2 exigence 10 — {path.name} écrit un indicateur de "
+                "reconstruction alors que le cas 4 n'est pas détectable avec "
+                "un porteur `input_boolean` (arsenal-runtime 704a056). Un "
+                "indicateur qui ne se déclenche jamais est une affirmation "
+                "non fondée, pas une exposition"
+            )
+            break
+    if "mesure_exploitable" not in contenu:
+        fail(
+            f"§4.4 — {path.name} ne rend pas explicite l'exploitabilité de la "
+            "mesure : le maintien serait subi plutôt que construit"
+        )
+
+# Aucun dispositif de sortie temporel ne doit libérer un besoin maintenu :
+# le §8.3 interdit qu'une durée tienne lieu de condition métier.
+for path in MACHINES:
+    contenu = read(path)
+    if "for:" in contenu or "delay:" in contenu:
+        fail(
+            f"§8.3 — {path.name} emploie une durée dans la machine de besoin : "
+            "une durée ne peut pas tenir lieu de condition métier"
+        )
+
+if not [e for e in ERRORS if "§4.4" in e or "§9.1 cas 4" in e or "§8.3" in e]:
+    print(f"✔ Indisponibilité exposée, sans dispositif temporel ni "
+          f"indicateur non fondé ({len(besoins)} besoins, §4.4 / §8.3)")
+
+
 if not [e for e in ERRORS if "§7.4 bis" in e or "Engagement L7.0" in e
         or "§6.4" in e or "§6 —" in e or "§9.1 —" in e]:
     print(f"✔ Frontière modulée exposée, constantes uniques, libération "
