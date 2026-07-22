@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | C35 — Mise en conformité du domaine VMC avec le contrat v2.1 |
 | **Lot** | **L2b — calibration finale**, **passe 2 : libération, frontière OFF, bande morte, §14.4** |
-| **Statut** | **Intégré dans `main` (PR #515).** Le travail probatoire du §3.6 a depuis été conduit — voir **§6 bis**. Il **réfute** les options de libération au niveau seul dans leur forme actuelle et établit un **fait structurel opposable**, mais **ne recommande aucune frontière OFF**. **L2b n'est pas soldé** |
+| **Statut** | **Intégré dans `main` (PR #515).** Le travail probatoire du §3.6 a depuis été conduit — voir **§6 bis**. Il **réfute** les options de libération au niveau seul dans leur forme actuelle et établit un **fait structurel opposable**, mais **ne recommande aucune frontière OFF**. **L2b n'est pas soldé**. **Passe 3 préparée** — [`arbitrage_architecture_liberation_relative_vmc.md`](arbitrage_architecture_liberation_relative_vmc.md) |
 | **Nature** | Document d'**instruction et d'arbitrage**. Il **ne modifie aucun runtime**, ne produit aucun patch, ne crée aucun mécanisme |
 | **Amont intégré dans `main`** | [`arbitrage_calibration_entree_vmc.md`](arbitrage_calibration_entree_vmc.md) — passe 1, voie d'entrée · [`reference_terrain_partielle_vmc.md`](reference_terrain_partielle_vmc.md) — L5 |
 | **Preuves opérationnelles** | `arsenal-runtime` : `37a6bd69` référence terrain partielle · `76451bf` support d'entrée · `625a349` contre-audit · `132072bf` profondeur enfants · **`8849a054315d591983a86a94ac92b350b79721c2`** instruction de la libération (§6 bis) |
@@ -460,6 +460,12 @@ pas : la hauteur de la frontière reste indéterminable.
 | **B — frontière OFF** | **non tranchée.** Cinq notions distinguées ; 70 % non reconduit ; formulation opposable fixée |
 | **C — bande morte** | **non déterminée.** Repères probatoires de conception : amplitude courte observée **1,80 point** parents, **3,00 points** enfants, dont la robustesse devra être démontrée par toute proposition ; frontières enfants représentables au point entier. La largeur dépend du mécanisme du point A |
 | **D — §14.4** | **mécanisme conforme, valeur non calibrée, §14.4 non soldé.** Deux constats : pas de spécification de cyclage documentée ; durée minimale non préservée au redémarrage |
+
+> **Suite.** La **passe 3** instruit l'architecture d'une libération relative :
+> [`arbitrage_architecture_liberation_relative_vmc.md`](arbitrage_architecture_liberation_relative_vmc.md),
+> **préparée sur branche**. Elle retient une **famille** — libération relative à
+> une référence physique instantanée, sans mémoire — et maintient le plancher
+> comme **repli**.
 
 **L2b demeure non soldé.** Le travail probatoire du §3.6 **est fait** (§6 bis) ;
 il a réfuté des options sans en rendre aucune recommandable. La passe 3 devra
