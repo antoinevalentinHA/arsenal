@@ -41,6 +41,26 @@
 #   Ce capteur ne lit desormais AUCUNE grandeur exterieure a sa
 #   propre piece.
 #
+# 📐 VOIE D'EVOLUTION — INSTRUMENTEE, PAS ENCORE DECISIONNELLE
+#   Les attributs `evolution_*` exposent l'observation
+#   glissante bornee du §2.2 bis : fenetre nominale, profondeur
+#   reellement disponible, valeur courante, valeur de reference,
+#   evolution calculee, frontiere, statut et raison de
+#   non-calculabilite (§10.2, exigences 11 a 19).
+#
+#   ILS N'ENTRENT PAS DANS `state`. La voie d'evolution existe
+#   pour reconnaitre un episode qui N'ATTEINT JAMAIS la
+#   frontiere de niveau ; or tant que la seule frontiere de
+#   liberation disponible EST cette frontiere de niveau, un
+#   besoin ouvert par l'evolution nait deja sous elle et serait
+#   libere a l'evaluation suivante.
+#
+#   Ce n'est pas un defaut de calibration : aucune valeur de W
+#   ni de D ne leverait cette contradiction. La voie devient
+#   decisionnelle en L7.4, avec l'hysteresis et la frontiere
+#   modulee qui lui donnent une liberation DISTINCTE de son
+#   entree.
+#
 # 🚫 AUCUN REPLI SILENCIEUX
 #   Mesure ou frontiere inexploitable => le capteur devient
 #   INDISPONIBLE, et l'attribut `cause_indisponibilite` en
@@ -50,7 +70,10 @@
 #   maintien du besoin actif — releve de L7.5.
 #
 # 🔗 PARAMETRE CONSOMME
-#   input_number.vmc_seuil_on_sdb_parents  (L7.0)
+#   input_number.vmc_seuil_on_sdb_parents     (L7.0)
+#   input_number.vmc_fenetre_sdb_parents      (L7.0, expose)
+#   input_number.vmc_evolution_sdb_parents    (L7.0, expose)
+#   sensor.vmc_minimum_glissant_sdb_parents   (L7.3)
 # ==========================================================
 
 - binary_sensor:
@@ -116,6 +139,69 @@
           {% else %}
             none
           {% endif %}
+
+        # ==============================================
+        # §10.2 exigences 11 a 19 — observation glissante
+        # ==============================================
+        # Exposees, JAMAIS consommees par `state` a ce stade.
+
+        evolution_fenetre_nominale: >
+          {{ states('input_number.vmc_fenetre_sdb_parents') }}
+
+        evolution_profondeur_disponible: >
+          {{ state_attr('sensor.vmc_minimum_glissant_sdb_parents',
+                        'age_coverage_ratio') }}
+
+        evolution_valeur_courante: >
+          {{ states('sensor.humidite_relative_sdb_parents') }}
+
+        evolution_valeur_reference: >
+          {{ states('sensor.vmc_minimum_glissant_sdb_parents') }}
+
+        evolution_calculee: >
+          {% set v = states('sensor.humidite_relative_sdb_parents') | float(none) %}
+          {% set mn = states('sensor.vmc_minimum_glissant_sdb_parents') | float(none) %}
+          {{ (v - mn) | round(2) if (v is not none and mn is not none) else none }}
+
+        evolution_frontiere: >
+          {{ states('input_number.vmc_evolution_sdb_parents') }}
+
+        evolution_calculable: >
+          {% set v = states('sensor.humidite_relative_sdb_parents') | float(none) %}
+          {% set mn = states('sensor.vmc_minimum_glissant_sdb_parents') | float(none) %}
+          {% set d = states('input_number.vmc_evolution_sdb_parents') | float(none) %}
+          {{ v is not none and mn is not none and d is not none }}
+
+        evolution_satisfaite: >
+          {% set v = states('sensor.humidite_relative_sdb_parents') | float(none) %}
+          {% set mn = states('sensor.vmc_minimum_glissant_sdb_parents') | float(none) %}
+          {% set d = states('input_number.vmc_evolution_sdb_parents') | float(none) %}
+          {% if v is none or mn is none or d is none %}
+            non calculable
+          {% else %}
+            {{ (v - mn) >= d }}
+          {% endif %}
+
+        evolution_cause_non_calculable: >
+          {% set v = states('sensor.humidite_relative_sdb_parents') | float(none) %}
+          {% set mn = states('sensor.vmc_minimum_glissant_sdb_parents') | float(none) %}
+          {% set d = states('input_number.vmc_evolution_sdb_parents') | float(none) %}
+          {% if mn is none %}
+            reference_glissante_indisponible
+          {% elif v is none %}
+            mesure_locale_inexploitable
+          {% elif d is none %}
+            frontiere_evolution_inexploitable
+          {% else %}
+            none
+          {% endif %}
+
+        # §4.4 bis — une profondeur insuffisante n'est ni une mesure
+        # indisponible, ni un critere non satisfait.
+        evolution_role: >
+          Instrumentée et exposée, NON décisionnelle. Elle n'entre pas dans
+          l'état du besoin tant que la libération se confond avec la frontière
+          d'entrée. Décisionnelle en L7.4.
 
         # §10.2 exigence 3 et 4 — maintien et liberation.
         # Enonce exact de l'etat transitoire, sans le masquer.

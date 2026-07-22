@@ -1,0 +1,87 @@
+# ==========================================================
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     VMC — Minimum glissant d'humidité relative, par pièce
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Fournir la VALEUR DE RÉFÉRENCE de l'observation glissante
+#   bornée du §2.2 bis : le minimum de l'humidité relative de
+#   la pièce sur la fenêtre nominale.
+#
+#   L'évolution locale s'en déduit par différence avec la
+#   mesure courante : `mesure - minimum`.
+#
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
+#   - Aucune décision
+#
+# 🔖 NATURE
+#   observation_glissante | reference_bornee | agregat_quantitatif
+#
+# 📋 PARAMÈTRES
+#   state_characteristic : value_min
+#   max_age              : fenêtre NOMINALE de la pièce
+#                          20 min salle de bain parents,
+#                          30 min salle de douche enfants —
+#                          arbitrage de la passe 1, la fenêtre
+#                          de 30 min étant fondée sur la
+#                          PROFONDEUR DISPONIBLE PENDANT LES
+#                          MONTÉES RÉELLES, et non sur
+#                          l'intervalle médian global entre
+#                          états.
+#   sampling_size        : dimensionné large — la borne réelle
+#                          est `max_age`, jamais le nombre
+#                          d'échantillons.
+#
+# ⚠️ CE N'EST PAS UNE MÉMOIRE D'ÉPISODE
+#   Le §2.2 interdit mémoire d'épisode, instant de début, durée
+#   écoulée, valeur de pic, historique de mesures, compteur et
+#   timer. Ces capteurs ne portent RIEN de tout cela : ils
+#   exposent une STATISTIQUE BORNÉE de la mesure courante, que
+#   le §2.2 bis autorise explicitement, et EN ENTRÉE SEULEMENT.
+#
+# ⚠️ FENÊTRE ET REDÉMARRAGE — §9.1 bis, TENSION À QUALIFIER
+#   Le contrat pose que l'observation glissante « n'est pas
+#   restaurée : elle repart vide ». La plateforme `statistics`
+#   RECHARGE en revanche sa fenêtre depuis l'historique du
+#   Recorder — c'est la contrainte que `recorder.yaml` documente
+#   pour toute source de cette plateforme.
+#
+#   L'écart va dans le SENS CONSERVATEUR : une fenêtre pleine
+#   ne crée aucun faux besoin et ne révoque aucun besoin
+#   restauré. Il reste à qualifier, sans urgence.
+#
+# 🔗 DÉPENDANCE RECORDER
+#   Les deux sources sont DÉJÀ dans l'allowlist `recorder.yaml`
+#   (Population A). Aucun élargissement de rétention n'est
+#   requis par ce lot.
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Servir au maintien ou à la libération d'un besoin
+#     (§2.2 bis : condition d'ENTRÉE uniquement)
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Observation — C35 L7.3
+# ==========================================================
+
+# Convention du depot : `name` porte le slug, l'entity_id en decoule.
+- platform: statistics
+  name: vmc_minimum_glissant_sdb_parents
+  entity_id: sensor.humidite_relative_sdb_parents
+  state_characteristic: value_min
+  max_age:
+    minutes: 20
+  sampling_size: 600
+
+- platform: statistics
+  name: vmc_minimum_glissant_sdb_enfants
+  entity_id: sensor.humidite_relative_sdb_enfants
+  state_characteristic: value_min
+  max_age:
+    minutes: 30
+  sampling_size: 600
