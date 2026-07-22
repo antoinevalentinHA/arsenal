@@ -23,14 +23,23 @@
 #   les cas 1 et 2 couvrent tout l'espace, et un etat restaure
 #   serait immediatement ecrase par la mesure courante.
 #
-# ⚠️ VERROU D'AERATION — RETRAIT PREVU EN L7.2
-#   `binary_sensor.aeration_preferable_etage` conditionne
-#   encore cette voie. C'est l'ECART CONTRACTUEL n° 1 du
-#   chantier C35, que le §4.3 du contrat proscrit deja.
+# ✅ VERROU D'AERATION — RETIRE (C35 L7.2)
+#   Le verdict d'opportunite d'ouverture des fenetres ne
+#   conditionne PLUS cette voie. C'etait l'ECART CONTRACTUEL
+#   n° 1 du chantier C35 ; le §4.3 le proscrivait deja.
 #
-#   Il est ici DEPLACE, non conserve par choix : il vivait
-#   dans l'agregation, il vit desormais dans le besoin local.
-#   L7.2 le supprime, en un seul endroit par piece.
+#   Ce verdict evalue l'opportunite d'aerer, a l'echelle d'un
+#   VOLUME et sur une echelle de temps LONGUE : il releve de
+#   l'objectif O3. Le §1.2 interdit qu'un critere servant O3
+#   conditionne une extraction locale.
+#
+#   L'identifiant de ce capteur n'est volontairement PAS cite
+#   ici : sa seule mention suffirait a faire de ce fichier un
+#   consommateur au regard du controle T10 du contrat
+#   d'aeration.
+#
+#   Ce capteur ne lit desormais AUCUNE grandeur exterieure a sa
+#   propre piece.
 #
 # 🚫 AUCUN REPLI SILENCIEUX
 #   Mesure ou frontiere inexploitable => le capteur devient
@@ -57,8 +66,7 @@
       state: >
         {% set mesure = states('sensor.humidite_relative_sdb_parents') | float(none) %}
         {% set seuil = states('input_number.vmc_seuil_on_sdb_parents') | float(none) %}
-        {% set aeration_favorable = is_state('binary_sensor.aeration_preferable_etage', 'on') %}
-        {{ mesure >= seuil and aeration_favorable }}
+        {{ mesure >= seuil }}
 
       icon: >
         {% if is_state(this.entity_id, 'on') %}
@@ -87,16 +95,9 @@
             Condition non calculable
           {% elif mesure < seuil %}
             Mesure locale sous la frontière d'entrée
-          {% elif not is_state('binary_sensor.aeration_preferable_etage', 'on') %}
-            Frontière atteinte, mais verrou d'aération fermé
           {% else %}
             Frontière d'entrée atteinte
           {% endif %}
-
-        # Contexte NON DECISIONNEL au sens du §10.5 une fois L7.2 passe.
-        # A ce stade il est encore decisionnel : c'est l'ecart n° 1.
-        verrou_aeration: >
-          {{ states('binary_sensor.aeration_preferable_etage') }}
 
         calculable: >
           {% set mesure = states('sensor.humidite_relative_sdb_parents') | float(none) %}

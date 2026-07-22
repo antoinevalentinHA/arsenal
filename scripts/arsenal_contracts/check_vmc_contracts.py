@@ -238,6 +238,54 @@ if not [e for e in ERRORS if "§11.2" in e]:
 
 
 # ==========================================================
+# TEST 5 — Aucun verrou d'aération dans la voie de décision (§4.3, §1.2)
+# ==========================================================
+#
+# Contrat vmc.md §4.3 : le verdict d'aération est NON DÉCISIONNEL. Il évalue
+# l'opportunité d'ouvrir des fenêtres, à l'échelle d'un VOLUME et sur une
+# échelle de temps LONGUE : il relève de O3, et le §1.2 interdit qu'un critère
+# servant O3 conditionne une extraction locale.
+#
+# L6 avait établi que le critère de clôture 8 de C35 « ne se vérifie pas seul » :
+# la liste des consommateurs légitimes du checker d'aération n'interdit que les
+# fichiers NON listés, de sorte qu'y laisser une entrée périmée ne fait échouer
+# aucun contrôle. Ce test ferme ce trou PAR L'AUTRE BOUT : il interdit la
+# consommation dans la voie de décision VMC, quelle que soit l'allowlist.
+
+VERDICT_AERATION = "aeration_preferable_etage"
+
+VOIE_DECISION = [
+    ROOT / "12_template_sensors" / "vmc" / "haute_vitesse_requise.yaml",
+    ROOT / "12_template_sensors" / "vmc" / "besoins",
+    ROOT / "12_template_sensors" / "vmc" / "intention.yaml",
+    ROOT / "11_automations" / "vmc",
+    ROOT / "10_scripts" / "vmc",
+]
+
+
+def _fichiers(cible: Path):
+    if cible.is_dir():
+        return sorted(p for p in cible.rglob("*.yaml") if p.is_file())
+    return [cible] if cible.is_file() else []
+
+
+controles = 0
+for cible in VOIE_DECISION:
+    for path in _fichiers(cible):
+        controles += 1
+        if VERDICT_AERATION in read(path):
+            fail(
+                "§4.3 — le verdict d'aération est consommé dans la voie de "
+                f"décision VMC : {path.relative_to(ROOT)}. Un critère servant "
+                "O3 ne peut pas conditionner une extraction locale (§1.2)"
+            )
+
+if not [e for e in ERRORS if "§4.3" in e]:
+    print(f"✔ Voie de décision VMC sans verrou d'aération "
+          f"({controles} fichiers, §4.3)")
+
+
+# ==========================================================
 # RESULTAT
 # ==========================================================
 
