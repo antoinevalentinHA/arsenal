@@ -777,7 +777,74 @@ include:
     # =====================================================
     # ==== 🌬️ VMC ====
     # =====================================================
+    # Reflet d'execution, ecrit DEPUIS les relais. Trace sur
+    # laquelle repose la reference AVANT changement de C35 L5 :
+    # la rompre detruirait la comparabilite avant / apres.
     - input_boolean.vmc_haute_vitesse
+
+    # ----------------------------------------------------------
+    # C35 L7.6 — AJOUT MINIMAL NECESSAIRE A L8
+    # ----------------------------------------------------------
+    # Le solde de L5 (arsenal-runtime b2fd782) a etabli, en balayant
+    # les 38 bases, qu'UNE SEULE entite de la chaine de decision sur
+    # onze etait historisee. Consequences alors constatees : la regle
+    # d'entree en vigueur n'etait PAS REJOUABLE, et la corroboration
+    # decision -> commande -> relais etait IMPOSSIBLE — c'est le
+    # risque R1 du chantier, avere puis clos par constat.
+    #
+    # Ces six entites lèvent ce risque POUR L'AVENIR. Sans elles, L8
+    # comparerait des resultats sans pouvoir remonter a leur cause,
+    # et serait aussi peu concluant que L5.
+    #
+    # Perimetre STRICTEMENT MINIMAL, entite par entite :
+    #
+    #   - la DECISION agregee : sans elle, L8 ne peut comparer que
+    #     des commutations, jamais des decisions ;
+    #   - les TROIS ETATS DE BESOIN : ils portent la couverture par
+    #     piece et par voie, grandeur meme de la comparaison
+    #     avant / apres fixee au solde de L5 ;
+    #   - les DEUX FRONTIERES modulees : sans leur valeur courante,
+    #     une liberation ne peut pas etre rattachee a son point de
+    #     comparaison, et le §15.1 ne peut pas etre verifie.
+    #
+    # Ce qui est VOLONTAIREMENT EXCLU : les frontieres fixes et les
+    # parametres, qui sont versionnes ou reglables et se lisent dans
+    # le depot ; les capteurs d'observation glissante, derivables des
+    # sources deja historisees ; les capteurs de diagnostic, qui
+    # n'entrent dans aucune comparaison.
+    #
+    # AUCUNE augmentation de `purge_keep_days` n'est demandee.
+
+    # RECORDER — Population B
+    # Role      : Decision metier agregee de la VMC
+    # Utilite   : Comparer des DECISIONS et non seulement des
+    #             commutations — impossible avant ce lot (R1)
+    # Logbook   : acceptable — commutation, faible frequence
+    # Cardinalite : booleenne
+    # Frequence : ~20 a 25 transitions par mois (mesure L5)
+    - binary_sensor.vmc_haute_vitesse_requise
+
+    # RECORDER — Population B
+    # Role      : Etat de besoin par piece et par voie
+    # Utilite   : Porter la couverture par piece, grandeur meme de la
+    #             comparaison avant / apres fixee au solde de L5
+    # Logbook   : acceptable — commutation, faible frequence
+    # Cardinalite : booleenne
+    # Frequence : ~23 besoins/mois parents, ~5 enfants (simulation passe 5)
+    - input_boolean.vmc_etat_besoin_sdb_parents
+    - input_boolean.vmc_etat_besoin_sdb_enfants
+    - input_boolean.vmc_etat_besoin_co2_sejour
+
+    # RECORDER — Population B
+    # Role      : Valeur courante de la frontiere de liberation modulee
+    # Utilite   : Rattacher une liberation a son point de comparaison, et
+    #             verifier le §15.1 du contrat
+    # Logbook   : non concerne — `logbook.yaml` est une allowlist, et ces
+    #             entites n'y figurent pas
+    # Cardinalite : continue bornee [50–70] %
+    # Frequence : suit la temperature exterieure, intervalle median 60 s
+    - sensor.vmc_frontiere_liberation_sdb_parents
+    - sensor.vmc_frontiere_liberation_sdb_enfants
 
     # =====================================================
     # ==== 🛌 WITHINGS ====

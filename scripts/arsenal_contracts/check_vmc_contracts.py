@@ -321,10 +321,19 @@ EXPOSITIONS = [
 
 besoins = sorted(BESOINS.glob("*.yaml")) if BESOINS.is_dir() else []
 
+# Les exigences 11 à 19 sont propres à l'observation glissante, donc à la
+# VOIE HUMIDITÉ. Le §5.2 pose que « les voies peuvent avoir des critères
+# internes différents » : la voie CO₂ n'a pas de critère d'évolution, et le
+# §10.2 conditionne ces exigences au cas « lorsqu'un critère d'évolution est
+# retenu ». Les y soumettre serait exiger l'exposition d'un critère inexistant.
+besoins_humidite = [p for p in besoins if p.name.startswith("humidite_")]
+
 if not besoins:
     fail("§2.2 bis — aucun besoin local trouvé")
+if not besoins_humidite:
+    fail("§2.2 bis — aucun besoin de la voie humidité trouvé")
 
-for path in besoins:
+for path in besoins_humidite:
     try:
         blocs = yaml.safe_load(path.read_text(encoding="utf-8"))
         entite = blocs[0]["binary_sensor"][0]
@@ -353,7 +362,7 @@ for path in besoins:
 
 if not [e for e in ERRORS if "§2.2 bis" in e or "§10.2" in e]:
     print(f"✔ Observation glissante exposée, condition d'entrée seule "
-          f"({len(besoins)} besoins, §2.2 bis / §10.2)")
+          f"({len(besoins_humidite)} besoins humidité, §2.2 bis / §10.2)")
 
 
 # ==========================================================
@@ -545,6 +554,65 @@ for path in MACHINES:
 if not [e for e in ERRORS if "§4.4" in e or "§9.1 cas 4" in e or "§8.3" in e]:
     print(f"✔ Indisponibilité exposée, sans dispositif temporel ni "
           f"indicateur non fondé ({len(besoins)} besoins, §4.4 / §8.3)")
+
+
+# ==========================================================
+# TEST 9 — La commande ne reconstruit aucune décision (§2.1, §8.2, §8.4)
+# ==========================================================
+#
+# Contrat vmc.md : l'application de la décision est une couche d'EXÉCUTION.
+# §8.4 pose que le reflet n'alimente pas la décision, et le §12.3 range parmi
+# les non-conformités « une décision lisant l'état physique de l'actionneur ».
+#
+# La contrepartie doit être vraie dans l'autre sens : la couche d'exécution ne
+# doit RIEN RECONSTRUIRE de la décision. Elle lit le verdict agrégé, et rien
+# de ce qui a servi à le former.
+
+COMMANDE = ROOT / "11_automations" / "vmc" / "gestion_auto.yaml"
+
+# Grandeurs et paramètres qui ont servi à FORMER la décision. Les relire dans
+# la couche de commande serait la reconstruire.
+INGREDIENTS_DECISION = (
+    "sensor.humidite_relative_",
+    "sensor.co2_sejour",
+    "sensor.vmc_minimum_glissant_",
+    "sensor.vmc_frontiere_liberation_",
+    "input_number.vmc_seuil_on",
+    "input_number.vmc_evolution_",
+    "input_number.vmc_fenetre_",
+    "input_number.vmc_borne_",
+    "input_number.vmc_co2_seuil",
+    "input_boolean.vmc_etat_besoin_",
+    "binary_sensor.vmc_besoin_",
+    "aeration_preferable",
+)
+
+if not COMMANDE.is_file():
+    fail(f"§8.2 — automatisation de commande introuvable : {COMMANDE}")
+else:
+    contenu_cmd = read(COMMANDE)
+    for ingredient in INGREDIENTS_DECISION:
+        if ingredient in contenu_cmd:
+            fail(
+                f"§8.2 — la couche de commande reconstruit la décision : "
+                f"{COMMANDE.name} lit '{ingredient}', qui a servi à la former. "
+                "Elle ne doit lire que le verdict agrégé"
+            )
+    if DECISION not in contenu_cmd:
+        fail(
+            f"§8.2 — {COMMANDE.name} ne lit pas le verdict agrégé "
+            f"{DECISION} : la commande ne serait rattachée à aucune décision"
+        )
+    # §8.4 — le reflet ne doit pas remonter dans la commande.
+    if "input_boolean.vmc_haute_vitesse" in contenu_cmd:
+        fail(
+            f"§8.4 — {COMMANDE.name} lit le reflet d'exécution : le sens est "
+            "unique, le reflet n'alimente ni la décision ni la commande"
+        )
+
+if not [e for e in ERRORS if "§8.2" in e or "§8.4" in e]:
+    print("✔ Commande rattachée au seul verdict agrégé, sans reconstruction "
+          "(§8.2, §8.4)")
 
 
 if not [e for e in ERRORS if "§7.4 bis" in e or "Engagement L7.0" in e

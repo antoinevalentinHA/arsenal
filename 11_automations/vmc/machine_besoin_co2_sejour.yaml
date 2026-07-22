@@ -1,0 +1,120 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION : VMC – Machine besoin CO₂ séjour
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Tenir l'etat du besoin CO2 du sejour, selon la machine
+#   hysteretique du contrat.
+#
+# 📐 MACHINE — §5.1, §5.3, §6.2, §6.3, §6.4
+#
+#   entree     : CO2 >= frontiere de declenchement
+#   maintien   : ni entree ni liberation satisfaites
+#   liberation : CO2 <= frontiere d'arret
+#
+#   Les deux frontieres sont FIXES : la voie CO2 n'est pas
+#   modulee. Le §7.4 bis ne la concerne pas.
+#
+# 📌 CE QUE CE LOT CORRIGE — C35 L7.6
+#   La voie CO2 etait un COMPARATEUR loge dans l'agregation :
+#   une seule frontiere, aucun etat, aucune liberation. Le §5.1
+#   exige de tout besoin une frontiere de LIBERATION et un etat
+#   PROPRES ; le §5.3 nomme explicitement le besoin CO2 et son
+#   etat booleen.
+#
+#   `input_number.vmc_co2_seuil_off` etait declare, expose en
+#   UI et controle en integrite, mais CONSOMME PAR RIEN — ce
+#   que le §10.4 qualifie de non-conformite. Il devient ici la
+#   frontiere de liberation reellement consommee.
+#
+# 🔒 AUTONOMIE DES VOIES — §5.2
+#   Cette machine ne lit AUCUN etat de besoin humidite. Aucune
+#   voie n'autorise, ne conditionne ni ne bloque une autre.
+#
+# 🔒 GARDE D'INDISPONIBILITE — §4.4
+#   La liberation exige une mesure ET une frontiere
+#   exploitables. A defaut, aucune liberation : le besoin actif
+#   est MAINTENU. Le §12.3 range parmi les non-conformites
+#   « la liberation d'un besoin actif sur mesure inexploitable ».
+#
+# 📌 REDEMARRAGE — §9.1 cas 1 a 3
+#   L'etat restaure est IMMEDIATEMENT confronte a la mesure
+#   courante. Les cas 1 et 2 priment inconditionnellement ;
+#   dans la bande morte (cas 3), aucune branche ne s'active et
+#   l'etat restaure est conserve.
+#
+#   CAS 4 — aucun etat valide restaurable : le besoin est
+#   initialise INACTIF, ce que la plateforme produit deja sans
+#   mecanisme. Sa DETECTION est impossible avec ce porteur, et
+#   l'exposabilite du §10.2 exigence 10 demeure NON SERVIE —
+#   verifie en L7.5 (arsenal-runtime 704a056).
+#
+# ✅ RELOAD-SAFE
+# ==========================================================
+
+- id: "10190000000010"
+  alias: "VMC - Machine besoin CO2 séjour"
+  description: >
+    Tient l'etat du besoin CO2 du sejour selon la machine hysteretique :
+    entree au-dessus de la frontiere de declenchement, liberation sous la
+    frontiere d'arret, maintien entre les deux.
+  mode: queued
+  max: 10
+  max_exceeded: silent
+
+  trigger:
+    - platform: state
+      entity_id: sensor.co2_sejour
+
+    # §9.1 — REEVALUATION AU DEMARRAGE, obligatoire.
+    # Sans ce declencheur, un etat restaure incoherent avec la
+    # mesure subsisterait jusqu'a la publication suivante.
+    - platform: homeassistant
+      event: start
+
+  variables:
+    mesure: "{{ states('sensor.co2_sejour') | float(none) }}"
+    seuil_on: "{{ states('input_number.vmc_co2_seuil_on') | float(none) }}"
+    seuil_off: "{{ states('input_number.vmc_co2_seuil_off') | float(none) }}"
+    actif: "{{ is_state('input_boolean.vmc_etat_besoin_co2_sejour', 'on') }}"
+
+    # §4.4 — MESURE INEXPLOITABLE. Rendue explicite plutot que
+    # subie : elle rend l'entree ET la liberation impossibles, donc
+    # le besoin actif est MAINTENU par construction.
+    mesure_exploitable: "{{ mesure is not none }}"
+
+    entree: >
+      {{ mesure is not none and seuil_on is not none and mesure >= seuil_on }}
+
+    # LIBERATION : exige mesure ET frontiere exploitables.
+    liberation: >
+      {{ mesure is not none and seuil_off is not none and mesure <= seuil_off }}
+
+  action:
+    - choose:
+
+        # ==================================================
+        # 🚀 ENTREE
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: "{{ not actif and entree }}"
+          sequence:
+            - action: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.vmc_etat_besoin_co2_sejour
+
+        # ==================================================
+        # 🔽 LIBERATION
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: "{{ actif and liberation }}"
+          sequence:
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.vmc_etat_besoin_co2_sejour
+
+      # Hors de ces deux cas : MAINTIEN. Aucune ecriture.
+      # C'est notamment le cas lorsque la mesure ou la frontiere
+      # n'est pas exploitable : le besoin actif demeure actif.
+      default: []
