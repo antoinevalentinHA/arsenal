@@ -14,12 +14,32 @@ views:
           action: navigate
           navigation_path: /eclairage-dashboard
 
+    # ======================================================
+    # 💡 CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
+    # ------------------------------------------------------
+    # badges
+    #   ↓
+    # vertical-stack racine
+    #   ↓
+    # bandeau de validité + mode astronomie (toujours visibles)
+    #   ↓
+    # sélecteur de consultation (contexte d'interface)
+    #   ↓
+    # détail conditionnel (section de réglages choisie)
+    # ======================================================
     cards:
       - type: vertical-stack
         cards:
           # ✅ Bandeau de validité (conditionnel)
           - !include ../../includes/alerte_configuration_invalide.yaml
 
+          # ==================================================
+          # 🔭 TOUJOURS VISIBLE — MODE ASTRONOMIE
+          # --------------------------------------------------
+          # Bascule unique, hors sélecteur : elle conditionne
+          # l'ensemble des automatismes d'éclairage et doit
+          # rester lisible quelle que soit la section affichée.
+          # ==================================================
           - type: custom:button-card
             template: section_header
             name: 🔭 Mode astronomie
@@ -28,336 +48,380 @@ views:
             entity: input_boolean.mode_astronomie
             name: Mode astronomie
 
+          # ==================================================
+          # 🔎 SÉLECTEUR DE CONSULTATION (modèle Palmarès)
+          # --------------------------------------------------
+          # input_select.eclairage_reglages_affichage = contexte
+          # d'interface (ne pilote rien, ne décide rien).
+          # ==================================================
           - type: custom:button-card
             template: section_header
-            name: 💡 Éclairage auto
-
-          - !include ../../includes/sub_section_headers/garage.yaml
+            name: 🔎 Réglages affichés
 
           - type: tile
-            entity: input_boolean.garage_auto_light
-            name: Mode auto
-
-          - type: tile
-            entity: input_number.duree_absence_garage
-            name: Délai extinction garage (min)
-            features_position: inline
+            entity: input_select.eclairage_reglages_affichage
+            name: Réglages affichés
+            features_position: bottom
             features:
-              - type: numeric-input
-                style: buttons
+              - type: select-options
 
-          - type: tile
-            entity: input_number.garage_seuil_luminosite_allumage_auto
-            name: Luminosité max
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+          # ==================================================
+          # 📋 DÉTAIL CONDITIONNEL — SECTION CHOISIE
+          # --------------------------------------------------
+          # Cartes reprises verbatim (aucune entité, aucun
+          # libellé ni alias modifié).
+          # ==================================================
+          - type: conditional
+            conditions:
+              - entity: input_select.eclairage_reglages_affichage
+                state: Éclairage auto
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: 💡 Éclairage auto
 
-          - !include ../../includes/sub_section_headers/entree.yaml
+                - !include ../../includes/sub_section_headers/garage.yaml
 
-          - type: tile
-            entity: input_boolean.entree_auto_light
-            name: Mode auto
+                - type: tile
+                  entity: input_boolean.garage_auto_light
+                  name: Mode auto
 
-          - type: tile
-            entity: input_number.duree_absence_entree
-            name: Délai extinction entrée (s)
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+                - type: tile
+                  entity: input_number.duree_absence_garage
+                  name: Délai extinction garage (min)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          - !include ../../includes/sub_section_headers/sejour.yaml
+                - type: tile
+                  entity: input_number.garage_seuil_luminosite_allumage_auto
+                  name: Luminosité max
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          - type: tile
-            entity: input_boolean.sejour_auto_light
-            name: Mode auto
+                - !include ../../includes/sub_section_headers/entree.yaml
 
-          - type: tile
-            entity: input_number.duree_absence_sejour
-            name: Délai extinction séjour (min)
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+                - type: tile
+                  entity: input_boolean.entree_auto_light
+                  name: Mode auto
 
-          - type: tile
-            entity: input_number.sejour_seuil_luminosite_extinction_auto
-            name: Luminosité extinction (lx) — 0 = off
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+                - type: tile
+                  entity: input_number.duree_absence_entree
+                  name: Délai extinction entrée (s)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          - type: tile
-            entity: binary_sensor.sejour_extinction_luminosite_autorisee
-            name: Extinction luminosité autorisée
+                - !include ../../includes/sub_section_headers/sejour.yaml
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: Sapin 🎄
+                - type: tile
+                  entity: input_boolean.sejour_auto_light
+                  name: Mode auto
 
-          - type: tile
-            entity: input_boolean.prise_baies_vitrees_auto
-            name: Mode auto
+                - type: tile
+                  entity: input_number.duree_absence_sejour
+                  name: Délai extinction séjour (min)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          - type: tile
-            entity: input_number.duree_absence_guirlande
-            name: Délai extinction sapin (min)
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+                - type: tile
+                  entity: input_number.sejour_seuil_luminosite_extinction_auto
+                  name: Luminosité extinction (lx) — 0 = off
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          - !include ../../includes/section_headers/jardin.yaml
+                - type: tile
+                  entity: binary_sensor.sejour_extinction_luminosite_autorisee
+                  name: Extinction luminosité autorisée
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🔘 Activation des automatismes
+                - type: custom:button-card
+                  template: sub_section_header
+                  name: Sapin 🎄
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_boolean.auto_lumiere_jardin_matin
-                name: Matin
+                - type: tile
+                  entity: input_boolean.prise_baies_vitrees_auto
+                  name: Mode auto
 
-              - type: tile
-                entity: input_boolean.auto_lumiere_jardin_soir
-                name: Soir
+                - type: tile
+                  entity: input_number.duree_absence_guirlande
+                  name: Délai extinction sapin (min)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🌅 Matin
+          - type: conditional
+            conditions:
+              - entity: input_select.eclairage_reglages_affichage
+                state: Jardin
+            card:
+              type: vertical-stack
+              cards:
+                - !include ../../includes/section_headers/jardin.yaml
 
-          - type: tile
-            entity: input_datetime.heure_allumage_jardin_matin
-            name: Heure d’allumage
+                - type: custom:button-card
+                  template: sub_section_header
+                  name: 🔘 Activation des automatismes
 
-          - type: tile
-            entity: input_number.delai_extinction_jardin_matin
-            name: Délai après lever du jour (min)
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_boolean.auto_lumiere_jardin_matin
+                      name: Matin
 
-          - type: tile
-            entity: input_datetime.heure_extinction_jardin_matin_fixe
-            name: Heure d’extinction fixe
+                    - type: tile
+                      entity: input_boolean.auto_lumiere_jardin_soir
+                      name: Soir
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🌇 Soir
+                - type: custom:button-card
+                  template: sub_section_header
+                  name: 🌅 Matin
 
-          - type: tile
-            entity: input_number.delai_allumage_jardin_soir
-            name: Délai après coucher du soleil (min)
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+                - type: tile
+                  entity: input_datetime.heure_allumage_jardin_matin
+                  name: Heure d’allumage
 
-          - type: tile
-            entity: input_number.duree_lumiere_jardin_soir
-            name: Durée de l’éclairage
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+                - type: tile
+                  entity: input_number.delai_extinction_jardin_matin
+                  name: Délai après lever du jour (min)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          - type: custom:button-card
-            template: section_header
-            name: 🛏️ Simulation de présence
+                - type: tile
+                  entity: input_datetime.heure_extinction_jardin_matin_fixe
+                  name: Heure d’extinction fixe
 
-          - type: tile
-            entity: input_boolean.activation_simulation_presence_vacances
-            name: Activer en vacances
+                - type: custom:button-card
+                  template: sub_section_header
+                  name: 🌇 Soir
 
-          - type: tile
-            entity: input_boolean.test_simulation_presence
-            name: Activer le mode test
+                - type: tile
+                  entity: input_number.delai_allumage_jardin_soir
+                  name: Délai après coucher du soleil (min)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          # ⏱️ Durée
-          - type: custom:button-card
-            template: sub_section_header
-            name: ⏱️ Durée (min)
+                - type: tile
+                  entity: input_number.duree_lumiere_jardin_soir
+                  name: Durée de l’éclairage
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_number.duree_min_cycle_simulation_presence
-                name: min
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: conditional
+            conditions:
+              - entity: input_select.eclairage_reglages_affichage
+                state: Simulation de présence
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: 🛏️ Simulation de présence
 
-              - type: tile
-                entity: input_number.duree_max_cycle_simulation_presence
-                name: max
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: tile
+                  entity: input_boolean.activation_simulation_presence_vacances
+                  name: Activer en vacances
 
-          - !include ../../includes/section_headers/entree.yaml
+                - type: tile
+                  entity: input_boolean.test_simulation_presence
+                  name: Activer le mode test
 
-          # 🌅 Réglages matin - Entrée
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🌅 Matin
+                # ⏱️ Durée
+                - type: custom:button-card
+                  template: sub_section_header
+                  name: ⏱️ Durée (min)
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_datetime.debut_cycle_simulation_presence_matin_entree
-                name: "de"
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_number.duree_min_cycle_simulation_presence
+                      name: min
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-              - type: tile
-                entity: input_datetime.fin_cycle_simulation_presence_matin_entree
-                name: "à"
+                    - type: tile
+                      entity: input_number.duree_max_cycle_simulation_presence
+                      name: max
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: tile
-            entity: input_number.nb_cycles_simulation_presence_matin_entree
-            name: Cycles
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+                - !include ../../includes/section_headers/entree.yaml
 
-          # 🌇 Réglages soir - Entrée
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🌇 Soir
+                # 🌅 Réglages matin - Entrée
+                - type: custom:button-card
+                  template: sub_section_header
+                  name: 🌅 Matin
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_datetime.debut_cycle_simulation_presence_soir_entree
-                name: "de"
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_datetime.debut_cycle_simulation_presence_matin_entree
+                      name: "de"
 
-              - type: tile
-                entity: input_datetime.fin_cycle_simulation_presence_soir_entree
-                name: "à"
+                    - type: tile
+                      entity: input_datetime.fin_cycle_simulation_presence_matin_entree
+                      name: "à"
 
-          - type: tile
-            entity: input_number.nb_cycles_simulation_presence_soir_entree
-            name: Cycles
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+                - type: tile
+                  entity: input_number.nb_cycles_simulation_presence_matin_entree
+                  name: Cycles
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          - !include ../../includes/section_headers/chambre_parents.yaml
+                # 🌇 Réglages soir - Entrée
+                - type: custom:button-card
+                  template: sub_section_header
+                  name: 🌇 Soir
 
-          # 🌅 Réglages matin - Parents
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🌅 Matin
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_datetime.debut_cycle_simulation_presence_soir_entree
+                      name: "de"
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_datetime.debut_cycle_simulation_presence_matin_chambre_parents
-                name: "de"
+                    - type: tile
+                      entity: input_datetime.fin_cycle_simulation_presence_soir_entree
+                      name: "à"
 
-              - type: tile
-                entity: input_datetime.fin_cycle_simulation_presence_matin_chambre_parents
-                name: "à"
+                - type: tile
+                  entity: input_number.nb_cycles_simulation_presence_soir_entree
+                  name: Cycles
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          - type: tile
-            entity: input_number.nb_cycles_simulation_presence_matin_chambre_parents
-            name: Cycles
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+                - !include ../../includes/section_headers/chambre_parents.yaml
 
-          # 🌇 Réglages soir - Parents
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🌇 Soir
+                # 🌅 Réglages matin - Parents
+                - type: custom:button-card
+                  template: sub_section_header
+                  name: 🌅 Matin
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_datetime.debut_cycle_simulation_presence_soir_chambre_parents
-                name: "de"
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_datetime.debut_cycle_simulation_presence_matin_chambre_parents
+                      name: "de"
 
-              - type: tile
-                entity: input_datetime.fin_cycle_simulation_presence_soir_chambre_parents
-                name: "à"
+                    - type: tile
+                      entity: input_datetime.fin_cycle_simulation_presence_matin_chambre_parents
+                      name: "à"
 
-          - type: tile
-            entity: input_number.nb_cycles_simulation_presence_soir_chambre_parents
-            name: Cycles
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+                - type: tile
+                  entity: input_number.nb_cycles_simulation_presence_matin_chambre_parents
+                  name: Cycles
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          # 🏠 Garage
-          - !include ../../includes/section_headers/garage.yaml
+                # 🌇 Réglages soir - Parents
+                - type: custom:button-card
+                  template: sub_section_header
+                  name: 🌇 Soir
 
-          # 🌅 Réglages matin - Garage
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🌅 Matin
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_datetime.debut_cycle_simulation_presence_soir_chambre_parents
+                      name: "de"
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_datetime.debut_cycle_simulation_presence_matin_garage
-                name: "de"
+                    - type: tile
+                      entity: input_datetime.fin_cycle_simulation_presence_soir_chambre_parents
+                      name: "à"
 
-              - type: tile
-                entity: input_datetime.fin_cycle_simulation_presence_matin_garage
-                name: "à"
+                - type: tile
+                  entity: input_number.nb_cycles_simulation_presence_soir_chambre_parents
+                  name: Cycles
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          - type: tile
-            entity: input_number.nb_cycles_simulation_presence_matin_garage
-            name: Cycles
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+                # 🏠 Garage
+                - !include ../../includes/section_headers/garage.yaml
 
-          # 🌇 Réglages soir - Garage
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🌇 Soir
+                # 🌅 Réglages matin - Garage
+                - type: custom:button-card
+                  template: sub_section_header
+                  name: 🌅 Matin
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_datetime.debut_cycle_simulation_presence_soir_garage
-                name: "de"
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_datetime.debut_cycle_simulation_presence_matin_garage
+                      name: "de"
 
-              - type: tile
-                entity: input_datetime.fin_cycle_simulation_presence_soir_garage
-                name: "à"
+                    - type: tile
+                      entity: input_datetime.fin_cycle_simulation_presence_matin_garage
+                      name: "à"
 
-          - type: tile
-            entity: input_number.nb_cycles_simulation_presence_soir_garage
-            name: Cycles
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+                - type: tile
+                  entity: input_number.nb_cycles_simulation_presence_matin_garage
+                  name: Cycles
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
+
+                # 🌇 Réglages soir - Garage
+                - type: custom:button-card
+                  template: sub_section_header
+                  name: 🌇 Soir
+
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_datetime.debut_cycle_simulation_presence_soir_garage
+                      name: "de"
+
+                    - type: tile
+                      entity: input_datetime.fin_cycle_simulation_presence_soir_garage
+                      name: "à"
+
+                - type: tile
+                  entity: input_number.nb_cycles_simulation_presence_soir_garage
+                  name: Cycles
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
