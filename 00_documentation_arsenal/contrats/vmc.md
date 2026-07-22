@@ -2,7 +2,7 @@
 # 📛 Domaine : Ventilation mécanique contrôlée (VMC)
 # 🧠 Nature : Pilotage automatique contractuel
 #
-# Version : v2.2
+# Version : v2.3
 # Statut  : Cible contractuelle validée — implémentation à mettre en conformité
 #
 # Ce document définit EXHAUSTIVEMENT le comportement attendu
@@ -706,13 +706,51 @@ lecture inverse : l'état de l'actionneur ne peut alimenter la décision (§2.1,
 
 #### 9.1 bis Observation glissante au redémarrage
 
-> **L'observation glissante du §2.2 bis n'est pas restaurée.** Elle repart vide.
+> **L'observation glissante du §2.2 bis n'est pas persistée.** Aucun état
+> calculé, aucune conclusion, aucun besoin dérivé d'elle ne survit au
+> redémarrage.
+
+**Ce qui est interdit, et ce qui ne l'est pas.** L'interdiction porte sur la
+**persistance de l'observation elle-même** — reporter au-delà du redémarrage une
+valeur de référence, une évolution calculée ou une conclusion. Elle ne porte pas
+sur la **provenance** des mesures qui remplissent la fenêtre.
 
 | Situation au redémarrage | Comportement |
 |---|---|
 | **Besoin restauré actif** | Conserve son état selon §9.1. Il reste gouverné par les règles de **maintien** (§6.3) et de **libération** (§6.4). **L'absence de profondeur ne le révoque pas** |
 | **Besoin inactif** | Le **critère dynamique ne peut pas l'activer** tant que la profondeur est insuffisante (§4.4 bis, situation B) |
 | **Critère de niveau satisfait** | Reste **immédiatement opérant**, indépendamment de la profondeur |
+
+#### 9.1 ter Reconstitution de la fenêtre depuis l'historique enregistré
+
+> **Une fenêtre glissante peut être reconstituée à partir de mesures déjà
+> enregistrées.** Elle peut donc être **pleine dès le démarrage**, sans que cela
+> constitue une persistance au sens du §9.1 bis.
+
+Cette faculté est **admise sous quatre conditions cumulatives** :
+
+| # | Condition |
+|---|---|
+| **1** | la reconstitution ne porte que sur des **mesures réellement enregistrées** de la **même grandeur** et de la **même pièce**. Aucune valeur n'est fabriquée, extrapolée ni substituée |
+| **2** | elle demeure **bornée par la fenêtre nominale** du §2.2 bis. Une reconstitution excédant cette fenêtre serait un **historique**, prohibé par le §2.2 |
+| **3** | la **profondeur temporelle réellement disponible** demeure exposée (§10.2, exigence 12), et le critère dynamique demeure **non calculable** tant qu'elle est insuffisante (§4.4 bis) |
+| **4** | la fenêtre reconstituée **ne révoque aucun besoin restauré** et **ne crée aucun besoin** qu'une fenêtre remplie en fonctionnement n'aurait pas créé |
+
+> **Pourquoi ce n'est pas une mémoire d'épisode.** Une fenêtre reconstituée ne
+> restitue **ni instant de début, ni durée écoulée, ni valeur de pic, ni état
+> antérieur du besoin**. Elle ne restitue que ce que le §2.2 bis autorise déjà à
+> observer en fonctionnement : la **mesure de la pièce sur une durée bornée**.
+> Le §2.2 n'est pas concerné.
+
+**Effet sur les invariants du §9.1 bis.** Une fenêtre pleine au démarrage
+**renforce** les deux premiers invariants plutôt qu'elle ne les affaiblit : elle
+ne fait perdre aucun besoin restauré, et le risque qu'elle crée un faux besoin
+est **borné par la condition 4**, la fenêtre étant identique à celle qu'un
+fonctionnement continu aurait produite.
+
+**Le tableau du §9.1 bis demeure applicable** : il décrit le comportement en
+**profondeur insuffisante**, situation qui subsiste lorsque l'historique
+enregistré ne couvre pas la fenêtre nominale.
 
 **Invariants :**
 
@@ -900,7 +938,10 @@ non une prédiction.
   granularité par pièce (§2.3) ;
 - un état détenu par un niveau d'agrégation (§2.4) ;
 - un besoin maintenu faute de mesure présenté comme un besoin observé (§10.2) ;
-- une observation glissante **persistée au redémarrage** (§9.1 bis) ;
+- une observation glissante dont une **conclusion, une valeur de référence ou
+  une évolution calculée** est **persistée au redémarrage** (§9.1 bis) ;
+- une fenêtre **reconstituée au-delà de la fenêtre nominale**, ou remplie de
+  **valeurs fabriquées**, extrapolées ou substituées (§9.1 ter) ;
 - une frontière de libération modulée **non bornée**, ou rendant la libération
   **immédiate** ou **impossible** dans un régime durable (§7.4 bis) ;
 - la libération d'un besoin actif alors que la **grandeur modulante** est
@@ -1114,6 +1155,6 @@ observé et cet ordre de grandeur devra être **expliqué avant clôture**. Un t
 
 # ==========================================================
 # FIN DU CONTRAT — VMC
-# Version v2.2 — cible contractuelle validée
+# Version v2.3 — cible contractuelle validée
 # Implémentation à mettre en conformité
 # ==========================================================
