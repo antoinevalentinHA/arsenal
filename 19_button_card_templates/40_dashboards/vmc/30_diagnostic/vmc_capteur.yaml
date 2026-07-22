@@ -7,10 +7,31 @@
 #     TEMPLATE UI METIER
 #
 # 🎯 ROLE
-#     Affiche la valeur d'un capteur VMC (humidité relative ou
-#     CO₂) avec le seuil actif contextualisé selon l'état haute
-#     vitesse. Le type de mesure est déduit dynamiquement depuis
-#     l'unité du capteur (ppm = CO₂, sinon HR).
+#     Afficher la valeur d'un capteur VMC (humidité relative ou
+#     CO₂) avec la frontière REELLEMENT CONSOMMEE par le
+#     système, contextualisée selon l'état du besoin de la
+#     pièce ou de la voie.
+#
+# 📌 REFONTE C35 L7.7 — §10.4
+#     Cette carte lisait les seuils GLOBAUX `vmc_seuil_on` et
+#     `vmc_seuil_off`, dont aucun n'était consommé par une
+#     décision après la mise en conformité. Elle colorait donc
+#     la valeur d'après une règle que le système n'appliquait
+#     pas — ce que le §10.4 proscrit :
+#
+#       « Toute frontière exposée à l'utilisateur, sous forme
+#         de réglage ou d'affichage, doit être celle que le
+#         système consomme effectivement. »
+#
+#     Elle lit desormais, par piece :
+#       - le seuil de niveau LOCAL ;
+#       - la frontière de libération MODULEE, telle que
+#         calculée et exposée par l'entité qui la produit ;
+#       - l'état du BESOIN de cette pièce, et non le reflet
+#         global d'exécution.
+#
+#     Pour la voie CO₂, les deux frontières fixes et l'état du
+#     besoin CO₂.
 #
 # 🧱 NATURE
 #     - Template button-card
@@ -18,39 +39,34 @@
 #     - UI uniquement (aucune décision)
 #
 # 🎨 SEMANTIQUE
-#     VMC haute vitesse ACTIVE :
-#     - valeur > seuil_off     -> 🔴 rouge (encore au-dessus du seuil d'arrêt)
-#     - valeur <= seuil_off    -> 🟢 vert  (descendu sous seuil off)
+#     Besoin ACTIF :
+#     - valeur > frontière d'arrêt  -> 🔴 rouge
+#     - valeur <= frontière d'arrêt -> 🟢 vert
 #
-#     VMC haute vitesse INACTIVE :
-#     - valeur >= seuil_on     -> 🔴 rouge (seuil de déclenchement atteint)
-#     - valeur < seuil_on      -> 🟢 vert  (sous le seuil)
+#     Besoin INACTIF :
+#     - valeur >= seuil de niveau   -> 🔴 rouge
+#     - valeur < seuil de niveau    -> 🟢 vert
 #
-#     Données manquantes       -> ⚪ gris clair (unavailable)
+#     Donnée manquante ou frontière non calculable
+#                                   -> ⚪ gris indisponibilité
 #
 # 🔗 DEPENDANCES
-#     - entity                          : sensor HR (%) ou CO₂ (ppm)
-#       (unité lue via attributes.unit_of_measurement pour routage)
-#     - input_boolean.vmc_haute_vitesse : état VMC pour choix du seuil affiché
-#     Branche HR :
-#     - input_number.vmc_seuil_on / vmc_seuil_off
-#     Branche CO₂ (unit contient 'ppm') :
-#     - input_number.vmc_co2_seuil_on / vmc_co2_seuil_off
+#     - entity : sensor HR (%) ou CO₂ (ppm)
+#     - variables.piece : 'sdb_parents' | 'sdb_enfants' | 'co2'
 #
 # ⚠️ CONTRAINTES
-#     - Routage HR/CO₂ basé sur unit_of_measurement — toute unité
-#       ne contenant pas 'ppm' est traitée comme HR
-#     - Utilise hass.states[] (pas states[]) — spécificité à noter si portage
-#     - Même pattern que deshumidificateur_capteur — seuil on/off
-#       contextualisé selon l'état de l'équipement
+#     - La pièce est passée EXPLICITEMENT par `variables.piece` :
+#       la deduire de l'unité serait un raccourci, et une
+#       nouvelle piece le romprait en silence.
+#     - Utilise hass.states[] (pas states[])
 #     - show_icon désactivé
 #
 # 🧩 USAGE
 #     type: custom:button-card
 #     template: vmc_capteur
-#     entity: sensor.humidite_relative_vmc
-#     # ou
-#     entity: sensor.co2_vmc
+#     entity: sensor.humidite_relative_sdb_parents
+#     variables:
+#       piece: sdb_parents
 #
 # ==========================================================
 
@@ -61,58 +77,80 @@ vmc_capteur:
   show_state: true
   show_label: true
 
+  variables:
+    piece: sdb_parents
+
   styles:
     card:
       - background-color: |
           [[[
+            const GRIS = "rgba(158, 158, 158, 0.1)";
+            const ROUGE = "rgba(244, 67, 54, 0.2)";
+            const VERT = "rgba(76, 175, 80, 0.2)";
+
             const eid = entity?.entity_id;
             const st = eid ? hass.states[eid] : null;
-            if (!st) return "rgba(158, 158, 158, 0.1)";
+            if (!st) return GRIS;
 
             const raw = parseFloat(st.state);
-            if (isNaN(raw)) return "rgba(158, 158, 158, 0.1)";
+            if (isNaN(raw)) return GRIS;
 
-            const unit = (st.attributes.unit_of_measurement || "").toLowerCase();
-            const isCO2 = unit.includes("ppm");
+            const piece = variables.piece;
+            const isCO2 = piece === "co2";
 
-            const seuilOn  = parseFloat(hass.states[isCO2
+            const besoin = hass.states[isCO2
+              ? "binary_sensor.vmc_besoin_co2_sejour"
+              : `binary_sensor.vmc_besoin_humidite_${piece}`];
+            if (!besoin || besoin.state === "unavailable"
+                || besoin.state === "unknown") return GRIS;
+
+            const seuilOn = parseFloat(hass.states[isCO2
               ? "input_number.vmc_co2_seuil_on"
-              : "input_number.vmc_seuil_on"]?.state);
-            const seuilOff = parseFloat(hass.states[isCO2
-              ? "input_number.vmc_co2_seuil_off"
-              : "input_number.vmc_seuil_off"]?.state);
+              : `input_number.vmc_seuil_on_${piece}`]?.state);
 
-            if (isNaN(seuilOn) || isNaN(seuilOff)) return "rgba(158, 158, 158, 0.1)";
+            const off = isCO2
+              ? parseFloat(hass.states["input_number.vmc_co2_seuil_off"]?.state)
+              : parseFloat(hass.states[
+                  `sensor.vmc_frontiere_liberation_${piece}`]?.state);
 
-            const vmcOn = hass.states["input_boolean.vmc_haute_vitesse"]?.state === "on";
+            if (isNaN(seuilOn) || isNaN(off)) return GRIS;
 
-            if (vmcOn) {
-              return raw > seuilOff ? "rgba(244, 67, 54, 0.2)" : "rgba(76, 175, 80, 0.2)";
-            }
-            return raw >= seuilOn ? "rgba(244, 67, 54, 0.2)" : "rgba(76, 175, 80, 0.2)";
+            return besoin.state === "on"
+              ? (raw > off ? ROUGE : VERT)
+              : (raw >= seuilOn ? ROUGE : VERT);
           ]]]
 
   label: |
     [[[
       const eid = entity?.entity_id;
       const st = eid ? hass.states[eid] : null;
-      if (!st) return "Seuil : —";
+      if (!st) return "Frontière : —";
 
-      const unit = (st.attributes.unit_of_measurement || "").toLowerCase();
-      const isCO2 = unit.includes("ppm");
+      const piece = variables.piece;
+      const isCO2 = piece === "co2";
+      const unite = isCO2 ? " ppm" : " %";
 
-      const seuilOn  = parseFloat(hass.states[isCO2
+      const besoin = hass.states[isCO2
+        ? "binary_sensor.vmc_besoin_co2_sejour"
+        : `binary_sensor.vmc_besoin_humidite_${piece}`];
+      if (!besoin || besoin.state === "unavailable"
+          || besoin.state === "unknown") return "Besoin indisponible";
+
+      const seuilOn = parseFloat(hass.states[isCO2
         ? "input_number.vmc_co2_seuil_on"
-        : "input_number.vmc_seuil_on"]?.state);
-      const seuilOff = parseFloat(hass.states[isCO2
-        ? "input_number.vmc_co2_seuil_off"
-        : "input_number.vmc_seuil_off"]?.state);
+        : `input_number.vmc_seuil_on_${piece}`]?.state);
 
-      if (isNaN(seuilOn) || isNaN(seuilOff)) return "Seuil : —";
+      const off = isCO2
+        ? parseFloat(hass.states["input_number.vmc_co2_seuil_off"]?.state)
+        : parseFloat(hass.states[
+            `sensor.vmc_frontiere_liberation_${piece}`]?.state);
 
-      const vmcOn = hass.states["input_boolean.vmc_haute_vitesse"]?.state === "on";
-
-      return vmcOn
-        ? `Seuil Off : ${seuilOff.toFixed(0)}${isCO2 ? " ppm" : " %"}`
-        : `Seuil On : ${seuilOn.toFixed(0)}${isCO2 ? " ppm" : " %"}`;
+      if (besoin.state === "on") {
+        return isNaN(off)
+          ? "Arrêt : non calculable"
+          : `Arrêt : ${off.toFixed(0)}${unite}`;
+      }
+      return isNaN(seuilOn)
+        ? "Niveau : —"
+        : `Niveau : ${seuilOn.toFixed(0)}${unite}`;
     ]]]

@@ -2,7 +2,7 @@
 # 📛 Domaine : Ventilation mécanique contrôlée (VMC)
 # 🧠 Nature : Pilotage automatique contractuel
 #
-# Version : v2.3
+# Version : v2.4
 # Statut  : Cible contractuelle validée — implémentation à mettre en conformité
 #
 # Ce document définit EXHAUSTIVEMENT le comportement attendu
@@ -686,7 +686,7 @@ lecture inverse : l'état de l'actionneur ne peut alimenter la décision (§2.1,
 | **1** | La mesure courante atteint ou dépasse la **frontière d'entrée** | Le besoin est **actif**, indépendamment de l'état restauré |
 | **2** | La mesure courante satisfait la **frontière de libération** | Le besoin est **inactif**, indépendamment de l'état restauré |
 | **3** | La mesure courante se situe **dans la bande morte** | Le besoin **conserve son état restauré** |
-| **4** | **Aucun état valide ne peut être restauré** | Le besoin est **initialisé inactif**, et cette situation de reconstruction doit être **exposable** (§10.2) |
+| **4** | **Aucun état valide ne peut être restauré** | Le besoin est **initialisé inactif**. L'exposition de cette origine est **conditionnée au porteur d'état** (§9.1 quater) |
 
 **Invariants :**
 
@@ -703,6 +703,35 @@ lecture inverse : l'état de l'actionneur ne peut alimenter la décision (§2.1,
   de l'état restauré ;
 - aucune restauration ne concerne les niveaux d'agrégation, qui n'ont pas d'état
   (§2.4).
+
+#### 9.1 quater Origine d'un état initialisé inactif
+
+> **Lorsqu'aucun état restaurable n'existe, le besoin est initialisé inactif.
+> Si le porteur ne permet pas de distinguer cet état d'un état inactif restauré,
+> cette origine peut rester non exposée. Aucune information de reconstruction ne
+> doit être fabriquée ou inférée.**
+
+**Ce que cette clause admet.** Un porteur booléen restauré nativement présente,
+en l'absence d'état restaurable, la **même valeur** qu'un état inactif
+légitimement restauré. L'origine du `inactif` n'est alors **pas observable**, et
+le §10.2 exigence 10 ne peut pas être servi pour ce cas.
+
+**Ce qu'elle n'admet pas.**
+
+| Interdit | Motif |
+|---|---|
+| **Fabriquer** une information de reconstruction | un indicateur qui ne peut pas se déclencher affiche en permanence une absence **non établie** : c'est une affirmation, pas une exposition |
+| **Inférer** l'origine à partir d'un délai, d'un compteur ou d'un historique | ce serait reconstituer une mémoire d'épisode, prohibée par le §2.2 |
+| Étendre la dispense **au-delà de cette origine** | l'état du besoin, ses conditions et ses frontières demeurent exposables sans réserve (§10.2) |
+
+> **La dispense porte sur une origine non observable, jamais sur une
+> observation que l'on renoncerait à exposer.** Si un porteur rendant cette
+> origine distinguable était retenu, l'exigence 10 redeviendrait pleinement
+> applicable — la clause décrit une **limite du porteur**, non une tolérance de
+> principe.
+
+**Prescription inchangée.** Le comportement du §9.1 cas 4 — besoin **initialisé
+inactif** — demeure obligatoire et n'est en rien assoupli.
 
 #### 9.1 bis Observation glissante au redémarrage
 
@@ -799,7 +828,7 @@ Le système doit pouvoir exposer, au niveau métier ou diagnostique approprié :
 | 7 | la **pièce à l'origine** du besoin | voie humidité |
 | 8 | l'état d'**indisponibilité ou d'abstention**, distinct de l'état métier actif | par besoin |
 | 9 | la **composition globale** lorsque plusieurs besoins sont actifs | global |
-| 10 | la **situation de reconstruction** lorsqu'aucun état n'a pu être restauré (§9.1, cas 4) | par besoin |
+| 10 | la **situation de reconstruction** lorsqu'aucun état n'a pu être restauré (§9.1, cas 4) — **sauf si le porteur d'état ne rend pas cette origine distinguable** (§9.1 quater) | par besoin |
 
 **Exigences propres à l'observation glissante** (§2.2 bis), lorsqu'un critère
 d'évolution est retenu. Le système doit pouvoir exposer ou rendre disponible au
@@ -957,6 +986,9 @@ non une prédiction.
 - une **valeur fabriquée** pour combler une profondeur insuffisante (§4.4 bis) ;
 - un besoin **révoqué** au motif que le critère dynamique est devenu non
   calculable (§9.1 bis) ;
+- une information de **reconstruction fabriquée ou inférée**, notamment un
+  indicateur qui ne peut pas se déclencher, ou une origine déduite d'un
+  délai, d'un compteur ou d'un historique (§9.1 quater) ;
 - un besoin subordonné à un critère relevant de O3 (§1.2, §4.3) ;
 - une durée d'exécution tenant lieu de condition de libération (§8.3) ;
 - une décision lisant l'état physique de l'actionneur (§2.1, §8.4) ;
@@ -1155,6 +1187,6 @@ observé et cet ordre de grandeur devra être **expliqué avant clôture**. Un t
 
 # ==========================================================
 # FIN DU CONTRAT — VMC
-# Version v2.3 — cible contractuelle validée
+# Version v2.4 — cible contractuelle validée
 # Implémentation à mettre en conformité
 # ==========================================================

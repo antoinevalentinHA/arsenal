@@ -8,6 +8,21 @@
 #
 # Préservation :
 #   - entity_id historique : binary_sensor.delta_ha_favorable_etage
+#
+# 📌 DEPLACEMENT C35 L7.7 — CRITERE DE CLOTURE 8
+#   Ce capteur vivait sous `12_template_sensors/vmc/`. Il n'a
+#   pourtant AUCUN role decisionnel VMC : c'est un REFLET UI de
+#   l'ecart d'humidite absolue publie par le verdict d'aeration.
+#
+#   Tant qu'il demeurait dans le domaine VMC, la liste des
+#   consommateurs legitimes du verdict d'aeration continuait de
+#   referencer un fichier VMC — de sorte que la REDACTION
+#   LITTERALE du critere de cloture 8 n'etait pas atteinte,
+#   alors que sa substance l'etait depuis L7.2.
+#
+#   Le deplacer le satisfait sans rien changer au comportement :
+#   `unique_id` inchange, donc `entity_id` conserve et AUCUNE
+#   migration d'historique.
 # ==========================================================
 
 - binary_sensor:
