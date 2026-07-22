@@ -14,12 +14,32 @@ views:
           action: navigate
           navigation_path: /chauffage-dashboard
 
+    # ======================================================
+    # 🔥 CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
+    # ------------------------------------------------------
+    # badges
+    #   ↓
+    # vertical-stack racine
+    #   ↓
+    # bandeau de validité + confort forcé (toujours visibles)
+    #   ↓
+    # sélecteur de consultation (contexte d'interface)
+    #   ↓
+    # détail conditionnel (section de réglages choisie)
+    # ======================================================
     cards:
       - type: vertical-stack
         cards:
           # ✅ Bandeau de validité (conditionnel)
           - !include ../../includes/alerte_configuration_invalide.yaml
 
+          # ==================================================
+          # 🔥 TOUJOURS VISIBLE — MODE CONFORT FORCÉ
+          # --------------------------------------------------
+          # Forçage opérateur : c'est le geste le plus fréquent
+          # de la page et il porte une confirmation. Il reste
+          # accessible quelle que soit la section affichée.
+          # ==================================================
           - type: custom:button-card
             template: section_header
             name: 🔥 Mode Confort forcé
@@ -34,295 +54,343 @@ views:
               confirmation:
                 text: "⚠️ Forcer le mode Confort chauffage ?"
 
+          # ==================================================
+          # 🔎 SÉLECTEUR DE CONSULTATION (modèle Palmarès)
+          # --------------------------------------------------
+          # input_select.chauffage_reglages_affichage = contexte
+          # d'interface (ne pilote rien, ne décide rien).
+          # ==================================================
           - type: custom:button-card
             template: section_header
-            name: 📋 Consignes
-
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_number.chauffage_consigne_confort
-                name: Confort
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-              - type: tile
-                entity: input_number.chauffage_consigne_reduite
-                name: Réduite
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+            name: 🔎 Réglages affichés
 
           - type: tile
-            entity: input_number.chauffage_consigne_vacances
-            name: Vacances
-            features_position: inline
+            entity: input_select.chauffage_reglages_affichage
+            name: Réglages affichés
+            features_position: bottom
             features:
-              - type: numeric-input
-                style: buttons
+              - type: select-options
 
-          - type: custom:button-card
-            template: section_header
-            name: ⚙️ Autorisation automatique
+          # ==================================================
+          # 📋 DÉTAIL CONDITIONNEL — SECTION CHOISIE
+          # --------------------------------------------------
+          # Cartes reprises verbatim (aucune entité, aucun
+          # libellé ni alias modifié).
+          #
+          # 🪜 HIÉRARCHIE DES EN-TÊTES
+          # Un `section_header` n'est supprimé que lorsqu'il
+          # RÉPÈTE le libellé de l'option ; le niveau inférieur
+          # est alors promu d'un cran (cas « Autorisation
+          # automatique »). Quand l'option REGROUPE plusieurs
+          # sections distinctes (cas « Protections et blocages »),
+          # les en-têtes internes ne sont pas des répétitions :
+          # ils sont conservés tels quels.
+          # ==================================================
+          - type: conditional
+            conditions:
+              - entity: input_select.chauffage_reglages_affichage
+                state: Consignes
+            card:
+              type: vertical-stack
+              cards:
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_number.chauffage_consigne_confort
+                      name: Confort
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🕒 Anticipation météo
+                    - type: tile
+                      entity: input_number.chauffage_consigne_reduite
+                      name: Réduite
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_boolean.chauffage_anticipation_meteo
-                name: "Activer"
-                icon: mdi:weather-sunny
+                - type: tile
+                  entity: input_number.chauffage_consigne_vacances
+                  name: Vacances
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: tile
-                entity: input_number.meteo_horizon_prevision_heures
-                name: "Horizon (+h)"
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: conditional
+            conditions:
+              - entity: input_select.chauffage_reglages_affichage
+                state: Autorisation automatique
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: 🕒 Anticipation météo
 
-          - type: tile
-            entity: input_number.meteo_favorable_offset
-            name: "Offset (°C) — sous consigne"
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_boolean.chauffage_anticipation_meteo
+                      name: "Activer"
+                      icon: mdi:weather-sunny
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🏖️ Pré-confort retour Vacances
+                    - type: tile
+                      entity: input_number.meteo_horizon_prevision_heures
+                      name: "Horizon (+h)"
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_boolean.pre_confort_enable
-                name: "Activer"
-                icon: mdi:calendar-clock
+                - type: tile
+                  entity: input_number.meteo_favorable_offset
+                  name: "Offset (°C) — sous consigne"
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: tile
-                entity: input_number.duree_prechauffage_retour_vacances
-                name: "Durée (h)"
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: custom:button-card
+                  template: section_header
+                  name: 🏖️ Pré-confort retour Vacances
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🌡️ Température extérieure
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_boolean.pre_confort_enable
+                      name: "Activer"
+                      icon: mdi:calendar-clock
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_number.chauffage_seuil_ext_on
-                name: "ON"
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                    - type: tile
+                      entity: input_number.duree_prechauffage_retour_vacances
+                      name: "Durée (h)"
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-              - type: tile
-                entity: input_number.chauffage_seuil_ext_off
-                name: "OFF"
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: custom:button-card
+                  template: section_header
+                  name: 🌡️ Température extérieure
 
-          - !include ../../includes/cartes/chauffage/reglages_seuils_temperature_exterieure.yaml
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_number.chauffage_seuil_ext_on
+                      name: "ON"
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🌡️ Température intérieure (offsets)
+                    - type: tile
+                      entity: input_number.chauffage_seuil_ext_off
+                      name: "OFF"
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_number.chauffage_offset_on
-                name: "ON"
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - !include ../../includes/cartes/chauffage/reglages_seuils_temperature_exterieure.yaml
 
-              - type: tile
-                entity: input_number.chauffage_offset_off
-                name: "OFF"
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: custom:button-card
+                  template: section_header
+                  name: 🌡️ Température intérieure (offsets)
 
-          - !include ../../includes/cartes/chauffage/reglages_seuils_temperature_interieure.yaml
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_number.chauffage_offset_on
+                      name: "ON"
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: custom:button-card
-            template: section_header
-            name: 🛡️ Protection thermique (offsets)
+                    - type: tile
+                      entity: input_number.chauffage_offset_off
+                      name: "OFF"
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_number.inhibition_geofencing_offset_on
-                name: "ON"
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - !include ../../includes/cartes/chauffage/reglages_seuils_temperature_interieure.yaml
 
-              - type: tile
-                entity: input_number.inhibition_geofencing_offset_off
-                name: "OFF"
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: conditional
+            conditions:
+              - entity: input_select.chauffage_reglages_affichage
+                state: Protections et blocages
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: 🛡️ Protection thermique (offsets)
 
-          - !include ../../includes/cartes/chauffage/reglages_seuils_protection_geofencing.yaml
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_number.inhibition_geofencing_offset_on
+                      name: "ON"
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: custom:button-card
-            template: section_header
-            name: 💨 Blocage Aération
+                    - type: tile
+                      entity: input_number.inhibition_geofencing_offset_off
+                      name: "OFF"
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: grid
-            square: false
-            columns: 1
-            cards:
-              - type: tile
-                entity: input_boolean.blocage_chauffage_aeration_active
-                name: Système de blocage actif
+                - !include ../../includes/cartes/chauffage/reglages_seuils_protection_geofencing.yaml
 
-              # --- Délai de stabilisation des capteurs ---
-              - type: tile
-                entity: input_number.delai_stabilisation_capteurs
-                name: Délai de stabilisation (min)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: custom:button-card
+                  template: section_header
+                  name: 💨 Blocage Aération
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: custom:button-card
-                template: sub_section_header
-                name: 🌡️ ΔT constaté
+                - type: grid
+                  square: false
+                  columns: 1
+                  cards:
+                    - type: tile
+                      entity: input_boolean.blocage_chauffage_aeration_active
+                      name: Système de blocage actif
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: ⏱️ Durée du blocage
+                    # --- Délai de stabilisation des capteurs ---
+                    - type: tile
+                      entity: input_number.delai_stabilisation_capteurs
+                      name: Délai de stabilisation (min)
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-              - type: tile
-                entity: input_number.aeration_m3_seuil_tiny
-                name: Tiny
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: custom:button-card
+                      template: sub_section_header
+                      name: 🌡️ ΔT constaté
 
-              - type: tile
-                entity: input_number.aeration_m3_prolongation_tiny
-                name: Tiny
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                    - type: custom:button-card
+                      template: sub_section_header
+                      name: ⏱️ Durée du blocage
 
-              - type: tile
-                entity: input_number.aeration_m3_seuil_medium
-                name: Medium
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                    - type: tile
+                      entity: input_number.aeration_m3_seuil_tiny
+                      name: Tiny
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-              - type: tile
-                entity: input_number.aeration_m3_prolongation_medium
-                name: Medium
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                    - type: tile
+                      entity: input_number.aeration_m3_prolongation_tiny
+                      name: Tiny
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-              - type: tile
-                entity: input_number.aeration_m3_seuil_high
-                name: High
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                    - type: tile
+                      entity: input_number.aeration_m3_seuil_medium
+                      name: Medium
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-              - type: tile
-                entity: input_number.aeration_m3_prolongation_high
-                name: High
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                    - type: tile
+                      entity: input_number.aeration_m3_prolongation_medium
+                      name: Medium
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: markdown
-            content: |
-              **Règle :** si ΔT < seuil **Tiny** → **aucune prolongation** (**0 min**)
+                    - type: tile
+                      entity: input_number.aeration_m3_seuil_high
+                      name: High
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: custom:button-card
-            template: section_header
-            name: 🔥 Blocage Poêle
+                    - type: tile
+                      entity: input_number.aeration_m3_prolongation_high
+                      name: High
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: tile
-            entity: input_number.poele_duree_blocage_chauffage_minutes
-            name: Duree blocage (min)
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
+                - type: markdown
+                  content: |
+                    **Règle :** si ΔT < seuil **Tiny** → **aucune prolongation** (**0 min**)
 
-          - type: custom:button-card
-            template: section_header
-            name: 📈 Courbe de chauffe
+                - type: custom:button-card
+                  template: section_header
+                  name: 🔥 Blocage Poêle
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_boolean.chauffage_reglages_auto
-                name: Réglage auto
+                - type: tile
+                  entity: input_number.poele_duree_blocage_chauffage_minutes
+                  name: Duree blocage (min)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: tile
-                entity: input_boolean.courbe_auto_simulation
-                name: Mode simulation
+          - type: conditional
+            conditions:
+              - entity: input_select.chauffage_reglages_affichage
+                state: Courbe de chauffe
+            card:
+              type: vertical-stack
+              cards:
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_boolean.chauffage_reglages_auto
+                      name: Réglage auto
 
-              - type: tile
-                entity: input_number.chauffage_pente_consigne
-                name: Pente
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                    - type: tile
+                      entity: input_boolean.courbe_auto_simulation
+                      name: Mode simulation
 
-              - type: tile
-                entity: input_number.chauffage_parallele_consigne
-                name: Parallèle
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                    - type: tile
+                      entity: input_number.chauffage_pente_consigne
+                      name: Pente
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
+
+                    - type: tile
+                      entity: input_number.chauffage_parallele_consigne
+                      name: Parallèle
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
