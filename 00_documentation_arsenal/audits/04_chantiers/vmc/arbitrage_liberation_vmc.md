@@ -4,10 +4,10 @@
 |---|---|
 | **Chantier** | C35 — Mise en conformité du domaine VMC avec le contrat v2.1 |
 | **Lot** | **L2b — calibration finale**, **passe 2 : libération, frontière OFF, bande morte, §14.4** |
-| **Statut** | **Instruction ouverte.** Ce document **ne tranche pas** le mécanisme de libération : les preuves disponibles n'y suffisent pas. Il compare les options, établit ce qui l'est, et énonce la preuve restant à acquérir |
+| **Statut** | **Intégré dans `main` (PR #515).** Le travail probatoire du §3.6 a depuis été conduit — voir **§6 bis**. Il **réfute** les options de libération au niveau seul dans leur forme actuelle et établit un **fait structurel opposable**, mais **ne recommande aucune frontière OFF**. **L2b n'est pas soldé** |
 | **Nature** | Document d'**instruction et d'arbitrage**. Il **ne modifie aucun runtime**, ne produit aucun patch, ne crée aucun mécanisme |
 | **Amont intégré dans `main`** | [`arbitrage_calibration_entree_vmc.md`](arbitrage_calibration_entree_vmc.md) — passe 1, voie d'entrée · [`reference_terrain_partielle_vmc.md`](reference_terrain_partielle_vmc.md) — L5 |
-| **Preuves opérationnelles** | `arsenal-runtime` : `37a6bd69` référence terrain partielle · `76451bf` support d'entrée · `625a349` contre-audit · `132072bf` profondeur enfants |
+| **Preuves opérationnelles** | `arsenal-runtime` : `37a6bd69` référence terrain partielle · `76451bf` support d'entrée · `625a349` contre-audit · `132072bf` profondeur enfants · **`8849a054315d591983a86a94ac92b350b79721c2`** instruction de la libération (§6 bis) |
 | **Contrat de référence** | [`../../../contrats/vmc.md`](../../../contrats/vmc.md) **v2.1** — §2.2, §2.2 bis, §2.3, §4.4, §6.3, §6.4, §8.2, §8.3, §8.4, §9.1, §9.1 bis, §14.2, §14.4. **Non modifié par ce lot** |
 
 > **Aucun runtime dans ce lot.** Aucun nouveau mécanisme n'est créé.
@@ -331,17 +331,141 @@ transitions du reflet.
 
 ---
 
+## 6 bis. Résultat probatoire (2026-07-22) — travail du §3.6 conduit
+
+> **Propriétaire de ces chiffres :** dépôt `arsenal-runtime`, commit
+> **`8849a054315d591983a86a94ac92b350b79721c2`**, dossier
+> `analyses/c35_l2b_liberation_20260722/`. Reproduction déterministe vérifiée
+> depuis un répertoire vide.
+
+Le travail probatoire réclamé au §3.6 a été conduit. Il ne produit **aucune
+frontière recommandable**, mais il établit un **fait structurel opposable** qui
+contraint toutes les options.
+
+### 6bis.1 Correction méthodologique préalable
+
+Le contrôle repose sur un **témoin de couverture indépendant** — union des
+horodatages de la température extérieure, de l'humidité absolue extérieure et du
+CO₂ du séjour. Motif : Home Assistant **historise sur changement**, et le
+silence d'un capteur signifie l'absence de variation, non l'absence de donnée.
+Une rupture réelle affecte toutes les entités à la fois. Sur 202,6 jours, il
+n'existe que **6 ruptures de couverture réelles**, totalisant **7,35 jours**.
+Entre deux publications, la valeur est **maintenue**.
+
+### 6bis.2 Fait démontré — l'entrée par évolution et la libération au niveau seul sont incompatibles
+
+> **Un besoin ouvert par la voie d'évolution l'est le plus souvent à un niveau
+> absolu déjà inférieur à toute frontière OFF plausible. Une libération au niveau
+> seul le referme dans la minute, sans qu'aucun assainissement n'ait eu lieu.**
+
+| Pièce | Sonde OFF | Besoins simulés | **ouverts à un niveau déjà ≤ OFF** | Durée médiane du besoin |
+|---|---:|---:|---:|---:|
+| Salle de bain parents | 62 | 342 | **64 %** | **2 min** |
+| Salle de bain parents | 70 | 738 | **72 %** | **1 min** |
+| Salle de douche enfants | 58 | 80 | **89 %** | 6 min |
+| Salle de douche enfants | 62 | 91 | **97 %** | 6 min |
+
+**Ce n'est pas un défaut de calibration : aucune valeur de frontière OFF ne
+résout ce problème.** Plus la frontière est haute, plus la proportion de besoins
+nés déjà libérés augmente.
+
+**Portée contractuelle.** Trois exigences entrent en tension :
+
+- le **§6.2** impose que la voie d'évolution existe, précisément pour qu'un
+  épisode restant sous une frontière fixe élevée ne demeure pas invisible ;
+- le **§6.4** exige une frontière de libération **distincte** de l'entrée et
+  **strictement moins exigeante** ;
+- le **§1.3** interdit qu'un besoin établi disparaisse sans preuve que sa
+  condition de libération est satisfaite.
+
+Une frontière OFF absolue, nécessairement plus basse que la frontière d'entrée
+de niveau, est **satisfaite d'emblée** pour un besoin ouvert par évolution à bas
+niveau : la voie d'évolution devient **inopérante**, ce que le §6.2 interdit.
+
+> **Point de clarification contractuelle.** Le §6.4 parle de « la frontière
+> d'entrée » **au singulier**. Depuis la passe 1, l'entrée comporte **deux
+> branches**. La lecture de « strictement moins exigeante » lorsque l'entrée est
+> composée n'est pas explicitée. **Aucune modification du contrat n'est proposée
+> dans ce lot** ; le point est consigné.
+
+### 6bis.3 Une résolution sans mémoire existe — non retenue à ce stade
+
+Conditionner la voie d'évolution à un **plancher de niveau instantané** —
+`niveau ≥ S` **OU** `(montée ≥ D **ET** niveau ≥ plancher)` — supprime le
+phénomène. Le plancher est une **fonction de l'état instantané** : il
+n'introduit **aucun historique de mesures** et reste compatible avec les §2.2 et
+§2.2 bis.
+
+Salle de bain parents :
+
+| OFF | Plancher | Besoins / mois | Durée médiane | Battements | Épisodes couverts |
+|---:|---:|---:|---:|---:|---:|
+| 62 | aucun | 51,0 | **2 min** | 207 | 128/138 |
+| **62** | **64** | **16,4** | **86 min** | **24** | **108/138** |
+| 66 | 68 | 22,8 | 57 min | 28 | 95/138 |
+| 70 | 72 | 26,7 | 15 min | 45 | 81/138 |
+
+Salle de douche enfants, OFF 54 avec plancher 56 : **21 besoins**, 136 min de
+durée médiane, **1 battement**, 17/27 épisodes.
+
+**Coût mesuré** : la couverture des épisodes passe de 125–128/138 à 81–108/138.
+**Conséquence documentaire** : cette résolution **modifierait le critère d'entrée
+arbitré en passe 1**, ce que la contradiction démontrée justifierait — mais elle
+n'est **pas retenue ici**.
+
+### 6bis.4 Options requalifiées
+
+| Option | Statut après ce contrôle |
+|---|---|
+| **1. OFF absolu annuel, niveau seul** | **Réfutée en l'état** (§6bis.2). Redevient envisageable *si* l'entrée est munie d'un plancher |
+| **2. OFF statique différencié par pièce** | Même réfutation, même résolution possible |
+| **3. Paramètres statiques saisonniers** | **Non départagée.** Une seconde année reste nécessaire |
+| **4. Référence locale dynamique** | **Incompatible en l'état** — inchangé |
+| **5. Condition de stabilité par N mesures consécutives** | **ÉCARTÉE.** Trois mesures valent **30 min en hiver et 3 min au printemps**, l'intervalle médian variant d'un facteur 9 selon la saison. Non explicable, non stable |
+| **6. Confirmation par une durée** | **Non écartée, insuffisante seule** : elle ramène les battements de 207 à 13, mais ne corrige pas le problème structurel |
+| **7. Plancher sur la voie d'évolution** *(issue du contrôle)* | **Compatible** §2.2 et §2.2 bis. Modifie le critère d'entrée de la passe 1 |
+
+### 6bis.5 Autres résultats
+
+- **Morphologie du retour**, parents : chute médiane de **6,4 points** du pic à
+  +30 min, puis **1,0 point** de +30 à +60 et **1,1 point** de +60 à +180 —
+  valeurs négatives comprises, le cycle diurne pouvant faire remonter la mesure.
+  Retour au régime ambiant sur **114/138** épisodes, médiane **59 min**.
+- **Franchissements hors épisode**, parents, sur 198,2 jours : une frontière à 70
+  est franchie **185 fois**, dont **92 pour moins de 30 minutes** ; elle n'est
+  pratiquement **jamais** franchie en été **parce que la pièce y est en
+  permanence en dessous**. 92 à 98 % des franchissements descendants sont
+  **diurnes**.
+- **Comparaison avec et sans trace déclarative** : effectifs saisonniers
+  inversés entre les deux groupes. **Aucune conclusion causale** ; le verdict non
+  concluant du lot L5 est inchangé.
+
+### 6bis.6 Absence de recommandation, maintenue
+
+> **Aucune frontière OFF n'est recommandée.** Le problème saisonnier persiste
+> sous toutes les variantes : avec plancher et OFF = 62, la durée médiane d'un
+> besoin est de **803 min en hiver, 167 min au printemps et 7 min en été**.
+
+Ce qui change par rapport au §3.6 : le travail probatoire est **fait**, et il a
+**réfuté** les options 1, 2 et 5 dans leur forme actuelle. Ce qui ne change
+pas : la hauteur de la frontière reste indéterminable.
+
+---
+
 ## 7. Synthèse — ce que cette passe rend possible et ce qu'elle laisse ouvert
 
 | Point | Résultat |
 |---|---|
-| **A — mécanisme de libération** | **non tranché.** Options 1, 2 compatibles ; 5 compatible sous condition stricte ; 3 et 5-à-fenêtre à qualifier ; 4 incompatible en l'état. Travail probatoire requis, §3.6 |
+| **A — mécanisme de libération** | **non tranché, et options 1, 2 et 5 REFUTEES dans leur forme actuelle** (§6 bis) : la libération au niveau absolu seul rend la voie d'évolution inopérante ; la condition « N mesures consécutives » est écartée comme inexplicable. Résolution sans mémoire identifiée — plancher sur la voie d'évolution — **non retenue**, elle modifierait le critère d'entrée de la passe 1. **Aucune frontière OFF recommandée** |
 | **B — frontière OFF** | **non tranchée.** Cinq notions distinguées ; 70 % non reconduit ; formulation opposable fixée |
 | **C — bande morte** | **non déterminée.** Repères probatoires de conception : amplitude courte observée **1,80 point** parents, **3,00 points** enfants, dont la robustesse devra être démontrée par toute proposition ; frontières enfants représentables au point entier. La largeur dépend du mécanisme du point A |
 | **D — §14.4** | **mécanisme conforme, valeur non calibrée, §14.4 non soldé.** Deux constats : pas de spécification de cyclage documentée ; durée minimale non préservée au redémarrage |
 
-**L2b demeure non soldé.** La passe 3 ne sera engageable qu'après le travail
-probatoire du §3.6.
+**L2b demeure non soldé.** Le travail probatoire du §3.6 **est fait** (§6 bis) ;
+il a réfuté des options sans en rendre aucune recommandable. La passe 3 devra
+trancher entre l'adoption d'un plancher sur la voie d'évolution — au prix de la
+réouverture du critère d'entrée de la passe 1 — et un mécanisme de libération qui
+ne soit pas un niveau absolu.
 
 ---
 
