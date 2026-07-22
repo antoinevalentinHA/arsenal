@@ -46,18 +46,37 @@ trancher est **explicitement reporté à L4** (§8).
 
 ### 2.1 Statut exact de `input_boolean.vmc_haute_vitesse`
 
-> **Cette entité n'est pas une « preuve d'exécution ».** C'est une **trace
-> déclarative de l'état de haute vitesse, actuellement non corroborée par la
-> décision ni par les sorties relais historisées.**
+> **Cette entité n'est pas une « preuve d'exécution » au sens physique.** C'est
+> une **trace de l'état de haute vitesse, non corroborée par la décision ni par
+> les sorties relais historisées.**
 
-La concordance **décision → commande → exécution** ne peut donc **pas** être
-démontrée par plusieurs sources indépendantes dans l'état actuel. Toute preuve
-portant sur le comportement en haute vitesse repose sur cette trace unique.
+La concordance **décision → commande → exécution** n'est donc pas démontrable par
+plusieurs sources indépendantes : toute observation du comportement en haute
+vitesse repose sur cette trace unique. **C'est un fait constaté** ; la question
+de savoir s'il est acceptable est tranchée ci-dessous.
 
-> **Exigence posée par L3, décision reportée à L4.** L4 devra déterminer si cette
-> trace est **suffisamment autoritative par construction**, ou si une
-> **exposition diagnostique supplémentaire** est nécessaire. **L3 formalise
-> l'exigence ; il ne choisit pas la correction.**
+> **Exigence posée par L3, tranchée en L4.**
+
+**Décision propriétaire (2026-07-21) — la trace est jugée suffisamment
+autoritative par construction.** Aucune exposition diagnostique supplémentaire
+n'est requise ; ni la décision ni les relais ne seront historisés.
+
+Éléments qui étayent cette conclusion, établis par l'audit :
+
+- le reflet est écrit **depuis l'état des relais** (`synchro_booleen`), non
+  depuis la décision — il rapporte donc bien une commutation, pas une intention ;
+- le module de commande est en **mode couplé** (`detach_relay = DISABLE`) et
+  **sans déclencheur externe** configuré : il n'existe **aucune voie de commande
+  hors Home Assistant** ;
+- une divergence ne pourrait donc provenir que d'un **échec de commande**
+  (MQTT/Zigbee) ou d'une perte de lien, non d'une action manuelle non tracée.
+
+**Limites conservées**, qui ne remettent pas en cause la décision :
+
+- le reflet n'est **pas** une preuve du débit physique — aucun retour moteur
+  n'existe (§3.F) ;
+- il **n'est pas mis à jour** tant que l'état relais est invalide (`l1 = l2`) et
+  conserve alors sa dernière valeur.
 
 ### 2.2 Statistiques long-terme
 
@@ -119,19 +138,42 @@ de faux positifs, fixé une fois la variabilité connue.
 
 ### E — « Suffisamment assaini » et frontière OFF (§14.2)
 
-> **Bloqué par §2.1.** La libération se calibre sur une redescente **en haute
-> vitesse** — non observée à ce jour.
+> **Distinction fondatrice (arbitrage 2026-07-21).** La frontière de libération
+> est un **niveau**, non une **cinétique**.
+>
+> - le **niveau** dit *à quel point de retour* on libère le besoin ;
+> - la **cinétique** dit *combien de temps* il faut pour l'atteindre.
+>
+> Quelle que soit la vitesse d'extraction, **on s'arrête au même niveau** — on y
+> parvient seulement plus ou moins vite. **Une redescente observée en haute
+> vitesse renseigne la cinétique ; elle ne fixe pas la frontière.**
 
-| À distinguer | Preuve suffisante |
-|---|---|
-| Chute rapide vs traîne | Déjà visible, mais **en basse vitesse** |
-| Cycle diurne | Profil sur journées calmes |
-| Désorption vs dilution | **≥ 1 redescente complète en haute vitesse** |
-| Effet propre de la haute vitesse | Comparaison basse vs haute vitesse sur épisodes appariés |
+**Conséquence : « suffisamment assaini » est calibrable dès maintenant**, sur
+l'historique Recorder existant, sans attendre d'épisode en haute vitesse.
 
-**Garde-fou normatif** : un épisode n'est *exploitable pour E* que si la haute
-vitesse a couvert sa phase de redescente. **Interdiction de calibrer la
-libération sur des redescentes de basse vitesse.**
+| Objet | Nature | Preuve suffisante |
+|---|---|---|
+| **Frontière de libération** (le niveau) | **Paramètre §14** | Ligne de base de la pièce, établie sur l'historique disponible, plus la marge de bande morte |
+| Cycle diurne | Contexte du précédent | Profil sur journées calmes |
+| Chute rapide vs traîne | **Cinétique** | Observable en basse vitesse ; ne fixe aucune frontière |
+| Désorption vs dilution | **Cinétique** | Non requis pour fixer la frontière |
+| **Durée réelle d'activation en haute vitesse** | **Effet attendu à vérifier (§15)**, non paramètre | Observable **après** mise en conformité |
+
+**Garde-fou requalifié.** L'interdiction antérieure — « ne jamais calibrer la
+libération sur des redescentes de basse vitesse » — visait la **cinétique**.
+Appliquée au **niveau**, elle bloquait à tort. Elle devient :
+
+> Une **cinétique** mesurée en basse vitesse ne doit pas être présentée comme
+> celle du régime renforcé, ni servir à prédire une durée d'activation. En
+> revanche, le **niveau** de retour, lui, se déduit légitimement de l'historique
+> disponible : il ne dépend pas du régime.
+
+**Critère de ressenti (arbitrage propriétaire).** L'objectif n'est pas
+d'optimiser un assèchement physique jusqu'à un état cible démontré, mais
+d'obtenir un comportement satisfaisant : la VMC doit réagir quand l'humidité
+d'une salle de bain monte du fait d'une douche ou d'un bain. La frontière de
+libération doit être fixée en conséquence — **retour vers l'état habituel de la
+pièce**, non poursuite d'un optimum hygrométrique.
 
 ### F — Effet de la haute vitesse — *le débit n'est pas une preuve requise*
 
@@ -217,7 +259,7 @@ aucune action artificielle.
 |---|---|---|---|
 | Séjour dans le périmètre | Montées locales rapides observées **ou** leur absence nette sur 30 j | Une montée ambiguë | Données trop rares |
 | Forme du critère d'évolution | Séparation nette sur épisodes étiquetés, stable sur plusieurs largeurs | Bon score sur une seule largeur | Étiquetage insuffisant |
-| « Assaini » / OFF | ≥ 1 redescente **complète en haute vitesse**, désorption vs dilution départagées | Redescentes basse vitesse seules | Aucune redescente HV |
+| « Assaini » / OFF (**niveau**) | Ligne de base de la pièce établie sur l'historique + marge de bande morte | Une seule journée de référence | Historique trop court ou trop bruité pour établir la base |
 | ~~Débit L/H~~ | **Hors dispositif** (§3.F) — l'effet de la haute vitesse est acquis ; seule sa **conséquence observée sur l'humidité** est probatoire | — | — |
 | Durée minimale | Spécification de cyclage | Absence de battement | Fiche introuvable |
 
@@ -261,7 +303,7 @@ collecte**. Aucune taille d'échantillon arbitraire.
 | R1 | Variation diurne ≈ épisode vespéral (~6,8 pts) | Profil diurne établi **avant** tout seuil |
 | R2 | Pas de restitution pris pour du signal | Mesure de bruit à pas homogène ; cas SdB enfants isolé |
 | R3 | Proxy de cinétique pris pour un débit | Réserve conservée (§3.F) — **aucune preuve du chantier n'en dépend** |
-| R4 | Redescente basse vitesse prise pour cible | Garde-fou : E-exploitable seulement si HV couvre la redescente |
+| R4 | **Cinétique** de basse vitesse prise pour celle du régime renforcé | Garde-fou requalifié (§3.E) : la cinétique ne fixe aucune frontière ; seul le **niveau** est calibré |
 | R5 | Épisode non étiqueté pris pour bruit (ou l'inverse) | Journal d'étiquetage |
 | R6 | **Décision et relais non historisés** | **Non neutralisable par la conception — objet de L4** |
 | R7 | Sauvegarde trop tardive (épisode purgé) | Cadence de sauvegarde < 30 j |
@@ -273,19 +315,18 @@ collecte**. Aucune taille d'échantillon arbitraire.
 L3 définit le dispositif **y compris les preuves actuellement impossibles**. Les
 dépendances suivantes sont **explicitement reportées à L4** :
 
-1. **Corroboration de la haute vitesse (R6).** L4 déterminera si la trace
-   `input_boolean.vmc_haute_vitesse` est suffisamment autoritative par
-   construction, ou si une exposition diagnostique minimale est nécessaire. L3
-   pose l'exigence, ne choisit pas la correction.
+1. ~~**Corroboration de la haute vitesse (R6).**~~ **✅ tranché en L4
+   (2026-07-21) : moyens suffisants.** La trace est jugée suffisamment
+   autoritative par construction (§2.1). **Aucune exposition diagnostique, aucune
+   modification de `recorder.yaml`.**
 2. **Spécification de cyclage du module de commande**, préalable à la seule
    composante « protection du relais » de la durée minimale (§3.G) — le module
-   est identifié, sa fiche est consultable sans intervention.
+   est identifié, sa fiche est consultable sans intervention. **Reporté à L2b.**
 
-> **L4 est ainsi recentré sur l'observabilité.** L'identification du moteur et
-> toute mesure matérielle sont **retirées du périmètre** (§3.F).
-
-**L4 pourra conclure** en l'une de deux issues : moyens suffisants / exposition
-diagnostique minimale nécessaire.
+> **L4 est soldé.** Aucune preuve du dispositif n'est plus en attente
+> d'observabilité : la frontière de libération relève d'un **niveau** calibrable
+> sur l'historique existant (§3.E), et la durée d'activation en haute vitesse est
+> un **effet à vérifier après changement**, non un préalable.
 
 > **L'exclusion actuelle d'une commande artificielle de la VMC reste intacte.**
 > L'absence de voie passive fiable pour capturer des épisodes en haute vitesse
@@ -300,8 +341,8 @@ diagnostique minimale nécessaire.
 | Étape | Objet | Verrou |
 |---|---|---|
 | **L3** | Le présent dispositif | Documentaire ; ne crée aucun outil ni instrumentation |
-| **L4** | Audit des moyens d'observation — **R6** (corroboration de la haute vitesse) | Conclut : moyens suffisants / exposition diagnostique minimale. **Aucune mesure matérielle** (§3.F) |
-| **L5** | Référence terrain — protocoles Recorder puis épisodes HV | Après L4 |
+| ~~**L4**~~ ✅ | ~~Audit des moyens d'observation — R6~~ **conclu (2026-07-21) : moyens suffisants** | Aucune exposition diagnostique, aucune instrumentation, aucune mesure matérielle |
+| **L5** | Référence terrain — extraction Recorder et étiquetage. **Allégée** : plus d'attente d'un épisode en haute vitesse (§3.E) | Après L4 |
 | **L2b** | Calibration, **uniquement** à partir de la référence L5 | Aucune correction runtime avant L2b soldé |
 
 ---
@@ -312,10 +353,12 @@ diagnostique minimale nécessaire.
 propriétaires, voie d'extraction privilégiée, garde-fous, séquencement,
 formalisation de l'exigence de corroboration.
 
-**Reporté à L4** : R6 (corroboration de la haute vitesse) et, accessoirement,
-la spécification de cyclage du module. **Reporté à L5** : la campagne.
-**Reporté à L2b** : toute valeur. **Retiré du dispositif** : la mesure du débit
-et toute identification matérielle du moteur (§3.F).
+**Tranché en L4** : R6 — moyens suffisants, aucune exposition diagnostique.
+**Reporté à L5** : la campagne (extraction + étiquetage). **Reporté à L2b** :
+toute valeur, dont la frontière de libération et la spécification de cyclage du
+module. **Retiré du dispositif** : la mesure du débit et toute identification
+matérielle du moteur (§3.F), ainsi que l'attente d'une redescente en haute
+vitesse (§3.E).
 
 > **L3 ne prétend pas que toutes les preuves sont obtenables dans l'état
 > actuel.** Il définit ce qu'il faut prouver et par quels moyens, en nommant
