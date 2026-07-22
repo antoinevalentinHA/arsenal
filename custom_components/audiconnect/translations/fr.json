@@ -3,12 +3,14 @@
     "abort": {
       "already_configured": "Ce compte est déjà configuré",
       "reauth_successful": "Réauthentification réussie",
+      "reconfigure_successful": "Reconfiguration réussie",
       "device_auth_failed": "Impossible de démarrer la connexion par code avec Audi. Veuillez réessayer plus tard."
     },
     "create_entry": {},
     "error": {
-      "authorization_pending": "Connexion pas encore détectée. Approuvez la demande dans votre navigateur, puis cliquez sur Valider.",
-      "device_auth_failed": "La connexion par code a échoué. Veuillez recommencer."
+      "authorization_pending": "Connexion pas encore détectée. Approuvez la demande dans votre navigateur, puis cliquez sur OK.",
+      "device_auth_failed": "La connexion par code a échoué. Veuillez recommencer.",
+      "invalid_credentials": "Informations d'identification invalides"
     },
     "step": {
       "user": {
@@ -27,11 +29,11 @@
       },
       "device": {
         "title": "Connexion à Audi",
-        "description": "Ouvrez le lien suivant et connectez-vous avec votre compte Audi pour autoriser Home Assistant :\n\n[{verification_uri}]({verification_uri})\n\nSi un code vous est demandé, saisissez : **{user_code}**\n\nUne fois la demande approuvée, cliquez sur **Valider**."
+        "description": "Ouvrez le lien suivant et connectez-vous avec votre compte Audi pour autoriser Home Assistant :\n\n[{verification_uri}]({verification_uri})\n\nSi un code vous est demandé, saisissez : **{user_code}**\n\nUne fois la demande approuvée, cliquez sur **OK**."
       },
       "reauth_confirm": {
         "title": "Réauthentification Audi",
-        "description": "Votre autorisation Audi a expiré. Ouvrez le lien suivant et reconnectez-vous :\n\n[{verification_uri}]({verification_uri})\n\nSi un code vous est demandé, saisissez : **{user_code}**\n\nUne fois la demande approuvée, cliquez sur **Valider**."
+        "description": "Votre autorisation Audi a expiré. Ouvrez le lien suivant et reconnectez-vous :\n\n[{verification_uri}]({verification_uri})\n\nSi un code vous est demandé, saisissez : **{user_code}**\n\nUne fois la demande approuvée, cliquez sur **OK**."
       },
       "reconfigure": {
         "title": "Mettre à jour la configuration Audi Connect",
@@ -44,6 +46,22 @@
           "spin": "S-PIN optionnel pour les actions sur le véhicule telles que le verrouillage/déverrouillage.",
           "region": "La région associée à votre compte Audi Connect.",
           "api_level": "Sur les véhicules Audi, la structure des requêtes API varie selon le modèle. Les véhicules récents utilisent une structure plus moderne que les anciens."
+        }
+      },
+      "credentials": {
+        "title": "Connexion à Audi",
+        "description": "Saisissez votre identifiant et votre mot de passe myAudi.",
+        "data": {
+          "username": "Nom d'utilisateur",
+          "password": "Mot de passe"
+        }
+      },
+      "reauth_credentials": {
+        "title": "Réauthentification Audi",
+        "description": "Votre connexion Audi ne fonctionne plus. Saisissez à nouveau vos identifiants.",
+        "data": {
+          "username": "Nom d'utilisateur",
+          "password": "Mot de passe"
         }
       }
     }
