@@ -14,243 +14,318 @@ views:
           action: navigate
           navigation_path: /clim-dashboard
 
+    # ======================================================
+    # ❄️ CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
+    # ------------------------------------------------------
+    # badges
+    #   ↓
+    # vertical-stack racine
+    #   ↓
+    # bandeau de validité (toujours visible)
+    #   ↓
+    # sélecteur de consultation (contexte d'interface)
+    #   ↓
+    # détail conditionnel (section de réglages choisie)
+    # ======================================================
     cards:
       - type: vertical-stack
         cards:
           # ✅ Bandeau de validité (conditionnel)
           - !include ../../includes/alerte_configuration_invalide.yaml
 
+          # ==================================================
+          # 🔎 SÉLECTEUR DE CONSULTATION (modèle Palmarès)
+          # --------------------------------------------------
+          # input_select.clim_reglages_affichage = contexte
+          # d'interface (ne pilote rien, ne décide rien).
+          #
+          # ⚠️ Distinct de `clim_conditions_mode`, qui sert le
+          # dashboard PRINCIPAL. Deux pages, deux contextes.
+          # ==================================================
           - type: custom:button-card
             template: section_header
-            name: ❄️ Mode Cool
+            name: 🔎 Réglages affichés
 
           - type: tile
-            entity: input_number.clim_seuil_temperature_exterieure_minimum
-            name: Seuil mini extérieur
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
-
-          - type: custom:button-card
-            template: sub_section_header
-            name: 📋 Consignes
-
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_number.clim_consigne_presence
-                name: Présence
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-              - type: tile
-                entity: input_number.clim_consigne_absence
-                name: Absence
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🌡️ Seuils de déclenchement
-
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_number.clim_seuil_declenchement_presence
-                name: Présence
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-              - type: tile
-                entity: input_number.clim_seuil_declenchement_absence
-                name: Absence
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🌡️ Seuils d'extinction
-
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_number.clim_seuil_extinction_presence
-                name: Présence
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-              - type: tile
-                entity: input_number.clim_seuil_extinction_absence
-                name: Absence
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-          - type: custom:button-card
-            template: sub_section_header
-            name: ⏳ Absence longue
-
-          - type: tile
-            entity: input_number.clim_duree_absence_longue
-            name: Durée avant extinction (h)
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
-
-          - !include ../../includes/cartes/climatisation/reglages_seuils_presence.yaml
-
-          - type: custom:button-card
-            template: section_header
-            name: 🔥 Mode HEAT
-
-          - type: tile
-            entity: input_boolean.chauffage_clim_active_en_hiver
-            name: Activer le chauffage par clim
-
-          - type: tile
-            entity: input_number.clim_hiver_seuil_temperature_exterieure
-            name: Seuil mini extérieur
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
-
-          - type: tile
-            entity: input_number.consigne_heat_clim
-            name: Consigne
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
-
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🎚️ Offsets
-
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_number.clim_offset_on
-                name: "ON"
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-              - type: tile
-                entity: input_number.clim_offset_off
-                name: "OFF"
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-          - !include ../../includes/cartes/climatisation/reglages_seuils_chauffage.yaml
-
-          - type: custom:button-card
-            template: section_header
-            name: 💦️ Déshumidification
-
-          - type: tile
-            entity: input_number.seuil_humidex_deshumidification
-            name: Seuil On (Humidex)
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
-
-          - type: custom:button-card
-            template: section_header
-            name: 💨 Ventilation
-
-          - type: tile
-            entity: input_select.clim_fan_mode_cible
-            name: Mode souhaité
+            entity: input_select.clim_reglages_affichage
+            name: Réglages affichés
             features_position: bottom
             features:
               - type: select-options
 
-          - type: custom:button-card
-            template: section_header
-            name: 🤫 Mode silencieux
+          # ==================================================
+          # 📋 DÉTAIL CONDITIONNEL — SECTION CHOISIE
+          # --------------------------------------------------
+          # Cartes reprises verbatim (aucune entité, aucun
+          # libellé ni alias modifié).
+          #
+          # 🪜 HIÉRARCHIE DES EN-TÊTES
+          # Un `section_header` n'est retiré que lorsqu'il
+          # RÉPÈTE le libellé de l'option ; le niveau inférieur
+          # est alors promu d'un cran (Mode Cool, Mode Heat).
+          # Quand l'option REGROUPE plusieurs sections
+          # distinctes, les en-têtes internes ne sont pas des
+          # répétitions et sont conservés tels quels.
+          # ==================================================
+          - type: conditional
+            conditions:
+              - entity: input_select.clim_reglages_affichage
+                state: Mode Cool
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: ⚙️ Général
 
-          - type: tile
-            entity: input_boolean.clim_mode_silencieux_auto_active
-            name: Mode silencieux automatique
+                - type: tile
+                  entity: input_number.clim_seuil_temperature_exterieure_minimum
+                  name: Seuil mini extérieur
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_datetime.clim_heure_silencieux_on
-                name: de
+                - type: custom:button-card
+                  template: section_header
+                  name: 📋 Consignes
 
-              - type: tile
-                entity: input_datetime.clim_heure_silencieux_off
-                name: à
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_number.clim_consigne_presence
+                      name: Présence
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: tile
-            entity: switch.clim_outdoor_unit_low_noise
-            name: Réduire bruit extérieur
+                    - type: tile
+                      entity: input_number.clim_consigne_absence
+                      name: Absence
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: custom:button-card
-            template: section_header
-            name: 🌙 Plage nocturne
+                - type: custom:button-card
+                  template: section_header
+                  name: 🌡️ Seuils de déclenchement
 
-          - type: tile
-            entity: input_boolean.clim_mode_nuit_actif
-            name: Mode nuit
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_number.clim_seuil_declenchement_presence
+                      name: Présence
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: tile
-            entity: input_boolean.clim_blocage_horaire_actif
-            name: Blocage dur
+                    - type: tile
+                      entity: input_number.clim_seuil_declenchement_absence
+                      name: Absence
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_datetime.clim_heure_blocage_autom_on
-                name: de
+                - type: custom:button-card
+                  template: section_header
+                  name: 🌡️ Seuils d'extinction
 
-              - type: tile
-                entity: input_datetime.clim_heure_blocage_autom_off
-                name: à
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_number.clim_seuil_extinction_presence
+                      name: Présence
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: markdown
-            content: >
-              Mode nuit : pendant la plage nocturne, la climatisation reste
-              autorisée mais applique la stratégie absence (consignes et seuils
-              « absence »), et le blocage horaire est neutralisé. Blocage dur :
-              interdit la climatisation pendant la plage. Si les deux sont
-              actifs, le mode nuit prime.
+                    - type: tile
+                      entity: input_number.clim_seuil_extinction_absence
+                      name: Absence
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
 
-          - type: custom:button-card
-            template: section_header
-            name: 🚫 Blocages
+                - type: custom:button-card
+                  template: section_header
+                  name: ⏳ Absence longue
 
-          - type: tile
-            entity: input_boolean.clim_blocage_aeration_etage_actif
-            name: Interdire si aération préférable
+                - type: tile
+                  entity: input_number.clim_duree_absence_longue
+                  name: Durée avant extinction (h)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
+
+                - !include ../../includes/cartes/climatisation/reglages_seuils_presence.yaml
+
+          - type: conditional
+            conditions:
+              - entity: input_select.clim_reglages_affichage
+                state: Mode Heat
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: ⚙️ Général
+
+                - type: tile
+                  entity: input_boolean.chauffage_clim_active_en_hiver
+                  name: Activer le chauffage par clim
+
+                - type: tile
+                  entity: input_number.clim_hiver_seuil_temperature_exterieure
+                  name: Seuil mini extérieur
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
+
+                - type: tile
+                  entity: input_number.consigne_heat_clim
+                  name: Consigne
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
+
+                - type: custom:button-card
+                  template: section_header
+                  name: 🎚️ Offsets
+
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_number.clim_offset_on
+                      name: "ON"
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
+
+                    - type: tile
+                      entity: input_number.clim_offset_off
+                      name: "OFF"
+                      features_position: inline
+                      features:
+                        - type: numeric-input
+                          style: buttons
+
+                - !include ../../includes/cartes/climatisation/reglages_seuils_chauffage.yaml
+
+          - type: conditional
+            conditions:
+              - entity: input_select.clim_reglages_affichage
+                state: Déshumidification et ventilation
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: 💦️ Déshumidification
+
+                - type: tile
+                  entity: input_number.seuil_humidex_deshumidification
+                  name: Seuil On (Humidex)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
+
+                - type: custom:button-card
+                  template: section_header
+                  name: 💨 Ventilation
+
+                - type: tile
+                  entity: input_select.clim_fan_mode_cible
+                  name: Mode souhaité
+                  features_position: bottom
+                  features:
+                    - type: select-options
+
+          - type: conditional
+            conditions:
+              - entity: input_select.clim_reglages_affichage
+                state: Plages horaires et blocages
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: 🤫 Mode silencieux
+
+                - type: tile
+                  entity: input_boolean.clim_mode_silencieux_auto_active
+                  name: Mode silencieux automatique
+
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_datetime.clim_heure_silencieux_on
+                      name: de
+
+                    - type: tile
+                      entity: input_datetime.clim_heure_silencieux_off
+                      name: à
+
+                - type: tile
+                  entity: switch.clim_outdoor_unit_low_noise
+                  name: Réduire bruit extérieur
+
+                - type: custom:button-card
+                  template: section_header
+                  name: 🌙 Plage nocturne
+
+                - type: tile
+                  entity: input_boolean.clim_mode_nuit_actif
+                  name: Mode nuit
+
+                - type: tile
+                  entity: input_boolean.clim_blocage_horaire_actif
+                  name: Blocage dur
+
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: tile
+                      entity: input_datetime.clim_heure_blocage_autom_on
+                      name: de
+
+                    - type: tile
+                      entity: input_datetime.clim_heure_blocage_autom_off
+                      name: à
+
+                - type: markdown
+                  content: >
+                    Mode nuit : pendant la plage nocturne, la climatisation reste
+                    autorisée mais applique la stratégie absence (consignes et seuils
+                    « absence »), et le blocage horaire est neutralisé. Blocage dur :
+                    interdit la climatisation pendant la plage. Si les deux sont
+                    actifs, le mode nuit prime.
+
+                - type: custom:button-card
+                  template: section_header
+                  name: 🚫 Blocages
+
+                - type: tile
+                  entity: input_boolean.clim_blocage_aeration_etage_actif
+                  name: Interdire si aération préférable
