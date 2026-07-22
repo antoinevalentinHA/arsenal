@@ -1,5 +1,40 @@
 button_card_templates: !include_dir_merge_named /config/19_button_card_templates
 
+# ==========================================================
+# 🧠 ARSENAL — DASHBOARD RÉGLAGES VMC
+# ----------------------------------------------------------
+# 📐 DOCTRINE APPLIQUÉE
+#   `ui/pattern_dashboard.md`          — racine `vertical-stack` unique,
+#                                        badges → contenu, aucune grille
+#                                        comme squelette
+#   `ui/pattern_dashboard_reglages.md` — typologie des réglages, statut de
+#                                        la `tile` native, carte « effet
+#                                        réel », bandeau de validité
+#
+# 🟩 POURQUOI LES `tile` SONT CONSERVÉES
+#   Le §🟩 du pattern réglages fait de la `tile` native la forme « par
+#   défaut et suffisante » pour l'édition d'un Seuil, et le §🚫 range le
+#   « remplacement massif des tile natives » parmi les NON-OBJECTIFS.
+#   Conserver une `tile` suffisante est conforme, pas un compromis.
+#
+# 📌 CORRECTIF — RETRAIT DES GRILLES
+#   La version précédente disposait les tuiles en grilles de 3 colonnes.
+#   Aucun autre dashboard de réglage du dépôt ne dépasse 2 colonnes, et la
+#   plupart n'emploient aucune grille. À 3 colonnes, une tuile à contrôle
+#   `numeric-input` tombe sous ~160 px en colonne masonry : libellés
+#   tronqués, boutons − / + tassés.
+#
+#   Les tuiles sont donc disposées UNE PAR LIGNE — forme stable de ~360 px
+#   à pleine largeur — et groupées par `sub_section_header`.
+#
+# 🔎 CARTE « EFFET RÉEL »
+#   Les seuils VMC sont des Seuils au sens du §🟩 : leur effet n'est pas
+#   lisible de la valeur seule — la frontière d'arrêt est modulée, et la
+#   borne haute gouverne la bande morte. Le §🔎 rend donc la carte markdown
+#   d'effet réel OBLIGATOIRE. Elle est externalisée dans
+#   `includes/cartes/vmc/`, seule convention du dépôt.
+# ==========================================================
+
 views:
   - badges:
       - type: custom:button-card
@@ -17,7 +52,8 @@ views:
     cards:
       - type: vertical-stack
         cards:
-          # ✅ Bandeau de validité (conditionnel)
+          # ✅ Bandeau de validité — première carte du flux de contenu,
+          #    adossé à `binary_sensor.parametres_invalides_global`.
           - !include ../../includes/alerte_configuration_invalide.yaml
 
           # ==================================================
@@ -31,57 +67,49 @@ views:
             template: sub_section_header
             name: 💧 Déclenchement
 
-          - type: grid
-            square: false
-            columns: 3
-            cards:
-              - type: tile
-                entity: input_number.vmc_seuil_on_sdb_parents
-                name: Niveau
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: input_number.vmc_seuil_on_sdb_parents
+            name: Seuil de niveau (%)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
-              - type: tile
-                entity: input_number.vmc_fenetre_sdb_parents
-                name: Fenêtre
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: input_number.vmc_fenetre_sdb_parents
+            name: Fenêtre d'observation (min)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
-              - type: tile
-                entity: input_number.vmc_evolution_sdb_parents
-                name: Évolution
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: input_number.vmc_evolution_sdb_parents
+            name: Évolution minimale (points)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           - type: custom:button-card
             template: sub_section_header
             name: 🌡️ Bornes de la frontière d'arrêt
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_number.vmc_borne_basse_sdb_parents
-                name: Borne basse
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: input_number.vmc_borne_basse_sdb_parents
+            name: Borne basse (%)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
-              - type: tile
-                entity: input_number.vmc_borne_haute_sdb_parents
-                name: Borne haute
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: input_number.vmc_borne_haute_sdb_parents
+            name: Borne haute (%)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           - type: tile
             entity: sensor.vmc_frontiere_liberation_sdb_parents
@@ -98,57 +126,49 @@ views:
             template: sub_section_header
             name: 💧 Déclenchement
 
-          - type: grid
-            square: false
-            columns: 3
-            cards:
-              - type: tile
-                entity: input_number.vmc_seuil_on_sdb_enfants
-                name: Niveau
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: input_number.vmc_seuil_on_sdb_enfants
+            name: Seuil de niveau (%)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
-              - type: tile
-                entity: input_number.vmc_fenetre_sdb_enfants
-                name: Fenêtre
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: input_number.vmc_fenetre_sdb_enfants
+            name: Fenêtre d'observation (min)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
-              - type: tile
-                entity: input_number.vmc_evolution_sdb_enfants
-                name: Évolution
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: input_number.vmc_evolution_sdb_enfants
+            name: Évolution minimale (points)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           - type: custom:button-card
             template: sub_section_header
             name: 🌡️ Bornes de la frontière d'arrêt
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_number.vmc_borne_basse_sdb_enfants
-                name: Borne basse
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: input_number.vmc_borne_basse_sdb_enfants
+            name: Borne basse (%)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
-              - type: tile
-                entity: input_number.vmc_borne_haute_sdb_enfants
-                name: Borne haute
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: input_number.vmc_borne_haute_sdb_enfants
+            name: Borne haute (%)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           - type: tile
             entity: sensor.vmc_frontiere_liberation_sdb_enfants
@@ -161,25 +181,21 @@ views:
             template: section_header
             name: 🫁 CO₂ séjour
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_number.vmc_co2_seuil_on
-                name: Déclenchement
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: input_number.vmc_co2_seuil_on
+            name: Seuil de déclenchement (ppm)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
-              - type: tile
-                entity: input_number.vmc_co2_seuil_off
-                name: Arrêt
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: input_number.vmc_co2_seuil_off
+            name: Seuil d'arrêt (ppm)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           # ==================================================
           # ⏱️ DURÉE MINIMALE
@@ -190,13 +206,13 @@ views:
 
           - type: tile
             entity: input_number.vmc_duree_min_haute
-            name: Durée
+            name: Durée minimale de haute vitesse (min)
             features_position: inline
             features:
               - type: numeric-input
                 style: buttons
 
           # ==================================================
-          # 📖 CE QUE LE SYSTÈME FAIT RÉELLEMENT
+          # 🔎 EFFET RÉEL — §🔎 du pattern réglages
           # ==================================================
-          - !include ../../includes/vmc/explication_reglages.yaml
+          - !include ../../includes/cartes/vmc/explication_reglages.yaml

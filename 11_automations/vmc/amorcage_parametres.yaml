@@ -1,0 +1,116 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION : VMC – Amorçage manuel des paramètres
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Ecrire, EN UNE FOIS ET SUR DECLENCHEMENT MANUEL EXCLUSIF,
+#   les dix valeurs d'amorce des parametres VMC introduits par
+#   C35 L7.0.
+#
+# ⚠️ AUCUN DECLENCHEUR — C'EST VOULU
+#   La cle `trigger` est VIDE. Cette automatisation ne peut
+#   donc JAMAIS s'executer d'elle-meme : ni au demarrage, ni
+#   sur changement d'etat, ni sur minuterie.
+#
+#   Elle ne s'execute que par une action deliberee — bouton
+#   « Executer » de Home Assistant, ou `automation.trigger`.
+#
+# 📌 POURQUOI ELLE REMPLACE `10190000000006`
+#   L'automatisation d'initialisation de L7.0 n'ecrivait que si
+#   un helper etait « disponible et non numerique ». Cette
+#   condition ne peut JAMAIS etre vraie :
+#
+#     un `input_number` sans etat restaurable ne prend pas
+#     `unknown` — il prend son `min`.
+#
+#   Verifie sur les 38 bases du corpus : 73 helpers, 32 065
+#   lignes d'etat, AUCUN etat non numerique. Constate au
+#   deploiement : aucune notification emise, et les dix helpers
+#   charges a leur minimum — bornes 40/40, seuils 50, fenetres
+#   5 min, evolutions 1 point.
+#
+# 🚫 POURQUOI AUCUN MECANISME AUTOMATIQUE NE PEUT LA REMPLACER
+#   Une fois un helper a son minimum, RIEN NE DISTINGUE
+#   « jamais initialise » de « regle au minimum par
+#   l'utilisateur ». C'est la meme limite d'origine non
+#   observable que le §9.1 quater du contrat enonce pour l'etat
+#   des besoins.
+#
+#   Un amorçage automatique ecraserait donc, tot ou tard, un
+#   reglage deliberе. Seul un acte explicite est sur.
+#
+# ⚠️ REJOUER CETTE ACTION ECRASE VOS REGLAGES
+#   Elle remet les dix parametres a leurs valeurs d'amorce.
+#   A n'executer que sur une installation neuve, ou pour
+#   revenir sciemment a la calibration de reference.
+#
+# 📌 VALEURS
+#   Issues de la passe 5 de C35 L2b, seule source de valeurs
+#   arbitrees. PROVISOIRES et REVISABLES : les modifier ici ne
+#   vaut pas recalibration.
+# ==========================================================
+
+- id: "10190000000011"
+  alias: "VMC - Amorçage manuel des paramètres"
+  description: >
+    Ecrit en une fois les dix valeurs d'amorce des parametres VMC.
+    SANS DECLENCHEUR : ne s'execute que sur action manuelle deliberee.
+    REJOUER CETTE ACTION ECRASE LES REGLAGES EN PLACE.
+  mode: single
+  max_exceeded: silent
+
+  # Vide, et delibere : cf. en-tete.
+  trigger: []
+
+  variables:
+    amorces:
+      - entite: input_number.vmc_seuil_on_sdb_parents
+        valeur: 74
+      - entite: input_number.vmc_fenetre_sdb_parents
+        valeur: 20
+      - entite: input_number.vmc_evolution_sdb_parents
+        valeur: 5
+      - entite: input_number.vmc_borne_basse_sdb_parents
+        valeur: 50
+      - entite: input_number.vmc_borne_haute_sdb_parents
+        valeur: 70
+      - entite: input_number.vmc_seuil_on_sdb_enfants
+        valeur: 74
+      - entite: input_number.vmc_fenetre_sdb_enfants
+        valeur: 30
+      - entite: input_number.vmc_evolution_sdb_enfants
+        valeur: 5
+      - entite: input_number.vmc_borne_basse_sdb_enfants
+        valeur: 50
+      - entite: input_number.vmc_borne_haute_sdb_enfants
+        valeur: 70
+
+  action:
+    - repeat:
+        for_each: "{{ amorces }}"
+        sequence:
+          - action: input_number.set_value
+            target:
+              entity_id: "{{ repeat.item.entite }}"
+            data:
+              value: "{{ repeat.item.valeur | float }}"
+
+    # ==================================================
+    # 🔔 TRACABILITE
+    # ==================================================
+    # L'ecriture est deliberee : elle doit laisser une trace
+    # lisible de ce qui a ete ecrit, et de quand.
+    - action: persistent_notification.create
+      data:
+        notification_id: "vmc_amorcage_parametres"
+        title: "💨 VMC – Paramètres amorcés"
+        message: >
+          Les {{ amorces | count }} paramètres VMC ont reçu leur valeur
+          d'amorce, issue de la calibration provisoire C35 L2b.
+
+          {% for a in amorces %}
+          - {{ a.entite }} → {{ a.valeur }}
+          {% endfor %}
+
+          Ces valeurs sont provisoires et révisables. Elles ne seront plus
+          jamais réécrites : cette action est manuelle et ne se déclenche
+          jamais d'elle-même.
