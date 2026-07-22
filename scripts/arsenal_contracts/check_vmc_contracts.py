@@ -286,6 +286,76 @@ if not [e for e in ERRORS if "§4.3" in e]:
 
 
 # ==========================================================
+# TEST 6 — Observation glissante exposée et bornée (§2.2 bis, §10.2)
+# ==========================================================
+#
+# Contrat vmc.md §2.2 bis : l'observation glissante est admissible comme
+# condition d'ENTRÉE uniquement, bornée, et ne participe ni au maintien ni à
+# la libération. §10.2 exigences 11 à 19 : elle doit être exposable.
+#
+# À ce stade (C35 L7.3), elle est INSTRUMENTÉE mais NON DÉCISIONNELLE : la
+# libération se confond encore avec la frontière d'entrée, de sorte qu'un
+# besoin ouvert par l'évolution serait libéré à l'évaluation suivante
+# (`arsenal-runtime` 16326b1). Ce test garde les deux faces :
+#   - l'exposition EXISTE ;
+#   - la référence glissante N'ENTRE PAS dans `state`.
+#
+# Le second contrôle devra être RETIRÉ par L7.4, qui rend la voie
+# décisionnelle. Son échec sera alors le signal attendu, non une régression.
+
+BESOINS = ROOT / "12_template_sensors" / "vmc" / "besoins"
+REFERENCE_GLISSANTE = "vmc_minimum_glissant"
+
+EXPOSITIONS = [
+    "evolution_fenetre_nominale",        # 11
+    "evolution_profondeur_disponible",   # 12
+    "evolution_valeur_courante",         # 13
+    "evolution_valeur_reference",        # 14
+    "evolution_calculee",                # 15
+    "evolution_frontiere",               # 16
+    "evolution_calculable",              # 17
+    "evolution_satisfaite",              # 18
+    "evolution_cause_non_calculable",    # 19
+]
+
+besoins = sorted(BESOINS.glob("*.yaml")) if BESOINS.is_dir() else []
+
+if not besoins:
+    fail("§2.2 bis — aucun besoin local trouvé")
+
+for path in besoins:
+    try:
+        blocs = yaml.safe_load(path.read_text(encoding="utf-8"))
+        entite = blocs[0]["binary_sensor"][0]
+    except Exception as exc:                              # noqa: BLE001
+        fail(f"§2.2 bis — besoin illisible : {path.name} ({exc})")
+        continue
+
+    attributs = entite.get("attributes") or {}
+    manquants = [e for e in EXPOSITIONS if e not in attributs]
+    if manquants:
+        fail(
+            f"§10.2 — exigences 11 à 19 non exposées par {path.name} : "
+            f"{manquants}"
+        )
+
+    # La référence glissante ne doit pas gouverner l'état tant que la
+    # libération n'est pas distincte de l'entrée (§2.2 bis, et constat
+    # arsenal-runtime 16326b1).
+    if REFERENCE_GLISSANTE in str(entite.get("state", "")):
+        fail(
+            f"§2.2 bis — la référence glissante entre dans l'état de "
+            f"{path.name} alors que la libération se confond encore avec la "
+            "frontière d'entrée : le besoin serait libéré à l'évaluation "
+            "suivante. Ce contrôle doit être retiré par L7.4, pas contourné"
+        )
+
+if not [e for e in ERRORS if "§2.2 bis" in e or "§10.2" in e]:
+    print(f"✔ Observation glissante exposée et non décisionnelle "
+          f"({len(besoins)} besoins, §2.2 bis / §10.2)")
+
+
+# ==========================================================
 # RESULTAT
 # ==========================================================
 
