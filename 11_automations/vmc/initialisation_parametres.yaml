@@ -1,0 +1,208 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION : VMC – Initialisation des paramètres
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Faire sortir UNE FOIS les helpers de paramètres VMC de
+#   l'etat `unknown`, et seulement dans ce cas.
+#
+# 🧱 PRINCIPE
+#   Les helpers du depot n'ont pas de cle `initial:` : un
+#   helper nouvellement declare vaut donc `unknown` a sa
+#   premiere apparition. Aucun repli numerique silencieux
+#   n'etant admis (C35, passe 5), la machine serait non
+#   calculable au premier demarrage suivant le deploiement.
+#
+#   Cette automatisation ecrit la valeur d'amorce UNIQUEMENT
+#   sur un helper sans valeur. Un `input_number` etant restaure
+#   par Home Assistant, il ne redevient jamais `unknown` :
+#   l'ecriture n'a donc lieu qu'une fois, et l'utilisateur
+#   demeure ensuite le seul auteur.
+#
+# ⚠️ CE N'EST PAS UN REPLI DEGUISE
+#   Un repli s'applique A CHAQUE EVALUATION et MASQUE
+#   l'indisponibilite. Cette initialisation s'execute UNE FOIS,
+#   sur un helper SANS VALEUR, et laisse ensuite la main.
+#
+# 🚫 AUCUN WRITER PERMANENT
+#   Aucune autre automatisation ne doit reecrire ces helpers.
+#   Invariant arrete par l'arbitrage C35 du 2026-07-22.
+#
+# 📌 VALEURS D'AMORCE
+#   Issues de la passe 5 de C35 L2b, seule source de valeurs
+#   arbitrees. Elles sont PROVISOIRES et REVISABLES ; les
+#   modifier ici ne vaut pas recalibration.
+#
+# 🔗 COEFFICIENTS DE CALIBRATION
+#   `A`, `B` et `H` ne figurent PAS ici : ce sont des
+#   constantes versionnees, portees par l'entite qui calcule
+#   la frontiere. Elles n'ont pas d'etat a initialiser.
+#
+# ✅ BOOT-SAFE + RELOAD-SAFE
+# ==========================================================
+
+- id: "10190000000006"
+  alias: "VMC - Initialisation des paramètres"
+  description: >
+    Ecrit la valeur d'amorce des helpers de parametres VMC
+    uniquement lorsqu'ils sont sans valeur. N'ecrit jamais sur
+    un helper deja renseigne.
+  mode: restart
+
+  trigger:
+    - platform: homeassistant
+      event: start
+
+    # Prise en charge d'un rechargement des helpers sans
+    # redemarrage : un helper nouvellement declare apparait
+    # alors directement en `unknown`.
+    #
+    # `for:` PORTE L'ATTENTE BORNEE de ce declencheur : une
+    # indisponibilite passagere ne declenche RIEN. Un helper
+    # n'est jamais reinitialise au seul motif qu'il a ete
+    # temporairement indisponible.
+    - platform: state
+      entity_id:
+        - input_number.vmc_seuil_on_sdb_parents
+        - input_number.vmc_fenetre_sdb_parents
+        - input_number.vmc_evolution_sdb_parents
+        - input_number.vmc_borne_basse_sdb_parents
+        - input_number.vmc_borne_haute_sdb_parents
+        - input_number.vmc_seuil_on_sdb_enfants
+        - input_number.vmc_fenetre_sdb_enfants
+        - input_number.vmc_evolution_sdb_enfants
+        - input_number.vmc_borne_basse_sdb_enfants
+        - input_number.vmc_borne_haute_sdb_enfants
+      to:
+        - "unknown"
+        - "unavailable"
+      for: "00:02:00"
+
+  variables:
+    # Table d'amorce. Ordre sans importance : chaque entree est
+    # evaluee independamment.
+    amorces:
+      - entite: input_number.vmc_seuil_on_sdb_parents
+        valeur: 74
+      - entite: input_number.vmc_fenetre_sdb_parents
+        valeur: 20
+      - entite: input_number.vmc_evolution_sdb_parents
+        valeur: 5
+      - entite: input_number.vmc_borne_basse_sdb_parents
+        valeur: 50
+      - entite: input_number.vmc_borne_haute_sdb_parents
+        valeur: 70
+      - entite: input_number.vmc_seuil_on_sdb_enfants
+        valeur: 74
+      - entite: input_number.vmc_fenetre_sdb_enfants
+        valeur: 30
+      - entite: input_number.vmc_evolution_sdb_enfants
+        valeur: 5
+      - entite: input_number.vmc_borne_basse_sdb_enfants
+        valeur: 50
+      - entite: input_number.vmc_borne_haute_sdb_enfants
+        valeur: 70
+
+  action:
+    # ==================================================
+    # ⏳ ATTENTE BORNEE
+    # ==================================================
+    # Une entite `unavailable` ne dit rien de sa valeur : elle
+    # dit que la plateforme n'a pas fini de la restaurer. On
+    # laisse donc l'indisponibilite se resoudre, au plus cinq
+    # minutes, AVANT d'evaluer quoi que ce soit.
+    #
+    # A l'expiration, on evalue tout de meme : l'attente est
+    # bornee, jamais bloquante.
+    - wait_template: >
+        {% set ns = namespace(indispo=0) %}
+        {% for a in amorces %}
+          {% if states(a.entite) == 'unavailable' %}
+            {% set ns.indispo = ns.indispo + 1 %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.indispo == 0 }}
+      timeout: "00:05:00"
+      continue_on_timeout: true
+
+    # ==================================================
+    # 🔎 PREDICAT D'INITIALISATION
+    # ==================================================
+    # Un helper est initialise SI ET SEULEMENT SI :
+    #   - il est DISPONIBLE (etat different de `unavailable`) ;
+    #   - et son etat N'EST PAS NUMERIQUE.
+    #
+    # SEMANTIQUE RETENUE, sans ambiguite :
+    #
+    #   `unavailable`
+    #       JAMAIS d'ecriture. Cet etat ne dit rien de la
+    #       valeur : il dit que la plateforme n'a pas fini de
+    #       restaurer l'entite.
+    #
+    #   `unknown` PERSISTANT, l'entite etant par ailleurs
+    #   disponible
+    #       INITIALISATION. C'est le cas NORMAL d'un helper
+    #       nouvellement declare, sans etat a restaurer.
+    #       L'ecriture n'a lieu qu'APRES la persistance de deux
+    #       minutes exigee par le declencheur ET l'attente
+    #       bornee ci-dessus. Exclure `unknown` empecherait
+    #       tout amorcage : aucun nouveau helper ne pourrait
+    #       jamais sortir de cet etat.
+    #
+    #   ETAT NUMERIQUE
+    #       CONSERVATION ABSOLUE, que la valeur soit celle de
+    #       l'amorce ou une valeur choisie par l'utilisateur.
+    #
+    #   INDISPONIBILITE TEMPORAIRE puis RESTAURATION NUMERIQUE
+    #       AUCUNE REINITIALISATION : pendant l'episode l'etat
+    #       est `unavailable`, donc exclu ; apres l'episode il
+    #       est numerique, donc exclu egalement.
+    #
+    # Forme explicite volontaire : elle ne depend d'aucun test
+    # Jinja specifique a une version de Home Assistant.
+    - variables:
+        a_initialiser: >
+          {% set ns = namespace(liste=[]) %}
+          {% for a in amorces %}
+            {% set etat = states(a.entite) %}
+            {% if etat != 'unavailable' and etat | float(none) is none %}
+              {% set ns.liste = ns.liste + [a] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.liste }}
+
+    - condition: template
+      value_template: "{{ a_initialiser | count > 0 }}"
+
+    - repeat:
+        for_each: "{{ a_initialiser }}"
+        sequence:
+          - action: input_number.set_value
+            target:
+              entity_id: "{{ repeat.item.entite }}"
+            data:
+              value: "{{ repeat.item.valeur | float }}"
+
+    # ==================================================
+    # 🔔 TRACABILITE — l'initialisation n'est pas silencieuse
+    # ==================================================
+    # Le parametre historique `vmc_seuil_on` etait GLOBAL ; il
+    # devient differencie par piece. Sa valeur est rappelee
+    # ici afin que la bascule soit constatable, et non subie.
+    - action: persistent_notification.create
+      data:
+        notification_id: "vmc_initialisation_parametres"
+        title: "💨 VMC – Paramètres initialisés"
+        message: >
+          {{ a_initialiser | count }} paramètre(s) VMC sans valeur ont reçu
+          leur valeur d'amorce, issue de la calibration provisoire C35 L2b.
+
+          {% for a in a_initialiser %}
+          - {{ a.entite }} → {{ a.valeur }}
+          {% endfor %}
+
+          Le seuil historique global input_number.vmc_seuil_on vaut
+          {{ states('input_number.vmc_seuil_on') }} et n'a pas été modifié.
+          Il est désormais remplacé par un seuil par pièce.
+
+          Ces valeurs sont provisoires et révisables. Elles ne seront plus
+          jamais réécrites automatiquement.

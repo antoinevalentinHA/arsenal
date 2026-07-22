@@ -1,0 +1,98 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     VMC — Bornes de la frontière de libération modulée
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker, par pièce, les deux valeurs fixes entre lesquelles
+#   la frontière de libération modulée demeure comprise.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Bornes basse et haute, par pièce
+#   - Aucun calcul : la frontière elle-même est calculée
+#     ailleurs, par l'entité qui porte les coefficients
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
+#
+# 🔗 OBLIGATION CONTRACTUELLE
+#   Contrat `vmc.md` v2.2, §7.4 bis, condition 1 :
+#     « la frontière modulée demeure comprise entre deux
+#       valeurs fixes, CONFIGURABLES ET EXPOSABLES »
+#
+#   Ces bornes sont donc des helpers par obligation, et non
+#   par choix d'implémentation.
+#
+# ⚠️ LA BORNE HAUTE N'EST PAS COSMÉTIQUE
+#   Elle fixe la bande morte de la voie de NIVEAU, égale à
+#   `S - borne haute`. À 70 pour un seuil de 74, cette bande
+#   vaut 4 points, soit la même valeur que la bande morte de
+#   la voie d'évolution : une bande morte unique sur les deux
+#   voies d'entrée.
+#
+#   Invariant à respecter : `S > borne haute`. Une borne haute
+#   supérieure ou égale au seuil de niveau annule la bande
+#   morte de cette voie.
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Déclencher directement une action
+#   - Commander directement la VMC
+#   - Calculer la frontière ici
+#   - Modifier automatiquement ces valeurs après leur
+#     initialisation contrôlée (C35 L7.0)
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# ⚠️ ABSENCE DE CLÉ `initial:`
+#   Conforme à la doctrine du dépôt. La sortie de l'état
+#   `unknown` est assurée UNE FOIS par l'automatisation
+#   `10190000000006`, jamais par un repli numérique silencieux.
+#
+# 🏷️ STATUT
+#   Socle — C35 L7.0
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🚿 Salle de bain parents
+# ----------------------------------------------------------
+vmc_borne_basse_sdb_parents:
+  name: "VMC - SdB parents - Borne basse de libération"
+  min: 40
+  max: 85
+  step: 1
+  unit_of_measurement: "%"
+  icon: mdi:arrow-collapse-down
+  mode: box
+
+vmc_borne_haute_sdb_parents:
+  name: "VMC - SdB parents - Borne haute de libération"
+  min: 40
+  max: 85
+  step: 1
+  unit_of_measurement: "%"
+  icon: mdi:arrow-collapse-up
+  mode: box
+
+# ----------------------------------------------------------
+# 🚿 Salle de douche enfants
+# ----------------------------------------------------------
+vmc_borne_basse_sdb_enfants:
+  name: "VMC - SdB enfants - Borne basse de libération"
+  min: 40
+  max: 85
+  step: 1
+  unit_of_measurement: "%"
+  icon: mdi:arrow-collapse-down
+  mode: box
+
+vmc_borne_haute_sdb_enfants:
+  name: "VMC - SdB enfants - Borne haute de libération"
+  min: 40
+  max: 85
+  step: 1
+  unit_of_measurement: "%"
+  icon: mdi:arrow-collapse-up
+  mode: box
