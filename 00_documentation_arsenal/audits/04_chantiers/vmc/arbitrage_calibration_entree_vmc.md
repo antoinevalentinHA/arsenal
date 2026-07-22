@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | C35 — Mise en conformité du domaine VMC avec le contrat v2.1 |
 | **Lot** | **L2b — calibration finale**, **passe 1 : voie d'entrée uniquement** |
-| **Statut** | **Arbitrage partiel. L2b n'est pas soldé.** Le maintien, la libération, la bande morte et le §14.4 restent ouverts |
+| **Statut** | **Intégré dans `main` (PR #514).** Les arbitrages d'entrée consignés ici sont **opposables dans le chantier**. **Arbitrage partiel : L2b n'est pas soldé** — le maintien, la libération, la frontière OFF, la bande morte et le §14.4 restent ouverts et sont instruits par la **passe 2**, [`arbitrage_liberation_vmc.md`](arbitrage_liberation_vmc.md) |
 | **Nature** | Document d'**arbitrage métier et architectural**. Il **ne modifie aucun runtime**, ne produit aucun patch et n'expose aucune valeur en UI |
 | **Preuves opérationnelles** | Dépôt `arsenal-runtime`, dossier `analyses/c35_l2b_entree_20260722/` — **`76451bf`** support initial de calibration · **`625a349`** contre-audit général (circularité, robustesse par pièce, nature des déclenchements) · **`132072bfe54e2ccb2397ee6c6e2aff41f7e44492`** contrôle ciblé de profondeur temporelle de la salle de douche enfants. Référence terrain partielle L5 : **`37a6bd69`** |
 | **Contrat de référence** | [`../../../contrats/vmc.md`](../../../contrats/vmc.md) **v2.1** — §2.2 bis, §2.3, §4.1, §4.3, §4.4 bis, §6.2, §8.3, §14. **Non modifié par ce lot** |
@@ -25,7 +25,12 @@
 
 **L2b n'est pas soldé.** Il le sera lorsque les paramètres de la salle de douche
 enfants seront calibrés, que le mécanisme de libération sera défini et que le
-§14.4 sera instruit.
+§14.4 sera instruit. La **passe 2** — libération, frontière OFF, bande morte et
+§14.4 — est instruite par [`arbitrage_liberation_vmc.md`](arbitrage_liberation_vmc.md).
+
+> **Portée de ce document.** Les arbitrages ci-dessous sont **intégrés dans `main`**
+> et opposables. Les valeurs qu'ils fixent restent **explicitement provisoires** :
+> aucune calibration définitive n'est déclarée, pour aucune pièce.
 
 ---
 
