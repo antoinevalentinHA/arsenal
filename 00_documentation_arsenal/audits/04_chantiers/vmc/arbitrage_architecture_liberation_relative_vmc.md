@@ -544,8 +544,11 @@ Ce point relève d'un lot documentaire distinct et **n'est pas traité ici**.
 - la **largeur de bande morte** ;
 - le **§14.4**.
 
-**Prochain jalon : passe 4 — réouverture contrôlée de l'entrée et calibration du
-plancher**, sur les preuves de `8849a054`, complétées si nécessaire.
+**Passe 4 rendue** — [`arbitrage_calibration_plancher_liberation_vmc.md`](arbitrage_calibration_plancher_liberation_vmc.md),
+préparée sur branche. Elle chiffre le coût du plancher, établit qu'**aucune
+frontière OFF fixe ne convient** — celle-ci échoue le contrôle du §7.4 en été —
+et retient comme famille une **frontière modulée par une grandeur extérieure
+instantanée**, sans calibrer ses constantes.
 
 **Aucune correction runtime n'est autorisée** tant que la séquence probatoire et
 L2b ne sont pas soldées.
