@@ -10,6 +10,9 @@
 from pathlib import Path
 import sys
 
+import yaml
+from jinja2 import Environment
+
 
 ERRORS = []
 
@@ -123,6 +126,115 @@ for path in ROOT.rglob("*.yaml"):
         )
 
 print("✔ Automatisations VMC avec mode")
+
+
+# ==========================================================
+# TEST 4 — Invariant de non-divergence de l'intention (§11.2)
+# ==========================================================
+#
+# Contrat vmc.md §11.2 :
+#   « Toute cause exposée doit être calculée à partir des mêmes grandeurs,
+#     des mêmes frontières et des mêmes états que la décision. Une
+#     approximation retenue pour la lisibilité, susceptible de diverger de
+#     la décision réelle, est INTERDITE. »
+#
+# Le contrôle est COMPORTEMENTAL : le gabarit Jinja de `cause` est extrait du
+# fichier contrôlé puis évalué. Aucune logique n'est reproduite ici — une
+# copie du gabarit rendrait le test aveugle à toute dérive du fichier.
+
+INTENTION = ROOT / "12_template_sensors" / "vmc" / "intention.yaml"
+DECISION = "binary_sensor.vmc_haute_vitesse_requise"
+
+
+def _gabarit_cause(path: Path) -> str:
+    blocs = yaml.safe_load(path.read_text(encoding="utf-8"))
+    for bloc in blocs or []:
+        for entite in bloc.get("sensor", []) or []:
+            if entite.get("unique_id") == "vmc_intention":
+                return entite["attributes"]["cause"]
+    raise ValueError("attribut `cause` de vmc_intention introuvable")
+
+
+def _rendre(gabarit: str, etat: str, composition):
+    env = Environment()
+    return env.from_string(gabarit).render(
+        states=lambda e: etat if e == DECISION else "unknown",
+        state_attr=lambda e, a: composition
+        if (e == DECISION and a == "composition") else None,
+    ).strip()
+
+
+if not INTENTION.is_file():
+    fail(f"Capteur d'intention introuvable : {INTENTION}")
+else:
+    try:
+        gabarit = _gabarit_cause(INTENTION)
+
+        # 4a — aucune source indépendante de la décision.
+        for interdit in ("sensor.humidite_relative_", "input_number.vmc_seuil",
+                         "input_number.vmc_co2_seuil", "sensor.co2_sejour",
+                         "aeration_preferable"):
+            if interdit in gabarit:
+                fail(
+                    "§11.2 — la cause de l'intention lit une source "
+                    f"indépendante de la décision : '{interdit}'"
+                )
+
+        # 4b — la cause dérive bien de l'attribut autoritatif.
+        if "composition" not in gabarit:
+            fail(
+                "§11.2 — la cause de l'intention ne dérive pas de l'attribut "
+                f"`composition` de {DECISION}"
+            )
+
+        # 4c — comportement, cas par cas.
+        cas = [
+            ("décision `on`, composition à une pièce",
+             "on", "SdB parents", "SdB parents", "Séjour"),
+            ("décision `on`, composition à deux pièces",
+             "on", "SdB parents + SdB enfants", "SdB enfants", "Séjour"),
+            ("décision `on`, composition contenant le séjour",
+             "on", "CO₂ séjour", "séjour", None),
+            ("décision `off`", "off", "Aucun besoin actif", None, "Séjour"),
+        ]
+        for libelle, etat, composition, attendu, interdit in cas:
+            rendu = _rendre(gabarit, etat, composition)
+            if not rendu:
+                fail(f"§11.2 — cause vide ({libelle})")
+                continue
+            if attendu and attendu not in rendu:
+                fail(
+                    f"§11.2 — cause ne restitue pas la composition "
+                    f"autoritative ({libelle}) : {rendu!r}"
+                )
+            if interdit and interdit in rendu:
+                fail(
+                    f"§11.2 — cause mentionne « {interdit} » alors que la "
+                    f"composition autoritative ne le contient pas "
+                    f"({libelle}) : {rendu!r}"
+                )
+
+        # 4d — comportement défini quand la source manque.
+        for libelle, etat, composition in [
+            ("composition absente", "on", None),
+            ("composition vide", "on", "  "),
+            ("décision indisponible", "unavailable", None),
+            ("décision inconnue", "unknown", "SdB parents"),
+        ]:
+            rendu = _rendre(gabarit, etat, composition)
+            if not rendu:
+                fail(f"§11.2 — cause vide, comportement non défini ({libelle})")
+            elif "Séjour" in rendu or "SdB" in rendu:
+                fail(
+                    f"§11.2 — cause invente une pièce en l'absence de source "
+                    f"autoritative ({libelle}) : {rendu!r}"
+                )
+
+    except Exception as exc:                              # noqa: BLE001
+        fail(f"§11.2 — contrôle de l'intention impossible : {exc}")
+
+if not [e for e in ERRORS if "§11.2" in e]:
+    print("✔ Intention dérivée de la décision, sans recalcul (§11.2)")
 
 
 # ==========================================================

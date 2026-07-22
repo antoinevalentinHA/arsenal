@@ -52,9 +52,22 @@ LEGITIMATE_CONSUMERS = {
     DIR_TEMPLATE_SENSORS / "climatisation" / "autorisation" / "cool.yaml",
     DIR_TEMPLATE_SENSORS / "climatisation" / "autorisation" / "dry.yaml",
     DIR_TEMPLATE_SENSORS / "climatisation" / "blocages" / "blocage_aeration_etage_reel.yaml",
-    DIR_TEMPLATE_SENSORS / "vmc" / "intention.yaml",
-    DIR_TEMPLATE_SENSORS / "vmc" / "haute_vitesse_requise.yaml",
+    # C35 L7.1 — `vmc/intention.yaml` SORT de cette liste : sa cause est
+    # desormais derivee de l'attribut autoritatif `composition` de la
+    # decision (§11.2), et il ne lit plus le verdict d'aeration.
     DIR_TEMPLATE_SENSORS / "vmc" / "delta_humidite_absolue_favorable.yaml",
+    # C35 L7.1 — le verrou d'aeration a QUITTE l'agregation
+    # `vmc/haute_vitesse_requise.yaml`, qui sort donc de cette liste, et vit
+    # desormais dans les deux besoins locaux ci-dessous.
+    #
+    # ⚠️ ENTREES TEMPORAIRES — RETRAIT PREVU EN C35 L7.2.
+    # Elles couvrent l'ECART CONTRACTUEL n° 1 du chantier, que le §4.3 de
+    # `contrats/vmc.md` proscrit deja : le verdict d'aeration ne doit pas
+    # conditionner la voie humidite. Leur retrait, avec celui du verrou dans
+    # les deux fichiers, est la PREUVE du lot L7.2 et sert le critere de
+    # cloture 8 de C35.
+    DIR_TEMPLATE_SENSORS / "vmc" / "besoins" / "humidite_sdb_parents.yaml",
+    DIR_TEMPLATE_SENSORS / "vmc" / "besoins" / "humidite_sdb_enfants.yaml",
     FILE_GLOBAL,
 }
 
