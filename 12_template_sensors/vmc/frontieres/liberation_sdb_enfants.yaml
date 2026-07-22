@@ -1,0 +1,144 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     VMC — Frontière de libération modulée, SdB enfants
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Calculer et exposer la frontiere de liberation du besoin
+#   humidite de la salle de bain parents, modulee par la
+#   temperature exterieure instantanee, ainsi que le plancher
+#   de la voie d'evolution qui la suit.
+#
+# 📐 MODELE — §7.4 bis
+#     OFF = borne( A - B x T_ext )   borne dans [basse, haute]
+#     P   = OFF + H
+#
+#   La liberation porte EXCLUSIVEMENT sur la mesure de la
+#   piece (§6.4) ; seule la VALEUR de la frontiere est modulee.
+#   La grandeur modulante n'est pas comparee : elle parametre
+#   le point de comparaison.
+#
+# 🔒 PROPRIETE DES CONSTANTES — engagement L7.0, §2 bis
+#   `A`, `B` et `H` sont des CONSTANTES VERSIONNEES :
+#     1. modifiables uniquement par commit, sous revue ;
+#     2. differenciees par piece ;
+#     3. DEFINIES UNE SEULE FOIS — ici, et nulle part ailleurs ;
+#     4. exposees PAR CETTE ENTITE, qui est celle qui calcule ;
+#     5. jamais dupliquees dans un helper, jamais remplacees
+#        par un repli silencieux.
+#
+#   L'automatisation de la machine hysteretique LIT cette
+#   entite ; elle ne redefinit aucune de ces valeurs.
+#
+#   Valeurs issues de la passe 5 de C35 L2b. PROVISOIRES et
+#   REVISABLES : les modifier ici ne vaut pas recalibration.
+#
+# ⚠️ FRONTIERE NON CALCULABLE — §7.4 bis condition 4
+#   Si la grandeur modulante est inexploitable, l'etat vaut
+#   `unknown` et la cause est exposee. AUCUNE bascule vers une
+#   frontiere fixe : ce serait substituer silencieusement un
+#   mecanisme dont l'inoperance estivale est demontree (8/42
+#   episodes) et qui echoue le controle du §7.4.
+#
+#   Un besoin actif est alors MAINTENU : `unknown` ne vaut
+#   jamais liberation.
+#
+# ⚠️ FRONTIERES ENTIERES
+#   Le capteur de cette piece restitue la mesure au POINT
+#   ENTIER. La frontiere et le plancher sont donc arrondis a
+#   l'entier : une frontiere decimale y serait inatteignable
+#   par construction.
+#
+# ⚠️ PIECE A USAGE LEGER
+#   Aucun des 27 episodes du corpus n'atteint la frontiere de
+#   niveau. Cette piece n'est servie QUE par la voie
+#   d'evolution, que ce lot rend decisionnelle.
+#
+# 🧱 PRINCIPE
+#   - Calcul PUR
+#   - Aucun etat, aucune memoire
+#   - Aucune action
+#   - Ne lit AUCUNE mesure de piece
+# ==========================================================
+
+- sensor:
+    - name: "VMC frontière libération SdB enfants"
+      unique_id: vmc_frontiere_liberation_sdb_enfants
+      default_entity_id: sensor.vmc_frontiere_liberation_sdb_enfants
+      unit_of_measurement: "%"
+      icon: mdi:arrow-collapse-horizontal
+
+      state: >
+        {% set a = 66.0 %}
+        {% set b = 1.0 %}
+        {% set text = states('sensor.temperature_jardin') | float(none) %}
+        {% set lo = states('input_number.vmc_borne_basse_sdb_enfants') | float(none) %}
+        {% set hi = states('input_number.vmc_borne_haute_sdb_enfants') | float(none) %}
+        {% if text is none or lo is none or hi is none %}
+          unknown
+        {% else %}
+          {# Mesure restituee au POINT ENTIER : la frontiere doit rester
+             representable a cette granularite. #}
+          {{ ([lo, [hi, a - b * text] | min] | max) | round(0) | int }}
+        {% endif %}
+
+      attributes:
+
+        # §10.2 exigence 20 — grandeur modulante employee.
+        grandeur_modulante: "sensor.temperature_jardin"
+
+        # §10.2 exigence 21 — sa valeur courante.
+        valeur_modulante: >
+          {{ states('sensor.temperature_jardin') }}
+
+        # §10.2 exigence 23 — bornes entre lesquelles la frontiere demeure.
+        borne_basse: >
+          {{ states('input_number.vmc_borne_basse_sdb_enfants') }}
+
+        borne_haute: >
+          {{ states('input_number.vmc_borne_haute_sdb_enfants') }}
+
+        # Constantes de calibration — definition autoritative UNIQUE.
+        constante_a: 66.0
+        constante_b: 1.0
+        bande_morte_h: 4.0
+
+        # Plancher de la voie d'evolution : P = OFF + H.
+        # Il SUIT la frontiere ; un plancher fixe perdrait tous les
+        # episodes d'ete, dont les pics sont bas.
+        plancher_evolution: >
+          {% set a = 66.0 %}
+          {% set b = 1.0 %}
+          {% set h = 4.0 %}
+          {% set text = states('sensor.temperature_jardin') | float(none) %}
+          {% set lo = states('input_number.vmc_borne_basse_sdb_enfants') | float(none) %}
+          {% set hi = states('input_number.vmc_borne_haute_sdb_enfants') | float(none) %}
+          {% if text is none or lo is none or hi is none %}
+            {{ none }}
+          {% else %}
+            {{ (([lo, [hi, a - b * text] | min] | max) | round(0) | int) + h }}
+          {% endif %}
+
+        # §10.2 exigence 24 — statut calculable / non calculable.
+        calculable: >
+          {% set text = states('sensor.temperature_jardin') | float(none) %}
+          {% set lo = states('input_number.vmc_borne_basse_sdb_enfants') | float(none) %}
+          {% set hi = states('input_number.vmc_borne_haute_sdb_enfants') | float(none) %}
+          {{ text is not none and lo is not none and hi is not none }}
+
+        # §10.2 exigence 24 — et sa raison.
+        cause_non_calculable: >
+          {% set text = states('sensor.temperature_jardin') | float(none) %}
+          {% set lo = states('input_number.vmc_borne_basse_sdb_enfants') | float(none) %}
+          {% set hi = states('input_number.vmc_borne_haute_sdb_enfants') | float(none) %}
+          {% if text is none %}
+            grandeur_modulante_inexploitable
+          {% elif lo is none or hi is none %}
+            bornes_inexploitables
+          {% else %}
+            none
+          {% endif %}
+
+        # Statut publie de l'axe modulant, pour que la cause d'une
+        # indisponibilite reste remontable sans quitter cette entite.
+        statut_grandeur_modulante: >
+          {{ states('sensor.temperature_jardin_statut') }}

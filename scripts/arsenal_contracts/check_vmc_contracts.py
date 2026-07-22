@@ -293,15 +293,16 @@ if not [e for e in ERRORS if "§4.3" in e]:
 # condition d'ENTRÉE uniquement, bornée, et ne participe ni au maintien ni à
 # la libération. §10.2 exigences 11 à 19 : elle doit être exposable.
 #
-# À ce stade (C35 L7.3), elle est INSTRUMENTÉE mais NON DÉCISIONNELLE : la
-# libération se confond encore avec la frontière d'entrée, de sorte qu'un
-# besoin ouvert par l'évolution serait libéré à l'évaluation suivante
-# (`arsenal-runtime` 16326b1). Ce test garde les deux faces :
-#   - l'exposition EXISTE ;
-#   - la référence glissante N'ENTRE PAS dans `state`.
+# C35 L7.4 — la voie est DEVENUE DÉCISIONNELLE. Le contrôle « la référence
+# glissante n'entre pas dans `state` », posé par L7.3 et explicitement daté,
+# est RETIRÉ : il a rempli son office, qui était d'empêcher une
+# décisionnalisation prématurée tant que la libération se confondait avec la
+# frontière d'entrée.
 #
-# Le second contrôle devra être RETIRÉ par L7.4, qui rend la voie
-# décisionnelle. Son échec sera alors le signal attendu, non une régression.
+# Ce qui subsiste :
+#   - l'exposition des exigences 11 à 19 EXISTE ;
+#   - l'évolution demeure une condition d'ENTRÉE : elle ne doit apparaître ni
+#     dans la libération, ni dans le maintien (§2.2 bis).
 
 BESOINS = ROOT / "12_template_sensors" / "vmc" / "besoins"
 REFERENCE_GLISSANTE = "vmc_minimum_glissant"
@@ -339,20 +340,138 @@ for path in besoins:
             f"{manquants}"
         )
 
-    # La référence glissante ne doit pas gouverner l'état tant que la
-    # libération n'est pas distincte de l'entrée (§2.2 bis, et constat
-    # arsenal-runtime 16326b1).
-    if REFERENCE_GLISSANTE in str(entite.get("state", "")):
-        fail(
-            f"§2.2 bis — la référence glissante entre dans l'état de "
-            f"{path.name} alors que la libération se confond encore avec la "
-            "frontière d'entrée : le besoin serait libéré à l'évaluation "
-            "suivante. Ce contrôle doit être retiré par L7.4, pas contourné"
-        )
+    # §2.2 bis — l'observation glissante est une condition d'ENTRÉE
+    # uniquement : elle ne participe ni au maintien ni à la libération.
+    attributs = entite.get("attributes") or {}
+    for cle in ("condition_liberation", "condition_maintien"):
+        if REFERENCE_GLISSANTE in str(attributs.get(cle, "")):
+            fail(
+                f"§2.2 bis — la référence glissante intervient dans "
+                f"`{cle}` de {path.name} : elle est une condition d'ENTRÉE "
+                "uniquement et ne participe ni au maintien ni à la libération"
+            )
 
 if not [e for e in ERRORS if "§2.2 bis" in e or "§10.2" in e]:
-    print(f"✔ Observation glissante exposée et non décisionnelle "
+    print(f"✔ Observation glissante exposée, condition d'entrée seule "
           f"({len(besoins)} besoins, §2.2 bis / §10.2)")
+
+
+# ==========================================================
+# TEST 7 — Machine hystérétique et frontière modulée (§7.4 bis, §10.4)
+# ==========================================================
+#
+# Contrat vmc.md §7.4 bis : la frontière modulée doit être bornée à double
+# sens, exposable, et son indisponibilité doit MAINTENIR le besoin actif.
+# §10.4 : toute frontière exposée doit être celle que le système consomme.
+#
+# Engagement L7.0 §2 bis : `A`, `B` et `H` sont des constantes versionnées,
+# DÉFINIES UNE SEULE FOIS et exposées PAR L'ENTITÉ QUI CALCULE.
+
+FRONTIERES = ROOT / "12_template_sensors" / "vmc" / "frontieres"
+MACHINES = sorted((ROOT / "11_automations" / "vmc").glob("machine_besoin_*.yaml"))
+
+EXPOSITIONS_FRONTIERE = [
+    "grandeur_modulante",     # 20
+    "valeur_modulante",       # 21
+    "borne_basse",            # 23
+    "borne_haute",            # 23
+    "calculable",             # 24
+    "cause_non_calculable",   # 24
+    "constante_a",
+    "constante_b",
+    "bande_morte_h",
+    "plancher_evolution",
+]
+
+frontieres = sorted(FRONTIERES.glob("*.yaml")) if FRONTIERES.is_dir() else []
+
+if not frontieres:
+    fail("§7.4 bis — aucune frontière de libération trouvée")
+if not MACHINES:
+    fail("§6 — aucune machine hystérétique trouvée")
+
+for path in frontieres:
+    try:
+        entite = yaml.safe_load(path.read_text(encoding="utf-8"))[0]["sensor"][0]
+    except Exception as exc:                              # noqa: BLE001
+        fail(f"§7.4 bis — frontière illisible : {path.name} ({exc})")
+        continue
+    attributs = entite.get("attributes") or {}
+    manquants = [e for e in EXPOSITIONS_FRONTIERE if e not in attributs]
+    if manquants:
+        fail(
+            f"§10.2 exigences 20 à 24 — non exposées par {path.name} : "
+            f"{manquants}"
+        )
+    # La frontière ne doit lire AUCUNE mesure de pièce (§6.4 : seule la
+    # mesure comparée est celle de la pièce ; la frontière est un point de
+    # comparaison).
+    if "humidite_relative_sdb" in read(path):
+        fail(
+            f"§6.4 — la frontière {path.name} lit une mesure de pièce : elle "
+            "est un point de comparaison, pas une grandeur comparée"
+        )
+
+# Les constantes ne doivent être définies QUE dans les frontières.
+CONSTANTES = ("constante_a", "constante_b", "bande_morte_h")
+for cible in (ROOT / "12_template_sensors" / "vmc",
+              ROOT / "11_automations" / "vmc"):
+    for path in _fichiers(cible):
+        if path.parent.name == "frontieres":
+            continue
+        contenu = read(path)
+        for c in CONSTANTES:
+            if f"{c}:" in contenu:
+                fail(
+                    f"Engagement L7.0 — la constante `{c}` est redéfinie hors "
+                    f"de l'entité calculatrice : {path.relative_to(ROOT)}. "
+                    "Une seule définition autoritative est admise"
+                )
+
+# §9.1 — l'état restauré doit être confronté aux mesures dès le démarrage.
+# Sans déclencheur `homeassistant.start`, un état restauré incohérent avec la
+# mesure subsisterait jusqu'à la publication suivante du capteur, alors que les
+# cas 1 et 2 du §9.1 « priment inconditionnellement ».
+for path in MACHINES:
+    try:
+        auto_m = yaml.safe_load(path.read_text(encoding="utf-8"))[0]
+    except Exception as exc:                              # noqa: BLE001
+        fail(f"§9.1 — machine illisible : {path.name} ({exc})")
+        continue
+    declencheurs = auto_m.get("trigger") or auto_m.get("triggers") or []
+    if not any(t.get("platform") == "homeassistant"
+               or t.get("trigger") == "homeassistant" for t in declencheurs):
+        fail(
+            f"§9.1 — {path.name} ne réévalue pas l'état restauré au "
+            "démarrage : un état incohérent avec la mesure subsisterait "
+            "jusqu'à la publication suivante, alors que les cas 1 et 2 "
+            "priment inconditionnellement"
+        )
+
+# La machine ne doit jamais libérer sur une frontière non calculable.
+for path in MACHINES:
+    contenu = read(path)
+    if "liberation:" not in contenu:
+        fail(f"§6.4 — {path.name} n'expose aucune condition de libération")
+        continue
+    bloc = contenu.split("liberation:", 1)[1].split("\n\n", 1)[0]
+    if "is not none" not in bloc:
+        fail(
+            f"§7.4 bis condition 4 — la libération de {path.name} ne vérifie "
+            "pas que la frontière est calculable : `unknown` vaudrait "
+            "libération"
+        )
+    if "float(" in bloc and "float(none)" not in bloc and "| float(none)" not in contenu:
+        fail(
+            f"§7.4 bis — repli numérique silencieux dans la libération de "
+            f"{path.name}"
+        )
+
+if not [e for e in ERRORS if "§7.4 bis" in e or "Engagement L7.0" in e
+        or "§6.4" in e or "§6 —" in e or "§9.1 —" in e]:
+    print(f"✔ Frontière modulée exposée, constantes uniques, libération "
+          f"gardée, état réévalué au démarrage "
+          f"({len(frontieres)} frontières, {len(MACHINES)} machines)")
 
 
 # ==========================================================

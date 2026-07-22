@@ -1,0 +1,61 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN
+#     VMC — Porteurs d'état des besoins humidité, par pièce
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter l'ÉTAT BOOLÉEN MINIMAL de chaque besoin humidité,
+#   celui que l'hystérésis exige et que le §9.1 restaure.
+#
+# 🧱 POURQUOI UN ÉTAT ÉCRIT
+#   Un capteur `template` ne peut pas porter d'hystérésis
+#   PERSISTANTE : l'idiome `is_state(this.entity_id, …)`
+#   pratiqué ailleurs dans le dépôt tient l'état EN SESSION,
+#   mais ne survit pas au redémarrage.
+#
+#   Le §9.1 exige que l'état soit restauré, puis confronté aux
+#   mesures courantes. Un `input_boolean` est restauré
+#   nativement par Home Assistant : c'est le seul porteur
+#   disponible sans Python.
+#
+# 🔒 CE QUI EST PORTÉ, ET RIEN D'AUTRE
+#   Un BOOLÉEN. Le §2.2 interdit mémoire d'épisode, instant de
+#   début, durée écoulée, valeur de pic, historique de mesures,
+#   compteur et timer ; le §9.1 précise que la restauration
+#   « ne restaure ni instant, ni durée, ni valeur, ni
+#   historique ». Un booléen ne peut structurellement rien
+#   porter d'autre.
+#
+# ✍️ AUTEUR UNIQUE
+#   Ces états sont écrits EXCLUSIVEMENT par les automatisations
+#   de machine hystérétique — `10190000000007` pour la salle de
+#   bain parents, `10190000000008` pour la salle de douche
+#   enfants. Aucune autre écriture n'est admise.
+#
+#   Ils NE SONT PAS des paramètres utilisateur : ils ne doivent
+#   figurer dans aucun réglage éditable.
+#
+# 🏷️ NATURE
+#   État métier | Porteur d'hystérésis
+#
+# 🚫 INTERDITS
+#   - Écrire depuis une autre automatisation
+#   - Exposer en réglage éditable
+#   - Y porter autre chose qu'un booléen
+#   - Les lire comme une mesure
+#
+# ⚠️ ABSENCE DE CLÉ `initial:`
+#   Conforme à la doctrine du dépôt. Le comportement au
+#   redémarrage — confrontation immédiate aux mesures, §9.1 —
+#   relève de **L7.5**.
+#
+# 🏷️ STATUT
+#   Socle — C35 L7.4
+# ==========================================================
+
+vmc_etat_besoin_sdb_parents:
+  name: "VMC - État besoin SdB parents"
+  icon: mdi:shower-head
+
+vmc_etat_besoin_sdb_enfants:
+  name: "VMC - État besoin SdB enfants"
+  icon: mdi:shower-head
