@@ -133,39 +133,40 @@ de faux positifs, fixé une fois la variabilité connue.
 vitesse a couvert sa phase de redescente. **Interdiction de calibrer la
 libération sur des redescentes de basse vitesse.**
 
-### F — Écart de débit basse/haute vitesse (**preuve prioritaire**)
+### F — Effet de la haute vitesse — *le débit n'est pas une preuve requise*
 
-Quatre grandeurs à ne pas confondre :
+> **Décision propriétaire (2026-07-21).** Le fait que la haute vitesse produise
+> un effet réel **est acquis par la connaissance d'usage** et n'a pas à être
+> démontré. **La mesure du débit sort du chemin critique du chantier.**
 
-| Grandeur | Source | Suffit pour |
-|---|---|---|
-| **Débit nominal constructeur** (L / H) | Fiche du moteur | Première qualification aéraulique |
-| **Débit réel de l'installation** | Mesure in situ | Qualification réelle |
-| **Gain relatif L → H** | Constructeur ou mesure | Amplitude de l'effet |
-| **Effet observé sur l'humidité** | Recorder + épisodes HV | Calibrer « assaini » dans le logement réel |
+Quatre grandeurs, dont **une seule** est probatoire ici :
 
-> **Une fiche constructeur peut suffire pour une première qualification
-> aéraulique, mais pas nécessairement pour calibrer « suffisamment assaini » dans
-> le logement réel** — cela dépend de l'effet observé, qui suppose des épisodes
-> en haute vitesse (§E, L4).
+| Grandeur | Statut |
+|---|---|
+| Débit nominal constructeur (L / H) | **Information de contexte.** Non requise |
+| Débit réel de l'installation | **Information de contexte.** Non requise |
+| Gain relatif L → H | **Information de contexte.** Non requise |
+| **Effet observé sur l'humidité** | ✅ **Seule grandeur probatoire** — c'est elle qui calibre « suffisamment assaini » (§E) |
 
-Méthodes, par sobriété décroissante :
+**Motif de la requalification.** Connaître un débit nominal n'apporte rien
+d'opérationnel aux paramètres ouverts : « suffisamment assaini » se calibre sur
+l'**effet observé**, la durée minimale sur la protection du relais et la
+condition métier, le coût acoustique et énergétique sur le ressenti. Le débit
+avait été promu « preuve prioritaire » sur l'hypothèse qu'un écart négligeable
+aurait vidé la révision de son objet — **hypothèse écartée**.
 
-| Rang | Méthode | Intrusif | Propriétaire | Discrimine L/H ? |
-|---|---|---|---|---|
-| 1 | **Documentation constructeur** | Non | Terrain → consignation Arsenal | Oui si fiche donne les deux débits |
-| 2 | Mesure anémométrique ponctuelle | Faible | Terrain | Oui, directement |
-| 3 | Proxy par cinétique d'assèchement | Non | arsenal-runtime | **Partiel — voir réserve** |
-| 4 | Puissance électrique par régime | Faible | Terrain | Oui si écart mesurable |
+**Conséquences :**
 
-> **Réserve dirimante.** Un proxy de cinétique **ne mesure pas un débit** : il
-> mêle débit, conditions de l'épisode, hygrométrie extérieure et désorption. Il
-> peut **corroborer** un écart établi par les rangs 1/2, **jamais l'établir
-> seul**.
+- **aucune identification du moteur n'est requise** ;
+- **aucune inspection terrain du caisson n'est requise** ;
+- **aucune mesure anémométrique, électrique ou d'achat de matériel** n'est requise ;
+- ce qui reste nécessaire relève de **§E** — observer une redescente pendant que
+  la haute vitesse tourne — c'est-à-dire d'**observabilité**, non de matériel.
 
-**Prérequis** : identifier le moteur VMC. Le dépôt ne le documente pas (seul le
-module de commande Zigbee `0x8c73dafffe0388a2` est connu). **Identification
-prioritaire — reportée à L4.**
+> **Garde-fou conservé.** Si un jour une affirmation quantitative sur le débit
+> devenait nécessaire, un proxy de cinétique **ne la fournirait pas** : il mêle
+> débit, conditions de l'épisode, hygrométrie extérieure et désorption. Cette
+> réserve reste valable, mais **aucune preuve du chantier n'en dépend**.
 
 ### G — Durée minimale d'exécution (§14.4)
 
@@ -197,9 +198,10 @@ aucune charge durable sur Recorder.
 > être prise **avant qu'un épisode ne sorte de cette fenêtre**.
 
 ### C — Mesure physique ponctuelle
-Nécessaire uniquement pour F (débit) et une partie de G, **et seulement si** la
-fiche constructeur est introuvable. **Aucun achat recommandé** avant
-identification du moteur et détermination de la grandeur nécessaire.
+**Sans objet pour le débit** (§3.F). Resterait envisageable pour la seule
+composante acoustique/énergétique du §3.G, **si** elle devenait décisive —
+ce qui n'est pas établi. **Aucun achat, aucune mesure, aucune inspection
+matérielle n'est requise par le présent dispositif.**
 
 ### D — Étiquetage manuel minimal — **nécessaire**
 Sans lui, C/D indécidables. Journal sobre, une ligne par épisode : date/heure
@@ -216,7 +218,7 @@ aucune action artificielle.
 | Séjour dans le périmètre | Montées locales rapides observées **ou** leur absence nette sur 30 j | Une montée ambiguë | Données trop rares |
 | Forme du critère d'évolution | Séparation nette sur épisodes étiquetés, stable sur plusieurs largeurs | Bon score sur une seule largeur | Étiquetage insuffisant |
 | « Assaini » / OFF | ≥ 1 redescente **complète en haute vitesse**, désorption vs dilution départagées | Redescentes basse vitesse seules | Aucune redescente HV |
-| Débit L/H | Deux valeurs constructeur **ou** deux mesures | Proxy de cinétique seul | Moteur non identifié |
+| ~~Débit L/H~~ | **Hors dispositif** (§3.F) — l'effet de la haute vitesse est acquis ; seule sa **conséquence observée sur l'humidité** est probatoire | — | — |
 | Durée minimale | Spécification de cyclage | Absence de battement | Fiche introuvable |
 
 **Minima opérationnels — proposés, motivés, non figés** : profil diurne sur
@@ -258,7 +260,7 @@ collecte**. Aucune taille d'échantillon arbitraire.
 |---|---|---|
 | R1 | Variation diurne ≈ épisode vespéral (~6,8 pts) | Profil diurne établi **avant** tout seuil |
 | R2 | Pas de restitution pris pour du signal | Mesure de bruit à pas homogène ; cas SdB enfants isolé |
-| R3 | Proxy de cinétique pris pour un débit | Réserve dirimante (§3.F) |
+| R3 | Proxy de cinétique pris pour un débit | Réserve conservée (§3.F) — **aucune preuve du chantier n'en dépend** |
 | R4 | Redescente basse vitesse prise pour cible | Garde-fou : E-exploitable seulement si HV couvre la redescente |
 | R5 | Épisode non étiqueté pris pour bruit (ou l'inverse) | Journal d'étiquetage |
 | R6 | **Décision et relais non historisés** | **Non neutralisable par la conception — objet de L4** |
@@ -275,13 +277,15 @@ dépendances suivantes sont **explicitement reportées à L4** :
    `input_boolean.vmc_haute_vitesse` est suffisamment autoritative par
    construction, ou si une exposition diagnostique minimale est nécessaire. L3
    pose l'exigence, ne choisit pas la correction.
-2. **Identification du moteur VMC** et recherche de sa documentation
-   constructeur (débits, cyclage).
-3. **Spécification du module de commande** (cyclage max), préalable à la durée
-   minimale (§3.G).
+2. **Spécification de cyclage du module de commande**, préalable à la seule
+   composante « protection du relais » de la durée minimale (§3.G) — le module
+   est identifié, sa fiche est consultable sans intervention.
 
-**L4 pourra conclure** en l'une de trois issues : moyens suffisants / exposition
-diagnostique minimale nécessaire / mesure terrain indispensable.
+> **L4 est ainsi recentré sur l'observabilité.** L'identification du moteur et
+> toute mesure matérielle sont **retirées du périmètre** (§3.F).
+
+**L4 pourra conclure** en l'une de deux issues : moyens suffisants / exposition
+diagnostique minimale nécessaire.
 
 > **L'exclusion actuelle d'une commande artificielle de la VMC reste intacte.**
 > L'absence de voie passive fiable pour capturer des épisodes en haute vitesse
@@ -296,7 +300,7 @@ diagnostique minimale nécessaire / mesure terrain indispensable.
 | Étape | Objet | Verrou |
 |---|---|---|
 | **L3** | Le présent dispositif | Documentaire ; ne crée aucun outil ni instrumentation |
-| **L4** | Audit des moyens d'observation — **R6** (corroboration HV) + **matériel VMC** (moteur, module) | Conclut : suffisant / exposition diagnostique / mesure terrain |
+| **L4** | Audit des moyens d'observation — **R6** (corroboration de la haute vitesse) | Conclut : moyens suffisants / exposition diagnostique minimale. **Aucune mesure matérielle** (§3.F) |
 | **L5** | Référence terrain — protocoles Recorder puis épisodes HV | Après L4 |
 | **L2b** | Calibration, **uniquement** à partir de la référence L5 | Aucune correction runtime avant L2b soldé |
 
@@ -308,8 +312,10 @@ diagnostique minimale nécessaire / mesure terrain indispensable.
 propriétaires, voie d'extraction privilégiée, garde-fous, séquencement,
 formalisation de l'exigence de corroboration.
 
-**Reporté à L4** : R6 (corroboration), identification moteur, spécification
-module. **Reporté à L5** : la campagne. **Reporté à L2b** : toute valeur.
+**Reporté à L4** : R6 (corroboration de la haute vitesse) et, accessoirement,
+la spécification de cyclage du module. **Reporté à L5** : la campagne.
+**Reporté à L2b** : toute valeur. **Retiré du dispositif** : la mesure du débit
+et toute identification matérielle du moteur (§3.F).
 
 > **L3 ne prétend pas que toutes les preuves sont obtenables dans l'état
 > actuel.** Il définit ce qu'il faut prouver et par quels moyens, en nommant
