@@ -1,0 +1,154 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR : VMC besoin CO₂ séjour
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Exposer le BESOIN D'EXTRACTION de la voie CO2, a partir de
+#   la seule mesure de CO2 du sejour.
+#
+# 📌 POURQUOI CE FICHIER EXISTE — C35 L7.6
+#   Le §5.3 du contrat definit la voie CO2 comme UN BESOIN
+#   UNIQUE dote d'un ETAT BOOLEEN PROPRE, et le §5.1 exige de
+#   tout besoin une frontiere d'entree, une condition de
+#   maintien, une frontiere de LIBERATION et un etat propres.
+#
+#   Jusqu'ici la voie CO2 etait un simple COMPARATEUR loge dans
+#   l'agregation : une seule frontiere, aucun etat, aucune
+#   liberation. `input_number.vmc_co2_seuil_off` etait declare,
+#   expose en UI et controle en integrite, mais CONSOMME PAR
+#   RIEN — non-conformite au §10.4.
+#
+#   Ce lot lui donne la meme forme qu'aux besoins de piece.
+#   `vmc_co2_seuil_off` devient la frontiere de LIBERATION
+#   reellement consommee.
+#
+# 🧱 PRINCIPE
+#   - Ce capteur EXPOSE, il ne decide pas : l'etat est porte
+#     par `input_boolean.vmc_etat_besoin_co2_sejour`, ecrit par
+#     la machine `10190000000010`
+#   - Aucune agregation
+#   - Aucune memoire au-dela de l'etat booleen minimal
+#
+# 🔒 AUTONOMIE DES VOIES — §5.2
+#   Ce besoin ne lit AUCUN etat de besoin humidite, et aucun
+#   besoin humidite ne lit le sien. Aucune voie n'autorise, ne
+#   conditionne ni ne bloque une autre.
+#
+# 🚫 AUCUN REPLI SILENCIEUX
+#   Mesure ou frontiere inexploitable => le capteur devient
+#   INDISPONIBLE, avec une cause enumeree. Le repli
+#   `| float(1000)` de l'ancien comparateur DISPARAIT.
+#
+# 🔗 PARAMETRES CONSOMMES
+#   input_number.vmc_co2_seuil_on   — frontiere d'entree
+#   input_number.vmc_co2_seuil_off  — frontiere de liberation
+# ==========================================================
+
+- binary_sensor:
+    - name: "VMC besoin CO₂ séjour"
+      unique_id: vmc_besoin_co2_sejour
+      default_entity_id: binary_sensor.vmc_besoin_co2_sejour
+
+      availability: >
+        {{ states('input_boolean.vmc_etat_besoin_co2_sejour')
+           not in ['unknown', 'unavailable'] }}
+
+      state: >
+        {{ is_state('input_boolean.vmc_etat_besoin_co2_sejour', 'on') }}
+
+      icon: >
+        {% if is_state(this.entity_id, 'on') %}
+          mdi:molecule-co2
+        {% else %}
+          mdi:leaf
+        {% endif %}
+
+      attributes:
+
+        voie: "CO₂"
+
+        piece: "Séjour"
+
+        mesure_locale: >
+          {{ states('sensor.co2_sejour') }}
+
+        frontiere_entree: >
+          {{ states('input_number.vmc_co2_seuil_on') }}
+
+        # §10.2 exigence 6 — frontiere de liberation REELLEMENT
+        # consommee (§10.4). Elle ne l'etait pas avant ce lot.
+        frontiere_liberation: >
+          {{ states('input_number.vmc_co2_seuil_off') }}
+
+        # §10.2 exigence 2 — condition d'entree, formulee comme une
+        # CONDITION D'ETAT et jamais comme un recit (§10.3).
+        condition_entree: >
+          {% set v = states('sensor.co2_sejour') | float(none) %}
+          {% set on = states('input_number.vmc_co2_seuil_on') | float(none) %}
+          {% if v is none %}
+            Mesure CO₂ inexploitable
+          {% elif on is none %}
+            Frontière d'entrée inexploitable
+          {% elif v >= on %}
+            Frontière d'entrée atteinte
+          {% else %}
+            Mesure sous la frontière d'entrée
+          {% endif %}
+
+        # §10.2 exigence 3 — condition de maintien.
+        condition_maintien: >
+          {% set v = states('sensor.co2_sejour') | float(none) %}
+          {% set off = states('input_number.vmc_co2_seuil_off') | float(none) %}
+          {% if not is_state('input_boolean.vmc_etat_besoin_co2_sejour', 'on') %}
+            Sans objet — besoin inactif
+          {% elif v is none %}
+            Mesure inexploitable — le besoin est maintenu (§4.4)
+          {% elif off is none %}
+            Frontière de libération inexploitable — le besoin est maintenu
+          {% elif v > off %}
+            Mesure au-dessus de la frontière de libération
+          {% else %}
+            Libération satisfaite
+          {% endif %}
+
+        # §10.2 exigence 4 — condition de liberation.
+        condition_liberation: >
+          {% set v = states('sensor.co2_sejour') | float(none) %}
+          {% set off = states('input_number.vmc_co2_seuil_off') | float(none) %}
+          {% if off is none or v is none %}
+            Non calculable
+          {% else %}
+            {{ 'Mesure sous la frontière' if v <= off
+               else 'Mesure au-dessus de la frontière' }}
+          {% endif %}
+
+        # §10.2 exigence 8 — l'abstention reste distincte de l'etat
+        # metier, et un besoin MAINTENU faute de mesure doit etre
+        # distinguable d'un besoin OBSERVE (§12.3).
+        mesure_exploitable: >
+          {{ states('sensor.co2_sejour') | float(none) is not none }}
+
+        maintenu_faute_de_mesure: >
+          {{ is_state('input_boolean.vmc_etat_besoin_co2_sejour', 'on')
+             and states('sensor.co2_sejour') | float(none) is none }}
+
+        maintenu_faute_de_frontiere: >
+          {{ is_state('input_boolean.vmc_etat_besoin_co2_sejour', 'on')
+             and states('input_number.vmc_co2_seuil_off') | float(none) is none }}
+
+        cause_indisponibilite: >
+          {% set v = states('sensor.co2_sejour') | float(none) %}
+          {% set on = states('input_number.vmc_co2_seuil_on') | float(none) %}
+          {% set off = states('input_number.vmc_co2_seuil_off') | float(none) %}
+          {% if v is none %}
+            mesure_co2_inexploitable
+          {% elif on is none or off is none %}
+            frontieres_inexploitables
+          {% else %}
+            none
+          {% endif %}
+
+        hysteresis: >
+          Active. Entrée au-dessus de la frontière de déclenchement, libération
+          sous la frontière d'arrêt, maintien entre les deux. L'état est porté
+          par input_boolean.vmc_etat_besoin_co2_sejour et restauré au
+          redémarrage.

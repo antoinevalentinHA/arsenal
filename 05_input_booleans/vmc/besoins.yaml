@@ -48,8 +48,13 @@
 #   redémarrage — confrontation immédiate aux mesures, §9.1 —
 #   relève de **L7.5**.
 #
+# 📌 VOIE CO₂ — §5.3
+#   Le contrat définit UN BESOIN UNIQUE pour la voie CO₂, avec
+#   un état booléen propre, au même titre que les besoins de
+#   pièce. Il en porte donc un, de la même forme.
+#
 # 🏷️ STATUT
-#   Socle — C35 L7.4
+#   Socle — C35 L7.4, étendu à la voie CO₂ en L7.6
 # ==========================================================
 
 vmc_etat_besoin_sdb_parents:
@@ -59,3 +64,7 @@ vmc_etat_besoin_sdb_parents:
 vmc_etat_besoin_sdb_enfants:
   name: "VMC - État besoin SdB enfants"
   icon: mdi:shower-head
+
+vmc_etat_besoin_co2_sejour:
+  name: "VMC - État besoin CO₂ séjour"
+  icon: mdi:molecule-co2

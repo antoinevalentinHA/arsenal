@@ -61,6 +61,10 @@
            or state_attr('binary_sensor.vmc_besoin_humidite_sdb_enfants',
                          'maintenu_faute_de_mesure') == true
            or state_attr('binary_sensor.vmc_besoin_humidite_sdb_enfants',
+                         'maintenu_faute_de_frontiere') == true
+           or state_attr('binary_sensor.vmc_besoin_co2_sejour',
+                         'maintenu_faute_de_mesure') == true
+           or state_attr('binary_sensor.vmc_besoin_co2_sejour',
                          'maintenu_faute_de_frontiere') == true }}
       for: "02:00:00"
 
@@ -73,6 +77,10 @@
                 or state_attr('binary_sensor.vmc_besoin_humidite_sdb_enfants',
                               'maintenu_faute_de_mesure') == true
                 or state_attr('binary_sensor.vmc_besoin_humidite_sdb_enfants',
+                              'maintenu_faute_de_frontiere') == true
+                or state_attr('binary_sensor.vmc_besoin_co2_sejour',
+                              'maintenu_faute_de_mesure') == true
+                or state_attr('binary_sensor.vmc_besoin_co2_sejour',
                               'maintenu_faute_de_frontiere') == true) }}
 
     # Re-projection post-demarrage : HA ne restaure pas les persistantes.
@@ -85,7 +93,8 @@
       {% set ns = namespace(liste=[]) %}
       {% for e, nom in [
            ('binary_sensor.vmc_besoin_humidite_sdb_parents', 'SdB parents'),
-           ('binary_sensor.vmc_besoin_humidite_sdb_enfants', 'SdB enfants')] %}
+           ('binary_sensor.vmc_besoin_humidite_sdb_enfants', 'SdB enfants'),
+           ('binary_sensor.vmc_besoin_co2_sejour', 'CO₂ séjour')] %}
         {% if state_attr(e, 'maintenu_faute_de_mesure') == true %}
           {% set ns.liste = ns.liste + [nom ~ ' — mesure inexploitable'] %}
         {% elif state_attr(e, 'maintenu_faute_de_frontiere') == true %}
