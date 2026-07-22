@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | C35 — Mise en conformité du domaine VMC avec le contrat v2.1 |
 | **Lot** | **L5 — acquisition d'une référence *avant* changement** |
-| **Statut** | **Référence terrain partielle établie.** **L5 n'est pas soldé** — le critère de clôture 5 de C35 n'est **pas** satisfait |
+| **Statut** | **Référence terrain partielle établie.** **L5 a depuis été SOLDÉ** par [`solde_reference_terrain_vmc.md`](solde_reference_terrain_vmc.md) (2026-07-22), qui traite les cinq points laissés ouverts au §8.2 et satisfait le critère de clôture 5. **Le présent document reste valide sur tout ce qu'il établit** ; il n'est pas rouvert |
 | **Nature** | Document de **synthèse métier et de qualification normative des faits**. Il ne calibre aucun paramètre, ne modifie aucun contrat, ne prescrit aucune correction runtime |
 | **Frontière de propriété** | Arsenal **interprète** ; `arsenal-runtime` **acquiert, extrait et reproduit** ([`protocole_dispositif_preuve_vmc.md`](protocole_dispositif_preuve_vmc.md) §6) |
 | **Preuve opérationnelle** | Dépôt `arsenal-runtime`, commit **`37a6bd69520be492d4377623d6eb64ff3ad82900`**, dossier `analyses/c35_l5_reference_20260722/` |
@@ -233,13 +233,21 @@ implémentation.
 - **recomptage et qualification de la trace déclarative** de haute vitesse ;
 - **limites du corpus** — couverture réelle, trous, inégalités mensuelles.
 
-### 8.2 Partie L5 **encore ouverte**
+### 8.2 Partie L5 **encore ouverte** *(à la date du présent lot)*
 
 - **preuves physiques ou documentaires du débit** ;
 - **corroboration décision → commande → relais** — toujours absente d'historique ;
 - **mécanisme de libération** ;
 - **éventuelle observation complémentaire** à définir ;
 - **arbitrages nécessaires avant L2b**.
+
+> **Traités depuis (2026-07-22).** Les cinq points sont repris un par un par
+> [`solde_reference_terrain_vmc.md`](solde_reference_terrain_vmc.md) §1 : le
+> débit est **hors dispositif** par arbitrage antérieur, la corroboration est
+> **impossible sur ce corpus** — vérifiée dans les 38 bases, une entité de la
+> chaîne sur onze étant présente —, le mécanisme de libération est **arbitré et
+> calibré**, aucune observation complémentaire ne relève de L5, et les
+> arbitrages ont été **rendus**.
 
 ### 8.3 Ce que ce lot ne fait pas
 
@@ -249,6 +257,10 @@ terminée et **n'active pas L2b**.
 
 **Jalon actif : L5 demeure le jalon actif de C35**, désormais en partie servi. L4
 est soldé depuis #512 et n'est pas rouvert ; L4 et L5 ne coexistent pas.
+
+> **Dépassé depuis le 2026-07-22.** L5 est **soldé** et le jalon actif est
+> **L7.0** — cf. [`solde_reference_terrain_vmc.md`](solde_reference_terrain_vmc.md)
+> §6. Le verrou de correction runtime demeure entier jusque-là.
 
 **Aucune correction runtime n'est autorisée** tant que la séquence probatoire et
 L2b ne sont pas soldées.
