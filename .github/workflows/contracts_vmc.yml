@@ -12,6 +12,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: python3 -m pip install --quiet pyyaml jinja2
+
       - name: Run VMC contract checks
         run: |
           python3 scripts/arsenal_contracts/check_vmc_contracts.py

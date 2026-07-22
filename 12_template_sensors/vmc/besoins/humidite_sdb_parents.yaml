@@ -1,0 +1,123 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR : VMC besoin humidité SdB parents
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Exprimer le BESOIN D'EXTRACTION LOCAL de la salle de bain
+#   parents, a partir de la seule mesure de cette piece.
+#
+# 🧱 PRINCIPE
+#   - Besoin LOCAL : la mesure d'aucune autre piece n'entre ici
+#   - Aucune agregation
+#   - Aucune action
+#   - Aucune temporisation
+#   - Aucune memoire
+#
+# 📌 ETAT TRANSITOIRE — C35 L7.1
+#   Ce capteur est NON HYSTERETIQUE a ce stade : entree et
+#   liberation partagent la meme frontiere de niveau. Il
+#   reproduit donc la semantique en vigueur, mais PAR PIECE.
+#
+#   L'hysteresis, la voie d'evolution et la frontiere de
+#   liberation modulee relevent de L7.3 et L7.4. Tant qu'il
+#   n'existe AUCUNE bande morte, le §9.1 n'a pas d'objet :
+#   les cas 1 et 2 couvrent tout l'espace, et un etat restaure
+#   serait immediatement ecrase par la mesure courante.
+#
+# ⚠️ VERROU D'AERATION — RETRAIT PREVU EN L7.2
+#   `binary_sensor.aeration_preferable_etage` conditionne
+#   encore cette voie. C'est l'ECART CONTRACTUEL n° 1 du
+#   chantier C35, que le §4.3 du contrat proscrit deja.
+#
+#   Il est ici DEPLACE, non conserve par choix : il vivait
+#   dans l'agregation, il vit desormais dans le besoin local.
+#   L7.2 le supprime, en un seul endroit par piece.
+#
+# 🚫 AUCUN REPLI SILENCIEUX
+#   Mesure ou frontiere inexploitable => le capteur devient
+#   INDISPONIBLE, et l'attribut `cause_indisponibilite` en
+#   donne la raison. Aucune valeur de repli n'est fabriquee.
+#
+#   Le traitement contractuel de cette indisponibilite — §4.4,
+#   maintien du besoin actif — releve de L7.5.
+#
+# 🔗 PARAMETRE CONSOMME
+#   input_number.vmc_seuil_on_sdb_parents  (L7.0)
+# ==========================================================
+
+- binary_sensor:
+    - name: "VMC besoin humidité SdB parents"
+      unique_id: vmc_besoin_humidite_sdb_parents
+      default_entity_id: binary_sensor.vmc_besoin_humidite_sdb_parents
+
+      availability: >
+        {% set mesure = states('sensor.humidite_relative_sdb_parents') | float(none) %}
+        {% set seuil = states('input_number.vmc_seuil_on_sdb_parents') | float(none) %}
+        {{ mesure is not none and seuil is not none }}
+
+      state: >
+        {% set mesure = states('sensor.humidite_relative_sdb_parents') | float(none) %}
+        {% set seuil = states('input_number.vmc_seuil_on_sdb_parents') | float(none) %}
+        {% set aeration_favorable = is_state('binary_sensor.aeration_preferable_etage', 'on') %}
+        {{ mesure >= seuil and aeration_favorable }}
+
+      icon: >
+        {% if is_state(this.entity_id, 'on') %}
+          mdi:shower-head
+        {% else %}
+          mdi:water-off-outline
+        {% endif %}
+
+      attributes:
+
+        piece: "Salle de bain parents"
+
+        mesure_locale: >
+          {{ states('sensor.humidite_relative_sdb_parents') }}
+
+        frontiere_entree: >
+          {{ states('input_number.vmc_seuil_on_sdb_parents') }}
+
+        # §10.2 exigence 2 — condition actuelle justifiant l'entree.
+        # Formulee comme une CONDITION D'ETAT, jamais comme un recit
+        # d'evenement passe (§10.3).
+        condition_entree: >
+          {% set mesure = states('sensor.humidite_relative_sdb_parents') | float(none) %}
+          {% set seuil = states('input_number.vmc_seuil_on_sdb_parents') | float(none) %}
+          {% if mesure is none or seuil is none %}
+            Condition non calculable
+          {% elif mesure < seuil %}
+            Mesure locale sous la frontière d'entrée
+          {% elif not is_state('binary_sensor.aeration_preferable_etage', 'on') %}
+            Frontière atteinte, mais verrou d'aération fermé
+          {% else %}
+            Frontière d'entrée atteinte
+          {% endif %}
+
+        # Contexte NON DECISIONNEL au sens du §10.5 une fois L7.2 passe.
+        # A ce stade il est encore decisionnel : c'est l'ecart n° 1.
+        verrou_aeration: >
+          {{ states('binary_sensor.aeration_preferable_etage') }}
+
+        calculable: >
+          {% set mesure = states('sensor.humidite_relative_sdb_parents') | float(none) %}
+          {% set seuil = states('input_number.vmc_seuil_on_sdb_parents') | float(none) %}
+          {{ mesure is not none and seuil is not none }}
+
+        cause_indisponibilite: >
+          {% set mesure = states('sensor.humidite_relative_sdb_parents') | float(none) %}
+          {% set seuil = states('input_number.vmc_seuil_on_sdb_parents') | float(none) %}
+          {% if mesure is none and seuil is none %}
+            mesure_et_frontiere_inexploitables
+          {% elif mesure is none %}
+            mesure_locale_inexploitable
+          {% elif seuil is none %}
+            frontiere_inexploitable
+          {% else %}
+            none
+          {% endif %}
+
+        # §10.2 exigence 3 et 4 — maintien et liberation.
+        # Enonce exact de l'etat transitoire, sans le masquer.
+        hysteresis: >
+          Aucune à ce stade — entrée et libération partagent la frontière de
+          niveau. Bande morte et libération modulée relèvent de L7.4.

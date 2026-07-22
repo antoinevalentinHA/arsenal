@@ -2,21 +2,52 @@
 # 🧠 ARSENAL — TEMPLATE SENSOR : VMC intention
 # ----------------------------------------------------------
 # 🎯 Rôle :
-#   Exposer l’intention métier de la VMC et la cause principale
-#   de manière lisible et localisée.
+#   Exposer l'intention métier de la VMC et sa cause, de
+#   manière lisible et localisée.
 #
 # 🧱 Principe :
 #   - Traduction sémantique PURE
 #   - Aucun état partagé entre templates
 #   - Compatible reload / redémarrage
 #
-# 🧠 NOTE UI
-#   L’évaluation "aération favorable" est ici basée sur
-#   delta_humidite_absolue > 0 pour une meilleure lisibilité
-#   humaine.
+# 🔒 INVARIANT DE NON-DIVERGENCE — §11.2
+#   La cause est DÉRIVÉE de l'attribut autoritatif
+#   `composition` de binary_sensor.vmc_haute_vitesse_requise.
 #
-#   Elle peut diverger du capteur métier
-#   binary_sensor.aeration_preferable_etage.
+#   Ce capteur ne recalcule RIEN :
+#     - il ne lit aucune mesure de pièce ;
+#     - il ne lit aucune frontière ;
+#     - il n'applique aucune comparaison.
+#
+#   Le §11.2 l'exige : « toute cause exposée doit être calculée
+#   à partir des mêmes grandeurs, des mêmes frontières et des
+#   mêmes états que la décision. Une approximation retenue pour
+#   la lisibilité, susceptible de diverger de la décision
+#   réelle, est interdite. »
+#
+# 📌 CORRECTION C35 L7.1
+#   Ce capteur calculait auparavant sa cause sur les TROIS
+#   mesures de pièce et sur le helper GLOBAL de seuil, avec une
+#   approximation d'aération assumée comme pouvant diverger.
+#
+#   Depuis que le séjour a quitté la voie humidité et que les
+#   frontières sont devenues locales, cette divergence n'était
+#   plus seulement possible : elle était CERTAINE. Elle est
+#   supprimée à la source, et non reportée.
+#
+#   Conséquence : les attributs `humidite_max`,
+#   `piece_dominante`, `co2_sejour` et `delta_humidite_absolue`
+#   sont RETIRÉS — chacun constituait un recalcul indépendant
+#   de la décision. Aucun n'était consommé par l'UI, qui ne lit
+#   que `cause`.
+#
+# 🚫 AUCUN REPLI SILENCIEUX
+#   Décision indisponible ou composition non exposée : la
+#   situation est NOMMÉE, jamais remplacée par une cause
+#   plausible.
+#
+# ❗ Ce capteur ne décide rien, n'influence rien, et ne
+#   constitue pas une source de vérité (§11.1).
 # ==========================================================
 
 - sensor:
@@ -25,70 +56,58 @@
       icon: mdi:brain
 
       state: >
-        {% if is_state('binary_sensor.vmc_haute_vitesse_requise', 'on') %}
+        {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
+        {% if decision == 'on' %}
           Extraction utile demandée
-        {% else %}
+        {% elif decision == 'off' %}
           Fonctionnement nominal demandé
+        {% else %}
+          Intention indisponible
         {% endif %}
 
       attributes:
 
+        # §10.2 exigence 2 — la cause, DÉRIVÉE et jamais recalculée.
+        # §10.3 — un motif décrit une condition d'état actuellement
+        # satisfaite, jamais un événement passé.
         cause: >
-          {% set seuil_on = states('input_number.vmc_seuil_on') | float(70) %}
-          {% set co2_on   = states('input_number.vmc_co2_seuil_on') | float(1000) %}
-
-          {% set pieces = {
-            'SDB Parents': states('sensor.humidite_relative_sdb_parents') | float(0),
-            'SDB Enfants': states('sensor.humidite_relative_sdb_enfants') | float(0),
-            'Séjour':      states('sensor.humidite_relative_sejour') | float(0)
-          } %}
-
-          {% set piece = pieces | dictsort(false, 'value') | last %}
-          {% set nom_piece = piece[0] %}
-          {% set h_max = piece[1] %}
-
-          {% set co2_state  = states('sensor.co2_sejour') %}
-          {% set co2_valide = co2_state not in ['unknown','unavailable','none',''] %}
-          {% set co2        = co2_state | float(0) %}
-
-          {% set delta_ha = state_attr(
-              'binary_sensor.aeration_preferable_etage',
-              'delta_humidite_absolue'
-            ) | float(0) %}
-
-          {% if is_state('binary_sensor.vmc_haute_vitesse_requise', 'off') %}
+          {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
+          {% set composition = state_attr(
+               'binary_sensor.vmc_haute_vitesse_requise', 'composition') %}
+          {% if decision not in ['on', 'off'] %}
+            Décision indisponible
+          {% elif composition is none or composition | trim == '' %}
+            Composition non exposée par la décision
+          {% elif decision == 'off' %}
             Aucun besoin identifié
-          {% elif co2_valide and co2 >= co2_on %}
-            CO₂ élevé – Séjour
-          {% elif h_max >= seuil_on and delta_ha > 0 %}
-            Humidité excessive – {{ nom_piece }} (aération favorable)
-          {% elif h_max >= seuil_on %}
-            Humidité excessive – {{ nom_piece }}
           {% else %}
-            Cause indéterminée
+            Besoin actif – {{ composition | trim }}
           {% endif %}
 
-        humidite_max: >
-          {% set vals = [
-            states('sensor.humidite_relative_sdb_parents') | float(0),
-            states('sensor.humidite_relative_sdb_enfants') | float(0),
-            states('sensor.humidite_relative_sejour') | float(0)
-          ] %}
-          {{ vals | max }}
+        # Source autoritative recopiée telle quelle, pour que la
+        # dérivation soit vérifiable sans quitter ce capteur.
+        composition_autoritative: >
+          {% set composition = state_attr(
+               'binary_sensor.vmc_haute_vitesse_requise', 'composition') %}
+          {{ composition if composition is not none else 'non exposée' }}
 
-        piece_dominante: >
-          {% set pieces = {
-            'SDB Parents': states('sensor.humidite_relative_sdb_parents') | float(0),
-            'SDB Enfants': states('sensor.humidite_relative_sdb_enfants') | float(0),
-            'Séjour':      states('sensor.humidite_relative_sejour') | float(0)
-          } %}
-          {{ (pieces | dictsort(false, 'value') | last)[0] }}
+        # §10.2 exigence 8 — l'abstention reste distincte de l'état
+        # métier. Une intention indisponible n'est pas une absence de
+        # besoin.
+        source_disponible: >
+          {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
+          {% set composition = state_attr(
+               'binary_sensor.vmc_haute_vitesse_requise', 'composition') %}
+          {{ decision in ['on', 'off'] and composition is not none }}
 
-        co2_sejour: >
-          {{ states('sensor.co2_sejour') }}
-
-        delta_humidite_absolue: >
-          {{ state_attr(
-               'binary_sensor.aeration_preferable_etage',
-               'delta_humidite_absolue'
-             ) | float(0) }}
+        cause_indisponibilite: >
+          {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
+          {% set composition = state_attr(
+               'binary_sensor.vmc_haute_vitesse_requise', 'composition') %}
+          {% if decision not in ['on', 'off'] %}
+            decision_indisponible
+          {% elif composition is none %}
+            composition_non_exposee
+          {% else %}
+            none
+          {% endif %}

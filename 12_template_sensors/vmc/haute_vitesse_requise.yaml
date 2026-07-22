@@ -2,42 +2,52 @@
 # 🧠 ARSENAL — BINARY SENSOR : VMC haute vitesse requise
 # ----------------------------------------------------------
 # 🎯 ROLE
-#   Déterminer si une demande instantanée de haute vitesse
-#   existe pour la VMC.
+#   AGREGER les besoins d'extraction en une demande unique.
 #
-# 🧱 PRINCIPE
-#   - Vérité métier PURE
+# 🧱 PRINCIPE — AGREGATION PURE (§2.4)
+#   Ce capteur ne detient AUCUN etat, n'applique AUCUNE
+#   frontiere qui lui soit propre, et ne lit AUCUNE mesure de
+#   piece. Il compose des besoins deja formes ailleurs.
+#
 #   - Aucun timer
 #   - Aucune action
-#   - Aucune mémoire d'état
-#   - Aucun maintien d'hystérésis
+#   - Aucune memoire d'etat
+#   - Aucun maintien d'hysteresis
+#   - AUCUNE frontiere locale
 #
-# 📌 LOGIQUE §5.1
-#   ON  → humidité excessive ET aération favorable
-#         OU CO₂ excessif si capteur valide
+# 📌 CHANGEMENT C35 L7.1
+#   Ce capteur etait un COMPARATEUR : il lisait les trois
+#   mesures de piece et leur appliquait une frontiere globale.
+#   Il devient une AGREGATION.
 #
-#   OFF → aucune demande instantanée de haute vitesse
+#   La voie humidite est desormais portee PAR PIECE :
+#     binary_sensor.vmc_besoin_humidite_sdb_parents
+#     binary_sensor.vmc_besoin_humidite_sdb_enfants
 #
-# ⚠️ NOTE
-#   Le maintien et la libération de la haute vitesse ne sont
-#   pas traités ici. Ils relèvent exclusivement de l'automation
-#   d'application VMC.
+#   Le SEJOUR ne contribue plus a la voie humidite. Arbitrage
+#   de la passe 1 : le corpus ne justifie pas de lui conferer
+#   un besoin humidite local autonome. Son rattachement
+#   definitif a un objectif du contrat n'est PAS prononce.
 #
-#   Les seuils OFF ne sont pas lus ici :
-#   ils relèvent de la libération §5.2 portée par l'automation.
+# 📌 VOIE CO2 — INCHANGEE, DEFEREE
+#   La voie CO2 reste ici, sous sa forme actuelle, y compris
+#   son repli numerique `| float(1000)`. Ce repli est
+#   ANTERIEUR et contraire a la doctrine arretee en passe 5 ;
+#   il n'est ni endosse ni etendu. Le sort de la voie CO2 —
+#   dont `vmc_co2_seuil_off`, consomme par aucune decision —
+#   est explicitement renvoye a L7.4 ou L7.6 par l'arbitrage
+#   de propriete des parametres.
 #
-# ⚠️ ÉTATS DÉGRADÉS
-#   - Capteurs HR indisponibles :
-#       interprétés comme non déclenchants pour la demande humidité.
-#       Le CO₂ conserve donc seul la capacité de déclencher.
+# ⚠️ ETATS DEGRADES
+#   Un besoin de piece indisponible n'est pas compte comme
+#   actif. Le traitement contractuel de l'indisponibilite
+#   — §4.4, maintien du besoin actif — releve de L7.5 ; il
+#   n'est PAS acquis a ce stade, et c'est l'ecart n° 5.
 #
-#   - CO₂ indisponible :
-#       ignoré explicitement via guard co2_valide.
-#
-#   - Helpers de seuil indisponibles :
-#       fallback défensif :
-#         • HR ON  = 70 %
-#         • CO₂ ON = 1000 ppm
+# ⚠️ VERROU D'AERATION
+#   Il ne figure plus ici : il a ete DEPLACE dans les besoins
+#   locaux, ou L7.2 le supprimera. Le retrait de ce fichier de
+#   la liste des consommateurs legitimes releve du meme lot.
 # ==========================================================
 
 - binary_sensor:
@@ -46,31 +56,18 @@
       default_entity_id: binary_sensor.vmc_haute_vitesse_requise
 
       state: >
-        {% set seuil_on = states('input_number.vmc_seuil_on') | float(70) %}
+        {% set besoin_parents = is_state(
+             'binary_sensor.vmc_besoin_humidite_sdb_parents', 'on') %}
+        {% set besoin_enfants = is_state(
+             'binary_sensor.vmc_besoin_humidite_sdb_enfants', 'on') %}
+
         {% set co2_on = states('input_number.vmc_co2_seuil_on') | float(1000) %}
-
-        {% set h_sdb_p = states('sensor.humidite_relative_sdb_parents') | float(0) %}
-        {% set h_sdb_e = states('sensor.humidite_relative_sdb_enfants') | float(0) %}
-        {% set h_sej = states('sensor.humidite_relative_sejour') | float(0) %}
-
         {% set co2_state = states('sensor.co2_sejour') %}
         {% set co2_valide = co2_state not in ['unknown', 'unavailable', 'none', ''] %}
         {% set co2 = co2_state | float(0) %}
-
-        {% set aeration_favorable = is_state('binary_sensor.aeration_preferable_etage', 'on') %}
-
-        {% set humidite_haute =
-             (h_sdb_p >= seuil_on)
-          or (h_sdb_e >= seuil_on)
-          or (h_sej >= seuil_on)
-        %}
-
         {% set co2_haut = co2_valide and (co2 >= co2_on) %}
 
-        {{
-          (humidite_haute and aeration_favorable)
-          or co2_haut
-        }}
+        {{ besoin_parents or besoin_enfants or co2_haut }}
 
       icon: >
         {% if is_state(this.entity_id, 'on') %}
@@ -78,3 +75,44 @@
         {% else %}
           mdi:fan
         {% endif %}
+
+      attributes:
+
+        # §10.2 exigence 9 — composition globale lorsque plusieurs
+        # besoins sont actifs. Enonce comme un ETAT, jamais comme un
+        # recit (§10.3).
+        composition: >
+          {% set actifs = [] %}
+          {% if is_state('binary_sensor.vmc_besoin_humidite_sdb_parents', 'on') %}
+            {% set actifs = actifs + ['SdB parents'] %}
+          {% endif %}
+          {% if is_state('binary_sensor.vmc_besoin_humidite_sdb_enfants', 'on') %}
+            {% set actifs = actifs + ['SdB enfants'] %}
+          {% endif %}
+          {% set co2_on = states('input_number.vmc_co2_seuil_on') | float(1000) %}
+          {% set co2_state = states('sensor.co2_sejour') %}
+          {% set co2_valide = co2_state not in ['unknown', 'unavailable', 'none', ''] %}
+          {% if co2_valide and (co2_state | float(0)) >= co2_on %}
+            {% set actifs = actifs + ['CO₂ séjour'] %}
+          {% endif %}
+          {{ actifs | join(' + ') if actifs else 'Aucun besoin actif' }}
+
+        besoin_sdb_parents: >
+          {{ states('binary_sensor.vmc_besoin_humidite_sdb_parents') }}
+
+        besoin_sdb_enfants: >
+          {{ states('binary_sensor.vmc_besoin_humidite_sdb_enfants') }}
+
+        # §10.2 exigence 8 — l'abstention doit rester distincte de
+        # l'etat metier. Un besoin non calculable n'est PAS un besoin
+        # absent, et cette distinction doit rester lisible meme si le
+        # §4.4 n'est pas encore applique (L7.5).
+        besoins_non_calculables: >
+          {% set ns = namespace(liste=[]) %}
+          {% for e in ['binary_sensor.vmc_besoin_humidite_sdb_parents',
+                       'binary_sensor.vmc_besoin_humidite_sdb_enfants'] %}
+            {% if states(e) in ['unknown', 'unavailable'] %}
+              {% set ns.liste = ns.liste + [e] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.liste | join(', ') if ns.liste else 'none' }}
