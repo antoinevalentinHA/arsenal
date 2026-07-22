@@ -1,0 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Réglages affichés (Éclairage)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Sélection de la SECTION DE RÉGLAGES AFFICHÉE dans le
+#   dashboard « Réglages éclairage » (détail conditionnel).
+#
+#   Options :
+#     • Éclairage auto
+#     • Jardin
+#     • Simulation de présence
+#
+# 🧩 Nature :
+#   Contexte d'interface (tolérance visuelle).
+#
+# ❌ Ne fait PAS :
+#   - Ne pilote RIEN
+#   - Ne déclenche AUCUNE action
+#   - Ne participe à AUCUNE décision
+#   - Ne représente PAS un état réel du système
+#   - Ne modifie AUCUN réglage d'éclairage
+#
+# 🔗 Utilisation :
+#   - Dashboard Lovelace uniquement :
+#       18_lovelace/dashboards/eclairage/reglages.yaml
+#       (sélecteur → cartes `conditional` de détail)
+#
+# ℹ️ Hors sélecteur (toujours visibles) :
+#   - le bandeau de configuration invalide
+#   - le « 🔭 Mode astronomie »
+#   Aucune information de validité n'est masquée.
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte UI / Logique / Action
+#   - Le backend décide, l'UI observe.
+#   - Un helper d'interface n'influence jamais le système.
+# ==========================================================
+
+eclairage_reglages_affichage:
+  name: Réglages affichés
+  options:
+    - Éclairage auto
+    - Jardin
+    - Simulation de présence
+  icon: mdi:tune-vertical
