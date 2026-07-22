@@ -1,0 +1,95 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     VMC — Frontière de libération modulée (KPI)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher la valeur courante de la frontière de libération
+#     modulée d'une piece, avec son plancher d'evolution en
+#     label.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de `socle_kpi_label_72`
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE — doctrine `ui/couleurs/02_palette.md`
+#     - frontiere calculable   -> 🔵 bleu information
+#                                 `rgba(33, 150, 243, 0.2)`
+#                                 « Information systeme / Diagnostic
+#                                   informatif / Ventilation, extraction,
+#                                   supervision »
+#     - non calculable         -> ⚪ gris indisponibilite
+#                                 `rgba(158, 158, 158, 0.1)`
+#                                 Il PRIME sur toute autre couleur, et ne
+#                                 doit jamais etre masque (05_regles.md, R6).
+#
+# 📌 POURQUOI CE TEMPLATE EXISTE
+#     Le dashboard appelait `socle_kpi_label_72` directement. Ce socle
+#     ne definit AUCUN `background-color` : la carte tombait sur le fond
+#     de theme, c'est-a-dire BLANC.
+#
+#     Or le blanc ne figure pas dans la palette officielle. Une carte
+#     sans fond n'est pas « neutre » : elle est HORS DOCTRINE. Le gris
+#     neutre `rgba(158,158,158,0.2)` et le gris indisponibilite
+#     `rgba(158,158,158,0.1)` sont les deux seuls gris contractuels, et
+#     aucun des deux ne se confond avec une absence de fond.
+#
+#     La convention du depot place la couleur dans un TEMPLATE DE
+#     DOMAINE specialisant le socle — 15 templates procedent ainsi
+#     (boiler, chauffage, climatisation, meteo, sante, volets) — et non
+#     dans un style local au site d'appel.
+#
+# 📡 SOURCE
+#     - entity : `sensor.vmc_frontiere_liberation_<piece>`
+#     - attribut `plancher_evolution` de cette meme entite
+#
+# ⚠️ CONTRAINTES
+#     - Aucune interaction (heritee du socle)
+#     - Ne recalcule RIEN : la frontiere et le plancher sont produits
+#       par l'entite qui les calcule, seule definition autoritative
+#       des constantes A, B et H
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_vmc_frontiere_liberation
+#     entity: sensor.vmc_frontiere_liberation_sdb_parents
+#     name: SdB parents
+#
+# ==========================================================
+
+carte_vmc_frontiere_liberation:
+  template: socle_kpi_label_72
+
+  icon: mdi:arrow-collapse-horizontal
+
+  state_display: |
+    [[[
+      const v = entity ? entity.state : null;
+      if (!v || v === 'unknown' || v === 'unavailable') return '—';
+      return `${v} %`;
+    ]]]
+
+  label: |
+    [[[
+      const p = entity?.attributes?.plancher_evolution;
+      if (p === null || p === undefined || p === '' || p === 'None')
+        return 'Plancher : —';
+      return `Plancher : ${p} %`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            // Gris indisponibilité prioritaire (couleurs/05_regles.md, R6)
+            const v = entity ? entity.state : null;
+            if (!v || v === 'unknown' || v === 'unavailable')
+              return 'rgba(158, 158, 158, 0.1)';
+
+            // Bleu information — diagnostic technique de ventilation
+            return 'rgba(33, 150, 243, 0.2)';
+          ]]]
