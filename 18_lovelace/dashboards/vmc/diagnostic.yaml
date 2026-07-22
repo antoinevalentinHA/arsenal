@@ -33,118 +33,264 @@ views:
             template: section_header
             name: 🧩 Besoins par pièce et par voie
 
-          - type: entities
-            entities:
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🚿 SdB parents
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+              - type: custom:button-card
+                template: carte_etat_interprete
+                entity: binary_sensor.vmc_besoin_humidite_sdb_parents
+                name: État
+                icon: mdi:shower-head
+                variables:
+                  libelles:
+                    'on': Besoin actif
+                    'off': Aucun besoin
+                  couleurs:
+                    'on': rgba(244, 67, 54, 0.2)
+                    'off': rgba(76, 175, 80, 0.2)
+
+              - type: custom:button-card
+                template: carte_attribut_categoriel_interprete
+                entity: binary_sensor.vmc_besoin_humidite_sdb_parents
+                name: Entrée
+                icon: mdi:login
+                variables:
+                  attribut: condition_entree
+
+          - type: conditional
+            conditions:
               - entity: binary_sensor.vmc_besoin_humidite_sdb_parents
-                name: SdB parents
-              - type: attribute
-                entity: binary_sensor.vmc_besoin_humidite_sdb_parents
-                attribute: condition_entree
-                name: "— entrée"
-              - type: attribute
-                entity: binary_sensor.vmc_besoin_humidite_sdb_parents
-                attribute: condition_liberation
-                name: "— libération"
-              - type: attribute
-                entity: binary_sensor.vmc_besoin_humidite_sdb_parents
-                attribute: maintenu_faute_de_mesure
-                name: "— maintenu faute de mesure"
-              - type: attribute
-                entity: binary_sensor.vmc_besoin_humidite_sdb_parents
-                attribute: maintenu_faute_de_frontiere
-                name: "— maintenu faute de frontière"
+                state: 'on'
+            card:
+              type: vertical-stack
+              cards:
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: custom:button-card
+                      template: carte_attribut_categoriel_interprete
+                      entity: binary_sensor.vmc_besoin_humidite_sdb_parents
+                      name: Maintien
+                      icon: mdi:pause-circle
+                      variables:
+                        attribut: condition_maintien
 
+                    - type: custom:button-card
+                      template: carte_attribut_categoriel_interprete
+                      entity: binary_sensor.vmc_besoin_humidite_sdb_parents
+                      name: Libération
+                      icon: mdi:logout
+                      variables:
+                        attribut: condition_liberation
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🚿 SdB enfants
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+              - type: custom:button-card
+                template: carte_etat_interprete
+                entity: binary_sensor.vmc_besoin_humidite_sdb_enfants
+                name: État
+                icon: mdi:shower-head
+                variables:
+                  libelles:
+                    'on': Besoin actif
+                    'off': Aucun besoin
+                  couleurs:
+                    'on': rgba(244, 67, 54, 0.2)
+                    'off': rgba(76, 175, 80, 0.2)
+
+              - type: custom:button-card
+                template: carte_attribut_categoriel_interprete
+                entity: binary_sensor.vmc_besoin_humidite_sdb_enfants
+                name: Entrée
+                icon: mdi:login
+                variables:
+                  attribut: condition_entree
+
+          - type: conditional
+            conditions:
               - entity: binary_sensor.vmc_besoin_humidite_sdb_enfants
-                name: SdB enfants
-              - type: attribute
-                entity: binary_sensor.vmc_besoin_humidite_sdb_enfants
-                attribute: condition_entree
-                name: "— entrée"
-              - type: attribute
-                entity: binary_sensor.vmc_besoin_humidite_sdb_enfants
-                attribute: condition_liberation
-                name: "— libération"
-              - type: attribute
-                entity: binary_sensor.vmc_besoin_humidite_sdb_enfants
-                attribute: maintenu_faute_de_mesure
-                name: "— maintenu faute de mesure"
-              - type: attribute
-                entity: binary_sensor.vmc_besoin_humidite_sdb_enfants
-                attribute: maintenu_faute_de_frontiere
-                name: "— maintenu faute de frontière"
+                state: 'on'
+            card:
+              type: vertical-stack
+              cards:
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: custom:button-card
+                      template: carte_attribut_categoriel_interprete
+                      entity: binary_sensor.vmc_besoin_humidite_sdb_enfants
+                      name: Maintien
+                      icon: mdi:pause-circle
+                      variables:
+                        attribut: condition_maintien
 
+                    - type: custom:button-card
+                      template: carte_attribut_categoriel_interprete
+                      entity: binary_sensor.vmc_besoin_humidite_sdb_enfants
+                      name: Libération
+                      icon: mdi:logout
+                      variables:
+                        attribut: condition_liberation
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🫁 CO₂ séjour
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+              - type: custom:button-card
+                template: carte_etat_interprete
+                entity: binary_sensor.vmc_besoin_co2_sejour
+                name: État
+                icon: mdi:molecule-co2
+                variables:
+                  libelles:
+                    'on': Besoin actif
+                    'off': Aucun besoin
+                  couleurs:
+                    'on': rgba(244, 67, 54, 0.2)
+                    'off': rgba(76, 175, 80, 0.2)
+
+              - type: custom:button-card
+                template: carte_attribut_categoriel_interprete
+                entity: binary_sensor.vmc_besoin_co2_sejour
+                name: Entrée
+                icon: mdi:login
+                variables:
+                  attribut: condition_entree
+
+          - type: conditional
+            conditions:
               - entity: binary_sensor.vmc_besoin_co2_sejour
-                name: CO₂ séjour
-              - type: attribute
-                entity: binary_sensor.vmc_besoin_co2_sejour
-                attribute: condition_entree
-                name: "— entrée"
-              - type: attribute
-                entity: binary_sensor.vmc_besoin_co2_sejour
-                attribute: condition_liberation
-                name: "— libération"
-              - type: attribute
-                entity: binary_sensor.vmc_besoin_co2_sejour
-                attribute: maintenu_faute_de_mesure
-                name: "— maintenu faute de mesure"
-              - type: attribute
-                entity: binary_sensor.vmc_besoin_co2_sejour
-                attribute: maintenu_faute_de_frontiere
-                name: "— maintenu faute de frontière"
+                state: 'on'
+            card:
+              type: vertical-stack
+              cards:
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: custom:button-card
+                      template: carte_attribut_categoriel_interprete
+                      entity: binary_sensor.vmc_besoin_co2_sejour
+                      name: Maintien
+                      icon: mdi:pause-circle
+                      variables:
+                        attribut: condition_maintien
+
+                    - type: custom:button-card
+                      template: carte_attribut_categoriel_interprete
+                      entity: binary_sensor.vmc_besoin_co2_sejour
+                      name: Libération
+                      icon: mdi:logout
+                      variables:
+                        attribut: condition_liberation
 
           - type: custom:button-card
             template: section_header
             name: 🌡️ Frontières de libération modulées
 
-          - type: entities
-            entities:
-              - entity: sensor.vmc_frontiere_liberation_sdb_parents
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+              - type: custom:button-card
+                template: socle_kpi_label_72
+                entity: sensor.vmc_frontiere_liberation_sdb_parents
                 name: SdB parents
-              - type: attribute
-                entity: sensor.vmc_frontiere_liberation_sdb_parents
-                attribute: plancher_evolution
-                name: "— plancher d'évolution"
-              - type: attribute
-                entity: sensor.vmc_frontiere_liberation_sdb_parents
-                attribute: cause_non_calculable
-                name: "— cause de non-calculabilité"
+                icon: mdi:arrow-collapse-horizontal
+                label: |
+                  [[[
+                    const p = entity?.attributes?.plancher_evolution;
+                    return (p === null || p === undefined || p === 'None')
+                      ? 'Plancher : —'
+                      : `Plancher : ${p} %`;
+                  ]]]
 
-              - entity: sensor.vmc_frontiere_liberation_sdb_enfants
+              - type: custom:button-card
+                template: socle_kpi_label_72
+                entity: sensor.vmc_frontiere_liberation_sdb_enfants
                 name: SdB enfants
-              - type: attribute
-                entity: sensor.vmc_frontiere_liberation_sdb_enfants
-                attribute: plancher_evolution
-                name: "— plancher d'évolution"
-              - type: attribute
-                entity: sensor.vmc_frontiere_liberation_sdb_enfants
-                attribute: cause_non_calculable
-                name: "— cause de non-calculabilité"
+                icon: mdi:arrow-collapse-horizontal
+                label: |
+                  [[[
+                    const p = entity?.attributes?.plancher_evolution;
+                    return (p === null || p === undefined || p === 'None')
+                      ? 'Plancher : —'
+                      : `Plancher : ${p} %`;
+                  ]]]
 
-              - entity: sensor.temperature_jardin
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+              - type: custom:button-card
+                template: socle_info_72
+                entity: sensor.temperature_jardin
                 name: Grandeur modulante
-              - entity: sensor.temperature_jardin_statut
-                name: "— statut de l'axe"
+                icon: mdi:thermometer
+
+              - type: custom:button-card
+                template: carte_capteur_etat_textuel
+                entity: sensor.temperature_jardin_statut
+                name: Statut de l'axe
+                icon: mdi:check-decagram-outline
 
           - type: custom:button-card
             template: section_header
             name: 🧪 Intégrité des paramètres
 
-          - type: entities
-            entities:
-              - entity: binary_sensor.parametres_invalides_vmc
-                name: Paramètres invalides
-              - type: attribute
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+              - type: custom:button-card
+                template: carte_etat_interprete
                 entity: binary_sensor.parametres_invalides_vmc
-                attribute: cause
-                name: "— cause"
-              - type: attribute
+                name: Paramètres
+                icon: mdi:tune-variant
+                variables:
+                  libelles:
+                    'on': Invalides
+                    'off': Cohérents
+                  couleurs:
+                    'on': rgba(244, 67, 54, 0.2)
+                    'off': rgba(76, 175, 80, 0.2)
+
+              - type: custom:button-card
+                template: carte_attribut_categoriel_interprete
                 entity: binary_sensor.parametres_invalides_vmc
-                attribute: bande_morte_niveau
-                name: "— bande morte de la voie de niveau"
-              - type: attribute
-                entity: binary_sensor.parametres_invalides_vmc
-                attribute: parametres_indisponibles
-                name: "— paramètres indisponibles"
+                name: Cause
+                icon: mdi:help-circle-outline
+                variables:
+                  attribut: cause
+
+          - type: custom:button-card
+            template: socle_info_72
+            entity: binary_sensor.parametres_invalides_vmc
+            name: Bande morte de la voie de niveau
+            icon: mdi:arrow-expand-horizontal
+            state_display: |
+              [[[
+                const v = entity?.attributes?.bande_morte_niveau;
+                return v ? v : '—';
+              ]]]
+
           - type: custom:button-card
             template: section_header
             name: ⚙️ Exécution physique

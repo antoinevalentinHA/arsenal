@@ -86,6 +86,20 @@ vigueur dans ce fichier et ici étendue.
 
 ---
 
+> ## ⚠️ CORRECTIF DU 2026-07-22 — LA DOCTRINE UI N'AVAIT PAS ÉTÉ LUE
+>
+> `00_documentation_arsenal/ui/` contient **27 documents normatifs**,
+> dont `pattern_dashboard.md` et `pattern_dashboard_reglages.md`
+> (*normatif — opposable*). **Aucun n'a été consulté avant ce lot.**
+>
+> Deux défauts en ont résulté : des **grilles à 3 colonnes** dans les
+> réglages, illisibles à largeur courante, et **trois cartes
+> `type: entities`** dans le diagnostic — seul dashboard de diagnostic du
+> dépôt à en employer, sur treize.
+>
+> Les deux sont corrigés par [`correctif_deploiement_l7_vmc.md`](correctif_deploiement_l7_vmc.md). Ce qui suit décrit l'intention
+> du lot, **pas la forme livrée**.
+
 ## 3. UI — ce qui est affiché est ce qui est appliqué
 
 ### 3.1 Le texte trompeur disparaît

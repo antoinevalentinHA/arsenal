@@ -623,6 +623,73 @@ if not [e for e in ERRORS if "§7.4 bis" in e or "Engagement L7.0" in e
 
 
 # ==========================================================
+# TEST 10 — Conformité UI des dashboards VMC
+# ==========================================================
+#
+# Doctrine : `00_documentation_arsenal/ui/pattern_dashboard.md` et
+# `pattern_dashboard_reglages.md`.
+#
+# Deux gardes, nées de défauts constatés au déploiement de C35 :
+#
+#   a) DIAGNOSTIC — aucune carte HA native directe. Le texte de
+#      `pattern_dashboard.md` liste `entities` comme autorisé, mais la
+#      PRATIQUE du dépôt est plus stricte : sur 13 dashboards de diagnostic,
+#      seul VMC en employait — 3 cartes ajoutées par C35 L7.7, sans que la
+#      doctrine UI ait été lue. L'écart texte / pratique est consigné à part
+#      et relève d'un arbitrage ; en attendant, la pratique fait foi.
+#
+#   b) RÉGLAGES — aucune grille de plus de 2 colonnes. Aucun autre dashboard
+#      de réglage du dépôt ne dépasse 2 colonnes ; à 3, une tuile à contrôle
+#      `numeric-input` tombe sous ~160 px en colonne masonry et tronque.
+#
+# Le `markdown` demeure autorisé, mais EXTERNALISÉ dans un include : c'est la
+# forme canonique de la carte « effet réel » (§🔎 du pattern réglages).
+
+DASH_VMC = ROOT / "18_lovelace" / "dashboards" / "vmc"
+CARTES_NATIVES_INTERDITES = ("type: entities", "type: markdown")
+COLONNES_MAX_REGLAGES = 2
+
+diag = DASH_VMC / "diagnostic.yaml"
+regl = DASH_VMC / "reglages.yaml"
+
+if not diag.is_file():
+    fail("§UI — dashboard de diagnostic VMC introuvable")
+else:
+    contenu = read(diag)
+    for interdite in CARTES_NATIVES_INTERDITES:
+        if interdite in contenu:
+            fail(
+                f"§UI — carte HA native `{interdite.split(': ')[1]}` dans "
+                f"{diag.name} : la pratique Arsenal impose `custom:button-card` "
+                "sur socles et templates existants ; un `markdown` n'est "
+                "toléré qu'externalisé dans un include"
+            )
+
+if not regl.is_file():
+    fail("§UI — dashboard de réglages VMC introuvable")
+else:
+    for ligne in read(regl).splitlines():
+        nu = ligne.strip()
+        if nu.startswith("#") or not nu.startswith("columns:"):
+            continue
+        try:
+            n = int(nu.split(":", 1)[1].strip())
+        except ValueError:
+            continue
+        if n > COLONNES_MAX_REGLAGES:
+            fail(
+                f"§UI — grille à {n} colonnes dans {regl.name} : au-delà de "
+                f"{COLONNES_MAX_REGLAGES}, une tuile à contrôle numérique "
+                "tombe sous ~160 px en colonne masonry et tronque ses "
+                "libellés"
+            )
+
+if not [e for e in ERRORS if "§UI" in e]:
+    print("✔ Dashboards VMC — aucune carte native directe, grilles ≤ 2 "
+          "colonnes (doctrine `ui/`)")
+
+
+# ==========================================================
 # RESULTAT
 # ==========================================================
 

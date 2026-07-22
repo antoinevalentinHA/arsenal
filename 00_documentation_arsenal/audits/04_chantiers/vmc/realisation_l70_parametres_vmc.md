@@ -93,6 +93,20 @@ même manière**, et c'est délibéré.
 > sur un helper **sans valeur**, après une attente bornée, et laisse ensuite la
 > main.
 
+> ## ⚠️ CE MÉCANISME N'A JAMAIS FONCTIONNÉ — CORRECTIF DU 2026-07-22
+>
+> **Le prédicat décrit ci-dessous ne pouvait jamais devenir vrai.** Un
+> `input_number` sans état restaurable ne prend pas `unknown` : il prend
+> son **`min`**. Vérifié sur les 38 bases — 73 helpers, 32 065 lignes
+> d'état, **aucun état non numérique** — et constaté au déploiement :
+> **aucune notification émise**, les dix helpers chargés à leur minimum.
+>
+> L'automatisation `10190000000006` **est supprimée** et remplacée par un
+> **amorçage manuel sans déclencheur**. Tout ce qui suit sur le mécanisme
+> d'initialisation est **caduc** et conservé à titre de trace.
+>
+> Cf. [`correctif_deploiement_l7_vmc.md`](correctif_deploiement_l7_vmc.md).
+
 > **Un helper n'est jamais réinitialisé au seul motif qu'il a été
 > temporairement indisponible.** C'est l'invariant central du mécanisme, et il
 > est **testé** (§5).
