@@ -20,8 +20,12 @@ views:
     # badges
     #   ↓
     # vertical-stack racine
-    #       ↓
-    #       blocs métier empilés
+    #   ↓
+    # bandeau de validité + clé de lecture (toujours visibles)
+    #   ↓
+    # sélecteur de consultation (contexte d'interface)
+    #   ↓
+    # détail conditionnel (section de réglages choisie)
     # ======================================================
     cards:
       - type: vertical-stack
@@ -29,218 +33,256 @@ views:
           # ✅ Bandeau de validité (conditionnel)
           - !include ../../includes/alerte_configuration_invalide.yaml
 
-          # === Bloc 1 : Introduction + Seuils par saison ===
-          - type: vertical-stack
-            cards:
-              - type: custom:button-card
-                template: section_header
-                name: 🪟 Aération – Réglages
+          # ==================================================
+          # 🪟 TOUJOURS VISIBLE — CLÉ DE LECTURE
+          # --------------------------------------------------
+          # L'encart ∆HA / ∆T explique ce que SIGNIFIENT tous
+          # les seuils de la page. Le masquer derrière une
+          # option rendrait les valeurs inintelligibles : il
+          # reste affiché quelle que soit la section choisie.
+          # ==================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🪟 Aération – Réglages
 
-              - type: markdown
-                content: >
-                  <div style="font-size: 13px; line-height: 1.4;">
-                  <b>But :</b> ouvrir quand l’air extérieur est plus sec et plus frais que l’intérieur.<br>
-                  La décision repose sur deux critères :<br>
-                  • ∆HA = humidité absolue intérieure − extérieure<br>
-                  • ∆T = température intérieure − extérieure<br><br>
-                  L’aération est recommandée si <b>∆HA ≥ seuil</b> <i>et</i> <b>∆T ≥ seuil</b>,
-                  sauf exception (CO₂, canicule, etc.).
-                  </div>
+          - type: markdown
+            content: >
+              <div style="font-size: 13px; line-height: 1.4;">
+              <b>But :</b> ouvrir quand l’air extérieur est plus sec et plus frais que l’intérieur.<br>
+              La décision repose sur deux critères :<br>
+              • ∆HA = humidité absolue intérieure − extérieure<br>
+              • ∆T = température intérieure − extérieure<br><br>
+              L’aération est recommandée si <b>∆HA ≥ seuil</b> <i>et</i> <b>∆T ≥ seuil</b>,
+              sauf exception (CO₂, canicule, etc.).
+              </div>
 
-              - type: custom:button-card
-                template: section_header
-                name: 📊 Seuils par saison (actifs)
+          # ==================================================
+          # 🔎 SÉLECTEUR DE CONSULTATION (modèle Palmarès)
+          # --------------------------------------------------
+          # input_select.aeration_reglages_affichage = contexte
+          # d'interface (ne pilote rien, ne décide rien).
+          # ==================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🔎 Réglages affichés
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: ☀️ Été
+          - type: tile
+            entity: input_select.aeration_reglages_affichage
+            name: Réglages affichés
+            features_position: bottom
+            features:
+              - type: select-options
 
-              - type: tile
-                entity: input_number.aeration_delta_ha_min_ete
-                name: ∆HA min (été)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          # ==================================================
+          # 📋 DÉTAIL CONDITIONNEL — SECTION CHOISIE
+          # --------------------------------------------------
+          # Cartes reprises verbatim (aucune entité, aucun
+          # libellé ni alias modifié).
+          #
+          # 🪜 HIÉRARCHIE DES EN-TÊTES
+          # Chaque option nomme UNE section : son en-tête, qui
+          # n'en serait qu'une répétition, est retiré et le
+          # niveau inférieur promu `section_header`. Le
+          # qualificatif « (actifs) » est conservé dans le
+          # libellé de l'option, pas perdu.
+          # ==================================================
+          - type: conditional
+            conditions:
+              - entity: input_select.aeration_reglages_affichage
+                state: Seuils par saison (actifs)
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: ☀️ Été
 
-              - type: tile
-                entity: input_number.aeration_seuil_ecart_temperature_min
-                name: ∆T min (été)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: tile
+                  entity: input_number.aeration_delta_ha_min_ete
+                  name: ∆HA min (été)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: 🍂 Inter-saison
+                - type: tile
+                  entity: input_number.aeration_seuil_ecart_temperature_min
+                  name: ∆T min (été)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: tile
-                entity: input_number.aeration_delta_ha_min_inter
-                name: ∆HA min (inter)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: custom:button-card
+                  template: section_header
+                  name: 🍂 Inter-saison
 
-              - type: tile
-                entity: input_number.aeration_delta_t_min_inter
-                name: ∆T min (inter)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: tile
+                  entity: input_number.aeration_delta_ha_min_inter
+                  name: ∆HA min (inter)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: ❄️ Hiver
+                - type: tile
+                  entity: input_number.aeration_delta_t_min_inter
+                  name: ∆T min (inter)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: tile
-                entity: input_number.aeration_delta_ha_min_hiver
-                name: ∆HA min (hiver)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: custom:button-card
+                  template: section_header
+                  name: ❄️ Hiver
 
-              - type: tile
-                entity: input_number.aeration_delta_t_min_hiver
-                name: ∆T min (hiver)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: tile
+                  entity: input_number.aeration_delta_ha_min_hiver
+                  name: ∆HA min (hiver)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          # === Bloc 2 : 🎛️ Modulateurs ===
-          - type: vertical-stack
-            cards:
-              - type: custom:button-card
-                template: section_header
-                name: 🎛️ Modulateurs (actifs)
+                - type: tile
+                  entity: input_number.aeration_delta_t_min_hiver
+                  name: ∆T min (hiver)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: 🌙 Nuit (22:00 → 09:00)
+          - type: conditional
+            conditions:
+              - entity: input_select.aeration_reglages_affichage
+                state: Modulateurs (actifs)
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: 🌙 Nuit (22:00 → 09:00)
 
-              - type: tile
-                entity: input_number.aeration_mod_nuit_delta_ha
-                name: Réduction ∆HA la nuit (g/m³)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: tile
+                  entity: input_number.aeration_mod_nuit_delta_ha
+                  name: Réduction ∆HA la nuit (g/m³)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: tile
-                entity: input_number.aeration_mod_nuit_delta_t
-                name: Réduction ∆T la nuit (°C)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: tile
+                  entity: input_number.aeration_mod_nuit_delta_t
+                  name: Réduction ∆T la nuit (°C)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: 🌧️ Pluie / Brouillard
+                - type: custom:button-card
+                  template: section_header
+                  name: 🌧️ Pluie / Brouillard
 
-              - type: tile
-                entity: input_number.aeration_pluie_rh_ext_seuil
-                name: RH ext ≥ (seuil %)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: tile
+                  entity: input_number.aeration_pluie_rh_ext_seuil
+                  name: RH ext ≥ (seuil %)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: tile
-                entity: input_number.aeration_mod_pluie_delta_ha
-                name: Majoration ∆HA si RH ext élevée (g/m³)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: tile
+                  entity: input_number.aeration_mod_pluie_delta_ha
+                  name: Majoration ∆HA si RH ext élevée (g/m³)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: 🥶 Grand froid
+                - type: custom:button-card
+                  template: section_header
+                  name: 🥶 Grand froid
 
-              - type: tile
-                entity: input_number.aeration_grand_froid_seuil_ext
-                name: T° ext < (seuil °C)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: tile
+                  entity: input_number.aeration_grand_froid_seuil_ext
+                  name: T° ext < (seuil °C)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: tile
-                entity: input_number.aeration_mod_grand_froid_add_delta_t
-                name: Majoration ∆T en grand froid (°C)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: tile
+                  entity: input_number.aeration_mod_grand_froid_add_delta_t
+                  name: Majoration ∆T en grand froid (°C)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: ☀️ Canicule
+                - type: custom:button-card
+                  template: section_header
+                  name: ☀️ Canicule
 
-              - type: tile
-                entity: input_number.aeration_canicule_seuil_ext
-                name: T° ext ≥ (seuil °C)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: tile
+                  entity: input_number.aeration_canicule_seuil_ext
+                  name: T° ext ≥ (seuil °C)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: 🧪 Modulateur – CO₂
+                - type: custom:button-card
+                  template: section_header
+                  name: 🧪 Modulateur – CO₂
 
-              - type: markdown
-                content: >
-                  <div style="font-size: 12px; line-height: 1.4;">
-                  <b>Seuil (lève blocage canicule)</b> : en canicule, l’aération reste
-                  possible si le CO₂ dépasse ce seuil.<br>
-                  <b>Seuil fort (priorité sanitaire)</b> : au-delà, l’aération est
-                  recommandée immédiatement, <i>y compris sous la pluie</i>.
-                  </div>
+                - type: markdown
+                  content: >
+                    <div style="font-size: 12px; line-height: 1.4;">
+                    <b>Seuil (lève blocage canicule)</b> : en canicule, l’aération reste
+                    possible si le CO₂ dépasse ce seuil.<br>
+                    <b>Seuil fort (priorité sanitaire)</b> : au-delà, l’aération est
+                    recommandée immédiatement, <i>y compris sous la pluie</i>.
+                    </div>
 
-              - type: tile
-                entity: input_number.aeration_co2_seuil
-                name: Seuil CO₂ (lève blocage canicule)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: tile
+                  entity: input_number.aeration_co2_seuil
+                  name: Seuil CO₂ (lève blocage canicule)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-              - type: tile
-                entity: input_number.aeration_co2_seuil_fort
-                name: Seuil CO₂ fort (priorité sanitaire)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: tile
+                  entity: input_number.aeration_co2_seuil_fort
+                  name: Seuil CO₂ fort (priorité sanitaire)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
 
-          # === Bloc 3 : ⚙️ Comportement général ===
-          - type: vertical-stack
-            cards:
-              - type: custom:button-card
-                template: section_header
-                name: ⚙️ Comportement
+          - type: conditional
+            conditions:
+              - entity: input_select.aeration_reglages_affichage
+                state: Comportement
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: ⏱️ Durée (affichage)
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: ⏱️ Durée (affichage)
+                - type: markdown
+                  content: >
+                    <div style="font-size: 12px; line-height: 1.4;">
+                    Cible d’affichage de la durée d’aération. <b>Sans effet sur la
+                    décision de recommandation</b> (sert uniquement au suivi de durée).
+                    </div>
 
-              - type: markdown
-                content: >
-                  <div style="font-size: 12px; line-height: 1.4;">
-                  Cible d’affichage de la durée d’aération. <b>Sans effet sur la
-                  décision de recommandation</b> (sert uniquement au suivi de durée).
-                  </div>
-
-              - type: tile
-                entity: input_number.aeration_duree_cible_minutes
-                name: Durée cible (min)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+                - type: tile
+                  entity: input_number.aeration_duree_cible_minutes
+                  name: Durée cible (min)
+                  features_position: inline
+                  features:
+                    - type: numeric-input
+                      style: buttons
