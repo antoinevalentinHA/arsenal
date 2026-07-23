@@ -96,7 +96,7 @@ views:
 
                 - type: tile
                   entity: input_number.duree_absence_garage
-                  name: Délai extinction garage (min)
+                  name: Délai extinction garage
                   features_position: inline
                   features:
                     - type: numeric-input
@@ -118,7 +118,7 @@ views:
 
                 - type: tile
                   entity: input_number.duree_absence_entree
-                  name: Délai extinction entrée (s)
+                  name: Délai extinction entrée
                   features_position: inline
                   features:
                     - type: numeric-input
@@ -132,7 +132,7 @@ views:
 
                 - type: tile
                   entity: input_number.duree_absence_sejour
-                  name: Délai extinction séjour (min)
+                  name: Délai extinction séjour
                   features_position: inline
                   features:
                     - type: numeric-input
@@ -162,7 +162,7 @@ views:
 
                 - type: tile
                   entity: input_number.duree_absence_guirlande
-                  name: Délai extinction sapin (min)
+                  name: Délai extinction sapin
                   features_position: inline
                   features:
                     - type: numeric-input
@@ -202,7 +202,7 @@ views:
                 - type: tile
                   entity: input_number.delai_extinction_jardin_matin
                   name: Délai après lever du jour (min)
-                  features_position: inline
+                  features_position: bottom
                   features:
                     - type: numeric-input
                       style: buttons

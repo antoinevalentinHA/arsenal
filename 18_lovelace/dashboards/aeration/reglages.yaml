@@ -166,7 +166,7 @@ views:
 
                 - type: tile
                   entity: input_number.aeration_mod_nuit_delta_ha
-                  name: Réduction ∆HA la nuit (g/m³)
+                  name: Réduction ∆HA la nuit
                   features_position: inline
                   features:
                     - type: numeric-input
@@ -174,7 +174,7 @@ views:
 
                 - type: tile
                   entity: input_number.aeration_mod_nuit_delta_t
-                  name: Réduction ∆T la nuit (°C)
+                  name: Réduction ∆T la nuit
                   features_position: inline
                   features:
                     - type: numeric-input

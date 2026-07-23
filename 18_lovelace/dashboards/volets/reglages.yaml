@@ -32,7 +32,7 @@ views:
           - type: tile
             entity: input_number.seuil_pluie_fermeture_volets
             name: Seuil de déclenchement (mm)
-            features_position: inline
+            features_position: bottom
             features:
               - type: numeric-input
                 style: buttons

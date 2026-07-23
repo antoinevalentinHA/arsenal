@@ -81,7 +81,7 @@ views:
 
           - type: tile
             entity: input_number.arrosage_pluie_prevue_horizon_heures
-            name: Horizon pluie prévue (h)
+            name: Horizon pluie prévue
             features_position: inline
             features:
               - type: numeric-input

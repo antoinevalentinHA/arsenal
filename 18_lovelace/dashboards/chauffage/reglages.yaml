@@ -152,7 +152,7 @@ views:
                 - type: tile
                   entity: input_number.meteo_favorable_offset
                   name: "Offset (°C) — sous consigne"
-                  features_position: inline
+                  features_position: bottom
                   features:
                     - type: numeric-input
                       style: buttons
@@ -278,7 +278,7 @@ views:
                     # --- Délai de stabilisation des capteurs ---
                     - type: tile
                       entity: input_number.delai_stabilisation_capteurs
-                      name: Délai de stabilisation (min)
+                      name: Délai de stabilisation
                       features_position: inline
                       features:
                         - type: numeric-input

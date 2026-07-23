@@ -164,7 +164,7 @@ views:
 
                 - type: tile
                   entity: input_number.clim_duree_absence_longue
-                  name: Durée avant extinction (h)
+                  name: Durée avant extinction
                   features_position: inline
                   features:
                     - type: numeric-input
