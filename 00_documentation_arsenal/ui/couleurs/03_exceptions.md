@@ -162,16 +162,24 @@ dans un contexte de navigation structurelle exclusivement.
 | Couleur | Valeur | Signification |
 |---------|--------|--------------|
 | 🔴 Rouge | `rgb(244, 67, 54)` | État d'alerte |
-| 🟡 Jaune | `rgb(255, 235, 59)` | Vigilance / à savoir (non bloquant) |
+| 🟡 Jaune ambré | `rgb(255, 193, 7)` | Vigilance / à savoir (non bloquant) |
 | 🟢 Vert | `rgb(76, 175, 80)` | État favorable |
 | 🔵 Bleu | `rgb(33, 150, 243)` | État normal / informatif |
 | ⚪ Gris | `rgb(158, 158, 158)` | Neutre / standby / off |
 
-Le jaune est la version **opaque** du jaune sémantique canon `rgba(255, 235, 59, 0.2)`
-(`02_palette.md`), au même titre que les rouge / vert / bleu ci-dessus sont les
-versions opaques de leur teinte canon. Il code une **vigilance non décisionnelle**
+Le jaune ambré `rgb(255, 193, 7)` code une **vigilance non décisionnelle**
 (« un signal existe, pris en charge, à savoir »), strictement en dessous du rouge
-d'alerte. L'orange reste **hors** palette NAV.
+d'alerte. **Pourquoi l'ambre et non le jaune canon opaque** : contrairement au
+rouge / vert / bleu, le jaune sémantique `rgba(255, 235, 59, 0.2)` (`02_palette.md`)
+est une teinte trop **claire** pour tenir en **aplat opaque d'icône** — sur une
+tuile claire (fond NAV `rgba(90, 110, 130, 0.08)`) son contraste est insuffisant,
+d'où son usage réservé au **fond** (0,2) derrière du texte foncé. Pour le rôle
+**icône opaque**, la vigilance emprunte donc l'**ambre** `rgb(255, 193, 7)` —
+déjà la teinte « vigilance intermédiaire » d'Arsenal (Exception 6,
+`rgba(255, 193, 7, 0.25)`) — dont la version opaque reste lisible en thème clair
+comme sombre, tout en restant *douce* (elle signale sans alarmer). L'orange
+`rgb(255, 152, 0)` reste **hors** palette NAV : il code un avertissement, pas
+une vigilance « prise en charge ».
 
 ### Priorité sémantique
 
