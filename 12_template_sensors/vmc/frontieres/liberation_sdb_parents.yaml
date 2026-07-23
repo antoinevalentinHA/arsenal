@@ -63,7 +63,15 @@
         {% set lo = states('input_number.vmc_borne_basse_sdb_parents') | float(none) %}
         {% set hi = states('input_number.vmc_borne_haute_sdb_parents') | float(none) %}
         {% if text is none or lo is none or hi is none %}
-          unknown
+          {# On rend le None de Python, PAS le texte `unknown` : ce capteur
+             a une unite ("%") donc HA en attend un nombre et valide l'etat
+             (`template.validators.number`). Un `unknown` litteral echoue
+             `float()` et journalise a chaque rechargement :
+               Received invalid sensor state: unknown ... expected a number
+             Le None est reconnu (`check_result_for_none`), court-circuite la
+             validation SANS erreur, et l'etat devient bien `unknown` — meme
+             idiome que l'attribut `plancher_evolution` ci-dessous. #}
+          {{ none }}
         {% else %}
           {{ [lo, [hi, a - b * text] | min] | max | round(2) }}
         {% endif %}
