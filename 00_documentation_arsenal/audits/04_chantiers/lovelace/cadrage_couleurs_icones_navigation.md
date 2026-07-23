@@ -2,6 +2,7 @@
 
 > **Type :** dossier d'arbitrage Lovelace / UI (non décisionnel). **Document faisant foi** du sujet (pointé par `REGISTRE_CHANTIERS.md`).
 > **ID registre :** `D-NAV-COULEUR`. **Statut : ✅ SOLDÉ (2026-07-19)** — menu ☰ Navigation : 5 tuiles dynamisées (Option C ; Arrosage, Rec. météo, Volets, NAS, Imprimerie — cf. §2 sexies) + 3 neutralisées au gris de base NAV (Option A ; Prises, Santé, Énergie — cf. §2 quinquies). **Section ⚙️ Système : reliquat résorbé — Option A (neutralisation) au gris de base NAV, combinée à une refonte du menu (12 → 6 tuiles), Reboot HA inclus — cf. §2 septies.** Plus aucune couleur d'icône figée hors palette dans `navigation.yaml`. **Chantier clos** (registre ⑤ Clos récents).
+> **Post-solde (2026-07-23) — recalibrage Arrosage :** la tuile Arrosage suit désormais le **besoin non couvert** (seuil de parole = niveau notification persistante) plutôt que l'épisode d'action — cf. §2 octies. Recalibrage d'une tuile déjà dynamisée, sans réouverture du chantier.
 > **Règle qui fait foi :** [`ui/couleurs/03_exceptions.md`](../../../ui/couleurs/03_exceptions.md) § *Exception 3 — Couleurs dynamiques d'icône en contexte NAV/HUB*.
 > **Discipline :** aucune modification UI d'une tuile tant que son cas n'est pas tranché (cas par cas) ; co-commit du registre à chaque changement d'état.
 
@@ -178,6 +179,29 @@ Résultat : grille **3 × 2 pleine** (`columns: 3`), zéro trou, deux rangées t
 **Reboot HA — neutralisation assumée (renversement de doctrine).** L'inventaire §1 annotait l'orange `#F57C00` de Reboot HA comme *« affordance action sensible »*. **Arbitrage propriétaire inverse (2026-07-19)** : pour une **action destructive** (`homeassistant.restart`), une couleur chaude **invite au clic** — précisément l'effet à éviter. La tuile passe au **gris** : présente mais **discrète**, non incitative (le garde-fou reste la `confirmation:` déjà en place). La couleur cesse d'être une affordance d'action et redevient, ici aussi, réservée au **signal d'état**.
 
 **Ce que ça coûte / ce que ça rapporte.** Coût : édition d'un seul fichier. Gain : plus **aucune** couleur d'icône figée hors palette dans `navigation.yaml` (menu **entièrement** conforme à l'Exception 3), section Système densifiée (12 → 6) et hiérarchisée. La grammaire visuelle est désormais stricte sur tout le menu : **gris = repos, couleur = signal d'état dérivé**.
+
+## 2 octies. Arrosage — *recalibrage du seuil de parole (épisode → besoin non couvert)*
+
+> **Statut :** **✅ implémenté (runtime, 2026-07-23)** — recalibrage d'une tuile **déjà dynamisée** (pas une nouvelle dynamisation). Artefact unique : `sensor.etat_arrosage_dashboard` (`12_template_sensors/system/cartes_dashboard_navigation/arrosage.yaml`). Aucune bascule dans `navigation.yaml`, aucun template touché, palette et enum inchangés → CI verte.
+
+**Le constat.** La tuile Arrosage (premier cas dynamisé, C10) colorait sur l'**épisode d'action** : `alert` 🔴 si `categorie == 'arrose'` ou `intention == 'on'`, `normal` 🔵 si suspension pluie. Or `binary_sensor.arrosage_intention` n'est `on` que si **les 7 verrous** sont réunis *en même temps* (dont la fenêtre d'aube et le cooldown). Conséquence : **hors fenêtre, la tuile est grise alors même que le sol a soif** — exactement l'information que l'utilisateur ouvre le dashboard pour lire. La couleur marquait l'action, pas le besoin.
+
+**Le principe qui tranche — « seuil de parole ».** Le système Arsenal est **silencieux par philosophie** : sur 268 automations, la notification persistante n'est levée que ~29 fois, réservée aux moments où **un humain est requis** (panne, alarme, échec d'exécution, non-conformité) ; l'arrosage n'en lève **aucune**. En colorant les tuiles, le menu de navigation devient un *tableau de bord* — légitime **à condition** que la couleur soit aussi parcimonieuse que cette couche notification. La couleur ne doit donc rompre le gris qu'au **même niveau qu'une notification persistante** : quand la situation devient **l'affaire de l'utilisateur**.
+
+Appliqué à l'arrosage : un sol sec en attente de l'arrosage d'aube n'est **pas** l'affaire de l'utilisateur — la V1 autonome s'en charge, en silence → **gris**. Le rouge n'est justifié que si le besoin **ne sera pas couvert** par la chaîne autonome.
+
+**Mapping recalibré (`sensor.etat_arrosage_dashboard`) :**
+
+| État renvoyé | Couleur NAV | Condition |
+|---|---|---|
+| `alert` | 🔴 rouge | `arrosage_besoin_sol` actif **ET** non pris en charge (pas de session, pas de pluie) **ET** chaîne autonome hors d'état d'agir : maître coupé, ou pont / préconditions / canal sol indisponible |
+| `off` | ⚪ gris (base) | le système assure : sol suffisant · sec mais pris en charge (arrosage en cours / pluie / attente de la fenêtre) · repos |
+| `unknown` | ⚪ gris indispo | besoin/pont illisible (garde-fou ; `pont_donnees_disponibles` est un booléen pur → un pont HS renvoie `off`, donc *besoin non couvert* → 🔴, pas gris) |
+| `normal` / `confort` | 🔵 / 🟢 | **non utilisés** — pas d'info bleue ni de vert nominal (doctrine « majoritairement gris, couleur = attention ») |
+
+> **Note doctrinale (deux rôles de couleur, hors périmètre arrosage).** Le clivage n'est pas *quelle couleur* mais *le seuil de parole*. Deux rôles de couleur restent légitimes dans le cockpit : (1) **attention** — 🔴 rare, « à toi » ; (2) **réassurance saisonnière** — 🟢/🔵 « le domaine de saison tourne bien » (chauffage l'hiver, clim l'été), bornée par la saison donc compatible avec « majoritairement gris ». Le seul cas illégitime est le nominal coloré d'un domaine **hors de sa saison de garde et sans réassurance à donner**. Chauffage (🟢 sur programme Confort) et Clim (🟢/🔵 sur mode) relèvent du rôle (2) — **non traités ici**, laissés en l'état.
+
+**Ce que ça coûte / ce que ça rapporte.** Coût : réécriture d'un seul capteur de synthèse. Gain : la tuile signale enfin le **besoin qui vous concerne** (et son silence dit « sous contrôle »), et cesse de crier sur une action nominale. Reste strictement dans la palette NAV (🔴/⚪).
 
 ## 3. Déclencheur de réveil
 
