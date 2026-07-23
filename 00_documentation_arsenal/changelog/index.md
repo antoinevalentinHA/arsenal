@@ -1608,6 +1608,30 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 **Signal net :**
 - Registre HA (C32/L6) — migration d'instance : renommage des entités physiques (Netatmo / Zigbee) au registre Home Assistant (`.storage/core.entity_registry`), historique préservé, sans changement de configuration YAML.
 
+---
+
+## 🧠 ARSENAL HA — [v17.0.2](changelogs/v17/v17_0_2.md) — STABLE — 2026-07-21
+**Tags :** voiture, climatisation, meteo, volets, chambres, lovelace, contrats, audits, registres
+
+**Signal net :**
+- Voiture (C25) — commande distante de climatisation : `script.audi_climatisation_distante` (bornes 15–30 °C, `comfort` / `economy`, confirmation sur transition observée en ~3 min), helpers `input_select.audi_climatisation_commande_etat` et `input_datetime.audi_climatisation_fin_prevue`, capteurs `binary_sensor.audi_climatisation_active{,_brut}`, automations `10150000000006` / `10150000000007` ; contrat `voiture.md` amendement A1 (INV-CMD-1 à 8).
+- Correctifs de rendu — accumulateurs Jinja non persistants sur 7 capteurs : `humidite_relative_max_chambres` / `rdc`, agrégats `temperature_{min,max}_chambres` et RDC, `batteries/faibles.yaml`, résumé fenêtres pluie, bilan mensuel Audi ; branche de repli rendue en permanence corrigée.
+- Volets (C32) — commandes groupées de l'étage : `chambres.yaml` remplacé par `etage.yaml` (`script.{ouvrir,fermer}_volets_etage`), « fermer tous les volets » commandait à nouveau la Salle de Jeux ; dashboard volets et en-têtes Enfants alignés.
+- Registres — C31 (solvabilité probatoire) clos, C34 (comportement au reboot / reload) ouvert, clôture conditionnelle C25 (réserve E6) ; `audit_publication_git.py` v1.5.0 → v1.6.0 et `securite_publication_git.md` v1.4.0 → v1.5.0 (C33, extension aux adultes) ; ajout des changelogs gelés v17.0.0 et v17.0.1.
+
+---
+
+## 🧠 ARSENAL HA — [v17.0.3](changelogs/v17/v17_0_3.md) — STABLE — 2026-07-23
+**Tags :** vmc, aeration, lovelace, contrats, ci, checkers, recorder, registres
+
+**Signal net :**
+- VMC (C35) — contrat `vmc.md` v1.3 → v2.4 et refonte de la chaîne de décision : besoins par pièce portés par des machines à état persistantes (`input_boolean.vmc_etat_besoin_*`, automations `10190000000007` / `10190000000008` / `10190000000010`), verdict `vmc_haute_vitesse_requise` réduit à une agrégation pure, intention dérivée de `composition` sans recalcul.
+- VMC — frontière de libération modulée : `sensor.vmc_frontiere_liberation_sdb_{parents,enfants}` (`clamp(borne_basse, min(borne_haute, a − b × temperature_jardin))`, bande morte 4,0 points) et observation glissante `sensor.vmc_minimum_glissant_sdb_*` ; helpers par pièce en remplacement de `vmc_seuil_on` / `vmc_seuil_off`.
+- VMC — `binary_sensor.aeration_preferable_etage` retiré des entrées décisionnelles (affichage informatif seul) ; capteur `delta_ha_favorable_etage` déplacé vers le domaine aération ; `parametres_invalides_vmc` passe de 2 à 6 invariants.
+- Lovelace — sélecteur d'affichage sur les dashboards Réglages (aération, chauffage, climatisation, éclairage) : `input_select.*_reglages_affichage` et blocs `conditional`, cartes reprises sans changement de valeur ; dashboard Réglages VMC à une tuile par ligne.
+- CI — ajout de `check_vmc_initialisation_contracts.py` (règles VINIT-000 à 004) et du workflow `contracts_vmc_initialisation.yml` ; contrôles VMC étendus (intention dérivée, absence de verrou d'aération, frontière modulée, redémarrage, UI) ; recompte checkers 85 → 86, workflows 90 → 91.
+- Recorder — historisation de 6 entités de la chaîne de décision VMC (verdict, 3 besoins, 2 frontières).
+
 ==================================================
 FIN INDEX
 ==================================================
