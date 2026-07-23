@@ -20,7 +20,7 @@
 #   - tap_action : navigate
 #   - couleur icône déterminée par l’état de variables.etat_dashboard :
 #       alert     → rouge
-#       vigilance → jaune (signal pris en charge, à savoir — Exception 3)
+#       vigilance → jaune ambré (signal pris en charge, à savoir — Exception 3)
 #       normal    → bleu
 #       confort   → vert
 #       eco       → bleu clair
@@ -50,7 +50,7 @@ bouton_navigation_dynamique:
 
             const map = {
               alert:     "rgb(244, 67, 54)",
-              vigilance: "rgb(255, 235, 59)",
+              vigilance: "rgb(255, 193, 7)",
               normal:    "rgb(33, 150, 243)",
               confort:   "rgb(76, 175, 80)",
               eco:       "rgb(33, 150, 243)",
