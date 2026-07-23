@@ -162,21 +162,30 @@ dans un contexte de navigation structurelle exclusivement.
 | Couleur | Valeur | Signification |
 |---------|--------|--------------|
 | 🔴 Rouge | `rgb(244, 67, 54)` | État d'alerte |
+| 🟡 Jaune | `rgb(255, 235, 59)` | Vigilance / à savoir (non bloquant) |
 | 🟢 Vert | `rgb(76, 175, 80)` | État favorable |
 | 🔵 Bleu | `rgb(33, 150, 243)` | État normal / informatif |
 | ⚪ Gris | `rgb(158, 158, 158)` | Neutre / standby / off |
 
+Le jaune est la version **opaque** du jaune sémantique canon `rgba(255, 235, 59, 0.2)`
+(`02_palette.md`), au même titre que les rouge / vert / bleu ci-dessus sont les
+versions opaques de leur teinte canon. Il code une **vigilance non décisionnelle**
+(« un signal existe, pris en charge, à savoir »), strictement en dessous du rouge
+d'alerte. L'orange reste **hors** palette NAV.
+
 ### Priorité sémantique
 
-La hiérarchie sémantique globale reste inchangée :
+La hiérarchie sémantique globale reste inchangée (`05_regles.md`) :
 
-🔴 > 🟠 > 🟢 > 🔵 > ⚪
+🔴 > 🟠 > 🟡 > 🟢 > 🔵 > ⚪
 
 ### 🚫 Interdits
 
 - Toute autre nuance de bleu
   (ex : `rgb(25, 118, 210)`, `rgb(144, 202, 249)`)
-- Toute autre nuance de rouge ou de vert
+- Toute autre nuance de rouge, de jaune ou de vert
+- Utilisation du jaune pour masquer un rouge d'alerte
+  (le jaune ne remplace jamais le rouge — R3)
 - Utilisation de ces couleurs opaques hors contexte NAV/HUB
 - Application de ces couleurs opaques au fond des cartes NAV
 - Utilisation de ces couleurs opaques sur des cartes métier

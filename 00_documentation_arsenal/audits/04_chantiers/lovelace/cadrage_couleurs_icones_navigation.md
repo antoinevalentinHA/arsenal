@@ -2,7 +2,7 @@
 
 > **Type :** dossier d'arbitrage Lovelace / UI (non décisionnel). **Document faisant foi** du sujet (pointé par `REGISTRE_CHANTIERS.md`).
 > **ID registre :** `D-NAV-COULEUR`. **Statut : ✅ SOLDÉ (2026-07-19)** — menu ☰ Navigation : 5 tuiles dynamisées (Option C ; Arrosage, Rec. météo, Volets, NAS, Imprimerie — cf. §2 sexies) + 3 neutralisées au gris de base NAV (Option A ; Prises, Santé, Énergie — cf. §2 quinquies). **Section ⚙️ Système : reliquat résorbé — Option A (neutralisation) au gris de base NAV, combinée à une refonte du menu (12 → 6 tuiles), Reboot HA inclus — cf. §2 septies.** Plus aucune couleur d'icône figée hors palette dans `navigation.yaml`. **Chantier clos** (registre ⑤ Clos récents).
-> **Post-solde (2026-07-23) — recalibrage Arrosage :** la tuile Arrosage suit désormais le **besoin non couvert** (seuil de parole = niveau notification persistante) plutôt que l'épisode d'action — cf. §2 octies. Recalibrage d'une tuile déjà dynamisée, sans réouverture du chantier.
+> **Post-solde (2026-07-23) — Arrosage, deux temps :** (1) la tuile suit le **besoin non couvert** plutôt que l'épisode d'action — §2 octies ; (2) après retour terrain, le **besoin couvert** (invisible en gris) reçoit un niveau propre 🟡 via la **formalisation du jaune NAV** dans l'Exception 3 (instancie l'Option B) — §2 nonies. Échelle finale : 🔴 besoin non couvert · 🟡 besoin pris en charge (à savoir) · ⚪ sol suffisant.
 > **Règle qui fait foi :** [`ui/couleurs/03_exceptions.md`](../../../ui/couleurs/03_exceptions.md) § *Exception 3 — Couleurs dynamiques d'icône en contexte NAV/HUB*.
 > **Discipline :** aucune modification UI d'une tuile tant que son cas n'est pas tranché (cas par cas) ; co-commit du registre à chaque changement d'état.
 
@@ -202,6 +202,31 @@ Appliqué à l'arrosage : un sol sec en attente de l'arrosage d'aube n'est **pas
 > **Note doctrinale (deux rôles de couleur, hors périmètre arrosage).** Le clivage n'est pas *quelle couleur* mais *le seuil de parole*. Deux rôles de couleur restent légitimes dans le cockpit : (1) **attention** — 🔴 rare, « à toi » ; (2) **réassurance saisonnière** — 🟢/🔵 « le domaine de saison tourne bien » (chauffage l'hiver, clim l'été), bornée par la saison donc compatible avec « majoritairement gris ». Le seul cas illégitime est le nominal coloré d'un domaine **hors de sa saison de garde et sans réassurance à donner**. Chauffage (🟢 sur programme Confort) et Clim (🟢/🔵 sur mode) relèvent du rôle (2) — **non traités ici**, laissés en l'état.
 
 **Ce que ça coûte / ce que ça rapporte.** Coût : réécriture d'un seul capteur de synthèse. Gain : la tuile signale enfin le **besoin qui vous concerne** (et son silence dit « sous contrôle »), et cesse de crier sur une action nominale. Reste strictement dans la palette NAV (🔴/⚪).
+
+> **⏭️ Suite immédiate — cf. §2 nonies :** le §2 octies laissait le besoin *couvert* en gris (donc invisible). Retour terrain de l'utilisateur : « il y a un besoin, et c'est gris — je ne comprends pas ; je veux le savoir ». Le besoin couvert reçoit désormais un niveau propre 🟡 (formalisation du jaune NAV). La ligne `off` du tableau ci-dessus ne couvre donc plus le cas « besoin pris en charge ».
+
+## 2 nonies. Arrosage — *formalisation du jaune NAV (besoin couvert = vigilance)*
+
+> **Statut :** **✅ implémenté (runtime, 2026-07-23)** — instancie l'**Option B** (formaliser une exception), restée ouverte depuis §2 (col. « B »). Étend l'**Exception 3** : le jaune opaque `rgb(255, 235, 59)` entre dans la palette d'icône NAV/HUB. Artefacts : `ui/couleurs/03_exceptions.md` (Exception 3), `scripts/arsenal_contracts/check_ui_runtime_colors_contracts.py` (whitelist `ALLOWED_RGB`), `bouton_navigation_dynamique.yaml` (clé `vigilance`), `sensor.etat_arrosage_dashboard`.
+
+**Le retour terrain.** Après §2 octies, un besoin *couvert par l'autonome* (le cas fréquent : sol sec, la V1 arrosera à l'aube) restait **gris** — donc **invisible**. Or l'utilisateur ouvre le dashboard précisément pour *voir* ce besoin (« demain le système va arroser, je veux le savoir »). Le §2 octies confondait deux réalités sous le gris : *rien à signaler* et *besoin détecté, pris en charge*.
+
+**Le manque de la charte.** L'Exception 3 n'autorisait que 🔴/🟢/🔵/⚪. Aucune de ces teintes ne dit « signal présent, pris en charge, **à savoir** sans alarmer » : le 🔵 est « info/technique » (trop neutre, et réservé ailleurs à une activité observable), le 🔴 est l'alarme (trop fort). Il manquait le cran **vigilance** — précisément le sens canon du **jaune** Arsenal (`02_palette.md` : « Vigilance / attention, niveau inférieur à l'orange, non bloquant »). Décision propriétaire : **formaliser le jaune dans l'Exception 3** (Option B) plutôt que détourner le bleu.
+
+**Ce que le jaune NAV est / n'est pas.** Version opaque `rgb(255, 235, 59)` du jaune canon `rgba(255, 235, 59, 0.2)`, exactement comme rouge/vert/bleu NAV sont les opaques de leur teinte. Sens **unique et opposable** : « un signal existe, il est pris en charge — à savoir ». Non décisionnel, non bloquant, **strictement sous le rouge** (R3 : le jaune ne masque jamais un rouge). L'orange reste hors palette NAV.
+
+**Mapping final (`sensor.etat_arrosage_dashboard`) — échelle de sévérité :**
+
+| État renvoyé | Couleur NAV | Condition |
+|---|---|---|
+| `alert` | 🔴 rouge | besoin actif **ET non couvert** : maître coupé, ou pont / préconditions / canal sol indisponible, et pas d'arrosage en cours ni de pluie → **à l'utilisateur d'agir** |
+| `vigilance` | 🟡 jaune | besoin actif **ET couvert** : la chaîne autonome arrosera (aube), ou arrosage en cours, ou pluie qui couvre → **à savoir** |
+| `off` | ⚪ gris (base) | sol suffisant, repos |
+| `unknown` | ⚪ gris indispo | besoin/pont illisible (garde-fou) |
+
+> **Portée de l'Exception 3 étendue.** Le jaune NAV est désormais **disponible pour toute tuile** dont un état latent relève de la vigilance « pris en charge » — pas seulement l'arrosage. Aucune tuile existante n'est migrée d'office ; l'usage reste **cas par cas**, comme le reste du dossier. La hiérarchie globale (`05_regles.md`) est inchangée : 🔴 > 🟠 > 🟡 > 🟢 > 🔵 > ⚪.
+
+**Ce que ça coûte / ce que ça rapporte.** Coût : une entrée de charte + une entrée de whitelist CI + une clé de template + un capteur. Gain : le besoin d'arrosage est **enfin visible** (🟡) sans être traité en alarme, le 🔴 reste réservé au besoin que le système ne couvrira pas, et le gris redevient l'honnête « rien à signaler ». La grammaire du cockpit gagne un cran manquant (vigilance), utile bien au-delà de l'arrosage.
 
 ## 3. Déclencheur de réveil
 

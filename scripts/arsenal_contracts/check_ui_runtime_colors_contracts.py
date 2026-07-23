@@ -136,6 +136,7 @@ ALLOWED_GRAPHICS_RGBA = {
 
 ALLOWED_RGB = {
     "rgb(244,67,54)",
+    "rgb(255,235,59)",
     "rgb(76,175,80)",
     "rgb(33,150,243)",
     "rgb(158,158,158)",
