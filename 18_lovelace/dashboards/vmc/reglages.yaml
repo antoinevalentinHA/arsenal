@@ -77,7 +77,7 @@ views:
 
           - type: tile
             entity: input_number.vmc_fenetre_sdb_parents
-            name: Fenêtre d'observation (min)
+            name: Fenêtre d'observation
             features_position: inline
             features:
               - type: numeric-input
@@ -86,7 +86,7 @@ views:
           - type: tile
             entity: input_number.vmc_evolution_sdb_parents
             name: Évolution minimale (points)
-            features_position: inline
+            features_position: bottom
             features:
               - type: numeric-input
                 style: buttons
@@ -136,7 +136,7 @@ views:
 
           - type: tile
             entity: input_number.vmc_fenetre_sdb_enfants
-            name: Fenêtre d'observation (min)
+            name: Fenêtre d'observation
             features_position: inline
             features:
               - type: numeric-input
@@ -145,7 +145,7 @@ views:
           - type: tile
             entity: input_number.vmc_evolution_sdb_enfants
             name: Évolution minimale (points)
-            features_position: inline
+            features_position: bottom
             features:
               - type: numeric-input
                 style: buttons
@@ -184,7 +184,7 @@ views:
           - type: tile
             entity: input_number.vmc_co2_seuil_on
             name: Seuil de déclenchement (ppm)
-            features_position: inline
+            features_position: bottom
             features:
               - type: numeric-input
                 style: buttons
