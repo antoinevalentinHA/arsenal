@@ -190,6 +190,94 @@ Lecture prudente : **petit échantillon** (4 cycles auto), **juillet chaud seul*
 capter du bruit diurne. Aucune règle, aucun seuil, aucun runtime ; **durée de
 base inchangée** (réglage opérateur, non touché).
 
+### 2026-07-23 — ré-observation séchage ↔ VPD sur le parc à 6 sondes (T06)
+
+Rejeu du protocole T05 (§3 bis) sur la base Recorder courante, **lecture seule**
+(`file:/config/home-assistant_v2.db?mode=ro`). Fenêtre disponible **2026-06-23 →
+2026-07-23** (purge 30 j). Les sondes individuelles
+(`sensor.jardin_humidite_sol_zone_1..6_soil_moisture`) sont **exclues du
+recorder** : seule la médiane est observable.
+
+**État du parc sur la fenêtre.** `sensor.jardin_humidite_sol_points_frais`
+pondéré par durée : **6 points frais 54,8 % (346 h)**, **3 points frais 44,9 %
+(283 h)**, 0 point 0,3 %. La fenêtre est donc **à cheval sur la bascule** ; le
+régime 6 sondes est franc **à partir du ~2026-07-14** (hypothèse retenue pour les
+sous-échantillons ci-dessous).
+
+**Artefact de méthode identifié (important).** Le filtre T05 d'origine — paires de
+points **consécutifs** espacés de 20 min à 2 h — est **biaisé** : la médiane est
+quantifiée et ne bouge que par paliers, si bien que ce filtre ne retient que les
+**pas de quantification** et non la dérive. Rejoué à l'identique il redonne
+n=374 et des moyennes **positives** (+0,05 à +0,15 pt/h)… sur une fenêtre qui
+contient par ailleurs des pertes réelles de **−13,5 pts en 45 h**. La conclusion
+de juillet (« séchage minuscule, le sol remonte même ») est donc **en partie un
+artefact de méthode**, pas seulement de métrologie. Correction retenue :
+**ré-échantillonnage sur grille régulière 30 min**, pente calculée sur 1 h (et
+3 h en contrôle).
+
+**Séchage (pts/h) biné par VPD — parc 6 sondes, depuis 2026-07-14, n=426**
+(grille 30 min, pente 1 h, hors arrosage −10 min/+3 h, hors pluie) :
+
+| VPD (kPa) | n | moyenne | médiane | écart-type | \|moy\|/σ |
+|---|---|---|---|---|---|
+| 0,0–0,5 | 40 | −0,045 | 0,10 | 0,377 | 0,12 |
+| 0,5–1,0 | 71 | −0,056 | 0,10 | 0,530 | 0,11 |
+| 1,0–1,5 | 102 | **−0,283** | 0,00 | 0,700 | 0,40 |
+| 1,5–2,0 | 104 | −0,214 | 0,00 | 0,669 | 0,32 |
+| 2,0–2,5 | 51 | −0,275 | 0,00 | 0,718 | 0,38 |
+| 2,5–3,0 | 38 | −0,211 | 0,00 | 0,667 | 0,32 |
+| 3,0–3,5 | 18 | −0,072 | 0,10 | 0,453 | 0,16 |
+
+Contrôle pente 3 h (n=410) : même forme (−0,004 / −0,090 / −0,246 / −0,211 /
+−0,271 / −0,171 / −0,157).
+
+**Phases de séchage franches** (≥ 36 h sans arrosage ni pluie) :
+
+| Fenêtre | Durée | Médiane | Δ | Pente moyenne |
+|---|---|---|---|---|
+| 06-27 → 07-05 | 203 h | 56,0 → 31,2 | −24,8 | −0,122 pt/h *(parc 3)* |
+| 07-13 → 07-18 | 125 h | 40,2 → 33,0 | −7,2 | −0,058 pt/h |
+| **07-18 → 07-20** | 45 h | 44,0 → 30,5 | **−13,5** | **−0,301 pt/h** |
+| **07-20 → 07-22** | 45 h | 43,7 → 29,9 | **−13,8** | **−0,301 pt/h** |
+
+**Confrontation au critère de bascule (§3 bis / T05)** :
+
+- **(a) tendance croissante avec la VPD — partiellement atteint.** Le séchage
+  passe de ~0 sous 1 kPa à **−0,21 / −0,28 pt/h** entre 1 et 3 kPa. Il **sature
+  puis s'atténue** au-delà de 3 kPa (bins peu peuplés ; forte VPD = milieu de
+  journée, surface déjà sèche). Non monotone sur toute la plage.
+- **(b) au-dessus du bruit — non atteint.** Meilleur rapport \|moyenne\|/σ =
+  **0,40** ; le critère demande > 1. Le bruit **horaire** reste 2,5 à 9× le
+  signal horaire.
+- **(c) phase de séchage franche multi-jours — atteint.** Deux épisodes nets à
+  **−0,30 pt/h** sur ~45 h, **tous deux en régime 6 sondes**.
+
+**Conséquence C11 : P2 reste non réuni — mais le blocage a nettement reculé.**
+Le passage à 6 sondes **a fait émerger le séchage** : il est désormais réel,
+négatif, d'ordre **≈ −0,3 pt/h en épisode sec** (~7 pts/jour) et **dépendant de
+la VPD dans la plage utile 1–3 kPa**. C'est un changement qualitatif par rapport
+au 2026-07-19. Le critère (b) échoue toujours, mais il est possible qu'il soit
+**mal calibré** : il confronte un signal d'échelle **journalière** à un bruit
+d'échelle **horaire** ; à l'échelle des phases multi-jours le signal est lisible
+sans ambiguïté (−13,5 pts). **Réviser (b) est un arbitrage propriétaire**, hors
+de cette entrée d'observation. Rédaction du contrat **P4 (modulation de durée)
+non ouverte** en l'état.
+
+**Ce qui manque.** Une fenêtre Recorder **intégralement** en régime 6 sondes
+(disponible ~**2026-08-20**, 30 j après la bascule) ; l'échantillon haute-VPD
+est encore mince (18 points au-dessus de 3 kPa).
+
+**Ajouts au protocole pour la prochaine ré-observation** : (i) **grille régulière
+30 min** au lieu des paires brutes — le filtre 20 min–2 h est biaisé et a
+contribué au verdict de juillet ; (ii) évaluer le critère (b) **à l'échelle
+journalière** plutôt qu'horaire.
+
+Lecture prudente : **~9 jours seulement** de la fenêtre relèvent du parc à
+6 sondes ; sondes **non calibrées** ; **médiane seule** (lecture par point non
+disponible, entités hors recorder) ; **juillet chaud seul**. Aucune règle, aucun
+seuil, aucun runtime ; **durée de base inchangée** (`input_number.arrosage_
+rainbird_station_1_duree_minutes` non touché).
+
 ---
 
 ## 4. Critères de sortie vers v0.5 (indicatifs, **non normatifs**)
