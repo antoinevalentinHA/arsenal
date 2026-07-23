@@ -6,25 +6,45 @@
 #     navigation Arrosage (lecture rapide uniquement, NAV/HUB).
 #
 #  🎯 États possibles (volontairement réduits) :
-#     - alert    → arrosage actif / requis (intention satisfaite)
-#     - normal   → suspension pluie (abstention volontaire, info)
-#     - off      → repos, conditions non réunies, abstention
-#     - unknown  → donnée intention non exploitable / pont indispo
+#     - alert    → besoin hydrique NON couvert par la chaîne
+#                  autonome → à l'utilisateur d'agir
+#     - off      → le système assure : sol suffisant, OU sec mais
+#                  pris en charge (arrosage en cours / pluie /
+#                  attente de la fenêtre d'aube), repos
+#     - unknown  → donnée non exploitable (besoin/pont illisible)
 #
 #  🎨 Couleur (Exception 3 — NAV/HUB) :
-#     alert→🔴  normal→🔵  off→⚪  unknown→⚪ (gris indispo prime)
+#     alert→🔴  off→⚪  unknown→⚪ (gris indispo prime)
 #
-#  ⚠️ Simplification assumée :
-#     - Pas de « confort » : la sémantique vert/favorable ne
-#       s'applique pas à l'arrosage (cf. R4).
-#     - « arrose » = épisode actif → alert, comme aération /
-#       chauffage (l'action en cours attire l'attention).
-#     - Le diagnostic fin (motif d'abstention, santé pont) vit
-#       dans le domaine ; ici, usage purement visuel NAV/HUB.
+#  🧭 Seuil de parole (doctrine cockpit) :
+#     La tuile rompt le gris au MÊME niveau qu'une notification
+#     persistante : uniquement quand la situation devient l'affaire
+#     de l'utilisateur. L'arrosage est silencieux par philosophie.
+#     Tant que la V1 autonome couvre le besoin (elle arrosera à la
+#     fenêtre d'aube), la tuile reste GRISE — même sol sec. Elle ne
+#     passe au 🔴 que si le besoin ne sera PAS couvert : maître
+#     coupé, ou blocage infra (pont / préconditions / canal sol),
+#     càd la chaîne autonome hors d'état d'agir.
+#
+#  ⚠️ Recalibrage 2026-07-23 (cf. audits/04_chantiers/lovelace/
+#     cadrage_couleurs_icones_navigation.md §2 octies) :
+#     - La couleur suit désormais le BESOIN non couvert, plus
+#       l'épisode d'action. Avant, `alert` marquait « arrose /
+#       intention on » : la tuile était grise justement quand le
+#       sol avait soif hors fenêtre (bug de lecture).
+#     - « arrose » (épisode en cours) N'EST PLUS une alerte : c'est
+#       le système qui assure → gris.
+#     - Pas de vert : la tuile ne valorise pas un état nominal
+#       (doctrine « majoritairement gris, couleur = attention »).
 #
 #  🔗 Entrées :
-#     - binary_sensor.arrosage_intention (attribut `categorie`)
+#     - binary_sensor.arrosage_besoin_sol         (le besoin brut)
+#     - binary_sensor.arrosage_session_en_cours   (pris en charge)
+#     - binary_sensor.arrosage_suspension_pluie   (pris en charge)
+#     - input_boolean.arrosage_automatique_actif  (chaîne autonome)
+#     - binary_sensor.arrosage_rain_bird_preconditions_runtime
 #     - binary_sensor.rain_bird_pont_donnees_disponibles
+#     - sensor.jardin_reservoir_sol_etat
 # ==========================================================
 
 - sensor:
@@ -33,16 +53,26 @@
       unique_id: etat_arrosage_dashboard
       state: >
         {% set UNAV = ['unknown', 'unavailable', 'none', 'None', ''] %}
-        {% set intention = states('binary_sensor.arrosage_intention') %}
-        {% set categorie = state_attr('binary_sensor.arrosage_intention', 'categorie') %}
+        {% set besoin_raw = states('binary_sensor.arrosage_besoin_sol') %}
         {% set dispo = states('binary_sensor.rain_bird_pont_donnees_disponibles') %}
 
-        {% if intention in UNAV or dispo == 'unavailable' %}
+        {% set besoin = besoin_raw == 'on' %}
+        {% set session = is_state('binary_sensor.arrosage_session_en_cours', 'on') %}
+        {% set pluie = is_state('binary_sensor.arrosage_suspension_pluie', 'on') %}
+        {% set maitre = is_state('input_boolean.arrosage_automatique_actif', 'on') %}
+        {% set precond = is_state('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'on') %}
+        {% set canal_ok = states('sensor.jardin_reservoir_sol_etat') in ['complet', 'degrade'] %}
+
+        {# La chaîne autonome est en état de couvrir le besoin (elle
+           arrosera à la fenêtre) : maître ON + infra exploitable.
+           Volontairement SANS fenêtre ni cooldown : un besoin hors
+           fenêtre reste « couvert » (l'aube viendra) → gris. #}
+        {% set autonome_capable = maitre and dispo == 'on' and precond and canal_ok %}
+
+        {% if besoin_raw in UNAV or dispo == 'unavailable' %}
           unknown
-        {% elif categorie == 'arrose' or intention == 'on' %}
+        {% elif besoin and not session and not pluie and not autonome_capable %}
           alert
-        {% elif categorie == 'suspendu' %}
-          normal
         {% else %}
           off
         {% endif %}
