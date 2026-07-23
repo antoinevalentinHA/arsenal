@@ -68,7 +68,7 @@ views:
               - type: tile
                 entity: input_number.bouclage_ecs_seuil_on
                 name: Activation
-                features_position: inline
+                features_position: bottom
                 features:
                   - type: numeric-input
                     style: buttons
@@ -77,7 +77,7 @@ views:
               - type: tile
                 entity: input_number.bouclage_ecs_seuil_off
                 name: Extinction
-                features_position: inline
+                features_position: bottom
                 features:
                   - type: numeric-input
                     style: buttons
@@ -109,7 +109,7 @@ views:
               - type: tile
                 entity: input_number.ecs_consigne_temperature
                 name: Normal
-                features_position: inline
+                features_position: bottom
                 features:
                   - type: numeric-input
                     style: buttons
@@ -117,7 +117,7 @@ views:
               - type: tile
                 entity: input_number.ecs_consigne_vaisselle
                 name: Vaisselle
-                features_position: inline
+                features_position: bottom
                 features:
                   - type: numeric-input
                     style: buttons
@@ -165,7 +165,7 @@ views:
               - type: tile
                 entity: input_number.ecs_off_tiny
                 name: Tiny ΔT
-                features_position: inline
+                features_position: bottom
                 features:
                   - type: numeric-input
                     style: buttons
@@ -173,7 +173,7 @@ views:
               - type: tile
                 entity: input_number.ecs_off_medium
                 name: Medium ΔT
-                features_position: inline
+                features_position: bottom
                 features:
                   - type: numeric-input
                     style: buttons
@@ -181,7 +181,7 @@ views:
               - type: tile
                 entity: input_number.ecs_off_normal
                 name: Normal ΔT
-                features_position: inline
+                features_position: bottom
                 features:
                   - type: numeric-input
                     style: buttons
@@ -189,7 +189,7 @@ views:
               - type: tile
                 entity: input_number.ecs_off_desinfection
                 name: Désinfection
-                features_position: inline
+                features_position: bottom
                 features:
                   - type: numeric-input
                     style: buttons
@@ -215,7 +215,7 @@ views:
               - type: tile
                 entity: input_number.ecs_eps_ponctuel
                 name: Epsilon ponctuel
-                features_position: inline
+                features_position: bottom
                 features:
                   - type: numeric-input
                     style: buttons
@@ -223,7 +223,7 @@ views:
               - type: tile
                 entity: input_number.ecs_eps_desinfection
                 name: Epsilon désinfection
-                features_position: inline
+                features_position: bottom
                 features:
                   - type: numeric-input
                     style: buttons
