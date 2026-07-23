@@ -206,8 +206,10 @@ views:
 
           - type: tile
             entity: input_number.vmc_duree_min_haute
+            # Libellé de 241 px pour une zone `inline` plafonnée à 192 px :
+            # rendu en `bottom` pour éviter la troncature.
             name: Durée minimale de haute vitesse (min)
-            features_position: inline
+            features_position: bottom
             features:
               - type: numeric-input
                 style: buttons

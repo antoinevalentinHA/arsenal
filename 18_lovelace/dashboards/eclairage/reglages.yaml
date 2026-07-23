@@ -140,8 +140,10 @@ views:
 
                 - type: tile
                   entity: input_number.sejour_seuil_luminosite_extinction_auto
+                  # Libellé de 217 px pour une zone `inline` plafonnée à
+                  # 192 px : rendu en `bottom` pour éviter la troncature.
                   name: Luminosité extinction (lx) — 0 = off
-                  features_position: inline
+                  features_position: bottom
                   features:
                     - type: numeric-input
                       style: buttons
@@ -215,8 +217,10 @@ views:
 
                 - type: tile
                   entity: input_number.delai_allumage_jardin_soir
+                  # Libellé de 217 px pour une zone `inline` plafonnée à
+                  # 192 px : rendu en `bottom` pour éviter la troncature.
                   name: Délai après coucher du soleil (min)
-                  features_position: inline
+                  features_position: bottom
                   features:
                     - type: numeric-input
                       style: buttons

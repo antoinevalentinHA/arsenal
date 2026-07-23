@@ -200,8 +200,10 @@ views:
 
           - type: tile
             entity: input_number.ecs_trigger_ceiling_tiny_medium
+            # Libellé de 198 px pour une zone `inline` plafonnée à 192 px :
+            # rendu en `bottom` pour éviter la troncature.
             name: Plafond amorçage tiny/medium
-            features_position: inline
+            features_position: bottom
             features:
               - type: numeric-input
                 style: buttons
