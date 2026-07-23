@@ -144,7 +144,7 @@ views:
                     - type: tile
                       entity: input_number.meteo_horizon_prevision_heures
                       name: "Horizon (+h)"
-                      features_position: inline
+                      features_position: bottom
                       features:
                         - type: numeric-input
                           style: buttons
@@ -173,7 +173,7 @@ views:
                     - type: tile
                       entity: input_number.duree_prechauffage_retour_vacances
                       name: "Durée (h)"
-                      features_position: inline
+                      features_position: bottom
                       features:
                         - type: numeric-input
                           style: buttons
@@ -299,7 +299,7 @@ views:
                     - type: tile
                       entity: input_number.aeration_m3_seuil_tiny
                       name: Tiny
-                      features_position: inline
+                      features_position: bottom
                       features:
                         - type: numeric-input
                           style: buttons
@@ -307,7 +307,7 @@ views:
                     - type: tile
                       entity: input_number.aeration_m3_prolongation_tiny
                       name: Tiny
-                      features_position: inline
+                      features_position: bottom
                       features:
                         - type: numeric-input
                           style: buttons
@@ -315,7 +315,7 @@ views:
                     - type: tile
                       entity: input_number.aeration_m3_seuil_medium
                       name: Medium
-                      features_position: inline
+                      features_position: bottom
                       features:
                         - type: numeric-input
                           style: buttons
@@ -323,7 +323,7 @@ views:
                     - type: tile
                       entity: input_number.aeration_m3_prolongation_medium
                       name: Medium
-                      features_position: inline
+                      features_position: bottom
                       features:
                         - type: numeric-input
                           style: buttons
@@ -331,7 +331,7 @@ views:
                     - type: tile
                       entity: input_number.aeration_m3_seuil_high
                       name: High
-                      features_position: inline
+                      features_position: bottom
                       features:
                         - type: numeric-input
                           style: buttons
@@ -339,7 +339,7 @@ views:
                     - type: tile
                       entity: input_number.aeration_m3_prolongation_high
                       name: High
-                      features_position: inline
+                      features_position: bottom
                       features:
                         - type: numeric-input
                           style: buttons
@@ -382,7 +382,7 @@ views:
                     - type: tile
                       entity: input_number.chauffage_pente_consigne
                       name: Pente
-                      features_position: inline
+                      features_position: bottom
                       features:
                         - type: numeric-input
                           style: buttons
@@ -390,7 +390,7 @@ views:
                     - type: tile
                       entity: input_number.chauffage_parallele_consigne
                       name: Parallèle
-                      features_position: inline
+                      features_position: bottom
                       features:
                         - type: numeric-input
                           style: buttons
