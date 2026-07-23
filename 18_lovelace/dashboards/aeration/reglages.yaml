@@ -194,8 +194,10 @@ views:
 
                 - type: tile
                   entity: input_number.aeration_mod_pluie_delta_ha
+                  # Libellé de 248 px pour une zone `inline` plafonnée à
+                  # 192 px : rendu en `bottom` pour éviter la troncature.
                   name: Majoration ∆HA si RH ext élevée (g/m³)
-                  features_position: inline
+                  features_position: bottom
                   features:
                     - type: numeric-input
                       style: buttons
@@ -214,8 +216,10 @@ views:
 
                 - type: tile
                   entity: input_number.aeration_mod_grand_froid_add_delta_t
+                  # Libellé de 207 px pour une zone `inline` plafonnée à
+                  # 192 px : rendu en `bottom` pour éviter la troncature.
                   name: Majoration ∆T en grand froid (°C)
-                  features_position: inline
+                  features_position: bottom
                   features:
                     - type: numeric-input
                       style: buttons
@@ -247,16 +251,20 @@ views:
 
                 - type: tile
                   entity: input_number.aeration_co2_seuil
+                  # Libellé de 205 px pour une zone `inline` plafonnée à
+                  # 192 px : rendu en `bottom` pour éviter la troncature.
                   name: Seuil CO₂ (lève blocage canicule)
-                  features_position: inline
+                  features_position: bottom
                   features:
                     - type: numeric-input
                       style: buttons
 
                 - type: tile
                   entity: input_number.aeration_co2_seuil_fort
+                  # Libellé de 200 px pour une zone `inline` plafonnée à
+                  # 192 px : rendu en `bottom` pour éviter la troncature.
                   name: Seuil CO₂ fort (priorité sanitaire)
-                  features_position: inline
+                  features_position: bottom
                   features:
                     - type: numeric-input
                       style: buttons
