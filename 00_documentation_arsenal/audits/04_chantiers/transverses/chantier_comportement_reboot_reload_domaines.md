@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Auditer le comportement de Home Assistant et des périphériques pilotés lors d'un redémarrage complet, d'un rechargement YAML, d'un rechargement d'intégration, et pendant les phases transitoires de restauration, d'indisponibilité et de recalcul qui suivent ces opérations. |
 | **Domaine** | Transverse — sept domaines pilotant des actions physiques. |
-| **Statut** | **Ouvert (2026-07-21) — cadrage et inventaire des sources uniquement.** Aucun verdict comportemental n'est émis à ce stade. |
+| **Statut** | **Ouvert (2026-07-21) ; enrichi le 2026-07-23 d'apports probatoires runtime L4** (climatisation, alarme — cf. §5.6). Le cadrage et l'inventaire restent la base. **Aucun verdict de qualification** au sens de la grille §2 (défaut « action physique indésirable » vs « recalcul fonctionnel » légitime) n'est émis : cette qualification relève de l'analyse statique des vagues. Les apports L4 **alimentent la cartographie** (critère ①) sans la clore. |
 | **Priorité** | **P1** — le sujet porte sur des actions physiques (chauffe, froid, eau, ventilation, éclairage, armement d'alarme) potentiellement déclenchées par une opération purement technique. |
 | **Ouvert le** | 2026-07-21. |
 | **Prochain jalon** | **Vague 1 d'audit** (§7). Pas de conclusion générale avant. |
@@ -160,6 +160,8 @@ confirmer en vague 1.
 |---|---|---|
 | [`preuve_terrain_c15_survie_persistantes_reboot.md`](../../01_rapports/notifications/preuve_terrain_c15_survie_persistantes_reboot.md) | Comportement **au reboot** de notifications persistantes | **À lire en priorité** — seule preuve runtime au reboot repérée |
 | [`audit_resilience_integrations_domaine.md`](../../01_rapports/resilience_integrations/audit_resilience_integrations_domaine.md) | Résilience des **intégrations** | À lire en vague 1 |
+| `arsenal-runtime/analyses/c34_effet_physique_rechargements_20260723/` (preuve L4, hors dépôt gouverné) | Effet physique **au reload** sur `switch.clim_power` : coupure + rejeu, **98,6 % équipement en marche**, délai médian 9 s ; contrôles négatifs et exclusion `unavailable` inclus | **Preuve runtime L4 acquise (2026-07-23)** — alimente la **vague 2** (climatisation) |
+| idem, lot complémentaire (`comparaison_interdomaines.py`) | **Alarme** : aucun effet au reload sur `alarm_control_panel.alarme_maison` (signal propre) ; **5 autres domaines indéterminables** | **Preuve runtime L4 acquise (2026-07-23)** — alimente la **vague 4** (alarme) |
 
 **C32 n'est pas retenu comme preuve générale de maîtrise des reloads.** Le résidu
 `update.prise_chambre_enfants_2`, dont l'échec est apparu au journal le 2026-07-20 à
@@ -170,12 +172,54 @@ confirmer en vague 1.
 - **Recorder** : `purge_keep_days: 30`, **allowlist** (375 entités enregistrées).
 - **Long-term statistics** : disponibles pour les seuls capteurs numériques éligibles.
 - **L4 — analyses hors ligne** : la doctrine (§7) référence des **précédents**, pas une
-  procédure. **R-L4-1 : L4 ne corrige jamais un défaut L1 ou L2**, et une entité hors
-  allowlist est absente de la sauvegarde **comme** de la base courante.
+  procédure. **R-L4-1 (clarifiée le 2026-07-23)** : L4 **ne corrige ni le code, ni un fait
+  statique observé** — elle ne « répare » pas un défaut L1/L2 et ne remplace pas l'analyse
+  statique qui **explique un mécanisme** ou **qualifie un effet**. En revanche, sur des
+  entités **dans l'allowlist**, une preuve L4 **peut contredire une hypothèse, lever une
+  indétermination ou requalifier une conclusion** L1/L2 lorsque le runtime apporte une preuve
+  pertinente. Une entité **hors allowlist** reste absente de la sauvegarde **comme** de la
+  base courante — L4 n'y peut rien.
 - **`arsenal-runtime`** : dépôt **local, sans remote**, espace d'analyse hors ligne
   (`architecture/ecosysteme_depots_satellites.md` §1.1). **Ni composant runtime, ni satellite
-  gouverné, ni méthode propriétaire.** Non accessible depuis `/config` — aucune affirmation
-  ne sera fondée sur son contenu.
+  gouverné, ni méthode propriétaire, ni source normative ou autorité fonctionnelle.** Non
+  accessible depuis `/config`. **Aucune conclusion n'est fondée sur la seule présence d'un
+  fichier ou d'une affirmation dans ce dépôt.** En revanche, une preuve **peut y être
+  conservée et reproduite** lorsqu'elle est fondée sur un **corpus runtime identifié, borné et
+  contrôlé** — ici l'**historique Recorder archivé des entités concernées** (allowlist) : le
+  dépôt est alors le **support probatoire et reproductible**, non la source de vérité
+  fonctionnelle (arbitrage propriétaire du 2026-07-23 ; cf. §8, R-L4-1).
+
+### 5.6 Apports runtime L4 acquis — pré-cartographie (2026-07-23)
+
+Preuve reproductible déposée hors dépôt gouverné, admissible au titre de R-L4-1
+clarifiée (§5.5) : historique Recorder archivé, entités **dans l'allowlist**, corpus
+borné (2026-02-05 → 2026-07-21, témoin de couverture indépendant), deux contrôles
+négatifs, exclusion de l'artefact `unavailable`. **Ce sont des apports à consommer par
+les vagues, non des verdicts de qualification.**
+
+| Domaine | Qualification §8 | Grille d'effet §2 | Portée |
+|---|---|---|---|
+| **climatisation** | démontré par preuve runtime existante | **effet établi** (coupure + rejeu) ; **qualification non tranchée** | La preuve établit **qu'un effet existe**, pas **s'il est un défaut**. « Action physique indésirable » **vs** « recalcul fonctionnel » relève de la **vague 2 (analyse statique)**. |
+| **alarme** | démontré par preuve runtime existante | **continuité légitime** (aucun effet) | Aucun effet au reload sur l'état armé, signal propre. Alimente la **vague 4**. |
+| **chauffage** | **indéterminable** | — | Aucun actionneur physique dans l'allowlist (seule une consigne planifiée, reconstruite). |
+| **VMC** | **indéterminable** | — | Relais physique non historisé ; seul un helper de commande existe. |
+| **arrosage** | **indéterminable** | — | Vanne Rain Bird non historisée ; drapeau de session logique, couverture 16 j. |
+| **déshumidificateur** | **indéterminable** | — | Signal se reconstruisant au reload → artefact de restauration indissociable. |
+| **éclairage** | **indéterminable** | — | Aucune entité `light.` ; une seule puissance de lampe, seuil on/off indéfini. |
+
+**Cohérence avec §8** : les cinq verdicts *indéterminable* **confirment** la conséquence
+directe du §8 (une entité hors allowlist ⇒ indéterminable, non contournable). Les
+**besoins d'instrumentation** correspondants (historiser un actionneur physique propre par
+`recorder.yaml`) sont consignés comme **limites et dépendances** — ils **ne sont pas
+implémentés dans ce lot** et relèveraient d'un chantier d'instrumentation distinct (§9).
+
+**Impact sur les critères de clôture (§9)** : ces apports **alimentent le critère ①**
+(cartographie) pour la climatisation et l'alarme, et **étayent** les verdicts
+*indéterminable* des cinq autres domaines. Ils **ne satisfont aucun critère à eux seuls** :
+la cartographie reste à consolider sur les sept domaines et à qualifier statiquement ; le
+contre-audit (②), le portefeuille (③) et les solutions (④) restent entiers. **Aucun
+correctif n'est orienté** ; le caractère fautif ou légitime de l'effet climatisation reste
+**à déterminer**.
 
 ---
 
@@ -252,8 +296,12 @@ Toute conclusion des vagues portera **obligatoirement** l'une de ces quatre qual
   helper écrit par appel de service est **partiellement** reconstructible via les événements
   (R-L2-1).
 - **L3** — `purge_keep_days: 30` borne la base courante.
-- **L4** — **ne corrige jamais** L1 ni L2 (R-L4-1). Une sauvegarde ne restitue que ce qui
-  était déjà enregistré.
+- **L4** — **ne corrige ni le code ni un fait statique** (R-L4-1, clarifiée le 2026-07-23) :
+  elle ne remplace pas l'analyse statique qui **explique un mécanisme** ou **qualifie un
+  effet**. Elle **peut néanmoins compléter une conclusion L1/L2 et en modifier la
+  qualification** — contredire une hypothèse, lever une indétermination — quand elle est
+  fondée sur un historique **d'entités dans l'allowlist**. Une sauvegarde ne restitue que ce
+  qui était déjà enregistré.
 
 **Conséquence directe et importante** : pour tout comportement dont la preuve reposerait sur
 une entité hors allowlist, le verdict sera **indéterminable**, et **aucune sauvegarde ne
