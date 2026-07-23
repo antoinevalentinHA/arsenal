@@ -19,10 +19,11 @@
 #   - basé sur bouton_navigation
 #   - tap_action : navigate
 #   - couleur icône déterminée par l’état de variables.etat_dashboard :
-#       alert   → rouge
-#       normal  → bleu
-#       confort → vert
-#       eco     → bleu clair
+#       alert     → rouge
+#       vigilance → jaune (signal pris en charge, à savoir — Exception 3)
+#       normal    → bleu
+#       confort   → vert
+#       eco       → bleu clair
 #       standby/off → gris
 #       indisponible → gris
 #
@@ -48,12 +49,13 @@ bouton_navigation_dynamique:
             const st = states[sensor].state;
 
             const map = {
-              alert:   "rgb(244, 67, 54)",
-              normal:  "rgb(33, 150, 243)",
-              confort: "rgb(76, 175, 80)",
-              eco:     "rgb(33, 150, 243)",
-              standby: "rgb(158, 158, 158)",
-              off:     "rgb(158, 158, 158)"
+              alert:     "rgb(244, 67, 54)",
+              vigilance: "rgb(255, 235, 59)",
+              normal:    "rgb(33, 150, 243)",
+              confort:   "rgb(76, 175, 80)",
+              eco:       "rgb(33, 150, 243)",
+              standby:   "rgb(158, 158, 158)",
+              off:       "rgb(158, 158, 158)"
             };
 
             return map[st] ?? "rgb(158, 158, 158)";
