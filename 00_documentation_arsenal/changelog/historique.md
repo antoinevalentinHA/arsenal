@@ -44,7 +44,8 @@ Le point que ce document veut rendre lisible : **comment une installation HA est
 | avril → mai 2026 | v13 | Vérité par **snapshot** et interprétée : sommeil, cardio, autonomie ; domaines externes (Bluetti, imprimerie) |
 | mai 2026 | v14 | **Le pivot de gouvernance** : nomenclature canonique, `contrats/` = point d'entrée unique, doc avant code |
 | mai → juin 2026 | v15 | L'ère de l'outillage : deadlines persistantes, doctrines, auto-audit, **lint et CI documentaire**, checkers |
-| juin 2026 | v16 | **Navigation documentaire gouvernée** : hubs, gates de pages-feuilles, README de domaine |
+| juin → juillet 2026 | v16 | **Navigation documentaire gouvernée**, puis le **tournant de l'abstention** : un capteur qui ne sait pas s'abstient au lieu d'inventer |
+| juillet 2026 | v17 | **Le modèle devient refactorable** : pièces et personnes renommées à travers tout le stack ; le contrat cesse de décrire l'existant pour **prescrire une cible** |
 
 ---
 
@@ -257,15 +258,37 @@ C'est aussi en v15.6.1 qu'est créé `prompt_changelog.md`, fixant les règles r
 
 ---
 
-## Phase M — Série v16 (juin 2026) — *navigation documentaire gouvernée*
+## Phase M — Série v16 (juin → juillet 2026) — *navigation gouvernée, puis le tournant de l'abstention*
 ### Ce qui s'est passé
 
-**v16.0.0 — Documentation navigable et vérifiée :** ajout de README dans les dossiers-feuilles et de liens internes dans les index (Architecture, Contrats, UI, outils externes) ; README de domaine pour la quasi-totalité des familles de contrats (alarme, ECS, météo, pannes, santé, publication, ouvertures, éclairage, imprimerie, déshumidificateur). Surtout, ajout du contrôle **`DOC-CI-6`** sur les pages-feuilles de navigation, intégré au workflow `docs.yml` : la navigabilité documentaire devient une **propriété vérifiée en CI**, pas une bonne volonté.
+La série v16 est longue (v16.0.0 → v16.4.2) et se lit en quatre sous-arcs.
 
-**v16.0.1 — Continuité runtime sous gouvernance documentaire :** réécriture du signal de panne secteur (`binary_sensor.panne_secteur_en_cours`, dérivation par OR UPS/Bluetti), présence thermique stabilisée, extension de la cascade de raison clim et verdicts par mode — chaque évolution accompagnée de ses rapports d'audit et de la mise à jour des contrats et hubs. Le runtime continue d'évoluer, mais **désormais toujours adossé à son corpus documentaire gouverné**.
+**Navigation et commandabilité vérifiées (v16.0.0 → v16.0.4).** Ajout de README dans les dossiers-feuilles et de liens internes dans les index ; README de domaine pour la quasi-totalité des familles de contrats. Surtout, le contrôle **`DOC-CI-6`** sur les pages-feuilles de navigation entre dans `docs.yml` : la navigabilité devient une **propriété vérifiée en CI**. La navigation Lovelace passe aux chemins canoniques `/<dashboard-key>` sous garde de `check_lovelace_navigation_contracts.py` (culs-de-sac, chemins de retour). La doctrine `commandabilite.md` naît, et le **registre des chantiers** (`REGISTRE_CHANTIERS.md`) reçoit son propre checker : le suivi de travaux devient lui aussi un artefact gardé.
+
+**Extension du parc et nouveaux domaines (v16.1.0 → v16.3.2).** La climatisation se dote d'un mode nuit et d'une **ventilation contractualisée** (intention persistante, recommandation à double latch d'hystérésis, verdict `repos`). Surtout, un **domaine physique entier apparaît** : l'arrosage Rain Bird, en observation v0 (v16.2.0), puis en **V1 automatique décision + action** (v16.3.0 : besoin sol, intention, exécution supervisée, coexistence `rain_delay`), puis diagnostic et canal de demande climatique ET₀/VPD (v16.3.2). Lovelace est reclassé par domaine à clés publiques inchangées.
+
+**La production documentaire se normalise à son tour (v16.3.3 → v16.3.5).** La doctrine `restauration_etat_helpers.md` et le checker `HINIT` retirent les clés `initial` des helpers réglables — HA restaure la dernière valeur réglée au lieu de reforcer une valeur d'usine. Les identifiants d'automatisation migrent de 13 à 14 chiffres sous checker `AID`. `prompt_changelog.md` devient la doctrine `redaction_changelog.md`. Puis, sur incident P0 (clés réseau Zigbee2MQTT exposées), **la publication devient une contrainte de conception** : workflow bloquant `security_publication_audit.yml`, règle S9, contrat `securite_publication_git.md`.
+
+**Le tournant de l'abstention (v16.4.0 → v16.4.2).** C'est l'inflexion de la série. L'ECS cesse de fabriquer des valeurs : plus de `float(0)` ni de dernière-valeur-connue, mais un état `unknown` et un attribut `provenance` (C24), avec un verrou CI anti-refabrication. La climatisation révoque l'admissibilité quand le besoin devient indisponible au lieu de retomber sur un défaut (C28) ; les agrégats de température s'abstiennent au lieu de tenir leur dernière valeur (C27). En v16.4.2 le dépôt **nomme la règle** — « **abstention native** » — et l'étend à l'état rapporté de la clim (C30) et aux six zones de température intérieure (C29) ; les coordonnées GPS `0,0` fabriquées disparaissent des gardes de présence. En parallèle, la doctrine `solvabilite_probatoire.md` (C31) fixe ce qui compte comme réserve solvable et à quelles conditions une clôture est recevable.
 
 ### Leçon retenue
-> **La boucle est bouclée : la documentation est navigable, référencée et testée.** Un document orphelin, un lien mort ou une page-feuille sans point d'entrée échouent la CI. Arsenal n'est plus seulement *documenté* : sa documentation est un système gouverné, avec ses invariants et ses gardes — exactement comme le runtime l'est depuis v8–v11.
+> **Une garde ne suffit pas : encore faut-il que le système sache dire « je ne sais pas ».** Jusqu'ici, la rigueur consistait à ajouter des verrous *au-dessus* des valeurs ; v16.4 découvre que le danger est *dans* les valeurs — un repli `float(0)`, une dernière-valeur-connue tenue indéfiniment, une coordonnée fabriquée sont des **mensonges silencieux** qu'aucun verrou aval ne peut rattraper. L'abstention devient la règle par défaut, et l'indisponibilité une information de première classe, exposée jusque dans la couleur des cartes. Symétriquement, `solvabilite_probatoire.md` applique la même exigence à la gouvernance : une réserve non datée, sans seuil ni propriétaire, n'est pas une réserve.
+
+---
+
+## Phase N — Série v17 (juillet 2026) — *le modèle devient refactorable*
+### Ce qui s'est passé
+
+**Le modèle physique du logement se refactore (v17.0.0 → v17.0.1).** `chambre_arnaud` devient `chambre_enfants` et `chambre_matthieu` devient `salle_de_jeux` — non pas un renommage cosmétique, mais un **changement de modèle** propagé à travers ~167 fichiers : le périmètre « chambres » passe de 3 à 2 pièces, les agrégats thermiques et le besoin de chauffe sont recalculés en conséquence, les contrats de bornes thermiques suivent, les stations Netatmo et leurs prises sont renommées. La v17.0.1 solde l'opération côté instance par une migration du registre d'entités Home Assistant, **historique préservé**, sans changement de YAML.
+
+**Les personnes sortent du code (v17.0.0, prolongé ensuite).** Le canon `parent_1` / `parent_2` est inscrit dans `nommage_entites.md` et appliqué au runtime : `person.*`, helpers de téléphone, capteurs BSSID, cibles de notification. Le verrou S7 de `audit_publication_git.py` (v1.4.0 → v1.6.0, contrat `securite_publication_git.md` v1.3.0 → v1.5.0) passe à une détection par frontière de lettre et couvre adultes comme enfants. Le fil ouvert en v16.3.5 sur la publication trouve ici sa forme générale : **le dépôt est conçu pour être exposable**.
+
+**Une couche d'action bornée, et l'abstention qui continue (v17.0.2).** La commande distante de climatisation de la voiture (C25) introduit une **honnêteté terminale** : le succès n'est déclaré que sur transition réellement observée dans une fenêtre bornée ; à défaut, « non confirmé / timeout », jamais un faux succès. La restitution est auto-expirante. La même release corrige sept capteurs dont un accumulateur Jinja ne survivait pas à sa boucle — ils rendaient leur **branche de repli en permanence** depuis des mois : l'exact motif que l'abstention de v16.4 visait à rendre impossible.
+
+**Le contrat devient une cible (v17.0.3).** Le contrat VMC passe de v1.3 à **v2.4 et change de statut** : « cible contractuelle validée — implémentation à mettre en conformité ». Le contrat ne décrit plus l'existant, il **prescrit un état à atteindre**, et le runtime y est amené lot par lot (L1 → L7.7) : besoins par pièce portés par des machines à état persistantes, verdict réduit à une agrégation pure, frontière de libération modulée par une mesure extérieure, entrée d'aération retirée des entrées décisionnelles. La CI suit le mouvement : `check_vmc_initialisation_contracts.py` ne cherche plus un motif dans le texte mais **évalue le prédicat Jinja contre des scénarios** — un contrôle de comportement, non de lexique.
+
+### Leçon retenue
+> **Ce qui était réputé figé devient un artefact versionné.** Le nom d'une pièce, l'identité des personnes, l'implémentation entière d'un domaine : trois choses qu'on ne touche pas dans une installation ordinaire, parce que le coût du refactoring y est inconnu et le risque de régression total. Contrats, checkers et registre rendent ces refactorings **sûrs et donc possibles** — c'est le dividende du fil B, encaissé dix mois après son amorce. Et le contrat franchit un dernier seuil : de *reflet* de l'existant (v9), puis de *point d'entrée* (v14), il devient **cible opposable** que l'implémentation doit rejoindre, sous une CI qui vérifie un comportement plutôt qu'une forme.
 
 ---
 
