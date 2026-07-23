@@ -67,131 +67,131 @@ views:
                   - type: select-options
 
           # ==================================================
-          # ❄️ DIAGNOSTICS — MODE COOL
-          # ==================================================
-          - type: custom:button-card
-            template: carte_clim_verdict_mode
-            entity: sensor.clim_verdict_cool
-            name: Verdict COOL
-            visibility:
-              - condition: state
-                entity: input_select.clim_conditions_mode
-                state: Cool
-
-          - type: grid
-            square: false
-            columns: 2
-            visibility:
-              - condition: state
-                entity: input_select.clim_conditions_mode
-                state: Cool
-            cards:
-              - type: custom:button-card
-                template: carte_clim_diagnostic_temperature_exterieure
-                name: Température extérieure
-
-              - type: custom:button-card
-                template: carte_clim_diagnostic_aeration_etage
-                name: Aération préférable
-                icon: mdi:weather-windy
-
-              - type: custom:button-card
-                template: carte_clim_diagnostic_temperature_max_chambres
-                name: Chambre la plus chaude
-
-              - type: custom:button-card
-                template: carte_clim_diagnostic_extinction_temperature_min_chambres
-                name: Chambre la plus froide
-
-          # ==================================================
-          # 💧 DIAGNOSTICS — MODE DRY
+          # 🩺 DIAGNOSTICS PAR MODE — BLOCS CONDITIONNELS
+          # --------------------------------------------------
+          # Un seul `type: conditional` par mode, portant le
+          # verdict ET sa grille de diagnostics dans un
+          # `vertical-stack`. Forme unique sur tout Arsenal
+          # (modèle Palmarès météo).
+          #
+          # Auparavant : COOL utilisait `visibility:` sur chaque
+          # carte, DRY et HEAT deux blocs `conditional`
+          # consécutifs répétant la même condition — trois
+          # écritures pour un seul comportement.
+          #
+          # input_select.clim_conditions_mode = contexte
+          # d'interface (ne pilote rien, ne décide rien).
           # ==================================================
           - type: conditional
             conditions:
               - entity: input_select.clim_conditions_mode
-                state: Dry
+                state: Cool
             card:
-              type: custom:button-card
-              template: carte_clim_verdict_mode
-              entity: sensor.clim_verdict_dry
-              name: Verdict DRY
-
-          - type: conditional
-            conditions:
-              - entity: input_select.clim_conditions_mode
-                state: Dry
-            card:
-              type: grid
-              square: false
-              columns: 2
+              type: vertical-stack
               cards:
                 - type: custom:button-card
-                  template: carte_clim_diagnostic_humidex_max_chambres
-                  name: Humidex max chambres
+                  template: carte_clim_verdict_mode
+                  entity: sensor.clim_verdict_cool
+                  name: Verdict COOL
 
-                - type: custom:button-card
-                  template: carte_clim_diagnostic_fenetres_maison
-                  name: Fenêtres maison
-                  icon: mdi:window-closed-variant
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: custom:button-card
+                      template: carte_clim_diagnostic_temperature_exterieure
+                      name: Température extérieure
 
-                - type: custom:button-card
-                  template: carte_clim_diagnostic_presence_babysitting
-                  name: Présence / Babysitting
-                  icon: mdi:account-group
+                    - type: custom:button-card
+                      template: carte_clim_diagnostic_aeration_etage
+                      name: Aération préférable
+                      icon: mdi:weather-windy
 
-                - type: custom:button-card
-                  template: carte_clim_diagnostic_aeration_etage
-                  name: Aération préférable
-                  icon: mdi:weather-windy
+                    - type: custom:button-card
+                      template: carte_clim_diagnostic_temperature_max_chambres
+                      name: Chambre la plus chaude
 
-          # ==================================================
-          # 🔥 DIAGNOSTICS — MODE HEAT
-          # ==================================================
+                    - type: custom:button-card
+                      template: carte_clim_diagnostic_extinction_temperature_min_chambres
+                      name: Chambre la plus froide
+
           - type: conditional
             conditions:
               - entity: input_select.clim_conditions_mode
-                state: Heat
+                state: Dry
             card:
-              type: custom:button-card
-              template: carte_clim_verdict_mode
-              entity: sensor.clim_verdict_heat
-              name: Verdict HEAT
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: carte_clim_verdict_mode
+                  entity: sensor.clim_verdict_dry
+                  name: Verdict DRY
+
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: custom:button-card
+                      template: carte_clim_diagnostic_humidex_max_chambres
+                      name: Humidex max chambres
+
+                    - type: custom:button-card
+                      template: carte_clim_diagnostic_fenetres_maison
+                      name: Fenêtres maison
+                      icon: mdi:window-closed-variant
+
+                    - type: custom:button-card
+                      template: carte_clim_diagnostic_presence_babysitting
+                      name: Présence / Babysitting
+                      icon: mdi:account-group
+
+                    - type: custom:button-card
+                      template: carte_clim_diagnostic_aeration_etage
+                      name: Aération préférable
+                      icon: mdi:weather-windy
 
           - type: conditional
             conditions:
               - entity: input_select.clim_conditions_mode
                 state: Heat
             card:
-              type: grid
-              square: false
-              columns: 2
+              type: vertical-stack
               cards:
                 - type: custom:button-card
-                  template: carte_diagnostic_besoin_chauffe_temperature_min_chambres
-                  name: Chambre la plus froide
-                  icon: mdi:thermometer
+                  template: carte_clim_verdict_mode
+                  entity: sensor.clim_verdict_heat
+                  name: Verdict HEAT
 
-                - type: custom:button-card
-                  template: carte_clim_diagnostic_temperature_exterieure_hiver
-                  name: T° extérieure
-                  icon: mdi:thermometer-lines
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: custom:button-card
+                      template: carte_diagnostic_besoin_chauffe_temperature_min_chambres
+                      name: Chambre la plus froide
+                      icon: mdi:thermometer
 
-                - type: custom:button-card
-                  template: carte_clim_diagnostic_presence_babysitting
-                  name: Présence / Babysitting
+                    - type: custom:button-card
+                      template: carte_clim_diagnostic_temperature_exterieure_hiver
+                      name: T° extérieure
+                      icon: mdi:thermometer-lines
 
-                - type: custom:button-card
-                  template: carte_clim_diagnostic_fenetres_maison
-                  name: Fenêtres maison
-                  icon: mdi:window-closed-variant
+                    - type: custom:button-card
+                      template: carte_clim_diagnostic_presence_babysitting
+                      name: Présence / Babysitting
 
-                - type: custom:button-card
-                  template: carte_clim_diagnostic_chauffage_hiver_actif
-                  name: Chauffage clim hiver
+                    - type: custom:button-card
+                      template: carte_clim_diagnostic_fenetres_maison
+                      name: Fenêtres maison
+                      icon: mdi:window-closed-variant
 
-                - type: custom:button-card
-                  template: carte_diagnostic_chauffage_blocage_aeration
-                  name: Blocage post-aération
+                    - type: custom:button-card
+                      template: carte_clim_diagnostic_chauffage_hiver_actif
+                      name: Chauffage clim hiver
+
+                    - type: custom:button-card
+                      template: carte_diagnostic_chauffage_blocage_aeration
+                      name: Blocage post-aération
 
           # ==================================================
           # 📜 HISTORIQUE
