@@ -25,10 +25,16 @@ Tout le reste relève de gouvernance, d'explicabilité ou de maintenabilité —
 
 ### P2 — améliorations utiles
 
-**D5 — Notification d'échec persistant non matérialisée**
+**~~D5 — Notification d'échec persistant non matérialisée~~ — SOLDÉ via C13 (clôturé 2026-07-23)**
+- **Statut** : **soldé** — promu en chantier **C13** (P1, arbitrage propriétaire 2026-07-03),
+  runtime livré (automation `10030000000121`), contrat `08_execution.md` aligné, garde CI D5
+  verte + 8 mutations, et **validation terrain provoquée le 2026-07-23** (notification créée sur
+  `clim_execution_echec = on` ∧ `counter > 2`, retrait sur `echec off`, sans action physique —
+  cf. `03_plans_action/climatisation/plan_action_post_revalidation_climatisation.md` §2 et le
+  registre ⑤). Dette fermée.
 - Type : gouvernance (contrat 08 vs runtime). Proba incident : faible (échec infra
   prolongé). Impact : un échec d'exécution reste silencieux. Complexité faible (notif,
-  ou corriger le contrat). Régression faible. **P2.**
+  ou corriger le contrat). Régression faible. ~~**P2.**~~ **Clos.**
 
 **D13 — Couverture CI partielle** (reliquat étroit) *(TRAITÉ — 2026-07-03)*
 - **Statut** : **traité** — deux gardes de non-régression ajoutées à
@@ -102,7 +108,7 @@ s'applique pas. Laisser tel quel.
 
 | Priorité | Dette | Type | Risque | Bénéfice | Effort |
 |---|---|---|---|---|---|
-| P2 | D5 — notif échec persistant | Gouvernance | Échec exécution silencieux | Visibilité des pannes | Faible |
+| ✅ | ~~D5 — notif échec persistant~~ *(soldé via C13, 2026-07-23)* | Gouvernance | ~~Échec exécution silencieux~~ | Notification persistante livrée + validée terrain | Faible |
 | ✅ | D13 — CI partielle *(traité)* | Gouvernance | ~~Filet incomplet (`clim_bloquee` F2, `clim_action_en_cours` F3)~~ | F2/F3 figés en CI (2026-07-03) | Faible |
 | ➜ | H2 — VMC seuils OFF morts *(absorbé)* | Gouvernance | ~~Réglage UI sans effet~~ | Porté par **C35** (2026-07-21) | Faible |
 | P2 | H3a — aération sans deadband | Bug potentiel | Oscillation recommandation | Stabilité du conseil | Moyen |
