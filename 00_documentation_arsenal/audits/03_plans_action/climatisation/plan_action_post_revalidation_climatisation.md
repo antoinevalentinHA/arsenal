@@ -78,12 +78,45 @@ blocages appuie l'arbitrage 4 (voir §4.1).
   notification de mode (`notification_id` distinct de `clim_mode_actif`).
 - **Effort.** Faible (une automation + un § de contrat + une garde CI).
 - **Critères de fin.**
-  1. `clim_execution_echec` → `on` produit une notification persistante ;
-  2. réarmement (`rearmement_apres_recuperation.yaml`) → dismiss ;
+  1. notification persistante émise lorsque `input_boolean.clim_execution_echec = on`
+     **et** `counter.clim_execution_retry_count > 2` (échec latché **et** budget de
+     reprise épuisé) ; un échec encore couvert par la reprise (`counter ≤ 2`) reste
+     silencieux — comportement voulu ;
+  2. retrait de la notification lorsque `input_boolean.clim_execution_echec` repasse
+     à `off` (exécution validée ou purge de l'échec) ;
   3. contrat 08 aligné sur le mécanisme réel (plus de sur-promesse) ;
   4. garde CI verte + détection prouvée par mutation-testing (méthode F2/F3) ;
   5. backlog mis à jour (D5 retiré des dettes ouvertes) et registre C13 clos —
      co-commit (règle 1 du registre).
+
+- **Validation et clôture (2026-07-23).** Les cinq critères sont satisfaits ; **C13 est clos.**
+  - **①② — preuve terrain provoquée.** Test provoqué contrôlé sur l'instance vivante
+    (Outils de développement → Actions, services HA — **manipulation artificielle, et non
+    une panne réelle de bout en bout**). Préconditions vérifiées (clim au repos
+    `target`/`power`/`climate = off`, `timer.clim_retry` idle, `systeme_stable = on`,
+    intégration Airstage saine). Quatre appels : `counter.set_value = 3`,
+    `input_boolean.turn_on` (`clim_execution_echec`), puis `input_boolean.turn_off`,
+    `counter.reset`. **① création** : notification persistante émise en **< 2 s** sur
+    `echec ∧ counter>2` (trace `automation` `10030000000121` **21:11:58**,
+    `persistent_notification.create`, `notification_id: clim_execution_echec`, titre
+    « ⚠️ Clim – Échec d'exécution persistant », message neutre, **cible `off`** conforme
+    au contrat 08). **② dismiss** : retrait en **< 2 s** sur `echec = off` (branche de
+    retrait de l'automation, non un clic manuel « Ignorer »). **Aucune exécution, reprise
+    (`10030000000108`) ni réarmement (`10030000000111`)** ne s'est déclenché ; **aucune
+    action physique** (`switch.clim_power` off constant, `script.clim_execution` off
+    constant). **Restauration complète** (`echec = off`, `counter = 0`). Un événement de
+    présence indépendant et une déconnexion transitoire de l'outil de pilotage sont
+    survenus, **sans incidence** sur le mécanisme.
+  - **③④ — chaîne prouvée statiquement.** Contrat `08_execution.md` aligné (§ « Notification
+    d'échec persistant ») ; garde CI D5 verte (`check_climatisation_admissibilite_contracts.py`,
+    tests `test_notification_echec_execution_persistant` / `test_notification_echec_message_neutre`) ;
+    **détection prouvée par mutation-testing (8 mutations)** à la livraison.
+  - **Portée de la preuve — honnêteté.** La preuve terrain établit la **couche de projection**
+    (création / maintien / retrait). Le déclenchement depuis une **panne naturelle prolongée**
+    épuisant réellement le budget (`counter>2` produit par l'amont réel) **n'a pas été observé** :
+    **preuve L4** — sur 8 reprises naturelles historisées (2026-07-13 → 21), le compteur a
+    **plafonné à 2**, la branche « création » n'a jamais été atteinte naturellement. Cet amont
+    reste couvert par les preuves **statiques + 8 mutations**, non par une occurrence terrain.
 - **Validations / checkers.** Extension de
   `check_climatisation_admissibilite_contracts.py` (présence de l'automation,
   trigger sur `clim_execution_echec`, `persistent_notification.create`/`dismiss`,
