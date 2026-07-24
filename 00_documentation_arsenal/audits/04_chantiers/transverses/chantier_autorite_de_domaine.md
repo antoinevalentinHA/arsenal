@@ -4,10 +4,10 @@
 |---|---|
 | **Chantier** | Poser une doctrine transverse d'**autorité de domaine** : lever l'assimilation actuelle entre *autorité unique* et *souveraineté permanente d'Arsenal*, et définir les régimes **automatique** / **manuel** sous la formule **« unicité de l'autorité, révocabilité de sa délégation »**. |
 | **Domaine** | Transverse — doctrine d'autorité décisionnelle. Sans propriétaire documentaire préexistant. |
-| **Statut** | **Ouvert — doctrine (#571), amendements VMC v2.5 (#572) / v2.6 (#573) et échafaudage (#574) livrés. PR C : bascule L4+L6 — `gestion_auto` consomme la décision exécutoire (abstention anti-fallback, gate boot, récupération minimale), conformité vs décision exécutoire (cause exposée), `check_vmc_contracts` aligné. Le mode manuel devient EXÉCUTOIRE.** Reste : tests terrain (dont test impératif de récupération après fail-safe) puis clôture du pilote. |
+| **Statut** | **Ouvert — SOCLE VMC VALIDÉ, PHASE UI OUVERTE.** Doctrine (#571), contrat v2.5/v2.6 (#572/#573), échafaudage (#574) et bascule L4+L6 (#575) livrés ; autorité automatique/manuelle, transitions supervisées et décision exécutoire unique en place ; **mode manuel exécutoire, validé en terrain T0→I** (récupération unique par front sur trois fronts isolés). **Phase UI encore ouverte avant clôture fonctionnelle du pilote.** Scénarios **J** (rafale, flapping provoqué, défaut persistant) = **réserve terrain différée non bloquante** (§6-bis). **Le pilote VMC n'est pas clos ; C36 reste ① Actif.** |
 | **Priorité** | **P2** — enjeu structurant, sans risque technique immédiat. Fait suite à l'observation **A2** de C34 (asymétrie doctrinale commande-directe / consigne-déléguée) et à l'audit transverse d'autorité (2026-07-24). |
 | **Ouvert le** | 2026-07-24. |
-| **Prochain jalon** | Doctrine (#571), contrat v2.5/v2.6 (#572/#573), échafaudage (#574) **livrés**. **PR C (présente)** : bascule L4+L6 — application consomme `binary_sensor.vmc_haute_vitesse_commandee`, conformité vs décision exécutoire (cause exposée), boot gaté sur `systeme_stable`, récupération sur front stabilisé de cohérence, `check_vmc_contracts` aligné. **Mode manuel exécutoire.** Reste : **tests terrain** (auto/manuel, transitions atomiques, reboot par régime, anomalie XOR → récupération unique — **test impératif** de matraquage) puis **clôture du pilote VMC**. |
+| **Prochain jalon** | **Pilote VMC — clôture fonctionnelle conditionnée à l'UI de reprise en main.** Concevoir puis valider l'**UI** (voir l'autorité active, entrer en manuel, choisir basse/haute, restituer l'autorité à Arsenal) dans le respect de l'**écrivain unique** : l'UI **appelle les primitives** (`vmc_entrer_mode_manuel` / `vmc_revenir_mode_automatique`), **jamais** de commande directe des relais ni d'orchestration des helpers de transition (§16.2, §16.4 ; recensement UI §16.6). La **conception UI n'est pas engagée** dans la présente passe. Puis **clôture fonctionnelle** du pilote. En parallèle : réconciliation des contrats de souveraineté chauffage/climatisation (Lot 4, passe distincte). Nettoyage G (branche morte + micro-clarif §16.2) non bloquant. **Réserve J** : réexamen **uniquement sur occurrence naturelle ou symptôme réel** ; **aucun compteur/retry sans preuve de matraquage**. |
 | **Registre** | Chantier **C36** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **Portée.** Chantier **doctrinal resserré.** Aucun helper, aucune UI, aucun runtime, aucune
@@ -148,6 +148,84 @@ première passe par domaine :
 > B (échafaudage inerte + `availability` cohérence, sans activation du manuel), C (bascule L4+L6 +
 > tests terrain). Les travaux C36-VMC avancent **en parallèle** des réserves C35 (calibration /
 > historisation), orthogonales à la titularité de l'autorité.
+
+---
+
+## 6-bis. Bilan d'étape du pilote VMC — socle validé, phase UI ouverte
+
+**Qualification.** Socle contractuel et runtime du pilote VMC validé ; phase UI encore
+ouverte avant clôture fonctionnelle du pilote. Les scénarios J restent une réserve
+terrain différée non bloquante. **Le pilote VMC n'est pas clos.**
+
+### Socle livré (cinq PR)
+
+- Doctrine transverse [`autorite_de_domaine.md`](../../../architecture/03_doctrines/autorite_de_domaine.md) (#571) —
+  propriétaire unique de la titularité ; `principes_generaux.md` §2 clarifié (unicité ≠ permanence).
+- Contrat [`vmc.md`](../../../contrats/vmc.md) §16 v2.5 (#572) puis v2.6 (#573) — comportements
+  d'autorité spécifiés et opposables.
+- Échafaudage L1–L5 (#574) — porteurs titulaire / consigne (sans `initial:`), décision exécutoire
+  dérivée à disponibilité stricte (anti-fallback), primitives supervisées d'entrée / retour,
+  fiabilisation de la cohérence physique.
+- Bascule L4+L6 (#575) — l'application et la conformité consomment la décision exécutoire ; le mode
+  manuel devient exécutoire.
+
+### Validation terrain — T0 → I (2026-07-24)
+
+Instrumentation par trace `state_changed` backend (horodatage serveur à la microseconde, ordre exact,
+aucun échantillon manqué), en lecture seule ; écriture des vérités **uniquement** par les primitives.
+
+- **T0 → H (non destructifs) : conformes.** Entrée manuelle **atomique** (consigne écrite avant le
+  transfert d'autorité, à la milliseconde ; aucune consigne antérieure exécutée transitoirement ;
+  commande physique en **break-before-make**, jamais de double activation). Décision automatique **non
+  exécutoire** en régime manuel (écart exposé sans non-conformité ni alerte). Retour automatique =
+  **geste explicite**, aucune reprise silencieuse (INV-AUT-6). Consigne invalide → **abstention** +
+  cause journalisée. **Durée minimale** de descente **différée** sur transition / **montée immédiate** /
+  une nouvelle demande annule la descente. Indisponibilité physique → cohérence **indisponible** (jamais
+  « incohérente »), watchdog inhibé, **aucun repli métier**. **Redémarrage déterministe** dans les deux
+  régimes : titulaire restauré fidèlement, **une seule** application, physique préservé par inertie.
+- **I (récupération XOR, sous supervision physique) : conforme.** Trois fronts d'injection réelle
+  (double activation en automatique, double coupure en automatique, double activation en manuel),
+  corroborés par confirmation physique. Sur chaque front : incohérence détectée après la temporisation
+  mesurée (~2 s), fail-safe vers la basse vitesse, puis — sur le front stabilisé de retour à une
+  cohérence valide (tenu ~5 s) — **exactement une** ré-application de la décision de l'autorité active.
+  La ventilation n'est jamais interrompue durablement ; le fail-safe agit sur le physique, pas sur la
+  décision.
+
+### Invariants opposables
+
+INV-AUT-1 à INV-AUT-6 **observés** ; INV-AUT-7 (expiration volontaire admise) **n/a** — non requis par
+ce pilote.
+
+### Nuances tranchées (aucune n'enfreint les invariants)
+
+- **Amorçage des capteurs au boot** — pendant le transitoire, la conformité est brièvement
+  *indisponible* (attributs masqués) plutôt qu'*indéterminée* avec cause textuelle. **Conforme** :
+  la disponibilité de la conformité est gatée sur la lisibilité des relais (§16.5), et l'indisponibilité
+  physique est surfacée par les entités relais et la cohérence. Un nettoyage documentaire (branche de
+  cause inatteignable + micro-clarification §16.2) est identifié comme suite **non bloquante**, en passe
+  séparée.
+- **Convergence de descente au démarrage** — au redémarrage, la descente est appliquée immédiatement,
+  sans la durée minimale. **Intentionnel** (§16.4) : la convergence de démarrage est une application
+  unique, hors de l'anti-flapping qui protège les *transitions*.
+
+### Réserve terrain — différée, non bloquante
+
+Pilote VMC livré et validé en terrain sur T0→I. L'absence de matraquage est établie par conception et
+confirmée sur trois récupérations isolées ; les scénarios invasifs de rafale, flapping provoqué et
+défaut persistant n'ont pas été exercés et restent une réserve terrain différée non bloquante, à
+réexaminer uniquement sur occurrence naturelle ou symptôme réel.
+
+Aucun mécanisme de compteur ou de retry ne doit être ajouté sans preuve de matraquage.
+
+### Reste pour la clôture fonctionnelle — phase UI
+
+La finalité du pilote est de rendre la **reprise en main utilisateur réellement accessible**. Tant que
+l'UI ne permet pas de **voir l'autorité active**, **entrer en manuel**, **choisir basse / haute** et
+**restituer l'autorité à Arsenal**, le pilote n'est pas fonctionnellement complet. La **conception UI
+n'est pas engagée dans la présente passe** ; elle constitue le **prochain jalon fonctionnel**, à mener
+dans le respect de l'**écrivain unique** : l'UI **appelle les primitives** (`vmc_entrer_mode_manuel` /
+`vmc_revenir_mode_automatique`) et **ne commande jamais directement** les relais ni n'orchestre les
+helpers de transition (§16.2, §16.4 ; instancie le recensement UI §16.6).
 
 ---
 
