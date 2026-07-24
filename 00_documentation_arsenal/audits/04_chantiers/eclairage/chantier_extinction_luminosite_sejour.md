@@ -229,6 +229,19 @@ d'hiver plus bas, ou l'acceptation d'un seuil « surtout actif l'été », **res
 (proxy ✅) et le point 2 (été provisoire), **C22 devient clôturable sous la seule réserve
 hiver** — à **parquer** (réévaluation en saison froide) ou à lever par accumulation hivernale.
 
+**Relevé d'activation (2026-07-24) — seuil posé à `50` lx.** Exécuté sur l'instance vivante
+(Outils de développement → Actions, `input_number.set_value`, pas « Set State ») :
+`input_number.sejour_seuil_luminosite_extinction_auto` = **50**. **Vérification live** :
+`binary_sensor.sejour_extinction_luminosite_autorisee` expose `seuil_luminosite: 50`,
+`illuminance: 42` (midi couvert) → **état `off`** — `seuil > 0` (50>0) **∧** `lux > seuil`
+(42 > 50 = **faux**) : le **calcul du seuil est vérifié**, et l'**abstention est correcte**
+(fail-safe, il ne fait pas assez clair pour autoriser l'extinction). **Aucune extinction,
+aucune action physique** : l'automation `10070000000035` a son `last_triggered` **inchangé
+(2026-07-23)**. **La fonction est active** (seuil 50 laissé en place, arbitrage propriétaire
+2026-07-24). **Point 3 en observation multi-jours** — à surveiller sur les prochains jours
+clairs : autorité `on` en milieu de matinée (lux > 50), extinction du séjour en présence +
+plein jour, **absence de ré-allumage** sous 5 min ; **repli** = helper à `0`. Suivi opérateur.
+
 ---
 
 ## 6. Risques résiduels / dettes
