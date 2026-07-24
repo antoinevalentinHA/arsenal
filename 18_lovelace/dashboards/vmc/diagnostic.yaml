@@ -25,6 +25,12 @@ views:
             template: carte_vmc_haute_vitesse_requise
             entity: binary_sensor.vmc_haute_vitesse_requise
 
+          # Décision EXÉCUTOIRE (§16.2) — lecture seule, à côté de la
+          # décision automatique. Anti-fallback : indispo → « Indéterminée ».
+          - type: custom:button-card
+            template: carte_vmc_decision_commandee
+            entity: binary_sensor.vmc_haute_vitesse_commandee
+
           - type: custom:button-card
             template: carte_vmc_intention
             entity: sensor.vmc_intention
@@ -279,21 +285,40 @@ views:
             template: section_header
             name: ⚙️ Exécution physique
 
+          # Relais L1/L2 — LECTURE SEULE (§16.2, §16.6). Le pilotage direct
+          # depuis l'UI contredirait l'autorité et l'écrivain uniques : ces
+          # cartes sont strictement non interactives (carte_etat_interprete,
+          # tap/hold/double verrouillés), tout en restant visibles pour le
+          # diagnostic. Toute commande passe par le chemin canonique.
           - type: grid
             columns: 2
             square: false
             cards:
               - type: custom:button-card
-                template: socle_toggle_confirme_indispo
+                template: carte_etat_interprete
                 entity: switch.vmc_l1
                 name: Relais L1
                 icon: mdi:electric-switch
+                variables:
+                  libelles:
+                    'on': Actif
+                    'off': Inactif
+                  couleurs:
+                    'on': rgba(33, 150, 243, 0.2)
+                    'off': rgba(158, 158, 158, 0.2)
 
               - type: custom:button-card
-                template: socle_toggle_confirme_indispo
+                template: carte_etat_interprete
                 entity: switch.vmc_l2
                 name: Relais L2
                 icon: mdi:electric-switch
+                variables:
+                  libelles:
+                    'on': Actif
+                    'off': Inactif
+                  couleurs:
+                    'on': rgba(33, 150, 243, 0.2)
+                    'off': rgba(158, 158, 158, 0.2)
 
           - type: custom:button-card
             template: section_header

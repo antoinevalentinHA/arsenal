@@ -48,6 +48,133 @@ views:
                   color_off: rgba(76, 175, 80, 0.2)
 
           ####################################################
+          # 🎛️ AUTORITÉ & REPRISE EN MAIN  (pilote C36)
+          # ----------------------------------------------------------
+          # Squelette pur : composition de templates 15_autorite/.
+          # Les actions n'appellent QUE les primitives supervisées
+          # (script.vmc_entrer_mode_manuel / script.vmc_revenir_mode_automatique).
+          # Aucune commande relais, aucune écriture directe de helper.
+          # Les conditionnels ne font que CHOISIR l'affichage selon le
+          # titulaire ; ils ne recalculent aucune vérité métier.
+          ####################################################
+          - type: vertical-stack
+            cards:
+              - type: custom:button-card
+                template: section_header
+                name: 🎛️ Autorité & reprise en main
+
+              # Qui détient l'autorité (lecture seule)
+              - type: custom:button-card
+                template: carte_etat_interprete
+                entity: input_select.vmc_titulaire_autorite
+                name: Autorité
+                icon: mdi:account-switch
+                variables:
+                  libelles:
+                    automatique: Arsenal (auto)
+                    manuel: Vous (manuel)
+                  couleurs:
+                    automatique: rgba(33, 150, 243, 0.2)
+                    manuel: rgba(255, 152, 0, 0.2)
+
+              # AUTOMATIQUE → proposer la prise de contrôle manuelle
+              - type: conditional
+                conditions:
+                  - entity: input_select.vmc_titulaire_autorite
+                    state: automatique
+                card:
+                  type: grid
+                  columns: 2
+                  square: false
+                  cards:
+                    - type: custom:button-card
+                      template: carte_action_vmc_prise_manuelle
+                      entity: script.vmc_entrer_mode_manuel
+                      name: Passer en manuel — basse
+                      icon: mdi:fan
+                      variables:
+                        consigne: basse
+                        confirmation: >-
+                          Prendre le contrôle manuel de la VMC en basse vitesse ?
+                    - type: custom:button-card
+                      template: carte_action_vmc_prise_manuelle
+                      entity: script.vmc_entrer_mode_manuel
+                      name: Passer en manuel — haute
+                      icon: mdi:fan-chevron-up
+                      variables:
+                        consigne: haute
+                        confirmation: >-
+                          Prendre le contrôle manuel de la VMC en haute vitesse ?
+
+              # MANUEL → changer la consigne + restituer l'autorité
+              - type: conditional
+                conditions:
+                  - entity: input_select.vmc_titulaire_autorite
+                    state: manuel
+                card:
+                  type: vertical-stack
+                  cards:
+                    - type: grid
+                      columns: 2
+                      square: false
+                      cards:
+                        - type: custom:button-card
+                          template: carte_action_vmc_prise_manuelle
+                          entity: script.vmc_entrer_mode_manuel
+                          name: Commander basse
+                          icon: mdi:fan
+                          variables:
+                            consigne: basse
+                            confirmation: >-
+                              Passer la VMC en basse vitesse (mode manuel) ?
+                        - type: custom:button-card
+                          template: carte_action_vmc_prise_manuelle
+                          entity: script.vmc_entrer_mode_manuel
+                          name: Commander haute
+                          icon: mdi:fan-chevron-up
+                          variables:
+                            consigne: haute
+                            confirmation: >-
+                              Passer la VMC en haute vitesse (mode manuel) ?
+                    - type: custom:button-card
+                      template: carte_action_vmc_restitution
+                      entity: script.vmc_revenir_mode_automatique
+                      name: Rendre l'autorité à Arsenal
+                      icon: mdi:account-arrow-right
+                      variables:
+                        confirmation: >-
+                          Rendre le contrôle de la VMC à Arsenal (mode automatique) ?
+
+              # Décision exécutoire (lecture seule, tous régimes)
+              - type: custom:button-card
+                template: carte_vmc_decision_commandee
+                entity: binary_sensor.vmc_haute_vitesse_commandee
+
+              # MANUEL → décision Arsenal THÉORIQUE (non exécutoire, info)
+              - type: conditional
+                conditions:
+                  - entity: input_select.vmc_titulaire_autorite
+                    state: manuel
+                card:
+                  type: custom:button-card
+                  template: carte_vmc_haute_vitesse_requise
+                  entity: binary_sensor.vmc_haute_vitesse_requise
+                  name: Décision Arsenal (théorique)
+
+              # État physique réel (lecture seule)
+              - type: custom:button-card
+                template: carte_mode_binaire_interprete
+                entity: input_boolean.vmc_haute_vitesse
+                name: État réel
+                icon: mdi:fan
+                tap_action: none
+                variables:
+                  label_on: Haute
+                  label_off: Basse
+                  color_on: rgba(76, 175, 80, 0.2)
+                  color_off: rgba(158, 158, 158, 0.2)
+
+          ####################################################
           # ⚙️ CONDITIONS ACTUELLES
           ####################################################
           - type: vertical-stack

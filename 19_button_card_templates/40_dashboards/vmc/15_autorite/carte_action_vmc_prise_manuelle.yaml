@@ -1,0 +1,67 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     VMC — Action : prise / commande manuelle (autorité C36)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Prendre le contrôle manuel de la VMC en une action ATOMIQUE
+#     et SUPERVISÉE (C36 §16.4), en déléguant intégralement à la
+#     primitive backend script.vmc_entrer_mode_manuel :
+#       valider la consigne → l'écrire → transférer l'autorité.
+#     Sert aussi, en régime déjà manuel, à changer la consigne
+#     (appel idempotent). Spécialisation Autorité VMC du socle
+#     d'action script confirmé.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_action_script_confirme
+#     - UI uniquement : n'écrit NI helper, NI relais. Seule frontière
+#       = la primitive supervisée (écrivain unique préservé, §16.2).
+#
+# 🔗 DEPENDANCES
+#     - entity   : script.vmc_entrer_mode_manuel (feedback d'état)
+#     - service  : script.vmc_entrer_mode_manuel
+#     - variables.consigne     : 'basse' | 'haute' (transmise telle quelle
+#                                à la primitive, qui la valide ; jamais
+#                                d'écriture directe d'input_select ici)
+#     - variables.confirmation : texte de confirmation modale (surchargé
+#                                au site d'appel selon le contexte)
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation modale OBLIGATOIRE (prise d'autorité / changement
+#       de consigne, §16.4)
+#     - N'expose JAMAIS une commande native de relais
+#     - Ne redéfinit ni couleur, ni state mapping du socle
+#     - La consigne est passée à la primitive, jamais écrite dans
+#       input_select.vmc_consigne_manuelle par l'UI
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_action_vmc_prise_manuelle
+#     entity: script.vmc_entrer_mode_manuel
+#     name: Passer en manuel — haute
+#     icon: mdi:fan-chevron-up
+#     variables:
+#       consigne: haute
+#       confirmation: "Prendre le contrôle manuel de la VMC en haute vitesse ?"
+#
+# 🔗 SATELLITE DE : socle_action_script_confirme
+# ==========================================================
+
+carte_action_vmc_prise_manuelle:
+  template: socle_action_script_confirme
+
+  tap_action:
+    action: call-service
+    service: script.vmc_entrer_mode_manuel
+    confirmation:
+      text: >
+        [[[
+          return variables?.confirmation
+            || "Prendre le contrôle manuel de la VMC ?";
+        ]]]
+    service_data:
+      consigne: '[[[ return variables.consigne ]]]'
