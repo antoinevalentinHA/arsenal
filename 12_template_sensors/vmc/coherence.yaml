@@ -27,6 +27,18 @@
       delay_off:
         seconds: 2
 
+      # C36 (§16.5) — INCOHÉRENCE RÉELLE UNIQUEMENT.
+      # Une INDISPONIBILITÉ de commande physique NE VAUT PAS
+      # incohérence : si un relais est unavailable/unknown, la
+      # cohérence est INDISPONIBLE (et non « off »). Le watchdog
+      # (fail-safe basse) ne se déclenche donc que sur une
+      # incohérence XOR RÉELLE (deux relais réellement actifs ou
+      # réellement inactifs), jamais pour remplacer une décision
+      # métier absente.
+      availability: >
+        {{ states('switch.vmc_l1') in ['on', 'off']
+           and states('switch.vmc_l2') in ['on', 'off'] }}
+
       state: >
         {% set l1 = is_state('switch.vmc_l1', 'on') %}
         {% set l2 = is_state('switch.vmc_l2', 'on') %}

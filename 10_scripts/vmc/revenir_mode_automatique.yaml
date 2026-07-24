@@ -1,0 +1,40 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : VMC — Revenir en mode automatique (primitive)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Primitive backend EXPLICITE et TRACÉE de restitution de
+#   l'autorité à Arsenal (pilote C36, §16.4) : titulaire → automatique.
+#   La convergence relève ensuite de la décision exécutoire unique.
+#
+# 🧱 SÉMANTIQUE
+#   - La consigne manuelle est LAISSÉE TELLE QUELLE et IGNORÉE
+#     tant que le régime est automatique (jamais effacée : pas de
+#     `initial:` sur les helpers, doctrine restauration_etat_helpers).
+#   - La restitution est un GESTE explicite, jamais un effet de bord
+#     ni une reprise silencieuse.
+#
+# 🛡️ SÉCURITÉ
+#   - N'ÉCRIT AUCUN RELAIS (switch.vmc_l1 / switch.vmc_l2).
+#     Écrivain unique préservé (§16.2). Cette primitive n'agit que
+#     sur le helper de titularité.
+#
+# 🔁 APPEL
+#   Destinée à être appelée par l'UI (à câbler ultérieurement).
+#   L'UI appelle ; elle n'orchestre pas la transition (§16.4).
+#
+# 🧊 PR B (échafaudage) — INERTE
+#   Non câblée en UI ; gestion_auto inchangé ⇒ aucun effet sur
+#   l'exécution même en cas d'appel. La bascule est en PR C.
+# ==========================================================
+
+vmc_revenir_mode_automatique:
+  alias: "VMC - Revenir en mode automatique (primitive supervisée)"
+  mode: single
+  max_exceeded: silent
+
+  sequence:
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.vmc_titulaire_autorite
+      data:
+        option: automatique

@@ -1,0 +1,41 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : VMC — Consigne manuelle
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Porter la CONSIGNE choisie par l'utilisateur en régime
+#   manuel (pilote C36, contrat vmc.md §16.3). Surface stricte
+#   { basse, haute } — l'arrêt n'est PAS exposé.
+#
+# 🧩 Nature :
+#   Intention persistante. VÉRITÉ propre, distincte du titulaire
+#   et de l'état physique (interdiction de fusion, §16).
+#   Consommée UNIQUEMENT lorsque le titulaire est « manuel ».
+#
+# 🔒 Persistance :
+#   PAS de clé `initial:` — doctrine restauration_etat_helpers.md
+#   (INV-INIT, R01/R02). La 1re option « basse » n'est qu'un
+#   BOOTSTRAP de première création, jamais un fallback : un état
+#   unknown/unavailable en régime manuel rend la décision
+#   exécutoire indisponible, il ne vaut pas « basse ».
+#
+# ❌ Ne fait PAS :
+#   - ne pilote AUCUN relais ;
+#   - ne décide RIEN par lui-même ;
+#   - n'expose PAS l'arrêt.
+#
+# 🔁 Écriture :
+#   Uniquement par la primitive d'entrée en manuel
+#   (script.vmc_entrer_mode_manuel), qui écrit la consigne AVANT
+#   de transférer l'autorité (atomicité, §16.4). Ignorée tant que
+#   le régime est automatique.
+#
+# 🧊 PR B (échafaudage) :
+#   INERTE sur l'exécution — aucun consommateur d'exécution.
+# ==========================================================
+
+vmc_consigne_manuelle:
+  name: "VMC — Consigne manuelle"
+  options:
+    - basse
+    - haute
+  icon: mdi:fan

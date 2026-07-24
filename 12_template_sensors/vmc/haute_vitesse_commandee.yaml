@@ -1,0 +1,96 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR : VMC haute vitesse COMMANDÉE
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   DÉCISION EXÉCUTOIRE UNIQUE de la VMC (pilote C36, §16.2).
+#   Matérialise, en un seul point, l'autorité active :
+#     - titulaire = automatique → suit la décision automatique
+#       binary_sensor.vmc_haute_vitesse_requise (§3.1) ;
+#     - titulaire = manuel       → suit la consigne
+#       input_select.vmc_consigne_manuelle (§16.3).
+#   ON = haute commandée · OFF = basse commandée.
+#
+# 🧱 DÉRIVÉ PUR (§2.4-like)
+#   Aucun état propre, aucune mémoire, aucun timer, aucune
+#   lecture de l'état physique. Fonction pure de :
+#     input_select.vmc_titulaire_autorite,
+#     input_select.vmc_consigne_manuelle,
+#     binary_sensor.vmc_haute_vitesse_requise.
+#
+# 🚫 ANTI-FALLBACK STRICT (§16.2) — availability
+#   La décision exécutoire n'est VALIDE que si le titulaire porte
+#   une valeur valide ET que la source qu'il désigne est valide :
+#     - automatique → décision auto ∈ {on, off} ;
+#     - manuel      → consigne ∈ {basse, haute}.
+#   À défaut → INDISPONIBLE (unavailable). Un unknown/unavailable
+#   NE VAUT NI automatique, NI basse, NI absence de besoin :
+#   AUCUNE valeur n'est substituée. L'application (PR C) s'abstient
+#   sur une décision exécutoire indisponible.
+#
+# 🧊 PR B (échafaudage) — INERTE
+#   Aucun consommateur d'exécution : gestion_auto reste inchangé
+#   et consomme encore binary_sensor.vmc_haute_vitesse_requise.
+#   En régime automatique (bootstrap), la présente décision est
+#   ÉQUIVALENTE à la décision automatique. La bascule (application
+#   + conformité) est le couple L4+L6 de la PR C.
+#
+# ⚠️ Exposition de la cause d'indisponibilité (§16.2)
+#   Quand cette entité est unavailable, HA masque ses attributs :
+#   la cause d'indisponibilité au diagnostic est portée par la
+#   couche conformité, dont l'adaptation vers cette décision
+#   relève de la PR C (§16.5, §16.6). Les attributs ci-dessous
+#   documentent le régime actif LORSQUE la décision est disponible.
+# ==========================================================
+
+- binary_sensor:
+    - name: "VMC haute vitesse commandée"
+      unique_id: vmc_haute_vitesse_commandee
+      default_entity_id: binary_sensor.vmc_haute_vitesse_commandee
+
+      # ANTI-FALLBACK : indisponible si le titulaire ou la source
+      # qu'il désigne n'est pas valide. Aucune valeur substituée.
+      availability: >
+        {% set t = states('input_select.vmc_titulaire_autorite') %}
+        {% set req = states('binary_sensor.vmc_haute_vitesse_requise') %}
+        {% set cons = states('input_select.vmc_consigne_manuelle') %}
+        {{ (t == 'automatique' and req in ['on', 'off'])
+           or (t == 'manuel' and cons in ['basse', 'haute']) }}
+
+      # ON = haute, OFF = basse. Les entrées sont garanties valides
+      # par l'availability ci-dessus (pas de valeur inventée).
+      state: >
+        {% if is_state('input_select.vmc_titulaire_autorite', 'manuel') %}
+          {{ is_state('input_select.vmc_consigne_manuelle', 'haute') }}
+        {% else %}
+          {{ is_state('binary_sensor.vmc_haute_vitesse_requise', 'on') }}
+        {% endif %}
+
+      icon: >
+        {% if is_state(this.entity_id, 'on') %}
+          mdi:fan-chevron-up
+        {% else %}
+          mdi:fan
+        {% endif %}
+
+      attributes:
+        # Régime / titulaire courant (diagnostic, lecture seule).
+        titulaire: >
+          {{ states('input_select.vmc_titulaire_autorite') }}
+
+        # Source de la décision exécutoire selon le régime.
+        source_decision: >
+          {% if is_state('input_select.vmc_titulaire_autorite', 'manuel') %}
+            consigne manuelle
+          {% else %}
+            décision automatique
+          {% endif %}
+
+        # Régime commandé, lisible (haute / basse / indisponible).
+        regime_commande: >
+          {% if is_state(this.entity_id, 'on') %}
+            haute
+          {% elif is_state(this.entity_id, 'off') %}
+            basse
+          {% else %}
+            indisponible
+          {% endif %}
