@@ -146,6 +146,11 @@ print("✔ Automatisations VMC avec mode")
 INTENTION = ROOT / "12_template_sensors" / "vmc" / "intention.yaml"
 DECISION = "binary_sensor.vmc_haute_vitesse_requise"
 
+# C36 §16.2 — la couche de commande consomme la DÉCISION EXÉCUTOIRE, qui résout
+# la titularité (automatique / manuel) et DÉRIVE du verdict agrégé (DECISION).
+EXECUTOIRE = "binary_sensor.vmc_haute_vitesse_commandee"
+EXECUTOIRE_FILE = ROOT / "12_template_sensors" / "vmc" / "haute_vitesse_commandee.yaml"
+
 
 def _gabarit_cause(path: Path) -> str:
     blocs = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -599,11 +604,25 @@ else:
                 f"{COMMANDE.name} lit '{ingredient}', qui a servi à la former. "
                 "Elle ne doit lire que le verdict agrégé"
             )
-    if DECISION not in contenu_cmd:
+    # C36 §16.2 — la commande lit la DÉCISION EXÉCUTOIRE (titularité résolue),
+    # et non plus le verdict agrégé directement.
+    if EXECUTOIRE not in contenu_cmd:
         fail(
-            f"§8.2 — {COMMANDE.name} ne lit pas le verdict agrégé "
-            f"{DECISION} : la commande ne serait rattachée à aucune décision"
+            f"§16.2 — {COMMANDE.name} ne lit pas la décision exécutoire "
+            f"{EXECUTOIRE} : la commande ne serait rattachée à aucune décision"
         )
+    # La décision exécutoire doit DÉRIVER du verdict agrégé : la chaîne
+    # commande → exécutoire → verdict reste ainsi tracée (§16.2).
+    if EXECUTOIRE_FILE.is_file():
+        contenu_exec = read(EXECUTOIRE_FILE)
+        if DECISION not in contenu_exec:
+            fail(
+                f"§16.2 — {EXECUTOIRE_FILE.name} (décision exécutoire) ne dérive "
+                f"pas du verdict agrégé {DECISION} : la chaîne "
+                "commande → exécutoire → verdict serait rompue"
+            )
+    else:
+        fail(f"§16.2 — décision exécutoire introuvable : {EXECUTOIRE_FILE}")
     # §8.4 — le reflet ne doit pas remonter dans la commande.
     if "input_boolean.vmc_haute_vitesse" in contenu_cmd:
         fail(
@@ -611,9 +630,9 @@ else:
             "unique, le reflet n'alimente ni la décision ni la commande"
         )
 
-if not [e for e in ERRORS if "§8.2" in e or "§8.4" in e]:
-    print("✔ Commande rattachée au seul verdict agrégé, sans reconstruction "
-          "(§8.2, §8.4)")
+if not [e for e in ERRORS if "§8.2" in e or "§8.4" in e or "§16.2" in e]:
+    print("✔ Commande rattachée à la décision exécutoire (dérivée du verdict "
+          "agrégé), sans reconstruction (§16.2, §8.2, §8.4)")
 
 
 if not [e for e in ERRORS if "§7.4 bis" in e or "Engagement L7.0" in e

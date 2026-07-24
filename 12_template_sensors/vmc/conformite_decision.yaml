@@ -2,65 +2,47 @@
 # 🧠 ARSENAL — BINARY SENSOR : VMC conformité décision
 # ----------------------------------------------------------
 # 🎯 ROLE
-#   Vérifier que l'état physique réel de la VMC est conforme
-#   à la décision métier centrale.
+#   Vérifier que l'état physique réel de la VMC est conforme à la
+#   DÉCISION EXÉCUTOIRE (C36 §16.5), et non à la seule décision
+#   automatique.
 #
 # 🧱 PRINCIPE
 #   Ce capteur mesure l'écart entre :
-#     - ce que le système a décidé  → binary_sensor.vmc_haute_vitesse_requise
-#     - ce qui est physiquement actif → switch.vmc_l1 / switch.vmc_l2
+#     - la décision exécutoire  → binary_sensor.vmc_haute_vitesse_commandee
+#       (régime automatique → décision auto ; régime manuel → consigne)
+#     - l'état physiquement actif → switch.vmc_l1 / switch.vmc_l2
 #
-#   ON  = état réel conforme à la décision
-#   OFF = état réel contradictoire avec la décision (non-conformité)
+#   ON  = état réel conforme à la décision EXÉCUTOIRE
+#   OFF = état réel contradictoire (non-conformité)
+#   unknown = conformité indéterminée : décision exécutoire indisponible
+#             (anti-fallback §16.2) OU XOR relais invalide
+#
+#   👉 Sous autorité MANUELLE, un écart entre la décision AUTOMATIQUE
+#      (théorique, non exécutoire) et l'état physique est LÉGITIME : il
+#      est exposé en attribut (decision_theorique / ecart_theorique),
+#      SANS constituer une non-conformité. La conformité ne se juge que
+#      contre la décision exécutoire.
+#
+# 🚫 CAUSE EXPOSÉE — AUCUNE CAUSE MUETTE (§16.2)
+#   Tant que les relais sont lisibles, ce capteur reste DISPONIBLE et
+#   expose, quand la décision exécutoire est indisponible, la cause
+#   précise via l'attribut cause_indetermination (titulaire / consigne /
+#   décision auto / relais / XOR). Pas de capteur diagnostic agrégé.
 #
 # ❌ NE PAS CONFONDRE AVEC
-#   binary_sensor.vmc_coherence_physique
-#     → vérifie uniquement la validité électrique (XOR relais)
-#     → ne connaît pas la décision métier
-#
-#   binary_sensor.vmc_conformite_decision  (ce capteur)
-#     → vérifie la cohérence fonctionnelle décision ↔ réel
-#     → ne juge pas la validité électrique
-#
-# 📐 TABLE DE VÉRITÉ
-#
-#   décision          | relais actif | XOR valide | état
-#   ------------------+--------------+------------+--------
-#   unavailable       | (any)        | (any)      | unavailable
-#   (any)             | unavailable  | (any)      | unavailable
-#   (any)             | (any)        | invalide   | unknown
-#   ON (haute)        | L1           | ✔          | ON
-#   ON (haute)        | L2           | ✔          | OFF
-#   OFF (basse)       | L2           | ✔          | ON  ← peut être OFF légitimement
-#   OFF (basse)       | L1           | ✔          | OFF ← non-conformité réelle ou hystérésis
+#   binary_sensor.vmc_coherence_physique → validité électrique (XOR) seule.
 #
 # ⏱️ HYSTÉRÉSIS
-#   Lors du retour en basse vitesse, l'automation impose une durée
-#   minimale de maintien en haute vitesse (input_number.vmc_duree_min_haute).
-#   Pendant cette fenêtre, un état OFF de ce capteur est LÉGITIME.
-#
-#   Ce capteur ne masque PAS cette fenêtre dans son state.
-#   Il l'expose via l'attribut non_conformite_legitime.
-#
-#   → Le state reflète toujours la réalité brute.
-#   → Le contexte est dans les attributs.
+#   Au retour en basse vitesse, l'application impose une durée minimale
+#   de maintien (input_number.vmc_duree_min_haute). Pendant cette fenêtre,
+#   un OFF de ce capteur est LÉGITIME (attribut non_conformite_legitime),
+#   ancré sur le last_changed de la décision exécutoire.
 #
 # ⏱️ TOLÉRANCE TRANSITOIRE
 #   delay_off: 8s — absorbe les transitoires de bascule relais.
-#   N'a pas vocation à couvrir la fenêtre d'hystérésis complète.
 #
-# 📐 ÉTATS POSSIBLES
-#   ON          → conforme
-#   OFF         → non-conforme (peut être légitime, voir attributs)
-#   unavailable → source indisponible (décision ou relais)
-#   unknown     → état réel non interprétable (XOR invalide)
-#
-# ❌ AUCUN EFFET DE BORD
-#   - ne corrige rien
-#   - ne déclenche rien
-#   - ne pilote aucun relais
-#
-# 👉 PURE observabilité fonctionnelle
+# ❌ AUCUN EFFET DE BORD — ne corrige rien, ne déclenche rien, ne pilote
+#   aucun relais. Observabilité fonctionnelle pure.
 # ==========================================================
 
 - binary_sensor:
@@ -71,26 +53,29 @@
       delay_off:
         seconds: 8
 
+      # Disponible dès que l'état physique est LISIBLE. La décision
+      # exécutoire indisponible n'entraîne PAS l'indisponibilité de ce
+      # capteur : elle produit l'état `unknown` + la cause exposée
+      # (§16.2 — aucune cause muette).
       availability: >
-        {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
         {% set l1 = states('switch.vmc_l1') %}
         {% set l2 = states('switch.vmc_l2') %}
-        {{ decision in ['on', 'off']
-           and l1 in ['on', 'off']
-           and l2 in ['on', 'off'] }}
+        {{ l1 in ['on', 'off'] and l2 in ['on', 'off'] }}
 
       state: >
-        {# Sources disponibles (garanties par availability) #}
-        {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
+        {% set executoire = states('binary_sensor.vmc_haute_vitesse_commandee') %}
         {% set l1 = states('switch.vmc_l1') == 'on' %}
         {% set l2 = states('switch.vmc_l2') == 'on' %}
         {% set xor_valide = (l1 and not l2) or (l2 and not l1) %}
 
-        {# XOR invalide → unknown (état réel non interprétable) #}
-        {% if not xor_valide %}
+        {# Décision exécutoire indisponible → conformité INDÉTERMINÉE #}
+        {% if executoire not in ['on', 'off'] %}
           unknown
-        {# Conformité fonctionnelle #}
-        {% elif decision == 'on' %}
+        {# XOR invalide → état réel non interprétable #}
+        {% elif not xor_valide %}
+          unknown
+        {# Conformité fonctionnelle vs décision EXÉCUTOIRE #}
+        {% elif executoire == 'on' %}
           {{ l1 and not l2 }}
         {% else %}
           {{ l2 and not l1 }}
@@ -107,14 +92,16 @@
 
       attributes:
 
+        # Décision attendue = décision EXÉCUTOIRE (interface consommée par
+        # l'alerte de non-conformité, inchangée).
         decision_attendue: >
-          {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
-          {% if decision == 'on' %}
+          {% set executoire = states('binary_sensor.vmc_haute_vitesse_commandee') %}
+          {% if executoire == 'on' %}
             haute
-          {% elif decision == 'off' %}
+          {% elif executoire == 'off' %}
             basse
           {% else %}
-            {{ decision }}
+            {{ executoire }}
           {% endif %}
 
         etat_physique_reel: >
@@ -136,18 +123,14 @@
           {% set l2 = states('switch.vmc_l2') == 'on' %}
           {{ (l1 and not l2) or (l2 and not l1) }}
 
+        # Fenêtre d'hystérésis ancrée sur la décision EXÉCUTOIRE : décision
+        # exécutoire OFF, L1 encore actif, et durée écoulée < durée minimale.
         dans_fenetre_hysteresis: >
-          {#
-            Estimation conservative : on est dans la fenêtre d'hystérésis
-            si la décision est OFF et que L1 est encore actif,
-            et que le temps écoulé depuis le dernier passage OFF
-            est inférieur à la durée minimale configurée.
-          #}
-          {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
+          {% set executoire = states('binary_sensor.vmc_haute_vitesse_commandee') %}
           {% set l1 = states('switch.vmc_l1') %}
           {% set duree_min = states('input_number.vmc_duree_min_haute') | float(15) %}
-          {% if decision == 'off' and l1 == 'on' %}
-            {% set last_off = states.binary_sensor.vmc_haute_vitesse_requise.last_changed %}
+          {% if executoire == 'off' and l1 == 'on' %}
+            {% set last_off = states.binary_sensor.vmc_haute_vitesse_commandee.last_changed %}
             {% set elapsed = (now() - last_off).total_seconds() / 60 %}
             {{ elapsed < duree_min }}
           {% else %}
@@ -155,26 +138,59 @@
           {% endif %}
 
         non_conformite_legitime: >
-          {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
+          {% set executoire = states('binary_sensor.vmc_haute_vitesse_commandee') %}
           {% set l1 = states('switch.vmc_l1') %}
           {% set duree_min = states('input_number.vmc_duree_min_haute') | float(15) %}
           {% set dans_fenetre = false %}
-          {% if decision == 'off' and l1 == 'on' %}
-            {% set last_off = states.binary_sensor.vmc_haute_vitesse_requise.last_changed %}
+          {% if executoire == 'off' and l1 == 'on' %}
+            {% set last_off = states.binary_sensor.vmc_haute_vitesse_commandee.last_changed %}
             {% set elapsed = (now() - last_off).total_seconds() / 60 %}
             {% set dans_fenetre = elapsed < duree_min %}
           {% endif %}
           {{ is_state(this.entity_id, 'off')
-             and is_state('binary_sensor.vmc_haute_vitesse_requise', 'off')
+             and is_state('binary_sensor.vmc_haute_vitesse_commandee', 'off')
              and is_state('switch.vmc_l1', 'on')
              and dans_fenetre }}
 
+        # Décision AUTOMATIQUE théorique (information) : en régime manuel,
+        # son écart avec le réel est LÉGITIME et n'est pas une non-conformité.
+        decision_theorique: >
+          {% set req = states('binary_sensor.vmc_haute_vitesse_requise') %}
+          {% if req == 'on' %}
+            haute
+          {% elif req == 'off' %}
+            basse
+          {% else %}
+            {{ req }}
+          {% endif %}
+
+        ecart_theorique: >
+          {% set req = states('binary_sensor.vmc_haute_vitesse_requise') %}
+          {% set l1 = states('switch.vmc_l1') == 'on' %}
+          {% set l2 = states('switch.vmc_l2') == 'on' %}
+          {% set reel_haute = l1 and not l2 %}
+          {% set reel_basse = l2 and not l1 %}
+          {% if req == 'on' %}
+            {{ not reel_haute }}
+          {% elif req == 'off' %}
+            {{ not reel_basse }}
+          {% else %}
+            unknown
+          {% endif %}
+
+        # Cause précise quand la conformité est indéterminée (§16.2).
         cause_indetermination: >
-          {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
+          {% set titulaire = states('input_select.vmc_titulaire_autorite') %}
+          {% set consigne = states('input_select.vmc_consigne_manuelle') %}
+          {% set req = states('binary_sensor.vmc_haute_vitesse_requise') %}
           {% set l1 = states('switch.vmc_l1') %}
           {% set l2 = states('switch.vmc_l2') %}
-          {% if decision in ['unavailable', 'unknown'] %}
-            Décision métier indisponible
+          {% if titulaire not in ['automatique', 'manuel'] %}
+            Titulaire d'autorité indisponible
+          {% elif titulaire == 'manuel' and consigne not in ['basse', 'haute'] %}
+            Consigne manuelle indisponible
+          {% elif titulaire == 'automatique' and req not in ['on', 'off'] %}
+            Décision automatique indisponible
           {% elif l1 in ['unavailable', 'unknown']
                   or l2 in ['unavailable', 'unknown'] %}
             Relais indisponible
