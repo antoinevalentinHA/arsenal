@@ -156,6 +156,79 @@ Le capteur suivant l'extérieur, un seuil calé en été sera **trop haut en hiv
 accumuler quelques cycles de météo variée avant de figer. **Le helper reste à `0`
 (désactivé) : aucun changement de comportement à ce stade.**
 
+### 5 ter. Mise à jour de calibration (2026-07-24) — 5 cycles, météo variée
+
+**Source** : base recorder fraîche `arsenal-runtime/snapshots/database/recorder_v17_0_3.db`
+(hors dépôt gouverné), lecture seule. Plage **2026-07-19 → 2026-07-24**, 8 188 points de
+`sensor.luminosite_garage_illuminance`. L'accumulation demandée par le §5bis est faite, la
+météo variant bien : **ensoleillé** (07-21, pic **627 lx**) et **couverts** (07-22 / 07-24,
+pics 254 / 179 lx ; **midi couvert du 07-22 descendu à 14 lx**).
+
+| Jour | nuit | pic | aube 07-09h | midi 11-15h (min) |
+|---|---|---|---|---|
+| 07-20 | 1 | 310 | 6 → 106 | 33-310 (**33**) |
+| 07-21 | 1 | **627** | 6 → 79 | 37-627 (37) |
+| 07-22 | 1 | 254 | 5 → 49 | 14-153 (**14**) |
+| 07-23 | 1 | 240 | 5 → 41 | 43-154 (43) |
+| 07-24 | 2 | 179 | 5 → 42 | — |
+
+**Constats.**
+- **Plancher nuit stable** à 1-2 lx tous les jours ; borne basse nette.
+- **Chevauchement aube ↔ midi nuageux confirmé et aggravé** : le 07-22 midi (14 lx) est plus
+  sombre qu'une aube claire (49 lx) ⇒ **aucun seuil unique ne sépare** les deux régimes
+  (propriété du site ; le §5bis relevait 33 lx, on descend à 14). **Sans conséquence** : le
+  défaut est **fail-safe** — l'autorité ne fait qu'*autoriser l'extinction* ; sous le seuil
+  elle retombe et **n'allume rien**.
+- **Établissement matinal de l'autorité par seuil** (franchissement stable, 09-19 h) : **40 lx**
+  ≈ 08:00 (couverture jour 92-100 %) · **50 lx** ≈ 08:09-09:05 (81-97 %) · **60 lx +**
+  plus tardif et plus conservateur. Les « retombées » nuageuses sont fréquentes mais
+  **fonctionnellement neutres** (fail-safe).
+
+**Point 2 — provisoirement calibré (été).** Un **seuil d'été ≈ 50 lx** est **défendable sur
+données** (5 cycles variés contre 1 au 07-20) : il établit l'autorité en milieu de matinée
+tous les jours et retient légitimement l'autorité en régime couvert sombre. **Réserve
+saisonnière maintenue** : données de **juillet seulement** — en hiver l'ambiance plus basse
+rendra 50 lx rarement franchi (fonction peu active, **sans danger**, fail-safe) ; un seuil
+d'hiver plus bas, ou l'acceptation d'un seuil « surtout actif l'été », **reste à trancher**.
+**Le helper reste à `0` tant que l'activation n'est pas décidée (cf. §5 quater).**
+
+### 5 quater. Protocole d'activation (point 3 — non-régression allumage)
+
+> **Nature.** Procédure **opérateur** d'activation de l'extinction sur luminosité et de
+> vérification de la **non-régression allumage** (point 3 du §5). L'activation **change le
+> comportement runtime** ; le helper à `0` est l'état neutre de repli. **Aucune simulation,
+> aucun forçage d'état** : on active la vraie fonction et on observe.
+
+**Préconditions.**
+- Séjour au repos ; **journée** (l'autorité ne s'établit qu'après ~08:00-09:00).
+- `sensor.luminosite_garage_illuminance` alimenté (non `unavailable`) ;
+  `binary_sensor.sejour_extinction_luminosite_autorisee` observable ; helper initial = `0`.
+
+**Activation — service HA (jamais « Set State » : transitoire et écrasé).**
+- Outils de développement → Actions : `input_number.set_value` sur
+  `input_number.sejour_seuil_luminosite_extinction_auto`, **valeur `50`** (ou la valeur d'été
+  retenue). L'autorité devient alors calculable (`seuil > 0`).
+
+**Observations (sur quelques jours de météo variée).**
+1. **Autorité** — `sejour_extinction_luminosite_autorisee` passe `on` en milieu de matinée
+   quand `lux > seuil`, `off` la nuit et en régime couvert sombre. Cohérent avec la courbe §5ter.
+2. **Extinction réelle** — autorité `on` **et** lampe séjour allumée en **présence + plein jour**
+   (l'angle mort visé) ⇒ l'automation `10070000000035` délègue à `script.sejour_off` : la lampe
+   s'éteint. Horodater.
+3. **Non-régression (point 3, le cœur)** — après une extinction par luminosité, **vérifier
+   l'absence de ré-allumage indésirable**. Attendu **non** : l'allumage est **période-gaté +
+   transition de mouvement requise** (`sejour.md` §6bis/§7). Consigner tout ré-allumage dans
+   les 5 min suivant une extinction luminosité.
+4. **Fail-safe** — sous les passages nuageux, l'autorité retombe `off` **sans rien allumer**.
+
+**Garde-fou / arrêt immédiat.** Boucle extinction ↔ ré-allumage, **ou** extinction non désirée
+(présence, ambiance perçue sombre) ⇒ **repli** : `input_number.set_value` du helper à **`0`**
+(désactive, comportement d'origine restauré instantanément).
+
+**Clôture.** Quelques jours sans ré-allumage indésirable ⇒ **point 3 soldé**. Avec le point 1
+(proxy ✅) et le point 2 (été provisoire), **C22 devient clôturable sous la seule réserve
+hiver** — à **parquer** (réévaluation en saison froide) ou à lever par accumulation hivernale.
+
 ---
 
 ## 6. Risques résiduels / dettes
