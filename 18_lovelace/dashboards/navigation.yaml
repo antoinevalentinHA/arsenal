@@ -261,18 +261,28 @@ views:
                 square: false
                 columns: 3
                 cards:
-                  # ── Ligne 1 : administration ──
-                  # Paramètres = hub /config (contient Intégrations + Entités)
+                  # ── Ligne 1 : observation ──
                   - type: custom:button-card
                     template: bouton_navigation
-                    name: Paramètres
-                    icon: mdi:cog
+                    name: Journal
+                    icon: mdi:book-open-variant
                     styles:
                       icon:
                         - color: "rgb(158, 158, 158)"
                     tap_action:
                       action: navigate
-                      navigation_path: /config/dashboard
+                      navigation_path: /logbook
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Logs HA
+                    icon: mdi:clipboard-text
+                    styles:
+                      icon:
+                        - color: "rgb(158, 158, 158)"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config/logs
 
                   - type: custom:button-card
                     template: bouton_navigation
@@ -284,6 +294,18 @@ views:
                     tap_action:
                       action: navigate
                       navigation_path: /config/backup/overview
+
+                  # ── Ligne 2 : administration ──
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Historique
+                    icon: mdi:chart-line
+                    styles:
+                      icon:
+                        - color: "rgb(158, 158, 158)"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /history
 
                   # Outils Dev = États + Templates + YAML factorisés
                   # (onglets States / Template / YAML sur la même page)
@@ -298,39 +320,17 @@ views:
                       action: navigate
                       navigation_path: /developer-tools/state
 
-                  # ── Ligne 2 : observation ──
+                  # Paramètres = hub /config (contient Intégrations + Entités)
                   - type: custom:button-card
                     template: bouton_navigation
-                    name: Logs HA
-                    icon: mdi:clipboard-text
+                    name: Paramètres
+                    icon: mdi:cog
                     styles:
                       icon:
                         - color: "rgb(158, 158, 158)"
                     tap_action:
                       action: navigate
-                      navigation_path: /config/logs
-
-                  - type: custom:button-card
-                    template: bouton_navigation
-                    name: Journal
-                    icon: mdi:book-open-variant
-                    styles:
-                      icon:
-                        - color: "rgb(158, 158, 158)"
-                    tap_action:
-                      action: navigate
-                      navigation_path: /logbook
-
-                  - type: custom:button-card
-                    template: bouton_navigation
-                    name: Historique
-                    icon: mdi:chart-line
-                    styles:
-                      icon:
-                        - color: "rgb(158, 158, 158)"
-                    tap_action:
-                      action: navigate
-                      navigation_path: /history
+                      navigation_path: /config/dashboard
 
               - type: custom:button-card
                 template: bouton_navigation
