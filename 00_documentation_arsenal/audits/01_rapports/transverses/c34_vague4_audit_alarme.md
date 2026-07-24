@@ -325,3 +325,122 @@ la preuve manquante qualifiée (observation d'un reboot / reload provoqué, ou i
 Recorder des contacts et du panneau — chantier d'instrumentation distinct). Le contre-audit de la
 vague 4 (attaquer ces deux findings, chercher les contre-exemples, vérifier la restauration du
 panneau `manual`) reste à conduire avant toute orientation.
+
+---
+
+## 13. Contre-audit de la vague 4
+
+### 13.1 Périmètre et méthode
+
+Ce contre-audit porte sur les conclusions des §1-§12, telles que mergées en PR #561. Il ne rejoue
+pas la cartographie : il **attaque** les conclusions sensibles, cherche les contre-exemples, et
+consolide. Trois axes, calqués sur la discipline du contre-audit de la vague 1 :
+
+1. **Recherche exhaustive des écrivains** du panneau (`alarm_arm_away` / `alarm_disarm` /
+   `alarm_trigger`) et de la sirène (`script.sirene_brutale`, topic MQTT `zigbee2mqtt/sirene/set`)
+   sur **la totalité de l'arborescence** (YAML + `.storage` + dashboards `18_lovelace/`), et non
+   plus sur le seul corpus métier — c'est ce qui avait **réfuté** l'auteur unique en vague 1.
+2. **Lecture des contrats non lus en première passe** (`40_application_decision.md`,
+   `60_delais_et_blocages.md`, `61_watchdog_blocage_armement.md`) pour vérifier si un **invariant
+   global** de garde `systeme_stable` existe — auquel cas Findings A/B seraient des **écarts** et
+   non des lacunes.
+3. **Confrontation de la restauration des helpers** (`initial:`) aux automatisations déclenchées
+   sur `systeme_stable → on`, pour instruire la **course au démarrage** signalée sans être
+   creusée au §4.3.
+
+**Limite constitutive, inchangée** : aucun reboot, reload ni appel de service n'a été provoqué.
+Tout point dont la causalité l'exigerait est classé **indéterminable**, jamais « plausible ».
+
+### 13.2 Conclusions confirmées
+
+- **Auteur automatique unique du panneau — confirmé, contrairement à la vague 1.** La recherche
+  élargie à tout l'arbre (y compris `.storage`, **absent/non suivi** dans ce dépôt — la
+  configuration est intégralement en YAML) ne trouve **aucun** écrivain supplémentaire :
+  `alarm_arm_away` (script `armer`), `alarm_disarm` (script `desarmer`), `alarm_trigger` (les
+  **trois** automatisations d'intrusion `…009` / `…007` / `…032`, dette §9 du contrat 50). **Aucun
+  écrivain transactionnel** (pas d'appelant de `transactions_bots` visant le panneau), **aucun
+  toggle de dashboard** : les cartes `carte_alarme_decision` / `carte_alarme_intention` de
+  `18_lovelace/dashboards/alarme/principal.yaml` sont **en lecture** (restitution C23) ; le seul
+  bouton d'action alarme est « Stop » (`carte_action_arret_sirene` → `script.arret_sirene`,
+  inconditionnel par contrat 70). L'élargissement qui avait démenti la vague 1 **confirme** ici.
+- **Auteur automatique unique de la sirène — confirmé.** Seul `10020000000011` appelle
+  `script.sirene_brutale` ; aucune publication concurrente sur `zigbee2mqtt/sirene/set` hors des
+  scripts sirène canoniques.
+- **Repère temporel +45 s et double inégalité 15 s < 45 s < 5 min — confirmés** (producteur unique
+  de `systeme_stable`, ne retombant qu'au reboot HA).
+- **Asymétrie mouvement / ouverture — confirmée.** `mouvement` (`…009`) porte `from: 'off'` et **ne
+  matche pas** `unavailable → on` ; `ouverture` (`…007`) n'a **pas** de `from:` et le matche.
+
+### 13.3 Conclusion corrigée — le §4.3 était trop affirmatif (Finding C)
+
+Le §4.3 concluait que la course entre l'application décisionnelle (`10020000000027`) et la
+reconstruction du contexte visiteur (`10210000000005`), toutes deux déclenchées sur
+`systeme_stable → on`, était **« résolue par re-déclenchement »**. **Cette formulation est
+réduite.**
+
+Le re-déclenchement garantit la **convergence de l'état final**, **pas** l'absence d'**action
+physique transitoire**. Fait établi par le contre-audit : `input_boolean.presence_visiteur` et
+`input_boolean.visite_en_cours` **n'ont pas de clé `initial:`** ⇒ ils **restaurent** leur valeur
+antérieure au reboot. La décision centrale lit `presence_visiteur` **directement** (premier terme
+du cascade → `VISITEUR_PRESENT → DISARMED`), **sans** le `delay_on 15 s` qui protège le chemin
+présence. Si l'application **gagne la course** sur `securite_reboot` en lisant un
+`presence_visiteur` restauré **périmé à `on`**, elle émet un **désarmement** que la correction
+ultérieure de `securite_reboot` **n'annule pas** (le désarmement est déjà appliqué ; un ré-armement
+exige l'absence confirmée à +5 min).
+
+**Bornage honnête (et non gonflage).** Cette action transitoire n'est atteignable que si l'état
+**antérieur au reboot** était déjà **incohérent** : panneau `armed_away` **et** `presence_visiteur
+== on`. Or en régime nominal, une présence visiteur **désarme** l'alarme (le panneau serait donc
+restauré `disarmed`, et la branche de désarmement de l'application — gardée
+`... != 'disarmed'` — devient un **no-op**). La précondition est donc un **état incohérent
+préexistant**, à faible atteignabilité pratique. **Finding C** est ainsi qualifié : **mécanisme
+démontré statiquement** (restauration sans `initial:` + course non ordonnée), **effet
+indéterminable** (ordre d'exécution des automatisations sur un même événement, non garanti par
+HA), **atteignabilité bornée par une incohérence amont**. Il **corrige le §4.3** sans constituer
+un risque actif — conformément à la règle de la vague 1 : ne pas conserver un point « par prudence
+rhétorique ».
+
+### 13.4 Findings A et B — qualification *lacune* confirmée, atteignabilité bornée
+
+**Aucun invariant global de garde `systeme_stable` n'existe.** Lecture faite des contrats 40, 60,
+61 (en plus de 50 et 70) : la seule mention est `40_application_decision.md` §Robustesse — « post-reboot
+safe (déclenchement sur `input_boolean.systeme_stable`) » — **propriété de la seule automatisation
+d'application**, non érigée en invariant transverse. Les contrats 60/61 ne traitent que la
+**restauration des timers** au redémarrage. Aucune clause n'impose à `sirene_forte` (`…011`, contrat
+70) ni au chemin `to: 'on'` de `…007` (contrat 50) une garde de démarrage. **Findings A et B restent
+donc des lacunes de couverture, non des écarts** — la qualification de première passe **tient** après
+lecture élargie.
+
+**Bornage des trois findings** (à porter au portefeuille, pour hiérarchiser) :
+
+| Finding | Précondition d'atteignabilité | Consequence | Atteignabilité |
+|---|---|---|---|
+| **A** (sirène) | reboot HA **pendant** un état `triggered` actif **+** restauration `manual → triggered` émettant l'événement | mise sous sirène | rare, **consequence maximale** |
+| **B** (ouverture) | contact **physiquement ouvert** en `armed_away` **+** redémarrage bridge Zigbee (watchdog ≥ 5 min hors-ligne, ou reload manuel) | déclenchement alarme | contact ouvert en armé possible (pas de gate « tout fermé » à l'armement) |
+| **C** (visiteur) | état amont **incohérent** (`armed_away` **+** `presence_visiteur` restauré `on`) **+** course gagnée | désarmement transitoire | très faible (incohérence préalable) |
+
+### 13.5 Points indéterminables (non « plausibles »)
+
+Requalifiés indéterminables, faute de pouvoir provoquer l'événement :
+
+- restauration du panneau `manual` à `triggered` **et** émission d'un événement satisfaisant
+  `to: triggered` sans `from:` (Finding A) ;
+- republication Zigbee2MQTT d'un contact réellement ouvert comme `unavailable → on` (Finding B) ;
+- **ordre d'exécution** de `10020000000027` et `10210000000005` sur `systeme_stable → on`
+  (Finding C) — HA n'en garantit aucun.
+
+Ces trois points sont des **objets de portefeuille**, pas des constats.
+
+### 13.6 Conséquences pour le portefeuille
+
+- Le constat **le plus solide et actionnable** reste l'**asymétrie de garde** entre automatisations
+  sœurs (mouvement `from: 'off'` vs ouverture `to: 'on'` ; intrusions gardées `systeme_stable` vs
+  sirène non gardée) — corrigeable localement, **indépendamment** de la preuve d'effet.
+- Les trois findings partagent une **même racine doctrinale** : la garde « anti-recomposition
+  post-reboot » `systeme_stable` est **implicitement bornée au reboot HA** et **non élevée en
+  invariant**, si bien qu'elle ne couvre ni le redémarrage d'intégration (B), ni la ré-ignition par
+  restauration (A), ni la course sur helper restauré (C). Trancher relève d'une **décision de
+  doctrine** (définir un invariant de démarrage transverse), non d'un correctif ponctuel — même
+  forme de conclusion qu'en vague 1 (§8.4).
+- **Aucune orientation corrective** n'est émise ici. Le portefeuille (livrable 3) tranchera la
+  hiérarchie A > B > C (par conséquence) et la preuve manquante de chacun.

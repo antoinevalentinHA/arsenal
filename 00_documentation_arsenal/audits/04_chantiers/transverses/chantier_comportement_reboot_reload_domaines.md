@@ -305,8 +305,32 @@ qualifiés au sens des §2/§8, à consommer par le contre-audit puis le portefe
 
 Findings A et B ont **la même signature** : absence de garde contre un artefact de
 restauration/recomposition, mécanisme démontré statiquement, effet indéterminable, qualifiés
-**lacune**. Ils sont versés au **portefeuille** sans orientation corrective. Le **contre-audit de
-la vague 4** reste à conduire.
+**lacune**. Ils sont versés au **portefeuille** sans orientation corrective.
+
+**Contre-audit de la vague 4 conduit (2026-07-24, §13 du rapport).** Résultats :
+
+- **Auteur automatique unique du panneau confirmé** par recherche élargie à tout l'arbre (YAML +
+  `.storage` absent + dashboards) — contrairement à la vague 1, l'élargissement **ne réfute pas**
+  ici (aucun écrivain transactionnel, aucun toggle de dashboard ; les cartes alarme sont en
+  lecture, seul « Stop » agit).
+- **Findings A/B : qualification *lacune* confirmée** après lecture des contrats 40/60/61 —
+  aucun **invariant global** de garde `systeme_stable` (la mention du contrat 40 vise la seule
+  automatisation d'application) ⇒ ni A ni B ne sont des écarts.
+- **§4.3 corrigé (Finding C, borné).** L'affirmation « course résolue par re-déclenchement » est
+  **réduite** : `presence_visiteur` / `visite_en_cours` **sans `initial:`** sont restaurés au
+  reboot ; l'application (qui lit `presence_visiteur` **sans** le `delay_on 15 s`) peut, en gagnant
+  la course sur `securite_reboot`, émettre un **désarmement transitoire** que le re-déclenchement
+  n'annule pas. **Mais** la précondition (`armed_away` **+** `presence_visiteur` restauré `on`) est
+  un **état incohérent amont** (une présence visiteur désarme normalement le panneau) ⇒
+  atteignabilité **très faible**. Finding C : mécanisme démontré statiquement, effet indéterminable.
+- **Racine doctrinale commune** aux trois findings : la garde « anti-recomposition post-reboot »
+  `systeme_stable` est **implicitement bornée au reboot HA** et **non érigée en invariant** ⇒ ne
+  couvre ni le redémarrage d'intégration (B), ni la ré-ignition par restauration (A), ni la course
+  sur helper restauré (C). Décision de doctrine, non correctif ponctuel. Hiérarchie portefeuille
+  proposée **A > B > C** (par conséquence).
+
+**La vague 4 (audit + contre-audit) est close.** Reste : portefeuille (livrable 3), après les
+vagues 2 et 3.
 
 ---
 
