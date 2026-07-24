@@ -29,7 +29,7 @@ Les deux sont complémentaires : un domaine peut être **contractualisé** (couv
 
 | Couche | Définition | Source canonique | Volume (cf. §3) |
 |---|---|---|---|
-| **Vérité normative** | Ce que le système DOIT faire : contrats opposables + doctrines transversales. | [`../contrats/`](../contrats/), [`../architecture/03_doctrines/`](../architecture/03_doctrines/) | 297 `.md` de contrats · 13 doctrines |
+| **Vérité normative** | Ce que le système DOIT faire : contrats opposables + doctrines transversales. | [`../contrats/`](../contrats/), [`../architecture/03_doctrines/`](../architecture/03_doctrines/) | 297 `.md` de contrats · 14 doctrines |
 | **Couverture mécanique** | Les contrôles qui vérifient une partie de la vérité normative. | `../../scripts/arsenal_contracts/` | 86 checkers |
 | **CI exécutée** | Le sous-ensemble des contrôles effectivement lancés en intégration continue. | `../../.github/workflows/` | 91 workflows — **ventilation détaillée au §3**, non recopiée ici |
 
@@ -46,7 +46,7 @@ Relation de couverture attendue : **surface normative à vérifier ≥ surface v
 | Indicateur | Valeur | Commande de re-vérification |
 |---|---|---|
 | Contrats `.md` (récursif) | **297** | `find 00_documentation_arsenal/contrats -name '*.md' \| wc -l` |
-| Doctrines transversales | **13** | `ls 00_documentation_arsenal/architecture/03_doctrines/*.md \| grep -v README \| wc -l` |
+| Doctrines transversales | **14** | `ls 00_documentation_arsenal/architecture/03_doctrines/*.md \| grep -v README \| wc -l` |
 | Checkers | **86** | `ls scripts/arsenal_contracts/check_*.py \| wc -l` |
 | Workflows (total) | **91** | `ls .github/workflows/*.yml \| wc -l` |
 | Workflows `contracts_*` (préfixe) | **85** | `ls .github/workflows/contracts_*.yml \| wc -l` |
