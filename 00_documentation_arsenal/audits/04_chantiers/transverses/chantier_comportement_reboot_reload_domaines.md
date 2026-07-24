@@ -266,7 +266,7 @@ cœur thermique, et pour **isoler l'alarme**, dont la sémantique diffère des a
 | Vague | Domaines | Volume runtime | Raison | État |
 |---|---|---|---|---|
 | **1** | VMC + déshumidificateur | 21 fichiers (26 réels, cf. rapport §1) | Volume le plus faible, proximité fonctionnelle (traitement de l'air), **aucun chantier existant** — terrain vierge idéal pour fixer la méthode | **✅ livrée** ([rapport](../../01_rapports/transverses/c34_vague1_audit_vmc_deshumidificateur.md)) — close en tant qu'audit ; branche B retenue, lot correctif au §10.6 |
-| **2** | climatisation + chauffage | 145 fichiers | Cœur thermique, **95 contrats sur 140**, dépendances croisées fortes, risque physique élevé | à lancer |
+| **2** | climatisation + chauffage | 145 fichiers | Cœur thermique, **95 contrats sur 140**, dépendances croisées fortes, risque physique élevé | **✅ livrée (2026-07-24)** ([rapport](../../01_rapports/transverses/c34_vague2_audit_climatisation_chauffage.md)) — cf. §7.2 |
 | **3** | arrosage + éclairage | 68 fichiers | Arrosage : dépendance pont externe. Éclairage : 27 automatisations pour 7 contrats — asymétrie à instruire | **✅ livrée (2026-07-24)** ([rapport](../../01_rapports/transverses/c34_vague3_audit_arrosage_eclairage.md)) — cf. §7.3 |
 | **4** | alarme | 30 fichiers | **Traité seul** : la révocation de sécurité y est un comportement potentiellement correct, ce qui inverse la grille de lecture | **✅ livrée (2026-07-24)** ([rapport](../../01_rapports/transverses/c34_vague4_audit_alarme.md)) — cf. §7.4 |
 
@@ -274,6 +274,33 @@ Chaque vague produit une section de cartographie **par domaine**, selon les rubr
 l'audit, et n'émet que des conclusions qualifiées au sens du §8.
 
 **Aucune vague n'est lancée par le présent document.**
+
+### 7.2 Vague 2 (climatisation + chauffage) — livrée le 2026-07-24
+
+Audit statique du cœur thermique (145 fichiers), **appuyé sur la preuve runtime L4** (effet établi au
+reload sur `switch.clim_power`). Résultat central : **aucun finding de défaut Arsenal**.
+
+- **Deux architectures opposées.** **Climatisation** = commande physique **directe** (`switch.clim_power`,
+  `climate.clim` Airstage). **Chauffage** = **aucun actionneur physique piloté par Arsenal** : tous les
+  écrivains sont `input_number` / `input_select` (consignes, plateaux, modes, courbe) ; l'actionnement
+  est **délégué à Netatmo** (hors périmètre). Le chauffage est donc **structurellement incapable** d'une
+  action physique directe au reboot/reload.
+- **L'effet L4 (coupure + rejeu sur `clim_power`) expliqué et qualifié — « qualification non tranchée »
+  levée.** La décision reste `cool` pendant le reload car l'admissibilité est ancrée sur un
+  **`input_boolean` persisté** (wrapper pur), qui ne bascule pas `off` ⇒ la garde ne force jamais `off`
+  ⇒ **Arsenal ne coupe jamais l'alimentation**. La **coupure est d'origine intégration Airstage**
+  (recomposition de `clim_power`, mises à jour d'entités non simultanées — documenté dans la garde) ;
+  le **rejeu est un recalcul fonctionnel** (`rearmement_apres_recuperation` ré-asserte la décision
+  persistée sur front de récupération, gardé et borné). Réalité physique du relais **indéterminable**.
+- **Résidu = arbitrage, pas défaut** : le cycle bref d'alimentation à chaque reload Airstage relève d'un
+  arbitrage (tolérer vs raréfier le reload), non d'un correctif de code Arsenal.
+- **Leçon transverse (avec le contre-audit vague 3)** : la vraie protection contre les artefacts de
+  reload est l'**ancrage de la décision sur une entité persistée/normalisée** (ici le verrou
+  d'admissibilité), **non `systeme_stable`**.
+
+**Portefeuille** : (a) arbitrage du cycle d'alimentation clim au reload Airstage ; (b) asymétrie
+doctrinale commande-directe (clim) vs consigne-déléguée (chauffage). **Aucun finding de défaut.**
+Contre-audit de la vague 2 à conduire.
 
 ### 7.3 Vague 3 (arrosage + éclairage) — livrée le 2026-07-24
 
@@ -446,8 +473,9 @@ C34 est clos lorsque les quatre livrables suivants sont produits et mergés :
 
 ## 10. Stop point
 
-**Vagues 1 (VMC + déshumidificateur), 3 (arrosage + éclairage) et 4 (alarme) livrées. Reste la
-vague 2 (climatisation + chauffage), puis le contre-audit de la vague 3 et le portefeuille.**
+**Les quatre vagues d'audit sont livrées** (1 VMC + déshum. ; 2 clim + chauffage ; 3 arrosage +
+éclairage ; 4 alarme). Restent le **contre-audit des vagues 2 et 3**, puis le **portefeuille**
+(livrable 3) et les **solutions** (livrable 4).
 
 Ce document ne conclut sur **aucun** comportement. Il n'ouvre **aucun** sous-chantier
 correctif. Toute orientation corrective relève du portefeuille (livrable 3), après
