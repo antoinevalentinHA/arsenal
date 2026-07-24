@@ -2,8 +2,13 @@
 # 📛 Domaine : Ventilation mécanique contrôlée (VMC)
 # 🧠 Nature : Pilotage automatique contractuel
 #
-# Version : v2.4
+# Version : v2.5
 # Statut  : Cible contractuelle validée — implémentation à mettre en conformité
+#
+# Évolution v2.5 : introduction de l'autorité de domaine (régimes automatique /
+# manuel), pilote du chantier C36 — voir §16. Évolution contractuelle additive et
+# orthogonale à la mise en conformité v2.4 en cours : elle définit des vérités et
+# des comportements attendus, sans concevoir le runtime.
 #
 # Ce document définit EXHAUSTIVEMENT le comportement attendu
 # du système VMC automatisé, indépendamment de son implémentation
@@ -237,6 +242,11 @@ temporelle. Il décrit uniquement **la nécessité métier instantanée**.
 
 Il est la **composition** définie au §6.7. Il ne porte lui-même **aucun critère
 propre** et **aucun état propre** (§2.4).
+
+> **Titularité (§16).** Ce capteur porte la décision du **régime automatique**.
+> Il demeure **calculé en permanence dans les deux régimes** ; en **régime
+> manuel**, il n'est **pas exécutoire** — il vaut information (décision théorique
+> d'Arsenal), l'autorité étant alors détenue par l'utilisateur.
 
 
 ---
@@ -667,6 +677,12 @@ l'exécution doit produire à partir de la décision. Elle **n'autorise jamais**
 lecture inverse : l'état de l'actionneur ne peut alimenter la décision (§2.1,
 §2.2).
 
+> **Titularité (§16).** L'application applique la décision **exécutoire du
+> titulaire courant**. En **régime automatique**, c'est la correspondance
+> ci-dessus. En **régime manuel**, elle **s'abstient** d'appliquer la décision
+> automatique : la commande exécutoire est celle de l'utilisateur, portée par le
+> **même écrivain** (§13.1, §16.2). Comportement attendu, non conception runtime.
+
 
 ---
 
@@ -800,6 +816,14 @@ décision est identique et l'application converge vers le même état.
 
 Aucun état ne survit à un rechargement en dehors des états booléens de besoin
 définis au §2.3.
+
+### 9.4 Régime d'autorité au redémarrage (renvoi §16)
+
+Le **titulaire de l'autorité** (automatique ou manuel) relève de l'état
+déterministe reconstruit au redémarrage : après reboot ou reload, le régime est
+**conforme au titulaire précédemment établi**, **sans reprise silencieuse** par
+Arsenal. Le **mécanisme technique de persistance n'est pas figé** par le présent
+contrat.
 
 
 ---
@@ -1045,6 +1069,15 @@ La VMC est un **sélecteur de régime permanent** :
 
 L'état « VMC éteinte » n'existe pas dans ce système.
 
+> **Trois niveaux distincts (§16).** Ne pas amalgamer : (a) la **protection
+> physique XOR** (jamais deux relais actifs) — impérative matérielle ; (b)
+> l'**invariant fonctionnel de ventilation permanente** — le logement reste
+> ventilé, **non tranché** comme simple politique négociable ; (c) la **politique
+> de sélection basse / haute** — couche négociable où s'exerce l'autorité. La
+> surface de commande, automatique comme manuelle, est le domaine `{basse,
+> haute}` ; l'**arrêt n'y figure pas** et son admissibilité n'est pas tranchée
+> (§16.3, §16.5).
+
 ### 13.4 Invariant physique
 
 À tout instant : **exactement un relais actif** — `vmc_l1 XOR vmc_l2 = TRUE`.
@@ -1068,6 +1101,10 @@ le retour en **basse vitesse**, considéré comme état sûr.
 
 > Cette politique porte sur l'**état de l'actionneur**. Elle ne s'applique pas à
 > une perte de mesure métier (§4.6), et ne consulte aucun besoin.
+
+> **Statut (§16).** Ce fail-safe est une **protection impérative active dans les
+> deux régimes** (automatique et manuel). Il borne l'espace des commandes
+> exécutables ; il ne constitue **pas** une reprise d'autorité.
 
 ### 13.7 Source de vérité
 
@@ -1185,8 +1222,101 @@ observé et cet ordre de grandeur devra être **expliqué avant clôture**. Un t
 était incomplet, et doit être compris comme tel.
 
 
+---
+
+## 16) Autorité de domaine — régimes automatique et manuel (pilote C36)
+
+> **Portée.** Cette section instancie pour la VMC la doctrine transverse
+> [`autorite_de_domaine.md`](../architecture/03_doctrines/autorite_de_domaine.md).
+> Elle définit des **vérités, responsabilités et comportements attendus** ; elle
+> **ne conçoit aucun** helper, automation, UI ni détail d'implémentation, et **ne
+> fige aucun type ni identifiant**. En cas de divergence sur la titularité, la
+> doctrine fait foi. Cette évolution est **orthogonale** à la mise en conformité
+> v2.4 (§14, §15) : elle porte sur la **titularité de l'autorité**, non sur la
+> qualité de la décision automatique.
+
+### 16.1 Principe et titulaires
+
+À un instant donné, l'autorité décisionnelle de la VMC est détenue par **un seul
+titulaire** :
+
+- **Régime automatique** — le titulaire est **Arsenal** ;
+- **Régime manuel** — le titulaire est l'**utilisateur**.
+
+Formule directrice : **unicité de l'autorité, révocabilité de sa délégation**.
+L'unicité porte sur le fait qu'**un seul titulaire décide** à chaque instant,
+jamais sur son identité. Il n'existe **jamais** deux décideurs concurrents, ni de
+priorité floue entre une décision Arsenal et une décision utilisateur.
+
+### 16.2 Décision exécutoire, écrivain unique, chemin canonique
+
+- Il existe, à chaque instant, **une seule décision exécutoire**.
+- L'**écrivain unique** vers l'équipement est la **couche d'exécution existante**
+  (`script.vmc_haute_vitesse` / `script.vmc_basse_vitesse`, §13.1, §8), **dans les
+  deux régimes**. Aucune commande **directe** des relais (`switch.vmc_l1` /
+  `switch.vmc_l2`) en parallèle de ce chemin canonique n'est admise.
+- `binary_sensor.vmc_haute_vitesse_requise` (§3.1) demeure **calculé en
+  permanence dans les deux régimes**. En **régime manuel** il est **non
+  exécutoire** : il vaut **information** (décision théorique d'Arsenal) et **n'est
+  pas consommé** par l'application (§8).
+
+### 16.3 Surface de commande manuelle
+
+- La surface de commande manuelle est **strictement** `{basse, haute}` — les deux
+  régimes physiques valides du §13.2.
+- L'**arrêt n'est pas exposé** en régime manuel. Son éventuelle admissibilité
+  **n'est pas tranchée** par le présent pilote (voir §16.5, niveau b).
+
+### 16.4 Transitions, restitution, redémarrage
+
+- Le **changement de titulaire** est **explicite, observable et déterministe**.
+- **Aucune reprise silencieuse** par Arsenal : la restitution de l'autorité à
+  Arsenal est elle-même **explicite**.
+- Une **expiration** de la délégation est **admise par la doctrine transverse**
+  mais **n'est pas une capacité requise** de ce pilote.
+- Au **redémarrage ou rechargement**, le comportement est **déterministe** et
+  **conforme au titulaire précédemment établi**, **sans reprise silencieuse**
+  (renvoi §9.4). Le **mécanisme technique de persistance n'est pas figé** ici.
+
+### 16.5 Protections impératives et distinction en trois niveaux
+
+Trois niveaux **distincts**, à ne jamais amalgamer :
+
+| Niveau | Nature | Rapport à l'autorité |
+|---|---|---|
+| **(a) Protection physique XOR** | Impérative matérielle : jamais deux relais actifs (§13.3, §13.5) | Prime dans les **deux régimes** ; borne les commandes, **n'est pas** une reprise d'autorité |
+| **(b) Ventilation permanente** | **Invariant fonctionnel** du domaine — le logement reste ventilé | **Non tranché** comme simple politique négociable ; **préservé par construction** par la surface `{basse, haute}` ; l'admissibilité d'un arrêt **n'est pas décidée** |
+| **(c) Sélection basse / haute** | Politique décisionnelle **négociable** | Couche **où s'exerce** l'autorité, automatique ou manuelle |
+
+- Le **fail-safe physique** (§13.6) est une **protection impérative active dans
+  les deux régimes**.
+- **Conformité légitime en régime manuel.** Sous autorité manuelle, un écart
+  entre la décision automatique (théorique, §16.2) et l'état physique est
+  **légitime** : il ne constitue **pas** une non-conformité et ne doit pas être
+  traité comme une anomalie. Comportement attendu ; le mécanisme n'est pas conçu
+  ici.
+
+### 16.6 Points restant à concevoir — et recensement UI
+
+Relèvent d'une passe d'implémentation ultérieure, **hors du présent contrat**, et
+**sans type ni identifiant figés** ici :
+
+- le **porteur du titulaire** et le **porteur de la consigne manuelle** ;
+- l'**exposition de « qui décide »**, de la consigne manuelle et de la décision
+  théorique ;
+- la **subordination de l'application** au titulaire (abstention en manuel) et la
+  **réinterprétation de la conformité** ;
+- l'**articulation entre le fail-safe physique et la consigne manuelle** après
+  disparition d'un état physique invalide.
+
+**Recensement UI (non traité ici).** Les relais `switch.vmc_l1` / `switch.vmc_l2`
+affichés au dashboard de diagnostic sont **recensés** comme point à sécuriser
+(interdire toute commande directe hors chemin canonique, §16.2) ; **aucune
+modification UI** n'est apportée par la présente passe.
+
+
 # ==========================================================
 # FIN DU CONTRAT — VMC
-# Version v2.4 — cible contractuelle validée
+# Version v2.5 — cible contractuelle validée
 # Implémentation à mettre en conformité
 # ==========================================================
