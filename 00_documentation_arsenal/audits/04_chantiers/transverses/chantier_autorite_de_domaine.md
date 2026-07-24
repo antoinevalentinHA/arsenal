@@ -4,10 +4,10 @@
 |---|---|
 | **Chantier** | Poser une doctrine transverse d'**autorité de domaine** : lever l'assimilation actuelle entre *autorité unique* et *souveraineté permanente d'Arsenal*, et définir les régimes **automatique** / **manuel** sous la formule **« unicité de l'autorité, révocabilité de sa délégation »**. |
 | **Domaine** | Transverse — doctrine d'autorité décisionnelle. Sans propriétaire documentaire préexistant. |
-| **Statut** | **Ouvert (2026-07-24) — doctrine livrée (PR #571) ; pilote VMC en amendement documentaire (2026-07-24).** Périmètre strictement documentaire ; aucune conception runtime ni UI. |
+| **Statut** | **Ouvert — doctrine (PR #571) et amendement VMC v2.5 (PR #572) livrés ; conception runtime VMC validée ; PR A (contrat v2.6 — comportements) en cours.** PR A strictement documentaire ; runtime en PR B/C ultérieures. |
 | **Priorité** | **P2** — enjeu structurant, sans risque technique immédiat. Fait suite à l'observation **A2** de C34 (asymétrie doctrinale commande-directe / consigne-déléguée) et à l'audit transverse d'autorité (2026-07-24). |
 | **Ouvert le** | 2026-07-24. |
-| **Prochain jalon** | Doctrine et clarification `principes_generaux.md` §2 **livrées** (PR #571). **Pilote retenu : VMC** — amendement documentaire de [`contrats/vmc.md`](../../../contrats/vmc.md) (v2.4 → v2.5, autorité de domaine, §16), sans runtime. |
+| **Prochain jalon** | Doctrine (PR #571) et amendement VMC v2.5 (PR #572) **livrés** ; **conception runtime validée**. **PR A** : contrat [`contrats/vmc.md`](../../../contrats/vmc.md) **v2.6** — spécification des comportements de l'autorité de domaine (anti-fallback, transitions atomiques, récupération minimale, conformité vs décision exécutoire), sans runtime. **PR B** (échafaudage inerte + `availability` cohérence) puis **PR C** (bascule L4+L6) à suivre, sur pré-attribution des identifiants. |
 | **Registre** | Chantier **C36** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **Portée.** Chantier **doctrinal resserré.** Aucun helper, aucune UI, aucun runtime, aucune
@@ -144,8 +144,10 @@ première passe par domaine :
 > silencieuse continue** à démanteler (le §12.1 du contrat VMC l'exclut) ; décision pure disponible
 > comme décision théorique non exécutoire ; **protection physique XOR** nettement séparable. La
 > traduction contractuelle est portée par [`../../../contrats/vmc.md`](../../../contrats/vmc.md) §16
-> (v2.5) — **documentaire, sans runtime**. Les travaux C36-VMC peuvent avancer **en parallèle** des
-> réserves C35 (calibration / historisation), orthogonales à la titularité de l'autorité.
+> (v2.5 → **v2.6** : comportements spécifiés). Déploiement **en trois PR** — A (contrat, documentaire),
+> B (échafaudage inerte + `availability` cohérence, sans activation du manuel), C (bascule L4+L6 +
+> tests terrain). Les travaux C36-VMC avancent **en parallèle** des réserves C35 (calibration /
+> historisation), orthogonales à la titularité de l'autorité.
 
 ---
 
