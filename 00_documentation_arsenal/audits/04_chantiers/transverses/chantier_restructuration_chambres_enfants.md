@@ -8,7 +8,7 @@
 | **Priorité** | **P2** (proposée) — voir §Priorité. |
 | **Ouvert le** | 2026-07-19. |
 | **Preuve de départ** | Besoin propriétaire (déménagement physique **à venir** : enfants regroupés dans l'ex-chambre Arnaud ; ex-chambre Matthieu → salle de jeux) + **inventaire d'impact en lecture seule** consigné §3. Aucun rapport d'audit préalable mergé — l'inventaire est la preuve de départ. |
-| **Prochain jalon** | **L9 — validation terrain (première passe faite, 2026-07-20).** **L6 soldé** : toutes les sources physiques (Netatmo/HomeKit + Zigbee) sont alignées, le dernier résidu (`prise_chambre_enfants_2`) ayant été renommé le 2026-07-20 à 17:10 ; **0 entité `unavailable`** sur l'instance. **L6b vérifié** (les 6 capteurs dérivés sont alimentés ; erreurs `temperature_source` réduites à 221 ms au démarrage). Restent : **L6c** (20 filtres de période encore `unknown`, résorption attendue le **2026-07-21 au matin**) puis **L10** (clôture). Scénarios non observables sans action : reboot de remédiation Netatmo, babyphone, groupe volets. |
+| **Prochain jalon** | **L9 — validation terrain (première passe faite, 2026-07-20).** **L6 soldé** : toutes les sources physiques (Netatmo/HomeKit + Zigbee) sont alignées, le dernier résidu (`prise_chambre_enfants_2`) ayant été renommé le 2026-07-20 à 17:10 ; **0 entité `unavailable`** sur l'instance. **L6b vérifié** (les 6 capteurs dérivés sont alimentés ; erreurs `temperature_source` réduites à 221 ms au démarrage). Restent : **L6c** (20 filtres de période encore `unknown`, résorption attendue le **2026-07-21 au matin**) puis **L10** (clôture). Scénarios non observables sans action **restants** : reboot de remédiation Netatmo, babyphone (**groupe volets étage ✅ validé terrain le 2026-07-24**). |
 
 > **⚠️ Portée de l'ouverture.** L'ouverture de C32 **consigne les décisions propriétaire déjà rendues**
 > (A1–A3, §Décisions) et l'**inventaire d'impact** (§3). Elle **ne crée aucun contrat, aucun runtime,
@@ -652,7 +652,9 @@ intégrer au cadrage de tout prochain chantier de nommage.
 ### Lot 9 — validation terrain (partiel, 2026-07-20)
 
 Audit fonctionnel post-migration en lecture seule (17:05–17:25). **Ne solde pas L9** : il en constitue la
-première passe.
+première passe. **Mise à jour 2026-07-24** : le **groupe volets étage est validé terrain** (cf. « Reste à
+établir » ci-dessous) ; restent **deux scénarios** non observables sans action — remédiation Netatmo,
+babyphone — avant de solder L9 puis prononcer L10.
 
 **Acquis — preuves runtime :**
 
@@ -681,7 +683,7 @@ première passe.
   été exercée** depuis la migration. Non observable sans couper une prise.
 - **Babyphone** — `last_triggered` nul, jamais déclenchée. Non observable sans provoquer une alerte
   sonore.
-- **Groupe volets chambres** — câblage correct au source, exécution non observée.
+- **Groupe volets étage** — ~~câblage correct au source, exécution non observée~~ **✅ VALIDÉ terrain (2026-07-24)** : « Ouvrir / Fermer tous les volets » commande bien les volets des **deux pièces de l'étage** (Chambre Enfants + Salle de Jeux) via `ouvrir/fermer_volets_etage` (A2-bis). Résorption de la régression silencieuse du 2026-07-20 confirmée **à l'exécution**, pas seulement au câblage.
 - **Couverture de journal** — la fenêtre 2026-07-19 22:30 → 2026-07-20 08:40, qui couvre le déploiement
   initial, a été purgée au redémarrage. **Absence de preuve, non preuve d'absence.**
 
