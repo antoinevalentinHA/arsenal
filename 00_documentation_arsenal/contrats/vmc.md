@@ -2,13 +2,17 @@
 # 📛 Domaine : Ventilation mécanique contrôlée (VMC)
 # 🧠 Nature : Pilotage automatique contractuel
 #
-# Version : v2.5
+# Version : v2.6
 # Statut  : Cible contractuelle validée — implémentation à mettre en conformité
 #
 # Évolution v2.5 : introduction de l'autorité de domaine (régimes automatique /
-# manuel), pilote du chantier C36 — voir §16. Évolution contractuelle additive et
-# orthogonale à la mise en conformité v2.4 en cours : elle définit des vérités et
-# des comportements attendus, sans concevoir le runtime.
+# manuel), pilote du chantier C36 — voir §16.
+# Évolution v2.6 : spécification des comportements de l'autorité de domaine
+# (disponibilité stricte et anti-fallback de la décision exécutoire, transitions
+# atomiques, récupération minimale après fail-safe, comportement au démarrage,
+# conformité contre la décision exécutoire) — voir §16. Toujours au niveau des
+# comportements attendus, sans figer type, nom d'entité ni identifiant runtime.
+# Additive et orthogonale à la mise en conformité v2.4 en cours.
 #
 # Ce document définit EXHAUSTIVEMENT le comportement attendu
 # du système VMC automatisé, indépendamment de son implémentation
@@ -1260,6 +1264,20 @@ priorité floue entre une décision Arsenal et une décision utilisateur.
   exécutoire** : il vaut **information** (décision théorique d'Arsenal) et **n'est
   pas consommé** par l'application (§8).
 
+**Disponibilité stricte de la décision exécutoire — aucun fallback métier.** La
+décision exécutoire n'est **valide** que si le **titulaire** porte une valeur
+valide (`automatique` ou `manuel`) **et** que la source qu'il désigne est valide
+(en automatique, la décision auto ; en manuel, la consigne). À défaut, la décision
+exécutoire est **indisponible**. Un état `unknown`/`unavailable` **ne vaut** ni
+`automatique`, ni `basse`, ni absence de besoin — aucune valeur n'est substituée.
+
+- Lorsque la décision exécutoire est **indisponible**, l'application **s'abstient**
+  (aucune commande) ; le physique **conserve son dernier régime valide**. La
+  ventilation permanente (§16.5-b) est préservée par l'**inertie physique** et le
+  **fail-safe XOR**, **jamais** par un repli métier vers la basse vitesse.
+- La **cause d'indisponibilité** (titulaire, consigne, décision théorique ou
+  indisponibilité physique) est **exposée** au diagnostic — **aucune cause muette**.
+
 ### 16.3 Surface de commande manuelle
 
 - La surface de commande manuelle est **strictement** `{basse, haute}` — les deux
@@ -1269,14 +1287,50 @@ priorité floue entre une décision Arsenal et une décision utilisateur.
 
 ### 16.4 Transitions, restitution, redémarrage
 
-- Le **changement de titulaire** est **explicite, observable et déterministe**.
-- **Aucune reprise silencieuse** par Arsenal : la restitution de l'autorité à
-  Arsenal est elle-même **explicite**.
-- Une **expiration** de la délégation est **admise par la doctrine transverse**
-  mais **n'est pas une capacité requise** de ce pilote.
-- Au **redémarrage ou rechargement**, le comportement est **déterministe** et
-  **conforme au titulaire précédemment établi**, **sans reprise silencieuse**
-  (renvoi §9.4). Le **mécanisme technique de persistance n'est pas figé** ici.
+**Principes.** Le **changement de titulaire** est **explicite, observable et
+déterministe**. **Aucune reprise silencieuse** par Arsenal. Une **expiration** de
+la délégation est **admise par la doctrine transverse** mais **n'est pas une
+capacité requise** de ce pilote.
+
+**Entrée en manuel — atomique et supervisée.** L'entrée en régime manuel est
+portée par une **primitive backend supervisée**, jamais par une écriture
+indépendante des vérités depuis l'UI. Elle procède **dans cet ordre** :
+
+1. **valider** la consigne demandée (`basse` ou `haute`) — à défaut : abstention et
+   cause exposée, aucune écriture ;
+2. **écrire la consigne** ;
+3. **transférer l'autorité** à l'utilisateur (titulaire → manuel) ;
+4. **convergence** par la décision exécutoire unique.
+
+L'écriture de la consigne **précède** le transfert d'autorité : à l'instant où le
+titulaire devient manuel, la consigne porte **déjà** la valeur voulue — **aucune
+consigne antérieure restaurée n'est exécutée transitoirement**. La primitive
+**n'écrit aucun relais** (écrivain unique préservé, §16.2).
+
+**Retour en automatique — explicite et tracé.** Le retour est porté par une
+**primitive backend explicite et traçable** (titulaire → automatique) ; la consigne
+est **laissée telle quelle** et **ignorée** tant que le régime est automatique. La
+restitution est un **geste**, jamais un effet de bord.
+
+**L'UI appelle ces primitives ; elle n'orchestre pas la transition.**
+
+**Redémarrage / rechargement.** Le comportement est **déterministe** et **conforme
+au titulaire précédemment établi**, **sans reprise silencieuse** (renvoi §9.4) :
+
+- **avant** la restauration des vérités **et** le franchissement du gate de
+  stabilité, **aucune application** n'a lieu — l'application **attend** ;
+- **aucune reprise implicite vers l'automatique** n'est admise ;
+- **après** restauration et stabilité, l'application applique la décision exécutoire
+  **du titulaire restauré**, **une seule fois**.
+
+**Bootstrap ≠ fallback.** La valeur de **première création** d'un porteur d'autorité
+ou de consigne (son état à la toute première initialisation, avant toute
+restauration) est un **bootstrap** ; ce **n'est pas** un substitut d'un état
+`unknown`/`unavailable`, lequel rend la décision exécutoire **indisponible**
+(§16.2). Avant toute exécution en régime établi, l'**état valide** de ces porteurs
+doit être **constaté**. Le **mécanisme technique de persistance n'est pas figé** ici
+(doctrine [`restauration_etat_helpers.md`](../architecture/03_doctrines/restauration_etat_helpers.md) :
+un porteur d'intention/override **n'utilise pas** `initial:`).
 
 ### 16.5 Protections impératives et distinction en trois niveaux
 
@@ -1290,24 +1344,46 @@ Trois niveaux **distincts**, à ne jamais amalgamer :
 
 - Le **fail-safe physique** (§13.6) est une **protection impérative active dans
   les deux régimes**.
-- **Conformité légitime en régime manuel.** Sous autorité manuelle, un écart
-  entre la décision automatique (théorique, §16.2) et l'état physique est
-  **légitime** : il ne constitue **pas** une non-conformité et ne doit pas être
-  traité comme une anomalie. Comportement attendu ; le mécanisme n'est pas conçu
-  ici.
+- **Watchdog XOR — incohérence réelle uniquement.** Le fail-safe ne force la basse
+  vitesse que face à une **incohérence physique réelle** (deux relais réellement
+  actifs, ou réellement inactifs), **jamais** pour remplacer une décision métier
+  absente. En conséquence, une **indisponibilité** de la commande physique **ne
+  vaut pas** incohérence : la cohérence physique (§13.4) est alors **indisponible**,
+  et non « incohérente ».
+- **Conformité comparée à la décision exécutoire.** La conformité fonctionnelle est
+  évaluée entre l'état physique et la **décision exécutoire** (§16.2), **jamais**
+  contre la seule décision automatique. Sous autorité manuelle, l'écart entre la
+  décision automatique (théorique) et l'état physique est **légitime** : il est
+  **exposé** comme information, **sans** constituer une non-conformité ni déclencher
+  d'alerte.
+- **Récupération après fail-safe — minimale.** Après une action du fail-safe, la
+  décision de **l'autorité active** est **restituée** sur le **front stabilisé de
+  retour à une cohérence physique valide** : **lecture unique** de la décision
+  exécutoire, **application unique** par le chemin canonique (§16.2). **Aucun
+  bornage** (compteur, temporisation de reprise) n'est ajouté tant qu'un risque de
+  boucle ou de matraquage n'est **pas démontré** — un défaut matériel persistant ne
+  produit aucun front de récupération, un défaut récurrent relève d'une **panne à
+  surfacer**, non d'une boucle logicielle.
+- **Durée minimale de descente.** La durée minimale de retour en basse vitesse
+  (§8.2, §8.3) est une **règle exécutive** de protection contre les commutations
+  rapprochées ; elle est **commune aux deux régimes** (montée immédiate, descente
+  différée). Elle n'est **pas** la protection impérative — celle-ci est le XOR
+  (niveau a).
 
-### 16.6 Points restant à concevoir — et recensement UI
+### 16.6 Ce qui relève encore de l'implémentation — et recensement UI
 
-Relèvent d'une passe d'implémentation ultérieure, **hors du présent contrat**, et
-**sans type ni identifiant figés** ici :
+Les **comportements** ci-dessus (§16.1–§16.5) sont **spécifiés et opposables**.
+Relèvent encore d'une passe d'implémentation ultérieure, **sans être anticipés
+ici** :
 
-- le **porteur du titulaire** et le **porteur de la consigne manuelle** ;
-- l'**exposition de « qui décide »**, de la consigne manuelle et de la décision
-  théorique ;
-- la **subordination de l'application** au titulaire (abstention en manuel) et la
-  **réinterprétation de la conformité** ;
-- l'**articulation entre le fail-safe physique et la consigne manuelle** après
-  disparition d'un état physique invalide.
+- la **traduction runtime** des rôles — porteur du titulaire, porteur de la
+  consigne, décision exécutoire dérivée, primitives d'entrée et de retour — dont le
+  **type, le nom d'entité et l'identifiant** seront fixés à l'implémentation ;
+- le **câblage UI** appelant les primitives (l'UI observe et déclenche, elle ne
+  décide ni n'orchestre) ;
+- l'**exposition** de « qui décide », de la consigne et de la décision théorique,
+  portée par la décision exécutoire et la conformité (§16.2, §16.5), **sans**
+  capteur diagnostic agrégé supplémentaire.
 
 **Recensement UI (non traité ici).** Les relais `switch.vmc_l1` / `switch.vmc_l2`
 affichés au dashboard de diagnostic sont **recensés** comme point à sécuriser
@@ -1317,6 +1393,6 @@ modification UI** n'est apportée par la présente passe.
 
 # ==========================================================
 # FIN DU CONTRAT — VMC
-# Version v2.5 — cible contractuelle validée
+# Version v2.6 — cible contractuelle validée
 # Implémentation à mettre en conformité
 # ==========================================================
