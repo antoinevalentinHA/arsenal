@@ -19,6 +19,7 @@
 
 ## 1. Cadre et statut
 
+- **Statut : CLÔTURÉ le 2026-07-24 — domaine arrosage LIVRÉ.** Les 6 conditions de livraison (§3) sont réunies ; la validation terrain minimale est acquise (§8, observation multi-cycle du 2026-07-24). Réserves **non bloquantes** conservées (dead-man natif station, notification nominale, sous-cas `degrade` positif — cf. §3) ; suites éventuelles = **C11** (modulation de durée, parqué). Plan conservé comme trace.
 - Document **non normatif** : il aide à **décider**, il ne prescrit pas. Tout lot futur sera **audité avant tout YAML** (contrats avant runtime).
 - Les **contrats priment** : ce plan **pointe** vers eux sans les réécrire.
 - Le **registre C10** reste le cockpit **synthétique** d'état ; ce plan en est le détail de pilotage, séparé.
@@ -70,7 +71,7 @@ Surfaces que les §5/§6 listaient encore comme purs manques alors qu'elles sont
 
 > Le domaine est déjà **publié** incrémentalement (v16.2 / v16.3) ; chaque incrément l'est **dans le changelog de sa release** (co-commit). « Livrer » ne désigne donc pas la première publication mais la **complétude** : l'atteinte des critères ci-dessus, **conditionnée** à leur réalisation, pas à une date.
 
-> **État des conditions de livraison.** runtime cohérent ✅ (Option A intégrée) · UI exploitable ✅ (verdict + raison, §4/§6.2) · diagnostic compréhensible ✅ (pont côté Système, §6.3) · notifications utiles arbitrées ✅ (actionnables couvertes ; nominale écartée par défaut, §5/§6.4) · dette bloquante connue : **aucune**. **Le domaine est donc fonctionnellement complet côté décision / action / UI / diagnostic.** Seule reste la **validation terrain minimale**, conservée en **suivi opportuniste** (§8) — **aucune simulation ni validation forcée** : elle sera constatée à l'occasion. Le chantier est ainsi **en quasi-clôture**, sous la seule réserve terrain.
+> **État des conditions de livraison.** runtime cohérent ✅ (Option A intégrée) · UI exploitable ✅ (verdict + raison, §4/§6.2) · diagnostic compréhensible ✅ (pont côté Système, §6.3) · notifications utiles arbitrées ✅ (actionnables couvertes ; nominale écartée par défaut, §5/§6.4) · dette bloquante connue : **aucune**. **Le domaine est donc fonctionnellement complet côté décision / action / UI / diagnostic.** La **validation terrain minimale est désormais acquise** (§8, observation 2026-07-24) : **décision automatique multi-cycle** confirmée (7 cycles-signature 07-08 → 07-24, **100 % `close_nominale`**), **cadence 100 % expliquée par les gardes** (`besoin_sol` / `suspension_pluie` — « absence ≠ panne »), et **Option A confirmée** sur données réelles (médiane disponible en régime `degrade`). **Les 6 conditions de livraison sont réunies : le domaine est LIVRÉ et le chantier C10 est CLOS (2026-07-24).** Réserves **non bloquantes** conservées : dead-man natif station non qualifié (**arbitré non bloquant le 2026-07-05**, compensé par l'orchestration — fin à échéance, watchdog, reprise) ; notification nominale « arrosage effectué » (micro-arbitrage futur, écarté par défaut) ; sous-cas « intention **positive** en `degrade` » non exercé (**non conditionnant**, §7 — le cœur d'Option A, médiane exploitable à 2 points, est confirmé). La fiabilité du signal sol et le sur-arrosage à 25 min relèvent de **C11** (parqué, prérequis P2 non réuni), **pas** de C10.
 
 ## 4. Acquis (haut niveau, sans détail PR par PR)
 
