@@ -303,7 +303,28 @@ Audit statique du corpus complet (68 fichiers runtime + contrats confrontés). R
 **Racine doctrinale commune confirmée** (avec la vague 4) : la garde `systeme_stable` est bornée au
 reboot HA et non érigée en invariant ⇒ ne couvre pas les reloads d'intégration ni les triggers
 `to:'on'` sans `from`. **Dette documentaire signalée** : complétude contractuelle de l'éclairage
-(27 automatisations / 7 contrats). Hiérarchie portefeuille : A > B > **E1** ; arrosage sans finding.
+(27 automatisations / 7 contrats).
+
+**Contre-audit de la vague 3 conduit (2026-07-24, §8 du rapport) — correction transverse majeure.**
+La recherche de la **nature exacte des entités déclencheuses** établit que `mouvement_*` (agrégats
+OR), `contact_*` redondants (réconciliation à quarantaine, restaurés) et `contact_*` base (hold-last)
+sont **tous des templates « toujours évaluables » — jamais `unavailable`**. Ils présentent `off → on`,
+**jamais `unavailable → on`** ⇒ sur ces entités, `to:'on'` sans `from` **équivaut** à `from:'off'`.
+Conséquences :
+
+- **E1 réfuté** comme artefact de recomposition (résidu réconciliation indéterminable, faible portée) ;
+- **Finding B (vague 4) repose sur la même hypothèse erronée** (les 5 contacts de `…007` sont ces
+  mêmes templates) ⇒ **à re-qualifier à la baisse** au portefeuille, même résidu ;
+- **Finding A intact** (mécanisme distinct : restauration RestoreEntity du panneau `manual → triggered`) ;
+  **Finding C intact** ;
+- **Correction de racine doctrinale** : la vraie protection contre la recomposition **n'est pas
+  `systeme_stable`** mais la **couche de normalisation template** — c'est **elle** qu'il faudrait
+  ériger en invariant.
+
+**Hiérarchie portefeuille révisée : A > C > (B et E1 réduits à un résidu de réconciliation
+indéterminable)** ; arrosage sans finding (conclusion renforcée : la sûreté au boot ne dépend pas de
+la survie du cooldown, la garde de disponibilité du pont suffit). Writers manuels de dashboard
+(lumières + station Rain Bird) confirmés — intention utilisateur, hors vecteur boot/reload.
 
 ### 7.4 Vague 4 (alarme) — livrée le 2026-07-24
 
