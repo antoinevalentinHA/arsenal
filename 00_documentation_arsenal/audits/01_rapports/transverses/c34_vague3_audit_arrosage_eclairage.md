@@ -211,3 +211,109 @@ moindre). Arrosage est consigné **sans finding** (résultat positif). Le **cont
 (attaquer E1, chercher les contre-exemples, confronter au contrat `sejour.md`/`garage.md`, vérifier la
 restauration effective de `arrosage_dernier_effectif` et des input_datetime de deadline) reste à conduire
 avant toute orientation.
+
+---
+
+## 8. Contre-audit de la vague 3
+
+### 8.1 Périmètre et méthode
+
+Attaque des conclusions des §1-§7 telles que mergées en PR #563, selon la discipline des
+contre-audits des vagues 1 et 4 : recherche des écrivains **élargie à tout l'arbre** (YAML +
+`.storage` + dashboards `18_lovelace/`), **détermination de la nature exacte des entités
+déclencheuses** (brut d'intégration vs template normalisé), confrontation aux contrats, et
+classement en *indéterminable* de tout ce qui exigerait un reload/reboot provoqué.
+
+### 8.2 Conclusions confirmées
+
+- **Arrosage — aucun écrivain automatique caché.** La recherche élargie (tout l'arbre, `.storage`
+  **absent**) ne trouve **aucun** écrivain automatique des actionneurs Rain Bird hors des scripts
+  déjà cartographiés (`station_1_courte_supervisee`, `stop_supervise`, `rain_delay_appliquer`) et de
+  leurs 3 appelants (`…002`, `…003`, `…006`). La double garde de disponibilité tient.
+- **La sûreté d'arrosage au boot ne dépend pas de la survie du cooldown.** Même si
+  `arrosage_dernier_effectif` ne se restaurait pas, un démarrage exigerait **en plus** pont
+  disponible + fenêtre + besoin ; or le pont est indisponible au boot ⇒ `arrosage_intention == off`
+  ⇒ pas de start. La restauration du cooldown est une **défense supplémentaire**, non le maillon
+  critique. Conclusion arrosage **renforcée**.
+- **Éclairage — extinctions confirmées sûres** (rattrapage d'un OFF calculé, deadline-gaté,
+  idempotent), reload YAML explicitement traité (`automation_reloaded`).
+
+### 8.3 Conclusion réfutée — E1 reposait sur une hypothèse fausse d'entité brute
+
+**Le §3.3 supposait que `mouvement_sejour` / `contact_garage` recomposent `unavailable → on`
+comme des entités Zigbee brutes. C'est faux, et E1 s'effondre en tant qu'artefact de
+recomposition.**
+
+Les entités déclencheuses des allumages incriminés sont **toutes des templates « toujours
+évaluables » (jamais `unavailable`)** :
+
+| Entité | Fichier | Comportement en indisponibilité de la source |
+|---|---|---|
+| `mouvement_sejour`, `mouvement_garage` | `mouvements/capteurs_agreges.yaml` | agrégat OR `state-based` : `'on' si un membre == 'on' sinon 'off'` ⇒ une source `unavailable` **compte `off`** |
+| `contact_garage`, `contact_sejour`, `contact_chambre_enfants`… | `ouvertures/capteurs_redondants.yaml` | `trigger-based`, état = `business_state` réconcilié (défaut **`off`**), **quarantaine** d'un `on` non corroboré, **restauré** au reboot |
+| `contact_entree_fenetre`, contacts base | `ouvertures/capteurs_base.yaml` | `trigger-based` **hold-last** : source indisponible ⇒ **conserve** le dernier `on`/`off` (défaut `off`), **jamais `unavailable`** |
+
+**Conséquence directe.** Aucune de ces entités ne présente `unavailable → on` : elles présentent
+`off → on` (détection réelle ou maintenue) **ou rien**. Sur une entité qui n'est jamais
+`unavailable`, un trigger `to: 'on'` **sans `from:`** et un trigger `from: 'off'` se comportent
+**identiquement** ⇒ **l'asymétrie sur laquelle E1 était bâti n'est pas un différenciateur réel**. Au
+reload d'intégration Zigbee, les sources brutes deviennent `unavailable` mais l'entité normalisée
+**maintient** son état (aucun `off → on` parasite). **E1 est réfuté comme vecteur de recomposition.**
+
+**Résidu honnête (indéterminable, faible portée)** : pour les contacts redondants, le `business_state`
+vit dans un `input_text` de réconciliation **restauré** ; un contexte restauré à `on` alors que
+l'entité elle-même était `off`, recalculé au trigger `systeme_stable → on`, pourrait produire un
+`off → on`. C'est un chemin **interne au sous-système de réconciliation** (domaine propre, lié à
+D-PRES), non un artefact de recomposition Zigbee. Portée faible, effet indéterminable.
+
+### 8.4 Correction transverse — le Finding B (vague 4) reposait sur la même hypothèse
+
+**Ce constat ne concerne pas que l'éclairage.** Le **Finding B de la vague 4** (alarme) était bâti
+sur exactement la même hypothèse : « un `contact_*` recompose `unavailable → on` au redémarrage du
+bridge Zigbee et déclenche l'intrusion via `…007` (`to:'on'` sans `from:`) ». Or les **5 contacts**
+déclencheurs de `…007` — `contact_chambre_enfants`, `contact_salle_de_jeux` (redondants),
+`contact_chambre_parents`, `contact_sejour` (agrégats), `contact_entree_fenetre` (base hold-last) —
+sont **précisément ces mêmes templates jamais-`unavailable`**. **Le Finding B est donc
+substantiellement réfuté par le même mécanisme** : pas de `unavailable → on` au niveau consommé, seul
+un `off → on` **réel** (ouverture véritable) déclenche — comportement **correct** en armé, pas un
+artefact.
+
+**À porter au portefeuille : re-qualifier le Finding B à la baisse** (résidu réconciliation
+indéterminable, même nature que le résidu E1). **Finding A reste intact** : il repose sur un
+mécanisme **distinct** — la restauration du panneau `alarm_control_panel: platform: manual`
+(RestoreEntity) vers `triggered`, **non** sur une recomposition de capteur template. **Finding C reste
+intact** (drapeau visiteur restauré + course). **Hiérarchie révisée : A > C > (B et E1 réduits à un
+résidu réconciliation indéterminable).**
+
+### 8.5 Writers manuels confirmés (dashboards) — hors vecteur boot/reload
+
+La recherche élargie confirme des **écrivains manuels** absents de la cartographie initiale :
+`18_lovelace/dashboards/eclairage/principal.yaml`, `systeme/prises.yaml`, `arsenal.yaml` exposent
+`switch.prise_lampe_sejour` / `lumiere_entree` / `prise_jardin` ; `arrosage/diagnostic.yaml` expose
+`switch.rain_bird_bat_bt_2_e9a3_station_1`. Ces cartes sont **actionnables** (toggle à intention
+utilisateur). **Elles ne sont ni automatiques, ni des vecteurs de boot/reload** — même taxinomie que
+la vague 4 (§8.5, writers manuels). La formulation « auteur automatique unique » reste exacte ; il
+faut lire « **automatique** » — des chemins manuels existent, hors périmètre C34.
+
+### 8.6 Points indéterminables
+
+- Restauration du `business_state` d'un `input_text` de contexte de réconciliation (résidu B/E1).
+- Sémantique exacte de RestoreEntity au reboot (états restaurés, ré-émission d'événements) — commune
+  au résidu ci-dessus et au Finding A.
+- Ordre d'exécution des triggers `systeme_stable → on` concurrents (déjà relevé vague 4, Finding C).
+
+### 8.7 Conséquences pour le portefeuille
+
+- **La vraie protection contre la recomposition n'est pas `systeme_stable`, mais la couche de
+  normalisation « toujours évaluable ».** Les vagues 3 et 4 avaient sur-attribué le risque à la
+  garde `systeme_stable` (bornée au reboot) ; le contre-audit établit que les entités consommées
+  sont **structurellement immunisées** contre `unavailable → on` par leur normalisation template
+  (agrégation OR, réconciliation à quarantaine, hold-last). **C'est cette couche — non
+  `systeme_stable` — qu'il faudrait ériger en invariant documenté.** Correction de racine
+  doctrinale, transverse aux vagues 3 et 4.
+- **Portefeuille révisé** : **Finding A** (sirène / restauration panneau `manual`) est le **seul
+  finding de reboot/reload à pertinence maintenue** ; **Finding C** faible ; **Findings B et E1
+  réduits** à un résidu de réconciliation indéterminable et de faible portée. **Arrosage : sans
+  finding, conclusion renforcée.**
+- Le contre-audit n'ouvre **aucune orientation corrective** : il **corrige et hiérarchise** les
+  constats avant le portefeuille (livrable 3).
