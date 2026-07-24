@@ -1,78 +1,91 @@
 # ==========================================================
-# 🧠 ARSENAL — AUTOMATION : VMC – Gestion automatique humidite
+# 🧠 ARSENAL — AUTOMATION : VMC – Application de la décision exécutoire
 # ----------------------------------------------------------
 # 🎯 ROLE
-#   Appliquer la vitesse de la VMC selon la demande métier
-#   instantanée fournie par binary_sensor.vmc_haute_vitesse_requise.
+#   Appliquer la vitesse de la VMC selon la DÉCISION EXÉCUTOIRE
+#   unique binary_sensor.vmc_haute_vitesse_commandee (C36 §16.2) :
+#     - régime automatique → suit la décision automatique agrégée ;
+#     - régime manuel      → suit la consigne utilisateur.
+#   L'application ne lit QUE la décision exécutoire (la titularité et
+#   la consigne y sont déjà résolues) — aucune reconstruction.
 #
 # 🧱 PRINCIPE D'ARCHITECTURE
-#   - Aucune décision métier locale
-#   - Aucun polling
-#   - Application stricte de la demande ON
-#   - Maintien temporel exécutif sur retour OFF
+#   - Aucune décision métier locale ; aucun polling.
+#   - Écrivain unique préservé : commande via script.vmc_haute_vitesse /
+#     script.vmc_basse_vitesse uniquement.
+#   - ANTI-FALLBACK (§16.2) : décision exécutoire indisponible ⇒
+#     ABSTENTION (aucune commande) ; le physique conserve son dernier
+#     régime valide. AUCUN `default` vers la basse vitesse.
 #
-# 🔁 HYSTERESIS TEMPORELLE §6.2
-#   - ON  → haute vitesse immédiate
-#   - OFF → retour basse vitesse après durée minimale
+# 🔁 POLITIQUE TEMPORELLE (§8.2, §8.3)
+#   - Montée (haute) : immédiate.
+#   - Descente (basse) : durée minimale EXÉCUTIVE — appliquée sur la
+#     seule TRANSITION de décision (trigger 'decision') ; immédiate au
+#     démarrage et sur récupération.
+#   - mode restart : une nouvelle demande annule une descente différée.
 #
-#   Toute nouvelle demande ON pendant le délai annule la descente
-#   grâce au mode restart.
+# 🩹 RÉCUPÉRATION APRÈS FAIL-SAFE (§16.5)
+#   Sur le FRONT STABILISÉ de retour de la cohérence physique vers un
+#   état valide (off→on, for 5 s), ré-application UNIQUE de la décision
+#   exécutoire par le chemin canonique. Auto-borné : un défaut persistant
+#   ne produit aucun front ; aucun compteur/retry n'est ajouté.
 #
-# ⚙️ GARANTIES
-#   - Pas d'oscillation rapide
-#   - Maintien exécutif hors capteur décisionnel
-#   - Comportement déterministe
-#
-# ✅ BOOT-SAFE + RELOAD-TEMPLATE-SAFE
+# 🚦 DÉMARRAGE / RECHARGEMENT (§16.4, §9.4)
+#   Aucune application avant restauration des vérités ET stabilité :
+#   déclenché sur input_boolean.systeme_stable → on, sous condition
+#   systeme_stable == on. Aucune reprise implicite vers l'automatique ;
+#   la décision exécutoire reflète le titulaire restauré.
 # ==========================================================
 
 - id: "10190000000001"
   alias: "VMC - Gestion humidité"
   description: >
-    Applique automatiquement la haute ou la basse vitesse de la VMC
-    en fonction de la demande métier fournie par
-    binary_sensor.vmc_haute_vitesse_requise, en respectant une durée
-    minimale de fonctionnement en haute vitesse.
+    Applique la vitesse de la VMC selon la décision exécutoire unique
+    binary_sensor.vmc_haute_vitesse_commandee (C36 §16.2), en respectant
+    une durée minimale exécutive au retour en basse vitesse, en
+    s'abstenant si la décision exécutoire est indisponible, et en
+    ré-appliquant la décision sur un front stabilisé de récupération.
   mode: restart
 
   trigger:
+    # Transition de la décision exécutoire (application normale).
     - platform: state
-      entity_id: binary_sensor.vmc_haute_vitesse_requise
+      id: decision
+      entity_id: binary_sensor.vmc_haute_vitesse_commandee
       to:
         - "on"
         - "off"
 
-    - platform: homeassistant
-      event: start
+    # Front de récupération après fail-safe (§16.5) : retour STABILISÉ
+    # de la cohérence physique vers un état valide → ré-application unique.
+    - platform: state
+      id: recuperation
+      entity_id: binary_sensor.vmc_coherence_physique
+      from: "off"
+      to: "on"
+      for:
+        seconds: 5
+
+    # Démarrage : appliquer une fois la stabilité atteinte (remplace le
+    # bypass homeassistant.start ; aucune reprise implicite avant restauration).
+    - platform: state
+      id: demarrage
+      entity_id: input_boolean.systeme_stable
+      to: "on"
 
   condition:
-    - condition: or
-      conditions:
-
-        - condition: template
-          value_template: >
-            {{ trigger.platform == 'homeassistant' }}
-
-        - condition: state
-          entity_id: input_boolean.systeme_stable
-          state: "on"
+    # Rien ne s'applique avant la stabilité système. Aucun bypass boot.
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
 
   variables:
-    # §14.4 — duree minimale EXECUTIVE. Aucun repli silencieux : le
-    # helper est le proprietaire de la valeur, et une valeur illisible
-    # doit etre traitee comme telle, non remplacee en silence.
-    #
-    # Le repli `| int(15)` retire ici etait ANTERIEUR au chantier et
-    # contraire a la doctrine arretee en passe 5. La valeur de 15 min
-    # demeure celle qu'AMORCE L7.0 ; elle n'est plus refabriquee a
-    # chaque evaluation.
+    # §14.4 — durée minimale EXÉCUTIVE. Aucun repli silencieux : le helper
+    # est le propriétaire de la valeur ; une valeur illisible est traitée
+    # comme telle (descente suspendue), non remplacée en silence.
     duree_min_minutes: >
       {{ states('input_number.vmc_duree_min_haute') | float(none) }}
 
-    # Une duree illisible ne doit ni prolonger indefiniment la haute
-    # vitesse, ni la couper sans delai. La descente est donc SUSPENDUE :
-    # le systeme demeure dans son etat courant, et
-    # `binary_sensor.parametres_invalides_vmc` en expose la cause.
     duree_min_lisible: >
       {{ duree_min_minutes is not none and duree_min_minutes > 0 }}
 
@@ -80,47 +93,44 @@
     - choose:
 
         # ==================================================
-        # 🚀 HAUTE VITESSE
+        # 🚀 HAUTE VITESSE — immédiat (tous déclencheurs)
         # ==================================================
         - conditions:
             - condition: state
-              entity_id: binary_sensor.vmc_haute_vitesse_requise
+              entity_id: binary_sensor.vmc_haute_vitesse_commandee
               state: "on"
           sequence:
             - service: script.vmc_haute_vitesse
 
         # ==================================================
-        # 🔽 BASSE VITESSE
+        # 🔽 BASSE VITESSE — durée mini exécutive sur transition
         # ==================================================
         - conditions:
             - condition: state
-              entity_id: binary_sensor.vmc_haute_vitesse_requise
+              entity_id: binary_sensor.vmc_haute_vitesse_commandee
               state: "off"
           sequence:
-            # Duree illisible : aucune descente. Le §12.3 proscrit une
-            # mesure inexploitable traitee comme une valeur numerique ;
-            # le meme principe vaut pour un parametre executif.
+            # Durée illisible : aucune descente (anti-fallback paramètre, §12.3).
             - condition: template
               value_template: "{{ duree_min_lisible }}"
 
+            # Délai UNIQUEMENT sur une transition de décision (anti-commutation).
+            # Au démarrage et sur front de récupération : application immédiate.
             - if:
                 - condition: template
-                  value_template: >
-                    {{ trigger.platform != 'homeassistant' }}
+                  value_template: "{{ trigger.id == 'decision' }}"
               then:
                 - delay:
                     seconds: "{{ (duree_min_minutes * 60) | int }}"
 
-            # Réévaluation après délai :
-            # si une demande ON est revenue entre-temps, le mode restart
-            # aura déjà annulé cette séquence. Cette garde protège aussi
-            # contre les cas limites reload / état modifié sans trigger.
+            # Réévaluation post-délai : si une demande est revenue, le mode
+            # restart a déjà annulé cette séquence. Garde reload / état modifié.
             - condition: state
-              entity_id: binary_sensor.vmc_haute_vitesse_requise
+              entity_id: binary_sensor.vmc_haute_vitesse_commandee
               state: "off"
 
             - service: script.vmc_basse_vitesse
 
-      default:
-        # État décisionnel indisponible : retour fail-safe basse vitesse.
-        - service: script.vmc_basse_vitesse
+      # PAS de `default` : décision exécutoire indisponible → ABSTENTION
+      # (le physique conserve son dernier régime valide ; §16.2 anti-fallback).
+      # La cause d'indisponibilité est exposée par binary_sensor.vmc_conformite_decision.
