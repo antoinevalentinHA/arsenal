@@ -1,0 +1,56 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     VMC — Action : restitution de l'autorité à Arsenal (C36)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Rendre l'autorité de la VMC à Arsenal (retour au régime
+#     automatique) via la primitive backend EXPLICITE et TRACÉE
+#     script.vmc_revenir_mode_automatique (C36 §16.4). La consigne
+#     manuelle est laissée telle quelle et ignorée en automatique.
+#     Spécialisation Autorité VMC du socle d'action script confirmé.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_action_script_confirme
+#     - UI uniquement : n'écrit NI helper, NI relais. Seule frontière
+#       = la primitive supervisée (écrivain unique préservé, §16.2).
+#
+# 🔗 DEPENDANCES
+#     - entity   : script.vmc_revenir_mode_automatique (feedback d'état)
+#     - service  : script.vmc_revenir_mode_automatique
+#     - variables.confirmation : texte de confirmation modale (optionnel)
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation modale OBLIGATOIRE (restitution d'autorité, §16.4)
+#     - N'expose JAMAIS une commande native de relais
+#     - N'écrit jamais input_select.vmc_titulaire_autorite directement :
+#       seule la primitive transfère l'autorité
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_action_vmc_restitution
+#     entity: script.vmc_revenir_mode_automatique
+#     name: Rendre l'autorité à Arsenal
+#     icon: mdi:account-arrow-right
+#     variables:
+#       confirmation: "Rendre le contrôle de la VMC à Arsenal (mode automatique) ?"
+#
+# 🔗 SATELLITE DE : socle_action_script_confirme
+# ==========================================================
+
+carte_action_vmc_restitution:
+  template: socle_action_script_confirme
+
+  tap_action:
+    action: call-service
+    service: script.vmc_revenir_mode_automatique
+    confirmation:
+      text: >
+        [[[
+          return variables?.confirmation
+            || "Rendre le contrôle de la VMC à Arsenal (mode automatique) ?";
+        ]]]

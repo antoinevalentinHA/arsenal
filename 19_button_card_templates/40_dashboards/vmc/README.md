@@ -18,7 +18,7 @@ intention → état interprété → capteur vs seuil
 
 ## Structure implicite identifiée
 
-Le dossier est organisé en **3 familles UI distinctes** :
+Le dossier est organisé en **4 familles UI distinctes** :
 
 ### A. Intention métier
 
@@ -59,14 +59,25 @@ Exemple : `vmc_capteur`
 
 ---
 
+### D. Autorité & reprise en main (pilote C36)
+
+Exemples : `carte_vmc_decision_commandee`, `carte_action_vmc_prise_manuelle`, `carte_action_vmc_restitution`
+
+- **Décision exécutoire** (`carte_vmc_decision_commandee`, type **pure**) : lecture seule de `binary_sensor.vmc_haute_vitesse_commandee` (décision exécutoire unique, §16.2), anti-fallback (indisponible → « Indéterminée », jamais traduite).
+- **Actions supervisées** (`carte_action_vmc_prise_manuelle`, `carte_action_vmc_restitution`, type **action**) : prise / changement de consigne / restitution d'autorité **exclusivement** via les primitives `script.vmc_entrer_mode_manuel` / `script.vmc_revenir_mode_automatique`. Confirmation modale obligatoire. **N'écrivent ni helper, ni relais** (écrivain unique préservé, §16.2, §16.4).
+
+> Ces cartes n'introduisent **aucune** commande directe de relais ni écriture directe de helper de transition. Toute écriture passe par une primitive supervisée.
+
+---
+
 ## Taxonomie des types UI
 
 | Type UI        | Signification                                                                                    | Exemples                                                        |
 |----------------|--------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
 | interprétative | lecture métier ou transformation locale d'état, non source de vérité système                   | `carte_vmc_intention`, `carte_etat_binaire_interprete_inverse`  |
 | diagnostic     | qualification capteur / seuil / hystérésis                                                      | `vmc_capteur`                                                   |
-| pure           | *(non utilisé dans ce domaine)*                                                                  | —                                                               |
-| action         | *(non utilisé dans ce domaine)*                                                                  | —                                                               |
+| pure           | lecture d'une décision déjà calculée par le backend                                             | `carte_vmc_decision_commandee`                                  |
+| action         | déclenchement d'une primitive supervisée (jamais de commande native)                            | `carte_action_vmc_prise_manuelle`, `carte_action_vmc_restitution` |
 | info           | *(non utilisé dans ce domaine)*                                                                  | —                                                               |
 
 ---
@@ -76,7 +87,8 @@ Exemple : `vmc_capteur`
 ```
 Niveau 1 — Intention          → 10_intention/
 Niveau 2 — État interprété    → 20_etat_interprete/
-Niveau 3 — Diagnostic capteur → 30_diagnostic/
+Niveau 3 — Autorité & action  → 15_autorite/
+Niveau 4 — Diagnostic capteur → 30_diagnostic/
 ```
 
 > Cette architecture en couches est normative. Toute carte doit appartenir à une seule couche. Aucune carte hybride n'est autorisée.
@@ -90,6 +102,11 @@ Niveau 3 — Diagnostic capteur → 30_diagnostic/
 
   10_intention/
     carte_vmc_intention.yaml
+
+  15_autorite/
+    carte_vmc_decision_commandee.yaml
+    carte_action_vmc_prise_manuelle.yaml
+    carte_action_vmc_restitution.yaml
 
   20_etat_interprete/
     carte_etat_binaire_interprete_inverse.yaml

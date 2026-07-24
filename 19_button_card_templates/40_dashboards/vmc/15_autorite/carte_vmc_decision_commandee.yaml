@@ -1,0 +1,97 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     VMC — Décision exécutoire (autorité de domaine, C36)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher la DÉCISION EXÉCUTOIRE UNIQUE de la VMC
+#     (binary_sensor.vmc_haute_vitesse_commandee, C36 §16.2) :
+#     ce qui est réellement commandé, tous régimes confondus
+#     (auto → décision automatique ; manuel → consigne).
+#     Lecture seule — aucune interaction, aucune décision locale.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_decision_72
+#     - UI uniquement (le backend décide ; l'UI traduit)
+#
+# 🎨 SEMANTIQUE (palette officielle)
+#     - on  (Haute commandée)  -> 🟢 vert  rgba(76,175,80,0.2)
+#     - off (Basse commandée)  -> ⚪ gris neutre rgba(158,158,158,0.2)
+#     - indispo                -> ⚪ gris indispo rgba(158,158,158,0.1)
+#
+# 🚫 ANTI-FALLBACK (§16.2)
+#     Une décision exécutoire indisponible s'affiche « Indéterminée » :
+#     JAMAIS traduite en automatique, basse ou haute. La cause fine
+#     reste portée par binary_sensor.vmc_conformite_decision.
+#
+# 🔗 DEPENDANCES
+#     - entity : binary_sensor.vmc_haute_vitesse_commandee
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_vmc_decision_commandee
+#     entity: binary_sensor.vmc_haute_vitesse_commandee
+#
+# 🔗 SATELLITE DE : socle_decision_72
+# ==========================================================
+
+carte_vmc_decision_commandee:
+  template: socle_decision_72
+
+  name: Décision exécutoire
+  icon: mdi:fan-chevron-up
+
+  variables:
+    diag: |
+      [[[
+        const state = entity?.state;
+        const UNAV = ['unknown', 'unavailable', undefined, null, 'none', ''];
+
+        const category = (() => {
+          if (UNAV.includes(state)) return 'indispo';
+          if (state === 'on') return 'haute';
+          if (state === 'off') return 'basse';
+          return 'indispo';
+        })();
+
+        const bg = (() => {
+          if (category === 'haute') return 'rgba(76, 175, 80, 0.2)';
+          if (category === 'basse') return 'rgba(158, 158, 158, 0.2)';
+          return 'rgba(158, 158, 158, 0.1)';
+        })();
+
+        const stateText = (() => {
+          if (category === 'haute') return 'Haute commandée';
+          if (category === 'basse') return 'Basse commandée';
+          return 'Indéterminée';
+        })();
+
+        const labelText = (() => {
+          if (category === 'haute') return 'Vitesse haute imposée à l\'exécution';
+          if (category === 'basse') return 'Vitesse basse imposée à l\'exécution';
+          return 'Décision exécutoire indisponible';
+        })();
+
+        return { category, bg, stateText, labelText };
+      ]]]
+
+  state_display: |
+    [[[
+      return variables.diag.stateText;
+    ]]]
+
+  label: |
+    [[[
+      return variables.diag.labelText;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return variables.diag.bg;
+          ]]]
