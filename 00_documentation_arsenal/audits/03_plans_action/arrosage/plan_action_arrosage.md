@@ -183,6 +183,19 @@ Quelques **axes ordonnés**, pas un backlog. Chaque lot sera **audité avant YAM
 
 > **Observation hydrique (2026-07-19, lecture Recorder) — 35 min sur-arrose ; signal sol pas encore fiable (prérequis C11-P2).** Sur les **4 cycles auto (35 min)** : pic sol **36–51 %** (≫ seuil 30 %) ⇒ **sur-arrosage confirmé** (baisser la durée de base serait factuellement justifié — geste opérateur, **non touché ici**). **Mais** dose-réponse **très dispersée** (+5,7 à +26,6 pts pour la **même** dose ; lags 36 min → 5 h 40) ⇒ **signal sol non fiable** : le prérequis **P2** de la modulation de durée (C11) **n'est pas réuni**. Parc capteurs passé à **6** (info opérateur) → ré-observation requise. Détail : [`plan d'observation hydrique v0 §3 bis (T05)`](../../02_conception/arrosage/plan_observation_hydrique_v0.md).
 
+> **Observation terrain (2026-07-24, requête Recorder sur base fraîche) — deux nouveaux cycles ; décision automatique confirmée sur 7 cycles-signature ; cadence entièrement expliquée par les gardes.** Base d'analyse acquise le 2026-07-24 (couverture jusqu'au 24/07 10:35, ajoutée au corpus : `arsenal-runtime/snapshots/database/recorder_v17_0_3.db`, hors dépôt gouverné). Depuis le point du 2026-07-20, **deux nouvelles sessions**, toutes deux à **05:30:00** (entrée de fenêtre Arsenal = signature automatique), **25 min**, `close_nominale` :
+>
+> | Session | Ouverture | Fin prévue | Fin observée | Écart | Verdict |
+> |---|---|---|---|---|---|
+> | 2026-07-22 | 05:30:00 | 05:55:00 | 05:55:02 | +2 s | `close_nominale` |
+> | 2026-07-24 | 05:30:00 | 05:55:00 | 05:55:03 | +3 s | `close_nominale` |
+>
+> **Décompte rigoureux : 10 sessions de suivi, 100 % `close_nominale`** (0 `stop_incertain` / `close_watchdog` / `close_reprise`). Parmi elles, **7 portent la signature automatique 05:30:00** — 07-08, 07-09, 07-10, 07-18, 07-20, 07-22, 07-24 — toutes `close_nominale`. Le plan ne créditait que **3** occurrences (05/07, 18/07, 20/07) : la requête sur base fraîche fait apparaître **trois cycles-signature déjà présents** (07-08/09/10) et **deux nouveaux** (07-22/24). **Réserve honnête maintenue** : la source du déclenchement n'est pas historisée ; le 05:30:00 est l'indice d'entrée-fenêtre, la qualification « automatique » relevant de l'**arbitrage propriétaire (2026-07-24)** — étendu ici aux 07-08/09/10/22/24 par **identité de signature** avec 18/20 déjà arbitrés. **La décision automatique est ainsi établie sur 7 cycles nominaux (07-08 → 07-24)** ; la réserve « pas encore multi-cycle » est **largement levée**.
+>
+> **Cadence entièrement expliquée par les gardes — « absence ≠ panne » confirmé sur données réelles.** Sonde de `binary_sensor.arrosage_besoin_sol` et `binary_sensor.arrosage_suspension_pluie` à l'entrée de fenêtre, **chaque jour** du 07-08 au 07-24 : arrosage **si et seulement si** `besoin_sol = on`. Chaque jour **sans** arrosage s'explique par une garde légitime — `besoin_sol = off` (sol au-dessus du seuil 30 %, cadence ~1 jour/2 depuis le 18/07) **ou** `suspension_pluie = on` (07-14/15, pluie détectée ; pluie réelle 07-11→13, `pluie_cumul_72h` 2,1–2,7 mm). `arrosage_automatique_actif = on` et `demande = complet` sur toute la plage. **Aucun non-déclenchement n'est une panne.**
+>
+> **Durée 35 → 25 min** stabilisée depuis le 20/07 (cohérente avec le sur-arrosage du 19/07), sans effet sur la nominalité. Lecture seule ; **aucun forçage, aucune simulation**.
+
 ## 9. Éléments explicitement différés
 
 Hors périmètre de la **première** livraison (différés, **non bloquants**) :
