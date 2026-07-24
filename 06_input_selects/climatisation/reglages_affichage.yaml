@@ -8,7 +8,7 @@
 #   Options :
 #     • Mode Cool
 #     • Mode Heat
-#     • Déshumidification et ventilation
+#     • Mode Dry  (déshumidification)
 #     • Plages horaires et blocages
 #
 # 🧩 Nature :
@@ -35,6 +35,9 @@
 #
 # ℹ️ Hors sélecteur (toujours visible) :
 #   - le bandeau de configuration invalide
+#   - la ventilation (`input_select.clim_fan_mode_cible`),
+#     inter-modes : elle s'applique en Cool / Heat / Dry, donc
+#     hissée en tête de page hors de toute section conditionnelle.
 #   Aucune information de validité n'est masquée.
 #
 # 🧠 Principe Arsenal associé :
@@ -48,6 +51,6 @@ clim_reglages_affichage:
   options:
     - Mode Cool
     - Mode Heat
-    - Déshumidification et ventilation
+    - Mode Dry
     - Plages horaires et blocages
   icon: mdi:tune-vertical
