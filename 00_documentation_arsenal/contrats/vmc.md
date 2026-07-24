@@ -1275,8 +1275,13 @@ exécutoire est **indisponible**. Un état `unknown`/`unavailable` **ne vaut** n
   (aucune commande) ; le physique **conserve son dernier régime valide**. La
   ventilation permanente (§16.5-b) est préservée par l'**inertie physique** et le
   **fail-safe XOR**, **jamais** par un repli métier vers la basse vitesse.
-- La **cause d'indisponibilité** (titulaire, consigne, décision théorique ou
-  indisponibilité physique) est **exposée** au diagnostic — **aucune cause muette**.
+- La **cause d'indisponibilité** de la décision exécutoire (titulaire, consigne ou
+  décision théorique) est **exposée** au diagnostic — **aucune cause muette**.
+  L'**indisponibilité physique** des relais relève d'un autre porteur : elle est
+  surfacée **directement sur les entités relais** (`switch.vmc_l1` /
+  `switch.vmc_l2`) et par la **cohérence physique** (§13.4, §13.10), et **non** par
+  une cause portée par la conformité — dont la disponibilité dépend précisément de
+  la lisibilité des relais.
 
 ### 16.3 Surface de commande manuelle
 

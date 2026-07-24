@@ -27,7 +27,10 @@
 #   Tant que les relais sont lisibles, ce capteur reste DISPONIBLE et
 #   expose, quand la décision exécutoire est indisponible, la cause
 #   précise via l'attribut cause_indetermination (titulaire / consigne /
-#   décision auto / relais / XOR). Pas de capteur diagnostic agrégé.
+#   décision auto / XOR). Pas de capteur diagnostic agrégé.
+#   👉 L'indisponibilité PHYSIQUE des relais n'est pas une cause exposée
+#      ici : elle rend ce capteur lui-même `unavailable`. Elle est portée
+#      par les entités relais et binary_sensor.vmc_coherence_physique.
 #
 # ❌ NE PAS CONFONDRE AVEC
 #   binary_sensor.vmc_coherence_physique → validité électrique (XOR) seule.
@@ -179,6 +182,11 @@
           {% endif %}
 
         # Cause précise quand la conformité est indéterminée (§16.2).
+        # NB : l'indisponibilité physique des relais n'est PAS une cause exposée
+        # ici — ce capteur devient lui-même `unavailable` quand les relais ne
+        # sont pas lisibles (voir availability), ce qui masque cet attribut.
+        # Elle est portée par les entités relais (switch.vmc_l1 / vmc_l2) et par
+        # binary_sensor.vmc_coherence_physique (§13.4, §13.10, contrat §16.2).
         cause_indetermination: >
           {% set titulaire = states('input_select.vmc_titulaire_autorite') %}
           {% set consigne = states('input_select.vmc_consigne_manuelle') %}
@@ -191,9 +199,6 @@
             Consigne manuelle indisponible
           {% elif titulaire == 'automatique' and req not in ['on', 'off'] %}
             Décision automatique indisponible
-          {% elif l1 in ['unavailable', 'unknown']
-                  or l2 in ['unavailable', 'unknown'] %}
-            Relais indisponible
           {% elif (l1 == 'on' and l2 == 'on') or (l1 == 'off' and l2 == 'off') %}
             XOR relais invalide — état physique non interprétable
           {% else %}
