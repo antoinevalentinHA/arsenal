@@ -16,6 +16,7 @@
 | [separation_decision_action.md](./separation_decision_action.md) | Principe architectural fondamental : séparation décision / action |
 | [causalite_metier.md](./causalite_metier.md) | Doctrine causalité métier et temporalité persistante |
 | [commandabilite.md](./commandabilite.md) | Doctrine de commandabilité : gate conditionnel de capacité d'exécution (distinct de la disponibilité ; pas une couche universelle) |
+| [autorite_de_domaine.md](./autorite_de_domaine.md) | Doctrine d'autorité de domaine : unicité de l'autorité, révocabilité de sa délégation ; régimes automatique / manuel (instancie « autorité unique par domaine ») |
 
 ## Conventions opérationnelles
 
