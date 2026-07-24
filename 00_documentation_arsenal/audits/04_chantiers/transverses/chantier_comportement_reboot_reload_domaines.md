@@ -7,7 +7,7 @@
 | **Statut** | **Ouvert (2026-07-21) ; enrichi le 2026-07-23 d'apports probatoires runtime L4** (climatisation, alarme — cf. §5.6) ; **vague 4 (alarme) livrée le 2026-07-24** (audit statique, cf. §7.4). La vague 1 (VMC + déshumidificateur) est close en tant qu'audit ; la vague 4 (alarme) l'est également. Le cadrage et l'inventaire restent la base. **Aucun verdict de qualification** au sens de la grille §2 (défaut « action physique indésirable » vs « recalcul fonctionnel » légitime) n'est **arrêté** avant contre-audit : les deux findings de la vague 4 (Findings A/B) sont qualifiés « candidats, non établis » (effet indéterminable). Les apports L4 et les vagues **alimentent la cartographie** (critère ①) sans la clore. |
 | **Priorité** | **P1** — le sujet porte sur des actions physiques (chauffe, froid, eau, ventilation, éclairage, armement d'alarme) potentiellement déclenchées par une opération purement technique. |
 | **Ouvert le** | 2026-07-21. |
-| **Prochain jalon** | **Vagues 2 (clim + chauffage) et 3 (arrosage + éclairage)**, puis **contre-audit** des vagues livrées (dont vague 4). Vagues 1 et 4 **livrées**. Pas de conclusion générale avant couverture des sept domaines. |
+| **Prochain jalon** | **Aucun — les 4 livrables des critères de clôture (§9) sont livrés.** C34 est clos dès le merge du livrable 4 ; reste la sortie des ① Actifs (décision propriétaire). Les chantiers D1/P4/P1/I1/A1/A2 vivent hors C34. |
 | **Registre** | Chantier **C34** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi.** |
 
 > **Ce document n'établit aucun comportement.** Il définit le périmètre, recense les
@@ -469,7 +469,12 @@ C34 est clos lorsque les quatre livrables suivants sont produits et mergés :
    nouveau, avec propriétaire, lots et preuves manquantes qualifiées — **✅ livré (2026-07-24)** :
    [`c34_portefeuille_chantiers.md`](c34_portefeuille_chantiers.md) ;
 4. **Solutions documentées** pour les chantiers prioritaires, au niveau de détail permettant
-   l'implémentation sans refaire l'analyse — **reste à produire (dernier livrable)**.
+   l'implémentation sans refaire l'analyse — **✅ livré (2026-07-24)** :
+   [`c34_solutions.md`](c34_solutions.md).
+
+> **Les quatre critères de clôture sont satisfaits.** Conformément au présent §9, **C34 est clos dès
+> le merge du livrable 4**. La sortie des ① Actifs du registre est la dernière écriture (co-commit).
+> Les chantiers issus du portefeuille (D1, P4, P1, I1, A1/A2) **poursuivent leur vie propre** hors C34.
 
 > **Aucun critère de clôture ne dépend d'une panne provoquée, d'un reboot fabriqué ou d'un
 > reload déclenché pour les besoins de la preuve.** Les quatre critères sont **documentaires**,
@@ -483,10 +488,11 @@ C34 est clos lorsque les quatre livrables suivants sont produits et mergés :
 
 ## 10. Stop point
 
-**Les quatre vagues d'audit, leurs contre-audits et le portefeuille (livrable 3,
-[`c34_portefeuille_chantiers.md`](c34_portefeuille_chantiers.md)) sont livrés.** Reste le seul
-**livrable 4 — solutions documentées** pour les chantiers prioritaires (D1 invariant doctrinal, P4
-déshum. branche B, P1 sirène, I1 instrumentation). Dernier critère de clôture documentaire.
+**Les quatre livrables des critères de clôture (§9) sont livrés** : cartographie (4 vagues),
+contre-audits (4), portefeuille ([`c34_portefeuille_chantiers.md`](c34_portefeuille_chantiers.md)) et
+solutions ([`c34_solutions.md`](c34_solutions.md)). **C34 est clos dès le merge du livrable 4.** Il ne
+reste qu'à **sortir C34 des ① Actifs** du registre (décision propriétaire, dernière écriture). Les
+chantiers issus du portefeuille (D1, P4, P1, I1, A1/A2) vivent désormais hors C34.
 
 Ce document ne conclut sur **aucun** comportement. Il n'ouvre **aucun** sous-chantier
 correctif. Toute orientation corrective relève du portefeuille (livrable 3), après
