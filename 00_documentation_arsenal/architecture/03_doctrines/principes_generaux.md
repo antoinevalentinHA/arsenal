@@ -39,6 +39,20 @@ par le périmètre du code qui le gère.
 silencieux, non reproductibles et non diagnostiquables ;
 l'unicité du décideur est la condition de la traçabilité.
 
+**Précision — titularité et délégation (unicité ≠ permanence).** L'unicité
+de l'autorité porte sur le **nombre** de décideurs à un instant donné (un
+seul), **jamais** sur l'**identité** de ce décideur. Assimiler l'unicité à
+une souveraineté **permanente** d'Arsenal est un ajout non fondé : le
+titulaire de l'autorité d'un domaine **peut changer** — Arsenal en régime
+automatique, l'utilisateur en régime manuel — sans jamais rompre l'unicité,
+puisqu'à chaque instant exactement un titulaire décide. La règle est donc :
+**unicité de l'autorité, révocabilité de sa délégation.** Le changement de
+titulaire est explicite, observable et déterministe ; aucune reprise
+silencieuse n'est admise. L'instanciation opposable de ce principe (régimes,
+écrivain unique, transition, portée, durée, restitution, protections
+impératives) est portée par
+[`autorite_de_domaine.md`](./autorite_de_domaine.md).
+
 ---
 
 ## 3. Séparation perception / décision / exécution
