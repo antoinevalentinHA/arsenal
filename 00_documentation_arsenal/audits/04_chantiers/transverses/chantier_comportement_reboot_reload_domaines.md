@@ -462,13 +462,14 @@ solvable dans le cadre du chantier** (R-VERROU-2).
 C34 est clos lorsque les quatre livrables suivants sont produits et mergés :
 
 1. **Cartographie consolidée** des sept domaines, chaque conclusion portant une des quatre
-   qualifications du §8 ;
+   qualifications du §8 — **✅ livrée** (les 4 vagues, §7.1-§7.4) ;
 2. **Contre-audit** ayant levé les raccourcis, confusions et généralisations de la
-   cartographie initiale ;
+   cartographie initiale — **✅ livré** (contre-audits des 4 vagues) ;
 3. **Portefeuille de chantiers** — chaque risque confirmé rattaché à un chantier existant ou
-   nouveau, avec propriétaire, lots et preuves manquantes qualifiées ;
+   nouveau, avec propriétaire, lots et preuves manquantes qualifiées — **✅ livré (2026-07-24)** :
+   [`c34_portefeuille_chantiers.md`](c34_portefeuille_chantiers.md) ;
 4. **Solutions documentées** pour les chantiers prioritaires, au niveau de détail permettant
-   l'implémentation sans refaire l'analyse.
+   l'implémentation sans refaire l'analyse — **reste à produire (dernier livrable)**.
 
 > **Aucun critère de clôture ne dépend d'une panne provoquée, d'un reboot fabriqué ou d'un
 > reload déclenché pour les besoins de la preuve.** Les quatre critères sont **documentaires**,
@@ -482,9 +483,10 @@ C34 est clos lorsque les quatre livrables suivants sont produits et mergés :
 
 ## 10. Stop point
 
-**Les quatre vagues d'audit et leurs contre-audits sont livrés** (1 VMC + déshum. ; 2 clim +
-chauffage ; 3 arrosage + éclairage ; 4 alarme). Restent le **portefeuille** (livrable 3) et les
-**solutions** (livrable 4) — les deux critères de clôture documentaires encore ouverts.
+**Les quatre vagues d'audit, leurs contre-audits et le portefeuille (livrable 3,
+[`c34_portefeuille_chantiers.md`](c34_portefeuille_chantiers.md)) sont livrés.** Reste le seul
+**livrable 4 — solutions documentées** pour les chantiers prioritaires (D1 invariant doctrinal, P4
+déshum. branche B, P1 sirène, I1 instrumentation). Dernier critère de clôture documentaire.
 
 Ce document ne conclut sur **aucun** comportement. Il n'ouvre **aucun** sous-chantier
 correctif. Toute orientation corrective relève du portefeuille (livrable 3), après
