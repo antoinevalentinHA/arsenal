@@ -267,13 +267,43 @@ cœur thermique, et pour **isoler l'alarme**, dont la sémantique diffère des a
 |---|---|---|---|---|
 | **1** | VMC + déshumidificateur | 21 fichiers (26 réels, cf. rapport §1) | Volume le plus faible, proximité fonctionnelle (traitement de l'air), **aucun chantier existant** — terrain vierge idéal pour fixer la méthode | **✅ livrée** ([rapport](../../01_rapports/transverses/c34_vague1_audit_vmc_deshumidificateur.md)) — close en tant qu'audit ; branche B retenue, lot correctif au §10.6 |
 | **2** | climatisation + chauffage | 145 fichiers | Cœur thermique, **95 contrats sur 140**, dépendances croisées fortes, risque physique élevé | à lancer |
-| **3** | arrosage + éclairage | 68 fichiers | Arrosage : dépendance pont externe. Éclairage : 27 automatisations pour 7 contrats — asymétrie à instruire | à lancer |
+| **3** | arrosage + éclairage | 68 fichiers | Arrosage : dépendance pont externe. Éclairage : 27 automatisations pour 7 contrats — asymétrie à instruire | **✅ livrée (2026-07-24)** ([rapport](../../01_rapports/transverses/c34_vague3_audit_arrosage_eclairage.md)) — cf. §7.3 |
 | **4** | alarme | 30 fichiers | **Traité seul** : la révocation de sécurité y est un comportement potentiellement correct, ce qui inverse la grille de lecture | **✅ livrée (2026-07-24)** ([rapport](../../01_rapports/transverses/c34_vague4_audit_alarme.md)) — cf. §7.4 |
 
 Chaque vague produit une section de cartographie **par domaine**, selon les rubriques de
 l'audit, et n'émet que des conclusions qualifiées au sens du §8.
 
 **Aucune vague n'est lancée par le présent document.**
+
+### 7.3 Vague 3 (arrosage + éclairage) — livrée le 2026-07-24
+
+Audit statique du corpus complet (68 fichiers runtime + contrats confrontés). Résultats qualifiés
+§2/§8, à consommer par le contre-audit puis le portefeuille :
+
+- **Arrosage — boot-safe, aucun défaut candidat, démontré statiquement.** Les 3 automatisations à
+  trigger `homeassistant start` sont toutes gardées : `declenchement` (start) n'arrose que si
+  `arrosage_intention == on`, laquelle exige la **disponibilité du pont Rain Bird** (indisponible au
+  boot ⇒ intention `off` ⇒ pas de start) ; **double garde** (le script exécutif re-vérifie
+  `dispo/precond/idle/switch off`) ; `session_fin_watchdog` **n'arrose jamais** (reprise/stop
+  seulement) ; `coexistence_rain_delay` réaffirme `rain_delay` via un script gardé, fail-safe. Le
+  **cooldown survit** (`arrosage_dernier_effectif` trigger-based `timestamp` restauré). Le reload
+  d'intégration Rain Bird est **absorbé par la couche décision availability-aware** (pas de
+  recomposition `unavailable → on` sur un template décisionnel).
+- **Éclairage — largement boot-safe ; premier traitement explicite du reload YAML.** Les 4 extinctions
+  ré-assertent un **OFF calculé** sur `start` **+ `automation_reloaded`**, sous condition idempotente
+  stricte (deadline persistée dépassée, lampe encore allumée, pas de mouvement) ⇒ **rattrapage justifié**,
+  non action indésirable. L'allumage jardin au boot est gardé `systeme_stable + présence + cycle`
+  (recalcul fonctionnel).
+- **Finding E1 (candidat, faible gravité)** — `sejour/on …014` et `garage/allumage_automatique`
+  déclenchent sur mouvement/contact **`to: 'on'` sans `from:`** (alors qu'`entree/automatique …026`
+  porte `from: 'off'`) ⇒ une recomposition Zigbee `unavailable → on` au **reload d'intégration** peut
+  allumer la lampe. **Même signature que le Finding B de l'alarme**, mais conséquence = éclairage ⇒
+  gravité faible. Effet **indéterminable**, guard-gap **démontré statiquement**, **lacune** probable.
+
+**Racine doctrinale commune confirmée** (avec la vague 4) : la garde `systeme_stable` est bornée au
+reboot HA et non érigée en invariant ⇒ ne couvre pas les reloads d'intégration ni les triggers
+`to:'on'` sans `from`. **Dette documentaire signalée** : complétude contractuelle de l'éclairage
+(27 automatisations / 7 contrats). Hiérarchie portefeuille : A > B > **E1** ; arrosage sans finding.
 
 ### 7.4 Vague 4 (alarme) — livrée le 2026-07-24
 
@@ -395,8 +425,8 @@ C34 est clos lorsque les quatre livrables suivants sont produits et mergés :
 
 ## 10. Stop point
 
-**Vagues 1 (VMC + déshumidificateur) et 4 (alarme) livrées. Prochaines étapes : vagues 2
-(climatisation + chauffage) et 3 (arrosage + éclairage), puis contre-audit des vagues livrées.**
+**Vagues 1 (VMC + déshumidificateur), 3 (arrosage + éclairage) et 4 (alarme) livrées. Reste la
+vague 2 (climatisation + chauffage), puis le contre-audit de la vague 3 et le portefeuille.**
 
 Ce document ne conclut sur **aucun** comportement. Il n'ouvre **aucun** sous-chantier
 correctif. Toute orientation corrective relève du portefeuille (livrable 3), après
