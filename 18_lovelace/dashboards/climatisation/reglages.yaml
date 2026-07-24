@@ -34,6 +34,25 @@ views:
           - !include ../../includes/alerte_configuration_invalide.yaml
 
           # ==================================================
+          # 💨 VENTILATION — INTER-MODES (toujours visible)
+          # --------------------------------------------------
+          # Le mode de ventilation s'applique quel que soit le
+          # mode thermodynamique (Cool / Heat / Dry). Il est
+          # donc hissé hors du sélecteur, en tête de page, et
+          # n'appartient à aucune section conditionnelle.
+          # ==================================================
+          - type: custom:button-card
+            template: section_header
+            name: 💨 Ventilation
+
+          - type: tile
+            entity: input_select.clim_fan_mode_cible
+            name: Mode souhaité
+            features_position: bottom
+            features:
+              - type: select-options
+
+          # ==================================================
           # 🔎 SÉLECTEUR DE CONSULTATION (modèle Palmarès)
           # --------------------------------------------------
           # input_select.clim_reglages_affichage = contexte
@@ -232,7 +251,7 @@ views:
           - type: conditional
             conditions:
               - entity: input_select.clim_reglages_affichage
-                state: Déshumidification et ventilation
+                state: Mode Dry
             card:
               type: vertical-stack
               cards:
@@ -247,17 +266,6 @@ views:
                   features:
                     - type: numeric-input
                       style: buttons
-
-                - type: custom:button-card
-                  template: section_header
-                  name: 💨 Ventilation
-
-                - type: tile
-                  entity: input_select.clim_fan_mode_cible
-                  name: Mode souhaité
-                  features_position: bottom
-                  features:
-                    - type: select-options
 
           - type: conditional
             conditions:
