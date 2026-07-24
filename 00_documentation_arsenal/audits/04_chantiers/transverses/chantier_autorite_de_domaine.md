@@ -4,16 +4,18 @@
 |---|---|
 | **Chantier** | Poser une doctrine transverse d'**autorité de domaine** : lever l'assimilation actuelle entre *autorité unique* et *souveraineté permanente d'Arsenal*, et définir les régimes **automatique** / **manuel** sous la formule **« unicité de l'autorité, révocabilité de sa délégation »**. |
 | **Domaine** | Transverse — doctrine d'autorité décisionnelle. Sans propriétaire documentaire préexistant. |
-| **Statut** | **Ouvert (2026-07-24) — chantier doctrinal.** Périmètre strictement documentaire ; aucune conception runtime/UI/par-domaine. |
+| **Statut** | **Ouvert (2026-07-24) — doctrine livrée (PR #571) ; pilote VMC en amendement documentaire (2026-07-24).** Périmètre strictement documentaire ; aucune conception runtime ni UI. |
 | **Priorité** | **P2** — enjeu structurant, sans risque technique immédiat. Fait suite à l'observation **A2** de C34 (asymétrie doctrinale commande-directe / consigne-déléguée) et à l'audit transverse d'autorité (2026-07-24). |
 | **Ouvert le** | 2026-07-24. |
-| **Prochain jalon** | Lot 1 — trancher la contradiction au propriétaire du principe ([`principes_generaux.md`](../../../architecture/03_doctrines/principes_generaux.md) §2). |
+| **Prochain jalon** | Doctrine et clarification `principes_generaux.md` §2 **livrées** (PR #571). **Pilote retenu : VMC** — amendement documentaire de [`contrats/vmc.md`](../../../contrats/vmc.md) (v2.4 → v2.5, autorité de domaine, §16), sans runtime. |
 | **Registre** | Chantier **C36** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **Portée.** Chantier **doctrinal resserré.** Aucun helper, aucune UI, aucun runtime, aucune
 > modification de contrat de domaine à ce stade. Les contrats affirmant une souveraineté permanente
 > d'Arsenal sont **recensés comme « à réconcilier ultérieurement »** (Lot 4), non modifiés ici.
-> L'ouverture ne vaut ni conception par domaine, ni choix d'un domaine pilote.
+> L'ouverture doctrinale n'a valu ni conception par domaine, ni choix de pilote ; le
+> pilote **VMC** a depuis été retenu (2026-07-24) et traité **au seul niveau
+> documentaire** (§6).
 
 ---
 
@@ -135,6 +137,15 @@ première passe par domaine :
   d'universalité de `09_securite.md` est un acquis côté climatisation).
 - **Coût de réconciliation contractuelle borné** — impact documentaire maîtrisable sur le contrat du
   domaine.
+
+> **Pilote retenu (2026-07-24) : VMC.** Décision propriétaire après l'audit ciblé VMC. Motifs :
+> surface de commande binaire `{basse, haute}` coïncidant avec le mode manuel ; **écrivain déjà
+> unique** (`script.vmc_haute_vitesse` / `script.vmc_basse_vitesse`) ; **aucune ré-assertion
+> silencieuse continue** à démanteler (le §12.1 du contrat VMC l'exclut) ; décision pure disponible
+> comme décision théorique non exécutoire ; **protection physique XOR** nettement séparable. La
+> traduction contractuelle est portée par [`../../../contrats/vmc.md`](../../../contrats/vmc.md) §16
+> (v2.5) — **documentaire, sans runtime**. Les travaux C36-VMC peuvent avancer **en parallèle** des
+> réserves C35 (calibration / historisation), orthogonales à la titularité de l'autorité.
 
 ---
 
