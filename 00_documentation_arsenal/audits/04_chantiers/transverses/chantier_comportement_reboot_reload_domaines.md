@@ -4,10 +4,10 @@
 |---|---|
 | **Chantier** | Auditer le comportement de Home Assistant et des périphériques pilotés lors d'un redémarrage complet, d'un rechargement YAML, d'un rechargement d'intégration, et pendant les phases transitoires de restauration, d'indisponibilité et de recalcul qui suivent ces opérations. |
 | **Domaine** | Transverse — sept domaines pilotant des actions physiques. |
-| **Statut** | **Ouvert (2026-07-21) ; enrichi le 2026-07-23 d'apports probatoires runtime L4** (climatisation, alarme — cf. §5.6). Le cadrage et l'inventaire restent la base. **Aucun verdict de qualification** au sens de la grille §2 (défaut « action physique indésirable » vs « recalcul fonctionnel » légitime) n'est émis : cette qualification relève de l'analyse statique des vagues. Les apports L4 **alimentent la cartographie** (critère ①) sans la clore. |
+| **Statut** | **Ouvert (2026-07-21) ; enrichi le 2026-07-23 d'apports probatoires runtime L4** (climatisation, alarme — cf. §5.6) ; **vague 4 (alarme) livrée le 2026-07-24** (audit statique, cf. §7.4). La vague 1 (VMC + déshumidificateur) est close en tant qu'audit ; la vague 4 (alarme) l'est également. Le cadrage et l'inventaire restent la base. **Aucun verdict de qualification** au sens de la grille §2 (défaut « action physique indésirable » vs « recalcul fonctionnel » légitime) n'est **arrêté** avant contre-audit : les deux findings de la vague 4 (Findings A/B) sont qualifiés « candidats, non établis » (effet indéterminable). Les apports L4 et les vagues **alimentent la cartographie** (critère ①) sans la clore. |
 | **Priorité** | **P1** — le sujet porte sur des actions physiques (chauffe, froid, eau, ventilation, éclairage, armement d'alarme) potentiellement déclenchées par une opération purement technique. |
 | **Ouvert le** | 2026-07-21. |
-| **Prochain jalon** | **Vague 1 d'audit** (§7). Pas de conclusion générale avant. |
+| **Prochain jalon** | **Vagues 2 (clim + chauffage) et 3 (arrosage + éclairage)**, puis **contre-audit** des vagues livrées (dont vague 4). Vagues 1 et 4 **livrées**. Pas de conclusion générale avant couverture des sept domaines. |
 | **Registre** | Chantier **C34** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi.** |
 
 > **Ce document n'établit aucun comportement.** Il définit le périmètre, recense les
@@ -200,7 +200,7 @@ les vagues, non des verdicts de qualification.**
 | Domaine | Qualification §8 | Grille d'effet §2 | Portée |
 |---|---|---|---|
 | **climatisation** | démontré par preuve runtime existante | **effet établi** (coupure + rejeu) ; **qualification non tranchée** | La preuve établit **qu'un effet existe**, pas **s'il est un défaut**. « Action physique indésirable » **vs** « recalcul fonctionnel » relève de la **vague 2 (analyse statique)**. |
-| **alarme** | démontré par preuve runtime existante | **continuité légitime** (aucun effet) | Aucun effet au reload sur l'état armé, signal propre. Alimente la **vague 4**. |
+| **alarme** | démontré par preuve runtime existante | **continuité légitime** (aucun effet) | Aucun effet au reload sur l'état armé, signal propre. **Consommée par la vague 4 (livrée le 2026-07-24, §7.4)** : confirme l'absence d'effet au reload YAML sur le panneau ; la vague 4 ajoute deux findings *candidats* (sirène non gardée au reboot ; intrusion ouverture non restauration-safe au redémarrage d'intégration Zigbee), tous deux à effet **indéterminable**. |
 | **chauffage** | **indéterminable** | — | Aucun actionneur physique dans l'allowlist (seule une consigne planifiée, reconstruite). |
 | **VMC** | **indéterminable** | — | Relais physique non historisé ; seul un helper de commande existe. |
 | **arrosage** | **indéterminable** | — | Vanne Rain Bird non historisée ; drapeau de session logique, couverture 16 j. |
@@ -263,17 +263,50 @@ pourrait être partielle ou contredite selon les domaines.
 Quatre vagues, ordonnées pour **roder la méthode sur un volume faible** avant d'attaquer le
 cœur thermique, et pour **isoler l'alarme**, dont la sémantique diffère des autres.
 
-| Vague | Domaines | Volume runtime | Raison |
-|---|---|---|---|
-| **1** | VMC + déshumidificateur | 21 fichiers | Volume le plus faible, proximité fonctionnelle (traitement de l'air), **aucun chantier existant** — terrain vierge idéal pour fixer la méthode |
-| **2** | climatisation + chauffage | 145 fichiers | Cœur thermique, **95 contrats sur 140**, dépendances croisées fortes, risque physique élevé |
-| **3** | arrosage + éclairage | 68 fichiers | Arrosage : dépendance pont externe. Éclairage : 27 automatisations pour 7 contrats — asymétrie à instruire |
-| **4** | alarme | 30 fichiers | **Traité seul** : la révocation de sécurité y est un comportement potentiellement correct, ce qui inverse la grille de lecture |
+| Vague | Domaines | Volume runtime | Raison | État |
+|---|---|---|---|---|
+| **1** | VMC + déshumidificateur | 21 fichiers (26 réels, cf. rapport §1) | Volume le plus faible, proximité fonctionnelle (traitement de l'air), **aucun chantier existant** — terrain vierge idéal pour fixer la méthode | **✅ livrée** ([rapport](../../01_rapports/transverses/c34_vague1_audit_vmc_deshumidificateur.md)) — close en tant qu'audit ; branche B retenue, lot correctif au §10.6 |
+| **2** | climatisation + chauffage | 145 fichiers | Cœur thermique, **95 contrats sur 140**, dépendances croisées fortes, risque physique élevé | à lancer |
+| **3** | arrosage + éclairage | 68 fichiers | Arrosage : dépendance pont externe. Éclairage : 27 automatisations pour 7 contrats — asymétrie à instruire | à lancer |
+| **4** | alarme | 30 fichiers | **Traité seul** : la révocation de sécurité y est un comportement potentiellement correct, ce qui inverse la grille de lecture | **✅ livrée (2026-07-24)** ([rapport](../../01_rapports/transverses/c34_vague4_audit_alarme.md)) — cf. §7.4 |
 
 Chaque vague produit une section de cartographie **par domaine**, selon les rubriques de
 l'audit, et n'émet que des conclusions qualifiées au sens du §8.
 
 **Aucune vague n'est lancée par le présent document.**
+
+### 7.4 Vague 4 (alarme) — livrée le 2026-07-24
+
+Audit statique du corpus complet (30/30 fichiers runtime + panneau + stabilisation + contrats 50/70),
+réutilisant la preuve L4 d'origine (aucun effet au reload sur le panneau — §5.6). Résultats
+qualifiés au sens des §2/§8, à consommer par le contre-audit puis le portefeuille (livrable 3) :
+
+- **Chemin nominal au reboot — sûr, démontré statiquement.** Le repère `systeme_stable` posé à
+  **+45 s** encadre tout : 15 s < 45 s < 5 min. Pas d'auto-armement au réveil (l'absence exige
+  `delay_on 5 min`, non écoulé à 45 s → `NOOP`) ; pas de désarmement sur `unknown` ni sur blip
+  < 15 s ; intrusion neutralisée pendant les 45 s (garde `systeme_stable` sur les trois
+  automatisations de détection) ; contexte visiteur reconstruit ; panneau `manual` restauré,
+  décision `NOOP` ⇒ **continuité légitime**.
+- **Finding A (candidat, non établi)** — l'automatisation de **sirène** (`10020000000011`,
+  `to: triggered`) **n'a pas** la garde `systeme_stable` que portent les automatisations
+  d'intrusion. Vecteur candidat : restauration du panneau `manual` à `triggered` au reboot ⇒
+  sirène rejouée. **Effet indéterminable** (sémantique de restauration HA-interne) ; guard-gap
+  **démontré statiquement** ; **lacune** de couverture du contrat 70 (reboot-safety de
+  l'extinction acquise, ré-ignition non traitée), **non écart**.
+- **Finding B (candidat, non établi)** — l'intrusion **ouverture** (`10020000000007`, `to: 'on'`
+  **sans `from:`**) matche `unavailable → on`, alors que l'intrusion **mouvement** porte
+  `from: 'off'`. La garde `systeme_stable` ne retombe qu'au **reboot HA**, jamais au redémarrage
+  d'intégration ⇒ un **redémarrage du bridge Zigbee** (watchdog `10120000000010` ou manuel) peut
+  faire recomposer un contact `unavailable → on` et déclencher l'alarme. **Effet indéterminable** ;
+  guard-gap **démontré statiquement** ; **lacune** de couverture du contrat 50 (I5 garde l'état
+  d'arrivée, pas la transition source), **non écart**.
+- **Reload YAML** — panneau inchangé (preuve L4) ; contacts Zigbee non rechargés par un reload du
+  package alarme ⇒ ni Finding A ni Finding B activés.
+
+Findings A et B ont **la même signature** : absence de garde contre un artefact de
+restauration/recomposition, mécanisme démontré statiquement, effet indéterminable, qualifiés
+**lacune**. Ils sont versés au **portefeuille** sans orientation corrective. Le **contre-audit de
+la vague 4** reste à conduire.
 
 ---
 
@@ -338,7 +371,8 @@ C34 est clos lorsque les quatre livrables suivants sont produits et mergés :
 
 ## 10. Stop point
 
-**Prochaine étape : vague 1 — VMC et déshumidificateur** (§7).
+**Vagues 1 (VMC + déshumidificateur) et 4 (alarme) livrées. Prochaines étapes : vagues 2
+(climatisation + chauffage) et 3 (arrosage + éclairage), puis contre-audit des vagues livrées.**
 
 Ce document ne conclut sur **aucun** comportement. Il n'ouvre **aucun** sous-chantier
 correctif. Toute orientation corrective relève du portefeuille (livrable 3), après
