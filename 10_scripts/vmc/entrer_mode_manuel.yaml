@@ -1,0 +1,85 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : VMC — Entrer en mode manuel (primitive)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Primitive backend SUPERVISÉE et ATOMIQUE de transition
+#   automatique → manuel (pilote C36, §16.4). Ordre imposé :
+#     1. valider la consigne demandée (basse | haute) ;
+#     2. écrire la consigne ;
+#     3. transférer l'autorité (titulaire → manuel) ;
+#     4. la convergence relève de la décision exécutoire unique.
+#
+# 🧱 ATOMICITÉ
+#   La consigne est écrite AVANT le transfert d'autorité : à
+#   l'instant où le titulaire devient « manuel », la consigne
+#   porte déjà la valeur voulue — aucune consigne antérieure
+#   restaurée n'est exécutée transitoirement.
+#
+# 🛡️ SÉCURITÉ
+#   - N'ÉCRIT AUCUN RELAIS (switch.vmc_l1 / switch.vmc_l2).
+#     Écrivain unique préservé (§16.2) : seuls les scripts
+#     d'exécution (vmc_haute_vitesse / vmc_basse_vitesse) commandent
+#     les relais. Cette primitive n'agit que sur les helpers
+#     d'autorité et de consigne.
+#   - Consigne invalide → ABSTENTION (aucune écriture) + cause
+#     exposée (journal), jamais de valeur inventée.
+#
+# 🔁 APPEL
+#   Destinée à être appelée par l'UI (à câbler ultérieurement).
+#   L'UI appelle ; elle n'orchestre pas la transition (§16.4).
+#
+# 🧊 PR B (échafaudage) — INERTE
+#   Non câblée en UI ; gestion_auto inchangé ⇒ aucun effet sur
+#   l'exécution même en cas d'appel. La bascule est en PR C.
+# ==========================================================
+
+vmc_entrer_mode_manuel:
+  alias: "VMC - Entrer en mode manuel (primitive supervisée)"
+  mode: single
+  max_exceeded: silent
+
+  fields:
+    consigne:
+      description: "Consigne manuelle demandée : basse ou haute"
+      example: "haute"
+      selector:
+        select:
+          options:
+            - basse
+            - haute
+
+  sequence:
+    - choose:
+
+        # ----------------------------------------------------
+        # Consigne invalide (absente ou hors {basse, haute}) :
+        # ABSTENTION — aucune écriture, cause exposée au journal.
+        # ----------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: "{{ (consigne | default('')) not in ['basse', 'haute'] }}"
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                logger: arsenal.vmc.autorite
+                message: >
+                  VMC entrer_mode_manuel : consigne invalide
+                  ('{{ consigne | default('') }}') — abstention, aucune écriture
+                  (titulaire et consigne inchangés).
+
+      # ------------------------------------------------------
+      # Consigne valide → séquence ATOMIQUE : consigne AVANT autorité
+      # ------------------------------------------------------
+      default:
+        - service: input_select.select_option
+          target:
+            entity_id: input_select.vmc_consigne_manuelle
+          data:
+            option: "{{ consigne }}"
+
+        - service: input_select.select_option
+          target:
+            entity_id: input_select.vmc_titulaire_autorite
+          data:
+            option: manuel

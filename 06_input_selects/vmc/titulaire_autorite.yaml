@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : VMC — Titulaire de l'autorité
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Porter le TITULAIRE de l'autorité décisionnelle VMC
+#   (pilote C36, contrat vmc.md §16). Une seule autorité à un
+#   instant : « automatique » (Arsenal) ou « manuel » (utilisateur).
+#
+# 🧩 Nature :
+#   Intention persistante / override. C'est une VÉRITÉ propre,
+#   distincte de la consigne manuelle et de l'état physique
+#   (interdiction de fusion, §16).
+#
+# 🔒 Persistance :
+#   PAS de clé `initial:` — doctrine restauration_etat_helpers.md
+#   (INV-INIT, R02) : la restauration HA est la vérité par défaut ;
+#   `initial:` reforcerait la valeur au reboot et écraserait le
+#   titulaire établi. La 1re option « automatique » n'est qu'un
+#   BOOTSTRAP de première création, jamais un fallback : un état
+#   unknown/unavailable rend la décision exécutoire indisponible
+#   (binary_sensor.vmc_haute_vitesse_commandee), il ne vaut pas
+#   « automatique ».
+#
+# ❌ Ne fait PAS :
+#   - ne pilote AUCUN relais ;
+#   - ne décide RIEN par lui-même ;
+#   - n'est PAS l'état physique ni la consigne.
+#
+# 🔁 Écriture :
+#   Uniquement par les primitives supervisées de transition
+#   (script.vmc_entrer_mode_manuel / script.vmc_revenir_mode_automatique).
+#
+# 🧊 PR B (échafaudage) :
+#   INERTE sur l'exécution — aucun consommateur d'exécution
+#   (gestion_auto inchangé). La bascule est en PR C.
+# ==========================================================
+
+vmc_titulaire_autorite:
+  name: "VMC — Titulaire de l'autorité"
+  options:
+    - automatique
+    - manuel
+  icon: mdi:account-switch
