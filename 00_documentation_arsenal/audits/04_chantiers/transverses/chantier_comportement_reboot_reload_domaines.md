@@ -300,7 +300,16 @@ reload sur `switch.clim_power`). Résultat central : **aucun finding de défaut 
 
 **Portefeuille** : (a) arbitrage du cycle d'alimentation clim au reload Airstage ; (b) asymétrie
 doctrinale commande-directe (clim) vs consigne-déléguée (chauffage). **Aucun finding de défaut.**
-Contre-audit de la vague 2 à conduire.
+
+**Contre-audit de la vague 2 conduit (2026-07-24, §8 du rapport) — verdict confirmé.** Recherche des
+écrivains élargie à tout l'arbre : **chauffage définitivement sans actionneur physique Arsenal**
+(recherche `climate.*`/Netatmo hors clim **vide**) ; **`clim_exec_apply_off` — seul coupeur de
+`clim_power` — n'a que deux appelants, tous `target_off`** ; l'`input_boolean` d'admissibilité **sans
+`initial:`** persiste ⇒ la décision reste `cool` au reload ⇒ Arsenal ne coupe jamais. **Correction** :
+le §2.4 se trompait sur `silence` (il **est** déclenché `systeme_stable`, et écrit `clim_quiet_fan`
+**non** `clim_power`) — la conclusion tient mais la justification était fausse, et une écriture physique
+au boot était omise (ré-assertion du ventilateur silencieux, recalcul de confort, sans effet
+puissance/mode). **Aucun défaut ajouté ; verdict « vague 2 sans défaut » renforcé.**
 
 ### 7.3 Vague 3 (arrosage + éclairage) — livrée le 2026-07-24
 
@@ -473,9 +482,9 @@ C34 est clos lorsque les quatre livrables suivants sont produits et mergés :
 
 ## 10. Stop point
 
-**Les quatre vagues d'audit sont livrées** (1 VMC + déshum. ; 2 clim + chauffage ; 3 arrosage +
-éclairage ; 4 alarme). Restent le **contre-audit des vagues 2 et 3**, puis le **portefeuille**
-(livrable 3) et les **solutions** (livrable 4).
+**Les quatre vagues d'audit et leurs contre-audits sont livrés** (1 VMC + déshum. ; 2 clim +
+chauffage ; 3 arrosage + éclairage ; 4 alarme). Restent le **portefeuille** (livrable 3) et les
+**solutions** (livrable 4) — les deux critères de clôture documentaires encore ouverts.
 
 Ce document ne conclut sur **aucun** comportement. Il n'ouvre **aucun** sous-chantier
 correctif. Toute orientation corrective relève du portefeuille (livrable 3), après

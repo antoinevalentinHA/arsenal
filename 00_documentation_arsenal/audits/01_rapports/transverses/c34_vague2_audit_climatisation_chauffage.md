@@ -198,3 +198,80 @@ doctrinale** commande-directe (clim) vs consigne-déléguée (chauffage). **Aucu
 Arsenal.** Le **contre-audit de la vague 2** (attaquer l'attribution de la coupure, vérifier qu'aucun
 chemin Arsenal — retry transactionnel chauffage inclus — ne pilote un actionneur, confronter aux
 contrats `09_securite.md` clim et à la doctrine courbe de chauffe) reste à conduire avant le portefeuille.
+
+---
+
+## 8. Contre-audit de la vague 2
+
+### 8.1 Périmètre et méthode
+
+Attaque des conclusions des §1-§7 selon la discipline des contre-audits précédents : recherche des
+écrivains **élargie à tout l'arbre** (YAML + `.storage` + dashboards), **vérification de la nature et
+des triggers exacts** de chaque automatisation à écrivain physique, confrontation à la persistance
+réelle des entités décisionnelles.
+
+### 8.2 Conclusions confirmées — et renforcées
+
+- **Chauffage sans actionneur physique Arsenal — confirmé de façon définitive.** La recherche
+  **sur tout l'arbre** de `climate.set_temperature` / `climate.set_hvac_mode` / push Netatmo / toute
+  cible `climate.*` **hors climatisation** est **vide**. Aucun chemin Arsenal ne pilote un radiateur ;
+  l'actionnement reste **entièrement délégué au planning Netatmo** (hors périmètre). La conclusion du §3
+  tient sans réserve.
+- **Arsenal ne coupe jamais `clim_power` quand la cible est `cool` — confirmé.** `clim_exec_apply_off`
+  (le **seul** appelant qui coupe `switch.clim_power`) n'a **que deux appelants** — `guard.yaml` et
+  `execution_mode_cible.yaml` — **tous deux conditionnés à `target_off`**. Aucun autre chemin ne coupe
+  l'alimentation.
+- **La décision reste `cool` au reload — confirmé au niveau du helper.**
+  `input_boolean.besoin_clim_cool_admissible` **ne porte aucun `initial:`** ⇒ il **restaure** son état
+  au reboot et **persiste** au reload (helper hors intégration Airstage). L'ancrage de `clim_target_mode`
+  sur ce verrou persisté est donc réel : pas de bascule `off` transitoire, garde jamais armée.
+- **La ventilation ne rallume ni ne coupe jamais** : `ventilation/application_mode` (`10030000000120`)
+  est gardée `clim_actif` (« l'intention ne rallume jamais la clim, contrat §7 ») et n'écrit qu'un
+  `fan_mode` sur un équipement **déjà actif** — jamais `clim_power`. Elle est en outre **reload-aware
+  par conception** (triggers bornés `from` indispo + note « `systeme_stable` ne couvre que le boot »).
+
+**⇒ La qualification centrale du §2.3 est confirmée** : la coupure `clim_power` au reload est
+**d'origine intégration Airstage**, le rejeu est un **recalcul fonctionnel** Arsenal. **Aucun défaut
+Arsenal.**
+
+### 8.3 Conclusion corrigée — le §2.4 se trompait sur `silence`
+
+**Le §2.4 affirmait que `silence.yaml` est « horaire, non déclenché au boot/reload » et le rangeait
+parmi les écrivains de `clim_power`. Les deux affirmations sont fausses.**
+
+- `silence.yaml` (`10030000000020`) **porte bien un trigger `systeme_stable → on`** (boot/reload) — il
+  n'est **pas** horaire.
+- Il n'écrit **pas** `switch.clim_power` mais **`switch.clim_quiet_fan`** (interrupteur du ventilateur
+  silencieux — confort acoustique), sur une clim **active** uniquement.
+
+**La conclusion du §2.4 survit** (silence **ne coupe pas** l'alimentation), mais **pour une autre
+raison que celle donnée** : ce n'est pas qu'il ne se déclenche pas au reload, c'est qu'il **agit sur un
+autre interrupteur** que la puissance. Le §2.4 **omettait par ailleurs une écriture physique réelle au
+boot** : au `systeme_stable → on`, `silence` **ré-asserte l'état du ventilateur silencieux**
+(`clim_quiet_fan`), gardé et idempotent. **Qualification : recalcul fonctionnel — confort seul, aucun
+effet sur la puissance ni le mode HVAC.** À ajouter à la cartographie ; **sans conséquence** sur le
+verdict « aucun défaut ».
+
+### 8.4 Writers manuels (dashboard) — hors vecteur boot/reload
+
+`18_lovelace/dashboards/climatisation/principal.yaml` expose un contrôle de `switch.clim_power`
+(intention utilisateur). **Writer manuel**, ni automatique ni vecteur de boot/reload — même taxinomie
+que les vagues 3 et 4. La formulation « écrivains automatiques » du rapport reste exacte.
+
+### 8.5 Note d'actualité — évolution `main` post-audit (#566)
+
+Depuis l'audit, `main` a intégré un changement de **réglages** climatisation (#566 : mode Dry de plein
+droit, réordonnancement de la ventilation inter-modes). Il porte sur l'**admissibilité/ordonnancement
+des modes**, **non** sur le mécanisme de reload (`clim_power`, garde, `rearmement`, persistance de
+l'admissibilité). **Les conclusions de la vague 2 restent valides** sur la base rebasée.
+
+### 8.6 Conséquences pour le portefeuille
+
+- **Verdict inchangé : aucun finding de défaut Arsenal en vague 2.** La confirmation est **renforcée**
+  (chauffage définitivement sans actionneur ; `apply_off` prouvé target-off-only).
+- **Une micro-observation ajoutée** (non défaut) : `silence` ré-asserte `clim_quiet_fan` au boot —
+  recalcul de confort, à porter en cartographie.
+- Les deux points portefeuille tiennent : **arbitrage** du cycle d'alimentation clim au reload Airstage,
+  et **asymétrie doctrinale** commande-directe (clim) vs consigne-déléguée (chauffage). La **leçon
+  transverse** (protection = ancrage sur entité persistée/normalisée, non `systeme_stable`) est
+  **confirmée** ici par la persistance du verrou d'admissibilité.
