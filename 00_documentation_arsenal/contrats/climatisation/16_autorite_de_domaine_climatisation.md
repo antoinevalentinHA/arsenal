@@ -5,7 +5,7 @@
 
 | Champ | Valeur |
 |---|---|
-| **Statut** | **Cible contractuelle — spécification opposable, runtime livré (hors UI).** Échafaudage + **bascule livrés** (§16.8) : l'application, la conformité, le Watchdog et le Guard consomment la **décision exécutoire** ; **le mode manuel est exécutoire**. Reste l'**UI** de reprise en main. |
+| **Statut** | **Cible contractuelle — spécification opposable, runtime + UI livrés.** Échafaudage + **bascule** + **UI** livrés (§16.8) : l'application, la conformité, le Watchdog et le Guard consomment la **décision exécutoire** ; **le mode manuel est exécutoire** et **accessible** (section « Autorité & reprise en main »). Reste la **validation terrain** puis la clôture fonctionnelle. |
 | **Domaine** | Climatisation (unité unique `climate.clim` / `switch.clim_power`). |
 | **Instancie** | Doctrine transverse [`autorite_de_domaine.md`](../../architecture/03_doctrines/autorite_de_domaine.md). |
 | **Patron** | Pilote VMC [`vmc.md`](../vmc.md) §16. |
@@ -225,7 +225,17 @@ Elles demeurent **exposées** comme information (« Arsenal aurait bloqué : fen
   si l'état rapporté par l'intégration est dégradé, une commande peut ne pas s'exécuter silencieusement
   — comme en régime automatique aujourd'hui. Ce n'est **pas une régression** ; C30 traite ce défaut
   pour les deux régimes.
-- **À venir.** UI de reprise en main (appelant les primitives).
+- **Livré (UI).** Section « 🎛️ Autorité & reprise en main » du dashboard climatisation
+  (`18_lovelace/dashboards/climatisation/principal.yaml`) + cartes
+  `19_button_card_templates/40_dashboards/climatisation/15_autorite/` : titulaire (lecture seule),
+  prise/commande manuelle par **mode** `{off, cool, dry, heat}` (appelle `clim_entrer_mode_manuel`
+  avec la consigne, confirmation modale), restitution (`clim_revenir_mode_automatique`), **décision
+  exécutoire** `sensor.clim_mode_commande` en lecture seule (anti-fallback « Indéterminée »), et en
+  manuel la **décision théorique** `sensor.clim_target_mode` (information). L'UI **appelle** les
+  primitives, n'écrit aucun helper, ne commande aucun relais/climate (§16.4). Aucun contrôle direct de
+  mode/alimentation n'existait à neutraliser.
+- **À venir.** Validation terrain (le mode manuel étant exécutoire et accessible), puis clôture
+  fonctionnelle.
 
 ---
 

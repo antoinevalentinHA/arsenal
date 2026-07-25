@@ -1,0 +1,56 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Action : restitution de l'autorité à Arsenal (C37)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Rendre l'autorité de la climatisation à Arsenal (retour au régime
+#     automatique) via la primitive backend EXPLICITE et TRACÉE
+#     script.clim_revenir_mode_automatique (contrat 16 §16.4). La consigne
+#     manuelle est laissée telle quelle et ignorée en automatique.
+#     Spécialisation Autorité climatisation du socle d'action script confirmé.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_action_script_confirme
+#     - UI uniquement : n'écrit NI helper, NI relais / climate. Seule
+#       frontière = la primitive supervisée (écrivain unique, §16.2).
+#
+# 🔗 DEPENDANCES
+#     - entity   : script.clim_revenir_mode_automatique (feedback d'état)
+#     - service  : script.clim_revenir_mode_automatique
+#     - variables.confirmation : texte de confirmation modale (optionnel)
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation modale OBLIGATOIRE (restitution d'autorité, §16.4)
+#     - N'expose JAMAIS une commande native de climate.clim / switch.clim_power
+#     - N'écrit jamais input_select.clim_titulaire_autorite directement :
+#       seule la primitive transfère l'autorité
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_action_clim_restitution
+#     entity: script.clim_revenir_mode_automatique
+#     name: Rendre l'autorité à Arsenal
+#     icon: mdi:account-arrow-right
+#     variables:
+#       confirmation: "Rendre le contrôle de la climatisation à Arsenal (mode automatique) ?"
+#
+# 🔗 SATELLITE DE : socle_action_script_confirme
+# ==========================================================
+
+carte_action_clim_restitution:
+  template: socle_action_script_confirme
+
+  tap_action:
+    action: call-service
+    service: script.clim_revenir_mode_automatique
+    confirmation:
+      text: >
+        [[[
+          return variables?.confirmation
+            || "Rendre le contrôle de la climatisation à Arsenal (mode automatique) ?";
+        ]]]
