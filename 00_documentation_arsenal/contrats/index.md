@@ -79,7 +79,7 @@
 | [alarme/](./alarme/) | 16 | README ✅ | Pipeline alarme numéroté 00→99 |
 | [arrosage/](./arrosage/) | 19 | README ✅ | Arrosage jardin — coexistence gouvernée Arsenal ↔ Rain Bird (v0.1 ; observation v0 livrée ; **décision V1 paramétrable spécifiée**) + relevé pont MQTT, classification entités, pré-requis runtime, mode manuel supervisé, relevé capteurs humidité sol Zigbee, socle observation hydrique v0 (chapeau + qualité données sol + canal réservoir sol **livré** + canal demande climatique **spécifié**) + **contrat de décision d'arrosage V1** (mono-station, exécution déléguée au script Run supervisé) |
 | [boiler/](./boiler/) | 7 | README ✅ | Chaudière / boiler bridge |
-| [chauffage/](./chauffage/) | 52 | README ✅ | Pipeline chauffage + capteurs + amendements |
+| [chauffage/](./chauffage/) | 53 | README ✅ | Pipeline chauffage + capteurs + amendements |
 | [climatisation/](./climatisation/) | 44 | README ✅ | Climatisation (17 root + 27 capteurs) |
 | [deshumidificateur/](./deshumidificateur/) | 3 | README ✅ | Déshumidificateur cave |
 | [eclairage/](./eclairage/) | 7 | README ✅ | Éclairage |
