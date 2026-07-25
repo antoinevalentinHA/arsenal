@@ -24,7 +24,19 @@ Un blocage de confort ou de sobriété est un **paramètre de doctrine opérateu
 | **2 — Confort / sobriété / bon sens** | Optimise l'usage, évite le gaspillage | Activable / désactivable par interrupteur opérateur | Entrée autorisation, conditionnée |
 | **3 — Informatif / diagnostic** | Rend l'état lisible | Sans objet (jamais consommé en décision) | Observabilité, hors chaîne |
 
-> **État 1 actuellement vide pour la climatisation.** Aucun blocage matériel réel (défaut compresseur, surchauffe, court-cycle) n'existe à ce jour. C'est le seul vrai manque structurel si l'étage 1 doit être autre chose qu'une case réservée.
+> **État 1 vide — assumé et justifié (dérogation, C38, 2026-07-25).** Arsenal ne porte aucun blocage
+> matériel logiciel (défaut compresseur, surchauffe, court-cycle), et c'est **délibéré** : la
+> caractérisation C38 établit qu'Arsenal **n'a aucun chemin de contournement** des protections de
+> l'unité — le climatiseur est piloté **exclusivement en soft** par l'intégration Airstage (cloud) ;
+> `climate.clim` **et** `switch.clim_power` appartiennent à l'intégration, **aucune prise / relais
+> secteur** n'alimente l'unité. Arsenal **ne peut donc pas** court-cycler le compresseur en
+> contournant ses gardes ; le contrôleur de l'unité (min-off anti-court-cycle, coupures thermiques —
+> firmware) reste **toujours en vigueur**. Ajouter un étage 1 **logiciel** doublonnerait cette garde
+> **sans aucun signal d'observabilité** (l'intégration n'expose ni état compresseur, ni min-off, ni
+> code défaut) — ce serait un **timer aveugle = fausse sécurité**, proscrite. L'étage 1 reste donc une
+> **case réservée assumée**, à rouvrir **uniquement** si une exposition réelle apparaît (nouveau
+> chemin de commande secteur, ou symptôme de court-cycle observé). Caractérisation :
+> [`chantier_protection_compresseur.md`](../../audits/04_chantiers/climatisation/chantier_protection_compresseur.md) §6.
 
 ---
 
