@@ -1375,29 +1375,31 @@ Trois niveaux **distincts**, à ne jamais amalgamer :
   différée). Elle n'est **pas** la protection impérative — celle-ci est le XOR
   (niveau a).
 
-### 16.6 Ce qui relève encore de l'implémentation — et recensement UI
+### 16.6 État de l'implémentation — livrée et conforme
 
-Les **comportements** ci-dessus (§16.1–§16.5) sont **spécifiés et opposables**.
-Relèvent encore d'une passe d'implémentation ultérieure, **sans être anticipés
-ici** :
+Les **comportements** ci-dessus (§16.1–§16.5) sont **spécifiés et opposables** ;
+leur implémentation est **livrée et conforme** (pilote VMC de C36, terrain validé
+T0→I puis UI). Ce qui relevait d'une passe ultérieure est désormais en place :
 
 - la **traduction runtime** des rôles — porteur du titulaire, porteur de la
-  consigne, décision exécutoire dérivée, primitives d'entrée et de retour — dont le
-  **type, le nom d'entité et l'identifiant** seront fixés à l'implémentation ;
-- le **câblage UI** appelant les primitives (l'UI observe et déclenche, elle ne
-  décide ni n'orchestre) ;
+  consigne, décision exécutoire dérivée, primitives d'entrée et de retour —
+  **livrée** (échafaudage puis bascule L4+L6) ; type, nom d'entité et identifiant
+  fixés ;
+- le **câblage UI** appelant les primitives (`vmc_entrer_mode_manuel` /
+  `vmc_revenir_mode_automatique`) — **livré** : l'UI observe et déclenche, elle ne
+  décide ni n'orchestre (écrivain unique respecté) ;
 - l'**exposition** de « qui décide », de la consigne et de la décision théorique,
   portée par la décision exécutoire et la conformité (§16.2, §16.5), **sans**
-  capteur diagnostic agrégé supplémentaire.
+  capteur diagnostic agrégé supplémentaire — **livrée**.
 
-**Recensement UI (non traité ici).** Les relais `switch.vmc_l1` / `switch.vmc_l2`
-affichés au dashboard de diagnostic sont **recensés** comme point à sécuriser
-(interdire toute commande directe hors chemin canonique, §16.2) ; **aucune
-modification UI** n'est apportée par la présente passe.
+**Recensement UI — résolu.** Les relais `switch.vmc_l1` / `switch.vmc_l2` affichés
+au dashboard de diagnostic sont **rendus strictement non interactifs** (lecture
+seule) : la double écriture est fermée, aucune commande directe hors chemin
+canonique (§16.2) n'est possible depuis l'UI.
 
 
 # ==========================================================
 # FIN DU CONTRAT — VMC
 # Version v2.6 — cible contractuelle validée
-# Implémentation à mettre en conformité
+# Implémentation livrée et conforme (pilote VMC de C36)
 # ==========================================================
