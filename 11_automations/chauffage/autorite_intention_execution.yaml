@@ -1,0 +1,90 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Autorité : intention → primitive supervisée
+#
+#  ID : 10240000000029
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Traduire l'INTENTION d'autorité exprimée à l'UI
+#     (input_select.chauffage_autorite_intention) en PRIMITIVE
+#     SUPERVISÉE (contrat 85 §85.4) :
+#       - intention = manuel      → script.chauffage_entrer_mode_manuel
+#                                    (consigne = régime auto courant)
+#       - intention = automatique → script.chauffage_revenir_mode_automatique
+#
+#     Cette automation :
+#       - ne décide rien (elle relaie une intention vers l'écrivain unique)
+#       - n'écrit NI titulaire NI exécution (seule la primitive transfère)
+#
+#  🔁 ANTI-BOUCLE / ANTI-REPRISE SILENCIEUSE
+#
+#     - Gardée « n'agir que si l'intention DIFFÈRE du titulaire réel » :
+#       les écritures de re-synchronisation (id 10240000000030), qui posent
+#       intention = titulaire, ne re-déclenchent aucune entrée.
+#     - Gardée par input_boolean.systeme_stable : au démarrage, la synchro
+#       (…030) réaligne l'intention sur le titulaire restauré AVANT que cette
+#       automation ne puisse agir → aucune reprise implicite au boot
+#       (§85.4 « aucune reprise silencieuse », redémarrage déterministe).
+#
+#  🧠 AUTORITÉ D'EXÉCUTION
+#
+#     script.chauffage_entrer_mode_manuel / script.chauffage_revenir_mode_automatique
+# ==========================================================
+
+- id: "10240000000029"
+  alias: "Chauffage - Autorité : intention → primitive supervisée"
+  description: >
+    Traduit l'intention d'autorité UI (input_select.chauffage_autorite_intention)
+    en primitive supervisée (§85.4). N'agit que si l'intention diffère du
+    titulaire réel et après le gate de stabilité — aucune boucle avec la synchro
+    (id 10240000000030), aucune reprise implicite au démarrage.
+  mode: single
+  max_exceeded: silent
+
+  # ======================================================
+  # 🔔 Déclencheur — Changement d'intention
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: input_select.chauffage_autorite_intention
+
+  # ======================================================
+  # 🛑 Gardes — stabilité + divergence réelle
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+    - condition: template
+      value_template: >
+        {{ states('input_select.chauffage_autorite_intention')
+           != states('input_select.chauffage_titulaire_autorite') }}
+
+  # ======================================================
+  # ▶️ Action — Traduction en primitive supervisée
+  # ======================================================
+  action:
+    - choose:
+        # Intention = manuel → prise de contrôle AU RÉGIME AUTO COURANT.
+        # consigne = régime exécutoire courant (confort/reduite) ; défaut
+        # 'reduite' (conservateur) en garde ultime → la primitive ne s'abstient
+        # jamais (§85.4 : entrée atomique, jamais bloquée par l'UI).
+        - conditions:
+            - condition: state
+              entity_id: input_select.chauffage_autorite_intention
+              state: manuel
+          sequence:
+            - service: script.chauffage_entrer_mode_manuel
+              data:
+                consigne: >
+                  {{ states('sensor.chauffage_mode_commande')
+                     if states('sensor.chauffage_mode_commande') in ['confort', 'reduite']
+                     else 'reduite' }}
+        # Intention = automatique → restitution explicite à Arsenal.
+        - conditions:
+            - condition: state
+              entity_id: input_select.chauffage_autorite_intention
+              state: automatique
+          sequence:
+            - service: script.chauffage_revenir_mode_automatique

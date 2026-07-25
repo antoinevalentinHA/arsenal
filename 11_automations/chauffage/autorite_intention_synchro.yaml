@@ -1,0 +1,76 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Autorité : synchro intention ← titulaire réel
+#
+#  ID : 10240000000030
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Re-synchroniser l'INTENTION UI
+#     (input_select.chauffage_autorite_intention) sur le TITULAIRE RÉEL
+#     (input_select.chauffage_titulaire_autorite) :
+#       - au DÉMARRAGE de Home Assistant (le sélecteur reflète le titulaire
+#         restauré, jamais une intention périmée) ;
+#       - à chaque TRANSFERT d'autorité effectif, y compris une primitive
+#         appelée hors sélecteur (le sélecteur suit l'autorité en vigueur).
+#
+#     Le titulaire est la SOURCE DE VÉRITÉ ; l'intention n'est qu'un porteur
+#     de surface qui doit refléter l'autorité réelle.
+#
+#  🔁 ANTI-BOUCLE
+#
+#     Idempotente : n'écrit QUE si l'intention diffère déjà du titulaire.
+#     Poser intention = titulaire ne franchit pas la garde de divergence de
+#     l'exécution (id 10240000000029) → aucune entrée re-déclenchée.
+#
+#  ⚠️ ANTI-FALLBACK
+#
+#     Ne reflète qu'un titulaire VALIDE (automatique | manuel) : un état
+#     unknown/unavailable ne fabrique AUCUNE intention (§85.4, bootstrap ≠ fallback).
+#
+#  🧠 AUTORITÉ D'ÉCRITURE
+#
+#     input_select.chauffage_autorite_intention (porteur de surface UI)
+# ==========================================================
+
+- id: "10240000000030"
+  alias: "Chauffage - Autorité : synchro intention ← titulaire réel"
+  description: >
+    Re-synchronise l'intention UI (input_select.chauffage_autorite_intention) sur
+    le titulaire réel (input_select.chauffage_titulaire_autorite) au démarrage et
+    à chaque transfert d'autorité. Idempotente (n'écrit que sur divergence), ne
+    reflète qu'un titulaire valide — aucune boucle avec l'exécution
+    (id 10240000000029).
+  mode: single
+  max_exceeded: silent
+
+  # ======================================================
+  # 🔔 Déclencheurs — démarrage + transfert d'autorité
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: input_select.chauffage_titulaire_autorite
+    - platform: homeassistant
+      event: start
+
+  # ======================================================
+  # 🛑 Gardes — titulaire valide + divergence réelle
+  # ======================================================
+  condition:
+    - condition: template
+      value_template: >
+        {{ states('input_select.chauffage_titulaire_autorite') in ['automatique', 'manuel'] }}
+    - condition: template
+      value_template: >
+        {{ states('input_select.chauffage_autorite_intention')
+           != states('input_select.chauffage_titulaire_autorite') }}
+
+  # ======================================================
+  # ▶️ Action — Refléter le titulaire réel
+  # ======================================================
+  action:
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.chauffage_autorite_intention
+      data:
+        option: "{{ states('input_select.chauffage_titulaire_autorite') }}"

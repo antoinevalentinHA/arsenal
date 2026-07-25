@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Chauffage — Intention d'autorité (UI)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Porte l'INTENTION d'autorité exprimée par l'utilisateur depuis
+#   le sélecteur du dashboard (autorité de domaine, contrat 85 §85.4) :
+#     - automatique → « je veux qu'Arsenal décide »
+#     - manuel      → « je veux décider »
+#   Porteur d'INTENTION UI, PAS le titulaire. Le titulaire réel reste
+#   input_select.chauffage_titulaire_autorite, écrit uniquement par les
+#   primitives supervisées.
+#
+# 🧩 Nature :
+#   Porteur d'intention (helper de surface). Écrit par l'UI (sélecteur)
+#   et re-synchronisé sur le titulaire réel par une automation dédiée.
+#   Une automation le traduit en primitive supervisée
+#   (script.chauffage_entrer_mode_manuel / script.chauffage_revenir_mode_automatique) :
+#   l'intention ne transfère JAMAIS l'autorité directement — elle passe
+#   toujours par l'écrivain unique du titulaire (§85.4).
+#
+# 🔁 Anti-boucle :
+#   La traduction (intention → primitive) n'agit QUE si l'intention
+#   diffère du titulaire réel ; la synchro (titulaire → intention) est
+#   idempotente (n'écrit que sur divergence). Aucun aller-retour.
+#
+# ⚠️ Anti-fallback :
+#   Pas de `initial:` — bootstrap ≠ fallback (doctrine
+#   restauration_etat_helpers.md). Un titulaire unknown/unavailable ne
+#   fabrique aucune intention (garde de la synchro).
+#
+# 🔗 Consommé par :
+#   - automation.chauffage_autorite_intention_execution (intention → primitive)
+#   - automation.chauffage_autorite_intention_synchro    (titulaire → intention)
+#   - carte_action_chauffage_autorite (sélecteur UI)
+# ==========================================================
+
+chauffage_autorite_intention:
+  name: "Chauffage — Intention d'autorité (UI)"
+  options:
+    - automatique
+    - manuel
+  icon: mdi:account-switch
