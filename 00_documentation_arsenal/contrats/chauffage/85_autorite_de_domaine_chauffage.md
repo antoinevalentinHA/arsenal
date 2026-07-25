@@ -5,7 +5,7 @@
 
 | Champ | Valeur |
 |---|---|
-| **Statut** | **Cible contractuelle — spécification opposable ; échafaudage + bascule + UI à venir (§85.8).** Définit les vérités, responsabilités et comportements attendus du régime manuel supervisé. Aucun runtime livré à ce stade. |
+| **Statut** | **Cible contractuelle — spécification opposable ; échafaudage livré (inerte), bascule + UI à venir (§85.8).** Définit les vérités, responsabilités et comportements attendus du régime manuel supervisé. Porteurs, décision exécutoire dérivée et primitives **livrés et inertes** ; l'application n'en dépend pas encore. |
 | **Domaine** | Chauffage. Exécution **déléguée** au boiler bridge / chaudière (Netatmo) ; **aucun actionneur physique Arsenal**. Commande **mono-zone** (une consigne unique de domaine). |
 | **Instancie** | Doctrine transverse [`autorite_de_domaine.md`](../../architecture/03_doctrines/autorite_de_domaine.md). |
 | **Patrons** | Pilotes VMC [`vmc.md`](../vmc.md) §16 et climatisation [`16_autorite_de_domaine_climatisation.md`](../climatisation/16_autorite_de_domaine_climatisation.md) §16 (C37, terrain validé). |
@@ -203,10 +203,16 @@ Elles demeurent **exposées** comme information (« Arsenal aurait réduit : fen
 
 **Cible contractuelle — échafaudage + bascule + UI à venir.**
 
-- **À livrer (échafaudage).** Porteur du titulaire `input_select.chauffage_titulaire_autorite`
-  (`automatique`/`manuel`, sans `initial:`) ; porteur de la consigne manuelle (régime
-  `{confort, réduit}`) ; **décision exécutoire dérivée** anti-fallback (§85.2) ; primitives supervisées
-  d'entrée et de retour ; porteur d'intention UI + automations de médiation (§85.4).
+- **Livré (échafaudage — inerte).** Porteur du titulaire `input_select.chauffage_titulaire_autorite`
+  (`automatique`/`manuel`, sans `initial:`) ; porteur de la consigne manuelle
+  `input_select.chauffage_consigne_manuelle` (`confort`/`reduite`, sans `initial:`) ; **décision
+  exécutoire dérivée** `sensor.chauffage_mode_commande` (anti-fallback strict via `availability` : en
+  auto = `chauffage_mode_session` ; en manuel = consigne manuelle ; sinon indisponible, §85.2) ;
+  primitives supervisées `script.chauffage_entrer_mode_manuel` (atomique : consigne avant autorité) et
+  `script.chauffage_revenir_mode_automatique`. **Inerte sur l'exécution** : aucun consommateur ne lit
+  encore `chauffage_mode_commande` (le pipeline existant Décision Centrale → `mode_session` →
+  `chauffage_appliquer_consigne` reste en vigueur). Le porteur d'intention UI + automations de médiation
+  (§85.4) arrivent avec l'UI.
 - **À livrer (bascule).** L'**application** consomme la **décision exécutoire** (auto **ou** consigne
   manuelle) ; la **conformité transactionnelle** (ACK + retry borné, `11_automations/chauffage/retry_transactionnel/*`)
   se compare / rejoue la **décision exécutoire**, non la seule intention machine mémorisée (D9) ;

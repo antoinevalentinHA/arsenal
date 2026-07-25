@@ -1,0 +1,34 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Chauffage — Consigne manuelle
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Porte la CONSIGNE du titulaire manuel (autorité de domaine,
+#   contrat 85 §85.3) : le RÉGIME choisi ∈ {confort, reduite}.
+#   Surface de commande manuelle = le régime (pas la consigne de
+#   température, qui reste gérée par Arsenal — second axe non exposé).
+#
+# 🧩 Nature :
+#   Porteur de consigne (helper). Écrit UNIQUEMENT par la primitive
+#   supervisée d'entrée (script.chauffage_entrer_mode_manuel), AVANT
+#   le transfert d'autorité (séquence atomique, §85.4). Ignorée tant
+#   que le régime est automatique.
+#
+# ⚠️ Anti-fallback :
+#   Un état unknown/unavailable NE VAUT PAS un régime : il rend la
+#   décision exécutoire (sensor.chauffage_mode_commande) INDISPONIBLE.
+#   Pas de `initial:` — bootstrap ≠ fallback ; la valeur de première
+#   création n'est jamais exécutée (la primitive l'écrit avant le
+#   transfert d'autorité).
+#
+# 🔗 Consommé par :
+#   - sensor.chauffage_mode_commande (décision exécutoire dérivée, §85.2)
+#
+# 📍 État actuel : ÉCHAFAUDAGE INERTE (bascule ultérieure).
+# ==========================================================
+
+chauffage_consigne_manuelle:
+  name: "Chauffage — Consigne manuelle"
+  options:
+    - confort
+    - reduite
+  icon: mdi:hand-back-right
