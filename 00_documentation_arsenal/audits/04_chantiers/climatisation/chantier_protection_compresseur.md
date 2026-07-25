@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Statuer sur l'**absence de protection matérielle du compresseur** (anti-court-cycle / défaut / surchauffe) au niveau Arsenal — l'**« étage 1 vide »** relevé par [`06_doctrine_blocages.md`](../../../contrats/climatisation/06_doctrine_blocages.md) §2, qualifié « **seul vrai manque structurel** ». Déterminer si une protection **logicielle** est **nécessaire** et, si oui, sa nature. |
 | **Domaine** | Climatisation (unité unique `climate.clim` / `switch.clim_power`, intégration **Airstage / Fujitsu**). |
-| **Statut** | **CARACTÉRISATION FAITE (2026-07-25) — arbitrage en attente (dérogation recommandée).** La caractérisation (§6) établit, **preuve statique à l'appui**, qu'Arsenal **n'a aucun chemin de contournement** (pilotage 100 % soft via l'intégration Airstage, aucune prise secteur) ⇒ **ne peut pas court-cycler le compresseur** ; l'unité se protège (firmware, constructeur-typique) ; trois défenses de renfort espacent déjà les commandes ; aucune observabilité pour un étage 1 logiciel. **Arbitrage recommandé : clôturer par dérogation documentée.** **Aucun contrat/runtime modifié à ce stade** (STOP-avant-écriture : décision propriétaire). Essaimé de C37, **indépendant de C30**. |
+| **Statut** | **✅ CLOS (2026-07-25) — par dérogation documentée.** La caractérisation (§6) établit, preuve statique à l'appui, qu'Arsenal **n'a aucun chemin de contournement** des protections de l'unité (pilotage 100 % soft via l'intégration Airstage, aucune prise secteur) ⇒ **ne peut pas court-cycler le compresseur** ; un étage 1 logiciel serait un timer aveugle sans observabilité (fausse sécurité). **Arbitrage tranché propriétaire (2026-07-25) : clôture par dérogation**, inscrite à [`06_doctrine_blocages.md`](../../../contrats/climatisation/06_doctrine_blocages.md) §2 (« état 1 vide assumé et justifié »). **Réouverture uniquement** sur exposition réelle (nouveau chemin de commande secteur ou symptôme de court-cycle observé). Aucun runtime ni protection logicielle créés (§6.4 : ce serait une fausse sécurité). |
 | **Priorité** | **P3** — dette de sûreté **latente**, sans incident actif. Rationnel : (a) **aucun symptôme** observé ; (b) les climatiseurs Airstage/Fujitsu embarquent typiquement une **protection compresseur interne** (anti-court-cycle firmware) — à confirmer (§4) ; (c) le régime automatique fonctionne de longue date sans incident ; (d) le mode manuel (C37) borne déjà le battement par surface au **niveau mode** + **durée minimale**. **Escalade** si la caractérisation (§4) révèle une exposition réelle. |
 | **Ouvert le** | 2026-07-25. Sur go opérateur, depuis le cadrage C37 §3. |
 | **Prochain jalon** | **Arbitrage propriétaire** (§6.5) : (a) **dérogation documentée** — inscrire à `06_doctrine_blocages.md` §2 que l'étage 1 est assumé vide (aucun contournement + firmware) et **clôturer C38** [recommandé] ; ou (b) engager un cadrage de protection logicielle si le propriétaire juge l'exposition non couverte. **STOP-avant-écriture** : aucune écriture de contrat avant tranchage. |
-| **Registre** | Chantier **C38** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
+| **Registre** | Chantier **C38** — ⑤ Clos récents (trace ≈ 90 j), cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **Portée.** Chantier **d'ouverture.** Aucun helper, aucune automation, aucun runtime, aucune
 > modification de contrat à ce stade. Ce chantier **ne présume pas** qu'une protection logicielle soit
@@ -149,6 +149,22 @@ sécurité.
 > assumé vide : aucun chemin de contournement Arsenal + protection firmware de l'unité »). **STOP-avant-écriture
 > : décision propriétaire.** Réserve mineure non bloquante : confirmation opportuniste du min-off au
 > manuel de service ou en terrain (renfort, non porteur).
+
+### 6.6 Clôture (2026-07-25)
+
+**Arbitrage tranché propriétaire : clôture par dérogation documentée.** La dérogation est inscrite à
+[`06_doctrine_blocages.md`](../../../contrats/climatisation/06_doctrine_blocages.md) §2 : l'« état 1
+vide » devient un **choix assumé et justifié** (aucun chemin de contournement Arsenal + protection
+firmware de l'unité + renforts §6.3), et non plus une lacune implicite. **C38 est clos.**
+
+**Condition de réouverture (unique).** Une **exposition réelle** : soit l'apparition d'un **chemin de
+commande secteur** (prise/relais physique donnant à Arsenal une coupure d'alimentation dure du
+compresseur), soit un **symptôme de court-cycle observé** en terrain. Aucune panne fabriquée ; aucun
+étage 1 logiciel tant que l'exposition n'est pas avérée (§6.4 — fausse sécurité).
+
+**Réserve non bloquante, sans objet pour la clôture.** La valeur exacte du min-off firmware du modèle
+peut être confirmée à l'occasion (manuel de service / observation) ; c'est un **renfort**, l'argument
+porteur (§6.1, absence de contournement) étant **statique et suffisant**.
 
 ---
 
