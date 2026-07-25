@@ -5,7 +5,7 @@
 
 | Champ | Valeur |
 |---|---|
-| **Statut** | **En vigueur — échafaudage + bascule livrés ; UI à venir (§85.8).** L'application (consommateur exécutoire unique) suit `sensor.chauffage_mode_commande` (auto **ou** consigne manuelle) via l'écrivain unique ; `decision_centrale` décide sans appeler l'exécutif ; iso-comportement en auto ; override `mode_confort_chauffage` migré (contexte panne système, non exécutoire en manuel). Reste l'UI de reprise en main, la validation terrain, la clôture. |
+| **Statut** | **En vigueur — échafaudage + bascule + UI livrés (§85.8).** L'application (consommateur exécutoire unique) suit `sensor.chauffage_mode_commande` (auto **ou** consigne manuelle) via l'écrivain unique ; `decision_centrale` décide sans appeler l'exécutif ; iso-comportement en auto ; override `mode_confort_chauffage` migré (contexte panne système, non exécutoire en manuel). **UI de reprise en main livrée** (sélecteur d'autorité d'intention + affichage conditionnel). Reste la **validation terrain** puis la clôture fonctionnelle. |
 | **Domaine** | Chauffage. Exécution **déléguée** au boiler bridge / chaudière (Netatmo) ; **aucun actionneur physique Arsenal**. Commande **mono-zone** (une consigne unique de domaine). |
 | **Instancie** | Doctrine transverse [`autorite_de_domaine.md`](../../architecture/03_doctrines/autorite_de_domaine.md). |
 | **Patrons** | Pilotes VMC [`vmc.md`](../vmc.md) §16 et climatisation [`16_autorite_de_domaine_climatisation.md`](../climatisation/16_autorite_de_domaine_climatisation.md) §16 (C37, terrain validé). |
@@ -215,7 +215,7 @@ Elles demeurent **exposées** comme information (« Arsenal aurait réduit : fen
 
 ## 85.8 État de l'implémentation
 
-**Cible contractuelle — échafaudage + bascule livrés ; UI à venir.**
+**Échafaudage + bascule + UI livrés ; reste la validation terrain puis la clôture fonctionnelle.**
 
 - **Livré (échafaudage).** Porteur du titulaire `input_select.chauffage_titulaire_autorite`
   (`automatique`/`manuel`, sans `initial:`) ; porteur de la consigne manuelle
@@ -251,10 +251,22 @@ Elles demeurent **exposées** comme information (« Arsenal aurait réduit : fen
   ré-asserteur continu** à démanteler (conformité **transactionnelle**, pas de ré-assertion permanente
   type Guard/Watchdog). Il n'existe **aucune dépendance de séquencement** analogue à C30 : la bascule
   **n'est pas gated**.
-- **À livrer (UI).** Section « Autorité & reprise en main » sur le patron d'autorité d'intention +
-  affichage conditionnel (VMC/clim) : sélecteur d'autorité ; manuel → régime `{confort, réduit}` +
-  décision exécutoire ; auto → décision + diagnostic. L'UI **appelle** les primitives, n'écrit aucun
-  titulaire, ne commande aucun relais.
+- **Livré (UI).** Section « 🎛️ Autorité & reprise en main » du dashboard chauffage
+  (`18_lovelace/dashboards/chauffage/principal.yaml`) + cartes
+  `19_button_card_templates/40_dashboards/chauffage/15_autorite/`, sur le patron d'autorité d'intention
+  + affichage conditionnel (VMC/clim) : **sélecteur d'autorité** (`carte_action_chauffage_autorite`,
+  écrit le porteur d'intention `input_select.chauffage_autorite_intention`, confirmation modale) ;
+  **manuel** → sélecteur de régime `{confort, réduit}` (`carte_action_chauffage_mode`, régime actif
+  surligné) + **décision exécutoire** `carte_chauffage_decision_commandee` (anti-fallback « Indéterminée ») ;
+  **auto** → décision d'Arsenal + diagnostic (`carte_chauffage_intention` + `carte_chauffage_decision`).
+  Médiation par **porteur d'intention** + automations `chauffage_autorite_intention_execution` (id
+  `10240000000029`, traduction gardée « intention ≠ titulaire » + gate de stabilité) et
+  `chauffage_autorite_intention_synchro` (id `10240000000030`, synchro idempotente, anti-fallback) →
+  anti-boucle, anti-reprise silencieuse. Reprise **et** restitution par le même sélecteur. Historique
+  visible dans les deux régimes. L'UI **écrit le porteur d'intention** et **appelle** les primitives ;
+  jamais le titulaire, jamais l'exécution. **Doctrine couleurs** : sélecteur d'autorité 🔵 bleu (auto) /
+  🟠 orange (manuel) coloré par l'autorité réelle ; sélecteur de régime en usage binaire 🟢 vert (régime
+  actif en manuel) / ⚪ gris neutre.
 - **Anti-court-cycle** — dérogation documentée (§85.5, D8) : rien à livrer côté Arsenal.
 
 ---

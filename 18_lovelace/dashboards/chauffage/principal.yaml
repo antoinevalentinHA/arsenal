@@ -38,31 +38,113 @@ views:
                 template: carte_chauffage_synthese
 
           # ==================================================
-          # 🧠 DÉCISION
+          # 🎛️ AUTORITÉ & REPRISE EN MAIN  (autorité de domaine C39)
+          # --------------------------------------------------
+          # Un SÉLECTEUR D'AUTORITÉ en tête (toujours visible) ; en dessous,
+          # le contenu s'ADAPTE au titulaire réel :
+          #   • manuel → vos contrôles (sélecteur de régime + décision exécutoire) ;
+          #   • auto   → le diagnostic qui justifie la décision d'Arsenal
+          #     (intention/décision).
+          # Le sélecteur écrit le porteur d'INTENTION ; une automation le
+          # traduit en primitive supervisée (chauffage_entrer_mode_manuel /
+          # chauffage_revenir_mode_automatique). Aucune écriture directe du
+          # titulaire depuis l'UI, aucune commande d'exécution.
+          # La section Historique (plus bas) reste visible dans les deux régimes.
           # ==================================================
-          - type: grid
-            square: false
-            columns: 1
-            cards:
-              - !include ../../includes/section_headers/decision.yaml
+          - type: custom:button-card
+            template: section_header
+            name: 🎛️ Autorité & reprise en main
 
-          # ==================================================
-          # 🎯 INTENTION / DÉCISION
-          # ==================================================
+          # Sélecteur d'autorité — écrit l'INTENTION
+          # (input_select.chauffage_autorite_intention) ; coloré par le
+          # titulaire RÉEL : bleu = Arsenal (auto), orange = vous (manuel).
           - type: grid
+            columns: 2
             square: false
-            columns: 1
             cards:
               - type: custom:button-card
-                entity: sensor.chauffage_mode_calcule
-                template: carte_chauffage_intention
-
+                template: carte_action_chauffage_autorite
+                entity: input_select.chauffage_autorite_intention
+                name: Automatique
+                icon: mdi:robot-outline
+                variables:
+                  intention: automatique
+                  confirmation: >-
+                    Rendre le contrôle du chauffage à Arsenal (mode automatique) ?
               - type: custom:button-card
-                entity: sensor.programme_chauffage
-                template: carte_chauffage_decision
+                template: carte_action_chauffage_autorite
+                entity: input_select.chauffage_autorite_intention
+                name: Manuel
+                icon: mdi:hand-back-right
+                variables:
+                  intention: manuel
+                  confirmation: >-
+                    Prendre le contrôle manuel du chauffage ?
+
+          # --------------------------------------------------
+          # MANUEL → vos contrôles
+          # --------------------------------------------------
+          - type: conditional
+            conditions:
+              - entity: input_select.chauffage_titulaire_autorite
+                state: manuel
+            card:
+              type: vertical-stack
+              cards:
+                # Sélecteur de régime — un tap change la main dans le régime
+                # choisi. Le régime actif est surligné (vert canon / gras) ;
+                # le régime est porté par l'icône + le libellé.
+                - type: grid
+                  columns: 2
+                  square: false
+                  cards:
+                    - type: custom:button-card
+                      template: carte_action_chauffage_mode
+                      entity: script.chauffage_entrer_mode_manuel
+                      name: Confort
+                      icon: mdi:radiator
+                      variables:
+                        consigne: confort
+                        confirmation: >-
+                          Passer le chauffage en confort (contrôle manuel) ?
+                    - type: custom:button-card
+                      template: carte_action_chauffage_mode
+                      entity: script.chauffage_entrer_mode_manuel
+                      name: Réduit
+                      icon: mdi:radiator-disabled
+                      variables:
+                        consigne: reduite
+                        confirmation: >-
+                          Passer le chauffage en réduit (contrôle manuel) ?
+
+                # Décision exécutoire (lecture seule) — votre consigne,
+                # imposée à l'exécution (anti-fallback « Indéterminée »).
+                - type: custom:button-card
+                  template: carte_chauffage_decision_commandee
+                  entity: sensor.chauffage_mode_commande
+
+          # --------------------------------------------------
+          # AUTO → le diagnostic qui justifie la décision d'Arsenal
+          # --------------------------------------------------
+          - type: conditional
+            conditions:
+              - entity: input_select.chauffage_titulaire_autorite
+                state: automatique
+            card:
+              type: vertical-stack
+              cards:
+                - !include ../../includes/section_headers/decision.yaml
+
+                - type: custom:button-card
+                  entity: sensor.chauffage_mode_calcule
+                  template: carte_chauffage_intention
+
+                - type: custom:button-card
+                  entity: sensor.programme_chauffage
+                  template: carte_chauffage_decision
 
           # ==================================================
-          # 📜 HISTORIQUE
+          # 📜 HISTORIQUE (les deux régimes)
           # ==================================================
           - type: grid
             square: false
