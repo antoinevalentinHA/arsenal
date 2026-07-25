@@ -1,0 +1,76 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR (CHAUFFAGE)
+# ----------------------------------------------------------
+# 📛 Nom UI :
+#   Chauffage — Mode commandé (décision exécutoire)
+#
+# 🎯 Rôle :
+#   DÉCISION EXÉCUTOIRE unique du chauffage (autorité de domaine,
+#   contrat 85 §85.2). Dérivée PURE de :
+#     - le titulaire (input_select.chauffage_titulaire_autorite)
+#     - la décision automatique (input_select.chauffage_mode_session —
+#       régime décidé par la Décision Centrale, écrit avant exécution)
+#     - la consigne manuelle (input_select.chauffage_consigne_manuelle)
+#   En régime automatique : vaut le régime décidé (mode_session).
+#   En régime manuel      : vaut la consigne du titulaire.
+#   Vocabulaire d'exécution : {confort, reduite}.
+#
+# 🧱 Principe Arsenal :
+#   - Décision PURE (aucun effet de bord, aucune mémoire, aucune tempo)
+#   - N'écrit aucun relais, ne lit aucun état physique
+#   - La décision automatique reste calculée et exposée comme décision
+#     THÉORIQUE non exécutoire quand le titulaire est manuel (§85.2)
+#
+# ⚠️ Anti-fallback strict (§85.2) :
+#   `availability` = vrai UNIQUEMENT si le titulaire porte une valeur
+#   valide ET la source qu'il désigne est valide. À défaut → indisponible.
+#   Un unknown/unavailable NE VAUT NI 'automatique', NI un régime, NI
+#   une abstention — aucune valeur n'est substituée.
+#
+# 🔌 Consommé par :
+#   - (à venir, bascule) la couche d'application et la conformité
+#     transactionnelle. AUCUN consommateur d'exécution à ce stade :
+#     ÉCHAFAUDAGE INERTE — l'application suit encore le pipeline existant
+#     (Décision Centrale → mode_session → script.chauffage_appliquer_consigne).
+#
+# 📍 Entité :
+#   sensor.chauffage_mode_commande
+# ==========================================================
+
+- sensor:
+    - name: "Chauffage Mode Commandé"
+      unique_id: chauffage_mode_commande
+      default_entity_id: sensor.chauffage_mode_commande
+
+      availability: >
+        {% set t = states('input_select.chauffage_titulaire_autorite') %}
+        {% set auto = states('input_select.chauffage_mode_session') %}
+        {% set cons = states('input_select.chauffage_consigne_manuelle') %}
+        {{ (t == 'automatique' and auto in ['confort', 'reduite'])
+           or (t == 'manuel' and cons in ['confort', 'reduite']) }}
+
+      state: >
+        {% if is_state('input_select.chauffage_titulaire_autorite', 'manuel') %}
+          {{ states('input_select.chauffage_consigne_manuelle') }}
+        {% else %}
+          {{ states('input_select.chauffage_mode_session') }}
+        {% endif %}
+
+      icon: >
+        {% set m = this.state %}
+        {% if m == 'confort' %} mdi:radiator
+        {% elif m == 'reduite' %} mdi:radiator-disabled
+        {% else %} mdi:help-circle-outline
+        {% endif %}
+
+      attributes:
+        titulaire: >
+          {{ states('input_select.chauffage_titulaire_autorite') }}
+        source_decision: >
+          {% if is_state('input_select.chauffage_titulaire_autorite', 'manuel') %}
+            consigne manuelle
+          {% else %}
+            décision automatique
+          {% endif %}
+        regime_theorique: >
+          {{ states('input_select.chauffage_mode_session') }}

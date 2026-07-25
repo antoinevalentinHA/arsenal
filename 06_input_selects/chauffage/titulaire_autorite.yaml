@@ -1,0 +1,35 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Chauffage — Titulaire de l'autorité
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Porte le TITULAIRE de l'autorité de domaine chauffage
+#   (autorité de domaine, contrat 85) :
+#     - automatique → Arsenal décide (Décision Centrale)
+#     - manuel      → l'utilisateur décide
+#   Un seul titulaire à chaque instant (unicité, révocabilité).
+#
+# 🧩 Nature :
+#   Porteur d'autorité (helper). Écrit UNIQUEMENT par les deux
+#   primitives supervisées (script.chauffage_entrer_mode_manuel /
+#   script.chauffage_revenir_mode_automatique). Jamais depuis l'UI
+#   en direct, jamais par une automation d'exécution.
+#
+# ⚠️ Anti-fallback :
+#   Un état unknown/unavailable NE VAUT PAS 'automatique' : il rend
+#   la décision exécutoire (sensor.chauffage_mode_commande) INDISPONIBLE.
+#   Pas de `initial:` — la première valeur est un bootstrap, jamais
+#   un repli (doctrine restauration_etat_helpers.md).
+#
+# 🔗 Consommé par :
+#   - sensor.chauffage_mode_commande (décision exécutoire dérivée, §85.2)
+#
+# 📍 État actuel : ÉCHAFAUDAGE INERTE — aucun consommateur d'exécution
+#   ne lit encore la décision exécutoire (bascule ultérieure).
+# ==========================================================
+
+chauffage_titulaire_autorite:
+  name: "Chauffage — Titulaire de l'autorité"
+  options:
+    - automatique
+    - manuel
+  icon: mdi:account-switch
