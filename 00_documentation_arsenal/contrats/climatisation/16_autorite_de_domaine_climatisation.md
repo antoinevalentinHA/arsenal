@@ -5,7 +5,7 @@
 
 | Champ | Valeur |
 |---|---|
-| **Statut** | **Cible contractuelle — spécification opposable, runtime + UI livrés.** Échafaudage + **bascule** + **UI** livrés (§16.8) : l'application, la conformité, le Watchdog et le Guard consomment la **décision exécutoire** ; **le mode manuel est exécutoire** et **accessible** (section « Autorité & reprise en main »). Reste la **validation terrain** puis la clôture fonctionnelle. |
+| **Statut** | ✅ **En vigueur — pilote fonctionnellement clos (C37, terrain validé le 2026-07-25).** Spécification opposable ; échafaudage + **bascule** + **UI** livrés (§16.8) : l'application, la conformité, le Watchdog et le Guard consomment la **décision exécutoire** ; **le mode manuel est exécutoire** et **accessible** (section « Autorité & reprise en main » — sélecteur d'autorité d'intention + affichage conditionnel). Réserve héritée non bloquante : *fail-open* C30 (suivi par C30). |
 | **Domaine** | Climatisation (unité unique `climate.clim` / `switch.clim_power`). |
 | **Instancie** | Doctrine transverse [`autorite_de_domaine.md`](../../architecture/03_doctrines/autorite_de_domaine.md). |
 | **Patron** | Pilote VMC [`vmc.md`](../vmc.md) §16. |
@@ -217,7 +217,7 @@ Elles demeurent **exposées** comme information (« Arsenal aurait bloqué : fen
 
 ## 16.8 État de l'implémentation
 
-**Échafaudage + bascule + UI livrés ; reste la validation terrain puis la clôture fonctionnelle.**
+**Échafaudage + bascule + UI livrés ; terrain validé ; pilote fonctionnellement clos (C37, 2026-07-25).**
 
 - **Livré (échafaudage).** Porteurs `input_select.clim_titulaire_autorite` et
   `input_select.clim_consigne_manuelle` (sans `initial:`) ; décision exécutoire dérivée
@@ -257,8 +257,10 @@ Elles demeurent **exposées** comme information (« Arsenal aurait bloqué : fen
   🟢 vert canon = le mode **actif en régime manuel**, ⚪ gris neutre canon = tout le reste, ⚪ gris
   indispo = indéterminée. **Le vert n'apparaît qu'en manuel** ; le mode et le rôle sont portés par
   l'icône + le libellé.
-- **À venir.** Validation terrain (le mode manuel étant exécutoire et accessible), puis clôture
-  fonctionnelle.
+- **Terrain validé (2026-07-25).** Opérateur — « très propre » : les deux régimes, prise / commande /
+  restitution, et l'affichage conditionnel auto↔manuel vérifiés en réel. **Pilote climatisation
+  fonctionnellement clos (C37).** Une éventuelle extension (consigne de température, vitesse de
+  ventilation exposées à la commande manuelle) serait un **nouvel arbitrage** hors périmètre (§16.3).
 
 ---
 
