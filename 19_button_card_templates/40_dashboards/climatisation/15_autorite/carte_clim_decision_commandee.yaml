@@ -18,12 +18,11 @@
 #     - Spécialisation de socle_decision_72
 #     - UI uniquement
 #
-# 🎨 SEMANTIQUE (palette officielle)
-#     - cool (Froid)        -> 🔵 bleu   rgba(33,150,243,0.2)
-#     - dry  (Déshum.)      -> 🟡 jaune  rgba(255,235,59,0.2)
-#     - heat (Chaud)        -> 🟠 orange rgba(255,152,0,0.2)
-#     - off  (Arrêt)        -> ⚪ gris neutre rgba(158,158,158,0.2)
-#     - indispo             -> ⚪ gris indispo rgba(158,158,158,0.1)
+# 🎨 SEMANTIQUE (palette officielle — la COULEUR encode l'ÉTAT, jamais le mode ;
+#     le mode est porté par le libellé + l'icône, cf. ui/couleurs/02_palette.md)
+#     - conditionnement commandé (cool/dry/heat) -> 🟢 vert  rgba(76,175,80,0.2)  (nominal actif)
+#     - arrêt commandé (off)                     -> ⚪ gris neutre rgba(158,158,158,0.2) (aucune demande)
+#     - indéterminée (indispo)                   -> ⚪ gris indispo rgba(158,158,158,0.1) (prioritaire)
 #
 # 🚫 ANTI-FALLBACK (§16.2)
 #     Une décision exécutoire indisponible s'affiche « Indéterminée » :
@@ -63,11 +62,14 @@ carte_clim_decision_commandee:
         })();
 
         const bg = (() => {
-          if (category === 'cool') return 'rgba(33, 150, 243, 0.2)';
-          if (category === 'dry')  return 'rgba(255, 235, 59, 0.2)';
-          if (category === 'heat') return 'rgba(255, 152, 0, 0.2)';
-          if (category === 'off')  return 'rgba(158, 158, 158, 0.2)';
-          return 'rgba(158, 158, 158, 0.1)';
+          // Doctrine couleurs : la couleur encode un ÉTAT, jamais l'identité du
+          // mode (le mode est porté par le libellé + l'icône).
+          //   conditionnement commandé (cool/dry/heat) -> 🟢 vert  (nominal actif)
+          //   arrêt commandé                            -> ⚪ gris neutre (aucune demande)
+          //   indéterminée (indispo)                    -> ⚪ gris indispo (prioritaire)
+          if (category === 'off')      return 'rgba(158, 158, 158, 0.2)';
+          if (category === 'indispo')  return 'rgba(158, 158, 158, 0.1)';
+          return 'rgba(76, 175, 80, 0.2)';
         })();
 
         const stateText = (() => {

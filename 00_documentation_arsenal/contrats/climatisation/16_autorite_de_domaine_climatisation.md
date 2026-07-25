@@ -227,13 +227,16 @@ Elles demeurent **exposées** comme information (« Arsenal aurait bloqué : fen
   pour les deux régimes.
 - **Livré (UI).** Section « 🎛️ Autorité & reprise en main » du dashboard climatisation
   (`18_lovelace/dashboards/climatisation/principal.yaml`) + cartes
-  `19_button_card_templates/40_dashboards/climatisation/15_autorite/` : titulaire (lecture seule),
-  prise/commande manuelle par **mode** `{off, cool, dry, heat}` (appelle `clim_entrer_mode_manuel`
-  avec la consigne, confirmation modale), restitution (`clim_revenir_mode_automatique`), **décision
-  exécutoire** `sensor.clim_mode_commande` en lecture seule (anti-fallback « Indéterminée »), et en
-  manuel la **décision théorique** `sensor.clim_target_mode` (information). L'UI **appelle** les
-  primitives, n'écrit aucun helper, ne commande aucun relais/climate (§16.4). Aucun contrôle direct de
-  mode/alimentation n'existait à neutraliser.
+  `19_button_card_templates/40_dashboards/climatisation/15_autorite/` : titulaire (lecture seule), un
+  **sélecteur de mode unique** (rangée `{off, cool, dry, heat}`, mode actif surligné, appelle
+  `clim_entrer_mode_manuel` avec la consigne, confirmation modale), restitution
+  (`clim_revenir_mode_automatique`), **décision exécutoire** `sensor.clim_mode_commande` en lecture
+  seule (anti-fallback « Indéterminée »), et en manuel la **décision théorique** `sensor.clim_target_mode`
+  (information). L'UI **appelle** les primitives, n'écrit aucun helper, ne commande aucun
+  relais/climate (§16.4). Aucun contrôle direct de mode/alimentation n'existait à neutraliser.
+  **Doctrine couleurs (`ui/couleurs`) respectée : la couleur encode un ÉTAT, jamais le mode** — 🟢 vert
+  = conditionnement commandé (nominal actif), ⚪ gris neutre = arrêt/inactif, ⚪ gris indispo =
+  indéterminée ; le mode est porté par l'icône + le libellé.
 - **À venir.** Validation terrain (le mode manuel étant exécutoire et accessible), puis clôture
   fonctionnelle.
 

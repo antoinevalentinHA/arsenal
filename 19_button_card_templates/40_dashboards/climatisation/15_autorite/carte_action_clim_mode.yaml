@@ -1,0 +1,87 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Sélecteur de mode (autorité C37)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Un élément du SÉLECTEUR DE MODE de la reprise en main. Un tap
+#     prend / change la main dans le mode porté par variables.consigne,
+#     en déléguant à la primitive supervisée script.clim_entrer_mode_manuel
+#     (contrat 16 §16.4) : valider → écrire consigne → transférer l'autorité.
+#     Fonctionne dans les deux régimes (auto → prise de contrôle ;
+#     manuel → changement de mode). Idempotent.
+#
+# 🧱 NATURE
+#     - Template button-card, spécialisation de carte_base_v2
+#     - UI uniquement : n'écrit NI helper, NI relais / climate. Seule
+#       frontière = la primitive supervisée (écrivain unique, §16.2).
+#
+# 🎨 SEMANTIQUE (doctrine ui/couleurs — la couleur encode l'ÉTAT, pas le mode)
+#     - mode ACTIF (= sensor.clim_mode_commande), conditionnement (cool/dry/heat)
+#         -> 🟢 vert rgba(76,175,80,0.2) (nominal actif)
+#     - mode ACTIF = arrêt (off)        -> ⚪ gris neutre rgba(158,158,158,0.2)
+#     - mode INACTIF (non commandé)     -> ⚪ gris neutre rgba(158,158,158,0.2)
+#     - « sélectionné » = gras (affordance structurelle, pas une couleur)
+#     Le mode (froid/déshum/chaud/arrêt) est porté par l'ICÔNE + le libellé.
+#
+# 🔗 DEPENDANCES
+#     - entity   : script.clim_entrer_mode_manuel (feedback d'état)
+#     - service  : script.clim_entrer_mode_manuel
+#     - variables.consigne     : 'off' | 'cool' | 'dry' | 'heat'
+#     - variables.confirmation : texte de confirmation modale
+#     - lecture d'état : sensor.clim_mode_commande (surlignage du mode actif —
+#                        restitution d'état, aucune décision UI)
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation modale OBLIGATOIRE (§16.4)
+#     - N'expose JAMAIS climate.clim / switch.clim_power
+#     - La consigne est passée à la primitive, jamais écrite dans
+#       input_select.clim_consigne_manuelle par l'UI
+#
+# 🔗 SATELLITE DE : carte_base_v2
+# ==========================================================
+
+carte_action_clim_mode:
+  template: carte_base_v2
+
+  show_state: false
+  show_icon: true
+  show_name: true
+  color_type: card
+
+  tap_action:
+    action: call-service
+    service: script.clim_entrer_mode_manuel
+    confirmation:
+      text: >
+        [[[
+          return variables?.confirmation
+            || "Commander la climatisation (contrôle manuel) ?";
+        ]]]
+    service_data:
+      consigne: '[[[ return variables.consigne ]]]'
+
+  styles:
+    icon:
+      - color: '#111'
+    name:
+      - color: '#111'
+      - font-size: 12px
+      - font-weight: >
+          [[[
+            const cur = states['sensor.clim_mode_commande']
+              ? states['sensor.clim_mode_commande'].state : null;
+            return cur === variables.consigne ? '700' : '400';
+          ]]]
+    card:
+      - background-color: >
+          [[[
+            const cur = states['sensor.clim_mode_commande']
+              ? states['sensor.clim_mode_commande'].state : null;
+            const actif = (cur === variables.consigne);
+            if (actif && variables.consigne !== 'off') return 'rgba(76, 175, 80, 0.2)';
+            return 'rgba(158, 158, 158, 0.2)';
+          ]]]
