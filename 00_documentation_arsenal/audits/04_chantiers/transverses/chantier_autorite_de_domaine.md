@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Poser une doctrine transverse d'**autorité de domaine** : lever l'assimilation actuelle entre *autorité unique* et *souveraineté permanente d'Arsenal*, et définir les régimes **automatique** / **manuel** sous la formule **« unicité de l'autorité, révocabilité de sa délégation »**. |
 | **Domaine** | Transverse — doctrine d'autorité décisionnelle. Sans propriétaire documentaire préexistant. |
-| **Statut** | **Ouvert — SOCLE VMC VALIDÉ, PHASE UI OUVERTE.** Doctrine (#571), contrat v2.5/v2.6 (#572/#573), échafaudage (#574) et bascule L4+L6 (#575) livrés ; autorité automatique/manuelle, transitions supervisées et décision exécutoire unique en place ; **mode manuel exécutoire, validé en terrain T0→I** (récupération unique par front sur trois fronts isolés). **Phase UI encore ouverte avant clôture fonctionnelle du pilote.** Scénarios **J** (rafale, flapping provoqué, défaut persistant) = **réserve terrain différée non bloquante** (§6-bis). **Le pilote VMC n'est pas clos ; C36 reste ① Actif.** |
+| **Statut** | **✅ CLOS (2026-07-25) — DOCTRINE POSÉE, PILOTE VMC FONCTIONNELLEMENT CLOS.** Doctrine (#571), contrat v2.5/v2.6 (#572/#573), échafaudage (#574), bascule L4+L6 (#575) et **UI de reprise en main (#578)** livrés ; autorité automatique/manuelle, transitions supervisées, décision exécutoire unique et **surface de reprise en main** en place ; **mode manuel exécutoire, validé en terrain T0→I** (récupération unique par front sur trois fronts isolés) **puis UI validée en terrain (2026-07-25)** — voir l'autorité active, entrer en manuel basse/haute via la primitive, restituer à Arsenal, relais non interactifs. Critères de non-clôture §9 (doctrinaux) **tous satisfaits** ; la démonstration par pilote est **complète de bout en bout**. **Lot 4** (réconciliation des contrats de souveraineté chauffage/climatisation) **essaimé** en dossier d'arbitrage distinct (③ `D-C36-L4`). Scénarios **J** (rafale, flapping provoqué, défaut persistant) = **réserve terrain différée non bloquante**, convertie en **veille domaine VMC** ancrée au contrat §16.5 (§6-bis, §11). **C36 sort des Actifs (⑤ Clos récents).** |
 | **Priorité** | **P2** — enjeu structurant, sans risque technique immédiat. Fait suite à l'observation **A2** de C34 (asymétrie doctrinale commande-directe / consigne-déléguée) et à l'audit transverse d'autorité (2026-07-24). |
 | **Ouvert le** | 2026-07-24. |
-| **Prochain jalon** | **Pilote VMC — clôture fonctionnelle conditionnée à l'UI de reprise en main.** Concevoir puis valider l'**UI** (voir l'autorité active, entrer en manuel, choisir basse/haute, restituer l'autorité à Arsenal) dans le respect de l'**écrivain unique** : l'UI **appelle les primitives** (`vmc_entrer_mode_manuel` / `vmc_revenir_mode_automatique`), **jamais** de commande directe des relais ni d'orchestration des helpers de transition (§16.2, §16.4 ; recensement UI §16.6). La **conception UI n'est pas engagée** dans la présente passe. Puis **clôture fonctionnelle** du pilote. En parallèle : réconciliation des contrats de souveraineté chauffage/climatisation (Lot 4, passe distincte). Nettoyage G (branche morte + micro-clarif §16.2) non bloquant. **Réserve J** : réexamen **uniquement sur occurrence naturelle ou symptôme réel** ; **aucun compteur/retry sans preuve de matraquage**. |
-| **Registre** | Chantier **C36** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
+| **Prochain jalon** | **Aucun sous C36 (clos).** Suites essaimées, hors C36 : (1) **`D-C36-L4`** — réconciliation effective des contrats de souveraineté chauffage/climatisation (Lot 4 a **recensé** ; la mise en cohérence est un **arbitrage dormant** à ③, réveil sur go opérateur) ; (2) **veille domaine VMC — réserve J** (rafale, flapping provoqué, défaut persistant) : réexamen **uniquement sur occurrence naturelle ou symptôme réel**, **aucun compteur/retry sans preuve de matraquage** (garde contractuelle §16.5). |
+| **Registre** | Chantier **C36** — ⑤ Clos récents (trace ≈ 90 j), cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). Suites : `D-C36-L4` (③). **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **Portée.** Chantier **doctrinal resserré.** Aucun helper, aucune UI, aucun runtime, aucune
 > modification de contrat de domaine à ce stade. Les contrats affirmant une souveraineté permanente
@@ -151,13 +151,15 @@ première passe par domaine :
 
 ---
 
-## 6-bis. Bilan d'étape du pilote VMC — socle validé, phase UI ouverte
+## 6-bis. Bilan du pilote VMC — fonctionnellement clos
 
-**Qualification.** Socle contractuel et runtime du pilote VMC validé ; phase UI encore
-ouverte avant clôture fonctionnelle du pilote. Les scénarios J restent une réserve
-terrain différée non bloquante. **Le pilote VMC n'est pas clos.**
+**Qualification.** Socle contractuel, runtime **et UI** du pilote VMC **livrés et validés en
+terrain**. La démonstration de la doctrine par pilote est **complète de bout en bout** : voir
+l'autorité active, entrer en manuel, choisir basse / haute et restituer l'autorité à Arsenal,
+dans le respect de l'écrivain unique. Les scénarios J restent une réserve terrain différée non
+bloquante, convertie en **veille domaine VMC** (§11). **Le pilote VMC est fonctionnellement clos.**
 
-### Socle livré (cinq PR)
+### Socle livré (six PR)
 
 - Doctrine transverse [`autorite_de_domaine.md`](../../../architecture/03_doctrines/autorite_de_domaine.md) (#571) —
   propriétaire unique de la titularité ; `principes_generaux.md` §2 clarifié (unicité ≠ permanence).
@@ -168,6 +170,12 @@ terrain différée non bloquante. **Le pilote VMC n'est pas clos.**
   fiabilisation de la cohérence physique.
 - Bascule L4+L6 (#575) — l'application et la conformité consomment la décision exécutoire ; le mode
   manuel devient exécutoire.
+- **UI de reprise en main (#578)** — surface d'autorité sur le dashboard principal (titulaire,
+  prise / commande / restitution, décision exécutoire en lecture seule, décision théorique en
+  manuel, état réel) ; **actions par les seules primitives supervisées** (`vmc_entrer_mode_manuel`
+  avec `consigne` / `vmc_revenir_mode_automatique`) ; relais L1/L2 du diagnostic **rendus
+  strictement non interactifs** (ferme la double écriture, §16.6). Nettoyage G (branche morte de
+  conformité, #576) livré en parallèle.
 
 ### Validation terrain — T0 → I (2026-07-24)
 
@@ -208,24 +216,35 @@ ce pilote.
   sans la durée minimale. **Intentionnel** (§16.4) : la convergence de démarrage est une application
   unique, hors de l'anti-flapping qui protège les *transitions*.
 
-### Réserve terrain — différée, non bloquante
+### Validation terrain UI — acquise (2026-07-25)
 
-Pilote VMC livré et validé en terrain sur T0→I. L'absence de matraquage est établie par conception et
-confirmée sur trois récupérations isolées ; les scénarios invasifs de rafale, flapping provoqué et
-défaut persistant n'ont pas été exercés et restent une réserve terrain différée non bloquante, à
-réexaminer uniquement sur occurrence naturelle ou symptôme réel.
+L'UI de reprise en main (#578) a été **déployée sur l'instance et validée en terrain**. La finalité du
+pilote — rendre la **reprise en main utilisateur réellement accessible** — est atteinte, dans le
+respect de l'**écrivain unique** :
+
+- **voir l'autorité active** — la surface expose le titulaire, la décision exécutoire (lecture seule)
+  et, en manuel, la décision théorique d'Arsenal comme information non exécutoire ;
+- **entrer en manuel, choisir basse / haute** — via la **primitive** `vmc_entrer_mode_manuel`
+  appelée avec la `consigne`, **jamais** de commande directe des relais ni d'orchestration des helpers
+  de transition (§16.2, §16.4) ;
+- **restituer l'autorité à Arsenal** — via `vmc_revenir_mode_automatique`, geste explicite, aucune
+  reprise silencieuse ;
+- **relais L1/L2 du diagnostic** — **non interactifs** (lecture seule), la double écriture est fermée
+  (§16.6).
+
+Écrivain unique **préservé** : l'UI observe et déclenche les primitives, elle ne décide ni n'orchestre.
+
+### Réserve terrain — différée, non bloquante → veille domaine VMC
+
+Pilote VMC livré et validé en terrain sur T0→I puis sur l'UI. L'absence de matraquage est établie par
+conception et confirmée sur trois récupérations isolées ; les scénarios invasifs de rafale, flapping
+provoqué et défaut persistant n'ont pas été exercés et restent une **réserve terrain différée non
+bloquante**, réexaminée **uniquement sur occurrence naturelle ou symptôme réel**. À la clôture de C36,
+cette réserve est **portée en veille du domaine VMC** (§11), **ancrée au contrat** : la garde
+[`vmc.md`](../../../contrats/vmc.md) §16.5 interdit déjà tout bornage (compteur, temporisation de
+reprise) tant qu'un risque de matraquage n'est pas démontré.
 
 Aucun mécanisme de compteur ou de retry ne doit être ajouté sans preuve de matraquage.
-
-### Reste pour la clôture fonctionnelle — phase UI
-
-La finalité du pilote est de rendre la **reprise en main utilisateur réellement accessible**. Tant que
-l'UI ne permet pas de **voir l'autorité active**, **entrer en manuel**, **choisir basse / haute** et
-**restituer l'autorité à Arsenal**, le pilote n'est pas fonctionnellement complet. La **conception UI
-n'est pas engagée dans la présente passe** ; elle constitue le **prochain jalon fonctionnel**, à mener
-dans le respect de l'**écrivain unique** : l'UI **appelle les primitives** (`vmc_entrer_mode_manuel` /
-`vmc_revenir_mode_automatique`) et **ne commande jamais directement** les relais ni n'orchestre les
-helpers de transition (§16.2, §16.4 ; instancie le recensement UI §16.6).
 
 ---
 
@@ -268,6 +287,13 @@ C36 **n'est pas clôturable** tant que :
 > **Cohérence interne.** Ces critères sont **documentaires, donc solvables sans preuve terrain**
 > (doctrine [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md)).
 
+> **Satisfaction (2026-07-25).** Les quatre critères sont **tous satisfaits** : la contradiction est
+> nommée et tranchée au propriétaire du principe (§1, `principes_generaux.md` §2) ; la doctrine
+> `autorite_de_domaine.md` est rédigée, mergée (#571) et propriétaire unique de la titularité ; le
+> cadre commun et les protections impératives sont posés comme invariants sans sur-spécification ; la
+> méthode de sélection du domaine pilote et le recensement des contrats à réconcilier (Lot 4) sont
+> fournis. **C36 est clôturable** — cf. §11.
+
 ---
 
 ## 10. Renvois
@@ -279,3 +305,30 @@ C36 **n'est pas clôturable** tant que :
 - Séparation décision / action : [`separation_decision_action.md`](../../../architecture/03_doctrines/separation_decision_action.md)
 - Observation d'origine (asymétrie doctrinale) : [`c34_portefeuille_chantiers.md`](c34_portefeuille_chantiers.md) (A2)
 - Précédents de mode manuel : [`arrosage/11_mode_manuel_supervise.md`](../../../contrats/arrosage/11_mode_manuel_supervise.md) · [`voiture.md`](../../../contrats/voiture.md) (A1)
+
+---
+
+## 11. Clôture (2026-07-25)
+
+**C36 est clos.** Les critères §9 (doctrinaux) sont tous satisfaits, et la doctrine a été
+**démontrée de bout en bout par un pilote** : le domaine VMC a reçu contrat opposable (v2.6),
+runtime (échafaudage + bascule) et **UI de reprise en main**, l'ensemble **validé en terrain**
+(T0→I puis UI). Le pilote VMC est **fonctionnellement clos** ; il tient de manière durable la
+formule directrice « unicité de l'autorité, révocabilité de sa délégation ».
+
+**Ce que la clôture ne prétend pas.** C36 clôt l'**ouverture doctrinale et sa démonstration par
+pilote**, pas la généralisation transverse. Deux suites sont **essaimées hors C36** :
+
+- **`D-C36-L4` — réconciliation des contrats de souveraineté chauffage/climatisation.** Le Lot 4 a
+  **recensé** les contrats affirmant une souveraineté permanente d'Arsenal (chauffage
+  [`10_souverainete_execution.md`](../../../contrats/chauffage/10_souverainete_execution.md),
+  climatisation [`03_decision_canonique.md`](../../../contrats/climatisation/03_decision_canonique.md)) ;
+  leur **mise en cohérence** avec la doctrine est une **passe distincte, non ordonnancée**, portée
+  au registre en **③ À arbitrer / dormants** (réveil sur go opérateur). Elle n'était pas dans le
+  périmètre exécutoire de C36 (§3, §7 — recensement seulement).
+- **Veille domaine VMC — réserve terrain J.** Les scénarios invasifs (rafale, flapping provoqué,
+  défaut persistant) n'ont pas été exercés ; **non bloquants**, réexaminés **uniquement sur
+  occurrence naturelle ou symptôme réel**. Ancrage durable = garde contractuelle
+  [`vmc.md`](../../../contrats/vmc.md) §16.5 (aucun compteur/retry sans preuve de matraquage). La
+  trace ⑤ du registre pointe cette veille ; aucune ligne ① n'est créée (une veille n'est pas un
+  chantier).
