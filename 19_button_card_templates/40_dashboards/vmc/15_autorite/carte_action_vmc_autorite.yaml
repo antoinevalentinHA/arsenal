@@ -1,0 +1,94 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     VMC — Sélecteur d'autorité (pilote C36)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Un segment du SÉLECTEUR D'AUTORITÉ de la reprise en main
+#     (contrat vmc.md §16). Un tap exprime une INTENTION d'autorité en
+#     écrivant input_select.vmc_autorite_intention (porté par
+#     variables.intention : 'automatique' | 'manuel'). Une automation
+#     traduit cette intention en primitive supervisée
+#     (vmc_entrer_mode_manuel / vmc_revenir_mode_automatique) et ne
+#     transfère l'autorité que si l'intention diffère du titulaire réel.
+#     L'UI n'écrit JAMAIS le titulaire ni un relais : elle exprime une
+#     intention, le backend transfère.
+#
+# 🧱 NATURE
+#     - Template button-card, spécialisation de carte_base_v2
+#     - UI uniquement : écrit le porteur d'INTENTION (surface), jamais le
+#       titulaire (input_select.vmc_titulaire_autorite, écrivain unique).
+#
+# 🎨 SEMANTIQUE (palette de base — cf. ui/couleurs/02_palette.md ;
+#     coloré par l'AUTORITÉ RÉELLE (titulaire), pas par l'intention :
+#     le segment actif = le titulaire courant, jamais un vœu non abouti)
+#     - segment == titulaire 'automatique' -> 🔵 bleu   rgba(33,150,243,0.2)  (Arsenal pilote — technique)
+#     - segment == titulaire 'manuel'      -> 🟠 orange rgba(255,152,0,0.2)   (vous pilotez — hors auto, vigilance)
+#     - segment inactif                    -> ⚪ gris neutre rgba(158,158,158,0.2)
+#     Le rôle (Automatique / Manuel) est porté par l'ICÔNE + le libellé.
+#
+# 🔗 DEPENDANCES
+#     - entity   : input_select.vmc_autorite_intention (feedback d'état)
+#     - service  : input_select.select_option (écrit l'intention)
+#     - variables.intention    : 'automatique' | 'manuel'
+#     - variables.confirmation : texte de confirmation modale
+#     - lecture d'état : input_select.vmc_titulaire_autorite (surlignage
+#                        du segment actif — restitution d'état, aucune décision UI)
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation modale OBLIGATOIRE (reprise / restitution = geste, §16)
+#     - N'écrit JAMAIS input_select.vmc_titulaire_autorite en direct
+#     - N'expose JAMAIS de commande relais VMC
+#
+# 🔗 SATELLITE DE : carte_base_v2
+# ==========================================================
+
+carte_action_vmc_autorite:
+  template: carte_base_v2
+
+  show_state: false
+  show_icon: true
+  show_name: true
+  color_type: card
+
+  tap_action:
+    action: call-service
+    service: input_select.select_option
+    confirmation:
+      text: >
+        [[[
+          return variables?.confirmation
+            || "Changer l'autorité de la VMC ?";
+        ]]]
+    service_data:
+      entity_id: input_select.vmc_autorite_intention
+      option: '[[[ return variables.intention ]]]'
+
+  styles:
+    icon:
+      - color: '#111'
+    name:
+      - color: '#111'
+      - font-size: 12px
+      - font-weight: >
+          [[[
+            const tit = states['input_select.vmc_titulaire_autorite']
+              ? states['input_select.vmc_titulaire_autorite'].state : null;
+            return (tit === variables.intention) ? '700' : '400';
+          ]]]
+    card:
+      - background-color: >
+          [[[
+            const tit = states['input_select.vmc_titulaire_autorite']
+              ? states['input_select.vmc_titulaire_autorite'].state : null;
+            // Coloré par l'autorité RÉELLE (titulaire) : segment actif = titulaire.
+            //   automatique -> bleu (Arsenal pilote) ; manuel -> orange (vous pilotez).
+            //   inactif -> gris neutre. Le rôle est porté par l'icône + le libellé.
+            if (tit !== variables.intention) return 'rgba(158, 158, 158, 0.2)';
+            if (variables.intention === 'automatique') return 'rgba(33, 150, 243, 0.2)';
+            if (variables.intention === 'manuel') return 'rgba(255, 152, 0, 0.2)';
+            return 'rgba(158, 158, 158, 0.2)';
+          ]]]
