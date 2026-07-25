@@ -71,109 +71,64 @@ views:
                 automatique: rgba(33, 150, 243, 0.2)
                 manuel: rgba(255, 152, 0, 0.2)
 
-          # AUTOMATIQUE → proposer la prise de contrôle manuelle
-          - type: conditional
-            conditions:
-              - entity: input_select.clim_titulaire_autorite
-                state: automatique
-            card:
-              type: grid
-              columns: 2
-              square: false
-              cards:
-                - type: custom:button-card
-                  template: carte_action_clim_prise_manuelle
-                  entity: script.clim_entrer_mode_manuel
-                  name: Passer en manuel — arrêt
-                  icon: mdi:power
-                  variables:
-                    consigne: "off"
-                    confirmation: >-
-                      Prendre le contrôle manuel de la climatisation et l'arrêter ?
-                - type: custom:button-card
-                  template: carte_action_clim_prise_manuelle
-                  entity: script.clim_entrer_mode_manuel
-                  name: Passer en manuel — froid
-                  icon: mdi:snowflake
-                  variables:
-                    consigne: cool
-                    confirmation: >-
-                      Prendre le contrôle manuel de la climatisation en froid ?
-                - type: custom:button-card
-                  template: carte_action_clim_prise_manuelle
-                  entity: script.clim_entrer_mode_manuel
-                  name: Passer en manuel — déshum.
-                  icon: mdi:water-percent
-                  variables:
-                    consigne: dry
-                    confirmation: >-
-                      Prendre le contrôle manuel de la climatisation en déshumidification ?
-                - type: custom:button-card
-                  template: carte_action_clim_prise_manuelle
-                  entity: script.clim_entrer_mode_manuel
-                  name: Passer en manuel — chaud
-                  icon: mdi:fire
-                  variables:
-                    consigne: heat
-                    confirmation: >-
-                      Prendre le contrôle manuel de la climatisation en chaud ?
+          # Sélecteur de mode (tous régimes) — un tap prend / change la main.
+          # Le mode actif (= sensor.clim_mode_commande) est surligné (vert nominal
+          # / gras) par la carte ; le mode est porté par l'icône + le libellé.
+          - type: grid
+            columns: 4
+            square: false
+            cards:
+              - type: custom:button-card
+                template: carte_action_clim_mode
+                entity: script.clim_entrer_mode_manuel
+                name: Arrêt
+                icon: mdi:power
+                variables:
+                  consigne: "off"
+                  confirmation: >-
+                    Passer la climatisation à l'arrêt (contrôle manuel) ?
+              - type: custom:button-card
+                template: carte_action_clim_mode
+                entity: script.clim_entrer_mode_manuel
+                name: Froid
+                icon: mdi:snowflake
+                variables:
+                  consigne: cool
+                  confirmation: >-
+                    Passer la climatisation en froid (contrôle manuel) ?
+              - type: custom:button-card
+                template: carte_action_clim_mode
+                entity: script.clim_entrer_mode_manuel
+                name: Déshum.
+                icon: mdi:water-percent
+                variables:
+                  consigne: dry
+                  confirmation: >-
+                    Passer la climatisation en déshumidification (contrôle manuel) ?
+              - type: custom:button-card
+                template: carte_action_clim_mode
+                entity: script.clim_entrer_mode_manuel
+                name: Chaud
+                icon: mdi:fire
+                variables:
+                  consigne: heat
+                  confirmation: >-
+                    Passer la climatisation en chaud (contrôle manuel) ?
 
-          # MANUEL → changer le mode + restituer l'autorité
+          # MANUEL → restituer l'autorité à Arsenal (action secondaire)
           - type: conditional
             conditions:
               - entity: input_select.clim_titulaire_autorite
                 state: manuel
             card:
-              type: vertical-stack
-              cards:
-                - type: grid
-                  columns: 2
-                  square: false
-                  cards:
-                    - type: custom:button-card
-                      template: carte_action_clim_prise_manuelle
-                      entity: script.clim_entrer_mode_manuel
-                      name: Commander arrêt
-                      icon: mdi:power
-                      variables:
-                        consigne: "off"
-                        confirmation: >-
-                          Arrêter la climatisation (mode manuel) ?
-                    - type: custom:button-card
-                      template: carte_action_clim_prise_manuelle
-                      entity: script.clim_entrer_mode_manuel
-                      name: Commander froid
-                      icon: mdi:snowflake
-                      variables:
-                        consigne: cool
-                        confirmation: >-
-                          Passer la climatisation en froid (mode manuel) ?
-                    - type: custom:button-card
-                      template: carte_action_clim_prise_manuelle
-                      entity: script.clim_entrer_mode_manuel
-                      name: Commander déshum.
-                      icon: mdi:water-percent
-                      variables:
-                        consigne: dry
-                        confirmation: >-
-                          Passer la climatisation en déshumidification (mode manuel) ?
-                    - type: custom:button-card
-                      template: carte_action_clim_prise_manuelle
-                      entity: script.clim_entrer_mode_manuel
-                      name: Commander chaud
-                      icon: mdi:fire
-                      variables:
-                        consigne: heat
-                        confirmation: >-
-                          Passer la climatisation en chaud (mode manuel) ?
-                - type: custom:button-card
-                  template: carte_action_clim_restitution
-                  entity: script.clim_revenir_mode_automatique
-                  name: Rendre l'autorité à Arsenal
-                  icon: mdi:account-arrow-right
-                  variables:
-                    confirmation: >-
-                      Rendre le contrôle de la climatisation à Arsenal (mode automatique) ?
+              type: custom:button-card
+              template: carte_action_clim_restitution
+              entity: script.clim_revenir_mode_automatique
+              name: Rendre l'autorité à Arsenal
+              icon: mdi:account-arrow-right
+              variables:
+                confirmation: >-
+                  Rendre le contrôle de la climatisation à Arsenal (mode automatique) ?
 
           # Décision exécutoire (lecture seule, tous régimes)
           - type: custom:button-card
