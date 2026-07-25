@@ -18,10 +18,11 @@
 #     - Spécialisation de socle_decision_72
 #     - UI uniquement (le backend décide ; l'UI traduit)
 #
-# 🎨 SEMANTIQUE (palette officielle)
-#     - on  (Haute commandée)  -> 🟢 vert  rgba(76,175,80,0.2)
-#     - off (Basse commandée)  -> ⚪ gris neutre rgba(158,158,158,0.2)
-#     - indispo                -> ⚪ gris indispo rgba(158,158,158,0.1)
+# 🎨 SEMANTIQUE (palette de base, usage BINAIRE — cf. ui/couleurs/02_palette.md ;
+#     la vitesse est portée par le libellé + l'icône)
+#     - décision exécutoire SOUS CONTRÔLE MANUEL -> 🟢 vert rgba(76,175,80,0.2) (votre consigne active)
+#     - régime automatique                       -> ⚪ gris neutre rgba(158,158,158,0.2)
+#     - indéterminée (indispo)                   -> ⚪ gris indispo rgba(158,158,158,0.1) (prioritaire)
 #
 # 🚫 ANTI-FALLBACK (§16.2)
 #     Une décision exécutoire indisponible s'affiche « Indéterminée » :
@@ -59,9 +60,16 @@ carte_vmc_decision_commandee:
         })();
 
         const bg = (() => {
-          if (category === 'haute') return 'rgba(76, 175, 80, 0.2)';
-          if (category === 'basse') return 'rgba(158, 158, 158, 0.2)';
-          return 'rgba(158, 158, 158, 0.1)';
+          // Palette de base, usage BINAIRE :
+          //   🟢 vert = décision exécutoire SOUS CONTRÔLE MANUEL (votre consigne active)
+          //   ⚪ gris neutre = régime automatique (aucune reprise en main)
+          //   ⚪ gris indispo = indéterminée (prioritaire)
+          // La vitesse (basse/haute) est portée par le libellé.
+          if (category === 'indispo') return 'rgba(158, 158, 158, 0.1)';
+          const tit = states['input_select.vmc_titulaire_autorite']
+            ? states['input_select.vmc_titulaire_autorite'].state : null;
+          if (tit === 'manuel') return 'rgba(76, 175, 80, 0.2)';
+          return 'rgba(158, 158, 158, 0.2)';
         })();
 
         const stateText = (() => {

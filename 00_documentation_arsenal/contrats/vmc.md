@@ -1317,7 +1317,16 @@ consigne antérieure restaurée n'est exécutée transitoirement**. La primitive
 est **laissée telle quelle** et **ignorée** tant que le régime est automatique. La
 restitution est un **geste**, jamais un effet de bord.
 
-**L'UI appelle ces primitives ; elle n'orchestre pas la transition.**
+**L'UI appelle ces primitives ; elle n'orchestre pas la transition.** Le sélecteur
+d'autorité écrit un **porteur d'intention de surface** (`input_select.vmc_autorite_intention`,
+sans `initial:`) — **jamais** le titulaire en direct. Une automation **traduit** cette intention en
+primitive supervisée (`manuel` → entrée au régime auto courant ; `automatique` → restitution), **gardée
+« n'agir que si l'intention diffère du titulaire réel »** ; une seconde automation **re-synchronise**
+l'intention sur le titulaire réel (démarrage et transfert effectif). L'intention **ne transfère jamais
+l'autorité** : elle passe toujours par l'**écrivain unique** du titulaire (§16.2). Cette médiation est
+**anti-boucle** (synchro idempotente) et **anti-reprise silencieuse** (la traduction est gardée par le
+gate de stabilité : au démarrage, la synchro réaligne l'intention sur le titulaire restauré **avant**
+toute traduction).
 
 **Redémarrage / rechargement.** Le comportement est **déterministe** et **conforme
 au titulaire précédemment établi**, **sans reprise silencieuse** (renvoi §9.4) :
@@ -1391,6 +1400,21 @@ T0→I puis UI). Ce qui relevait d'une passe ultérieure est désormais en place
 - l'**exposition** de « qui décide », de la consigne et de la décision théorique,
   portée par la décision exécutoire et la conformité (§16.2, §16.5), **sans**
   capteur diagnostic agrégé supplémentaire — **livrée**.
+
+**Refonte UI (2026-07-25) — alignée sur le pilote climatisation (C37).** La section
+« Autorité & reprise en main » adopte l'information architecture validée en clim : **un sélecteur
+d'autorité en tête** (deux segments `Automatique`/`Manuel`, `carte_action_vmc_autorite`, écrit le
+porteur d'intention `input_select.vmc_autorite_intention`, confirmation modale) **et un contenu
+conditionnel au titulaire réel** — **manuel** → sélecteur de vitesse `{basse, haute}`
+(`carte_action_vmc_mode`, vitesse active surlignée) + **décision exécutoire** lecture seule
+(anti-fallback « Indéterminée ») ; **automatique** → **décision d'Arsenal** + section **Conditions
+actuelles** (humidité SDB, CO₂, air extérieur). Reprise **et** restitution passent par le même
+sélecteur (plus de bouton de restitution séparé) ; l'Historique reste visible dans les deux régimes.
+Médiation par **porteur d'intention** + deux automations (traduction gardée « intention ≠ titulaire »
++ gate de stabilité ; synchro idempotente) → anti-boucle, anti-reprise silencieuse ; l'UI n'écrit
+jamais le titulaire. **Doctrine couleurs** : sélecteur d'autorité 🔵 bleu (auto) / 🟠 orange (manuel)
+coloré par l'autorité réelle ; sélecteur de vitesse en usage binaire 🟢 vert (vitesse active en manuel)
+/ ⚪ gris neutre.
 
 **Recensement UI — résolu.** Les relais `switch.vmc_l1` / `switch.vmc_l2` affichés
 au dashboard de diagnostic sont **rendus strictement non interactifs** (lecture
