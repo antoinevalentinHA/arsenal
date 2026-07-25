@@ -150,7 +150,9 @@ L'absence de protection compresseur **matérielle** (`06_doctrine_blocages.md` �
 structurel ») est une **dette de sûreté préexistante**, indépendante du mode manuel. Elle mérite un
 **suivi propre** : évaluer si une protection court-cycle/défaut passe le **test d'universalité** (§09)
 — auquel cas elle serait **impérative, commune aux deux régimes**. **Non bloquante** pour C37 (D4).
-**À arbitrer** : ouvrir un item dédié (③ dormant ou backlog climatisation) — décision propriétaire.
+**Ouvert (2026-07-25)** comme chantier **C38** — ouverture documentaire
+[`chantier_protection_compresseur.md`](../../04_chantiers/climatisation/chantier_protection_compresseur.md)
+(① Actifs, P3 ; caractériser la protection interne Airstage/Fujitsu puis arbitrer).
 
 ---
 
