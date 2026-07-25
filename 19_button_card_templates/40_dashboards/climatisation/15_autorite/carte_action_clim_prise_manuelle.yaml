@@ -1,0 +1,66 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Action : prise / commande manuelle (autorité C37)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Prendre le contrôle manuel de la climatisation en une action
+#     ATOMIQUE et SUPERVISÉE (contrat 16 §16.4), en déléguant
+#     intégralement à la primitive backend script.clim_entrer_mode_manuel :
+#       valider la consigne (mode) → l'écrire → transférer l'autorité.
+#     Sert aussi, en régime déjà manuel, à changer le mode (appel
+#     idempotent). Spécialisation Autorité climatisation du socle
+#     d'action script confirmé.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_action_script_confirme
+#     - UI uniquement : n'écrit NI helper, NI relais / climate. Seule
+#       frontière = la primitive supervisée (écrivain unique, §16.2).
+#
+# 🔗 DEPENDANCES
+#     - entity   : script.clim_entrer_mode_manuel (feedback d'état)
+#     - service  : script.clim_entrer_mode_manuel
+#     - variables.consigne     : 'off' | 'cool' | 'dry' | 'heat' (transmise
+#                                telle quelle à la primitive, qui la valide ;
+#                                jamais d'écriture directe d'input_select ici)
+#     - variables.confirmation : texte de confirmation modale (surchargé au
+#                                site d'appel selon le mode)
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation modale OBLIGATOIRE (prise d'autorité / changement de
+#       mode, §16.4)
+#     - N'expose JAMAIS une commande native de climate.clim / switch.clim_power
+#     - La consigne (mode) est passée à la primitive, jamais écrite dans
+#       input_select.clim_consigne_manuelle par l'UI
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_action_clim_prise_manuelle
+#     entity: script.clim_entrer_mode_manuel
+#     name: Passer en manuel — froid
+#     icon: mdi:snowflake
+#     variables:
+#       consigne: cool
+#       confirmation: "Prendre le contrôle manuel de la climatisation en froid ?"
+#
+# 🔗 SATELLITE DE : socle_action_script_confirme
+# ==========================================================
+
+carte_action_clim_prise_manuelle:
+  template: socle_action_script_confirme
+
+  tap_action:
+    action: call-service
+    service: script.clim_entrer_mode_manuel
+    confirmation:
+      text: >
+        [[[
+          return variables?.confirmation
+            || "Prendre le contrôle manuel de la climatisation ?";
+        ]]]
+    service_data:
+      consigne: '[[[ return variables.consigne ]]]'

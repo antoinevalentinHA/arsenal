@@ -51,6 +51,159 @@ views:
             entity: sensor.clim_action_en_cours
 
           # ==================================================
+          # 🎛️ AUTORITÉ & REPRISE EN MAIN
+          # ==================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🎛️ Autorité & reprise en main
+
+          # Qui détient l'autorité (lecture seule)
+          - type: custom:button-card
+            template: carte_etat_interprete
+            entity: input_select.clim_titulaire_autorite
+            name: Autorité
+            icon: mdi:account-switch
+            variables:
+              libelles:
+                automatique: Arsenal (auto)
+                manuel: Vous (manuel)
+              couleurs:
+                automatique: rgba(33, 150, 243, 0.2)
+                manuel: rgba(255, 152, 0, 0.2)
+
+          # AUTOMATIQUE → proposer la prise de contrôle manuelle
+          - type: conditional
+            conditions:
+              - entity: input_select.clim_titulaire_autorite
+                state: automatique
+            card:
+              type: grid
+              columns: 2
+              square: false
+              cards:
+                - type: custom:button-card
+                  template: carte_action_clim_prise_manuelle
+                  entity: script.clim_entrer_mode_manuel
+                  name: Passer en manuel — arrêt
+                  icon: mdi:power
+                  variables:
+                    consigne: "off"
+                    confirmation: >-
+                      Prendre le contrôle manuel de la climatisation et l'arrêter ?
+                - type: custom:button-card
+                  template: carte_action_clim_prise_manuelle
+                  entity: script.clim_entrer_mode_manuel
+                  name: Passer en manuel — froid
+                  icon: mdi:snowflake
+                  variables:
+                    consigne: cool
+                    confirmation: >-
+                      Prendre le contrôle manuel de la climatisation en froid ?
+                - type: custom:button-card
+                  template: carte_action_clim_prise_manuelle
+                  entity: script.clim_entrer_mode_manuel
+                  name: Passer en manuel — déshum.
+                  icon: mdi:water-percent
+                  variables:
+                    consigne: dry
+                    confirmation: >-
+                      Prendre le contrôle manuel de la climatisation en déshumidification ?
+                - type: custom:button-card
+                  template: carte_action_clim_prise_manuelle
+                  entity: script.clim_entrer_mode_manuel
+                  name: Passer en manuel — chaud
+                  icon: mdi:fire
+                  variables:
+                    consigne: heat
+                    confirmation: >-
+                      Prendre le contrôle manuel de la climatisation en chaud ?
+
+          # MANUEL → changer le mode + restituer l'autorité
+          - type: conditional
+            conditions:
+              - entity: input_select.clim_titulaire_autorite
+                state: manuel
+            card:
+              type: vertical-stack
+              cards:
+                - type: grid
+                  columns: 2
+                  square: false
+                  cards:
+                    - type: custom:button-card
+                      template: carte_action_clim_prise_manuelle
+                      entity: script.clim_entrer_mode_manuel
+                      name: Commander arrêt
+                      icon: mdi:power
+                      variables:
+                        consigne: "off"
+                        confirmation: >-
+                          Arrêter la climatisation (mode manuel) ?
+                    - type: custom:button-card
+                      template: carte_action_clim_prise_manuelle
+                      entity: script.clim_entrer_mode_manuel
+                      name: Commander froid
+                      icon: mdi:snowflake
+                      variables:
+                        consigne: cool
+                        confirmation: >-
+                          Passer la climatisation en froid (mode manuel) ?
+                    - type: custom:button-card
+                      template: carte_action_clim_prise_manuelle
+                      entity: script.clim_entrer_mode_manuel
+                      name: Commander déshum.
+                      icon: mdi:water-percent
+                      variables:
+                        consigne: dry
+                        confirmation: >-
+                          Passer la climatisation en déshumidification (mode manuel) ?
+                    - type: custom:button-card
+                      template: carte_action_clim_prise_manuelle
+                      entity: script.clim_entrer_mode_manuel
+                      name: Commander chaud
+                      icon: mdi:fire
+                      variables:
+                        consigne: heat
+                        confirmation: >-
+                          Passer la climatisation en chaud (mode manuel) ?
+                - type: custom:button-card
+                  template: carte_action_clim_restitution
+                  entity: script.clim_revenir_mode_automatique
+                  name: Rendre l'autorité à Arsenal
+                  icon: mdi:account-arrow-right
+                  variables:
+                    confirmation: >-
+                      Rendre le contrôle de la climatisation à Arsenal (mode automatique) ?
+
+          # Décision exécutoire (lecture seule, tous régimes)
+          - type: custom:button-card
+            template: carte_clim_decision_commandee
+            entity: sensor.clim_mode_commande
+
+          # MANUEL → décision Arsenal théorique (information, non exécutoire)
+          - type: conditional
+            conditions:
+              - entity: input_select.clim_titulaire_autorite
+                state: manuel
+            card:
+              type: custom:button-card
+              template: carte_etat_interprete
+              entity: sensor.clim_target_mode
+              name: Décision Arsenal (théorique)
+              icon: mdi:thought-bubble
+              variables:
+                libelles:
+                  "off": Arrêt
+                  cool: Froid
+                  dry: Déshumidification
+                  heat: Chaud
+                couleurs:
+                  "off": rgba(158, 158, 158, 0.2)
+                  cool: rgba(33, 150, 243, 0.2)
+                  dry: rgba(255, 235, 59, 0.2)
+                  heat: rgba(255, 152, 0, 0.2)
+
+          # ==================================================
           # ⚖️ CONDITIONS — MODE AFFICHÉ
           # ==================================================
           - type: grid

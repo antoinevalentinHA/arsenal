@@ -1,0 +1,104 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Décision exécutoire (autorité de domaine, C37)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher la DÉCISION EXÉCUTOIRE UNIQUE de la climatisation
+#     (sensor.clim_mode_commande, contrat 16 §16.2) : le mode réellement
+#     commandé, tous régimes confondus (auto → décision automatique ;
+#     manuel → consigne). Lecture seule — aucune interaction, aucune
+#     décision locale (le backend décide ; l'UI traduit).
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_decision_72
+#     - UI uniquement
+#
+# 🎨 SEMANTIQUE (palette officielle)
+#     - cool (Froid)        -> 🔵 bleu   rgba(33,150,243,0.2)
+#     - dry  (Déshum.)      -> 🟡 jaune  rgba(255,235,59,0.2)
+#     - heat (Chaud)        -> 🟠 orange rgba(255,152,0,0.2)
+#     - off  (Arrêt)        -> ⚪ gris neutre rgba(158,158,158,0.2)
+#     - indispo             -> ⚪ gris indispo rgba(158,158,158,0.1)
+#
+# 🚫 ANTI-FALLBACK (§16.2)
+#     Une décision exécutoire indisponible s'affiche « Indéterminée » :
+#     JAMAIS traduite en un mode ni en 'off'. La décision automatique
+#     théorique reste portée par sensor.clim_target_mode.
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor.clim_mode_commande
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_clim_decision_commandee
+#     entity: sensor.clim_mode_commande
+#
+# 🔗 SATELLITE DE : socle_decision_72
+# ==========================================================
+
+carte_clim_decision_commandee:
+  template: socle_decision_72
+
+  name: Décision exécutoire
+  icon: mdi:thermostat
+
+  variables:
+    diag: |
+      [[[
+        const state = entity?.state;
+        const UNAV = ['unknown', 'unavailable', undefined, null, 'none', ''];
+
+        const category = (() => {
+          if (UNAV.includes(state)) return 'indispo';
+          if (state === 'cool') return 'cool';
+          if (state === 'dry')  return 'dry';
+          if (state === 'heat') return 'heat';
+          if (state === 'off')  return 'off';
+          return 'indispo';
+        })();
+
+        const bg = (() => {
+          if (category === 'cool') return 'rgba(33, 150, 243, 0.2)';
+          if (category === 'dry')  return 'rgba(255, 235, 59, 0.2)';
+          if (category === 'heat') return 'rgba(255, 152, 0, 0.2)';
+          if (category === 'off')  return 'rgba(158, 158, 158, 0.2)';
+          return 'rgba(158, 158, 158, 0.1)';
+        })();
+
+        const stateText = (() => {
+          if (category === 'cool') return 'Froid commandé';
+          if (category === 'dry')  return 'Déshumidification commandée';
+          if (category === 'heat') return 'Chaud commandé';
+          if (category === 'off')  return 'Arrêt commandé';
+          return 'Indéterminée';
+        })();
+
+        const labelText = (() => {
+          if (category === 'indispo') return 'Décision exécutoire indisponible';
+          return 'Mode imposé à l\'exécution';
+        })();
+
+        return { category, bg, stateText, labelText };
+      ]]]
+
+  state_display: |
+    [[[
+      return variables.diag.stateText;
+    ]]]
+
+  label: |
+    [[[
+      return variables.diag.labelText;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return variables.diag.bg;
+          ]]]
