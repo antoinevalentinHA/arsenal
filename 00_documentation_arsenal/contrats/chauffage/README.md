@@ -21,7 +21,7 @@
 Les contrats principaux suivent une numérotation décroissante d'abstraction :
 `00–01` fondateurs → `10–30` souveraineté et décision → `40–50` blocages et standby
 → `60–70` contexte absent/vacances et autorisation → `72–80` offsets et table canonique
-→ `90–92` sémantique et UI.
+→ `85` autorité de domaine (régimes automatique / manuel) → `90–92` sémantique et UI.
 
 Les **gaps volontaires** dans la numérotation (ex. : absence de `02`, `11`, `31`…)
 réservent des plages pour des contrats futurs.
