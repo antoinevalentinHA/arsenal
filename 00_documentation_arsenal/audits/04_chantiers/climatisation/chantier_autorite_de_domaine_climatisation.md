@@ -4,10 +4,10 @@
 |---|---|
 | **Chantier** | Appliquer la doctrine [`autorite_de_domaine.md`](../../../architecture/03_doctrines/autorite_de_domaine.md) au domaine **climatisation** : réconcilier la **souveraineté permanente d'Arsenal** — écrite en toutes lettres dans plusieurs contrats — avec la formule **« unicité de l'autorité, révocabilité de sa délégation »**, sur le patron du **pilote VMC** (contrat `vmc.md` §16). Exécution côté climatisation du dossier transverse **`D-C36-L4`**. |
 | **Domaine** | Climatisation. Dépendances doctrinales transverses (autorité de domaine, commandabilité). |
-| **Statut** | **OUVERT (2026-07-25) — OUVERTURE DOCUMENTAIRE.** L'ouverture **ne vaut ni** validation d'un diagnostic, **ni** décision de contractualiser, **ni** décision d'implémenter, **ni** décision que la climatisation *doive* recevoir un mode manuel. Elle **pose la contradiction**, **recense** les invariants de souveraineté à réconcilier, **cadre** les arbitrages par domaine (§5) et **inscrit le séquencement** avec les chantiers climatisation en cours (§6). **Aucun contrat, aucun runtime n'est modifié dans la présente passe.** |
+| **Statut** | **ACTIF (2026-07-25) — PIVOT TRANCHÉ, CADRAGE LIVRÉ.** L'ouverture documentaire a posé la contradiction et cadré les arbitrages. **§5.1 tranché : OUI**, la climatisation reçoit un **mode manuel supervisé**. Décisions D1–D8 **actées propriétaire** (surface = mode `{off,cool,dry,heat}` ; portée domaine entier ; anti-court-cycle par bornage décisionnel ; vetos contextuels **catégorie B** outrepassables en manuel ; durée indéfinie + expiration optionnelle ; action physique IR ≠ prise en main ; conformité runtime gated C30) — cf. cadrage [`cadrage_autorite_de_domaine_mode_manuel_climatisation.md`](../../02_conception/climatisation/cadrage_autorite_de_domaine_mode_manuel_climatisation.md). **Aucun contrat, aucun runtime modifié à ce stade** ; le contrat est la passe suivante (STOP-avant-écriture : validation du cadrage, en particulier D5, d'abord). |
 | **Priorité** | **P2** — enjeu structurant, sans risque technique immédiat en phase d'ouverture (documentaire). Suit l'observation A2 de C34 et la clôture de C36 (doctrine posée, pilote VMC démontré). |
 | **Ouvert le** | 2026-07-25. Promu depuis **`D-C36-L4`** (③ arbitrage dormant, essaimé de C36) sur go opérateur. |
-| **Prochain jalon** | **Trancher les arbitrages par domaine du §5** — au premier chef : *ce domaine auto-pur à forte contrainte de sûreté reçoit-il un mode manuel ?* Puis, seulement si oui : portée, surface de commande, modèle de durée, prérequis anti-court-cycle, vetos outrepassables. **Aucune écriture de contrat ni de runtime avant tranchage explicite** (STOP-avant-écriture). Séquencement obligatoire avec **C30** (§6). |
+| **Prochain jalon** | **Passe contrat** — amender les contrats climatisation (03/07/09/06/15) sur le patron VMC §16, selon la spécification §2 du cadrage, **hors runtime de conformité** (gated C30). **STOP-avant-écriture** : valider le cadrage (en particulier la classification des vetos D5, conséquence : refroidir fenêtre ouverte / en absence devient légitime en manuel) avant d'écrire le contrat. Puis runtime → UI → terrain. Item de sûreté **étage 1 compresseur** à arbitrer (cadrage §3). |
 | **Registre** | Chantier **C37** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). Branche **climatisation** de `D-C36-L4` ; la branche **chauffage** reste dormante en ③. **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **Portée.** Chantier **d'ouverture.** Aucun helper, aucune UI, aucun runtime, aucune modification
@@ -129,10 +129,16 @@ restitution / redémarrage (§16.4), protections impératives en trois niveaux (
 
 ---
 
-## 5. Arbitrages par domaine — à trancher (STOP-avant-écriture)
+## 5. Arbitrages par domaine — TRANCHÉS (2026-07-25)
 
-Ces arbitrages relèvent du **propriétaire**. Aucun contrat ni runtime n'est écrit avant leur
-tranchage. Ils instancient les questions ouvertes du §7 de
+> **✅ Tranchés et actés propriétaire.** Le pivot §5.1 = **OUI** ; les décisions **D1–D8** sont
+> consignées dans le cadrage
+> [`cadrage_autorite_de_domaine_mode_manuel_climatisation.md`](../../02_conception/climatisation/cadrage_autorite_de_domaine_mode_manuel_climatisation.md)
+> (surface, portée, anti-court-cycle, classification des vetos, durée, action physique,
+> séquencement C30). Les descriptions ci-dessous restent l'**énoncé** des arbitrages ; leur
+> **résolution** fait foi dans le cadrage.
+
+Ces arbitrages relevaient du **propriétaire**. Ils instancient les questions ouvertes du §7 de
 [`chantier_autorite_de_domaine.md`](../transverses/chantier_autorite_de_domaine.md).
 
 - **§5.1 — Pivot : la climatisation reçoit-elle un mode manuel ?** Domaine auto-pur à forte contrainte
