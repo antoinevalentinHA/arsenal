@@ -6,8 +6,10 @@
 #
 # 🎯 Rôle :
 #   Détecter une divergence persistante entre
-#   la décision centrale (sensor.clim_target_mode)
+#   la décision EXÉCUTOIRE (sensor.clim_mode_commande — auto ou consigne
+#   manuelle, autorité de domaine contrat 16 §16.5)
 #   et l’état réel observé de la climatisation.
+#   En régime automatique, clim_mode_commande == clim_target_mode.
 #
 # 🧱 Principe Arsenal :
 #   - Diagnostic PUR
@@ -21,7 +23,7 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.clim_target_mode
+        - sensor.clim_mode_commande
         - switch.clim_power
         - sensor.clim_mode_local
       for: "00:01:00"
@@ -39,12 +41,12 @@
       # cible conserve la sémantique contractuelle mergée (CAS 3 : une autre
       # valeur exploitable de target donne un verdict false, pas une abstention).
       availability: >
-        {{ states('sensor.clim_target_mode') not in ['unknown', 'unavailable', 'none', '']
+        {{ states('sensor.clim_mode_commande') not in ['unknown', 'unavailable', 'none', '']
            and states('switch.clim_power') in ['on', 'off']
            and states('sensor.clim_mode_local') in ['off', 'cool', 'dry', 'heat', 'auto', 'fan_only'] }}
 
       state: >
-        {% set target = states('sensor.clim_target_mode') %}
+        {% set target = states('sensor.clim_mode_commande') %}
         {% set power = states('switch.clim_power') %}
         {% set mode  = states('sensor.clim_mode_local') %}
 

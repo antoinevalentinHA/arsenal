@@ -91,7 +91,7 @@
     # La décision réclame toujours une action (cible sous contrat)
     - condition: template
       value_template: >
-        {{ states('sensor.clim_target_mode') in ['cool', 'dry', 'heat', 'off'] }}
+        {{ states('sensor.clim_mode_commande') in ['cool', 'dry', 'heat', 'off'] }}
 
     # Système stable et hors panne secteur
     - condition: state

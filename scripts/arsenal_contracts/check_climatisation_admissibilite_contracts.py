@@ -146,9 +146,16 @@ UI_CARTE_CLIM_SYNTHESE = (
 # Vocabulaire nominal figé de clim_mode_local (C30 A6a)
 CLIM_MODE_LOCAL_VOCAB = ["off", "cool", "dry", "heat", "auto", "fan_only"]
 
-# Opérandes exigés par le verdict de cohérence (C30 A6a)
+# Opérandes exigés par le verdict de cohérence (C30 A6a).
+# Depuis la bascule d'autorité de domaine (C37), l'opérande de décision de la
+# conformité est la DÉCISION EXÉCUTOIRE `sensor.clim_mode_commande` (auto ou
+# consigne manuelle) et non plus `sensor.clim_target_mode` seul. L'intention A6a
+# est préservée et renforcée : clim_mode_commande porte sa propre `availability`
+# (anti-fallback §16.2), donc s'abstenir sur une décision exécutoire indéterminée
+# (titulaire/consigne invalides) est natif. En régime auto, clim_mode_commande ==
+# clim_target_mode.
 COHERENCE_OPERANDES = [
-    "sensor.clim_target_mode",
+    "sensor.clim_mode_commande",
     "switch.clim_power",
     "sensor.clim_mode_local",
 ]

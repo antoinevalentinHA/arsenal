@@ -118,12 +118,17 @@
       entity_id:
         - climate.clim
         - switch.clim_power
-        - sensor.clim_target_mode
+        - sensor.clim_mode_commande
     - platform: homeassistant
       event: start
 
   variables:
-    target_mode: "{{ states('sensor.clim_target_mode') }}"
+    # Décision EXÉCUTOIRE (auto ou consigne manuelle, autorité de domaine §16.5).
+    # En régime automatique, clim_mode_commande == clim_target_mode.
+    # Si indisponible (unknown/unavailable), target_off est faux ⇒ le Guard
+    # s'ABSTIENT (ne force pas off) : abstention fail-safe conforme §16.2 —
+    # on ne coupe pas une unité active sur une décision momentanément indéterminée.
+    target_mode: "{{ states('sensor.clim_mode_commande') }}"
     clim_power: "{{ states('switch.clim_power') }}"
     clim_state: "{{ states('climate.clim') }}"
 

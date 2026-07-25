@@ -3,8 +3,10 @@
 #     Clim – Exécution mode cible
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Appliquer le mode cible issu de sensor.clim_target_mode
+#   Appliquer la décision EXÉCUTOIRE (sensor.clim_mode_commande — auto ou
+#   consigne manuelle selon le titulaire, autorité de domaine contrat 16 §16.2)
 #   de manière idempotente, sans aucune décision thermique.
+#   En régime automatique, clim_mode_commande == clim_target_mode.
 #
 # 🧱 PRINCIPE
 #   - Action pure
@@ -17,7 +19,7 @@
 #       3. post-condition KO    → échec d'exécution, reprise programmée
 #
 # 🔌 DÉPENDANCES
-#   - sensor.clim_target_mode
+#   - sensor.clim_mode_commande  (décision exécutoire ; auto ⇒ = clim_target_mode)
 #   - climate.clim
 #   - switch.clim_power
 #   - input_boolean.clim_execution_echec
@@ -40,7 +42,7 @@ clim_execution:
     # 1. LECTURE ET QUALIFICATION
     # ======================================================
     - variables:
-        target: "{{ states('sensor.clim_target_mode') }}"
+        target: "{{ states('sensor.clim_mode_commande') }}"
         hvac: "{{ states('climate.clim') }}"
         power: "{{ states('switch.clim_power') }}"
         retry_next: "{{ (states('counter.clim_execution_retry_count') | int(0)) + 1 }}"
