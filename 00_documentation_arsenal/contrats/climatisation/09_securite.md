@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — CLIMATISATION
 ## 08 — Sécurité — Guards & Watchdog
 
-**Version contrat :** v1.5
+**Version contrat :** v1.6
 
 ---
 
@@ -250,6 +250,19 @@ il produit toujours le même `sensor.clim_target_mode`.
 
 > Il n'existe qu'un seul résultat de décision : celui produit par la couche
 > d'Arbitrage selon la politique d'arbitrage active.
+
+> **Portée sous autorité de domaine — Guard/Watchdog comparés à la décision exécutoire
+> (v1.6).** Les invariants ci-dessus (Guard et Watchdog **ne modifient jamais**
+> `sensor.clim_target_mode` ; ré-assertion de la décision canonique) sont **conservés**. Sous le
+> régime **manuel** ([`16_autorite_de_domaine_climatisation.md`](16_autorite_de_domaine_climatisation.md)),
+> la référence de cohérence et de ré-assertion devient la **décision exécutoire** (§16.2) — en
+> automatique, elle **coïncide** avec `clim_target_mode` (comportement actuel **inchangé**) ; en
+> manuel, c'est la **consigne** du titulaire. Le Guard reste impératif dans les deux régimes : il
+> n'interdit que l'**incohérence** `(décision exécutoire, physique)`, jamais une commande manuelle
+> *cohérente*. Le Watchdog continue de **ne modifier aucune décision** — il n'en demande que la
+> ré-application. **Le *runtime* de ce rebranchement (conformité/Watchdog sur l'exécutoire) est
+> coordonné avec C30** (P1, [`chantier_convergence_decision_execution_climatisation.md`](../../audits/04_chantiers/climatisation/chantier_convergence_decision_execution_climatisation.md))
+> ; la présente clause en fixe la **cible contractuelle**, non le calendrier d'implémentation.
 
 ---
 

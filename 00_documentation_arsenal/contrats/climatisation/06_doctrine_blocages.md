@@ -153,3 +153,33 @@ La neutralisation de `clim_blocage_horaire_reel` est **globale**. HEAT et DRY ne
 ### Statut
 
 Doctrine **validée comme cible** (au sens de §8) et **implémentée au runtime en v16.1.0** : entités `input_boolean.clim_mode_nuit_actif` et `binary_sensor.clim_mode_nuit_effectif` créées, trois sélecteurs COOL requalifiés en régime absence pendant la plage nocturne, `clim_blocage_horaire_reel` neutralisé quand le mode nuit est armé, exposition UI livrée. **Validation terrain acquise le 2026-06-29** (bascule régime absence COOL + neutralisation du blocage horaire vérifiées en plage nocturne réelle). Chantier **C8 clos** au registre des chantiers (CI verte).
+
+---
+
+## 10. Blocages et autorité de domaine — catégorie A / catégorie B (C37)
+
+Le régime **manuel** d'autorité de domaine
+([`16_autorite_de_domaine_climatisation.md`](16_autorite_de_domaine_climatisation.md)) qualifie le
+rapport des blocages à la commande **du titulaire manuel**. Il **ne modifie pas** leur comportement
+en régime automatique.
+
+- **Tous les blocages contextualisés d'étage 2** (aération étage, horaire, fenêtres, absence
+  prolongée, vacances) et les **flags manuels** de coordination (poêle, aération post-chauffage) sont
+  des **politiques de confort, de sobriété ou de coordination** : **catégorie B** au sens de la
+  doctrine [`commandabilite.md`](../../architecture/03_doctrines/commandabilite.md). Ils sont donc
+  **outrepassables** par un **titulaire manuel** (§16.6). Ils restent **pleinement actifs en régime
+  automatique** et **exposés comme information** en manuel — jamais silencieusement supprimés.
+- **Aucun blocage de cette couche n'est une protection de sûreté** au sens du test d'universalité de
+  [`09_securite.md`](09_securite.md) : le §1 le pose déjà — un blocage de confort/sobriété est un
+  **paramètre de doctrine opérateur, pas une règle gravée**. En conséquence, **aucun** n'est
+  opposable au titulaire manuel.
+- **Cohérence avec les flags opérateur existants (§4, §7.4).** Un flag manuel (ex.
+  `blocage_clim_poele`) est une décision opérateur **ponctuelle** *au sein* du régime automatique ; le
+  régime manuel d'autorité de domaine en est la forme **titularisée et révocable** (délégation
+  durable). Les deux coexistent sans contradiction : le titulaire manuel décide directement le mode,
+  les flags restant l'expression opérateur dans le régime automatique. **Aucune garde supplémentaire**
+  n'est ajoutée à un flag manuel (invariant §7.4 conservé).
+
+*(Seul le Guard de cohérence système et l'impossibilité physique — catégorie A — priment sur la
+commande manuelle : ils relèvent de [`09_securite.md`](09_securite.md), pas de la présente couche de
+blocages.)*
