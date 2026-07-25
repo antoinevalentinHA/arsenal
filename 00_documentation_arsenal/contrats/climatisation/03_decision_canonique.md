@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — CLIMATISATION
 ## 03 — Décision canonique
 
-**Version contrat :** v1.3
+**Version contrat :** v1.4
 
 ---
 
@@ -35,6 +35,16 @@ La décision est :
 - **non persistant** — ne constitue pas une vérité système.
 
 Il ne constitue pas une vérité, mais uniquement la sortie canonique consommée par l'exécution.
+
+> **Portée de l'invariant « non modifiable manuellement » — régime automatique
+> (v1.4).** Cet invariant vaut pour la **décision automatique** : `sensor.clim_target_mode`
+> n'est jamais forcé à la main *en tant que décision d'Arsenal*. Sous le régime **manuel**
+> d'autorité de domaine ([`16_autorite_de_domaine_climatisation.md`](16_autorite_de_domaine_climatisation.md)),
+> l'utilisateur devient **titulaire** : la **décision exécutoire** dérive alors du titulaire et
+> de sa consigne, et `sensor.clim_target_mode` demeure **calculé et exposé** comme **décision
+> théorique non exécutoire**. L'invariant n'est donc **pas** contredit — `clim_target_mode`
+> reste non modifiable *en tant que sortie canonique automatique* ; c'est la **titularité de
+> l'exécutoire** qui devient révocable.
 
 ---
 

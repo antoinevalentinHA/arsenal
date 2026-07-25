@@ -3,7 +3,7 @@
 > Il n'existe qu'un seul résultat de décision : celui produit par l'Arbitrage selon la politique active.
 ## 06 — Arbitrage — Politique active
 
-**Version contrat :** v1.3
+**Version contrat :** v1.4
 
 ---
 
@@ -54,3 +54,12 @@ Il est exclusivement un résultat de repli de la politique d'arbitrage, lorsqu'a
 - Ne crée aucun besoin et ne modifie aucun état — sélectionne uniquement parmi les besoins admissibles existants
 
 > Il n'existe qu'un seul résultat de décision : `sensor.clim_target_mode`, déterminé exclusivement à partir des besoins admissibles et de la politique active.
+
+> **Portée — régime automatique (v1.4).** L'unicité du résultat de décision est **conservée** :
+> il n'existe **jamais** deux décisions exécutoires concurrentes. Ce que le régime **manuel**
+> d'autorité de domaine ([`16_autorite_de_domaine_climatisation.md`](16_autorite_de_domaine_climatisation.md))
+> introduit n'est **pas** un second décideur, mais un **titulaire révocable** : en automatique,
+> l'Arbitrage produit la décision exécutoire (`sensor.clim_target_mode`) ; en manuel, la décision
+> exécutoire est la **consigne du titulaire**, et l'Arbitrage continue de produire
+> `sensor.clim_target_mode` comme **décision théorique** (information). À chaque instant, un seul
+> résultat exécutoire, un seul titulaire.

@@ -1,8 +1,8 @@
 # CONTRAT ARSENAL — CLIMATISATION
 ## 15 — Politique d'absence COOL : veto Vacances immédiat, absence longue réglable, veto composite
 
-**Version contrat :** v1.0
-**Statut :** Normatif — **opposable** (Chantier C20, Lot 1).
+**Version contrat :** v1.1
+**Statut :** Normatif — **opposable** (Chantier C20, Lot 1 ; précisé C37, autorité de domaine).
 **Domaine :** Climatisation — mode COOL, couche autorisation/blocage.
 **Subordonné à :** [`06_doctrine_blocages.md`](06_doctrine_blocages.md) · [`04_entrees_metier.md`](04_entrees_metier.md)
 **Consommé par :** [`capteurs/autorisations/10_autorisations.md`](capteurs/autorisations/10_autorisations.md) (`binary_sensor.autorisation_clim_cool`)
@@ -154,6 +154,14 @@ veto_effectif (cible C21) = clim_veto_absence_vacances == on  ET NON preparation
 - **INV-VETO-7** — Écrivain unique de l'horodatage : seul `10030000000122` écrit `clim_debut_absence`.
 - **INV-VETO-8** — Fail-closed : aucune source indisponible ne produit une autorisation par défaut au titre de l'absence/Vacances.
 - **INV-VETO-9** — Frontière C21 : aucune préparation/exception créée par C20.
+- **INV-VETO-10** — Portée régime automatique (C37) : les invariants ci-dessus, notamment
+  l'**autorité unique** (INV-VETO-1) et le **veto immédiat** (INV-VETO-2), régissent le régime
+  **automatique**. Le veto COOL absence/Vacances est une **politique de sobriété** — **catégorie B**
+  au sens de [`commandabilite.md`](../../architecture/03_doctrines/commandabilite.md) : il est
+  **non opposable au titulaire manuel** ([`16_autorite_de_domaine_climatisation.md`](16_autorite_de_domaine_climatisation.md)
+  §16.6). En régime manuel, il reste **calculé et exposé** comme information (« Arsenal aurait
+  interdit le COOL : Vacances »), sans s'imposer à la commande de l'utilisateur ; `autorisation_clim_cool`
+  demeure l'autorité unique d'autorisation COOL **en automatique**.
 
 > **Vérification CI (proposition, Lot 2) :** checker dédié `check_climatisation_absence_cool_contracts.py` + workflow `contracts_climatisation_absence_cool.yml` (nom à confirmer) — le domaine COOL/absence n'a aujourd'hui **aucun** checker.
 
