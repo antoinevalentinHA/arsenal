@@ -5,7 +5,7 @@
 
 | Champ | Valeur |
 |---|---|
-| **Statut** | **Cible contractuelle — spécification opposable ; échafaudage livré (inerte), bascule + UI à venir (§85.8).** Définit les vérités, responsabilités et comportements attendus du régime manuel supervisé. Porteurs, décision exécutoire dérivée et primitives **livrés et inertes** ; l'application n'en dépend pas encore. |
+| **Statut** | **En vigueur — échafaudage + bascule livrés ; UI à venir (§85.8).** L'application (consommateur exécutoire unique) suit `sensor.chauffage_mode_commande` (auto **ou** consigne manuelle) via l'écrivain unique ; `decision_centrale` décide sans appeler l'exécutif ; iso-comportement en auto ; override `mode_confort_chauffage` migré (contexte panne système, non exécutoire en manuel). Reste l'UI de reprise en main, la validation terrain, la clôture. |
 | **Domaine** | Chauffage. Exécution **déléguée** au boiler bridge / chaudière (Netatmo) ; **aucun actionneur physique Arsenal**. Commande **mono-zone** (une consigne unique de domaine). |
 | **Instancie** | Doctrine transverse [`autorite_de_domaine.md`](../../architecture/03_doctrines/autorite_de_domaine.md). |
 | **Patrons** | Pilotes VMC [`vmc.md`](../vmc.md) §16 et climatisation [`16_autorite_de_domaine_climatisation.md`](../climatisation/16_autorite_de_domaine_climatisation.md) §16 (C37, terrain validé). |
@@ -144,6 +144,12 @@ décision exécutoire **indisponible** (§85.2). Un porteur d'intention/override
   observabilité** (fausse sécurité, proscrite). L'absence d'un tel étage côté Arsenal est **assumée et
   justifiée** — même raisonnement que la dérogation compresseur climatisation (C38). Réouverture
   **uniquement** sur exposition réelle d'un chemin de commande direct ou d'un symptôme de court-cycle.
+- **Protection batterie critique — réserve séparée (Décision A).** Le forçage confort de panne secteur
+  (`mode_confort_chauffage`, §85.6) est une **politique** conditionnelle (batterie non faible, présence),
+  **non** une protection impérative, et **non opposable** au titulaire manuel. Une éventuelle protection
+  **réellement impérative** liée à un état **critique** de batterie devra être **démontrée et
+  contractualisée séparément** (test d'universalité, niveau (a)) ; elle ne doit pas être confondue avec
+  le forçage confort actuel.
 
 ---
 
@@ -169,13 +175,21 @@ ouverte, pendant une aération ou en présence du poêle : ce sont des **politiq
 automatique** ; elles ne sont **pas supprimées**, seulement **non opposables** au titulaire manuel.
 Elles demeurent **exposées** comme information (« Arsenal aurait réduit : fenêtre ouverte »).
 
-> **Override `mode_confort_chauffage` — englobé (D4).** L'actuel forçage `comfort` souverain
-> (`input_boolean.mode_confort_chauffage`, évalué niveau 0 avant la table — [`30`](30_decision_centrale.md) §4,
-> [`80`](80_table_decision_canonique.md) §3.4) est un levier humain **non titularisé**. Le présent
-> régime manuel en est la forme **titularisée et révocable** : « forcer confort » devient **« prendre
-> la main en régime confort »**. Le rôle niveau-0 de l'override est **retiré** au profit du modèle
-> titulaire (un seul levier, une seule autorité), avec **équivalence fonctionnelle préservée** — la
-> bascule effectue cette migration (§85.8).
+> **Override `mode_confort_chauffage` — DOUBLE rôle, migration nuancée (D4, précisé à la bascule).**
+> `input_boolean.mode_confort_chauffage` (évalué niveau 0 avant la table — [`30`](30_decision_centrale.md) §4,
+> [`80`](80_table_decision_canonique.md) §3.4) porte **deux** rôles : (a) un **levier utilisateur**
+> (ancien toggle UI « Confort forcé ») et (b) un **contexte système de panne secteur** (écrit par
+> `activation_mode_panne` / `desactivation_mode_panne`).
+> - Le **rôle utilisateur (a)** est **retiré** au profit du modèle titulaire : « forcer confort »
+>   devient **« prendre la main en régime confort »** (le toggle UI est supprimé). Un seul levier
+>   d'autorité utilisateur subsiste : le titulaire manuel.
+> - Le **rôle système (b)** est **conservé** : `mode_confort_chauffage` reste une **entrée de la
+>   décision automatique** (niveau 0), **non exécutoire en régime manuel** (le titulaire manuel reste
+>   souverain — l'exécutoire ignore la décision auto en manuel, §85.2). Une **réconciliation au
+>   démarrage** (domaine panne) purge tout résidu `on` d'un ancien forçage utilisateur hors contexte
+>   de panne réel, garantissant qu'après bascule les seuls producteurs sont les mécanismes de panne.
+> Ainsi il ne subsiste **aucune voie d'autorité utilisateur concurrente**, et aucun forçage confort
+> résiduel invisible ne survit à la bascule.
 
 ---
 
@@ -201,24 +215,37 @@ Elles demeurent **exposées** comme information (« Arsenal aurait réduit : fen
 
 ## 85.8 État de l'implémentation
 
-**Cible contractuelle — échafaudage + bascule + UI à venir.**
+**Cible contractuelle — échafaudage + bascule livrés ; UI à venir.**
 
-- **Livré (échafaudage — inerte).** Porteur du titulaire `input_select.chauffage_titulaire_autorite`
+- **Livré (échafaudage).** Porteur du titulaire `input_select.chauffage_titulaire_autorite`
   (`automatique`/`manuel`, sans `initial:`) ; porteur de la consigne manuelle
   `input_select.chauffage_consigne_manuelle` (`confort`/`reduite`, sans `initial:`) ; **décision
   exécutoire dérivée** `sensor.chauffage_mode_commande` (anti-fallback strict via `availability` : en
   auto = `chauffage_mode_session` ; en manuel = consigne manuelle ; sinon indisponible, §85.2) ;
   primitives supervisées `script.chauffage_entrer_mode_manuel` (atomique : consigne avant autorité) et
-  `script.chauffage_revenir_mode_automatique`. **Inerte sur l'exécution** : aucun consommateur ne lit
-  encore `chauffage_mode_commande` (le pipeline existant Décision Centrale → `mode_session` →
-  `chauffage_appliquer_consigne` reste en vigueur). Le porteur d'intention UI + automations de médiation
-  (§85.4) arrivent avec l'UI.
-- **À livrer (bascule).** L'**application** consomme la **décision exécutoire** (auto **ou** consigne
-  manuelle) ; la **conformité transactionnelle** (ACK + retry borné, `11_automations/chauffage/retry_transactionnel/*`)
-  se compare / rejoue la **décision exécutoire**, non la seule intention machine mémorisée (D9) ;
-  **iso-comportement en auto** à démontrer (décision exécutoire == décision automatique) ; **migration
-  de l'override** `mode_confort_chauffage` vers le modèle titulaire (D4) ; **extension du numerus
-  clausus CH-4** à la primitive manuelle.
+  `script.chauffage_revenir_mode_automatique`.
+- **Livré (bascule).** L'**application** est portée par `automation.chauffage_application`
+  (`execution_mode_commande.yaml`), **consommateur exécutoire unique** de `sensor.chauffage_mode_commande`
+  (auto **ou** consigne manuelle) via l'écrivain unique `script.chauffage_appliquer_consigne`.
+  `decision_centrale` **décide** (raison → `input_text.chauffage_raison`, puis `mode_session`) et **émet**
+  l'événement `chauffage_execution_requise` — il **n'appelle plus** le script exécutif. Le **retry** et
+  `modification_consigne` rejouent désormais la **décision exécutoire** (`mode_commande`). **Numerus
+  clausus CH-4** : `decision_centrale` retiré, `execution_mode_commande` ajouté (net inchangé, 3 appelants).
+  **Iso-comportement en auto** : `mode_commande == mode_session` ; l'événement est émis exactement
+  quand `decision_centrale` appliquerait (mêmes gardes), drift-correction préservée.
+- **Convergence au démarrage (§85.4).** `automation.chauffage_application` s'exécute au front
+  `systeme_stable off→on` en **séquence ordonnée** : barrière d'attente de la réconciliation du résidu
+  `mode_confort_chauffage` (automation panne dédiée) → décision (recalcul en auto / raison
+  `commande_manuelle` en manuel) → **application unique** de la décision du titulaire restauré
+  (idempotence). Le trigger `systeme_stable` de `decision_centrale_trigger` est **retiré** (reprise-boot
+  possédée par l'orchestrateur, pas de double-run).
+- **Migration de l'override (D4).** Toggle UI « Confort forcé » **retiré** ; `mode_confort_chauffage`
+  demeure un **contexte système de panne** (§85.6) ; réconciliation au démarrage purgeant tout résidu
+  utilisateur hors panne. **Aucune voie d'autorité utilisateur concurrente** ne subsiste.
+- **Modèle de raison.** `input_text.chauffage_raison` (réutilisé, **aucun consommateur** — l'UI lit
+  `sensor.chauffage_raison_calculee`, inchangé) porte la raison de la **décision courante** : écrite
+  atomiquement **avant** la vérité qui fait évoluer `mode_commande` (auto) ; dérivée `commande_manuelle`
+  en manuel. Appariement au boot garanti (recalcul en auto, dérivation en manuel).
 - **Différence structurelle avec la climatisation — allègement.** Le chauffage a **déjà** un écrivain
   d'exécution **unique** (`script.chauffage_appliquer_consigne`, numerus clausus) et **aucun watchdog
   ré-asserteur continu** à démanteler (conformité **transactionnelle**, pas de ré-assertion permanente

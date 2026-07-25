@@ -1,0 +1,71 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Panne secteur – Réconciliation du résidu confort au démarrage
+#
+#  ID : 10040000000005
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Neutraliser au démarrage tout état résiduel `on` de
+#     `input_boolean.mode_confort_chauffage` qui NE proviendrait PAS
+#     d'un contexte de panne secteur réel.
+#
+#     Contexte (bascule C39, contrat chauffage 85 §85.6) : l'ancien
+#     override utilisateur « Confort forcé » est retiré de l'UI. Le
+#     signal `mode_confort_chauffage` devient un CONTEXTE SYSTÈME de
+#     panne secteur (entrée de la décision automatique), non exécutoire
+#     en régime manuel (l'autorité manuelle reste souveraine, Décision A).
+#     Un état `on` restauré au reboot, hérité d'un ancien forçage
+#     utilisateur, forcerait le confort de façon invisible : cette
+#     automation le purge de manière déterministe.
+#
+#  ⚙️ PRINCIPE
+#
+#     - Panne secteur réellement active (`panne_secteur_active` on ou
+#       coupure présente) → signal CONSERVÉ (la panne en est propriétaire).
+#     - Sinon, si `mode_confort_chauffage` est encore `on` → NEUTRALISÉ.
+#
+#     Après cette réconciliation, les SEULS producteurs de
+#     `mode_confort_chauffage` sont les mécanismes de panne secteur
+#     (activation / désactivation) et la présente réconciliation.
+#     Aucun forçage confort résiduel invisible ne survit à la bascule.
+#
+#  🔗 ORDONNANCEMENT
+#
+#     Déclenchée au front `systeme_stable off→on`, immédiate.
+#     automation.chauffage_application (convergence boot) ATTEND cette
+#     réconciliation (barrière) avant de décider puis d'appliquer.
+# ==========================================================
+
+- id: "10040000000005"
+  alias: "Panne - Réconciliation résidu confort chauffage au démarrage"
+  description: >
+    Purge au démarrage tout résidu on de input_boolean.mode_confort_chauffage
+    hors contexte de panne secteur réel (ancien override utilisateur retiré,
+    bascule C39). Conserve le signal si la panne est active.
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      from: "off"
+      to: "on"
+
+  condition:
+    # Pas de panne secteur réelle en cours
+    - condition: state
+      entity_id: input_boolean.panne_secteur_active
+      state: "off"
+    - condition: state
+      entity_id: binary_sensor.coupure_secteur
+      state: "off"
+    # Résidu à purger
+    - condition: state
+      entity_id: input_boolean.mode_confort_chauffage
+      state: "on"
+
+  action:
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.mode_confort_chauffage

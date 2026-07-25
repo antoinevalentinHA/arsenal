@@ -177,13 +177,14 @@
       id: "chauffage_application_en_cours_off"
 
     # ======================================================
-    # 🚀 REPRISE SYSTEME — STABILISATION HOME ASSISTANT
+    # 🚀 REPRISE SYSTEME — retirée (bascule C39).
+    #     La convergence au démarrage (front systeme_stable off→on) est
+    #     désormais possédée par automation.chauffage_application, qui
+    #     ordonne réconciliation résidu → décision → application unique
+    #     (contrat 85 §85.4). Conserver ici un trigger systeme_stable
+    #     re-lancerait decision_centrale en parallèle de l'orchestrateur
+    #     (double-run, ordre non garanti).
     # ======================================================
-
-    - platform: state
-      entity_id: input_boolean.systeme_stable
-      to: "on"
-      id: "systeme_stable"
 
   condition:
 

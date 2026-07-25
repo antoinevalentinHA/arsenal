@@ -53,12 +53,18 @@ Valeurs possibles : `comfort`, `neutre`, `reduced`.
 
 ### 3.4 Sources d'autorisation amont
 
-**Override opérateur** via `input_boolean.mode_confort_chauffage` :
+**Override** via `input_boolean.mode_confort_chauffage` :
 
-- constitue une commande opérateur souveraine,
-- impose la décision finale `comfort` indépendamment des blocages hiérarchiques et des règles d'abstention,
+- impose la décision **automatique** finale `comfort` indépendamment des blocages hiérarchiques et des règles d'abstention,
 - est évalué avant toute application de la table décisionnelle standard,
 - ne contourne jamais les sécurités matérielles hors périmètre Arsenal.
+
+> **Depuis C39 (autorité de domaine, [`85_autorite_de_domaine_chauffage.md`](85_autorite_de_domaine_chauffage.md) §85.6).**
+> `mode_confort_chauffage` n'est **plus un levier opérateur** : c'est un **contexte système de panne
+> secteur** (entrée de la décision **automatique** ci-dessus). Le levier opérateur de reprise en main
+> est désormais l'**autorité manuelle** (titulaire + régime `{confort, réduit}`), et la décision
+> automatique — override compris — est **non exécutoire en régime manuel** (§85.2). La commande
+> manuelle « confort » ne passe donc plus par ce booléen mais par le titulaire.
 
 **Inhibition géofencing** (`input_boolean.chauffage_inhibition_geofencing`) :
 

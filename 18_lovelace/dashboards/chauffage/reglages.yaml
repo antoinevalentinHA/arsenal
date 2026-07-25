@@ -34,26 +34,11 @@ views:
           - !include ../../includes/alerte_configuration_invalide.yaml
 
           # ==================================================
-          # 🔥 TOUJOURS VISIBLE — MODE CONFORT FORCÉ
-          # --------------------------------------------------
-          # Forçage opérateur : c'est le geste le plus fréquent
-          # de la page et il porte une confirmation. Il reste
-          # accessible quelle que soit la section affichée.
-          # ==================================================
-          - type: custom:button-card
-            template: section_header
-            name: 🔥 Mode Confort forcé
-
-          - type: custom:button-card
-            template: socle_toggle
-            entity: input_boolean.mode_confort_chauffage
-            name: Confort forcé
-            icon: mdi:radiator
-            tap_action:
-              action: toggle
-              confirmation:
-                text: "⚠️ Forcer le mode Confort chauffage ?"
-
+          # 🔥 « Mode Confort forcé » — RETIRÉ (bascule C39).
+          #    L'override utilisateur devient l'autorité manuelle (contrat 85) :
+          #    la prise en main confort passe désormais par le sélecteur
+          #    d'autorité + le régime {confort, réduit}. `mode_confort_chauffage`
+          #    n'est plus un levier utilisateur (contexte système panne seul).
           # ==================================================
           # 🔎 SÉLECTEUR DE CONSULTATION (modèle Palmarès)
           # --------------------------------------------------

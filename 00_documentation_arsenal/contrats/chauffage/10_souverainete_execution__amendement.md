@@ -64,7 +64,7 @@ La couche d'Application admet exactement **deux natures** d'appelant :
 Les seuls invocateurs autorisés de `script.chauffage_appliquer_consigne` sont :
 
 <!-- R-CALL-1:ALLOWLIST:BEGIN -->
-- `10_scripts/chauffage/decision_centrale.yaml`
+- `11_automations/chauffage/execution_mode_commande.yaml`
 - `11_automations/chauffage/retry_transactionnel/declenchement.yaml`
 - `11_automations/chauffage/modification_consigne.yaml`
 <!-- R-CALL-1:ALLOWLIST:END -->
@@ -73,9 +73,9 @@ Classification :
 
 | Appelant | Nature | Mandat |
 |---|---|---|
-| `10_scripts/chauffage/decision_centrale.yaml` | Autorité décisionnelle | Décide le régime et l'applique (`raison = {{ reason }}`). |
-| `11_automations/chauffage/retry_transactionnel/declenchement.yaml` | Ré-applicateur borné | Rejoue l'intention sessionnelle `input_select.chauffage_mode_session` (`raison = retry_transactionnel`). |
-| `11_automations/chauffage/modification_consigne.yaml` | Ré-applicateur borné | Rejoue le mode actif `input_select.chauffage_dernier_mode_decide` sur modification de consigne (`raison = reapplication_consigne_*`). |
+| `11_automations/chauffage/execution_mode_commande.yaml` | Exécuteur de la décision exécutoire | Applique `sensor.chauffage_mode_commande` (auto **ou** consigne manuelle, §85.2). Propriétaire du lancement de transaction (idempotence, annulation retry). `decision_centrale` **décide** (raison + `mode_session`) mais **n'appelle plus** l'écrivain (bascule C39, §85.2). |
+| `11_automations/chauffage/retry_transactionnel/declenchement.yaml` | Ré-applicateur borné | Rejoue la **décision exécutoire** `sensor.chauffage_mode_commande` (`raison = retry_transactionnel`). |
+| `11_automations/chauffage/modification_consigne.yaml` | Ré-applicateur borné | Rejoue la °C du régime **exécutoire** `sensor.chauffage_mode_commande` sur modification de consigne (`raison = reapplication_consigne_*`). |
 
 > Le bloc délimité par les sentinelles `R-CALL-1:ALLOWLIST` est la **source
 > d'autorité** de l'invariant CI : la constante `APPELANTS_AUTORISES` de

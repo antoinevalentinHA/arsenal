@@ -333,7 +333,19 @@ chauffage_decision_centrale:
           sequence:
 
             # --------------------------------------------------
-            # Memoire d'intention sessionnelle chauffage
+            # Raison AVANT la décision exécutoire (appariement atomique,
+            # contrat 85 §85.4). input_text.chauffage_raison porte la raison
+            # de la décision courante (source de la raison exécutoire en auto).
+            # --------------------------------------------------
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.chauffage_raison
+              data:
+                value: "{{ reason }}"
+
+            # --------------------------------------------------
+            # Memoire d'intention sessionnelle chauffage (= décision théorique
+            # auto ; devient exécutoire via sensor.chauffage_mode_commande)
             # --------------------------------------------------
             - service: input_select.select_option
               target:
@@ -342,24 +354,14 @@ chauffage_decision_centrale:
                 option: "confort"
 
             # --------------------------------------------------
-            # Annulation retry chauffage en attente
+            # Signal d'exécution — l'application (décision exécutoire) est
+            # déléguée à automation.chauffage_application (écrivain unique,
+            # CH-4). Émis même si mode_session est inchangé, pour préserver
+            # l'iso-comportement (decision_centrale décide d'appliquer →
+            # l'application applique). decision_centrale N'APPELLE PLUS le
+            # script exécutif (§85.2, bascule C39).
             # --------------------------------------------------
-            - service: input_boolean.turn_off
-              target:
-                entity_id: input_boolean.chauffage_retry_pending
-
-            - service: timer.cancel
-              target:
-                entity_id: timer.chauffage_retry
-
-            # --------------------------------------------------
-            # Execution chauffage
-            # --------------------------------------------------
-            - alias: "Activer chauffage confort"
-              service: script.chauffage_appliquer_consigne
-              data:
-                consigne: "{{ states('input_select.chauffage_mode_session') }}"
-                raison: "{{ reason }}"
+            - event: chauffage_execution_requise
 
             # --------------------------------------------------
             # Anti-rebond post-decision
@@ -378,6 +380,15 @@ chauffage_decision_centrale:
           sequence:
 
             # --------------------------------------------------
+            # Raison AVANT la décision exécutoire (appariement atomique, §85.4)
+            # --------------------------------------------------
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.chauffage_raison
+              data:
+                value: "{{ reason }}"
+
+            # --------------------------------------------------
             # Memoire d'intention sessionnelle chauffage
             # --------------------------------------------------
             - service: input_select.select_option
@@ -387,23 +398,11 @@ chauffage_decision_centrale:
                 option: "reduite"
 
             # --------------------------------------------------
-            # Annulation retry chauffage en attente
+            # Signal d'exécution — application déléguée à
+            # automation.chauffage_application (écrivain unique, CH-4).
+            # decision_centrale N'APPELLE PLUS le script exécutif (§85.2).
             # --------------------------------------------------
-            - service: input_boolean.turn_off
-              target:
-                entity_id: input_boolean.chauffage_retry_pending
-
-            - service: timer.cancel
-              target:
-                entity_id: timer.chauffage_retry
-
-            # --------------------------------------------------
-            # Execution chauffage
-            # --------------------------------------------------
-            - service: script.chauffage_appliquer_consigne
-              data:
-                consigne: "{{ states('input_select.chauffage_mode_session') }}"
-                raison: "{{ reason }}"
+            - event: chauffage_execution_requise
 
             # --------------------------------------------------
             # Anti-rebond post-decision
