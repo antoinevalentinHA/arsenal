@@ -4,10 +4,10 @@
 |---|---|
 | **Chantier** | Appliquer la doctrine [`autorite_de_domaine.md`](../../../architecture/03_doctrines/autorite_de_domaine.md) au domaine **chauffage** : réconcilier la **souveraineté machine permanente d'Arsenal** — écrite en toutes lettres dans plusieurs contrats — avec la formule **« unicité de l'autorité, révocabilité de sa délégation »**, sur le patron des pilotes **VMC** (contrat `vmc.md` §16) et **climatisation** (contrat `16_…` §16, C37, terrain validé). Exécution côté chauffage du dossier transverse **`D-C36-L4`** (branche restée dormante après la promotion de la branche climatisation en C37). |
 | **Domaine** | Chauffage. Dépendances doctrinales transverses (autorité de domaine, commandabilité). |
-| **Statut** | **OUVERTURE (2026-07-25) — documentaire.** Nomme la contradiction (§1), recense les invariants de souveraineté à réconcilier, cadre les arbitrages propriétaires (§5) et le séquencement (§6). **Aucun contrat, aucun helper, aucun runtime, aucune UI, aucun checker modifié à ce stade.** Le pivot §5.1 (le chauffage reçoit-il un mode manuel ?) et la surface §5.2 restent **à trancher par le propriétaire**. |
+| **Statut** | **ACTIF (2026-07-25) — CADRAGE ACTÉ.** Ouverture (contradiction §1, invariants, arbitrages §5, séquencement §6) **puis cadrage** : pivot §5.1 = **OUI**, surface = **régime binaire `{confort, réduit}`** (D2), portée = **domaine entier** (D3, VP8 préservé), override `mode_confort_chauffage` **englobé** (D4) ; décisions dérivées D5–D9 (blocages cat A/B, durée, action physique, anti-court-cycle par dérogation, séquencement) proposées, cf. [`cadrage_autorite_de_domaine_mode_manuel_chauffage.md`](../../02_conception/chauffage/cadrage_autorite_de_domaine_mode_manuel_chauffage.md). **Aucun contrat, aucun runtime, aucune UI modifié à ce stade.** |
 | **Priorité** | **P2** — enjeu structurant, sans risque technique immédiat en phase d'ouverture (documentaire). Suit la clôture de C37 (doctrine posée, pilotes VMC + clim démontrés de bout en bout). |
 | **Ouvert le** | 2026-07-25. Promu depuis **`D-C36-L4`** (③ arbitrage dormant, essaimé de C36) sur go opérateur. |
-| **Prochain jalon** | **Trancher le pivot §5.1** et, s'il est positif, les arbitrages §5.2–§5.8 (surface, portée, sort de l'override existant `mode_confort_chauffage`, catégorisation des blocages, durée, action physique, anti-court-cycle). Puis, selon le tranchage : dérogation documentée (§5.1 négatif) **ou** passe de cadrage contractuel (§5.1 positif) → contrat → runtime → UI → validation terrain. |
+| **Prochain jalon** | **Passe contrat** : écrire `chauffage/85_autorite_de_domaine_chauffage.md` (numéro proposé) + amendements `10`(+CH-4)/`30`/`40`/`70`/`80`, sur le patron VMC/clim §16 et les décisions D1–D9 du cadrage. Puis runtime (échafaudage + bascule) → UI (patron d'autorité d'intention + affichage conditionnel) → validation terrain → clôture fonctionnelle. |
 | **Registre** | Chantier **C39** — ① Actifs (ouverture), cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). Branche **chauffage** de `D-C36-L4` (la branche **climatisation** a été promue en **C37**, close). **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **Portée.** Chantier **d'ouverture.** Aucun helper, aucune UI, aucun runtime, aucune modification
@@ -153,7 +153,15 @@ difficultés neuves, non héritées des pilotes :**
 
 ---
 
-## 5. Arbitrages par domaine — À TRANCHER (propriétaire)
+## 5. Arbitrages par domaine — TRANCHÉS (2026-07-25)
+
+> **✅ Tranchés.** Pivot §5.1 = **OUI** ; surface §5.2 = **régime binaire `{confort, réduit}`** ;
+> portée §5.3 = **domaine entier** ; override §5.4 = **englobé par le mode manuel**. Les décisions
+> **D1–D9** (dont la classification des blocages, la durée, l'anti-court-cycle par dérogation) sont
+> consignées dans le cadrage
+> [`cadrage_autorite_de_domaine_mode_manuel_chauffage.md`](../../02_conception/chauffage/cadrage_autorite_de_domaine_mode_manuel_chauffage.md).
+> Les descriptions ci-dessous restent l'**énoncé** des arbitrages ; leur **résolution** fait foi dans
+> le cadrage.
 
 Ces arbitrages relèvent du **propriétaire**. Ils instancient les questions ouvertes du §7 de
 [`chantier_autorite_de_domaine.md`](../transverses/chantier_autorite_de_domaine.md), et bénéficient du
