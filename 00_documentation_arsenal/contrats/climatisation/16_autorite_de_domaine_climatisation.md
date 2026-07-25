@@ -101,7 +101,16 @@ explicite et traçable** (titulaire → automatique) ; la consigne est **laissé
 **ignorée** tant que le régime est automatique. La restitution est un **geste**, jamais un effet de
 bord.
 
-**L'UI appelle ces primitives ; elle n'orchestre pas la transition.**
+**L'UI appelle ces primitives ; elle n'orchestre pas la transition.** Le sélecteur
+d'autorité écrit un **porteur d'intention de surface** (`input_select.clim_autorite_intention`,
+sans `initial:`) — **jamais** le titulaire en direct. Une automation **traduit** cette intention en
+primitive supervisée (`manuel` → entrée au mode auto courant ; `automatique` → restitution), **gardée
+« n'agir que si l'intention diffère du titulaire réel »** ; une seconde automation **re-synchronise**
+l'intention sur le titulaire réel (démarrage et transfert effectif). L'intention **ne transfère
+jamais l'autorité** : elle passe toujours par l'**écrivain unique** du titulaire (§16.2). Cette
+médiation par intention est **anti-boucle** (synchro idempotente) et **anti-reprise silencieuse** (la
+traduction est gardée par le gate de stabilité : au démarrage, la synchro réaligne l'intention sur le
+titulaire restauré **avant** toute traduction).
 
 **Redémarrage / rechargement.** Le comportement est **déterministe** et **conforme au titulaire
 précédemment établi**, **sans reprise silencieuse** :
@@ -208,7 +217,7 @@ Elles demeurent **exposées** comme information (« Arsenal aurait bloqué : fen
 
 ## 16.8 État de l'implémentation
 
-**Échafaudage + bascule livrés ; UI à venir.**
+**Échafaudage + bascule + UI livrés ; reste la validation terrain puis la clôture fonctionnelle.**
 
 - **Livré (échafaudage).** Porteurs `input_select.clim_titulaire_autorite` et
   `input_select.clim_consigne_manuelle` (sans `initial:`) ; décision exécutoire dérivée
@@ -227,17 +236,27 @@ Elles demeurent **exposées** comme information (« Arsenal aurait bloqué : fen
   pour les deux régimes.
 - **Livré (UI).** Section « 🎛️ Autorité & reprise en main » du dashboard climatisation
   (`18_lovelace/dashboards/climatisation/principal.yaml`) + cartes
-  `19_button_card_templates/40_dashboards/climatisation/15_autorite/` : titulaire (lecture seule), un
-  **sélecteur de mode unique** (rangée `{off, cool, dry, heat}`, mode actif surligné, appelle
-  `clim_entrer_mode_manuel` avec la consigne, confirmation modale), restitution
-  (`clim_revenir_mode_automatique`), **décision exécutoire** `sensor.clim_mode_commande` en lecture
-  seule (anti-fallback « Indéterminée »), et en manuel la **décision théorique** `sensor.clim_target_mode`
-  (information). L'UI **appelle** les primitives, n'écrit aucun helper, ne commande aucun
-  relais/climate (§16.4). Aucun contrôle direct de mode/alimentation n'existait à neutraliser.
-  **Doctrine couleurs (`ui/couleurs`) — usage binaire** : 🟢 vert canon = le mode **actif en régime
-  manuel** (action autorisée / actif), ⚪ gris neutre canon = tout le reste (les 3 autres modes, et
-  tous les modes en régime **automatique**), ⚪ gris indispo = indéterminée. **Le vert n'apparaît qu'en
-  manuel** (l'utilisateur décide) ; le mode est porté par l'icône + le libellé.
+  `19_button_card_templates/40_dashboards/climatisation/15_autorite/`. **Information architecture :
+  un sélecteur d'autorité en tête** (deux segments `Automatique`/`Manuel`, `carte_action_clim_autorite`,
+  écrit le porteur d'intention `input_select.clim_autorite_intention`, confirmation modale) **et un
+  contenu conditionnel au titulaire réel** :
+    - **manuel** → le **sélecteur de mode** (rangée `{off, cool, dry, heat}`, `carte_action_clim_mode`,
+      mode actif surligné, appelle `clim_entrer_mode_manuel`, confirmation) et la **décision
+      exécutoire** `sensor.clim_mode_commande` en lecture seule (anti-fallback « Indéterminée ») ;
+    - **automatique** → le **diagnostic qui justifie la décision d'Arsenal** : verdict + **raison
+      globale** (`carte_clim_decision`, `sensor.clim_action_en_cours`) puis la section **Conditions**
+      (mode affiché + diagnostics par mode).
+  La **restitution** (retour à l'automatique) et la **reprise** (passage au manuel) se font par le
+  même sélecteur d'autorité — plus de bouton de restitution séparé ; la découvrabilité est ainsi
+  symétrique dans les deux régimes. La section **Historique** reste visible dans les deux régimes.
+  L'UI **écrit le porteur d'intention** (surface) et **appelle** les primitives via l'automation de
+  traduction ; elle n'écrit **jamais** le titulaire ni ne commande aucun relais/climate (§16.4).
+  **Doctrine couleurs (`ui/couleurs`)** : pour le **sélecteur d'autorité**, 🔵 bleu = titulaire
+  `automatique` (Arsenal pilote), 🟠 orange = titulaire `manuel` (vous pilotez), coloré par
+  l'autorité **réelle** (jamais un vœu non abouti) ; pour le **sélecteur de mode** (usage binaire),
+  🟢 vert canon = le mode **actif en régime manuel**, ⚪ gris neutre canon = tout le reste, ⚪ gris
+  indispo = indéterminée. **Le vert n'apparaît qu'en manuel** ; le mode et le rôle sont portés par
+  l'icône + le libellé.
 - **À venir.** Validation terrain (le mode manuel étant exécutoire et accessible), puis clôture
   fonctionnelle.
 
