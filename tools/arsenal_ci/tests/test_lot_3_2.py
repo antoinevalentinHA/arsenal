@@ -49,9 +49,12 @@ def test_allowlist_constante_egale_contrat():
 
 
 def test_allowlist_contient_les_trois_appelants():
+    # Bascule C39 : decision_centrale n'appelle plus l'écrivain (il décide +
+    # émet l'événement d'exécution) ; l'appelant exécutoire est désormais
+    # automation.chauffage_application (execution_mode_commande.yaml).
     assert r_call_1.APPELANTS_AUTORISES == frozenset(
         {
-            "10_scripts/chauffage/decision_centrale.yaml",
+            "11_automations/chauffage/execution_mode_commande.yaml",
             "11_automations/chauffage/retry_transactionnel/declenchement.yaml",
             "11_automations/chauffage/modification_consigne.yaml",
         }

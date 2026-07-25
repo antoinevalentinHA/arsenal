@@ -62,7 +62,7 @@ CIBLE = "script.chauffage_appliquer_consigne"
 # Allow-list (A2). MIROIR de l'enumeration du contrat ; garde par le meta-test.
 APPELANTS_AUTORISES = frozenset(
     {
-        "10_scripts/chauffage/decision_centrale.yaml",
+        "11_automations/chauffage/execution_mode_commande.yaml",
         "11_automations/chauffage/retry_transactionnel/declenchement.yaml",
         "11_automations/chauffage/modification_consigne.yaml",
     }

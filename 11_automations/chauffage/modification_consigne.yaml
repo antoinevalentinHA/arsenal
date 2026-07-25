@@ -30,11 +30,12 @@
 #         - chauffage_consigne_confort
 #         - chauffage_consigne_reduite
 #
-#     - Lecture du mode actuellement décidé :
-#         input_select.chauffage_dernier_mode_decide
+#     - Lecture de la décision EXÉCUTOIRE en vigueur :
+#         sensor.chauffage_mode_commande  (auto OU consigne manuelle, §85.2)
 #
-#     - Si la consigne modifiée correspond au mode actif :
-#         → réapplication via script souverain
+#     - Si la consigne modifiée correspond au régime exécutoire :
+#         → réapplication via script souverain (mirroir strict de
+#           mode_commande — ne choisit ni ne modifie jamais le mode)
 #
 #     - Sinon :
 #         → abstention stricte
@@ -54,7 +55,7 @@
 #
 #     - input_number.chauffage_consigne_confort
 #     - input_number.chauffage_consigne_reduite
-#     - input_select.chauffage_dernier_mode_decide
+#     - sensor.chauffage_mode_commande
 #     - script.chauffage_appliquer_consigne
 #
 # ----------------------------------------------------------
@@ -88,8 +89,11 @@
 
   action:
     - variables:
+        # Source = DÉCISION EXÉCUTOIRE (bascule C39, §85.2) : on réapplique la
+        # °C du régime réellement en vigueur (auto OU consigne manuelle), jamais
+        # une décision automatique en régime manuel. Vocabulaire : confort/reduite.
         mode_actuel: >
-          {{ states('input_select.chauffage_dernier_mode_decide') }}
+          {{ states('sensor.chauffage_mode_commande') }}
 
     - choose:
 
@@ -98,7 +102,7 @@
             - condition: template
               value_template: >
                 {{ trigger.entity_id == 'input_number.chauffage_consigne_confort'
-                   and mode_actuel == 'comfort' }}
+                   and mode_actuel == 'confort' }}
           sequence:
             - action: script.chauffage_appliquer_consigne
               data:
@@ -110,7 +114,7 @@
             - condition: template
               value_template: >
                 {{ trigger.entity_id == 'input_number.chauffage_consigne_reduite'
-                   and mode_actuel == 'reduced' }}
+                   and mode_actuel == 'reduite' }}
           sequence:
             - action: script.chauffage_appliquer_consigne
               data:

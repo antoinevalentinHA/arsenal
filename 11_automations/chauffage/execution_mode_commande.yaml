@@ -1,0 +1,152 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Application de la décision exécutoire
+#
+#  ID : 10240000000028
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Consommateur EXÉCUTOIRE UNIQUE de la décision de domaine
+#     (autorité de domaine, contrat 85 §85.2). Applique
+#     `sensor.chauffage_mode_commande` (auto OU consigne manuelle)
+#     via l'écrivain unique `script.chauffage_appliquer_consigne`.
+#
+#     Propriétaire cohérent du LANCEMENT de transaction (§85, C39) :
+#       - idempotence (ne réapplique pas un régime déjà réel) ;
+#       - annulation d'un retry en attente (une nouvelle application
+#         périme le retry stale) ;
+#       - délégation à l'écrivain unique (verrou / MQTT / ACK possédés
+#         par le script exécutif ; retry par le sous-système dédié).
+#
+#     decision_centrale N'APPELLE PLUS le script exécutif : il décide
+#     (raison + mode_session) et émet l'événement `chauffage_execution_requise`.
+#
+#  🔔 DÉCLENCHEURS
+#
+#     - event `chauffage_execution_requise` — décision AUTO (émis par
+#       decision_centrale même si mode_session inchangé → iso-comportement
+#       du drift-correction). Ignoré si titulaire ≠ automatique.
+#     - state `sensor.chauffage_mode_commande` — changement d'exécutoire
+#       (prise/relâche manuelle, changement de régime).
+#     - state `input_boolean.systeme_stable` off→on — CONVERGENCE au
+#       démarrage (§85.4), ordonnée : réconciliation résidu → décision →
+#       application unique du titulaire restauré.
+#
+#  🛡️ ANTI-FALLBACK (§85.2)
+#     N'applique que si `mode_commande ∈ {confort, reduite}` ; si la
+#     décision exécutoire est indisponible → abstention (aucune commande).
+#
+#  🧠 AUTORITÉ D'EXÉCUTION
+#     script.chauffage_appliquer_consigne (écrivain unique, CH-4/R-CALL-1)
+# ==========================================================
+
+- id: "10240000000028"
+  alias: "Chauffage - Application décision exécutoire"
+  description: >
+    Applique sensor.chauffage_mode_commande via l'écrivain unique. Propriétaire
+    du lancement de transaction (idempotence + annulation retry). Convergence
+    ordonnée au démarrage. decision_centrale ne fait plus qu'émettre l'événement.
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: event
+      event_type: chauffage_execution_requise
+      id: "decision_auto"
+    - platform: state
+      entity_id: sensor.chauffage_mode_commande
+      id: "mode_commande"
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      from: "off"
+      to: "on"
+      id: "boot"
+
+  condition:
+    # Gate de stabilité : aucune application avant stabilisation (boot).
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+    # L'événement AUTO ne s'applique qu'en régime automatique (en manuel, seul
+    # un changement de mode_commande — via la primitive — commande).
+    - condition: template
+      value_template: >
+        {{ trigger.id != 'decision_auto'
+           or is_state('input_select.chauffage_titulaire_autorite', 'automatique') }}
+
+  action:
+
+    # ==================================================
+    # 🕒 CONVERGENCE ORDONNÉE AU DÉMARRAGE (branche boot)
+    #    réconciliation résidu → décision → appariement raison+décision
+    # ==================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.id == 'boot' }}"
+          sequence:
+            # Barrière 1 — attendre la réconciliation du résidu
+            # mode_confort_chauffage (automation panne 10040000000005).
+            - wait_template: >
+                {{ is_state('input_boolean.panne_secteur_active', 'on')
+                   or is_state('input_boolean.mode_confort_chauffage', 'off') }}
+              timeout: "00:00:10"
+              continue_on_timeout: true
+            # Établissement apparié raison + décision, selon le titulaire restauré.
+            - choose:
+                # AUTO → recalcul (raison granulaire fraîche + mode_session appariés)
+                - conditions:
+                    - condition: state
+                      entity_id: input_select.chauffage_titulaire_autorite
+                      state: automatique
+                  sequence:
+                    - service: script.turn_on
+                      target:
+                        entity_id: script.chauffage_decision_centrale
+                    - wait_template: >
+                        {{ is_state('script.chauffage_decision_centrale', 'off') }}
+                      timeout: "00:00:10"
+                      continue_on_timeout: true
+                # MANUEL → raison exécutoire = 'commande_manuelle' (dérivée ci-dessous)
+
+    # ==================================================
+    # 🛡️ Anti-fallback — décision exécutoire disponible
+    # ==================================================
+    - condition: template
+      value_template: >
+        {{ states('sensor.chauffage_mode_commande') in ['confort', 'reduite'] }}
+
+    # ==================================================
+    # ♻️ Idempotence transactionnelle — ne pas réappliquer un régime déjà réel
+    # ==================================================
+    - alias: "Idempotence : mode_commande ≠ programme réel"
+      condition: template
+      value_template: >
+        {% set cmd = states('sensor.chauffage_mode_commande') %}
+        {% set prog = states('sensor.programme_chauffage') | lower %}
+        {% set prog_norm = 'confort' if ('comfort' in prog or 'confort' in prog)
+                           else ('reduite' if 'eco' in prog else 'inconnu') %}
+        {{ cmd != prog_norm }}
+
+    # ==================================================
+    # 🧹 Annulation d'un retry en attente (nouvelle application le périme)
+    # ==================================================
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.chauffage_retry_pending
+    - service: timer.cancel
+      target:
+        entity_id: timer.chauffage_retry
+
+    # ==================================================
+    # ▶️ Exécution via l'écrivain unique (CH-4/R-CALL-1)
+    #    Raison : 'commande_manuelle' en manuel (dérivée du titulaire) ;
+    #    raison granulaire de la décision courante en auto (input_text).
+    # ==================================================
+    - service: script.chauffage_appliquer_consigne
+      data:
+        consigne: "{{ states('sensor.chauffage_mode_commande') }}"
+        raison: >
+          {{ 'commande_manuelle'
+             if is_state('input_select.chauffage_titulaire_autorite', 'manuel')
+             else states('input_text.chauffage_raison') }}

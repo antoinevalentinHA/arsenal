@@ -60,7 +60,7 @@
 
     - condition: template
       value_template: >
-        {{ states('input_select.chauffage_mode_session') in ['confort', 'reduite'] }}
+        {{ states('sensor.chauffage_mode_commande') in ['confort', 'reduite'] }}
 
   action:
     - service: system_log.write
@@ -96,5 +96,5 @@
 
     - service: script.chauffage_appliquer_consigne
       data:
-        consigne: "{{ states('input_select.chauffage_mode_session') }}"
+        consigne: "{{ states('sensor.chauffage_mode_commande') }}"
         raison: "retry_transactionnel"
