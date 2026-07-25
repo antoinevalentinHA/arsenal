@@ -1,0 +1,38 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Consigne manuelle (Clim)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Porte le MODE choisi par le titulaire manuel de l'autorité
+#   de domaine climatisation (contrat 16, §16.3). Surface de
+#   commande = le mode cible : off / cool / dry / heat.
+#   (La consigne de température et la ventilation ne sont PAS
+#   exposées dans cette passe — hors périmètre §16.3.)
+#
+# 🧩 Nature :
+#   Porteur de consigne (helper). Consommé UNIQUEMENT quand
+#   titulaire = manuel. Écrit UNIQUEMENT par
+#   script.clim_entrer_mode_manuel, qui écrit la consigne AVANT
+#   de transférer l'autorité (atomicité, §16.4). Laissé tel quel
+#   et ignoré tant que le titulaire est automatique.
+#
+# ⚠️ Anti-fallback :
+#   Un état unknown/unavailable NE VAUT PAS un mode : il rend la
+#   décision exécutoire (sensor.clim_mode_commande) INDISPONIBLE.
+#   Pas de `initial:` — bootstrap ≠ fallback ; la valeur de première
+#   création n'est jamais exécutée (la primitive l'écrit avant le
+#   transfert d'autorité).
+#
+# 🔗 Consommé par :
+#   - sensor.clim_mode_commande (décision exécutoire dérivée, §16.2)
+#
+# 📍 État actuel : ÉCHAFAUDAGE INERTE (bascule ultérieure, coord. C30).
+# ==========================================================
+
+clim_consigne_manuelle:
+  name: "Clim — Consigne manuelle"
+  options:
+    - "off"
+    - cool
+    - dry
+    - heat
+  icon: mdi:hand-back-right
