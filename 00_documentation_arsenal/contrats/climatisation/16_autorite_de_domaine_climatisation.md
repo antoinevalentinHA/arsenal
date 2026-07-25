@@ -234,9 +234,10 @@ Elles demeurent **exposées** comme information (« Arsenal aurait bloqué : fen
   seule (anti-fallback « Indéterminée »), et en manuel la **décision théorique** `sensor.clim_target_mode`
   (information). L'UI **appelle** les primitives, n'écrit aucun helper, ne commande aucun
   relais/climate (§16.4). Aucun contrôle direct de mode/alimentation n'existait à neutraliser.
-  **Doctrine couleurs (`ui/couleurs`) respectée : la couleur encode un ÉTAT, jamais le mode** — 🟢 vert
-  = conditionnement commandé (nominal actif), ⚪ gris neutre = arrêt/inactif, ⚪ gris indispo =
-  indéterminée ; le mode est porté par l'icône + le libellé.
+  **Doctrine couleurs (`ui/couleurs`) — usage binaire** : 🟢 vert canon = le mode **actif en régime
+  manuel** (action autorisée / actif), ⚪ gris neutre canon = tout le reste (les 3 autres modes, et
+  tous les modes en régime **automatique**), ⚪ gris indispo = indéterminée. **Le vert n'apparaît qu'en
+  manuel** (l'utilisateur décide) ; le mode est porté par l'icône + le libellé.
 - **À venir.** Validation terrain (le mode manuel étant exécutoire et accessible), puis clôture
   fonctionnelle.
 

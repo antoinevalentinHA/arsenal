@@ -19,12 +19,13 @@
 #     - UI uniquement : n'écrit NI helper, NI relais / climate. Seule
 #       frontière = la primitive supervisée (écrivain unique, §16.2).
 #
-# 🎨 SEMANTIQUE (doctrine ui/couleurs — la couleur encode l'ÉTAT, pas le mode)
-#     - mode ACTIF (= sensor.clim_mode_commande), conditionnement (cool/dry/heat)
-#         -> 🟢 vert rgba(76,175,80,0.2) (nominal actif)
-#     - mode ACTIF = arrêt (off)        -> ⚪ gris neutre rgba(158,158,158,0.2)
-#     - mode INACTIF (non commandé)     -> ⚪ gris neutre rgba(158,158,158,0.2)
-#     - « sélectionné » = gras (affordance structurelle, pas une couleur)
+# 🎨 SEMANTIQUE (palette de base, usage BINAIRE — cf. ui/couleurs/02_palette.md)
+#     - mode ACTIF **en régime manuel** (= le mode que vous avez choisi)
+#         -> 🟢 vert rgba(76,175,80,0.2) (action autorisée / actif)
+#     - tout le reste (3 autres modes, ou n'importe quel mode en régime auto)
+#         -> ⚪ gris neutre rgba(158,158,158,0.2)
+#     Le vert n'apparaît QUE si le titulaire est manuel : en auto, aucun mode
+#     n'est vert (vous ne décidez pas). Le mode est porté par l'icône + le libellé.
 #     Le mode (froid/déshum/chaud/arrêt) est porté par l'ICÔNE + le libellé.
 #
 # 🔗 DEPENDANCES
@@ -74,14 +75,18 @@ carte_action_clim_mode:
           [[[
             const cur = states['sensor.clim_mode_commande']
               ? states['sensor.clim_mode_commande'].state : null;
-            return cur === variables.consigne ? '700' : '400';
+            const tit = states['input_select.clim_titulaire_autorite']
+              ? states['input_select.clim_titulaire_autorite'].state : null;
+            return (tit === 'manuel' && cur === variables.consigne) ? '700' : '400';
           ]]]
     card:
       - background-color: >
           [[[
             const cur = states['sensor.clim_mode_commande']
               ? states['sensor.clim_mode_commande'].state : null;
-            const actif = (cur === variables.consigne);
-            if (actif && variables.consigne !== 'off') return 'rgba(76, 175, 80, 0.2)';
+            const tit = states['input_select.clim_titulaire_autorite']
+              ? states['input_select.clim_titulaire_autorite'].state : null;
+            // Binaire : vert = votre mode actif EN MANUEL ; gris neutre sinon.
+            if (tit === 'manuel' && cur === variables.consigne) return 'rgba(76, 175, 80, 0.2)';
             return 'rgba(158, 158, 158, 0.2)';
           ]]]

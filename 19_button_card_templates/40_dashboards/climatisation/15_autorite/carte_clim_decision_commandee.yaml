@@ -18,11 +18,11 @@
 #     - Spécialisation de socle_decision_72
 #     - UI uniquement
 #
-# 🎨 SEMANTIQUE (palette officielle — la COULEUR encode l'ÉTAT, jamais le mode ;
-#     le mode est porté par le libellé + l'icône, cf. ui/couleurs/02_palette.md)
-#     - conditionnement commandé (cool/dry/heat) -> 🟢 vert  rgba(76,175,80,0.2)  (nominal actif)
-#     - arrêt commandé (off)                     -> ⚪ gris neutre rgba(158,158,158,0.2) (aucune demande)
-#     - indéterminée (indispo)                   -> ⚪ gris indispo rgba(158,158,158,0.1) (prioritaire)
+# 🎨 SEMANTIQUE (palette de base, usage BINAIRE — cf. ui/couleurs/02_palette.md ;
+#     le mode est porté par le libellé + l'icône)
+#     - mode actif SOUS CONTRÔLE MANUEL -> 🟢 vert rgba(76,175,80,0.2) (action autorisée / actif)
+#     - régime automatique              -> ⚪ gris neutre rgba(158,158,158,0.2)
+#     - indéterminée (indispo)          -> ⚪ gris indispo rgba(158,158,158,0.1) (prioritaire)
 #
 # 🚫 ANTI-FALLBACK (§16.2)
 #     Une décision exécutoire indisponible s'affiche « Indéterminée » :
@@ -62,14 +62,16 @@ carte_clim_decision_commandee:
         })();
 
         const bg = (() => {
-          // Doctrine couleurs : la couleur encode un ÉTAT, jamais l'identité du
-          // mode (le mode est porté par le libellé + l'icône).
-          //   conditionnement commandé (cool/dry/heat) -> 🟢 vert  (nominal actif)
-          //   arrêt commandé                            -> ⚪ gris neutre (aucune demande)
-          //   indéterminée (indispo)                    -> ⚪ gris indispo (prioritaire)
-          if (category === 'off')      return 'rgba(158, 158, 158, 0.2)';
-          if (category === 'indispo')  return 'rgba(158, 158, 158, 0.1)';
-          return 'rgba(76, 175, 80, 0.2)';
+          // Palette sémantique de base, usage BINAIRE :
+          //   🟢 vert = mode actif SOUS CONTRÔLE MANUEL (action autorisée / actif)
+          //   ⚪ gris neutre = régime automatique (aucune reprise en main)
+          //   ⚪ gris indispo = indéterminée (prioritaire)
+          // Le mode (froid/déshum/chaud/arrêt) est porté par le libellé.
+          if (category === 'indispo') return 'rgba(158, 158, 158, 0.1)';
+          const tit = states['input_select.clim_titulaire_autorite']
+            ? states['input_select.clim_titulaire_autorite'].state : null;
+          if (tit === 'manuel') return 'rgba(76, 175, 80, 0.2)';
+          return 'rgba(158, 158, 158, 0.2)';
         })();
 
         const stateText = (() => {
