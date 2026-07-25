@@ -94,7 +94,7 @@
                 message: >
                   L'exécution de la climatisation a échoué de manière
                   persistante et le budget de reprise différée est épuisé
-                  (cible : {{ states('sensor.clim_target_mode') }}).
+                  (cible : {{ states('sensor.clim_mode_commande') }}).
                   Aucune nouvelle reprise automatique n'est programmée
                   dans l'état courant. Vérifier l'état de l'intégration et
                   de l'équipement avant une nouvelle tentative.

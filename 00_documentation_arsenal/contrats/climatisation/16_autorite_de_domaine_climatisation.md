@@ -5,7 +5,7 @@
 
 | Champ | Valeur |
 |---|---|
-| **Statut** | **Cible contractuelle — spécification opposable.** **Échafaudage runtime inerte livré** (porteurs, décision exécutoire dérivée, primitives — §16.8) ; **bascule** (application + conformité/Watchdog sur la décision exécutoire) **à venir, coordonnée avec C30** ; UI à venir. |
+| **Statut** | **Cible contractuelle — spécification opposable, runtime livré (hors UI).** Échafaudage + **bascule livrés** (§16.8) : l'application, la conformité, le Watchdog et le Guard consomment la **décision exécutoire** ; **le mode manuel est exécutoire**. Reste l'**UI** de reprise en main. |
 | **Domaine** | Climatisation (unité unique `climate.clim` / `switch.clim_power`). |
 | **Instancie** | Doctrine transverse [`autorite_de_domaine.md`](../../architecture/03_doctrines/autorite_de_domaine.md). |
 | **Patron** | Pilote VMC [`vmc.md`](../vmc.md) §16. |
@@ -208,19 +208,23 @@ Elles demeurent **exposées** comme information (« Arsenal aurait bloqué : fen
 
 ## 16.8 État de l'implémentation
 
-**Échafaudage inerte livré ; bascule à venir.**
+**Échafaudage + bascule livrés ; UI à venir.**
 
-- **Livré (échafaudage inerte).** Porteurs `input_select.clim_titulaire_autorite` et
+- **Livré (échafaudage).** Porteurs `input_select.clim_titulaire_autorite` et
   `input_select.clim_consigne_manuelle` (sans `initial:`) ; décision exécutoire dérivée
   `sensor.clim_mode_commande` (anti-fallback strict, §16.2) ; primitives supervisées
   `script.clim_entrer_mode_manuel` (atomique) et `script.clim_revenir_mode_automatique`.
-  **Inerte** : aucune couche d'exécution ne consomme encore `sensor.clim_mode_commande` —
-  l'application lit toujours `sensor.clim_target_mode` ; **aucun changement de comportement**, le mode
-  manuel n'est **pas encore exécutoire**.
-- **À venir (bascule).** Rebrancher l'**application** puis la **conformité et le Watchdog** sur la
-  décision exécutoire (§16.5) rend le mode manuel exécutoire. Cette bascule touche la couche que **C30**
-  (P1) durcit : elle est **coordonnée avec C30** — aucune écriture runtime de cette couche avant
-  stabilisation ou coordination explicite.
+- **Livré (bascule).** L'**application** (`clim_execution` + son déclencheur), la **conformité**
+  (`clim_incoherence_decision_reel`), le **Watchdog** et le **Guard** consomment désormais la
+  **décision exécutoire** `sensor.clim_mode_commande` (auto **ou** consigne manuelle), et non plus la
+  seule décision automatique. **Le mode manuel est exécutoire.** En régime automatique,
+  `clim_mode_commande == clim_target_mode` : le comportement y est **inchangé** (iso-comportement,
+  validé par l'oracle). Le Guard s'abstient si la décision exécutoire est indisponible (fail-safe
+  §16.2). `sensor.clim_target_mode` reste calculé et exposé comme **décision théorique** (§16.2).
+- **Réserve héritée, non régressive.** Le mode manuel hérite du *fail-open* suivi par **C30** (P1) :
+  si l'état rapporté par l'intégration est dégradé, une commande peut ne pas s'exécuter silencieusement
+  — comme en régime automatique aujourd'hui. Ce n'est **pas une régression** ; C30 traite ce défaut
+  pour les deux régimes.
 - **À venir.** UI de reprise en main (appelant les primitives).
 
 ---
