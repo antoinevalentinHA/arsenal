@@ -1,0 +1,35 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Titulaire de l'autorité (Clim)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Porte le TITULAIRE de l'autorité de domaine climatisation
+#   (autorité de domaine, contrat 16) :
+#     - automatique → Arsenal décide
+#     - manuel      → l'utilisateur décide
+#   Un seul titulaire à chaque instant (unicité, révocabilité).
+#
+# 🧩 Nature :
+#   Porteur d'autorité (helper). Écrit UNIQUEMENT par les deux
+#   primitives supervisées (script.clim_entrer_mode_manuel /
+#   script.clim_revenir_mode_automatique). Jamais depuis l'UI
+#   en direct, jamais par une automation d'exécution.
+#
+# ⚠️ Anti-fallback :
+#   Un état unknown/unavailable NE VAUT PAS 'automatique' : il rend
+#   la décision exécutoire (sensor.clim_mode_commande) INDISPONIBLE.
+#   Pas de `initial:` — la première valeur est un bootstrap, jamais
+#   un repli (doctrine restauration_etat_helpers.md).
+#
+# 🔗 Consommé par :
+#   - sensor.clim_mode_commande (décision exécutoire dérivée, §16.2)
+#
+# 📍 État actuel : ÉCHAFAUDAGE INERTE — aucun consommateur d'exécution
+#   ne lit encore la décision exécutoire (bascule ultérieure, coord. C30).
+# ==========================================================
+
+clim_titulaire_autorite:
+  name: "Clim — Titulaire de l'autorité"
+  options:
+    - automatique
+    - manuel
+  icon: mdi:account-switch

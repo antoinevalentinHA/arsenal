@@ -5,7 +5,7 @@
 
 | Champ | Valeur |
 |---|---|
-| **Statut** | **Cible contractuelle — spécification opposable.** Implémentation **non livrée** (runtime à venir ; le rebranchement de la conformité/Watchdog est **coordonné avec C30**, §5). |
+| **Statut** | **Cible contractuelle — spécification opposable.** **Échafaudage runtime inerte livré** (porteurs, décision exécutoire dérivée, primitives — §16.8) ; **bascule** (application + conformité/Watchdog sur la décision exécutoire) **à venir, coordonnée avec C30** ; UI à venir. |
 | **Domaine** | Climatisation (unité unique `climate.clim` / `switch.clim_power`). |
 | **Instancie** | Doctrine transverse [`autorite_de_domaine.md`](../../architecture/03_doctrines/autorite_de_domaine.md). |
 | **Patron** | Pilote VMC [`vmc.md`](../vmc.md) §16. |
@@ -208,12 +208,20 @@ Elles demeurent **exposées** comme information (« Arsenal aurait bloqué : fen
 
 ## 16.8 État de l'implémentation
 
-**Non livrée.** La présente section est une **spécification opposable**. Le runtime (porteurs
-titulaire/consigne, décision exécutoire dérivée anti-fallback, primitives supervisées, UI) est une
-passe ultérieure. Le **rebranchement de la conformité et du Watchdog** sur la décision exécutoire
-(§16.5) est **coordonné avec C30** (P1) : aucune écriture runtime de cette couche avant stabilisation
-ou coordination explicite. Le reste (titulaire, consigne, décision exécutoire, primitives, surface,
-durée) n'est pas gated par C30.
+**Échafaudage inerte livré ; bascule à venir.**
+
+- **Livré (échafaudage inerte).** Porteurs `input_select.clim_titulaire_autorite` et
+  `input_select.clim_consigne_manuelle` (sans `initial:`) ; décision exécutoire dérivée
+  `sensor.clim_mode_commande` (anti-fallback strict, §16.2) ; primitives supervisées
+  `script.clim_entrer_mode_manuel` (atomique) et `script.clim_revenir_mode_automatique`.
+  **Inerte** : aucune couche d'exécution ne consomme encore `sensor.clim_mode_commande` —
+  l'application lit toujours `sensor.clim_target_mode` ; **aucun changement de comportement**, le mode
+  manuel n'est **pas encore exécutoire**.
+- **À venir (bascule).** Rebrancher l'**application** puis la **conformité et le Watchdog** sur la
+  décision exécutoire (§16.5) rend le mode manuel exécutoire. Cette bascule touche la couche que **C30**
+  (P1) durcit : elle est **coordonnée avec C30** — aucune écriture runtime de cette couche avant
+  stabilisation ou coordination explicite.
+- **À venir.** UI de reprise en main (appelant les primitives).
 
 ---
 

@@ -1,0 +1,30 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Clim – Revenir en mode automatique (primitive supervisée)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Primitive backend de RETOUR en régime automatique (autorité de
+#   domaine, contrat 16 §16.4) : transfère l'autorité au titulaire
+#   Arsenal (titulaire → automatique). Restitution EXPLICITE et tracée.
+#
+# 🧱 PRINCIPE
+#   - N'écrit AUCUN relais / climate (écrivain unique préservé)
+#   - La consigne manuelle est LAISSÉE TELLE QUELLE et ignorée tant
+#     que le régime est automatique (jamais effacée — pas de `initial:`)
+#   - Aucune reprise silencieuse : la restitution est un geste
+#   - Appelée par l'UI ; l'UI n'orchestre pas la transition
+#
+# 📍 État actuel : ÉCHAFAUDAGE INERTE (bascule ultérieure, coord. C30).
+# ==========================================================
+
+clim_revenir_mode_automatique:
+  alias: "Clim - Revenir en mode automatique (primitive supervisée)"
+  mode: single
+  max_exceeded: silent
+
+  sequence:
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.clim_titulaire_autorite
+      data:
+        option: automatique

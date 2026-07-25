@@ -1,0 +1,75 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom UI :
+#   Clim — Mode commandé (décision exécutoire)
+#
+# 🎯 Rôle :
+#   DÉCISION EXÉCUTOIRE unique de la climatisation (autorité de
+#   domaine, contrat 16 §16.2). Dérivée PURE de :
+#     - le titulaire (input_select.clim_titulaire_autorite)
+#     - la décision automatique (sensor.clim_target_mode) — théorique
+#     - la consigne manuelle (input_select.clim_consigne_manuelle)
+#   En régime automatique : vaut sensor.clim_target_mode.
+#   En régime manuel      : vaut la consigne du titulaire.
+#
+# 🧱 Principe Arsenal :
+#   - Décision PURE (aucun effet de bord, aucune mémoire, aucune tempo)
+#   - N'écrit aucun relais, ne lit aucun état physique
+#   - sensor.clim_target_mode reste calculé et exposé comme décision
+#     THÉORIQUE non exécutoire quand le titulaire est manuel (§16.2)
+#
+# ⚠️ Anti-fallback strict (§16.2) :
+#   `availability` = vrai UNIQUEMENT si le titulaire porte une valeur
+#   valide ET la source qu'il désigne est valide. À défaut → indisponible.
+#   Un unknown/unavailable NE VAUT NI 'automatique', NI un mode, NI
+#   absence de besoin — aucune valeur n'est substituée.
+#
+# 🔌 Consommé par :
+#   - (à venir, bascule coordonnée C30) la couche d'application et la
+#     conformité. AUCUN consommateur d'exécution à ce stade :
+#     ÉCHAFAUDAGE INERTE — l'application lit encore sensor.clim_target_mode.
+#
+# 📍 Entité :
+#   sensor.clim_mode_commande
+# ==========================================================
+
+- sensor:
+    - name: "Clim Mode Commandé"
+      unique_id: clim_mode_commande
+      default_entity_id: sensor.clim_mode_commande
+
+      availability: >
+        {% set t = states('input_select.clim_titulaire_autorite') %}
+        {% set auto = states('sensor.clim_target_mode') %}
+        {% set cons = states('input_select.clim_consigne_manuelle') %}
+        {{ (t == 'automatique' and auto in ['cool', 'dry', 'heat', 'off'])
+           or (t == 'manuel' and cons in ['cool', 'dry', 'heat', 'off']) }}
+
+      state: >
+        {% if is_state('input_select.clim_titulaire_autorite', 'manuel') %}
+          {{ states('input_select.clim_consigne_manuelle') }}
+        {% else %}
+          {{ states('sensor.clim_target_mode') }}
+        {% endif %}
+
+      icon: >
+        {% set m = this.state %}
+        {% if m == 'cool' %} mdi:snowflake
+        {% elif m == 'dry' %} mdi:water-percent
+        {% elif m == 'heat' %} mdi:fire
+        {% elif m == 'off' %} mdi:power
+        {% else %} mdi:help-circle-outline
+        {% endif %}
+
+      attributes:
+        titulaire: >
+          {{ states('input_select.clim_titulaire_autorite') }}
+        source_decision: >
+          {% if is_state('input_select.clim_titulaire_autorite', 'manuel') %}
+            consigne manuelle
+          {% else %}
+            décision automatique
+          {% endif %}
+        mode_theorique: >
+          {{ states('sensor.clim_target_mode') }}
