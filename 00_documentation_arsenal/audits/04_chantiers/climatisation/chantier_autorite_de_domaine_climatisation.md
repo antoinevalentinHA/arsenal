@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Appliquer la doctrine [`autorite_de_domaine.md`](../../../architecture/03_doctrines/autorite_de_domaine.md) au domaine **climatisation** : réconcilier la **souveraineté permanente d'Arsenal** — écrite en toutes lettres dans plusieurs contrats — avec la formule **« unicité de l'autorité, révocabilité de sa délégation »**, sur le patron du **pilote VMC** (contrat `vmc.md` §16). Exécution côté climatisation du dossier transverse **`D-C36-L4`**. |
 | **Domaine** | Climatisation. Dépendances doctrinales transverses (autorité de domaine, commandabilité). |
-| **Statut** | **ACTIF (2026-07-25) — RUNTIME + UI LIVRÉS, MODE MANUEL EXÉCUTOIRE ET ACCESSIBLE.** §5.1 = **OUI** ; D1–D8 actées ; contrat [`16_autorite_de_domaine_climatisation.md`](../../../contrats/climatisation/16_autorite_de_domaine_climatisation.md) (§16.1–§16.8) + précisions 03/07/09/06/15 ; échafaudage → **bascule** (application/conformité/Watchdog/Guard sur `clim_mode_commande`, iso-comportement en auto, oracle 289 passed, checker C30 A6a co-évolué) → **UI** de reprise en main (section dashboard + cartes `15_autorite/` : titulaire, prise/commande manuelle par mode `{off,cool,dry,heat}` via primitive, restitution, décision exécutoire lecture seule anti-fallback, décision théorique en manuel ; aucun contrôle direct à neutraliser). **Verrou C30 réexaminé et levé** (échange de référence sur couche C30 déjà mergée). Réserve héritée non régressive : *fail-open* C30 (deux régimes). |
+| **Statut** | ✅ **CLOS (2026-07-25) — PILOTE CLIMATISATION FONCTIONNELLEMENT CLOS, TERRAIN VALIDÉ.** §5.1 = **OUI** ; D1–D8 actées ; contrat [`16_autorite_de_domaine_climatisation.md`](../../../contrats/climatisation/16_autorite_de_domaine_climatisation.md) (§16.1–§16.8) + précisions 03/07/09/06/15 ; échafaudage → **bascule** (application/conformité/Watchdog/Guard sur `clim_mode_commande`, iso-comportement en auto, oracle 289 passed, checker C30 A6a co-évolué) → **UI** de reprise en main : d'abord sélecteur de mode + couleurs binaires (#588/#589/#590), **puis refonte (#591)** en **sélecteur d'autorité d'intention + affichage conditionnel** (manuel → contrôles ; auto → diagnostic + Conditions ; Historique dans les deux régimes ; reprise/restitution par le même sélecteur). **Verrou C30 réexaminé et levé** (échange de référence sur couche C30 déjà mergée). **Terrain validé (2026-07-25) — « très propre »** : les deux régimes, prise/commande/restitution, affichage conditionnel. Réserve héritée non régressive : *fail-open* C30 (deux régimes, suivi par C30). |
 | **Priorité** | **P2** — enjeu structurant, sans risque technique immédiat en phase d'ouverture (documentaire). Suit l'observation A2 de C34 et la clôture de C36 (doctrine posée, pilote VMC démontré). |
 | **Ouvert le** | 2026-07-25. Promu depuis **`D-C36-L4`** (③ arbitrage dormant, essaimé de C36) sur go opérateur. |
-| **Prochain jalon** | **Validation terrain** : le mode manuel étant désormais exécutoire **et** accessible par l'UI, tester en réel — prise en main (chaque mode), commande effective, restitution, décision exécutoire affichée fidèlement (dont « Indéterminée » si indisponible), conditionnels auto↔manuel. Puis **clôture fonctionnelle** du pilote climatisation. Réserve : *fail-open* C30 (hérité, non régressif, suivi par C30). |
-| **Registre** | Chantier **C37** — ① Actifs (bascule livrée, reste l'UI), cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). Branche **climatisation** de `D-C36-L4` ; la branche **chauffage** reste dormante en ③. **Ce document est la source faisant foi pointée par la ligne.** |
+| **Prochain jalon** | *(aucun — chantier clos).* Réserve héritée **non bloquante** : *fail-open* C30 (deux régimes, suivi par **C30** — pas par C37). Une éventuelle extension (consigne de température, vitesse de ventilation exposées à la commande manuelle) serait un **nouvel arbitrage**, hors périmètre de ce pilote (§16.3). |
+| **Registre** | Chantier **C37** — ⑤ **Clos récents**, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). Branche **climatisation** de `D-C36-L4` (close) ; la branche **chauffage** reste dormante en ③. **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **Portée.** Chantier **d'ouverture.** Aucun helper, aucune UI, aucun runtime, aucune modification
 > de contrat à ce stade. Le patron VMC §16 est une **référence**, non un gabarit à décalquer : la
@@ -222,6 +222,26 @@ Selon le tranchage du §5.1 :
 
 > **Cohérence interne.** Les critères de l'ouverture sont **documentaires, donc solvables sans preuve
 > terrain** (doctrine [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md)).
+
+---
+
+## 8-bis. Clôture fonctionnelle du pilote — SOLDÉE (2026-07-25)
+
+L'ouverture ayant été soldée par un **§5.1 positif**, le chantier a déroulé la feuille de route §8 —
+**cadrage → contrat → runtime → UI → validation terrain** — et est **fonctionnellement clos**.
+
+- **Cadrage** : décisions D1–D8 actées ([`cadrage_autorite_de_domaine_mode_manuel_climatisation.md`](../../02_conception/climatisation/cadrage_autorite_de_domaine_mode_manuel_climatisation.md)).
+- **Contrat** : [`16_autorite_de_domaine_climatisation.md`](../../../contrats/climatisation/16_autorite_de_domaine_climatisation.md) (§16.1–§16.8) + précisions 03/07/09/06/15.
+- **Runtime** : échafaudage (porteurs, `sensor.clim_mode_commande` anti-fallback, primitives supervisées) puis **bascule** (#587) — application, conformité, Watchdog et Guard consomment la **décision exécutoire** ; iso-comportement en auto (oracle 289 passed) ; **verrou C30 réexaminé et levé** (bascule = échange de référence sur couche C30 déjà mergée, orthogonal au terrain A3/A4).
+- **UI** : sélecteur de mode + couleurs binaires (#588/#589/#590), **puis refonte (#591)** en **sélecteur d'autorité d'intention + affichage conditionnel** — manuel → sélecteur de mode + décision exécutoire ; auto → diagnostic (verdict + raison globale) + section Conditions ; Historique dans les deux régimes ; reprise **et** restitution par le même sélecteur (découvrabilité symétrique). Médiation par **porteur d'intention** (`input_select.clim_autorite_intention`) + automations (traduction gardée « intention ≠ titulaire » + gate de stabilité ; synchro idempotente) → anti-boucle, anti-reprise silencieuse ; l'UI n'écrit jamais le titulaire.
+- **Validation terrain (2026-07-25)** : opérateur — « **très propre** » ; les deux régimes, prise / commande / restitution, affichage conditionnel auto↔manuel vérifiés en réel.
+
+**Réserve héritée, non bloquante** : *fail-open* C30 (deux régimes), suivie par **C30**, pas par C37.
+**Essaimages** : **C38** (protection compresseur — clos par dérogation documentée) ; **branche chauffage
+de `D-C36-L4`** (dormante en ③, même démarche applicable sur go opérateur).
+
+> **Solvabilité.** La clôture s'appuie sur des livrables mergés (contrat + runtime + UI, CI verte) et
+> la **validation terrain** de l'opérateur : preuve d'usage, pas seulement documentaire.
 
 ---
 
