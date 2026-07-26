@@ -4,10 +4,10 @@
 |---|---|
 | **Chantier** | Appliquer la doctrine [`autorite_de_domaine.md`](../../../architecture/03_doctrines/autorite_de_domaine.md) au domaine **déshumidificateur cave** : réconcilier la **souveraineté machine permanente** (souveraineté d'observation + écrivain d'exécution unique) avec la formule **« unicité de l'autorité, révocabilité de sa délégation »**, sur le patron des pilotes VMC (C36), climatisation (C37) et chauffage (C39), tous clos et validés terrain. |
 | **Domaine** | Déshumidificateur cave (mono-appareil ; actionneur **SwitchBot mécanique** sur `switch.deshumidificateur`). Dépendances doctrinales transverses (autorité de domaine, commandabilité). |
-| **Statut** | **OUVERTURE (2026-07-26) — documentaire.** Nomme la contradiction (§1), recense les invariants de souveraineté, cadre les arbitrages propriétaires (§5) et le séquencement (§6). **Aucun contrat, aucun helper, aucun runtime, aucune UI, aucun checker modifié à ce stade.** Le pivot §5.1 (le déshumidificateur reçoit-il un mode manuel ?) reste **à trancher par le propriétaire**. |
+| **Statut** | **OUVERTURE SOLDÉE (2026-07-26) — pivot tranché, prochaine étape cadrage.** Nomme la contradiction (§1), recense les invariants, cadre les arbitrages (§5) et le séquencement (§6). **Pivot §5.1 = OUI** (mode manuel supervisé) ; **§5.7 écarté** (pas de pression humaine directe — SwitchBot) ; **§5.8 sans objet** (pas d'écrivain concurrent actif — `bot_transaction_execute` dormant). **Aucun contrat, aucun helper, aucun runtime, aucune UI, aucun checker modifié à ce stade.** |
 | **Priorité** | **P2** — enjeu structurant, sans risque technique immédiat en phase d'ouverture (documentaire). Suit la clôture de C39 (doctrine posée, trois pilotes démontrés de bout en bout). |
 | **Ouvert le** | 2026-07-26. Domaine **explicitement nommé** dans le dossier transverse [`chantier_autorite_de_domaine.md`](../transverses/chantier_autorite_de_domaine.md) §7 (« VMC, déshumidificateur — auto purs à contraintes de sûreté fortes »). |
-| **Prochain jalon** | **Trancher le pivot §5.1** et, s'il est positif, les arbitrages §5.2–§5.8 (surface, portée, création de la gouvernance d'autorité, statut de l'anti-court-cycle, écrivain latent concurrent, action physique directe, durée). Puis, selon le tranchage : dérogation documentée (§5.1 négatif) **ou** cadrage → contrat → runtime → UI → validation terrain. |
+| **Prochain jalon** | **Passe cadrage** : formaliser D1–Dn (surface `{marche, arrêt}`, portée mono-appareil, **gouvernance d'autorité à créer ex nihilo** sur le modèle ECS §02, min-off conservé sur les commandes Arsenal, durée indéfinie + expiration optionnelle). Puis contrat → runtime (échafaudage + bascule) → UI (patron autorité d'intention) → validation terrain → clôture. |
 | **Registre** | Chantier **C40** — ① Actifs (ouverture), cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **Portée.** Chantier **d'ouverture.** Aucun helper, aucune UI, aucun runtime, aucune modification de
@@ -113,19 +113,30 @@ le déshumidificateur ajoute des difficultés neuves :**
    non invariantes »). **Statut identique à clim (C38)/chauffage : dérogation faute de chemin de
    contournement**, pas un invariant de catégorie A opposable à un titulaire manuel. *(Rectifie une
    présomption d'ouverture : ce n'est pas un anti-court-cycle impératif.)*
-5. **Écrivain latent concurrent.** `10_scripts/system/transactions_bots.yaml` (`bot_transaction_execute`)
-   **déclare `switch.deshumidificateur` comme cible** et émet `switch.turn_on/off`, mais **aucun appelant
-   runtime** ne l'invoque (couche **plombée mais dormante**). C'est un **second écrivain potentiel** en
-   contradiction frontale avec l'écrivain unique (L.432). **À arbitrer avant toute bascule** (§5.8).
-6. **Action physique directe OBSERVABLE.** Le §7 doctrinal (« une action physique directe vaut-elle
-   prise en main ? ») est ici **concret et tranchable** : presser le bouton du déshum est une action
-   physique directe, et Arsenal l'**observe** (via `power > 100 W`) — contrairement à la télécommande IR
-   clim, non observable. Faut-il qu'une mise en marche physique observée **vaille** prise en main
-   (titulaire → utilisateur) ? Arbitrage neuf (§5.7).
+5. **Couche transactionnelle générique dormante — PAS une contradiction.** `bot_transaction_execute`
+   (`10_scripts/system/transactions_bots.yaml`) est un **exécuteur transactionnel switchbot générique**
+   paramétré (`target_bot`), servant plusieurs bots (déshumidificateur, `bot_chambre_parents`) ; le
+   déshum figure dans son **registre** (entité/lock/timer/compteur), mais **aucun appelant ne l'invoque**
+   dans tout le dépôt (couche **dormante / non câblée**). L'**écrivain actif unique** de
+   `switch.deshumidificateur` reste donc `script.set_deshumidificateur_state` (appelé par les automations
+   déshum) : **aucun écrivain concurrent actif, aucune contradiction à arbitrer.** *(Rectifie une
+   présomption d'ouverture — ce n'était pas une collision d'autorité. Tout au plus, si le déshum était
+   un jour routé vers la couche générique, il faudrait garantir un chemin unique : item d'hygiène,
+   hors périmètre C40.)*
+6. **Action physique directe — écartée (propriétaire).** L'actionneur étant un **SwitchBot posé sur le
+   bouton**, il n'existe pas de scénario pertinent de pression humaine directe sur l'appareil en cave.
+   Comme clim/chauffage : l'action physique directe **ne vaut pas** prise en main ; la reprise passe
+   **exclusivement** par les primitives supervisées / le sélecteur.
 
 ---
 
-## 5. Arbitrages par domaine — À TRANCHER (propriétaire)
+## 5. Arbitrages par domaine — pivot tranché (2026-07-26)
+
+> **✅ Pivot §5.1 = OUI** (le déshumidificateur reçoit un mode manuel supervisé). **§5.7 écarté**
+> (pas de scénario de pression humaine directe — SwitchBot sur le bouton). **§5.8 sans objet** (pas
+> d'écrivain concurrent actif, §4.5). **§5.5** : sans préférence propriétaire → défaut retenu = min-off
+> conservé sur les commandes Arsenal (auto + manuel), à confirmer au cadrage. Restent à formaliser au
+> **cadrage** : surface (§5.2), portée (§5.3), gouvernance à créer (§5.4), durée (§5.6).
 
 Ces arbitrages relèvent du **propriétaire**. Ils instancient les questions ouvertes du §7 de
 [`chantier_autorite_de_domaine.md`](../transverses/chantier_autorite_de_domaine.md), et bénéficient des
@@ -145,12 +156,13 @@ Ces arbitrages relèvent du **propriétaire**. Ils instancient les questions ouv
   même à une commande manuelle (protection du matériel) ou non.
 - **§5.6 — Durée, expiration, persistance.** Modèle(s) de durée ; expiration volontaire (INV-AUT-7) ;
   redémarrage déterministe sans reprise silencieuse (INV-AUT-6) ; porteurs sans `initial:`.
-- **§5.7 — Une action physique directe (pression bouton) vaut-elle prise en main ?** Ici **observable**
-  (capteur de puissance). À trancher : une mise en marche/arrêt physique observée transfère-t-elle
-  l'autorité au titulaire manuel, ou reste-t-elle une simple divergence observée ?
-- **§5.8 — Écrivain latent concurrent `bot_transaction_execute`.** Trancher son sort avant toute
-  bascule : le **retirer/neutraliser** (il contredit l'écrivain unique) ou le **contractualiser** — mais
-  jamais laisser deux écrivains du même relais.
+- **§5.7 — Action physique directe : ÉCARTÉE (tranché propriétaire, 2026-07-26).** Pas de scénario
+  pertinent de pression humaine directe sur l'appareil (SwitchBot posé sur le bouton). L'action physique
+  directe **ne vaut pas** prise en main ; on n'y touche pas (comme clim/chauffage).
+- **§5.8 — *(sans objet).*** Il n'existe **pas** d'écrivain concurrent actif : `bot_transaction_execute`
+  est une couche générique **dormante et non câblée** (§4.5), l'écrivain actif unique est
+  `set_deshumidificateur_state`. Aucun arbitrage d'autorité requis. Un éventuel nettoyage de l'entrée
+  déshum dormante dans la couche générique est un **item d'hygiène hors périmètre C40**.
 
 ---
 
@@ -158,9 +170,8 @@ Ces arbitrages relèvent du **propriétaire**. Ils instancient les questions ouv
 
 - **Aucune collision active.** Les deux entrées déshum du registre sont **closes** (seuils H1 ; libellé
   guard §12) et ne touchent pas la couche décision/exécution/conformité. Aucun chantier déshum dédié
-  n'est ouvert.
-- **Point de vigilance runtime.** L'**écrivain latent concurrent** (`bot_transaction_execute`, §5.8,
-  dormant) doit être arbitré avant une bascule d'autorité.
+  n'est ouvert. **Un seul écrivain actif** du relais (`set_deshumidificateur_state`) ; la couche
+  transactionnelle générique `bot_transaction_execute` est dormante (§4.5) — pas de collision.
 - **Précédents.** **C37** (clim) et **C39** (chauffage) fournissent le gabarit de bout en bout, y compris
   la médiation par intention (helper + 2 automations anti-boucle) et la convergence boot ordonnée.
 
@@ -170,8 +181,7 @@ Ces arbitrages relèvent du **propriétaire**. Ils instancient les questions ouv
 
 - Elle ne décide **pas** que le déshumidificateur recevra un mode manuel (§5.1).
 - Elle n'amende **aucun** contrat, ne crée **aucun** helper / capteur / script / UI / checker.
-- Elle ne **choisit** ni surface, ni durée, ni gouvernance, ni sort de l'écrivain latent, ni règle sur
-  l'action physique directe.
+- Elle ne **choisit** ni surface, ni durée, ni gouvernance (à formaliser au cadrage).
 - Elle ne modifie **pas** le régime de sûreté (guard, conformité, min-off).
 
 ---
@@ -181,8 +191,8 @@ Ces arbitrages relèvent du **propriétaire**. Ils instancient les questions ouv
 L'ouverture C40 est **soldée** (et le chantier passe à sa phase suivante — cadrage ou dérogation) quand :
 
 - la contradiction est nommée et les invariants de souveraineté recensés (§1) — **fait à l'ouverture** ;
-- les arbitrages §5 sont **présentés au propriétaire** et le **pivot §5.1 est tranché** ;
-- le séquencement (§6), dont le sort de l'écrivain latent, est **acté**.
+- les arbitrages §5 sont **présentés au propriétaire** et le **pivot §5.1 est tranché** — **fait : OUI (2026-07-26)** ;
+- le séquencement (§6) est **acté**.
 
 Selon le tranchage du §5.1 :
 
