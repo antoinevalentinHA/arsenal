@@ -81,7 +81,7 @@
 | [boiler/](./boiler/) | 7 | README ✅ | Chaudière / boiler bridge |
 | [chauffage/](./chauffage/) | 53 | README ✅ | Pipeline chauffage + capteurs + amendements |
 | [climatisation/](./climatisation/) | 44 | README ✅ | Climatisation (17 root + 27 capteurs) |
-| [deshumidificateur/](./deshumidificateur/) | 3 | README ✅ | Déshumidificateur cave |
+| [deshumidificateur/](./deshumidificateur/) | 4 | README ✅ | Déshumidificateur cave |
 | [eclairage/](./eclairage/) | 7 | README ✅ | Éclairage |
 | [ecs/](./ecs/) | 31 | README ✅ | ECS — fondation (00-11) + contrats d'exécution |
 | [imprimerie/](./imprimerie/) | 4 | README ✅ | Bruit machines industrielles (Imprimerie) |
