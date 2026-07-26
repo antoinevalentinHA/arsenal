@@ -1,0 +1,32 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Déshumidificateur — Consigne manuelle
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Porte la CONSIGNE du titulaire manuel (autorité de domaine, contrat
+#   deshumidificateur/autorite_de_domaine.md §3) : l'état demandé
+#   ∈ {on, off} (surface binaire {marche, arrêt}). Vocabulaire aligné sur
+#   `target_state` de l'écrivain unique `script.set_deshumidificateur_state`.
+#
+# 🧩 Nature :
+#   Porteur de consigne (helper). Écrit UNIQUEMENT par la primitive
+#   supervisée d'entrée (script.deshumidificateur_entrer_mode_manuel),
+#   AVANT le transfert d'autorité (séquence atomique). Ignoré tant que le
+#   régime est automatique.
+#
+# ⚠️ Anti-fallback :
+#   Un état unknown/unavailable NE VAUT PAS un état : il rend la décision
+#   exécutoire (sensor.deshumidificateur_etat_commande) INDISPONIBLE.
+#   Pas de `initial:` — bootstrap ≠ fallback.
+#
+# 🔗 Consommé par :
+#   - sensor.deshumidificateur_etat_commande (décision exécutoire dérivée)
+#
+# 📍 État actuel : ÉCHAFAUDAGE INERTE (bascule ultérieure).
+# ==========================================================
+
+deshumidificateur_consigne_manuelle:
+  name: "Déshumidificateur — Consigne manuelle"
+  options:
+    - "on"
+    - "off"
+  icon: mdi:hand-back-right

@@ -1,0 +1,31 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Déshumidificateur – Revenir en mode automatique (primitive supervisée)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Primitive backend de RETOUR en régime automatique (autorité de domaine,
+#   contrat deshumidificateur/autorite_de_domaine.md §4) : transfère
+#   l'autorité au titulaire Arsenal (titulaire → automatique). Restitution
+#   EXPLICITE et tracée.
+#
+# 🧱 PRINCIPE
+#   - N'écrit AUCUN relais (écrivain unique préservé)
+#   - La consigne manuelle est LAISSÉE TELLE QUELLE et ignorée tant que le
+#     régime est automatique (jamais effacée — pas de `initial:`)
+#   - Aucune reprise silencieuse : la restitution est un geste
+#   - Appelée par l'UI ; l'UI n'orchestre pas la transition
+#
+# 📍 État actuel : ÉCHAFAUDAGE INERTE (bascule ultérieure).
+# ==========================================================
+
+deshumidificateur_revenir_mode_automatique:
+  alias: "Deshumidificateur - Revenir en mode automatique (primitive supervisée)"
+  mode: single
+  max_exceeded: silent
+
+  sequence:
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.deshumidificateur_titulaire_autorite
+      data:
+        option: automatique

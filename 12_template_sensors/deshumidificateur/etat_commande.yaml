@@ -1,0 +1,74 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR (DÉSHUMIDIFICATEUR)
+# ----------------------------------------------------------
+# 📛 Nom UI :
+#   Déshumidificateur — État commandé (décision exécutoire)
+#
+# 🎯 Rôle :
+#   DÉCISION EXÉCUTOIRE unique du déshumidificateur (autorité de domaine,
+#   contrat deshumidificateur/autorite_de_domaine.md §2). Dérivée PURE de :
+#     - le titulaire (input_select.deshumidificateur_titulaire_autorite)
+#     - la décision automatique (binary_sensor.deshumidificateur_cave_demarrage_recommande)
+#     - la consigne manuelle (input_select.deshumidificateur_consigne_manuelle)
+#   En régime automatique : vaut la décision auto. En régime manuel : vaut
+#   la consigne. Vocabulaire d'exécution : {on, off} (= target_state).
+#
+# 🧱 Principe Arsenal :
+#   - Décision PURE (aucun effet de bord, aucune mémoire, aucune tempo)
+#   - N'écrit aucun relais, ne lit aucun état physique
+#   - La décision auto reste calculée et exposée comme décision THÉORIQUE
+#     non exécutoire quand le titulaire est manuel (§2)
+#
+# ⚠️ Anti-fallback strict (§2) :
+#   `availability` = vrai UNIQUEMENT si le titulaire porte une valeur valide
+#   ET la source qu'il désigne est valide. À défaut → indisponible. Un
+#   unknown/unavailable NE VAUT NI 'automatique', NI un état — aucune valeur
+#   substituée.
+#
+# 🔌 Consommé par :
+#   - (à venir, bascule) l'automation d'application (consommateur exécutoire
+#     unique). AUCUN consommateur d'exécution à ce stade : ÉCHAFAUDAGE INERTE —
+#     l'exécution suit encore le pipeline existant (demarrage_recommande →
+#     activation/desactivation → script.set_deshumidificateur_state).
+#
+# 📍 Entité :
+#   sensor.deshumidificateur_etat_commande
+# ==========================================================
+
+- sensor:
+    - name: "Deshumidificateur Etat Commande"
+      unique_id: deshumidificateur_etat_commande
+      default_entity_id: sensor.deshumidificateur_etat_commande
+
+      availability: >
+        {% set t = states('input_select.deshumidificateur_titulaire_autorite') %}
+        {% set auto = states('binary_sensor.deshumidificateur_cave_demarrage_recommande') %}
+        {% set cons = states('input_select.deshumidificateur_consigne_manuelle') %}
+        {{ (t == 'automatique' and auto in ['on', 'off'])
+           or (t == 'manuel' and cons in ['on', 'off']) }}
+
+      state: >
+        {% if is_state('input_select.deshumidificateur_titulaire_autorite', 'manuel') %}
+          {{ states('input_select.deshumidificateur_consigne_manuelle') }}
+        {% else %}
+          {{ states('binary_sensor.deshumidificateur_cave_demarrage_recommande') }}
+        {% endif %}
+
+      icon: >
+        {% set m = this.state %}
+        {% if m == 'on' %} mdi:air-humidifier
+        {% elif m == 'off' %} mdi:air-humidifier-off
+        {% else %} mdi:help-circle-outline
+        {% endif %}
+
+      attributes:
+        titulaire: >
+          {{ states('input_select.deshumidificateur_titulaire_autorite') }}
+        source_decision: >
+          {% if is_state('input_select.deshumidificateur_titulaire_autorite', 'manuel') %}
+            consigne manuelle
+          {% else %}
+            décision automatique
+          {% endif %}
+        etat_theorique: >
+          {{ states('binary_sensor.deshumidificateur_cave_demarrage_recommande') }}
