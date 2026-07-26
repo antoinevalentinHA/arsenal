@@ -285,6 +285,37 @@ L'exécuteur n'est pas modifié pour l'ajout d'une cible de niveau A ou B.
 
 ---
 
+## 14. Suivi — état d'activation de l'exécuteur (observation C40)
+
+> **Statut audité (2026-07-26) : exécuteur DORMANT — aucun appelant en runtime.**
+
+Le contre-audit mené lors du retrait du support déshumidificateur (C40) a établi, par
+recoupement de plusieurs angles indépendants sur le dépôt, que `bot_transaction_execute`
+**n'a aucun invocateur** — pour **aucune cible**, y compris `bot_chambre_parents` :
+
+- aucun `service:`/`action: script.bot_transaction_execute` ;
+- aucune invocation indirecte (`script.turn_on`/`toggle` ciblant le script) ;
+- aucun appel de service templaté susceptible de résoudre vers lui ;
+- aucune utilisation du paramètre `target_bot` hors la définition du script ;
+- `switch.bot_chambre_parents` n'est écrit nulle part dans `10_scripts/` ou `11_automations/`.
+
+L'exécuteur est donc **seulement défini**, jamais exercé. Son unique cible résiduelle au
+registre (§4, `bot_chambre_parents`, niveau A) est elle-même sans chemin d'actionnement actif.
+
+**Décision laissée ouverte (hors périmètre C40)** — deux options, au choix du propriétaire :
+
+1. **Retrait complet** de la couche (`bot_transaction_execute`, ses helpers `bot_tx_*`,
+   l'entrée registre `bot_chambre_parents`, le sensor `bot_tx_running`, ce contrat et son
+   checker) — si `bot_chambre_parents` n'a pas d'usage prévu.
+2. **Conservation en réserve** — capacité générique documentée, réactivable par ajout
+   d'un appelant + entrée registre (§13), sans dette de comportement (rien ne tourne).
+
+Aucune action n'est requise tant que l'option n'est pas tranchée : l'exécuteur dormant ne
+produit aucun effet runtime. Cette note existe pour que la décision soit **explicite** le
+jour venu, et non subie.
+
+---
+
 ## Annexe A — Entrée canonique de la transaction
 
 Paramètres reçus par le script souverain :
