@@ -1,12 +1,14 @@
 # ==========================================================
 # 🧠 ARSENAL — INPUT_NUMBER
-#     Arrosage / Rain Bird — Durée station 1 (manuel)
+#     Arrosage / Rain Bird — Durée d'arrosage (partagée)
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Stocker la durée (minutes) de l'arrosage manuel supervisé
-#   de la station 1, réglable par l'opérateur. Lue et bornée
+#   Stocker la durée (minutes) d'arrosage de la station,
+#   réglable par l'opérateur. Réglage PARTAGÉ : lu et borné
 #   par le script `arrosage_rain_bird_station_1_courte_supervisee`
-#   avant d'être appliquée à la durée native Rain Bird.
+#   (commande manuelle supervisée) ET réutilisé par la décision
+#   d'arrosage automatique V1 (contrat 17_decision_v1 §5), avant
+#   d'être appliqué à la durée native Rain Bird.
 #
 # 🧩 PÉRIMÈTRE
 #   - Stockage persistant uniquement
@@ -27,7 +29,7 @@
 # ==========================================================
 
 arrosage_rainbird_station_1_duree_minutes:
-  name: "Arrosage Rain Bird — Durée station 1"
+  name: "Arrosage Rain Bird — Durée d'arrosage"
   min: 1
   max: 60
   step: 1
