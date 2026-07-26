@@ -89,25 +89,6 @@ views:
 
           - type: custom:button-card
             template: section_header
-            name: ⚙️ Arrosage manuel
-
-          - type: markdown
-            content: >
-              <div style="font-size: 13px; line-height: 1.45;">
-              Durée de la commande manuelle supervisée de la station 1.
-              Réglage <b>uniquement</b> : aucun arrosage n'est déclenché ici.
-              </div>
-
-          - type: tile
-            entity: input_number.arrosage_rainbird_station_1_duree_minutes
-            name: Durée station 1 (min)
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
-
-          - type: custom:button-card
-            template: section_header
             name: ⚙️ Arrosage automatique
 
           - type: markdown
@@ -167,3 +148,24 @@ views:
               - type: tile
                 entity: input_datetime.arrosage_fenetre_fin
                 name: Fin
+
+          - type: custom:button-card
+            template: section_header
+            name: ⚙️ Durée d'arrosage
+
+          - type: markdown
+            content: >
+              <div style="font-size: 13px; line-height: 1.45;">
+              Durée d'arrosage <b>partagée</b> : elle s'applique à la commande
+              manuelle supervisée <b>comme</b> à l'arrosage <b>automatique</b> V1
+              (réglage réutilisé, pas redéfini). Réglage <b>uniquement</b> : aucun
+              arrosage n'est déclenché ici.
+              </div>
+
+          - type: tile
+            entity: input_number.arrosage_rainbird_station_1_duree_minutes
+            name: Durée d'arrosage (min)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
