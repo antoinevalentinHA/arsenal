@@ -5,7 +5,7 @@
 
 | Champ | Valeur |
 |---|---|
-| **Statut** | **En vigueur — échafaudage + bascule + UI livrés (§85.8).** L'application (consommateur exécutoire unique) suit `sensor.chauffage_mode_commande` (auto **ou** consigne manuelle) via l'écrivain unique ; `decision_centrale` décide sans appeler l'exécutif ; iso-comportement en auto ; override `mode_confort_chauffage` migré (contexte panne système, non exécutoire en manuel). **UI de reprise en main livrée** (sélecteur d'autorité d'intention + affichage conditionnel). Reste la **validation terrain** puis la clôture fonctionnelle. |
+| **Statut** | ✅ **En vigueur — pilote fonctionnellement clos (C39, terrain validé le 2026-07-25).** L'application (consommateur exécutoire unique) suit `sensor.chauffage_mode_commande` (auto **ou** consigne manuelle) via l'écrivain unique ; `decision_centrale` décide sans appeler l'exécutif ; iso-comportement en auto ; override `mode_confort_chauffage` migré (contexte panne système, non exécutoire en manuel) ; UI de reprise en main (sélecteur d'autorité d'intention + affichage conditionnel). Réserves non bloquantes : anti-court-cycle par dérogation (délégué chaudière) ; protection batterie critique = chantier séparé. |
 | **Domaine** | Chauffage. Exécution **déléguée** au boiler bridge / chaudière (Netatmo) ; **aucun actionneur physique Arsenal**. Commande **mono-zone** (une consigne unique de domaine). |
 | **Instancie** | Doctrine transverse [`autorite_de_domaine.md`](../../architecture/03_doctrines/autorite_de_domaine.md). |
 | **Patrons** | Pilotes VMC [`vmc.md`](../vmc.md) §16 et climatisation [`16_autorite_de_domaine_climatisation.md`](../climatisation/16_autorite_de_domaine_climatisation.md) §16 (C37, terrain validé). |
@@ -215,7 +215,7 @@ Elles demeurent **exposées** comme information (« Arsenal aurait réduit : fen
 
 ## 85.8 État de l'implémentation
 
-**Échafaudage + bascule + UI livrés ; reste la validation terrain puis la clôture fonctionnelle.**
+**Échafaudage + bascule + UI livrés ; terrain validé ; pilote fonctionnellement clos (C39, 2026-07-25).**
 
 - **Livré (échafaudage).** Porteur du titulaire `input_select.chauffage_titulaire_autorite`
   (`automatique`/`manuel`, sans `initial:`) ; porteur de la consigne manuelle

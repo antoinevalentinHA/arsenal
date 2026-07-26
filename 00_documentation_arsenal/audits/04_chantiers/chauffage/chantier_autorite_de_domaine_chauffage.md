@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Appliquer la doctrine [`autorite_de_domaine.md`](../../../architecture/03_doctrines/autorite_de_domaine.md) au domaine **chauffage** : réconcilier la **souveraineté machine permanente d'Arsenal** — écrite en toutes lettres dans plusieurs contrats — avec la formule **« unicité de l'autorité, révocabilité de sa délégation »**, sur le patron des pilotes **VMC** (contrat `vmc.md` §16) et **climatisation** (contrat `16_…` §16, C37, terrain validé). Exécution côté chauffage du dossier transverse **`D-C36-L4`** (branche restée dormante après la promotion de la branche climatisation en C37). |
 | **Domaine** | Chauffage. Dépendances doctrinales transverses (autorité de domaine, commandabilité). |
-| **Statut** | **ACTIF (2026-07-25) — RUNTIME + UI LIVRÉS ; reste la validation terrain.** UI de reprise en main livrée (section « Autorité & reprise en main » : sélecteur d'autorité d'intention `input_select.chauffage_autorite_intention` + automations `10240000000029`/`030` ; manuel → régime `{confort, réduit}` + décision exécutoire ; auto → décision + diagnostic). Antérieurement : **ÉCHAFAUDAGE + BASCULE LIVRÉS.** Ouverture → cadrage (D1–D9) → contrat [`85_autorite_de_domaine_chauffage.md`](../../../contrats/chauffage/85_autorite_de_domaine_chauffage.md) → échafaudage → **bascule** : `automation.chauffage_application` (id `10240000000028`) est le **consommateur exécutoire unique** de `sensor.chauffage_mode_commande` via l'écrivain unique ; `decision_centrale` décide (raison + `mode_session`) et **émet** `chauffage_execution_requise` sans appeler l'exécutif ; retry + `modification_consigne` rejouent `mode_commande` ; **CH-4** swap (`decision_centrale` → `execution_mode_commande`, net inchangé). **Convergence boot ordonnée** (réconciliation résidu → décision → application unique ; trigger `systeme_stable` retiré de `decision_centrale_trigger`). **Override migré** : toggle « Confort forcé » retiré, `mode_confort_chauffage` = contexte panne système (non exécutoire en manuel), réconciliation panne au boot (id `10040000000005`). **Iso-comportement auto** (`mode_commande == mode_session`). |
+| **Statut** | ✅ **CLOS (2026-07-25) — PILOTE CHAUFFAGE FONCTIONNELLEMENT CLOS, TERRAIN VALIDÉ.** Ouverture → cadrage (D1–D9) → contrat [`85`](../../../contrats/chauffage/85_autorite_de_domaine_chauffage.md) → échafaudage (#597) → bascule (#598 : `automation.chauffage_application` consommateur exécutoire unique ; `decision_centrale` décide + émet l'événement ; override `mode_confort_chauffage` migré, non exécutoire en manuel ; convergence boot ordonnée ; iso-comportement auto) → UI (#599 : sélecteur d'autorité d'intention + affichage conditionnel). **Terrain validé (2026-07-25) — « déployé, validé ».** Réserves non bloquantes : anti-court-cycle par dérogation (délégué chaudière) ; protection batterie critique = chantier séparé (Décision A). Cf. §8-bis. Ouverture → cadrage (D1–D9) → contrat [`85_autorite_de_domaine_chauffage.md`](../../../contrats/chauffage/85_autorite_de_domaine_chauffage.md) → échafaudage → **bascule** : `automation.chauffage_application` (id `10240000000028`) est le **consommateur exécutoire unique** de `sensor.chauffage_mode_commande` via l'écrivain unique ; `decision_centrale` décide (raison + `mode_session`) et **émet** `chauffage_execution_requise` sans appeler l'exécutif ; retry + `modification_consigne` rejouent `mode_commande` ; **CH-4** swap (`decision_centrale` → `execution_mode_commande`, net inchangé). **Convergence boot ordonnée** (réconciliation résidu → décision → application unique ; trigger `systeme_stable` retiré de `decision_centrale_trigger`). **Override migré** : toggle « Confort forcé » retiré, `mode_confort_chauffage` = contexte panne système (non exécutoire en manuel), réconciliation panne au boot (id `10040000000005`). **Iso-comportement auto** (`mode_commande == mode_session`). |
 | **Priorité** | **P2** — enjeu structurant, sans risque technique immédiat en phase d'ouverture (documentaire). Suit la clôture de C37 (doctrine posée, pilotes VMC + clim démontrés de bout en bout). |
 | **Ouvert le** | 2026-07-25. Promu depuis **`D-C36-L4`** (③ arbitrage dormant, essaimé de C36) sur go opérateur. |
-| **Prochain jalon** | **Validation terrain** : les deux régimes, prise/commande/restitution par le sélecteur, affichage conditionnel manuel↔auto, convergence au boot, override migré (résidu purgé, panne préservée). Puis **clôture fonctionnelle** du pilote chauffage. |
-| **Registre** | Chantier **C39** — ① Actifs (ouverture), cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). Branche **chauffage** de `D-C36-L4` (la branche **climatisation** a été promue en **C37**, close). **Ce document est la source faisant foi pointée par la ligne.** |
+| **Prochain jalon** | *(aucun — chantier clos).* Une éventuelle extension (consigne de température, commande par pièce via TRV — franchit VP8) serait un **nouvel arbitrage**, hors périmètre de ce pilote (§85.3). Réserve : protection batterie critique impérative = chantier séparé (Décision A, §85.5). |
+| **Registre** | Chantier **C39** — ⑤ **Clos récents**, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). Branche **chauffage** de `D-C36-L4` (close) ; branche **climatisation** = **C37** (close). **Ce document est la source faisant foi pointée par la ligne.** |
 
 > **Portée.** Chantier **d'ouverture.** Aucun helper, aucune UI, aucun runtime, aucune modification
 > de contrat à ce stade. Les patrons VMC/clim §16 sont une **référence**, non un gabarit à décalquer :
@@ -243,6 +243,40 @@ Selon le tranchage du §5.1 :
 
 > **Cohérence interne.** Les critères de l'ouverture sont **documentaires, donc solvables sans preuve
 > terrain** (doctrine [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md)).
+
+---
+
+## 8-bis. Clôture fonctionnelle du pilote — SOLDÉE (2026-07-25)
+
+Le pivot §5.1 étant **positif**, le chantier a déroulé la feuille de route — **cadrage → contrat →
+runtime (échafaudage + bascule) → UI → validation terrain** — et est **fonctionnellement clos**.
+
+- **Cadrage** : décisions D1–D9 actées ([`cadrage_autorite_de_domaine_mode_manuel_chauffage.md`](../../02_conception/chauffage/cadrage_autorite_de_domaine_mode_manuel_chauffage.md)).
+- **Contrat** : [`85_autorite_de_domaine_chauffage.md`](../../../contrats/chauffage/85_autorite_de_domaine_chauffage.md) (§85.1–§85.8).
+- **Runtime — échafaudage** (#597) : porteurs `chauffage_titulaire_autorite` + `…_consigne_manuelle`
+  (sans `initial:`), décision exécutoire dérivée `sensor.chauffage_mode_commande` (anti-fallback),
+  primitives supervisées.
+- **Runtime — bascule** (#598) : `automation.chauffage_application` = **consommateur exécutoire
+  unique** de `mode_commande` via l'écrivain unique ; `decision_centrale` décide (raison + `mode_session`)
+  et **émet** `chauffage_execution_requise` sans appeler l'exécutif ; retry + `modification_consigne`
+  rejouent `mode_commande` ; **CH-4** swap (net inchangé) ; **convergence boot ordonnée** (réconciliation
+  résidu → décision → application unique) ; **override `mode_confort_chauffage` migré** (double rôle :
+  levier utilisateur retiré, contexte panne système préservé, non exécutoire en manuel). Iso-comportement
+  en auto (`mode_commande == mode_session`).
+- **UI** (#599) : sélecteur d'autorité d'intention (`chauffage_autorite_intention` + automations
+  `10240000000029`/`030`) + affichage conditionnel — manuel → régime `{confort, réduit}` + décision
+  exécutoire ; auto → décision + diagnostic ; Historique dans les deux régimes.
+- **Validation terrain (2026-07-25)** : opérateur — **déployé, validé** ; les deux régimes,
+  prise / commande / restitution, affichage conditionnel, convergence au boot, override migré.
+
+**Réserves, non bloquantes** : anti-court-cycle par **dérogation** (exécution déléguée chaudière/Netatmo,
+figure C38, §85.5, D8) ; protection **batterie critique** impérative = chantier séparé à démontrer
+(Décision A). **Atouts du domaine** confirmés sur tout l'arc : écrivain d'exécution **déjà unique**
+(CH-4/R-CALL-1), **aucun watchdog ré-asserteur** à démanteler, **aucune dépendance de séquencement**
+type C30.
+
+> **Solvabilité.** La clôture s'appuie sur des livrables mergés (contrat + runtime + UI, CI verte) et la
+> **validation terrain** de l'opérateur : preuve d'usage, pas seulement documentaire.
 
 ---
 
