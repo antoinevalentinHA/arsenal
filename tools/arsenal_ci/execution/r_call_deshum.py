@@ -9,7 +9,7 @@ l'automation d'application (consommateur executoire unique) et les deux retry
 transactionnels. Tout invocateur hors de cet ensemble est une rupture de
 souverainete d'execution.
 
-Deux invariants STRUCTURELS (topologie d'appel), analogues a CH-4/R-CALL-1 mais
+Trois invariants STRUCTURELS (topologie d'appel), analogues a CH-4/R-CALL-1 mais
 CIBLANT le domaine deshumidificateur :
 
   1. NUMERUS CLAUSUS — les seuls fichiers qui invoquent
@@ -18,6 +18,11 @@ CIBLANT le domaine deshumidificateur :
   2. ANTI-ROUTAGE — aucun appelant ne route le deshumidificateur via l'executeur
      switchbot generique `script.bot_transaction_execute`
      (`target_bot: deshumidificateur`). Une seule primitive physique legitime.
+  3. APPEL DIRECT INTERDIT (I1, migre du checker switchbot en C40) — aucun
+     `switch.turn_on/off/toggle` direct sur `switch.deshumidificateur` hors
+     l'ecrivain unique (`10_scripts/deshumidificateur/forcer_etat.yaml`, qui
+     DEFINIT `set_deshumidificateur_state`). La souverainete d'execution du
+     domaine est portee par cette garde dediee, pas par le checker generique.
 
 Identite des appelants : par CHEMIN DE FICHIER relatif. Un deplacement d'un
 appelant contractualise DOIT casser la CI et exiger un amendement.
@@ -51,6 +56,11 @@ CIBLE = "script.set_deshumidificateur_state"
 # Cible 2 : l'executeur switchbot generique (anti-routage deshum).
 EXECUTEUR_BOT = "script.bot_transaction_execute"
 BOT_DESHUM = "deshumidificateur"
+
+# Cible 3 : appel direct a l'entite physique, interdit hors ecrivain unique (I1).
+ENTITE_PHYSIQUE = "switch.deshumidificateur"
+ECRIVAIN_PHYSIQUE_FICHIER = "10_scripts/deshumidificateur/forcer_etat.yaml"
+_SERVICES_DIRECTS = frozenset({"switch.turn_on", "switch.turn_off", "switch.toggle"})
 
 # Allow-list. MIROIR de l'enumeration du contrat ; garde par le meta-test.
 APPELANTS_AUTORISES = frozenset(
@@ -139,6 +149,48 @@ def sites_routage(doc) -> List[str]:
     return trouves
 
 
+def _norm_ids(valeur) -> List[str]:
+    if isinstance(valeur, str):
+        return [valeur]
+    if isinstance(valeur, list):
+        return [x for x in valeur if isinstance(x, str)]
+    return []
+
+
+def _entites_appel(noeud: dict) -> List[str]:
+    """entity_id d'un noeud d'appel (target / data / clef directe)."""
+    ids: List[str] = []
+    for cle in ("target", "data"):
+        sous = noeud.get(cle)
+        if isinstance(sous, dict):
+            ids.extend(_norm_ids(sous.get("entity_id")))
+    ids.extend(_norm_ids(noeud.get("entity_id")))
+    return ids
+
+
+def _parcourir_direct(noeud, trouves: List[str]) -> None:
+    """Sites `switch.turn_on/off/toggle` visant l'entite physique deshum."""
+    if isinstance(noeud, dict):
+        appel = None
+        for cle in _CLES_APPEL:
+            val = noeud.get(cle)
+            if isinstance(val, str) and val in _SERVICES_DIRECTS:
+                appel = cle
+        if appel and ENTITE_PHYSIQUE in _entites_appel(noeud):
+            trouves.append(appel)
+        for valeur in noeud.values():
+            _parcourir_direct(valeur, trouves)
+    elif isinstance(noeud, list):
+        for element in noeud:
+            _parcourir_direct(element, trouves)
+
+
+def sites_appel_direct(doc) -> List[str]:
+    trouves: List[str] = []
+    _parcourir_direct(doc, trouves)
+    return trouves
+
+
 def analyser_arbre(
     fichiers: Mapping[str, object],
     autorises: frozenset = APPELANTS_AUTORISES,
@@ -148,6 +200,7 @@ def analyser_arbre(
 
     porteurs: Dict[str, List[str]] = {}
     routeurs: Dict[str, List[str]] = {}
+    directs: Dict[str, List[str]] = {}
     for rel, doc in fichiers.items():
         sc = sites_cible(doc)
         if sc:
@@ -155,6 +208,9 @@ def analyser_arbre(
         sr = sites_routage(doc)
         if sr:
             routeurs[rel] = sr
+        sd = sites_appel_direct(doc)
+        if sd:
+            directs[rel] = sd
 
     # 1. Numerus clausus : appelants non autorises de l'ecrivain unique.
     for rel in sorted(porteurs):
@@ -196,7 +252,29 @@ def analyser_arbre(
                 )
             )
 
-    # 3. Divergence inverse (le contrat mentirait sur le runtime).
+    # 3. Appel direct interdit a switch.deshumidificateur hors ecrivain unique (I1).
+    for rel in sorted(directs):
+        if rel != ECRIVAIN_PHYSIQUE_FICHIER:
+            for cle in directs[rel]:
+                violations.append(
+                    Violation(
+                        rule=RULE_ID,
+                        message=(
+                            f"Appel direct interdit a '{ENTITE_PHYSIQUE}' "
+                            f"(switch.turn_on/off/toggle). Seul l'ecrivain unique "
+                            f"'{ECRIVAIN_PHYSIQUE_FICHIER}' "
+                            f"(script.set_deshumidificateur_state) commande l'entite "
+                            f"physique (contrat §2)."
+                        ),
+                        source=rel,
+                        target=ENTITE_PHYSIQUE,
+                        file=rel,
+                        host_key=cle,
+                        severity=Severity.BLOCKING,
+                    )
+                )
+
+    # 4. Divergence inverse (le contrat mentirait sur le runtime).
     for rel in sorted(autorises):
         if rel not in porteurs:
             violations.append(

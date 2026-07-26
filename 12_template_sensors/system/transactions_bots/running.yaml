@@ -9,8 +9,8 @@
 #   - Derive des locks par cible
 #
 # 🔗 DEPENDANCES
-#   - input_boolean.bot_tx_lock_deshumidificateur
 #   - input_boolean.bot_tx_lock_bot_chambre_parents
+#   (support déshumidificateur retiré — C40 ; déshum hors registre switchbot)
 #
 # 🚫 NE FAIT PAS
 #   - Ne remplace pas les locks individuels
@@ -29,8 +29,4 @@
       unique_id: bot_tx_running
       icon: mdi:cog-sync
       state: >
-        {{
-          is_state('input_boolean.bot_tx_lock_deshumidificateur', 'on')
-          or
-          is_state('input_boolean.bot_tx_lock_bot_chambre_parents', 'on')
-        }}
+        {{ is_state('input_boolean.bot_tx_lock_bot_chambre_parents', 'on') }}

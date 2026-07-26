@@ -5,7 +5,7 @@
 
 | Champ | Valeur |
 |---|---|
-| **Statut** | **Cible contractuelle — échafaudage + bascule + UI livrés ; validation terrain à venir (§11).** L'application est le consommateur exécutoire unique de la décision dérivée ; `activation`/`desactivation` sont producteurs de décision ; retry souverain ; garde CI numerus clausus + anti-routage ; UI « Autorité & reprise en main » (intention + médiation + affichage conditionnel). Retrait physique switchbot **déféré** (PR C40 dédiée, §9). |
+| **Statut** | **En vigueur — chantier C40 CLOS (terrain validé 2026-07-26).** Tout livré : échafaudage, bascule (application = consommateur exécutoire unique ; producteurs de décision ; retry souverain), UI « Autorité & reprise en main » (intention + médiation + affichage conditionnel), garde CI `R-CALL-DESHUM` (numerus clausus + anti-routage + interdiction d'appel direct), retrait physique switchbot (v2.1.0). |
 | **Domaine** | Déshumidificateur cave. Actionneur **SwitchBot mécanique aveugle** (`switch.deshumidificateur` ; aucun retour API) ; état réel = `binary_sensor.deshumidificateur_actif` (`power > 100 W`). **Mono-appareil.** |
 | **Instancie** | Doctrine transverse [`autorite_de_domaine.md`](../../architecture/03_doctrines/autorite_de_domaine.md). |
 | **Patrons** | Pilotes VMC [`vmc.md`](../vmc.md) §16 · climatisation [`16_autorite_de_domaine_climatisation.md`](../climatisation/16_autorite_de_domaine_climatisation.md) §16 · chauffage [`85_autorite_de_domaine_chauffage.md`](../chauffage/85_autorite_de_domaine_chauffage.md) (tous clos, terrain validé). |
@@ -42,9 +42,11 @@ Arsenal reste l'autorité *par défaut*, mais cette autorité est **délégable 
   `set_deshumidificateur_state` sont **l'automation d'application** (consommateur exécutoire unique) et
   le **retry** transactionnel (`retry_on`, `retry_off`). Tout autre appelant = rupture de souveraineté
   d'exécution ; ajout par amendement explicite, jamais runtime silencieux. **Garde CI** : `R-CALL-DESHUM`
-  (`tools/arsenal_ci/execution/r_call_deshum.py`) — miroir mécanique de l'allow-list ci-dessous, gardé
-  par méta-test contrat↔constante, + interdiction de tout routage déshum via l'exécuteur switchbot
-  générique (`script.bot_transaction_execute`, cf. §9).
+  (`tools/arsenal_ci/execution/r_call_deshum.py`) — trois invariants : (1) miroir mécanique de l'allow-list
+  ci-dessous, gardé par méta-test contrat↔constante ; (2) interdiction de tout routage déshum via
+  l'exécuteur switchbot générique (`script.bot_transaction_execute`, cf. §9) ; (3) **interdiction d'appel
+  direct** à `switch.deshumidificateur` (`switch.turn_on/off/toggle`) hors l'écrivain unique
+  (`10_scripts/deshumidificateur/forcer_etat.yaml`) — invariant I1 **migré** du checker switchbot en C40.
 
   <!-- R-CALL-DESHUM:ALLOWLIST:BEGIN -->
   - `11_automations/deshumidificateur/application.yaml`
@@ -164,10 +166,12 @@ primitive physique légitime**, tout **routage déshum via cet exécuteur est in
 Le **retrait physique** du support déshumidificateur de `bot_transaction_execute` (branches
 `is_deshumidificateur` + helpers dormants `input_boolean.bot_tx_lock_deshumidificateur`,
 `timer.bot_tx_cooldown_deshumidificateur`, `counter.bot_tx_failures_deshumidificateur`, capteurs
-diagnostic associés) touche un **contrat système partagé stable** (`switchbot_transactionnel.md` v2.0.1,
-sert aussi `bot_chambre_parents`) et son checker : il est **déféré à une PR C40 dédiée**. La garantie
-fonctionnelle (« une seule primitive physique légitime ») est **déjà assurée** par la garde CI ci-dessus ;
-le retrait physique ne fait que supprimer des branches prouvées mortes.
+diagnostic associés) est **livré (C40)** : branches et helpers supprimés (aucun appelant ne les
+invoquait) ; agrégateur `bot_tx_running` réduit à `bot_chambre_parents` ; contrat partagé
+[`switchbot_transactionnel.md`](../switchbot_transactionnel.md) révisé **v2.0.1 → v2.1.0** (déshum
+hors registre §4 ; niveau B conservé comme capacité sans cible active) + son checker de-déshummisé.
+L'invariant I1 « aucun appel direct à `switch.deshumidificateur` » est **migré** vers `R-CALL-DESHUM`
+(§2). Résultat : **une seule primitive physique légitime**, gouvernée par le domaine.
 
 ---
 
@@ -203,9 +207,9 @@ le retrait physique ne fait que supprimer des branches prouvées mortes.
   - **retry souverain** `retry_on`/`retry_off` (§7) ;
   - **garde CI** `R-CALL-DESHUM` : numerus clausus {application, retry_on, retry_off} + anti-routage
     switchbot (§2/§9).
-- **Déféré (PR C40 dédiée)** : retrait physique du support déshum de `bot_transaction_execute` +
-  révision du contrat partagé `switchbot_transactionnel.md` + son checker (§9). Garantie fonctionnelle
-  déjà assurée par la garde CI.
+- **Livré (retrait physique)** : support déshum retiré de `bot_transaction_execute` (branches + helpers
+  dormants) ; `bot_tx_running` réduit à `bot_chambre_parents` ; `switchbot_transactionnel.md`
+  v2.0.1 → v2.1.0 + checker de-déshummisé ; invariant I1 (appel direct) migré vers `R-CALL-DESHUM` (§9).
 - **Livré (UI)** : section « Autorité & reprise en main » — porteur d'intention
   `input_select.deshumidificateur_autorite_intention` (`{automatique, manuel}`, sans `initial:`) +
   2 automations de médiation (exécution intention→primitive gardée `intention≠titulaire` + `systeme_stable` ;

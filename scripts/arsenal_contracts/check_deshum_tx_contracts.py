@@ -77,31 +77,17 @@ def has_switch_write(text: str) -> bool:
     return pattern.search(text) is not None
 
 
-def test_tx_entities_declared():
-    expected_unique_id_entities = [
-        "bot_tx_busy_deshumidificateur",
-        "bot_tx_cooldown_deshumidificateur",
-    ]
-
-    expected_mapping_entities = [
-        "bot_tx_failures_deshumidificateur",
-        "bot_tx_lock_deshumidificateur",
-        "bot_tx_cooldown_deshumidificateur",
-    ]
-
-    for entity_id in expected_unique_id_entities:
-        assert_ok(
-            contains_unique_id(entity_id),
-            f"Entite TX template non declaree par unique_id : {entity_id}",
-        )
-
-    for entity_id in expected_mapping_entities:
-        assert_ok(
-            contains_mapping_key(entity_id),
-            f"Entite TX helper/timer/counter non declaree par cle : {entity_id}",
-        )
-
-    print("✔ artefacts TX declares")
+# NOTE C40 — retrait du support déshum de la couche switchbot transactionnelle
+# générique. Deux tests devenus SANS OBJET ont été retirés :
+#   - `test_tx_entities_declared` : les helpers dormants bot_tx_*_deshumidificateur
+#     (lock, cooldown, failures, busy) sont supprimés (aucun appelant) ;
+#   - `test_system_transaction_layer_is_reference_only_for_switch` : la couche
+#     `transactions_bots.yaml` ne référence plus switch.deshumidificateur (déshum
+#     hors registre §4, cf. switchbot_transactionnel.md v2.1.0).
+# Les invariants d'ÉCRIVAIN UNIQUE (écrivain présent, aucun autre writer,
+# automations/guard sans écriture) restent gardés ci-dessous. La souveraineté
+# d'exécution (numerus clausus + anti-routage + interdiction d'appel direct) est
+# par ailleurs portée par R-CALL-DESHUM (autorite_de_domaine.md §2).
 
 
 def test_authorized_execution_script_present_and_writes_switch():
@@ -155,33 +141,6 @@ def test_no_other_physical_switch_writers():
     )
 
     print("✔ aucun writer materiel hors autorite unique")
-
-
-def test_system_transaction_layer_is_reference_only_for_switch():
-    path = ROOT / SYSTEM_TRANSACTION_SCRIPT
-
-    assert_ok(
-        path.is_file(),
-        f"Script transactionnel systeme absent : {SYSTEM_TRANSACTION_SCRIPT}",
-    )
-
-    if not path.is_file():
-        print("✔ couche transactionnelle non testee : fichier absent")
-        return
-
-    text = without_full_line_comments(read(path))
-
-    assert_ok(
-        "switch.deshumidificateur" in text,
-        "Transaction bots : reference switch.deshumidificateur absente",
-    )
-
-    assert_ok(
-        not has_switch_write(text),
-        "Transaction bots : ecriture directe interdite sur switch.deshumidificateur",
-    )
-
-    print("✔ couche transactionnelle sans ecriture directe du switch")
 
 
 def test_domain_automations_do_not_write_switch():
@@ -239,10 +198,8 @@ def test_test_registry_matches_functions():
 
 
 TESTS = [
-    "test_tx_entities_declared",
     "test_authorized_execution_script_present_and_writes_switch",
     "test_no_other_physical_switch_writers",
-    "test_system_transaction_layer_is_reference_only_for_switch",
     "test_domain_automations_do_not_write_switch",
     "test_guard_does_not_write_switch",
     "test_test_registry_matches_functions",

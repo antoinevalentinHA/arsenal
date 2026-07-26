@@ -57,58 +57,49 @@ bot_transaction_execute:
         request_id: "{{ request_id | default('none') }}"
         request_source: "{{ request_source | default('none') }}"
 
-        is_deshumidificateur: "{{ target_bot == 'deshumidificateur' }}"
+        # Registre des cibles (§4). Support déshumidificateur RETIRÉ (C40) : le
+        # déshum est gouverné par son écrivain unique dédié
+        # (script.set_deshumidificateur_state, garde R-CALL-DESHUM), jamais par
+        # cet exécuteur générique. Seul bot_chambre_parents subsiste (niveau A).
         is_bot_chambre_parents: "{{ target_bot == 'bot_chambre_parents' }}"
 
         entity: >
-          {% if is_deshumidificateur %}
-            switch.deshumidificateur
-          {% elif is_bot_chambre_parents %}
+          {% if is_bot_chambre_parents %}
             switch.bot_chambre_parents
           {% else %}
             none
           {% endif %}
 
         proof_level: >
-          {% if is_deshumidificateur %}
-            B
-          {% elif is_bot_chambre_parents %}
+          {% if is_bot_chambre_parents %}
             A
           {% else %}
             none
           {% endif %}
 
         cooldown_entity: >
-          {% if is_deshumidificateur %}
-            timer.bot_tx_cooldown_deshumidificateur
-          {% elif is_bot_chambre_parents %}
+          {% if is_bot_chambre_parents %}
             timer.bot_tx_cooldown_bot_chambre_parents
           {% else %}
             none
           {% endif %}
 
         cooldown_duration: >
-          {% if is_deshumidificateur %}
-            00:00:30
-          {% elif is_bot_chambre_parents %}
+          {% if is_bot_chambre_parents %}
             00:00:10
           {% else %}
             00:00:00
           {% endif %}
 
         lock_entity: >
-          {% if is_deshumidificateur %}
-            input_boolean.bot_tx_lock_deshumidificateur
-          {% elif is_bot_chambre_parents %}
+          {% if is_bot_chambre_parents %}
             input_boolean.bot_tx_lock_bot_chambre_parents
           {% else %}
             none
           {% endif %}
 
         failures_counter: >
-          {% if is_deshumidificateur %}
-            counter.bot_tx_failures_deshumidificateur
-          {% elif is_bot_chambre_parents %}
+          {% if is_bot_chambre_parents %}
             counter.bot_tx_failures_bot_chambre_parents
           {% else %}
             none
