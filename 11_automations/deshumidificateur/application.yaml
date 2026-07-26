@@ -1,0 +1,84 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Déshumidificateur – Application de la décision exécutoire
+#
+#  ID : 10060000000011
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     CONSOMMATEUR EXÉCUTOIRE UNIQUE de la décision de domaine
+#     (autorité de domaine, contrat deshumidificateur/autorite_de_domaine.md §8).
+#     Applique `sensor.deshumidificateur_etat_commande` (auto = décision publiée,
+#     manuel = consigne) via l'écrivain unique `script.set_deshumidificateur_state`.
+#
+#     Consommateur PUR : ne produit AUCUNE décision (pas même au boot — la
+#     production/convergence est portée par convergence_boot + converger_auto).
+#
+#  🔔 IMPULSION UNIQUE (§ exclusivité A/B)
+#     - trigger A : changement d'état de `sensor.deshumidificateur_etat_commande`
+#       (chemin normal — producteur/convergence a modifié l'exécutoire) ;
+#     - trigger B : événement `deshumidificateur_application_requise` — émis par
+#       l'orchestrateur UNIQUEMENT quand l'exécutoire NE change PAS mais qu'une
+#       convergence physique doit être vérifiée.
+#     A et B sont mutuellement exclusifs par construction (l'événement n'est émis
+#     que si aucun changement d'état n'aura lieu) → jamais deux transactions.
+#
+#  🧵 SÉRIALISATION SANS PERTE
+#     mode: queued (PAS single/silent) : une décision opposée arrivée pendant une
+#     transaction (guard ≤ ~120 s) est MISE EN FILE, jamais rejetée. Chaque run
+#     RELIT `etat_commande` à la prise de main (aucun payload historique) →
+#     convergence vers l'intention la plus récente.
+#
+#  🛡️ ANTI-FALLBACK / IDEMPOTENCE (§2)
+#     - abstention si l'exécutoire ∉ {on, off} (indisponible/invalide) ;
+#     - abstention si l'état réel est déjà conforme ;
+#     - gate `systeme_stable` : aucune application avant stabilisation (neutralise
+#       la fenêtre de restauration au boot — une valeur restaurée n'est jamais
+#       appliquée avant republication).
+#
+#  🧠 AUTORITÉ D'EXÉCUTION
+#     script.set_deshumidificateur_state (écrivain unique ; numerus clausus §2 /
+#     R-CALL déshum : {application, retry_on, retry_off}).
+# ==========================================================
+
+- id: "10060000000011"
+  alias: "Déshumidificateur - Application décision exécutoire"
+  description: >
+    Consommateur exécutoire unique de sensor.deshumidificateur_etat_commande via
+    l'écrivain unique. Impulsion unique (état OU événement, jamais les deux).
+    File sans perte (queued) + relecture live → aucune décision opposée perdue.
+  mode: queued
+  max: 10
+
+  trigger:
+    - platform: state
+      entity_id: sensor.deshumidificateur_etat_commande
+      id: "etat_commande"
+    - platform: event
+      event_type: deshumidificateur_application_requise
+      id: "impulsion"
+
+  condition:
+    # Gate de stabilité : aucune application avant stabilisation (boot).
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+  action:
+    # Relecture LIVE de l'exécutoire au moment où ce run obtient la main
+    # (mode queued → jamais un payload capturé au déclenchement).
+    - variables:
+        cible: "{{ states('sensor.deshumidificateur_etat_commande') }}"
+
+    # Abstention si exécutoire invalide/indisponible OU déjà conforme au réel.
+    - condition: template
+      value_template: >
+        {{ cible in ['on', 'off']
+           and cible != states('binary_sensor.deshumidificateur_actif') }}
+
+    - service: script.set_deshumidificateur_state
+      data:
+        target_state: "{{ cible }}"
+        request_source: "automation.deshumidificateur_application"
+        request_id: >
+          application_{{ now().strftime('%Y%m%dT%H%M%S') }}

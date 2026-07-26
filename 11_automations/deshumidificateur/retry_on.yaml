@@ -23,17 +23,25 @@
 #   - input_text.deshum_guard_last_expected_state
 #   - input_text.deshum_guard_last_request_source
 #   - binary_sensor.deshumidificateur_actif
+#   - sensor.deshumidificateur_etat_commande
 #   - script.set_deshumidificateur_state
+#
+# 🛡️ RETRY SOUVERAIN (autorité de domaine §7 / D9)
+#   Avant toute réémission, RELIT la décision exécutoire courante
+#   (sensor.deshumidificateur_etat_commande) :
+#     - si elle n'est plus « on » (décision changée / bascule de titulaire) →
+#       ANNULATION du retry périmé (aucune réémission) ;
+#     - sinon → réémission de la VALEUR EXÉCUTOIRE COURANTE, jamais un payload
+#       historique.
 #
 # 🚫 NE FAIT PAS
 #   - ne qualifie pas l'effet réel
 #   - ne remplace pas le guard
 #   - ne boucle pas sur ses propres retries
-#   - ne prend aucune decision metier de seuil ou de cycle
+#   - ne réémet jamais une commande devenue non souveraine
 #
 # 🧠 STATUT ARCHITECTURAL
-#   Automation d'invariant defensif.
-#   La reemission reste explicite et exterieure au guard.
+#   Automation d'invariant defensif (appelant légitime — numerus clausus §2).
 # ==========================================================
 
 - id: "10060000000005"
@@ -63,10 +71,17 @@
         {{ states('input_text.deshum_guard_last_request_source')
            != 'automation.deshumidificateur_retry_on' }}
 
+    # D9 — souveraineté : la décision exécutoire courante est toujours « on ».
+    # Si elle a changé depuis l'échec → annulation (aucune réémission).
+    - condition: template
+      value_template: >
+        {{ states('sensor.deshumidificateur_etat_commande') == 'on' }}
+
   action:
     - action: script.set_deshumidificateur_state
       data:
-        target_state: "on"
+        # Valeur EXÉCUTOIRE COURANTE relue (jamais un payload historique).
+        target_state: "{{ states('sensor.deshumidificateur_etat_commande') }}"
         request_source: "automation.deshumidificateur_retry_on"
         request_id: >
           retry_{{ now().strftime('%Y%m%dT%H%M%S') }}

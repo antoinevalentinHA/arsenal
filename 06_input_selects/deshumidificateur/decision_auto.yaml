@@ -1,0 +1,34 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT (DÉSHUMIDIFICATEUR)
+# ----------------------------------------------------------
+# 📛 Nom UI :
+#   Déshumidificateur — Décision automatique publiée
+#
+# 🎯 Rôle :
+#   PORTEUR de la décision automatique PUBLIÉE (branche « auto » de la décision
+#   exécutoire dérivée, contrat deshumidificateur/autorite_de_domaine.md §8).
+#   Écrit UNIQUEMENT par les producteurs de décision auto :
+#     - automation activation / desactivation (discipline de timing steady) ;
+#     - script deshumidificateur_converger_auto (recompute boot / restitution).
+#   Alimente `sensor.deshumidificateur_etat_commande` en régime automatique.
+#
+# 🧱 Principe Arsenal :
+#   - N'est PAS la décision automatique THÉORIQUE : celle-ci reste
+#     `binary_sensor.deshumidificateur_cave_demarrage_recommande` (calculée en
+#     permanence, exposée via `etat_theorique`). Ce porteur est la décision auto
+#     APRÈS discipline de timing (stabilité, min-on/min-off catégorie B).
+#   - Aucun `initial:` — bootstrap ≠ fallback (§4). Une valeur RESTAURÉE est
+#     NON QUALIFIÉE et n'est JAMAIS appliquée avant republication par la
+#     convergence (§4, INV-AUT-6). En régime manuel elle est non exécutoire.
+#   - N'écrit aucun relais.
+#
+# 📍 Entité :
+#   input_select.deshumidificateur_decision_auto
+# ==========================================================
+
+deshumidificateur_decision_auto:
+  name: "Déshumidificateur - Décision automatique publiée"
+  icon: mdi:robot-outline
+  options:
+    - "on"
+    - "off"

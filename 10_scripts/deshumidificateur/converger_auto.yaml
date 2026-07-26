@@ -1,0 +1,76 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Déshumidificateur – Convergence automatique (producteur pur)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Recalculer la décision automatique DÉTERMINISTE de la politique courante et
+#   la PUBLIER dans `input_select.deshumidificateur_decision_auto` (contrat
+#   deshumidificateur/autorite_de_domaine.md §8). Utilisé aux deux points de
+#   « recompute from scratch » :
+#     - boot (après systeme_stable) — contexte: boot ;
+#     - retour explicite à l'automatique — contexte: restitution.
+#
+# 🧱 PRINCIPE — PRODUCTEUR PUR
+#   - PUBLIE `decision_auto` et RETOURNE la valeur publiée ({decision: on|off|none}).
+#   - N'ÉMET PAS l'événement générique `deshumidificateur_application_requise`
+#     (c'est l'ORCHESTRATEUR appelant qui décide de l'impulsion — exclusivité A/B).
+#   - N'APPELLE JAMAIS l'écrivain `set_deshumidificateur_state` (numerus clausus §2 :
+#     seuls application + retry_on + retry_off). N'écrit aucun relais.
+#   - Anti-fallback (§2) : source(s) indisponible(s) → `none` (aucune publication).
+#
+# 🧮 VERDICT
+#   R = décision automatique théorique (binary_sensor…demarrage_recommande)
+#   A = état réel observé (binary_sensor.deshumidificateur_actif)
+#   - contexte boot (conservateur, iso reconciliation ; timers non restaurés = idle) :
+#       R==on ∧ A==off ∧ blocage idle → on ; sinon → A (miroir de l'état RÉEL observé,
+#       jamais la valeur restaurée) ; R/A indispo → none.
+#   - contexte restitution (full policy ; min-on/min-off REDEVENUS opposables en auto) :
+#       R==on → on si A==on ou blocage idle, sinon off ;
+#       R==off → off si A==off ou cycle idle, sinon on (maintien min-on) ;
+#       R/A indispo → none.
+# ==========================================================
+
+deshumidificateur_converger_auto:
+  alias: "Deshumidificateur - Convergence automatique (producteur pur)"
+  mode: single
+  max_exceeded: silent
+
+  fields:
+    contexte:
+      description: "Contexte de convergence : boot (conservateur) ou restitution (full policy)"
+      example: "restitution"
+      selector:
+        select:
+          options:
+            - "boot"
+            - "restitution"
+
+  sequence:
+    - variables:
+        ctx: "{{ contexte | default('restitution') }}"
+        R: "{{ states('binary_sensor.deshumidificateur_cave_demarrage_recommande') }}"
+        A: "{{ states('binary_sensor.deshumidificateur_actif') }}"
+        blocage_idle: "{{ is_state('timer.deshumidificateur_blocage_redemarrage', 'idle') }}"
+        cycle_idle: "{{ is_state('timer.deshumidificateur_cycle', 'idle') }}"
+        decision: >-
+          {% if R not in ['on', 'off'] or A not in ['on', 'off'] %}none{% elif ctx == 'boot' %}{% if R == 'on' and A == 'off' and blocage_idle %}on{% else %}{{ A }}{% endif %}{% else %}{% if R == 'on' %}{% if A == 'on' or blocage_idle %}on{% else %}off{% endif %}{% else %}{% if A == 'off' or cycle_idle %}off{% else %}on{% endif %}{% endif %}{% endif %}
+
+    # Publication (seulement si la décision est qualifiée). Producteur pur :
+    # aucune émission d'événement, aucun appel écrivain.
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ decision in ['on', 'off'] }}"
+          sequence:
+            - service: input_select.select_option
+              target:
+                entity_id: input_select.deshumidificateur_decision_auto
+              data:
+                option: "{{ decision }}"
+
+    # Retour de la valeur publiée (scalaire connu) — sans relire aucun capteur.
+    - variables:
+        reponse:
+          decision: "{{ decision }}"
+    - stop: "converged"
+      response_variable: reponse

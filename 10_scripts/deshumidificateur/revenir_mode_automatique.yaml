@@ -4,18 +4,30 @@
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #   Primitive backend de RETOUR en régime automatique (autorité de domaine,
-#   contrat deshumidificateur/autorite_de_domaine.md §4) : transfère
-#   l'autorité au titulaire Arsenal (titulaire → automatique). Restitution
-#   EXPLICITE et tracée.
+#   contrat deshumidificateur/autorite_de_domaine.md §4). Restitution EXPLICITE
+#   et tracée, avec CONVERGENCE déterministe de la politique automatique courante.
+#
+# 🧭 SÉQUENCE (ordre obligatoire — §4)
+#   1. avant = consigne manuelle (exécutoire courant, titulaire encore MANUEL) ;
+#   2. converger_auto(restitution) → publie decision_auto = D (min-on/min-off
+#      REDEVENUS opposables en auto) et le RETOURNE ; titulaire encore manuel →
+#      etat_commande = consigne (inchangé) → l'application n'est pas déclenchée
+#      prématurément sur decision_auto ;
+#   3. titulaire → automatique (etat_commande bascule consigne → decision_auto) ;
+#   4. impulsion UNIQUE (exclusivité A/B, sur scalaires connus) :
+#        D ∉ {on,off} → ABSTENTION : converger n'a pas qualifié de décision auto
+#          (source indisponible) → on NE transfère PAS l'autorité (reste manuel) ;
+#        D != avant   → le flip a changé l'exécutoire → trigger A porte l'impulsion ;
+#        D == avant   → aucun changement d'état → émettre application_requise (B).
 #
 # 🧱 PRINCIPE
-#   - N'écrit AUCUN relais (écrivain unique préservé)
-#   - La consigne manuelle est LAISSÉE TELLE QUELLE et ignorée tant que le
-#     régime est automatique (jamais effacée — pas de `initial:`)
-#   - Aucune reprise silencieuse : la restitution est un geste
-#   - Appelée par l'UI ; l'UI n'orchestre pas la transition
-#
-# 📍 État actuel : ÉCHAFAUDAGE INERTE (bascule ultérieure).
+#   - N'écrit AUCUN relais ; n'appelle JAMAIS l'écrivain (numerus clausus §2).
+#   - La consigne manuelle est LAISSÉE TELLE QUELLE (jamais effacée ; pas d'initial:).
+#   - Aucune reprise silencieuse : à l'impulsion, l'application lit etat_commande
+#     APRÈS le flip → branche AUTO (decision_auto), JAMAIS la consigne manuelle.
+#   - Aucun recours à une valeur restaurée/périmée : decision_auto est republié
+#     par converger_auto à l'étape 2.
+#   - Appelée par l'UI ; l'UI n'orchestre pas la transition.
 # ==========================================================
 
 deshumidificateur_revenir_mode_automatique:
@@ -24,8 +36,45 @@ deshumidificateur_revenir_mode_automatique:
   max_exceeded: silent
 
   sequence:
-    - service: input_select.select_option
-      target:
-        entity_id: input_select.deshumidificateur_titulaire_autorite
+    # 1. Exécutoire courant AVANT (scalaire connu, lu à la source — pas etat_commande).
+    - variables:
+        avant: "{{ states('input_select.deshumidificateur_consigne_manuelle') }}"
+
+    # 2. Convergence (producteur pur) : publie decision_auto = D, retourne D.
+    - service: script.deshumidificateur_converger_auto
       data:
-        option: automatique
+        contexte: restitution
+      response_variable: conv
+
+    - choose:
+        # Abstention : converger n'a pas qualifié de décision auto exécutoire.
+        # On ne transfère pas l'autorité dans un état auto irrésoluble (anti-fallback).
+        - conditions:
+            - condition: template
+              value_template: "{{ conv.decision not in ['on', 'off'] }}"
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                logger: arsenal.deshumidificateur.autorite
+                message: >
+                  Deshumidificateur revenir_mode_automatique : décision automatique
+                  non qualifiable (source indisponible) — abstention, autorité NON
+                  transférée (reste manuel).
+
+      # 3. Transfert d'autorité (etat_commande : consigne → decision_auto).
+      default:
+        - service: input_select.select_option
+          target:
+            entity_id: input_select.deshumidificateur_titulaire_autorite
+          data:
+            option: automatique
+
+        # 4. Impulsion UNIQUE : événement SEULEMENT si l'exécutoire ne change pas
+        #    (D == avant → pas de trigger A) ; sinon le trigger A porte l'impulsion.
+        - choose:
+            - conditions:
+                - condition: template
+                  value_template: "{{ conv.decision == avant }}"
+              sequence:
+                - event: deshumidificateur_application_requise

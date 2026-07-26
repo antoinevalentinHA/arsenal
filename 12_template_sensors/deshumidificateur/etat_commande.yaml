@@ -6,12 +6,16 @@
 #
 # 🎯 Rôle :
 #   DÉCISION EXÉCUTOIRE unique du déshumidificateur (autorité de domaine,
-#   contrat deshumidificateur/autorite_de_domaine.md §2). Dérivée PURE de :
+#   contrat deshumidificateur/autorite_de_domaine.md §2/§8). Dérivée PURE de :
 #     - le titulaire (input_select.deshumidificateur_titulaire_autorite)
-#     - la décision automatique (binary_sensor.deshumidificateur_cave_demarrage_recommande)
+#     - la décision auto PUBLIÉE (input_select.deshumidificateur_decision_auto)
 #     - la consigne manuelle (input_select.deshumidificateur_consigne_manuelle)
-#   En régime automatique : vaut la décision auto. En régime manuel : vaut
-#   la consigne. Vocabulaire d'exécution : {on, off} (= target_state).
+#   En régime automatique : vaut la décision auto PUBLIÉE (branche « auto »,
+#   produite par activation/desactivation/converger_auto — §8). En régime
+#   manuel : vaut la consigne. Vocabulaire d'exécution : {on, off} (= target_state).
+#
+#   La décision auto THÉORIQUE reste `binary_sensor…demarrage_recommande` (exposée
+#   via `etat_theorique`) : calculée en permanence, non exécutoire en manuel (§2).
 #
 # 🧱 Principe Arsenal :
 #   - Décision PURE (aucun effet de bord, aucune mémoire, aucune tempo)
@@ -26,10 +30,8 @@
 #   substituée.
 #
 # 🔌 Consommé par :
-#   - (à venir, bascule) l'automation d'application (consommateur exécutoire
-#     unique). AUCUN consommateur d'exécution à ce stade : ÉCHAFAUDAGE INERTE —
-#     l'exécution suit encore le pipeline existant (demarrage_recommande →
-#     activation/desactivation → script.set_deshumidificateur_state).
+#   - `automation.deshumidificateur_application` — CONSOMMATEUR EXÉCUTOIRE UNIQUE
+#     (trigger d'état + événement `deshumidificateur_application_requise`). §8.
 #
 # 📍 Entité :
 #   sensor.deshumidificateur_etat_commande
@@ -42,7 +44,7 @@
 
       availability: >
         {% set t = states('input_select.deshumidificateur_titulaire_autorite') %}
-        {% set auto = states('binary_sensor.deshumidificateur_cave_demarrage_recommande') %}
+        {% set auto = states('input_select.deshumidificateur_decision_auto') %}
         {% set cons = states('input_select.deshumidificateur_consigne_manuelle') %}
         {{ (t == 'automatique' and auto in ['on', 'off'])
            or (t == 'manuel' and cons in ['on', 'off']) }}
@@ -51,7 +53,7 @@
         {% if is_state('input_select.deshumidificateur_titulaire_autorite', 'manuel') %}
           {{ states('input_select.deshumidificateur_consigne_manuelle') }}
         {% else %}
-          {{ states('binary_sensor.deshumidificateur_cave_demarrage_recommande') }}
+          {{ states('input_select.deshumidificateur_decision_auto') }}
         {% endif %}
 
       icon: >
@@ -68,7 +70,7 @@
           {% if is_state('input_select.deshumidificateur_titulaire_autorite', 'manuel') %}
             consigne manuelle
           {% else %}
-            décision automatique
+            décision automatique publiée
           {% endif %}
         etat_theorique: >
           {{ states('binary_sensor.deshumidificateur_cave_demarrage_recommande') }}
