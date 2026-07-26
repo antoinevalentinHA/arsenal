@@ -1,0 +1,92 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Déshumidificateur — Sélecteur d'état (autorité de domaine C40)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Un élément du SÉLECTEUR D'ÉTAT de la reprise en main. Un tap prend / change
+#     la main dans l'état porté par variables.consigne (on/off), en déléguant à la
+#     primitive supervisée script.deshumidificateur_entrer_mode_manuel (contrat
+#     deshumidificateur/autorite_de_domaine.md §4) : valider → écrire consigne →
+#     transférer l'autorité. Fonctionne dans les deux régimes (auto → prise de
+#     contrôle ; manuel → changement d'état). Idempotent.
+#
+# 🧱 NATURE
+#     - Template button-card, spécialisation de carte_base_v2
+#     - UI uniquement : n'écrit NI helper, NI exécution. Seule frontière = la
+#       primitive supervisée (écrivain unique, §2).
+#
+# 🎨 SEMANTIQUE (palette de base, usage BINAIRE — cf. ui/couleurs/02_palette.md)
+#     - état ACTIF **en régime manuel** (= l'état que vous avez choisi)
+#         -> 🟢 vert rgba(76,175,80,0.2) (action autorisée / actif)
+#     - tout le reste (l'autre état, ou n'importe quel état en auto)
+#         -> ⚪ gris neutre rgba(158,158,158,0.2)
+#     Le vert n'apparaît QUE si le titulaire est manuel : en auto, aucun état
+#     n'est vert (vous ne décidez pas). L'état (marche/arrêt) est porté par
+#     l'ICÔNE + le libellé.
+#
+# 🔗 DEPENDANCES
+#     - entity   : script.deshumidificateur_entrer_mode_manuel (feedback d'état)
+#     - service  : script.deshumidificateur_entrer_mode_manuel
+#     - variables.consigne     : 'on' | 'off'
+#     - variables.confirmation : texte de confirmation modale
+#     - lecture d'état : sensor.deshumidificateur_etat_commande (surlignage de
+#                        l'état actif — restitution d'état, aucune décision UI)
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation modale OBLIGATOIRE (§4)
+#     - N'expose JAMAIS de commande d'exécution déshumidificateur en direct
+#     - La consigne est passée à la primitive, jamais écrite dans le helper de
+#       consigne par l'UI
+#
+# 🔗 SATELLITE DE : carte_base_v2
+# ==========================================================
+
+carte_action_deshum_mode:
+  template: carte_base_v2
+
+  show_state: false
+  show_icon: true
+  show_name: true
+  color_type: card
+
+  tap_action:
+    action: call-service
+    service: script.deshumidificateur_entrer_mode_manuel
+    confirmation:
+      text: >
+        [[[
+          return variables?.confirmation
+            || "Commander le déshumidificateur (contrôle manuel) ?";
+        ]]]
+    service_data:
+      consigne: '[[[ return variables.consigne ]]]'
+
+  styles:
+    icon:
+      - color: '#111'
+    name:
+      - color: '#111'
+      - font-size: 12px
+      - font-weight: >
+          [[[
+            const cur = states['sensor.deshumidificateur_etat_commande']
+              ? states['sensor.deshumidificateur_etat_commande'].state : null;
+            const tit = states['input_select.deshumidificateur_titulaire_autorite']
+              ? states['input_select.deshumidificateur_titulaire_autorite'].state : null;
+            return (tit === 'manuel' && cur === variables.consigne) ? '700' : '400';
+          ]]]
+    card:
+      - background-color: >
+          [[[
+            const cur = states['sensor.deshumidificateur_etat_commande']
+              ? states['sensor.deshumidificateur_etat_commande'].state : null;
+            const tit = states['input_select.deshumidificateur_titulaire_autorite']
+              ? states['input_select.deshumidificateur_titulaire_autorite'].state : null;
+            // Binaire : vert = votre état actif EN MANUEL ; gris neutre sinon.
+            if (tit === 'manuel' && cur === variables.consigne) return 'rgba(76, 175, 80, 0.2)';
+            return 'rgba(158, 158, 158, 0.2)';
+          ]]]

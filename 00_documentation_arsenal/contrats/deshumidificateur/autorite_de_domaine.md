@@ -5,7 +5,7 @@
 
 | Champ | Valeur |
 |---|---|
-| **Statut** | **Cible contractuelle — échafaudage + bascule livrés ; UI à venir (§11).** L'application est le consommateur exécutoire unique de la décision dérivée ; `activation`/`desactivation` sont producteurs de décision ; retry souverain ; garde CI numerus clausus + anti-routage livrée. Retrait physique switchbot **déféré** (PR C40 dédiée, §9). |
+| **Statut** | **Cible contractuelle — échafaudage + bascule + UI livrés ; validation terrain à venir (§11).** L'application est le consommateur exécutoire unique de la décision dérivée ; `activation`/`desactivation` sont producteurs de décision ; retry souverain ; garde CI numerus clausus + anti-routage ; UI « Autorité & reprise en main » (intention + médiation + affichage conditionnel). Retrait physique switchbot **déféré** (PR C40 dédiée, §9). |
 | **Domaine** | Déshumidificateur cave. Actionneur **SwitchBot mécanique aveugle** (`switch.deshumidificateur` ; aucun retour API) ; état réel = `binary_sensor.deshumidificateur_actif` (`power > 100 W`). **Mono-appareil.** |
 | **Instancie** | Doctrine transverse [`autorite_de_domaine.md`](../../architecture/03_doctrines/autorite_de_domaine.md). |
 | **Patrons** | Pilotes VMC [`vmc.md`](../vmc.md) §16 · climatisation [`16_autorite_de_domaine_climatisation.md`](../climatisation/16_autorite_de_domaine_climatisation.md) §16 · chauffage [`85_autorite_de_domaine_chauffage.md`](../chauffage/85_autorite_de_domaine_chauffage.md) (tous clos, terrain validé). |
@@ -206,9 +206,15 @@ le retrait physique ne fait que supprimer des branches prouvées mortes.
 - **Déféré (PR C40 dédiée)** : retrait physique du support déshum de `bot_transaction_execute` +
   révision du contrat partagé `switchbot_transactionnel.md` + son checker (§9). Garantie fonctionnelle
   déjà assurée par la garde CI.
-- **À livrer (UI)** : section « Autorité & reprise en main » (sélecteur d'autorité d'intention +
-  affichage conditionnel ; manuel → `{marche, arrêt}` + décision exécutoire ; auto → décision +
-  diagnostic).
+- **Livré (UI)** : section « Autorité & reprise en main » — porteur d'intention
+  `input_select.deshumidificateur_autorite_intention` (`{automatique, manuel}`, sans `initial:`) +
+  2 automations de médiation (exécution intention→primitive gardée `intention≠titulaire` + `systeme_stable` ;
+  synchro intention←titulaire idempotente, boot + transfert) ; cartes `15_autorite/`
+  (`carte_action_deshum_autorite`, `carte_action_deshum_mode`, `carte_deshum_decision_commandee`) ;
+  dashboard `principal.yaml` avec affichage conditionnel sur le titulaire réel (manuel → sélecteur
+  `{marche, arrêt}` + décision exécutoire + rappel décision théorique ; auto → Conditions + Décision).
+  Reprise ET restitution par le même sélecteur (pas de bouton séparé) ; Mesures + Historique dans les
+  deux régimes. L'UI n'écrit jamais le titulaire ni ne commande d'exécution.
 - **Min-on / min-off** : politiques d'usage (dérogation, §5) — rien à durcir côté matériel sans
   démonstration.
 
