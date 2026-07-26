@@ -44,18 +44,18 @@
 #     recommandation est déjà OFF, aucune extinction n’est
 #     rejouée automatiquement. Ce comportement est intentionnel.
 #
-#  🧠 AUTORITÉ D’EXÉCUTION
+#  🧠 PRODUCTEUR DE DÉCISION AUTO (autorité de domaine §8)
 #
-#     script.set_deshumidificateur_state
-#
-#     → script unique responsable de l’état réel
-#       du déshumidificateur.
+#     N’appelle PLUS l’écrivain. PUBLIE la décision auto « off » dans
+#     input_select.deshumidificateur_decision_auto (branche « auto »). La
+#     discipline de timing auto (stabilité, min-on) est conservée à l’identique.
+#     Impulsion unique (exclusivité A/B) : cf. activation.
 #
 #  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
 #     - Ne calcule PAS l’humidité
 #     - Ne décide PAS quand déshumidifier
-#     - Ne remplace PAS un invariant instantané
+#     - N’appelle PAS l’écrivain (set_deshumidificateur_state)
 #     - Ne corrige PAS immédiatement un écart transitoire
 #
 #  🧠 GOUVERNANCE TEMPORELLE
@@ -112,9 +112,22 @@
       state: "idle"
 
   action:
-    - action: script.set_deshumidificateur_state
+    # Producteur de décision auto : PUBLIE « off » (§8). Pas d'appel écrivain.
+    - variables:
+        avant: "{{ states('input_select.deshumidificateur_decision_auto') }}"
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.deshumidificateur_decision_auto
       data:
-        target_state: "off"
-        request_source: "automation.deshumidificateur_desactivation_auto"
-        request_id: >
-          desactivation_auto_{{ now().strftime('%Y%m%dT%H%M%S') }}
+        option: "off"
+    # Impulsion vers l'application UNIQUEMENT en régime automatique.
+    - condition: state
+      entity_id: input_select.deshumidificateur_titulaire_autorite
+      state: automatique
+    # Exclusivité A/B : événement seulement si l'exécutoire ne change pas.
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ avant == 'off' }}"
+          sequence:
+            - event: deshumidificateur_application_requise

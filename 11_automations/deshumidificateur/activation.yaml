@@ -40,19 +40,26 @@
 #
 #     Cette automation est strictement événementielle.
 #
-#  🧠 AUTORITÉ D’EXÉCUTION
+#  🧠 PRODUCTEUR DE DÉCISION AUTO (autorité de domaine §8)
 #
-#     script.set_deshumidificateur_state
+#     N’appelle PLUS l’écrivain. PUBLIE la décision auto « on » dans
+#     input_select.deshumidificateur_decision_auto (branche « auto » de la
+#     décision exécutoire). L’application (consommateur exécutoire unique)
+#     réalise la commande. Discipline de timing auto (stabilité, min-off)
+#     conservée à l’identique dans les triggers/conditions ci-dessous.
 #
-#     → script unique responsable de l’état réel
-#       du déshumidificateur.
+#     Impulsion unique (exclusivité A/B) : en régime auto, si la publication
+#     CHANGE l’exécutoire → le changement d’état porte l’impulsion ; si elle ne
+#     le change pas (decision_auto déjà « on ») → événement application_requise.
+#     En régime manuel : la décision auto est rafraîchie (théorique) sans
+#     signaler l’application (etat_commande = consigne, inchangé).
 #
 #  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
 #     - Ne calcule PAS l’humidité
 #     - Ne définit AUCUN seuil
 #     - Ne décide PAS quand déshumidifier
-#     - Ne remplace PAS le GUARD invariant
+#     - N’appelle PAS l’écrivain (set_deshumidificateur_state)
 #     - Ne force PAS une activation immédiate
 #
 #  🧠 ARCHITECTURE ARSENAL
@@ -98,9 +105,24 @@
       state: "idle"
 
   action:
-    - action: script.set_deshumidificateur_state
+    # Producteur de décision auto : PUBLIE « on » (§8). Pas d'appel écrivain.
+    - variables:
+        avant: "{{ states('input_select.deshumidificateur_decision_auto') }}"
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.deshumidificateur_decision_auto
       data:
-        target_state: "on"
-        request_source: "automation.deshumidificateur_activation_auto"
-        request_id: >
-          activation_auto_{{ now().strftime('%Y%m%dT%H%M%S') }}
+        option: "on"
+    # Impulsion vers l'application UNIQUEMENT en régime automatique
+    # (en manuel, etat_commande = consigne — la décision auto n'est que théorique).
+    - condition: state
+      entity_id: input_select.deshumidificateur_titulaire_autorite
+      state: automatique
+    # Exclusivité A/B : événement seulement si l'exécutoire ne change pas
+    # (decision_auto déjà « on » → aucun trigger d'état ; sinon le trigger A porte).
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ avant == 'on' }}"
+          sequence:
+            - event: deshumidificateur_application_requise

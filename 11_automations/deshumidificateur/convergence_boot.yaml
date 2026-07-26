@@ -1,0 +1,82 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Déshumidificateur – Convergence au démarrage
+#
+#  ID : 10060000000012
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Orchestrer la CONVERGENCE au démarrage (autorité de domaine, contrat
+#     deshumidificateur/autorite_de_domaine.md §4/§8). ABSORBE l'ancienne
+#     `reconciliation_demarrage` : après `systeme_stable`, republie une décision
+#     QUALIFIÉE et déclenche UNE seule impulsion d'application.
+#
+#     Cette automation N'APPELLE JAMAIS l'écrivain `set_deshumidificateur_state`
+#     (hors numerus clausus §2). Elle publie via `converger_auto` (producteur pur)
+#     et signale l'application — qui reste le consommateur exécutoire unique.
+#
+#  🧭 SÉQUENCE
+#     1. attendre `systeme_stable` (sinon abstention totale) ;
+#     2. titulaire AUTO :
+#          avant = decision_auto RESTAURÉ (scalaire connu, lu AVANT) ;
+#          converger_auto(boot) publie D et le retourne ;
+#          exclusivité A/B sur valeurs connues (aucune relecture du template sensor) :
+#            D ∉ {on,off}  → abstention (etat_commande indisponible) ;
+#            D != avant    → le changement d'état portera l'impulsion (trigger A) ;
+#            D == avant     → aucun changement → émettre `application_requise` (B).
+#     3. titulaire MANUEL : aucune convergence auto ; la consigne restaurée est
+#        l'exécutoire → émettre `application_requise` (impulsion unique).
+#
+#     Une valeur `decision_auto` restaurée n'est JAMAIS appliquée avant d'avoir
+#     été republiée/qualifiée ici (§4, INV-AUT-6).
+# ==========================================================
+
+- id: "10060000000012"
+  alias: "Déshumidificateur - Convergence au démarrage"
+  description: >
+    Convergence ordonnée au boot (absorbe reconciliation). Republie une décision
+    qualifiée via converger_auto (producteur pur) puis déclenche une impulsion
+    d'application unique. N'appelle jamais l'écrivain.
+  mode: single
+
+  trigger:
+    - platform: homeassistant
+      event: start
+
+  action:
+    # Gate de stabilité : aucune convergence avant stabilisation (sinon abstention).
+    - wait_template: "{{ is_state('input_boolean.systeme_stable', 'on') }}"
+      timeout: "00:03:00"
+      continue_on_timeout: false
+
+    - choose:
+        # ── Titulaire AUTOMATIQUE : converger puis impulsion unique ──
+        - conditions:
+            - condition: state
+              entity_id: input_select.deshumidificateur_titulaire_autorite
+              state: automatique
+          sequence:
+            - variables:
+                avant: "{{ states('input_select.deshumidificateur_decision_auto') }}"
+            - service: script.deshumidificateur_converger_auto
+              data:
+                contexte: boot
+              response_variable: conv
+            # Exclusivité A/B : événement SEULEMENT si l'exécutoire ne change pas.
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: >
+                        {{ conv.decision in ['on', 'off'] and conv.decision == avant }}
+                  sequence:
+                    - event: deshumidificateur_application_requise
+              # D != avant → trigger A porte l'impulsion (pas d'événement).
+              # D ∉ {on,off} → abstention (etat_commande indisponible).
+
+        # ── Titulaire MANUEL : consigne restaurée, impulsion unique ──
+        - conditions:
+            - condition: state
+              entity_id: input_select.deshumidificateur_titulaire_autorite
+              state: manuel
+          sequence:
+            - event: deshumidificateur_application_requise
