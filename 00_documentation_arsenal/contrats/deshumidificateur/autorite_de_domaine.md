@@ -5,7 +5,7 @@
 
 | Champ | Valeur |
 |---|---|
-| **Statut** | **Cible contractuelle — spécification opposable ; échafaudage + bascule + UI à venir (§11).** Définit les vérités, responsabilités et comportements attendus du régime manuel supervisé. Aucun runtime livré à ce stade. |
+| **Statut** | **Cible contractuelle — échafaudage livré (inerte) ; bascule + UI à venir (§11).** Porteurs, décision exécutoire dérivée et primitives **livrés et inertes** (aucun consommateur d'exécution) ; l'application n'en dépend pas encore. |
 | **Domaine** | Déshumidificateur cave. Actionneur **SwitchBot mécanique aveugle** (`switch.deshumidificateur` ; aucun retour API) ; état réel = `binary_sensor.deshumidificateur_actif` (`power > 100 W`). **Mono-appareil.** |
 | **Instancie** | Doctrine transverse [`autorite_de_domaine.md`](../../architecture/03_doctrines/autorite_de_domaine.md). |
 | **Patrons** | Pilotes VMC [`vmc.md`](../vmc.md) §16 · climatisation [`16_autorite_de_domaine_climatisation.md`](../climatisation/16_autorite_de_domaine_climatisation.md) §16 · chauffage [`85_autorite_de_domaine_chauffage.md`](../chauffage/85_autorite_de_domaine_chauffage.md) (tous clos, terrain validé). |
@@ -167,9 +167,13 @@ dormants), **+ garde CI** interdisant tout routage déshum via cet exécuteur. *
 
 **Cible contractuelle — échafaudage + bascule + UI à venir.**
 
-- **À livrer (échafaudage)** : titulaire `input_select.deshumidificateur_titulaire_autorite` (sans
-  `initial:`) ; consigne manuelle `{on, off}` ; décision exécutoire dérivée anti-fallback ; primitives
-  supervisées entrée/retour ; porteur d'intention + automations de médiation.
+- **Livré (échafaudage — inerte)** : titulaire `input_select.deshumidificateur_titulaire_autorite` +
+  consigne manuelle `input_select.deshumidificateur_consigne_manuelle` (`{on, off}`, sans `initial:`) ;
+  décision exécutoire dérivée `sensor.deshumidificateur_etat_commande` (anti-fallback via `availability` :
+  auto = `demarrage_recommande` ; manuel = consigne ; sinon indisponible) ; primitives
+  `script.deshumidificateur_entrer_mode_manuel` (atomique) / `…_revenir_mode_automatique`. **Inerte** :
+  aucun consommateur ne lit encore `etat_commande` (le pipeline existant reste en vigueur). Le porteur
+  d'intention + automations de médiation arrivent avec l'UI.
 - **À livrer (bascule)** : automation d'application (consommateur exécutoire unique) ;
   `activation`/`desactivation` → producteurs de décision ; retry souverain (§7) ; retrait du support
   déshum de `bot_transaction_execute` + garde CI (§9). Iso-comportement en auto à démontrer.

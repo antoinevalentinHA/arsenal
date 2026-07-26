@@ -1,0 +1,34 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Déshumidificateur — Titulaire de l'autorité
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Porte le TITULAIRE de l'autorité de domaine déshumidificateur
+#   (autorité de domaine, contrat deshumidificateur/autorite_de_domaine.md) :
+#     - automatique → Arsenal décide (demarrage_recommande)
+#     - manuel      → l'utilisateur décide
+#   Un seul titulaire à chaque instant (unicité, révocabilité).
+#
+# 🧩 Nature :
+#   Porteur d'autorité (helper). Écrit UNIQUEMENT par les deux
+#   primitives supervisées (script.deshumidificateur_entrer_mode_manuel /
+#   script.deshumidificateur_revenir_mode_automatique). Jamais depuis
+#   l'UI en direct, jamais par une automation d'exécution.
+#
+# ⚠️ Anti-fallback :
+#   Un état unknown/unavailable NE VAUT PAS 'automatique' : il rend la
+#   décision exécutoire (sensor.deshumidificateur_etat_commande) INDISPONIBLE.
+#   Pas de `initial:` — bootstrap ≠ fallback (doctrine restauration_etat_helpers.md).
+#
+# 🔗 Consommé par :
+#   - sensor.deshumidificateur_etat_commande (décision exécutoire dérivée)
+#
+# 📍 État actuel : ÉCHAFAUDAGE INERTE — aucun consommateur d'exécution
+#   ne lit encore la décision exécutoire (bascule ultérieure).
+# ==========================================================
+
+deshumidificateur_titulaire_autorite:
+  name: "Déshumidificateur — Titulaire de l'autorité"
+  options:
+    - automatique
+    - manuel
+  icon: mdi:account-switch

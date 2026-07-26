@@ -1,0 +1,66 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Déshumidificateur – Entrer en mode manuel (primitive supervisée)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Primitive backend d'ENTRÉE en régime manuel (autorité de domaine,
+#   contrat deshumidificateur/autorite_de_domaine.md §4). Séquence ATOMIQUE :
+#     1. valider l'état demandé (on/off)
+#     2. écrire la consigne
+#     3. transférer l'autorité (titulaire → manuel)
+#   La consigne est écrite AVANT le transfert : à l'instant où le titulaire
+#   devient manuel, la consigne porte déjà la valeur voulue.
+#
+# 🧱 PRINCIPE
+#   - N'écrit AUCUN relais (écrivain unique set_deshumidificateur_state préservé)
+#   - Consigne invalide → ABSTENTION (aucune écriture) + cause loguée
+#   - Appelée par l'UI ; l'UI n'orchestre pas la transition
+#
+# 📍 État actuel : ÉCHAFAUDAGE INERTE — la décision exécutoire
+#   (sensor.deshumidificateur_etat_commande) n'est pas encore consommée
+#   par l'application (bascule ultérieure).
+# ==========================================================
+
+deshumidificateur_entrer_mode_manuel:
+  alias: "Deshumidificateur - Entrer en mode manuel (primitive supervisée)"
+  mode: single
+  max_exceeded: silent
+
+  fields:
+    consigne:
+      description: "État manuel demandé : on ou off"
+      example: "on"
+      selector:
+        select:
+          options:
+            - "on"
+            - "off"
+
+  sequence:
+    - choose:
+        # Consigne invalide → ABSTENTION (aucune écriture) + log
+        - conditions:
+            - condition: template
+              value_template: "{{ (consigne | default('')) not in ['on', 'off'] }}"
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                logger: arsenal.deshumidificateur.autorite
+                message: >
+                  Deshumidificateur entrer_mode_manuel : consigne invalide
+                  ('{{ consigne | default('') }}') — abstention, aucune écriture
+                  (titulaire et consigne inchangés).
+      # Consigne valide → séquence ATOMIQUE : consigne AVANT autorité
+      default:
+        - service: input_select.select_option
+          target:
+            entity_id: input_select.deshumidificateur_consigne_manuelle
+          data:
+            option: "{{ consigne }}"
+
+        - service: input_select.select_option
+          target:
+            entity_id: input_select.deshumidificateur_titulaire_autorite
+          data:
+            option: manuel
