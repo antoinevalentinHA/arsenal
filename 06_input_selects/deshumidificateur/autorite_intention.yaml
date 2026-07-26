@@ -1,0 +1,32 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT (DÉSHUMIDIFICATEUR)
+# ----------------------------------------------------------
+# 📛 Nom UI :
+#   Déshumidificateur — Intention d'autorité (surface UI)
+#
+# 🎯 Rôle :
+#   PORTEUR D'INTENTION de surface du sélecteur d'autorité (autorité de domaine,
+#   contrat deshumidificateur/autorite_de_domaine.md §4). L'UI écrit ICI (jamais
+#   le titulaire). Deux automations de médiation :
+#     - exécution : intention → primitive supervisée (entrer_mode_manuel /
+#       revenir_mode_automatique), gardée « n'agir que si intention ≠ titulaire »
+#       + systeme_stable ;
+#     - synchro : intention ← titulaire réel (boot + tout transfert), idempotente.
+#
+# 🧱 Principe Arsenal :
+#   - N'est PAS l'autorité : le titulaire (input_select.deshumidificateur_titulaire_autorite)
+#     est la source de vérité. Ce porteur ne fait que refléter/exprimer une intention.
+#   - Aucun `initial:` — bootstrap ≠ fallback (§4) : au boot, la synchro réaligne
+#     l'intention sur le titulaire restauré ; aucune reprise silencieuse.
+#   - N'écrit aucun relais, ne commande aucune exécution.
+#
+# 📍 Entité :
+#   input_select.deshumidificateur_autorite_intention
+# ==========================================================
+
+deshumidificateur_autorite_intention:
+  name: "Déshumidificateur - Intention d'autorité"
+  icon: mdi:gesture-tap-button
+  options:
+    - automatique
+    - manuel

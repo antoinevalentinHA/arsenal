@@ -24,7 +24,7 @@ views:
       - type: vertical-stack
         cards:
           # ==================================================
-          # 💧 MESURES HUMIDITÉ — CAVE
+          # 💧 MESURES HUMIDITÉ — CAVE  (les deux régimes)
           # ==================================================
           - type: grid
             square: false
@@ -35,71 +35,159 @@ views:
               - !include ../../includes/cartes/diagnostic/graph_humidite_cave.yaml
 
           # ==================================================
-          # ⚖️ CONDITIONS DE DÉSHUMIDIFICATION
+          # 🎛️ AUTORITÉ & REPRISE EN MAIN  (autorité de domaine C40)
+          # --------------------------------------------------
+          # Un SÉLECTEUR D'AUTORITÉ en tête (toujours visible) ; en dessous,
+          # le contenu s'ADAPTE au titulaire réel :
+          #   • manuel → vos contrôles (sélecteur marche/arrêt + décision
+          #     exécutoire + rappel de la décision théorique d'Arsenal) ;
+          #   • auto   → les Conditions + la Décision qui justifient le
+          #     pilotage d'Arsenal.
+          # Le sélecteur écrit le porteur d'INTENTION ; une automation le
+          # traduit en primitive supervisée (deshumidificateur_entrer_mode_manuel
+          # / deshumidificateur_revenir_mode_automatique). Aucune écriture directe
+          # du titulaire depuis l'UI, aucune commande d'exécution.
+          # La section Historique (plus bas) reste visible dans les deux régimes.
           # ==================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🎛️ Autorité & reprise en main
+
+          # Sélecteur d'autorité — écrit l'INTENTION
+          # (input_select.deshumidificateur_autorite_intention) ; coloré par le
+          # titulaire RÉEL : bleu = Arsenal (auto), orange = vous (manuel).
           - type: grid
+            columns: 2
             square: false
-            columns: 1
             cards:
-              - !include ../../includes/section_headers/conditions.yaml
+              - type: custom:button-card
+                template: carte_action_deshum_autorite
+                entity: input_select.deshumidificateur_autorite_intention
+                name: Automatique
+                icon: mdi:robot-outline
+                variables:
+                  intention: automatique
+                  confirmation: >-
+                    Rendre le contrôle du déshumidificateur à Arsenal (mode automatique) ?
+              - type: custom:button-card
+                template: carte_action_deshum_autorite
+                entity: input_select.deshumidificateur_autorite_intention
+                name: Manuel
+                icon: mdi:hand-back-right
+                variables:
+                  intention: manuel
+                  confirmation: >-
+                    Prendre le contrôle manuel du déshumidificateur ?
 
-              - type: grid
-                square: false
-                columns: 2
-                cards:
-                  - type: custom:button-card
-                    template: deshumidificateur_capteur
-                    entity: binary_sensor.critere_deshumidification_ha_cave
-                    name: Critère HA (g/m³)
-                    icon: mdi:water
-                    tap_action: none
+          # --------------------------------------------------
+          # MANUEL → vos contrôles
+          # --------------------------------------------------
+          - type: conditional
+            conditions:
+              - entity: input_select.deshumidificateur_titulaire_autorite
+                state: manuel
+            card:
+              type: vertical-stack
+              cards:
+                # Sélecteur d'état — un tap prend/change la main dans l'état
+                # choisi. L'état actif est surligné (vert canon / gras) ;
+                # l'état est porté par l'icône + le libellé.
+                - type: grid
+                  columns: 2
+                  square: false
+                  cards:
+                    - type: custom:button-card
+                      template: carte_action_deshum_mode
+                      entity: script.deshumidificateur_entrer_mode_manuel
+                      name: Marche
+                      icon: mdi:air-humidifier
+                      variables:
+                        consigne: "on"
+                        confirmation: >-
+                          Mettre le déshumidificateur en marche (contrôle manuel) ?
+                    - type: custom:button-card
+                      template: carte_action_deshum_mode
+                      entity: script.deshumidificateur_entrer_mode_manuel
+                      name: Arrêt
+                      icon: mdi:air-humidifier-off
+                      variables:
+                        consigne: "off"
+                        confirmation: >-
+                          Arrêter le déshumidificateur (contrôle manuel) ?
 
-                  - type: custom:button-card
-                    template: deshumidificateur_capteur
-                    entity: binary_sensor.critere_deshumidification_cave
-                    name: Critère HR (%)
-                    icon: mdi:water-percent
-                    tap_action: none
+                # Décision exécutoire (lecture seule) — votre consigne,
+                # imposée à l'exécution (anti-fallback « Indéterminée »).
+                - type: custom:button-card
+                  template: carte_deshum_decision_commandee
+                  entity: sensor.deshumidificateur_etat_commande
 
-                  - type: custom:button-card
-                    template: carte_timer_status
-                    entity: timer.deshumidificateur_cycle
-                    name: Cycle mini
-                    icon: mdi:timer-outline
-                    variables:
-                      active_semantic: info
+                # Rappel de la décision THÉORIQUE d'Arsenal (non exécutoire
+                # tant que vous pilotez).
+                - type: custom:button-card
+                  template: section_header
+                  name: 🧭 Décision théorique d'Arsenal
+                - type: custom:button-card
+                  template: carte_deshumidificateur_decision_logique
+                  name: Recommandation (non exécutoire)
 
-                  - type: custom:button-card
-                    template: carte_timer_status
-                    entity: timer.deshumidificateur_blocage_redemarrage
-                    name: Blocage inter-cycles
-                    icon: mdi:timer-outline
-                    variables:
-                      active_semantic: info
+          # --------------------------------------------------
+          # AUTO → Conditions + Décision qui justifient le pilotage d'Arsenal
+          # --------------------------------------------------
+          - type: conditional
+            conditions:
+              - entity: input_select.deshumidificateur_titulaire_autorite
+                state: automatique
+            card:
+              type: vertical-stack
+              cards:
+                # ⚖️ Conditions de déshumidification
+                - !include ../../includes/section_headers/conditions.yaml
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: custom:button-card
+                      template: deshumidificateur_capteur
+                      entity: binary_sensor.critere_deshumidification_ha_cave
+                      name: Critère HA (g/m³)
+                      icon: mdi:water
+                      tap_action: none
+                    - type: custom:button-card
+                      template: deshumidificateur_capteur
+                      entity: binary_sensor.critere_deshumidification_cave
+                      name: Critère HR (%)
+                      icon: mdi:water-percent
+                      tap_action: none
+                    - type: custom:button-card
+                      template: carte_timer_status
+                      entity: timer.deshumidificateur_cycle
+                      name: Cycle mini
+                      icon: mdi:timer-outline
+                      variables:
+                        active_semantic: info
+                    - type: custom:button-card
+                      template: carte_timer_status
+                      entity: timer.deshumidificateur_blocage_redemarrage
+                      name: Blocage inter-cycles
+                      icon: mdi:timer-outline
+                      variables:
+                        active_semantic: info
+
+                # 🧠 Décision / état réel
+                - !include ../../includes/section_headers/decision.yaml
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: custom:button-card
+                      template: carte_deshumidificateur_decision_logique
+                      name: Décision logique
+                    - type: custom:button-card
+                      template: carte_deshumidificateur_etat_reel
+                      name: État réel (prise)
 
           # ==================================================
-          # 🧠 DÉCISION / ÉTAT RÉEL
-          # ==================================================
-          - type: grid
-            square: false
-            columns: 1
-            cards:
-              - !include ../../includes/section_headers/decision.yaml
-
-              - type: grid
-                square: false
-                columns: 2
-                cards:
-                  - type: custom:button-card
-                    template: carte_deshumidificateur_decision_logique
-                    name: Décision logique
-
-                  - type: custom:button-card
-                    template: carte_deshumidificateur_etat_reel
-                    name: État réel (prise)
-
-          # ==================================================
-          # 📜 HISTORIQUE
+          # 📜 HISTORIQUE  (les deux régimes)
           # ==================================================
           - type: grid
             square: false
