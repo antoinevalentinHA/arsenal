@@ -1,10 +1,19 @@
 # Contrat — Socle transactionnel d'exécution des Bots SwitchBot
 
 **Domaine** : Exécution / Actionneurs BLE  
-**Version** : 2.0.1  
+**Version** : 2.1.0  
 **Statut** : Stable — approuvé pour implémentation  
-**Périmètre** : `switch.deshumidificateur` (niveau B), `switch.bot_chambre_parents` (niveau A)  
+**Périmètre** : `switch.bot_chambre_parents` (niveau A)  
 **Extensibilité** : oui, par ajout d'entrée registre — sans modification de l'exécuteur
+
+> **v2.1.0 (C40) — retrait du support `switch.deshumidificateur`.** Le déshumidificateur
+> quitte ce registre transactionnel générique : il est gouverné par son **écrivain unique
+> dédié** `script.set_deshumidificateur_state` (contrat
+> [`deshumidificateur/autorite_de_domaine.md`](deshumidificateur/autorite_de_domaine.md) §2/§9,
+> garde `R-CALL-DESHUM`). La branche `is_deshumidificateur` de l'exécuteur et ses helpers
+> dormants (`bot_tx_lock/cooldown/failures/busy_deshumidificateur`) sont supprimés — aucun
+> appelant ne les invoquait. Le **niveau B** reste défini dans la taxonomie (§5/§6) comme
+> capacité de l'exécuteur, sans cible active à ce jour.
 
 ---
 
@@ -51,21 +60,9 @@ Garantir que toute action Bot soit :
 
 Le registre est la source d'autorité pour toutes les décisions d'exécution. Le niveau de preuve est une propriété du registre, pas une propriété intrinsèque du type de Bot. Il ne peut être modifié que par révision de contrat.
 
-### 4.1 `switch.deshumidificateur`
+> **Note (v2.1.0).** `switch.deshumidificateur` (anciennement §4.1, niveau B) a été **retiré du registre** (C40) : gouverné hors de cet exécuteur par son écrivain unique dédié. Le niveau B reste défini (§5/§6) comme capacité, sans cible active.
 
-| Paramètre | Valeur |
-|---|---|
-| `bot_id` | `deshumidificateur` |
-| `entity` | `switch.deshumidificateur` |
-| `statut` | actif |
-| `proof_level` | B |
-| `actions_autorisées` | `turn_on`, `turn_off` |
-| `proof_attribute` | `last_run_success` |
-| `cooldown_seconds` | 30 |
-
-**Sémantique de preuve** : après émission, l'attribut `last_run_success` de `switch.deshumidificateur` est lu après un délai court. S'il est `true`, la commande a été reçue et acceptée par le Bot. Ce niveau de preuve ne confirme pas l'effet physique.
-
-### 4.2 `switch.bot_chambre_parents`
+### 4.1 `switch.bot_chambre_parents`
 
 | Paramètre | Valeur |
 |---|---|

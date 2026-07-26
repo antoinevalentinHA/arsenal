@@ -50,3 +50,25 @@ def test_allowlist_contient_les_trois_appelants():
             "11_automations/deshumidificateur/retry_off.yaml",
         }
     )
+
+
+# ------------------------------ 3. appel direct switch.deshumidificateur (I1, C40)
+
+def test_appel_direct_switch_deshum_reserve_a_l_ecrivain():
+    """Le seul site legitime d'appel direct a switch.deshumidificateur est
+    l'ecrivain unique (forcer_etat.yaml). Toute autre occurrence = BLOCKING."""
+    directs = [
+        v for v in r_call_deshum.analyser()
+        if v.severity is Severity.BLOCKING and v.target == r_call_deshum.ENTITE_PHYSIQUE
+    ]
+    assert directs == [], (
+        "Appel direct interdit a switch.deshumidificateur hors ecrivain unique : "
+        + ", ".join(v.source for v in directs)
+    )
+
+
+def test_ecrivain_physique_est_bien_l_ecrivain_unique():
+    assert (
+        r_call_deshum.ECRIVAIN_PHYSIQUE_FICHIER
+        == "10_scripts/deshumidificateur/forcer_etat.yaml"
+    )

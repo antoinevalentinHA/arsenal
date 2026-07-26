@@ -21,10 +21,6 @@ F_EXECUTEUR      = REPO_ROOT / "10_scripts/system/transactions_bots.yaml"
 DIR_SCRIPTS      = REPO_ROOT / "10_scripts"
 DIR_AUTOMATIONS  = REPO_ROOT / "11_automations"
 
-# Scripts métiers connus consommant le script souverain
-# (scope restreint pour I7 — délais et logique BLE)
-DIR_SCRIPTS_DESHU = REPO_ROOT / "10_scripts/deshumidificateur"
-
 # Fichiers de verrous (exclus du test I1 — ils déclarent la relation)
 DIR_LOCKS = REPO_ROOT / "05_input_booleans/system/transactions_bots"
 
@@ -32,17 +28,20 @@ DIR_LOCKS = REPO_ROOT / "05_input_booleans/system/transactions_bots"
 # Paramètres normatifs (§4, §5, §7)
 # ---------------------------------------------------------------------------
 
-# Cibles du registre (§4)
-CIBLES_REGISTRE = ["deshumidificateur", "bot_chambre_parents"]
+# Cibles du registre (§4). Support déshumidificateur retiré (C40) :
+# le déshum est gouverné hors de cet exécuteur générique par son écrivain unique
+# dédié (script.set_deshumidificateur_state) et sa garde propre R-CALL-DESHUM
+# (numerus clausus + anti-routage + interdiction d'appel direct à
+# switch.deshumidificateur). Ne subsiste ici que bot_chambre_parents (niveau A).
+CIBLES_REGISTRE = ["bot_chambre_parents"]
 
-# Entités SwitchBot — appels directs interdits hors exécuteur (I1)
+# Entités SwitchBot — appels directs interdits hors exécuteur (I1).
+# switch.deshumidificateur migré vers R-CALL-DESHUM (garde de souveraineté du domaine).
 ENTITES_SWITCHBOT = [
-    "switch.deshumidificateur",
     "switch.bot_chambre_parents",
 ]
 
 # Cooldowns normatifs (§4)
-COOLDOWN_DESHU   = "30"
 COOLDOWN_CHAMBRE = "10"
 
 # Verdicts normatifs vérifiables en V1 (§7)
@@ -142,8 +141,7 @@ def test_cooldowns_presents() -> None:
                       f"{F_EXECUTEUR.relative_to(REPO_ROOT)}")
         return
     all_ok = True
-    for val, label in [(COOLDOWN_DESHU, "deshumidificateur 30 s"),
-                       (COOLDOWN_CHAMBRE, "bot_chambre_parents 10 s")]:
+    for val, label in [(COOLDOWN_CHAMBRE, "bot_chambre_parents 10 s")]:
         # Cherche la valeur dans un contexte cooldown
         windows = re.findall(r".{0,60}cooldown.{0,60}", content, re.IGNORECASE)
         found = any(val in w for w in windows) or bool(
@@ -154,8 +152,7 @@ def test_cooldowns_presents() -> None:
                           f"{F_EXECUTEUR.relative_to(REPO_ROOT)} (§4)")
             all_ok = False
     if all_ok:
-        print(f"✔ T3 — Cooldowns normatifs présents "
-              f"({COOLDOWN_DESHU} s + {COOLDOWN_CHAMBRE} s)")
+        print(f"✔ T3 — Cooldown normatif présent ({COOLDOWN_CHAMBRE} s)")
 
 
 # ---------------------------------------------------------------------------
@@ -237,13 +234,10 @@ def test_no_direct_switchbot_calls() -> None:
     )
 
     # Exceptions documentées : scripts d'autorité d'exécution unique par domaine.
-    # Ces scripts sont les seuls points d'entrée légitimes hors script souverain.
-    # Leur autorité est définie dans le contrat de domaine correspondant.
-    EXCEPTIONS = {
-        # script.set_deshumidificateur_state — autorité d'exécution unique déshumidificateur
-        # (contrat deshumidificateur.md — section "Autorité d'exécution unique")
-        REPO_ROOT / "10_scripts/deshumidificateur/forcer_etat.yaml",
-    }
+    # switch.deshumidificateur a quitté ENTITES_SWITCHBOT (C40) — sa garde d'appel
+    # direct (écrivain unique set_deshumidificateur_state / forcer_etat.yaml) est
+    # désormais portée par R-CALL-DESHUM, pas par ce checker générique.
+    EXCEPTIONS: set = set()
 
     violations = []
 
@@ -278,37 +272,12 @@ def test_no_direct_switchbot_calls() -> None:
 
 
 # ---------------------------------------------------------------------------
-# T8 — Scripts métiers sans délai d'exécution BLE (I7)
-#
-# Invariant (I7) : les scripts métiers n'intègrent aucune logique de
-# transport BLE ni délai d'exécution. Les delay/wait_for_trigger BLE
-# appartiennent exclusivement à l'exécuteur.
-# Scope : scripts métiers consommateurs connus (deshumidificateur).
-# Méthode : absence de délai (delay:) dans le même bloc qu'un appel
-# au script souverain.
+# T8 (I7 — scripts métiers sans délai BLE) : RETIRÉ (C40).
+#   Son seul périmètre instrumenté était les scripts déshumidificateur, qui ont
+#   quitté la couche switchbot transactionnelle (déshum gouverné par son écrivain
+#   unique dédié). bot_chambre_parents n'a pas de script métier consommateur scanné.
+#   L'invariant I7 reste au contrat ; il n'a plus de cible instrumentée ici.
 # ---------------------------------------------------------------------------
-
-def test_metier_scripts_no_ble_delay() -> None:
-    # Cherche les scripts métiers qui appellent le script souverain
-    pattern_souverain = re.compile(r"transactions_bots|script\.executer_bot")
-    pattern_delay     = re.compile(r"^\s*(?:delay|wait_for_trigger)\s*:", re.MULTILINE)
-
-    violations = []
-    for path in yaml_files(DIR_SCRIPTS_DESHU):
-        content = read(path)
-        if not pattern_souverain.search(content):
-            continue
-        # Ce script appelle le souverain — il ne doit pas avoir de delay
-        if pattern_delay.search(content):
-            violations.append(f"{path.relative_to(REPO_ROOT)} : "
-                              f"delay/wait_for_trigger dans script métier (I7)")
-
-    if violations:
-        for v in violations:
-            ERRORS.append(f"T8 — Logique de délai BLE dans script métier "
-                          f"(violation I7) : {v}")
-    else:
-        print("✔ T8 — Scripts métiers sans délai d'exécution BLE (I7)")
 
 
 # ---------------------------------------------------------------------------
@@ -378,7 +347,6 @@ TESTS = [
     test_last_run_success_present,
     test_diagnostic_fields_present,
     test_no_direct_switchbot_calls,
-    test_metier_scripts_no_ble_delay,
     test_no_proof_mode_param,
     test_sent_unconfirmed_for_level_a,
 ]
