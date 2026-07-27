@@ -108,7 +108,7 @@ Quelques vues, telles qu'elles tournent. Elles sont **denses par conception** : 
 Plusieurs patterns se picorent indépendamment du reste :
 
 - **Séparation décision / action bornée** — une autorité décisionnelle unique par domaine produit des états lisibles ; des exécutants bornés les appliquent. Doctrine dans [`architecture/index.md`](00_documentation_arsenal/architecture/index.md), démonstration dans [`contrats/chauffage/`](00_documentation_arsenal/contrats/chauffage/README.md).
-- **Commandes physiques fiabilisées par ACK transactionnel** — mécanisme détaillé dans [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md) et [`contrats/switchbot_transactionnel.md`](00_documentation_arsenal/contrats/switchbot_transactionnel.md).
+- **Commandes physiques fiabilisées par ACK transactionnel** — une commande n'est jamais supposée exécutée ; mécanisme détaillé dans [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md) et [`contrats/switchbot_transactionnel.md`](00_documentation_arsenal/contrats/switchbot_transactionnel.md).
 - **Machine d'état explicite** plutôt qu'un enchevêtrement d'automatisations : [`contrats/aeration_blocage_chauffage/`](00_documentation_arsenal/contrats/aeration_blocage_chauffage/).
 - **Triplet de dashboards principal / diagnostic / réglages** par domaine : [`18_lovelace/dashboards/chauffage/`](18_lovelace/dashboards/chauffage/).
 - **Palmarès persistant restitué en lecture seule** — un pipeline backend clôture chaque journée civile et la classe dans un top 10 ; les cartes Lovelace se contentent de lire. Le *pattern* est réutilisable, le YAML ne l'est pas.

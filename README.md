@@ -104,7 +104,7 @@ A few live views, as they run. They are **dense by design**: the UI observes sta
 Several patterns can be picked independently of the rest:
 
 - **Decision / bounded-action separation** — doctrine in [`architecture/index.md`](00_documentation_arsenal/architecture/index.md), demonstrated in [`contrats/chauffage/`](00_documentation_arsenal/contrats/chauffage/README.md).
-- **Physical commands hardened by transactional ACK** — mechanism in full in [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md).
+- **Physical commands hardened by transactional ACK** — a command is never assumed to have run; mechanism in full in [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md).
 - **Explicit state machine** instead of tangled automations — [`contrats/aeration_blocage_chauffage/`](00_documentation_arsenal/contrats/aeration_blocage_chauffage/).
 - **Main / diagnostic / settings dashboard triplet** per domain — [`18_lovelace/dashboards/chauffage/`](18_lovelace/dashboards/chauffage/).
 - **Persistent leaderboard rendered read-only** — a backend pipeline closes each civil day and ranks it into a top-10; the Lovelace cards only read. The *pattern* is reusable, the YAML is not.
