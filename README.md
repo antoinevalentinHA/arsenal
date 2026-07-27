@@ -10,11 +10,11 @@
 
 > A home run by Home Assistant — and held to the standards of serious software.
 
-**Arsenal is a real, in-production Home Assistant configuration for a family home.** It covers heating, domestic hot water, air conditioning, ventilation, irrigation, energy, security, presence, indoor and outdoor measurement, dashboards and infrastructure observability.
+**Arsenal is an in-production Home Assistant configuration for a family home.** It covers heating, domestic hot water, air conditioning, ventilation, irrigation, energy, security, presence, indoor and outdoor measurement, dashboards and infrastructure observability.
 
 It is a complete system, observable file by file — and governed like software.
 
-*In figures: ~1,750 YAML files, ~3,000 distinct entities, 277 contract files, 91 CI workflows.*
+*In figures: 46 domains, every one under a written contract — ~1,750 YAML files, 91 CI workflows.*
 
 > 📖 The full documentation is written in French. This page is an English entry point; deeper documents (contracts, architecture, audits) remain in French, and each is linked below.
 
@@ -104,7 +104,7 @@ A few live views, as they run. They are **dense by design**: the UI observes sta
 Several patterns can be picked independently of the rest:
 
 - **Decision / bounded-action separation** — doctrine in [`architecture/index.md`](00_documentation_arsenal/architecture/index.md), demonstrated in [`contrats/chauffage/`](00_documentation_arsenal/contrats/chauffage/README.md).
-- **Physical commands hardened by transactional ACK** — acknowledgement, retry and guard, with monotonic timers and anti-phantom triggers, so a command is never assumed to have run — [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md).
+- **Physical commands hardened by transactional ACK** — mechanism in full in [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md).
 - **Explicit state machine** instead of tangled automations — [`contrats/aeration_blocage_chauffage/`](00_documentation_arsenal/contrats/aeration_blocage_chauffage/).
 - **Main / diagnostic / settings dashboard triplet** per domain — [`18_lovelace/dashboards/chauffage/`](18_lovelace/dashboards/chauffage/).
 - **Persistent leaderboard rendered read-only** — a backend pipeline closes each civil day and ranks it into a top-10; the Lovelace cards only read. The *pattern* is reusable, the YAML is not.
@@ -122,7 +122,7 @@ These are one-off extractions: Arsenal stays a system, not a library.
 
 ## What Arsenal is *not*
 
-- **Not an install to copy.** Entities, IPs, MQTT topics, devices and domain choices are specific to one house. What is reusable is the patterns, the invariants and the method. Specific to one house — but not to houses: the same decision apparatus has since been ported to a second site of a different nature, an industrial print shop, without rewriting the architecture — the site coupling stays isolated in the identifier suffix (`<function>_<site>`).
+- **Not an install to copy.** Entities, IPs, MQTT topics, devices and domain choices are specific to one house. What is reusable is the patterns, the invariants and the method. Specific to one house — but not to houses. The same decision apparatus has since been ported to a second site of a different nature, an industrial print shop, without rewriting the architecture; the site coupling stays isolated in the identifier suffix (`<function>_<site>`).
 - **Not a showcase.** Arsenal is not optimized for screenshots; it is optimized to stay maintainable and governable years after being built.
 - **Not Home Assistant documentation.** The official docs remain the reference for integrations and Lovelace. Arsenal is about system architecture.
 - **Not uniformly finished.** Some domains are closed, others mid-cycle, some unaudited — and this is written plainly in the domain map and the work registry.
