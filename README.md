@@ -8,11 +8,13 @@
 [![Arsenal Doctrine](https://github.com/antoinevalentinHA/arsenal/actions/workflows/doctrine.yml/badge.svg)](https://github.com/antoinevalentinHA/arsenal/actions/workflows/doctrine.yml)
 [![Arsenal Docs](https://github.com/antoinevalentinHA/arsenal/actions/workflows/docs.yml/badge.svg)](https://github.com/antoinevalentinHA/arsenal/actions/workflows/docs.yml)
 
-> A real home, run by Home Assistant — and held to the standards of serious software.
+> A home run by Home Assistant — and held to the standards of serious software.
 
 **Arsenal is a real, in-production Home Assistant configuration for a family home.** It covers heating, domestic hot water, air conditioning, ventilation, irrigation, energy, security, presence, indoor and outdoor measurement, dashboards and infrastructure observability.
 
-It is **not a framework and not a copy-paste config**. It is a complete system, observable file by file — and governed like software.
+It is a complete system, observable file by file — and governed like software.
+
+*In figures: ~1,750 YAML files, ~3,000 distinct entities, 277 contract files, 91 CI workflows.*
 
 > 📖 The full documentation is written in French. This page is an English entry point; deeper documents (contracts, architecture, audits) remain in French, and each is linked below.
 
@@ -28,10 +30,10 @@ Arsenal is built on a small set of non-negotiable principles. They are documente
 - **Contract-driven architecture.** Every domain has a written contract *before* it has code. If the implementation contradicts the contract, the implementation is wrong — not the contract. See [`contrats/index.md`](00_documentation_arsenal/contrats/index.md).
 - **Separation of decision, action, diagnostics and UI.** A single decision authority per domain produces readable states; bounded executors apply them; dashboards observe them. The backend decides, the UI observes — never the reverse. See [`architecture/index.md`](00_documentation_arsenal/architecture/index.md).
 - **Reliable, idempotent actions.** Critical physical commands are transactional — acknowledgement, retry and guard — with monotonic timers and anti-phantom triggers, so a command is never assumed to have run. See [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md).
-- **Observability.** Each domain exposes a diagnostic view of its internal decision chain, and the [`recorder.yaml`](recorder.yaml) works as a documented **allowlist**: every recorded entity is there by decision, not by default.
+- **Observability.** Each domain exposes a diagnostic view of its internal decision chain, and the system view exists to surface faults, not to look clean — an observability page that has never caught anything proves nothing. The [`recorder.yaml`](recorder.yaml) works as a documented **allowlist**: every recorded entity is there by decision, not by default.
 - **Changelog-driven governance.** Changelogs are a decision memory, not a commit log — a "clean signal" reading of what actually changed. See [`changelog/index.md`](00_documentation_arsenal/changelog/index.md).
-- **Real-world Home Assistant deployment.** This is a system running today in an actual house, with mains/internet outages, hardware bridges and buffer power treated as first-class domains.
-- **AI-assisted engineering, human-governed.** Arsenal is not "coded by AI": it is governed by a non-developer human who uses AI as an execution force under strict constraints (no invented IDs, no casual renames, contracts bound drift, CI forbids red, the human decides). See the [French README](README.fr.md#maintenu-avec-assistance-ia).
+- **In-production Home Assistant deployment.** This is a system running today in an actual house, with mains/internet outages, hardware bridges and buffer power treated as first-class domains.
+- **AI-assisted engineering, human-governed.** Arsenal is not "coded by AI": it is governed by a non-developer human who uses AI as an execution force under strict constraints (no invented IDs, no casual renames, contracts constrain drift, CI forbids red, the human decides). See the [French README](README.fr.md#maintenu-avec-assistance-ia).
 
 ---
 
@@ -56,6 +58,8 @@ Arsenal is built on a small set of non-negotiable principles. They are documente
                      Hardware
 ```
 
+*Two doctrine terms above: **Admissibility** — whether a decision state may be acted on at all; **Sovereign scripts** — a single script owns a domain's decision end to end. Both detailed in [`architecture/index.md`](00_documentation_arsenal/architecture/index.md).*
+
 Perception measures, decision concludes, execution applies. The UI is not part of this flow — it observes it. Layer and doctrine detail lives in [`architecture/index.md`](00_documentation_arsenal/architecture/index.md).
 
 The governance chain is the same for every domain:
@@ -68,7 +72,7 @@ Contracts are reference documents confronted with the code, and the discipline i
 
 ## Interface preview
 
-A few real views, as they run. They are **dense by design**: the UI observes states, it does not compute them.
+A few live views, as they run. They are **dense by design**: the UI observes states, it does not compute them.
 
 <details>
 <summary>See the screenshots</summary>
@@ -97,13 +101,13 @@ A few real views, as they run. They are **dense by design**: the UI observes sta
 
 ## What you can take away
 
-Arsenal is not copy-pasteable, but several patterns can be picked independently:
+Several patterns can be picked independently of the rest:
 
 - **Decision / bounded-action separation** — doctrine in [`architecture/index.md`](00_documentation_arsenal/architecture/index.md), demonstrated in [`contrats/chauffage/`](00_documentation_arsenal/contrats/chauffage/README.md).
-- **Physical commands hardened by transactional ACK** — [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md).
+- **Physical commands hardened by transactional ACK** — acknowledgement, retry and guard, with monotonic timers and anti-phantom triggers, so a command is never assumed to have run — [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md).
 - **Explicit state machine** instead of tangled automations — [`contrats/aeration_blocage_chauffage/`](00_documentation_arsenal/contrats/aeration_blocage_chauffage/).
 - **Main / diagnostic / settings dashboard triplet** per domain — [`18_lovelace/dashboards/chauffage/`](18_lovelace/dashboards/chauffage/).
-- **Persistent leaderboard rendered read-only** — a backend pipeline closes each civil day, ranks it into a top-10 (FIFO on ties) and exposes ISO dates as canonical plus French display dates as a derived attribute; the Lovelace cards only read them. The *pattern* is reusable — the YAML is not, it rests on this home's sensors, automations and helpers.
+- **Persistent leaderboard rendered read-only** — a backend pipeline closes each civil day and ranks it into a top-10; the Lovelace cards only read. The *pattern* is reusable, the YAML is not.
 - **Documented allowlist recorder**, entity by entity — [`recorder.yaml`](recorder.yaml).
 
 Some patterns have even been extracted into standalone public repositories, reusable without knowing anything about Arsenal:
@@ -112,13 +116,13 @@ Some patterns have even been extracted into standalone public repositories, reus
 - [`ha-state-archive`](https://github.com/antoinevalentinHA/ha-state-archive) — Home Assistant state archiving, audit and versioning pipeline.
 - [`ha-archive-search`](https://github.com/antoinevalentinHA/ha-archive-search) — search engine over the archived versions.
 
-These are one-off extractions, not a framework: Arsenal stays a system, not a library.
+These are one-off extractions: Arsenal stays a system, not a library.
 
 ---
 
 ## What Arsenal is *not*
 
-- **Not an install to copy.** Entities, IPs, MQTT topics, devices and domain choices are specific to one house. What is reusable is the patterns, the invariants and the method.
+- **Not an install to copy.** Entities, IPs, MQTT topics, devices and domain choices are specific to one house. What is reusable is the patterns, the invariants and the method. Specific to one house — but not to houses: the same decision apparatus has since been ported to a second site of a different nature, an industrial print shop, without rewriting the architecture — the site coupling stays isolated in the identifier suffix (`<function>_<site>`).
 - **Not a showcase.** Arsenal is not optimized for screenshots; it is optimized to stay maintainable and governable years after being built.
 - **Not Home Assistant documentation.** The official docs remain the reference for integrations and Lovelace. Arsenal is about system architecture.
 - **Not uniformly finished.** Some domains are closed, others mid-cycle, some unaudited — and this is written plainly in the domain map and the work registry.

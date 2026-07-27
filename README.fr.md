@@ -5,11 +5,13 @@
 [![License: MIT](https://img.shields.io/github/license/antoinevalentinHA/arsenal?color=blue)](./LICENSE)
 [![Home Assistant](https://img.shields.io/badge/Home_Assistant-system-41BDF5?logo=home-assistant&logoColor=white)](https://www.home-assistant.io/)
 
-> Une maison réelle, pilotée par Home Assistant — et tenue aux standards d'un logiciel sérieux.
+> Une maison pilotée par Home Assistant — et tenue aux standards d'un logiciel sérieux.
 
 Arsenal est une configuration Home Assistant **réelle, utilisée en production dans une maison familiale**. Elle couvre le chauffage, l'eau chaude, la climatisation, l'aération, l'arrosage, l'énergie, la sécurité, la présence, les mesures intérieures et extérieures, les dashboards et l'observabilité d'infrastructure.
 
-Ce n'est ni un framework, ni une configuration à copier telle quelle. C'est un système complet, observable fichier par fichier — et gouverné comme un logiciel.
+C'est un système complet, observable fichier par fichier — et gouverné comme un logiciel.
+
+*En chiffres : ~1 750 fichiers YAML, ~3 000 entités distinctes, 277 fichiers de contrat, 91 workflows de CI.*
 
 ![Vue d'accueil Arsenal — grille des domaines et confort thermique](00_documentation_arsenal/ui/captures/accueil.png)<br>
 *Tableau de bord d'accueil : tous les domaines d'un coup d'œil.*
@@ -18,7 +20,7 @@ Ce n'est ni un framework, ni une configuration à copier telle quelle. C'est un 
 
 ## Ce qu'Arsenal fait concrètement
 
-Quelques comportements réels du système, tels qu'ils tournent aujourd'hui :
+Quelques comportements du système, tels qu'ils tournent aujourd'hui :
 
 - **Le chauffage est piloté par une décision centrale unique** : un script souverain évalue présence, météo, apport du poêle et fenêtres ouvertes, puis produit des états lisibles (`binary_sensor.chauffage_autorise_systeme`, `meteo_favorable_chauffage`, `poele_en_fonction`…) que des exécutants bornés appliquent.
 - **L'aération bloque le chauffage via une machine d'état explicite** : chaque épisode d'aération suit un cycle de vie normé, avec timers monotones et anti-triggers fantômes — la reprise thermique restant du ressort exclusif de la décision chauffage.
@@ -70,9 +72,11 @@ Règle d'or : **le backend décide, l'UI observe**. Aucune logique métier dans 
 
 Côté historisation, le [`recorder.yaml`](recorder.yaml) fonctionne en **allowlist** : chaque entité enregistrée est là par décision documentée (rôle, utilité, cardinalité, fréquence), pas par défaut.
 
+Une vue d'observabilité est là pour signaler des défauts, pas pour paraître propre : une page qui n'a jamais rien détecté ne prouve rien.
+
 ### Aperçu de l'interface
 
-Quelques vues réelles, telles qu'elles tournent. Elles sont **denses par conception** : l'UI observe des états, elle ne les calcule pas.
+Quelques vues, telles qu'elles tournent. Elles sont **denses par conception** : l'UI observe des états, elle ne les calcule pas.
 
 <details>
 <summary>Voir les captures</summary>
@@ -101,13 +105,13 @@ Quelques vues réelles, telles qu'elles tournent. Elles sont **denses par concep
 
 ## Ce que vous pouvez emporter
 
-Arsenal n'est pas copiable tel quel, mais plusieurs patterns se picorent indépendamment du reste :
+Plusieurs patterns se picorent indépendamment du reste :
 
 - **Séparation décision / action bornée** — une autorité décisionnelle unique par domaine produit des états lisibles ; des exécutants bornés les appliquent. Doctrine dans [`architecture/index.md`](00_documentation_arsenal/architecture/index.md), démonstration dans [`contrats/chauffage/`](00_documentation_arsenal/contrats/chauffage/README.md).
-- **Commandes physiques fiabilisées par ACK transactionnel** — acquittement, retry, garde : [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md) et [`contrats/switchbot_transactionnel.md`](00_documentation_arsenal/contrats/switchbot_transactionnel.md).
+- **Commandes physiques fiabilisées par ACK transactionnel** — acquittement, retry et garde, avec timers monotones et anti-triggers fantômes : une commande n'est jamais supposée exécutée. [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md) et [`contrats/switchbot_transactionnel.md`](00_documentation_arsenal/contrats/switchbot_transactionnel.md).
 - **Machine d'état explicite** plutôt qu'un enchevêtrement d'automatisations : [`contrats/aeration_blocage_chauffage/`](00_documentation_arsenal/contrats/aeration_blocage_chauffage/).
 - **Triplet de dashboards principal / diagnostic / réglages** par domaine : [`18_lovelace/dashboards/chauffage/`](18_lovelace/dashboards/chauffage/).
-- **Palmarès persistant restitué en lecture seule** — un pipeline backend clôture chaque journée civile, la classe dans un top 10 (FIFO sur égalité) et expose la date ISO comme donnée canonique plus une date d'affichage FR dérivée ; les cartes Lovelace se contentent de lire. Le *pattern* est réutilisable — le YAML ne l'est pas : il repose sur les capteurs, automatisations et helpers propres à cette maison.
+- **Palmarès persistant restitué en lecture seule** — un pipeline backend clôture chaque journée civile et la classe dans un top 10 ; les cartes Lovelace se contentent de lire. Le *pattern* est réutilisable, le YAML ne l'est pas.
 - **Recorder en allowlist documentée**, entité par entité : [`recorder.yaml`](recorder.yaml).
 - **Résilience secteur / internet / cloud** comme domaines contractualisés : [`contrats/pannes/`](00_documentation_arsenal/contrats/pannes/) et [`contrats/resilience_integrations.md`](00_documentation_arsenal/contrats/resilience_integrations.md).
 - **Pont NAS → MQTT → Home Assistant** comme outil transverse de frontière externe : [`outils_externes/nas_arsenal/`](00_documentation_arsenal/outils_externes/nas_arsenal/) et son contrat [`arsenal_nas.md`](00_documentation_arsenal/contrats/arsenal_nas.md).
@@ -119,7 +123,7 @@ Certains patterns ont même été extraits en dépôts publics autonomes, réuti
 - [`ha-state-archive`](https://github.com/antoinevalentinHA/ha-state-archive) — pipeline d'archivage, d'audit et de versionnement d'états Home Assistant, côté infrastructure.
 - [`ha-archive-search`](https://github.com/antoinevalentinHA/ha-archive-search) — moteur de recherche sur les versions archivées, côté infrastructure.
 
-Ce sont des extractions ponctuelles, pas un framework : Arsenal reste un système, pas une bibliothèque.
+Ce sont des extractions ponctuelles : Arsenal reste un système, pas une bibliothèque.
 
 ---
 
@@ -208,7 +212,7 @@ L'IA accélère l'exécution. Les contrats, la CI et le cycle d'audit existent p
 
 ## Ce qu'Arsenal n'est pas
 
-**Pas une installation à copier.** Les entités, IPs, topics MQTT, devices et choix métier sont spécifiques à une maison précise. Ce qui est réutilisable, ce sont les patterns, les invariants et la méthode.
+**Pas une installation à copier.** Les entités, IPs, topics MQTT, devices et choix métier sont spécifiques à une maison précise. Ce qui est réutilisable, ce sont les patterns, les invariants et la méthode. Spécifique à une maison — mais pas aux maisons : le même appareil décisionnel a été porté sur un second site de nature différente, une imprimerie, sans réécriture de l'architecture — le couplage au site restant isolé dans le suffixe des identifiants (`<fonction>_<lieu>`).
 
 **Pas une vitrine.** Arsenal n'est pas optimisé pour le screenshot. Il est optimisé pour rester maintenable et gouvernable des années après sa construction.
 
