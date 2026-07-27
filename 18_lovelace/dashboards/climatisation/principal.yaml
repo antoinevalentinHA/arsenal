@@ -37,10 +37,6 @@ views:
               - type: custom:button-card
                 template: carte_clim_synthese
 
-              # Mode de ventilation réellement appliqué (statut passif)
-              - type: custom:button-card
-                template: carte_clim_ventilation
-
           # ==================================================
           # 🎛️ AUTORITÉ & REPRISE EN MAIN
           # --------------------------------------------------
