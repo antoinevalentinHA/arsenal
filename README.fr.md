@@ -7,11 +7,11 @@
 
 > Une maison pilotée par Home Assistant — et tenue aux standards d'un logiciel sérieux.
 
-Arsenal est une configuration Home Assistant **réelle, utilisée en production dans une maison familiale**. Elle couvre le chauffage, l'eau chaude, la climatisation, l'aération, l'arrosage, l'énergie, la sécurité, la présence, les mesures intérieures et extérieures, les dashboards et l'observabilité d'infrastructure.
+Arsenal est une configuration Home Assistant **utilisée en production dans une maison familiale**. Elle couvre le chauffage, l'eau chaude, la climatisation, l'aération, l'arrosage, l'énergie, la sécurité, la présence, les mesures intérieures et extérieures, les dashboards et l'observabilité d'infrastructure.
 
 C'est un système complet, observable fichier par fichier — et gouverné comme un logiciel.
 
-*En chiffres : ~1 750 fichiers YAML, ~3 000 entités distinctes, 277 fichiers de contrat, 91 workflows de CI.*
+*En chiffres : 46 domaines, tous sous contrat écrit — ~1 750 fichiers YAML, 91 workflows de CI.*
 
 ![Vue d'accueil Arsenal — grille des domaines et confort thermique](00_documentation_arsenal/ui/captures/accueil.png)<br>
 *Tableau de bord d'accueil : tous les domaines d'un coup d'œil.*
@@ -108,7 +108,7 @@ Quelques vues, telles qu'elles tournent. Elles sont **denses par conception** : 
 Plusieurs patterns se picorent indépendamment du reste :
 
 - **Séparation décision / action bornée** — une autorité décisionnelle unique par domaine produit des états lisibles ; des exécutants bornés les appliquent. Doctrine dans [`architecture/index.md`](00_documentation_arsenal/architecture/index.md), démonstration dans [`contrats/chauffage/`](00_documentation_arsenal/contrats/chauffage/README.md).
-- **Commandes physiques fiabilisées par ACK transactionnel** — acquittement, retry et garde, avec timers monotones et anti-triggers fantômes : une commande n'est jamais supposée exécutée. [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md) et [`contrats/switchbot_transactionnel.md`](00_documentation_arsenal/contrats/switchbot_transactionnel.md).
+- **Commandes physiques fiabilisées par ACK transactionnel** — mécanisme détaillé dans [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md) et [`contrats/switchbot_transactionnel.md`](00_documentation_arsenal/contrats/switchbot_transactionnel.md).
 - **Machine d'état explicite** plutôt qu'un enchevêtrement d'automatisations : [`contrats/aeration_blocage_chauffage/`](00_documentation_arsenal/contrats/aeration_blocage_chauffage/).
 - **Triplet de dashboards principal / diagnostic / réglages** par domaine : [`18_lovelace/dashboards/chauffage/`](18_lovelace/dashboards/chauffage/).
 - **Palmarès persistant restitué en lecture seule** — un pipeline backend clôture chaque journée civile et la classe dans un top 10 ; les cartes Lovelace se contentent de lire. Le *pattern* est réutilisable, le YAML ne l'est pas.
