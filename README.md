@@ -49,17 +49,17 @@ Arsenal is built on a small set of non-negotiable principles. They are documente
 ┌─────────────────────────────────────────────┐
 │  Template sensors · Helpers · Admissibility │  DECISION
 └───────────────────────┬─────────────────────┘
-                        │ decision states
+                        │ executory decision — held by Arsenal (auto) or you (manual)
                         ▼
 ┌─────────────────────────────────────────────┐
-│  Automations · Sovereign scripts            │  EXECUTION
+│  Automations · Bounded executors            │  EXECUTION
 └───────────────────────┬─────────────────────┘
                         │ commands
                         ▼
-                     Hardware
+                     Hardware  ⟳  (sensors and actuators are one physical world)
 ```
 
-*Two doctrine terms above: **Admissibility** — whether a decision state may be acted on at all; **Sovereign scripts** — a single script owns a domain's decision end to end. Both detailed in [`architecture/index.md`](00_documentation_arsenal/architecture/index.md).*
+*The **decision** layer produces one **executory decision** per domain; its holder is single but revocable — Arsenal in automatic mode, you in manual (see [`autorite_de_domaine.md`](00_documentation_arsenal/architecture/03_doctrines/autorite_de_domaine.md)). **Admissibility** gates whether a decision may be acted on at all; a single **bounded executor** carries it to the hardware — it never decides.*
 
 Perception measures, decision concludes, execution applies. The UI is not part of this flow — it observes it. Layer and doctrine detail lives in [`architecture/index.md`](00_documentation_arsenal/architecture/index.md).
 

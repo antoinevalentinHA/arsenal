@@ -148,15 +148,17 @@ Ce sont des extractions ponctuelles : Arsenal reste un système, pas une bibliot
 ┌─────────────────────────────────────────────┐
 │  Template sensors · Helpers · Admissibilité │  DÉCISION
 └───────────────────────┬─────────────────────┘
-                        │ états de décision
+                        │ décision exécutoire — tenue par Arsenal (auto) ou vous (manuel)
                         ▼
 ┌─────────────────────────────────────────────┐
-│  Automatisations · Scripts souverains       │  EXÉCUTION
+│  Automatisations · Exécutants bornés        │  EXÉCUTION
 └───────────────────────┬─────────────────────┘
                         │ commandes
                         ▼
-                    Hardware
+                    Hardware  ⟳  (capteurs et actionneurs sont un même monde physique)
 ```
+
+*La couche **décision** produit une **décision exécutoire** unique par domaine ; son titulaire est unique mais révocable — Arsenal en régime automatique, vous en manuel (voir [`autorite_de_domaine.md`](00_documentation_arsenal/architecture/03_doctrines/autorite_de_domaine.md)). L'**admissibilité** conditionne si une décision peut être appliquée ; un seul **exécutant borné** la porte au matériel — il ne décide jamais.*
 
 La perception mesure, la décision conclut, l'exécution applique. L'UI n'apparaît pas dans ce flux : elle l'observe. Le détail des couches et des doctrines vit dans [`architecture/index.md`](00_documentation_arsenal/architecture/index.md).
 
