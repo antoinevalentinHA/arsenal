@@ -57,7 +57,10 @@ mais ne sont **pas** un impact de C36 ; ils n'entrent pas dans le présent audit
 > **Suite (2026-07-27).** La conformité des domaines ayant *adopté* la doctrine a depuis été
 > auditée séparément : climatisation → [`../climatisation/audit_autorite_de_domaine_c37.md`](../climatisation/audit_autorite_de_domaine_c37.md)
 > (souveraineté réconciliée v1.4) ; chauffage → [`../chauffage/audit_autorite_de_domaine_c39.md`](../chauffage/audit_autorite_de_domaine_c39.md)
-> (réconciliation hétérogène — résidu `D-C36-L4` ouvert au niveau textuel du contrat `10 §6 l.244`).
+> (réconciliation hétérogène — résidu `D-C36-L4` ouvert au niveau textuel du contrat `10 §6 l.244`) ;
+> déshumidificateur → [`../deshumidificateur/audit_autorite_de_domaine_c40.md`](../deshumidificateur/audit_autorite_de_domaine_c40.md)
+> (le plus mature — min-on/min-off non opposables au manuel, CI la plus forte). **Les 4 domaines de
+> l'empreinte d'autorité sont désormais couverts.**
 
 > **Réponse directe.** « Les domaines impactés par C36 » = **VMC** (runtime + contrat, en
 > profondeur) et le **socle doctrinal transverse**. Chauffage et climatisation ne sont

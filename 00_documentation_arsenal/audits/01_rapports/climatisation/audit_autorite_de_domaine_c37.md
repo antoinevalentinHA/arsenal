@@ -125,5 +125,5 @@ durcissement sont **classées, non prescrites** (relèveraient d'un chantier CI 
 
 - Doctrine : [`autorite_de_domaine.md`](../../../architecture/03_doctrines/autorite_de_domaine.md)
 - Contrats : [`16_autorite_de_domaine_climatisation.md`](../../../contrats/climatisation/16_autorite_de_domaine_climatisation.md) · [`03_decision_canonique.md`](../../../contrats/climatisation/03_decision_canonique.md) (v1.4)
-- Audit jumeau (chauffage) : [`../chauffage/audit_autorite_de_domaine_c39.md`](../chauffage/audit_autorite_de_domaine_c39.md)
+- Audits jumeaux : [`../chauffage/audit_autorite_de_domaine_c39.md`](../chauffage/audit_autorite_de_domaine_c39.md) · [`../deshumidificateur/audit_autorite_de_domaine_c40.md`](../deshumidificateur/audit_autorite_de_domaine_c40.md)
 - Audit d'origine (C36/VMC) : [`../transverses/audit_domaines_impactes_c36_autorite_de_domaine.md`](../transverses/audit_domaines_impactes_c36_autorite_de_domaine.md)

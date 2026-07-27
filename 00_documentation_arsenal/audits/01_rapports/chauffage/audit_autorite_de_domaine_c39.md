@@ -141,5 +141,5 @@ lint étage-1 à `mode_commande.yaml`) sont **classées, non prescrites** — ar
 
 - Doctrine : [`autorite_de_domaine.md`](../../../architecture/03_doctrines/autorite_de_domaine.md)
 - Contrats : [`85_autorite_de_domaine_chauffage.md`](../../../contrats/chauffage/85_autorite_de_domaine_chauffage.md) · [`10_souverainete_execution.md`](../../../contrats/chauffage/10_souverainete_execution.md) (+ [`__amendement.md`](../../../contrats/chauffage/10_souverainete_execution__amendement.md)) · [`30_decision_centrale.md`](../../../contrats/chauffage/30_decision_centrale.md)
-- Audit jumeau (climatisation) : [`../climatisation/audit_autorite_de_domaine_c37.md`](../climatisation/audit_autorite_de_domaine_c37.md)
+- Audits jumeaux : [`../climatisation/audit_autorite_de_domaine_c37.md`](../climatisation/audit_autorite_de_domaine_c37.md) · [`../deshumidificateur/audit_autorite_de_domaine_c40.md`](../deshumidificateur/audit_autorite_de_domaine_c40.md)
 - Audit d'origine (C36/VMC) : [`../transverses/audit_domaines_impactes_c36_autorite_de_domaine.md`](../transverses/audit_domaines_impactes_c36_autorite_de_domaine.md)
