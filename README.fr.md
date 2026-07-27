@@ -95,7 +95,7 @@ Quelques vues, telles qu'elles tournent. Elles sont **denses par conception** : 
 *Palmarès météo : pas la météo du jour mais la mémoire climatique de la maison — un top 10 persistant (chaleur, froid, nuits chaudes, pluie), classé et daté côté backend, restitué en lecture seule. Les dates FR `DD/MM/YYYY` sont dérivées côté backend ; la carte n'applique aucun formatage. Le sélecteur est un pur contexte d'interface — il ne pilote rien.*
 
 ![Vue Climatisation — principal : état, décision et verdict](00_documentation_arsenal/ui/captures/climatisation-principal.png)<br>
-*Climatisation — principal : le backend décide et affiche son verdict ; l'UI observe.*
+*Climatisation — principal (régime automatique) : autorité tenue par Arsenal ; le backend décide et affiche son verdict (ici « à l'arrêt ») ; l'UI observe.*
 
 ![Vue diagnostic de la climatisation — chaîne interne de décision](00_documentation_arsenal/ui/captures/climatisation-diagnostic.png)<br>
 *Climatisation — diagnostic : la chaîne interne, seuils et blocages. Même domaine, deux profondeurs de lecture.*

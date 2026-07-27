@@ -91,7 +91,7 @@ A few live views, as they run. They are **dense by design**: the UI observes sta
 *Weather leaderboard: not today's weather but the home's climate memory — a persistent top-10 (heat, cold, warm nights, rainfall), ranked and dated on the backend, rendered read-only. Dates are French display strings derived server-side; the card applies no formatting of its own. The selector is pure interface context — it drives nothing.*
 
 ![Air conditioning — main view: state, decision and verdict](00_documentation_arsenal/ui/captures/climatisation-principal.png)<br>
-*Air conditioning — main: the backend decides and shows its verdict; the UI observes.*
+*Air conditioning — main (automatic mode): authority held by Arsenal; the backend decides and shows its verdict (here "at rest"); the UI observes.*
 
 ![Air conditioning diagnostic view — internal decision chain](00_documentation_arsenal/ui/captures/climatisation-diagnostic.png)<br>
 *Air conditioning — diagnostic: the internal chain, thresholds and blocks. Same domain, two reading depths.*
