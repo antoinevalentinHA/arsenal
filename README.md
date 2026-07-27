@@ -29,7 +29,7 @@ Arsenal is built on a small set of non-negotiable principles. They are documente
 
 - **Contract-driven architecture.** Every domain has a written contract *before* it has code. If the implementation contradicts the contract, the implementation is wrong — not the contract. See [`contrats/index.md`](00_documentation_arsenal/contrats/index.md).
 - **Separation of decision, action, diagnostics and UI.** A single decision authority per domain produces readable states; bounded executors apply them; dashboards observe them. The backend decides, the UI observes — never the reverse. See [`architecture/index.md`](00_documentation_arsenal/architecture/index.md).
-- **Auto or manual, the owner's choice.** Where it is useful — ventilation, air conditioning, heating, the cellar dehumidifier — a domain can run under Arsenal (automatic) or be handed back to the user (manual), driven by exposed parameters. The switch is explicit and observable, with no silent hand-back: a domain's authority is single, but its delegation is revocable. See [`architecture/03_doctrines/autorite_de_domaine.md`](00_documentation_arsenal/architecture/03_doctrines/autorite_de_domaine.md).
+- **Manual or automatic, your choice — one executory decision.** Where it is useful (ventilation, air conditioning, heating, the cellar dehumidifier), an "Authority & hand-back" card names who holds the domain — **Arsenal** (automatic) or **you** (manual). In automatic, the UI shows Arsenal's decision *and* the conditions behind it (humidity, CO₂, thermal intent…); in manual, you command the domain directly (ventilation low/high, AC off/cool/dry/heat, heating comfort/reduced). Either way, a single verdict — the **executory decision** — is imposed on execution. The switch is explicit and observable, with no silent hand-back; authority is single, its delegation revocable. See [`architecture/03_doctrines/autorite_de_domaine.md`](00_documentation_arsenal/architecture/03_doctrines/autorite_de_domaine.md).
 - **Reliable, idempotent actions.** Critical physical commands are transactional — acknowledgement, retry and guard — with monotonic timers and anti-phantom triggers, so a command is never assumed to have run. See [`contrats/boiler/`](00_documentation_arsenal/contrats/boiler/README.md).
 - **Observability.** Each domain exposes a diagnostic view of its internal decision chain, and the system view exists to surface faults, not to look clean — an observability page that has never caught anything proves nothing. The [`recorder.yaml`](recorder.yaml) works as a documented **allowlist**: every recorded entity is there by decision, not by default.
 - **Changelog-driven governance.** Changelogs are a decision memory, not a commit log — a "clean signal" reading of what actually changed. See [`changelog/index.md`](00_documentation_arsenal/changelog/index.md).
@@ -77,6 +77,15 @@ A few live views, as they run. They are **dense by design**: the UI observes sta
 
 <details>
 <summary>See the screenshots</summary>
+
+![Ventilation — authority in automatic mode](00_documentation_arsenal/ui/captures/vmc-autorite-auto.png)<br>
+*Ventilation — automatic mode: Arsenal holds authority and shows not just its verdict ("not required") but the conditions behind it — bathroom humidity, living-room CO₂, outside air.*
+
+![Ventilation — manual hand-back](00_documentation_arsenal/ui/captures/vmc-autorite-manuel.png)<br>
+*Ventilation — hand-back: authority returned to the user; the domain is commanded directly (Low / High) and the card names the executory decision imposed on execution. Same card, two holders.*
+
+![Heating — manual hand-back](00_documentation_arsenal/ui/captures/chauffage-autorite.png)<br>
+*Heating — hand-back: same authority model, domain-appropriate controls (Comfort / Reduced); here "Reduced commanded", the regime imposed on execution.*
 
 ![Weather leaderboard — persistent top-10 of climate records](00_documentation_arsenal/ui/captures/meteo-palmares.png)<br>
 *Weather leaderboard: not today's weather but the home's climate memory — a persistent top-10 (heat, cold, warm nights, rainfall), ranked and dated on the backend, rendered read-only. Dates are French display strings derived server-side; the card applies no formatting of its own. The selector is pure interface context — it drives nothing.*

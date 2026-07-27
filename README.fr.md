@@ -23,7 +23,7 @@ C'est un système complet, observable fichier par fichier — et gouverné comme
 Quelques comportements du système, tels qu'ils tournent aujourd'hui :
 
 - **Le chauffage est piloté par une décision centrale unique** : un script souverain évalue présence, météo, apport du poêle et fenêtres ouvertes, puis produit des états lisibles (`binary_sensor.chauffage_autorise_systeme`, `meteo_favorable_chauffage`, `poele_en_fonction`…) que des exécutants bornés appliquent.
-- **Manuel ou auto piloté, au choix** : pour les domaines où c'est utile — VMC, climatisation, chauffage, déshumidificateur cave — chacun tourne sous Arsenal (régime automatique) ou est rendu à l'utilisateur (régime manuel), selon les paramètres exposés. La bascule est explicite et observable, sans reprise silencieuse : l'autorité d'un domaine est unique, mais sa délégation est révocable. Doctrine : [`autorite_de_domaine.md`](00_documentation_arsenal/architecture/03_doctrines/autorite_de_domaine.md).
+- **Manuel ou automatique, au choix — une seule décision exécutoire** : pour les domaines où c'est utile (VMC, climatisation, chauffage, déshumidificateur cave), un carton « Autorité & reprise en main » désigne le titulaire — **Arsenal** (automatique) ou **vous** (manuel). En automatique, l'UI expose la décision d'Arsenal *et* les conditions qui la motivent (humidité, CO₂, intention thermique…) ; en manuel, vous commandez le domaine directement (VMC basse/haute, clim arrêt/froid/déshum./chaud, chauffage confort/réduit). Dans les deux cas, un même verdict — la **décision exécutoire** — est imposé à l'exécution. Bascule explicite et observable, sans reprise silencieuse ; l'autorité est unique, sa délégation révocable. Doctrine : [`autorite_de_domaine.md`](00_documentation_arsenal/architecture/03_doctrines/autorite_de_domaine.md).
 - **L'aération bloque le chauffage via une machine d'état explicite** : chaque épisode d'aération suit un cycle de vie normé, avec timers monotones et anti-triggers fantômes — la reprise thermique restant du ressort exclusif de la décision chauffage.
 - **L'eau chaude sanitaire est supervisée par un watchdog**, avec un sous-domaine bouclage (recirculation) audité et clôturé, et une désinfection au retour de vacances.
 - **Les commandes physiques critiques sont transactionnelles** : la chaudière est pilotée via un pont Raspberry Pi ([`boiler_pi`](00_documentation_arsenal/outils_externes/boiler_pi/)) avec acquittement MQTT, retry et garde — on ne suppose jamais qu'une commande a été exécutée.
@@ -81,6 +81,15 @@ Quelques vues, telles qu'elles tournent. Elles sont **denses par conception** : 
 
 <details>
 <summary>Voir les captures</summary>
+
+![VMC — autorité en régime automatique](00_documentation_arsenal/ui/captures/vmc-autorite-auto.png)<br>
+*VMC — régime automatique : Arsenal tient l'autorité et affiche non seulement son verdict (« Non requise ») mais les conditions qui le motivent — humidité des salles de bain, CO₂ du séjour, air extérieur.*
+
+![VMC — reprise en main manuelle](00_documentation_arsenal/ui/captures/vmc-autorite-manuel.png)<br>
+*VMC — reprise en main : l'autorité est rendue à l'utilisateur ; le domaine se commande directement (Basse / Haute) et le carton nomme la décision exécutoire imposée à l'exécution. Même carton, deux titulaires.*
+
+![Chauffage — reprise en main manuelle](00_documentation_arsenal/ui/captures/chauffage-autorite.png)<br>
+*Chauffage — reprise en main : même modèle d'autorité, contrôles propres au domaine (Confort / Réduit) ; ici « Réduit commandé », régime imposé à l'exécution.*
 
 ![Palmarès météo — top 10 persistant des records climatiques](00_documentation_arsenal/ui/captures/meteo-palmares.png)<br>
 *Palmarès météo : pas la météo du jour mais la mémoire climatique de la maison — un top 10 persistant (chaleur, froid, nuits chaudes, pluie), classé et daté côté backend, restitué en lecture seule. Les dates FR `DD/MM/YYYY` sont dérivées côté backend ; la carte n'applique aucun formatage. Le sélecteur est un pur contexte d'interface — il ne pilote rien.*
