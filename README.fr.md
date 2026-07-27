@@ -23,6 +23,7 @@ C'est un système complet, observable fichier par fichier — et gouverné comme
 Quelques comportements du système, tels qu'ils tournent aujourd'hui :
 
 - **Le chauffage est piloté par une décision centrale unique** : un script souverain évalue présence, météo, apport du poêle et fenêtres ouvertes, puis produit des états lisibles (`binary_sensor.chauffage_autorise_systeme`, `meteo_favorable_chauffage`, `poele_en_fonction`…) que des exécutants bornés appliquent.
+- **Manuel ou auto piloté, au choix** : pour les domaines où c'est utile — VMC, climatisation, chauffage, déshumidificateur cave — chacun tourne sous Arsenal (régime automatique) ou est rendu à l'utilisateur (régime manuel), selon les paramètres exposés. La bascule est explicite et observable, sans reprise silencieuse : l'autorité d'un domaine est unique, mais sa délégation est révocable. Doctrine : [`autorite_de_domaine.md`](00_documentation_arsenal/architecture/03_doctrines/autorite_de_domaine.md).
 - **L'aération bloque le chauffage via une machine d'état explicite** : chaque épisode d'aération suit un cycle de vie normé, avec timers monotones et anti-triggers fantômes — la reprise thermique restant du ressort exclusif de la décision chauffage.
 - **L'eau chaude sanitaire est supervisée par un watchdog**, avec un sous-domaine bouclage (recirculation) audité et clôturé, et une désinfection au retour de vacances.
 - **Les commandes physiques critiques sont transactionnelles** : la chaudière est pilotée via un pont Raspberry Pi ([`boiler_pi`](00_documentation_arsenal/outils_externes/boiler_pi/)) avec acquittement MQTT, retry et garde — on ne suppose jamais qu'une commande a été exécutée.
@@ -212,7 +213,7 @@ L'IA accélère l'exécution. Les contrats, la CI et le cycle d'audit existent p
 
 ## Ce qu'Arsenal n'est pas
 
-**Pas une installation à copier.** Les entités, IPs, topics MQTT, devices et choix métier sont spécifiques à une maison précise. Ce qui est réutilisable, ce sont les patterns, les invariants et la méthode. Spécifique à une maison — mais pas aux maisons : le même appareil décisionnel a été porté sur un second site de nature différente, une imprimerie, sans réécriture de l'architecture — le couplage au site restant isolé dans le suffixe des identifiants (`<fonction>_<lieu>`).
+**Pas une installation à copier.** Les entités, IPs, topics MQTT, devices et choix métier sont spécifiques à une maison précise. Ce qui est réutilisable, ce sont les patterns, les invariants et la méthode. Les couches mesure et observabilité se transposent à bas coût — instanciées par lieu via un suffixe d'identifiant — mais les domaines décisionnels sont câblés à la topologie thermique, aux équipements et au plan de cette maison. Les porter sur une autre maison est une réécriture bornée, pas une copie : ce qui voyage, c'est la méthode et les invariants, à étudier et redériver.
 
 **Pas une vitrine.** Arsenal n'est pas optimisé pour le screenshot. Il est optimisé pour rester maintenable et gouvernable des années après sa construction.
 
