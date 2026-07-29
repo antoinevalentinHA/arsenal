@@ -7,20 +7,21 @@
 # ==========================================================
 #
 # 🎯 RÔLE
-#   Répondre en UNE carte XL : « quelle durée a réellement été figée et
-#   exécutée ? »
+#   Répondre en UNE carte XL : « où en est la session, et quand doit-elle
+#   se terminer ? » — vue CYCLE DE VIE + AUTORITÉ DE FIN.
 #     - state  → état de session, PILOTÉ par le backend :
 #                « Session en cours : … » si active, sinon « Dernière session : … ».
-#     - label  → durée figée, motif figé, début → fin prévue · fin observée, verdict.
+#     - label  → début → fin prévue (échéance = autorité unique de fin).
 #     - couleur → dérivée de l'état de session (palette existante).
-#   La durée FIGÉE (session) reste distincte de la durée applicable (Décision).
+#   Frontière assumée (aucun doublon) : cette carte porte l'ÉTAT et
+#   l'AUTORITÉ DE FIN ; la trace du dernier cycle terminé (durée appliquée,
+#   fin observée, verdict, motif, preuve de démarrage) vit dans
+#   carte_arrosage_dernier_arrosage_synthese_xl.
 #
 # 📡 SOURCE (lecture seule)
 #   entity: sensor.arrosage_session_etat
 #   + binary_sensor.arrosage_session_en_cours
-#   + input_number.arrosage_session_duree_minutes
-#   + input_text.arrosage_session_modulation_motif / _verdict
-#   + input_datetime.arrosage_session_debut / _fin_prevue / _fin_observee
+#   + input_datetime.arrosage_session_debut / _fin_prevue
 #
 # ⚙️ LOGIQUE UI (assemblage/traduction, AUCUN calcul)
 #   - Mappe codes → libellés ; tronque les horodatages à HH:MM (affichage).
@@ -43,12 +44,8 @@ carte_arrosage_session_synthese_xl:
 
   triggers_update:
     - binary_sensor.arrosage_session_en_cours
-    - input_number.arrosage_session_duree_minutes
-    - input_text.arrosage_session_modulation_motif
-    - input_text.arrosage_session_verdict
     - input_datetime.arrosage_session_debut
     - input_datetime.arrosage_session_fin_prevue
-    - input_datetime.arrosage_session_fin_observee
 
   state_display: >
     [[[
@@ -70,28 +67,9 @@ carte_arrosage_session_synthese_xl:
       const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
       const val = (id) => { const v = states?.[id]?.state; return UNAV.includes(v) ? null : v; };
       const hhmm = (id) => { const v = val(id); return v ? v.toString().slice(11, 16) : "—"; };
-      const motifMap = {
-        "reduction_sol": "réduction sol", "allongement_climatique": "allongement climat",
-        "compensation_sol_climat": "compensation sol/climat",
-        "climat_non_qualifie_plancher_nominal": "climat non qualifié (base)",
-        "neutre": "neutre", "abstention_sol": "abstention sol",
-        "abstention_climat": "abstention climat", "abstention_double": "double abstention",
-        "modulation_desactivee": "modulation désactivée",
-        "controle_modulation_indisponible": "contrôle indisponible",
-        "decision_motif_indisponible": "motif décision indisponible",
-        "decision_indisponible": "décision indisponible", "decision_invalide": "décision invalide",
-        "base_invalide": "base invalide", "base_indisponible": "base indisponible",
-      };
-      const dur = val("input_number.arrosage_session_duree_minutes");
-      const mo = val("input_text.arrosage_session_modulation_motif");
-      const verd = val("input_text.arrosage_session_verdict");
-      const l1 = "figée " + (dur !== null ? dur + " min" : "—")
-               + " · motif " + (mo !== null ? (motifMap[mo] || mo) : "—");
-      const l2 = "début " + hhmm("input_datetime.arrosage_session_debut")
-               + " → prévu " + hhmm("input_datetime.arrosage_session_fin_prevue")
-               + " · observé " + hhmm("input_datetime.arrosage_session_fin_observee");
-      const l3 = "verdict " + (verd !== null ? verd : "—");
-      return l1 + "<br>" + l2 + "<br>" + l3;
+      return "début " + hhmm("input_datetime.arrosage_session_debut")
+           + " → fin prévue " + hhmm("input_datetime.arrosage_session_fin_prevue")
+           + " (échéance)";
     ]]]
 
   styles:

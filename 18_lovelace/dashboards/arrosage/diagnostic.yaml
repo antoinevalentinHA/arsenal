@@ -4,11 +4,14 @@ button_card_templates: !include_dir_merge_named /config/19_button_card_templates
 # 🩺 ARROSAGE — DIAGNOSTIC (explication du raisonnement du domaine)
 # ----------------------------------------------------------
 # Vue 100 % LECTURE. Répond à « pourquoi le domaine Arrosage arrive-t-il
-# à ce verdict ? ». Refonte en BLOCS XL de synthèse (une carte lisible
-# par domaine : hydrique, climat, décision de durée, session), suivis
-# d'une zone Détails (graphes ET₀/VPD, métriques brutes).
+# à ce verdict ? ». Structurée en SECTIONS distinctes, chacune portée par
+# UNE carte XL de synthèse lisible :
+#   🌧️ Précipitations · 💧 Diagnostic hydrique · 🌡️ Demande climatique ·
+#   🎛️ Décision de durée · 🧾 Session · 🛠️ Exécution (dernier arrosage).
+# Chaque carte XL est placée sous SON PROPRE section header.
 # Le canal climatique (ET₀/VPD) PARTICIPE désormais à la décision via la
-# modulation de durée (C11 P4 : allongement 1,05 sous forte demande).
+# modulation de durée (C11 P4 : allongement 1,05 sous forte demande) ; ses
+# grandeurs sont restituées dans la synthèse climatique XL (plus de graphe).
 #
 # Réutilisation exclusive des socles/templates existants ; aucune logique
 # métier/décisionnelle ici (le runtime décide, l'UI restitue/assemble).
@@ -71,221 +74,62 @@ views:
             entity: binary_sensor.arrosage_suspension_pluie
 
           # =========================================================
-          # 💧 Diagnostic hydrique (synthèse XL) — besoin sol + confiance
+          # 💧 Diagnostic hydrique — besoin sol + confiance réservoir
           # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 💧 Diagnostic hydrique
+
           - type: custom:button-card
             template: carte_arrosage_sol_synthese_xl
             entity: binary_sensor.arrosage_besoin_sol
 
           # =========================================================
-          # 🌡️ Demande climatique (synthèse XL) — ET₀/VPD → statut
+          # 🌡️ Demande climatique — ET₀/VPD → statut
           # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🌡️ Demande climatique
+
           - type: custom:button-card
             template: carte_arrosage_climat_synthese_xl
             entity: sensor.arrosage_modulation_reco_climat
 
           # =========================================================
-          # 🎛️ Décision de durée (synthèse XL) — BLOC PRINCIPAL
-          #    « nominale → applicable » + motif global + facteurs backend
+          # 🎛️ Décision de durée — « nominale → applicable » + motif global
           # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🎛️ Décision de durée
+
           - type: custom:button-card
             template: carte_arrosage_modulation_synthese_xl
             entity: sensor.arrosage_modulation_duree_applicable
 
           # =========================================================
-          # 🧾 Session (synthèse XL) — durée figée réellement exécutée
+          # 🧾 Session — état courant + autorité de fin
           # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🧾 Session
+
           - type: custom:button-card
             template: carte_arrosage_session_synthese_xl
             entity: sensor.arrosage_session_etat
 
           # =========================================================
-          # 🛠️ Exécution — l'acte et sa preuve
+          # 🛠️ Exécution — l'acte, sa preuve et la trace du dernier cycle
           # =========================================================
           - type: custom:button-card
             template: section_header
             name: 🛠️ Exécution
 
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: status_72_on_off
-                entity: switch.rain_bird_bat_bt_2_e9a3_station_1
-                name: Station 1 active
-                icon: mdi:sprinkler-variant
-
-              - type: custom:button-card
-                template: socle_info_72
-                entity: sensor.arrosage_dernier_effectif
-                name: Dernier arrosage prouvé
-                icon: mdi:history
-
-          # =========================================================
-          # 🔎 Détails — graphes et métriques brutes (secondaire)
-          # =========================================================
-          # Les blocs XL ci-dessus portent la lecture ; cette zone conserve
-          # les grandeurs brutes et les tendances pour l'analyse fine.
           - type: custom:button-card
-            template: section_header
-            name: 🔎 Détails
-
-          # -- Sol : grandeurs brutes --
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: carte_etat_interprete
-                entity: sensor.jardin_reservoir_sol_etat
-                name: État réservoir sol
-                icon: mdi:cup-water
-                variables:
-                  couleurs:
-                    complet: 'rgba(76, 175, 80, 0.2)'
-                    degrade: 'rgba(255, 235, 59, 0.2)'
-                    insuffisant: 'rgba(255, 152, 0, 0.2)'
-                    indisponible: 'rgba(158, 158, 158, 0.1)'
-
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: sensor.jardin_humidite_sol_points_frais
-                name: Points frais
-                icon: mdi:check-decagram
-
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: sensor.jardin_humidite_sol_mediane
-                name: Médiane
-                icon: mdi:water-percent
-
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: sensor.jardin_humidite_sol_minimum
-                name: Minimum
-                icon: mdi:water-alert-outline
-
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: sensor.jardin_humidite_sol_heterogeneite
-                name: Écart
-                icon: mdi:arrow-expand-vertical
-
-          # -- Climat : tendances ET₀ / VPD (unités distinctes, jamais fondues) --
-          - type: custom:mini-graph-card
-            name: 🌞 ET₀ journalière
-            icon: mdi:sun-thermometer-outline
-            entities:
-              - entity: sensor.arrosage_demande_climatique_et0
-                name: ET₀
-            hours_to_show: 72
-            points_per_hour: 4
-            line_width: 3
-            animate: true
-            smoothing: true
-            show:
-              labels: true
-              legend: false
-              extrema: true
-              fill: fade
-              icon: false
-            font_size: 75
-            height: 160
-            align_state: center
-            decimals: 2
-            tap_action:
-              action: more-info
-
-          - type: custom:mini-graph-card
-            name: 💧 VPD courant
-            icon: mdi:water-opacity
-            entities:
-              - entity: sensor.arrosage_demande_climatique_vpd
-                name: VPD
-            hours_to_show: 72
-            points_per_hour: 4
-            line_width: 3
-            animate: true
-            smoothing: true
-            show:
-              labels: true
-              legend: false
-              extrema: true
-              fill: fade
-              icon: false
-            font_size: 75
-            height: 160
-            align_state: center
-            decimals: 2
-            tap_action:
-              action: more-info
+            template: status_72_on_off
+            entity: switch.rain_bird_bat_bt_2_e9a3_station_1
+            name: Station 1 active
+            icon: mdi:sprinkler-variant
 
           - type: custom:button-card
-            template: carte_etat_interprete
-            entity: sensor.arrosage_demande_climatique_etat
-            name: État du canal climatique
-            icon: mdi:weather-partly-cloudy
-            variables:
-              couleurs:
-                complet: 'rgba(76, 175, 80, 0.2)'
-                degrade: 'rgba(255, 235, 59, 0.2)'
-                indisponible: 'rgba(158, 158, 158, 0.1)'
-
-          # -- Session : trace brute (début / durée figée / fin / verdict / motif) --
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: socle_info_72
-                entity: input_datetime.arrosage_session_debut
-                name: Début de session
-                icon: mdi:ray-start-arrow
-
-              - type: custom:button-card
-                template: socle_info_72
-                entity: input_number.arrosage_session_duree_minutes
-                name: Durée figée
-                icon: mdi:timer-sand-paused
-
-              - type: custom:button-card
-                template: socle_info_72
-                entity: input_datetime.arrosage_session_fin_prevue
-                name: Fin prévue (échéance)
-                icon: mdi:clock-alert-outline
-
-              - type: custom:button-card
-                template: socle_info_72
-                entity: input_datetime.arrosage_session_fin_observee
-                name: Fin observée
-                icon: mdi:ray-end
-
-          - type: custom:button-card
-            template: socle_info_72
-            entity: input_text.arrosage_session_verdict
-            name: Verdict de session (code interne)
-            icon: mdi:clipboard-text-clock
-
-          - type: custom:button-card
-            template: carte_etat_interprete
-            entity: input_text.arrosage_session_modulation_motif
-            name: Motif modulation (figé)
-            icon: mdi:tune-variant
-            variables:
-              couleurs:
-                reduction_sol: 'rgba(76, 175, 80, 0.2)'
-                allongement_climatique: 'rgba(255, 152, 0, 0.2)'
-                compensation_sol_climat: 'rgba(158, 158, 158, 0.2)'
-                climat_non_qualifie_plancher_nominal: 'rgba(255, 235, 59, 0.2)'
-                neutre: 'rgba(158, 158, 158, 0.2)'
-                abstention_sol: 'rgba(255, 235, 59, 0.2)'
-                abstention_climat: 'rgba(255, 235, 59, 0.2)'
-                abstention_double: 'rgba(255, 152, 0, 0.2)'
-                modulation_desactivee: 'rgba(158, 158, 158, 0.2)'
-                controle_modulation_indisponible: 'rgba(158, 158, 158, 0.1)'
-                decision_motif_indisponible: 'rgba(255, 152, 0, 0.2)'
-                decision_indisponible: 'rgba(158, 158, 158, 0.1)'
-                decision_invalide: 'rgba(244, 67, 54, 0.2)'
-                base_invalide: 'rgba(244, 67, 54, 0.2)'
-                base_indisponible: 'rgba(158, 158, 158, 0.1)'
+            template: carte_arrosage_dernier_arrosage_synthese_xl
+            entity: sensor.arrosage_dernier_effectif

@@ -1,0 +1,117 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Arrosage — Dernier arrosage (synthèse XL)
+#
+# 🗂️ COUCHE : diagnostic
+# 🧱 TYPE UI : synthèse XL (trace du dernier cycle terminé)
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Répondre en UNE carte XL : « quand le dernier arrosage a-t-il eu lieu,
+#   quelle durée a été appliquée, et comment s'est-il terminé ? » — vue
+#   PREUVE + RÉSULTAT (post-mortem du dernier cycle).
+#     - state  → headline PILOTÉ par l'état réel de session :
+#                « Arrosage en cours » si session active ;
+#                sinon « Dernier arrosage : <JJ/MM HH:MM> » (preuve démarrage) ;
+#                données indisponibles ⇒ "—".
+#     - label  → durée appliquée (figée), fin observée, verdict, motif figé.
+#     - couleur → dérivée du verdict de session (palette existante).
+#   Frontière assumée (aucun doublon) : la carte Session porte l'ÉTAT et
+#   l'AUTORITÉ DE FIN (début, fin prévue) ; cette carte porte la PREUVE de
+#   démarrage et le RÉSULTAT du cycle. Aucun champ commun.
+#
+# 📡 SOURCE (lecture seule)
+#   entity: sensor.arrosage_dernier_effectif (device_class timestamp — preuve
+#           du démarrage confirmé par le switch natif)
+#   + binary_sensor.arrosage_session_en_cours (pilote le headline)
+#   + input_number.arrosage_session_duree_minutes (durée figée appliquée)
+#   + input_datetime.arrosage_session_fin_observee (fin observée)
+#   + input_text.arrosage_session_verdict / _modulation_motif
+#   + sensor.arrosage_session_etat (verdict de couleur, lu via states[...])
+#
+# ⚙️ LOGIQUE UI (assemblage/traduction, AUCUN calcul)
+#   - Mappe codes → libellés ; formate l'horodatage ISO en JJ/MM HH:MM
+#     (pur découpage de chaîne, affichage — aucune arithmétique de durée).
+#   - Ne recalcule NI durée, NI écart temporel ; assemble des traces backend.
+#   - unknown/unavailable/attribut absent ⇒ "—".
+#
+# 🔗 SATELLITE DE : socle_status_label_xl
+# 🏷️ STATUT : Diagnostic UI — Arsenal (C11 P4, refonte)
+# ==========================================================
+
+carte_arrosage_dernier_arrosage_synthese_xl:
+  template: socle_status_label_xl
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: true
+  name: Dernier arrosage
+  icon: mdi:history
+
+  triggers_update:
+    - binary_sensor.arrosage_session_en_cours
+    - input_number.arrosage_session_duree_minutes
+    - input_datetime.arrosage_session_fin_observee
+    - input_text.arrosage_session_verdict
+    - input_text.arrosage_session_modulation_motif
+    - sensor.arrosage_session_etat
+
+  state_display: >
+    [[[
+      const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+      const enCours = states?.["binary_sensor.arrosage_session_en_cours"]?.state === "on";
+      if (enCours) return "Arrosage en cours";
+      const iso = entity.state;
+      if (UNAV.includes(iso)) return "—";
+      const s = iso.toString();
+      const jm = s.slice(8, 10) + "/" + s.slice(5, 7);
+      const hm = s.slice(11, 16);
+      return "Dernier arrosage : " + jm + " " + hm;
+    ]]]
+
+  label: >
+    [[[
+      const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+      const val = (id) => { const v = states?.[id]?.state; return UNAV.includes(v) ? null : v; };
+      const hhmm = (id) => { const v = val(id); return v ? v.toString().slice(11, 16) : "—"; };
+      const motifMap = {
+        "reduction_sol": "réduction sol", "allongement_climatique": "allongement climat",
+        "compensation_sol_climat": "compensation sol/climat",
+        "climat_non_qualifie_plancher_nominal": "climat non qualifié (base)",
+        "neutre": "neutre", "abstention_sol": "abstention sol",
+        "abstention_climat": "abstention climat", "abstention_double": "double abstention",
+        "modulation_desactivee": "modulation désactivée",
+        "controle_modulation_indisponible": "contrôle indisponible",
+        "decision_motif_indisponible": "motif décision indisponible",
+        "decision_indisponible": "décision indisponible", "decision_invalide": "décision invalide",
+        "base_invalide": "base invalide", "base_indisponible": "base indisponible",
+      };
+      const dur = val("input_number.arrosage_session_duree_minutes");
+      const verd = val("input_text.arrosage_session_verdict");
+      const mo = val("input_text.arrosage_session_modulation_motif");
+      const l1 = "durée " + (dur !== null ? dur + " min" : "—")
+               + " · fin observée " + hhmm("input_datetime.arrosage_session_fin_observee");
+      const l2 = "verdict " + (verd !== null ? verd : "—")
+               + " · motif " + (mo !== null ? (motifMap[mo] || mo) : "—");
+      return l1 + "<br>" + l2;
+    ]]]
+
+  styles:
+    card:
+      - height: auto
+      - min-height: 96px
+      - background-color: >
+          [[[
+            const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+            const v = (states?.["input_text.arrosage_session_verdict"]?.state || "").toString().trim();
+            if (UNAV.includes(v)) return "rgba(158, 158, 158, 0.1)";
+            if (v === "close_nominale") return "rgba(76, 175, 80, 0.2)";
+            if (v === "close_reprise" || v === "fin_observee") return "rgba(255, 235, 59, 0.2)";
+            if (v === "close_watchdog" || v === "close_anomalie") return "rgba(255, 152, 0, 0.2)";
+            if (v === "stop_incertain" || v === "depassement") return "rgba(244, 67, 54, 0.2)";
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]
+    label:
+      - white-space: normal
+      - line-height: 1.4
