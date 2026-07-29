@@ -1,0 +1,100 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Arrosage — Demande climatique (synthèse XL)
+#
+# 🗂️ COUCHE : diagnostic
+# 🧱 TYPE UI : synthèse XL (statut + contexte interprété)
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Répondre en UNE carte XL : « le climat augmente-t-il la demande
+#   d'arrosage ? »
+#     - state  → statut de la recommandation climatique
+#                (sensor.arrosage_modulation_reco_climat).
+#     - label  → ET₀, VPD, état du canal, motif, facteur si pertinent.
+#     - couleur → dérivée du statut (demande_forte orange / neutre / abstention).
+#   Remplace définitivement l'ancien encart « Observation à blanc » :
+#   le canal climatique PARTICIPE désormais à la décision (allongement 1,05).
+#
+# 📡 SOURCE (lecture seule)
+#   entity: sensor.arrosage_modulation_reco_climat (attributes.motif, .facteur)
+#   + sensor.arrosage_demande_climatique_et0 / _vpd / _etat (lus via states[...])
+#
+# ⚙️ LOGIQUE UI (traduction/assemblage, AUCUN calcul)
+#   - Mappe les codes backend en libellés ; concatène ET₀/VPD/état bruts.
+#   - Ne calcule NI ET₀, NI VPD, NI le facteur (lu de l'attribut).
+#   - unknown/unavailable/attribut absent ⇒ "—".
+#
+# 🔗 SATELLITE DE : socle_status_label_xl
+# 🏷️ STATUT : Diagnostic UI — Arsenal (C11 P4, refonte)
+# ==========================================================
+
+carte_arrosage_climat_synthese_xl:
+  template: socle_status_label_xl
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: true
+  name: Demande climatique
+  icon: mdi:sun-thermometer-outline
+
+  triggers_update:
+    - sensor.arrosage_demande_climatique_et0
+    - sensor.arrosage_demande_climatique_vpd
+    - sensor.arrosage_demande_climatique_etat
+
+  state_display: >
+    [[[
+      const s = (entity.state || "").toString().trim();
+      const map = {
+        "demande_forte": "Demande forte",
+        "neutre": "Demande normale",
+        "abstention": "Non qualifié",
+      };
+      return map[s] || "—";
+    ]]]
+
+  label: >
+    [[[
+      const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+      const val = (id) => { const v = states?.[id]?.state; return UNAV.includes(v) ? null : v; };
+      const canalMap = { complet: "complet", degrade: "dégradé", indisponible: "indisponible" };
+      const et0 = val("sensor.arrosage_demande_climatique_et0");
+      const vpd = val("sensor.arrosage_demande_climatique_vpd");
+      const canal = val("sensor.arrosage_demande_climatique_etat");
+      const motifMap = {
+        "demande_forte_et0": "forte demande (ET₀)",
+        "demande_forte_vpd": "forte demande (VPD)",
+        "demande_forte_et0_vpd": "forte demande (ET₀+VPD)",
+        "demande_faible_ou_normale": "demande faible/normale",
+        "climat_degrade": "canal dégradé",
+        "climat_indisponible": "canal indisponible",
+        "climat_etat_indetermine": "état indéterminé",
+      };
+      const mo = (entity.attributes?.motif || "").toString().trim();
+      const fac = parseFloat(entity.attributes?.facteur);
+      const l1 = "ET₀ " + (et0 !== null ? et0 + " mm/j" : "—")
+               + " · VPD " + (vpd !== null ? vpd + " kPa" : "—")
+               + " · canal " + (canal ? (canalMap[canal] || canal) : "—");
+      const l2 = (motifMap[mo] || "—") + (fac > 1 ? " · allongement ×" + fac.toString().replace('.', ',') : "");
+      return l1 + "<br>" + l2;
+    ]]]
+
+  styles:
+    card:
+      - height: auto
+      - min-height: 88px
+      - background-color: >
+          [[[
+            const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+            if (UNAV.includes(entity.state)) return "rgba(158, 158, 158, 0.1)";
+            const s = (entity.state || "").toString().trim();
+            if (s === "demande_forte") return "rgba(255, 152, 0, 0.2)";
+            if (s === "neutre") return "rgba(158, 158, 158, 0.2)";
+            if (s === "abstention") return "rgba(158, 158, 158, 0.1)";
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]
+    label:
+      - white-space: normal
+      - line-height: 1.4

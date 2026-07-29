@@ -1,0 +1,115 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Arrosage — Session (synthèse XL)
+#
+# 🗂️ COUCHE : diagnostic
+# 🧱 TYPE UI : synthèse XL (état + trace de session)
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Répondre en UNE carte XL : « quelle durée a réellement été figée et
+#   exécutée ? »
+#     - state  → état de session, PILOTÉ par le backend :
+#                « Session en cours : … » si active, sinon « Dernière session : … ».
+#     - label  → durée figée, motif figé, début → fin prévue · fin observée, verdict.
+#     - couleur → dérivée de l'état de session (palette existante).
+#   La durée FIGÉE (session) reste distincte de la durée applicable (Décision).
+#
+# 📡 SOURCE (lecture seule)
+#   entity: sensor.arrosage_session_etat
+#   + binary_sensor.arrosage_session_en_cours
+#   + input_number.arrosage_session_duree_minutes
+#   + input_text.arrosage_session_modulation_motif / _verdict
+#   + input_datetime.arrosage_session_debut / _fin_prevue / _fin_observee
+#
+# ⚙️ LOGIQUE UI (assemblage/traduction, AUCUN calcul)
+#   - Mappe codes → libellés ; tronque les horodatages à HH:MM (affichage).
+#   - Ne calcule NI durée, NI écart ; aucune reconstruction de session.
+#   - unknown/unavailable/attribut absent ⇒ "—".
+#
+# 🔗 SATELLITE DE : socle_status_label_xl
+# 🏷️ STATUT : Diagnostic UI — Arsenal (C11 P4, refonte)
+# ==========================================================
+
+carte_arrosage_session_synthese_xl:
+  template: socle_status_label_xl
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: true
+  name: Session
+  icon: mdi:history
+
+  triggers_update:
+    - binary_sensor.arrosage_session_en_cours
+    - input_number.arrosage_session_duree_minutes
+    - input_text.arrosage_session_modulation_motif
+    - input_text.arrosage_session_verdict
+    - input_datetime.arrosage_session_debut
+    - input_datetime.arrosage_session_fin_prevue
+    - input_datetime.arrosage_session_fin_observee
+
+  state_display: >
+    [[[
+      const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+      const etatMap = {
+        "aucune": "aucune", "ouverte": "ouverte", "fin_observee": "fin observée",
+        "close_nominale": "close (nominale)", "close_reprise": "close (reprise)",
+        "close_watchdog": "close (watchdog)", "close_anomalie": "close (anomalie)",
+        "stop_incertain": "stop incertain", "depassement": "dépassement",
+      };
+      const e = (entity.state || "").toString().trim();
+      const lib = UNAV.includes(e) ? "—" : (etatMap[e] || e);
+      const enCours = states?.["binary_sensor.arrosage_session_en_cours"]?.state === "on";
+      return (enCours ? "Session en cours : " : "Dernière session : ") + lib;
+    ]]]
+
+  label: >
+    [[[
+      const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+      const val = (id) => { const v = states?.[id]?.state; return UNAV.includes(v) ? null : v; };
+      const hhmm = (id) => { const v = val(id); return v ? v.toString().slice(11, 16) : "—"; };
+      const motifMap = {
+        "reduction_sol": "réduction sol", "allongement_climatique": "allongement climat",
+        "compensation_sol_climat": "compensation sol/climat",
+        "climat_non_qualifie_plancher_nominal": "climat non qualifié (base)",
+        "neutre": "neutre", "abstention_sol": "abstention sol",
+        "abstention_climat": "abstention climat", "abstention_double": "double abstention",
+        "modulation_desactivee": "modulation désactivée",
+        "controle_modulation_indisponible": "contrôle indisponible",
+        "decision_motif_indisponible": "motif décision indisponible",
+        "decision_indisponible": "décision indisponible", "decision_invalide": "décision invalide",
+        "base_invalide": "base invalide", "base_indisponible": "base indisponible",
+      };
+      const dur = val("input_number.arrosage_session_duree_minutes");
+      const mo = val("input_text.arrosage_session_modulation_motif");
+      const verd = val("input_text.arrosage_session_verdict");
+      const l1 = "figée " + (dur !== null ? dur + " min" : "—")
+               + " · motif " + (mo !== null ? (motifMap[mo] || mo) : "—");
+      const l2 = "début " + hhmm("input_datetime.arrosage_session_debut")
+               + " → prévu " + hhmm("input_datetime.arrosage_session_fin_prevue")
+               + " · observé " + hhmm("input_datetime.arrosage_session_fin_observee");
+      const l3 = "verdict " + (verd !== null ? verd : "—");
+      return l1 + "<br>" + l2 + "<br>" + l3;
+    ]]]
+
+  styles:
+    card:
+      - height: auto
+      - min-height: 96px
+      - background-color: >
+          [[[
+            const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+            const e = (entity.state || "").toString().trim();
+            if (UNAV.includes(e) || e === "aucune") return "rgba(158, 158, 158, 0.1)";
+            if (e === "ouverte") return "rgba(33, 150, 243, 0.2)";
+            if (e === "close_nominale") return "rgba(76, 175, 80, 0.2)";
+            if (e === "fin_observee" || e === "close_reprise") return "rgba(255, 235, 59, 0.2)";
+            if (e === "close_watchdog" || e === "close_anomalie") return "rgba(255, 152, 0, 0.2)";
+            if (e === "stop_incertain" || e === "depassement") return "rgba(244, 67, 54, 0.2)";
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]
+    label:
+      - white-space: normal
+      - line-height: 1.4

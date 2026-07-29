@@ -1,0 +1,101 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Arrosage — Décision de durée (synthèse XL, bloc principal)
+#
+# 🗂️ COUCHE : diagnostic
+# 🧱 TYPE UI : synthèse XL décisionnelle (lecture seule)
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Rendre immédiatement lisible la décision de modulation de durée :
+#     - state  → « <nominale> min → <applicable> min » (2 valeurs BACKEND,
+#                AUCUNE soustraction, aucun facteur recalculé).
+#     - label  → motif global (en premier), puis synthèse sol+climat,
+#                facteurs lus du backend, état du contrôle.
+#     - couleur → dérivée du motif global.
+#
+# 📡 SOURCE (lecture seule — le backend décide, l'UI restitue)
+#   entity: sensor.arrosage_modulation_duree_applicable
+#     state = durée applicable ; attributes.duree_nominale, .motif_global,
+#     .sol_statut/.sol_facteur, .climat_statut/.climat_facteur,
+#     .facteur_applique, .modulation_controle.
+#
+# ⚙️ LOGIQUE UI (assemblage/traduction, AUCUN calcul décisionnel)
+#   - Concatène nominale et applicable (valeurs backend) avec « → ».
+#   - Mappe motifs/statuts en libellés ; les facteurs sont LUS d'attributs.
+#   - Ne calcule NI durée, NI facteur, NI écart ; aucune inférence de statut.
+#   - entité indisponible / attribut absent ⇒ "—" + gris indispo.
+#
+# 🔗 SATELLITE DE : socle_status_label_xl
+# 🏷️ STATUT : Diagnostic UI — Arsenal (C11 P4, refonte)
+# ==========================================================
+
+carte_arrosage_modulation_synthese_xl:
+  template: socle_status_label_xl
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: true
+  name: Décision de durée
+  icon: mdi:timer-cog-outline
+
+  state_display: >
+    [[[
+      const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+      const appl = entity.state;
+      const nom = entity.attributes?.duree_nominale;
+      if (UNAV.includes(appl) || UNAV.includes(nom)) return "—";
+      return nom + " min → " + appl + " min";
+    ]]]
+
+  label: >
+    [[[
+      const A = entity.attributes || {};
+      const fmt = (x) => { const f = parseFloat(x); return isNaN(f) ? "—" : "×" + f.toString().replace('.', ','); };
+      const mg = {
+        "reduction_sol": "Réduction (sol)",
+        "allongement_climatique": "Allongement (climat)",
+        "compensation_sol_climat": "Compensation sol/climat",
+        "climat_non_qualifie_plancher_nominal": "Climat non qualifié (base)",
+        "neutre": "Neutre",
+        "abstention_sol": "Abstention sol",
+        "abstention_climat": "Abstention climat",
+        "abstention_double": "Double abstention",
+        "modulation_desactivee": "Modulation désactivée",
+        "controle_modulation_indisponible": "Contrôle indisponible",
+      };
+      const solM = { reduction: "réduction", neutre: "neutre", abstention: "abstention" };
+      const cliM = { demande_forte: "forte", neutre: "normale", abstention: "non qualifié" };
+      const ctrlM = { on: "active", off: "désactivée", indisponible: "indisponible" };
+      const mot = (A.motif_global || "").toString().trim();
+      const l1 = mg[mot] || "—";
+      const l2 = "sol " + (solM[(A.sol_statut || '').trim()] || "—") + " " + fmt(A.sol_facteur)
+               + " · climat " + (cliM[(A.climat_statut || '').trim()] || "—") + " " + fmt(A.climat_facteur);
+      const l3 = "appliqué " + fmt(A.facteur_applique)
+               + " · contrôle " + (ctrlM[(A.modulation_controle || '').trim()] || "—");
+      return l1 + "<br>" + l2 + "<br>" + l3;
+    ]]]
+
+  styles:
+    card:
+      - height: auto
+      - min-height: 96px
+      - background-color: >
+          [[[
+            const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+            if (UNAV.includes(entity.state)) return "rgba(158, 158, 158, 0.1)";
+            const m = (entity.attributes?.motif_global || "").toString().trim();
+            if (m === "reduction_sol") return "rgba(76, 175, 80, 0.2)";
+            if (m === "allongement_climatique") return "rgba(255, 152, 0, 0.2)";
+            if (m === "climat_non_qualifie_plancher_nominal") return "rgba(255, 235, 59, 0.2)";
+            if (m === "abstention_sol" || m === "abstention_climat") return "rgba(255, 235, 59, 0.2)";
+            if (m === "abstention_double") return "rgba(255, 152, 0, 0.2)";
+            if (m === "controle_modulation_indisponible") return "rgba(158, 158, 158, 0.1)";
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]
+    state:
+      - font-size: 17px
+    label:
+      - white-space: normal
+      - line-height: 1.4
