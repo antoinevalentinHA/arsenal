@@ -1632,6 +1632,20 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - CI — ajout de `check_vmc_initialisation_contracts.py` (règles VINIT-000 à 004) et du workflow `contracts_vmc_initialisation.yml` ; contrôles VMC étendus (intention dérivée, absence de verrou d'aération, frontière modulée, redémarrage, UI) ; recompte checkers 85 → 86, workflows 90 → 91.
 - Recorder — historisation de 6 entités de la chaîne de décision VMC (verdict, 3 besoins, 2 frontières).
 
+---
+
+## 🧠 ARSENAL HA — [v17.1.0](changelogs/v17/v17_1_0.md) — STABLE — 2026-07-28
+**Tags :** vmc, climatisation, chauffage, deshumidificateur, arrosage, lovelace, contrats, doctrines, checkers, registres
+
+**Signal net :**
+- Autorité de domaine (C36) — ajout de la doctrine `autorite_de_domaine.md` (INV-AUT-1 à 7) et du régime manuel supervisé sur quatre domaines : helpers `input_select.<domaine>_{titulaire_autorite,consigne_manuelle,autorite_intention}`, décision exécutoire (`binary_sensor.vmc_haute_vitesse_commandee`, `sensor.{chauffage_mode_commande,clim_mode_commande,deshumidificateur_etat_commande}`), primitives `entrer_mode_manuel` / `revenir_mode_automatique`, médiation par deux automations par domaine.
+- VMC (pilote C36) — `contrats/vmc.md` v2.4 → v2.6 (§16) ; `gestion_auto.yaml` applique la décision exécutoire, retrait du `default:` de repli en basse vitesse et du bypass `homeassistant: start`, ajout d'un trigger de récupération sur `vmc_coherence_physique` ; `vmc_conformite_decision` jugée contre l'exécutoire avec cause exposée ; relais L1/L2 passés en lecture seule au diagnostic.
+- Chauffage (C39) — `contrats/chauffage/85_autorite_de_domaine_chauffage.md` ; `decision_centrale.yaml` n'appelle plus l'écrivain et émet `chauffage_execution_requise` ; ajout de `execution_mode_commande.yaml` (`10240000000028`, allowlist R-CALL-1 modifiée) ; `input_boolean.mode_confort_chauffage` retiré de l'UI et réduit au contexte de panne secteur (`10040000000005`).
+- Climatisation (C37 / C38) — contrats 03, 06, 07, 09 et 15 précisés (décision théorique, blocages catégorie A/B, INV-VETO-10, étage 1 vide par dérogation) ; `sensor.clim_target_mode` remplacé par `sensor.clim_mode_commande` dans l'exécution, le Guard, la reprise, le réarmement et la cohérence.
+- Déshumidificateur (C40) — activation / désactivation publient `input_select.deshumidificateur_decision_auto` ; ajout de `application.yaml` (`10060000000011`) comme consommateur exécutoire unique, de `convergence_boot.yaml` et de `converger_auto.yaml` ; retries relisent la décision courante ; sortie du registre SwitchBot (`switchbot_transactionnel.md` v2.1.0, 5 helpers supprimés).
+- Lovelace — jaune ambré `rgb(255, 193, 7)` ajouté à l'Exception 3 (vigilance) et à `bouton_navigation_dynamique` ; `sensor.etat_arrosage_dashboard` recalculé sur le besoin sol couvert / non couvert ; durée d'arrosage déclarée partagée manuel ↔ automatique ; sections « Autorité & reprise en main » sur les 4 dashboards.
+- Registres — C10, C13, C34 et C35 clos ; C36 à C40 ajoutés en clos récents ; contrats 297 → 300, doctrines 13 → 14 ; ajout des changelogs gelés v17.0.2 et v17.0.3 ; `historique.md` complété (phase M réécrite, phase N série v17).
+
 ==================================================
 FIN INDEX
 ==================================================
