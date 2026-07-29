@@ -134,9 +134,39 @@ Sur un signal **fiable et explicitement qualifié**, `facteur_sol` peut :
 
 `facteur_climat` exprime une **demande supplémentaire** et peut :
 - rester **neutre** (`facteur_climat = 1`) — y compris par **abstention** ;
-- **allonger** la durée (`facteur_climat > 1`) sous forte demande évaporative
-  (ET₀/VPD qualifiés) ;
+- **allonger réellement** la durée (`facteur_climat > 1`) sous **forte demande
+  évaporative qualifiée** (ET₀/VPD) — **facteur initial `1,05`** (§6) ;
 - **jamais réduire** la durée à lui seul (`facteur_climat ≥ 1`, invariant §6).
+
+Un canal climatique **non pleinement qualifié** (`degrade`, `indisponible`,
+indéterminé, ou ET₀/VPD non exploitables) **n'allonge pas** et **interdit toute
+réduction** : la durée reste la **durée nominale** (protection). Une lecture
+climatique **absente ou dégradée n'est jamais** interprétée comme favorable à une
+réduction.
+
+### 5.5 Composition et plancher nominal (couche décision)
+
+La composition est `nominale × facteur_sol × facteur_climat`, avec un **plancher
+à la durée nominale sous forte demande** :
+- **forte demande qualifiée** (`facteur_climat = 1,05`) :
+  `produit = base × facteur_sol × 1,05` ; **`durée_avant_arrondi = max(base,
+  produit)`** — une réduction sol combinée à l'allongement climatique **ne
+  descend jamais sous la base** ;
+- **demande faible/normale qualifiée** (`facteur_climat = 1`) :
+  `durée_avant_arrondi = base × facteur_sol` (la réduction sol s'applique) ;
+- **climat non qualifié** : `durée_avant_arrondi = base` (protection, sans
+  réduction).
+
+Puis **arrondi** (§7) et **clamp `[1,60]`** (§6). `facteur_theorique` (produit des
+recommandations, p. ex. `0,95 × 1,05 = 0,9975`) et `facteur_applique` (après
+plancher, p. ex. `1,0`) sont **exposés distinctement** (§10). Le **motif global**
+distingue au minimum :
+- **`reduction_sol`** — réduction sol appliquée (climat normal) ;
+- **`allongement_climatique`** — allongement réel (climat fort, sol non réducteur) ;
+- **`compensation_sol_climat`** — réduction sol et allongement climatique se
+  compensent, durée ramenée au **plancher nominal** ;
+- **`climat_non_qualifie_plancher_nominal`** — climat non qualifié, durée nominale
+  par protection.
 
 ---
 
@@ -158,6 +188,13 @@ Sur un signal **fiable et explicitement qualifié**, `facteur_sol` peut :
 3. **Aucune réduction** (`facteur < 1`) depuis un canal **abstenu, dégradé, non
    frais ou non qualifié** — la réduction est réservée à un signal **sol fiable et
    qualifié** (§5.1, §5.3).
+3bis. **Plancher nominal sous forte demande & protection (opposable).** Sous
+   **forte demande climatique qualifiée**, la durée finale **ne descend jamais
+   sous la base** : `durée_avant_arrondi = max(base, base × facteur_sol × 1,05)`.
+   Un canal climatique **`degrade`, `indisponible`, indéterminé, ou ET₀/VPD
+   `unknown`/`unavailable`** ⇒ **durée = base** (aucune réduction, aucun
+   allongement). Un canal climatique **incomplet** n'est **jamais** lu comme
+   favorable à la réduction (§5.4, §5.5).
 4. **Domaine admissible borné** : `facteur_sol ∈ [f_sol_min, f_sol_max]` avec
    `f_sol_min > 0` (plancher de réduction **strictement positif**) et
    `facteur_climat ∈ [1, f_climat_max]`. L'existence de ces bornes est
@@ -171,6 +208,14 @@ Sur un signal **fiable et explicitement qualifié**, `facteur_sol` peut :
   déclenchement, dose-réponse 35 min montrant un **sur-arrosage récurrent** —
   pic 36–51 % ≫ seuil 30 %, séchage ≈ −3,3 pt/j VPD-dépendant), **puis confirmés
   par preuve runtime** sur la modulation branchée (§12).
+- **Forte demande climatique — facteur d'allongement et seuils (§5.4/§5.5)** —
+  **calibration initiale réversible**, **non** des vérités agronomiques
+  définitives : **facteur `1,05`** (allongement **réel**) déclenché à
+  **ET₀ ≥ 6,0 mm·j⁻¹** **OU** **VPD ≥ 2,3 kPa** (≈ **quartile supérieur** des
+  distributions réellement observées, ~1 mois). Sous forte demande, le **plancher
+  nominal** (§5.5) garantit que la durée ne descend jamais sous la base.
+  **Recalibrables** après validation runtime. Implémentés en **constantes nommées
+  et commentées** dans le runtime — **pas de helper**, pas de réglage UI.
 - S'ils sont exposés en helpers, ce n'est **qu'à l'intérieur** du domaine
   admissible borné (1), et **seulement si** leur utilité et leur autorité sont
   établies (arbitrage propriétaire). **Aucune valeur numérique n'est fixée par ce
@@ -237,7 +282,11 @@ La restitution doit permettre de **retrouver au minimum**, sans reconstruction :
 5. la **durée avant arrondi** ;
 6. la **durée applicable finale** ;
 7. le **motif dominant** ou la **synthèse explicative** ;
-8. la **durée effectivement figée** par le Run (snapshot §8).
+8. la **durée effectivement figée** par le Run (snapshot §8) ;
+9. le **statut de demande climatique** (forte / faible ou normale / non
+   qualifiée) et son motif ; `facteur_theorique` (produit des recommandations) vs
+   `facteur_applique` (après plancher §5.5), rendant visibles l'**allongement
+   climatique** et la **compensation** au plancher nominal.
 
 Chaque canal expose en outre sa **disponibilité** et son **abstention** explicite
 (§5.1). Le facteur composé (§9.3) est **optionnel et explicatif**, jamais

@@ -308,9 +308,11 @@ views:
                 variables:
                   attribut: climat_statut
                   libelles:
+                    demande_forte: Demande forte
                     neutre: Neutre
                     abstention: Abstention
                   couleurs:
+                    demande_forte: 'rgba(255, 152, 0, 0.2)'
                     neutre: 'rgba(158, 158, 158, 0.2)'
                     abstention: 'rgba(158, 158, 158, 0.1)'
 
@@ -334,8 +336,20 @@ views:
                 icon: mdi:information-outline
                 variables:
                   attribut: climat_motif
+                  libelles:
+                    demande_forte_et0: Demande forte (ET₀)
+                    demande_forte_vpd: Demande forte (VPD)
+                    demande_forte_et0_vpd: Demande forte (ET₀+VPD)
+                    demande_faible_ou_normale: Demande faible/normale
+                    climat_degrade: Canal dégradé
+                    climat_indisponible: Canal indisponible
+                    climat_etat_indetermine: État indéterminé
                   couleurs:
-                    allongement_climatique_non_calibre: 'rgba(158, 158, 158, 0.2)'
+                    demande_forte_et0: 'rgba(255, 152, 0, 0.2)'
+                    demande_forte_vpd: 'rgba(255, 152, 0, 0.2)'
+                    demande_forte_et0_vpd: 'rgba(255, 152, 0, 0.2)'
+                    demande_faible_ou_normale: 'rgba(158, 158, 158, 0.2)'
+                    climat_degrade: 'rgba(255, 235, 59, 0.2)'
                     climat_indisponible: 'rgba(158, 158, 158, 0.1)'
                     climat_etat_indetermine: 'rgba(158, 158, 158, 0.1)'
 
@@ -367,6 +381,9 @@ views:
               attribut: motif_global
               libelles:
                 reduction_sol: Réduction (sol)
+                allongement_climatique: Allongement (climat)
+                compensation_sol_climat: Compensation sol/climat
+                climat_non_qualifie_plancher_nominal: Climat non qualifié (base)
                 neutre: Neutre
                 abstention_sol: Abstention sol
                 abstention_climat: Abstention climat
@@ -375,6 +392,9 @@ views:
                 controle_modulation_indisponible: Contrôle indisponible
               couleurs:
                 reduction_sol: 'rgba(76, 175, 80, 0.2)'
+                allongement_climatique: 'rgba(255, 152, 0, 0.2)'
+                compensation_sol_climat: 'rgba(158, 158, 158, 0.2)'
+                climat_non_qualifie_plancher_nominal: 'rgba(255, 235, 59, 0.2)'
                 neutre: 'rgba(158, 158, 158, 0.2)'
                 abstention_sol: 'rgba(255, 235, 59, 0.2)'
                 abstention_climat: 'rgba(255, 235, 59, 0.2)'
@@ -465,6 +485,9 @@ views:
             variables:
               couleurs:
                 reduction_sol: 'rgba(76, 175, 80, 0.2)'
+                allongement_climatique: 'rgba(255, 152, 0, 0.2)'
+                compensation_sol_climat: 'rgba(158, 158, 158, 0.2)'
+                climat_non_qualifie_plancher_nominal: 'rgba(255, 235, 59, 0.2)'
                 neutre: 'rgba(158, 158, 158, 0.2)'
                 abstention_sol: 'rgba(255, 235, 59, 0.2)'
                 abstention_climat: 'rgba(255, 235, 59, 0.2)'

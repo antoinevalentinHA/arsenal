@@ -6,16 +6,14 @@
 #   Produire la DÉCISION de durée applicable modulée (contrat
 #   19_modulation_duree.md), à partir de la durée nominale opérateur et
 #   des recommandations des canaux sol (primaire) et climat (secondaire).
-#   Couche RECOMMANDATION + DÉCISION (PAS observation).
-#
-#   ⚠️ L1 — AUCUN BRANCHEMENT DANS LE RUN. Le Run continue de lire la
-#   durée nominale ; le branchement au point unique est le lot L2.
+#   Couche RECOMMANDATION + DÉCISION (PAS observation). Décision consommée
+#   par le Run (snapshot unique au démarrage).
 #
 # 🧱 ARCHITECTURE (3 entités sémantiques — AUCUN JSON transporté en état)
 #   - sensor.arrosage_modulation_reco_sol    : état = STATUT sol
 #       (reduction/neutre/abstention) ; attributs facteur, motif.
 #   - sensor.arrosage_modulation_reco_climat : état = STATUT climat
-#       (neutre/abstention) ; attributs facteur, motif.
+#       (demande_forte/neutre/abstention) ; attributs facteur, motif.
 #   - sensor.arrosage_modulation_duree_applicable : état = DURÉE (min) ;
 #       attributs = trace de composition + facteurs théorique/appliqué + motif.
 #   Chaque état porte une valeur sémantique courte. La décision CONSOMME les
@@ -27,10 +25,17 @@
 #   ordonnée MULTIPLICATIVE : nominale × facteur_sol × facteur_climat
 #   → arrondi (demi → entier pair) → clamp [1,60].
 #
-# 🔢 CALIBRATION L1 (mise en service minimale, recalibrable — contrat §6)
-#   Réduction sol = 0,95 (perturbation initiale minimale réversible), gate :
+# 🔢 CALIBRATION (mise en service minimale, recalibrable — contrat §6)
+#   Réduction sol = 0,95 (perturbation initiale minimale réversible), gate sol :
 #   état sol `complet` ET médiane disponible ET médiane ≥ seuil déclenchement.
-#   Allongements sol et climat = 1,0 (non calibrés, différés preuve runtime).
+#   Allongement sol = 1,0 (non calibré, différé preuve runtime).
+#   ALLONGEMENT climatique RÉEL (contrat 19 §5.5) : forte demande qualifiée
+#   (climat 'complet' ET (ET₀ >= 6,0 OU VPD >= 2,3)) ⇒ facteur climat = 1,05.
+#   Composition base × sol × climat, PLANCHER nominal sous forte demande :
+#   durée_avant_arrondi = max(base, base × sol × 1,05) — réduction + climat fort
+#   ne descend jamais sous la base. Climat NON qualifié ⇒ durée = base
+#   (protection, aucune réduction). Seuils ET₀/VPD et facteur 1,05 = calibration
+#   initiale réversible (≈ quartile supérieur observé), recalibrables en runtime.
 #
 # 🎛️ CONTRÔLE (input_boolean.arrosage_modulation_duree_actif)
 #   - `on`        : modulation autorisée (facteur appliqué = théorique).
@@ -86,20 +91,51 @@
           {% else %}sol_non_qualifie{% endif %}
 
     # ===== Recommandation CANAL CLIMAT (secondaire) — état = statut =====
-    # L1 : allongement non calibré ⇒ facteur neutre 1,0 ; climat ne réduit jamais.
+    # Allongement non calibré ⇒ facteur neutre 1,0 (le climat ne réduit jamais).
+    # Porte en outre la QUALIFICATION DE DEMANDE (contrat 19 §5.4/§5.5) :
+    #   demande_forte : climat 'complet' ET (ET₀ >= seuil OU VPD >= seuil) ;
+    #   neutre        : climat 'complet' ET demande faible/normale ;
+    #   abstention    : climat non pleinement qualifié (degrade/indispo/indéterminé).
+    # SEUILS = calibration INITIALE de protection (≈ quartile supérieur des
+    # distributions observées ~1 mois), recalibrables après validation runtime
+    # (contrat 19 §6). Constantes explicites ci-dessous, PAS de helper.
     - name: "Arrosage modulation reco climat"
       unique_id: arrosage_modulation_reco_climat
       default_entity_id: sensor.arrosage_modulation_reco_climat
       icon: mdi:sun-thermometer-outline
       state: >
         {% set etat = states('sensor.arrosage_demande_climatique_etat') %}
-        {% if etat in ['complet', 'degrade'] %}neutre
+        {% set et0 = states('sensor.arrosage_demande_climatique_et0') | float(none) %}
+        {% set vpd = states('sensor.arrosage_demande_climatique_vpd') | float(none) %}
+        {% set ET0_FORTE = 6.0 %}
+        {% set VPD_FORTE = 2.3 %}
+        {% if etat == 'complet' and et0 is not none and vpd is not none %}
+        {{ 'demande_forte' if (et0 >= ET0_FORTE or vpd >= VPD_FORTE) else 'neutre' }}
         {% else %}abstention{% endif %}
       attributes:
-        facteur: "1.0"
+        # Facteur climat : 1,05 (allongement RÉEL) sous forte demande qualifiée,
+        # sinon 1,0. Le climat n'abaisse jamais la durée (facteur >= 1).
+        facteur: >
+          {% set etat = states('sensor.arrosage_demande_climatique_etat') %}
+          {% set et0 = states('sensor.arrosage_demande_climatique_et0') | float(none) %}
+          {% set vpd = states('sensor.arrosage_demande_climatique_vpd') | float(none) %}
+          {% set ET0_FORTE = 6.0 %}
+          {% set VPD_FORTE = 2.3 %}
+          {% if etat == 'complet' and et0 is not none and vpd is not none and (et0 >= ET0_FORTE or vpd >= VPD_FORTE) %}1.05{% else %}1.0{% endif %}
         motif: >
           {% set etat = states('sensor.arrosage_demande_climatique_etat') %}
-          {% if etat in ['complet', 'degrade'] %}allongement_climatique_non_calibre
+          {% set et0 = states('sensor.arrosage_demande_climatique_et0') | float(none) %}
+          {% set vpd = states('sensor.arrosage_demande_climatique_vpd') | float(none) %}
+          {% set ET0_FORTE = 6.0 %}
+          {% set VPD_FORTE = 2.3 %}
+          {% if etat == 'complet' and et0 is not none and vpd is not none %}
+          {% set e = et0 >= ET0_FORTE %}
+          {% set v = vpd >= VPD_FORTE %}
+          {% if e and v %}demande_forte_et0_vpd
+          {% elif e %}demande_forte_et0
+          {% elif v %}demande_forte_vpd
+          {% else %}demande_faible_ou_normale{% endif %}
+          {% elif etat == 'degrade' %}climat_degrade
           {% elif etat == 'indisponible' %}climat_indisponible
           {% else %}climat_etat_indetermine{% endif %}
 
@@ -116,9 +152,16 @@
       state: >
         {% set base = states('input_number.arrosage_rainbird_station_1_duree_minutes') | float(1) %}
         {% set applied = is_state('input_boolean.arrosage_modulation_duree_actif', 'on') %}
+        {% set cli_s = states('sensor.arrosage_modulation_reco_climat') %}
         {% set sol_f = state_attr('sensor.arrosage_modulation_reco_sol', 'facteur') | float(1.0) %}
         {% set cli_f = state_attr('sensor.arrosage_modulation_reco_climat', 'facteur') | float(1.0) %}
-        {% set fa = (sol_f * cli_f) if applied else 1.0 %}
+        {# Composition + plancher nominal (contrat 19 §5.5) :
+           - forte demande (cli_f=1.05) : max(1, sol_f*1.05) → jamais sous la base ;
+           - demande faible/normale (cli_f=1.0) : sol_f (la réduction s'applique) ;
+           - climat non qualifié (abstention) : 1.0 (protection nominale). #}
+        {% set fa = 1.0 if not applied
+             else ([1.0, (sol_f * cli_f)] | max if cli_s == 'demande_forte'
+                   else (sol_f if cli_s == 'neutre' else 1.0)) %}
         {% set dva = base * fa %}
         {% set fl = dva | int %}
         {% set frac = dva - fl %}
@@ -143,18 +186,26 @@
         duree_avant_arrondi: >
           {% set base = states('input_number.arrosage_rainbird_station_1_duree_minutes') | float(1) %}
           {% set applied = is_state('input_boolean.arrosage_modulation_duree_actif', 'on') %}
+          {% set cli_s = states('sensor.arrosage_modulation_reco_climat') %}
           {% set sol_f = state_attr('sensor.arrosage_modulation_reco_sol', 'facteur') | float(1.0) %}
           {% set cli_f = state_attr('sensor.arrosage_modulation_reco_climat', 'facteur') | float(1.0) %}
-          {{ (base * ((sol_f * cli_f) if applied else 1.0)) | round(4) }}
+          {% set fa = 1.0 if not applied
+               else ([1.0, (sol_f * cli_f)] | max if cli_s == 'demande_forte'
+                     else (sol_f if cli_s == 'neutre' else 1.0)) %}
+          {{ (base * fa) | round(4) }}
         facteur_theorique: >
           {% set sol_f = state_attr('sensor.arrosage_modulation_reco_sol', 'facteur') | float(1.0) %}
           {% set cli_f = state_attr('sensor.arrosage_modulation_reco_climat', 'facteur') | float(1.0) %}
           {{ (sol_f * cli_f) | round(4) }}
         facteur_applique: >
           {% set applied = is_state('input_boolean.arrosage_modulation_duree_actif', 'on') %}
+          {% set cli_s = states('sensor.arrosage_modulation_reco_climat') %}
           {% set sol_f = state_attr('sensor.arrosage_modulation_reco_sol', 'facteur') | float(1.0) %}
           {% set cli_f = state_attr('sensor.arrosage_modulation_reco_climat', 'facteur') | float(1.0) %}
-          {{ ((sol_f * cli_f) if applied else 1.0) | round(4) }}
+          {% set fa = 1.0 if not applied
+               else ([1.0, (sol_f * cli_f)] | max if cli_s == 'demande_forte'
+                     else (sol_f if cli_s == 'neutre' else 1.0)) %}
+          {{ fa | round(4) }}
         motif_global: >
           {% set m = states('input_boolean.arrosage_modulation_duree_actif') %}
           {% if m == 'off' %}modulation_desactivee
@@ -162,11 +213,16 @@
           {% else %}
           {% set ss = states('sensor.arrosage_modulation_reco_sol') %}
           {% set cs = states('sensor.arrosage_modulation_reco_climat') %}
-          {% set sol_f = state_attr('sensor.arrosage_modulation_reco_sol', 'facteur') | float(1.0) %}
-          {% if sol_f < 1 %}reduction_sol
-          {% elif ss == 'abstention' and cs == 'abstention' %}abstention_double
+          {% if cs == 'demande_forte' %}
+          {% if ss == 'reduction' %}compensation_sol_climat{% else %}allongement_climatique{% endif %}
+          {% elif cs == 'abstention' %}
+          {% if ss == 'reduction' %}climat_non_qualifie_plancher_nominal
+          {% elif ss == 'abstention' %}abstention_double
+          {% else %}abstention_climat{% endif %}
+          {% else %}
+          {% if ss == 'reduction' %}reduction_sol
           {% elif ss == 'abstention' %}abstention_sol
-          {% elif cs == 'abstention' %}abstention_climat
           {% else %}neutre{% endif %}
           {% endif %}
-        note: "Décision de durée modulée (contrat 19). L1 : non consommée par le Run (branchement = L2)."
+          {% endif %}
+        note: "Décision de durée modulée (contrat 19 §5.5). Forte demande climatique ⇒ allongement réel ×1,05 avec plancher nominal (réduction+climat ne descend jamais sous la base) ; climat non qualifié ⇒ durée nominale. Consommée par le Run (snapshot)."
