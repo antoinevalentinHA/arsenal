@@ -1,0 +1,115 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Arrosage — Précipitations (synthèse XL)
+#
+# 🗂️ COUCHE : diagnostic
+# 🧱 TYPE UI : synthèse XL (état + contexte interprété)
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Répondre en UNE carte XL : « a-t-il assez plu (ou est-il assez
+#   prévu de pleuvoir) pour suspendre un arrosage ? »
+#     - state  → verdict de SUSPENSION PLUIE, qualifié par la
+#                fiabilité (confirmée = fait observé / présumée = prévu).
+#     - label  → contexte pluie : cumuls 24/48/72 h, pluie prévue,
+#                et raison(s) courte(s) traduites depuis le motif.
+#     - couleur → bleu (information/diagnostic) si suspension active,
+#                gris neutre sinon, gris indispo si source absente.
+#   Remplace le couple « grille KPI + carte raison » : aligne la
+#   section Précipitations sur les autres sections (une carte XL).
+#
+# 📡 SOURCE (lecture seule — le runtime décide, l'UI restitue)
+#   entity: binary_sensor.arrosage_suspension_pluie
+#       state                 → on/off (suspension active ou non)
+#       attributes.fiabilite  → confirme | presume | aucun
+#       attributes.motif      → observe_24h, observe_48h, observe_72h, prevue
+#   + sensor.pluie_cumul_24h / _48h / _72h / sensor.pluie_prevue
+#     (états bruts en mm, lus via states[...])
+#
+# ⚙️ LOGIQUE UI (traduction/assemblage, AUCUN calcul métier)
+#   - Traduit fiabilité + motif backend en libellés FR lisibles,
+#     SANS exposer observe_24h / observe_48h / observe_72h / prevue.
+#   - Concatène les cumuls bruts ; ne calcule NI cumul NI seuil.
+#   - unknown/unavailable/attribut absent ⇒ "—" (jamais masqué).
+#
+# 🧱 INSPIRATION
+#   Pattern carte_arrosage_sol_synthese_xl / _climat_synthese_xl
+#   (state = verdict mappé ; label = contexte brut assemblé).
+#
+# 🔗 SATELLITE DE : socle_status_label_xl
+# 🏷️ STATUT : Diagnostic UI — Arsenal (refonte section Précipitations)
+# ==========================================================
+
+carte_arrosage_pluie_synthese_xl:
+  template: socle_status_label_xl
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: true
+  name: Précipitations
+  icon: mdi:weather-rainy
+
+  triggers_update:
+    - sensor.pluie_cumul_24h
+    - sensor.pluie_cumul_48h
+    - sensor.pluie_cumul_72h
+    - sensor.pluie_prevue
+
+  state_display: >
+    [[[
+      const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+      if (UNAV.includes(entity.state)) return "—";
+      if (entity.state !== "on") return "Pas de suspension";
+      const f = (entity.attributes?.fiabilite || "").toString().trim();
+      const map = {
+        "confirme": "Suspension confirmée",
+        "presume": "Suspension présumée",
+      };
+      return map[f] || "Suspension";
+    ]]]
+
+  label: >
+    [[[
+      const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+      const mm = (id) => {
+        const s = states?.[id]?.state;
+        return UNAV.includes(s) ? "—" : s + " mm";
+      };
+      const l1 = "24 h " + mm("sensor.pluie_cumul_24h")
+               + " · 48 h " + mm("sensor.pluie_cumul_48h")
+               + " · 72 h " + mm("sensor.pluie_cumul_72h");
+
+      const raw = (entity.attributes?.motif || "").toString().trim();
+      let raison;
+      if (!raw || raw === "aucun" || UNAV.includes(raw)) {
+        raison = "aucune";
+      } else {
+        const codes = raw.split(",").map(s => s.trim());
+        const fenetres = { "observe_24h": "24 h", "observe_48h": "48 h", "observe_72h": "72 h" };
+        const observees = ["observe_24h", "observe_48h", "observe_72h"]
+          .filter(k => codes.includes(k))
+          .map(k => fenetres[k]);
+        const parts = [];
+        if (observees.length > 0) parts.push("pluie observée " + observees.join(" · "));
+        if (codes.includes("prevue")) parts.push("pluie prévue");
+        raison = parts.length > 0 ? parts.join(" · ") : "aucune";
+      }
+      const l2 = "prévue " + mm("sensor.pluie_prevue") + " · raison : " + raison;
+      return l1 + "<br>" + l2;
+    ]]]
+
+  styles:
+    card:
+      - height: auto
+      - min-height: 88px
+      - background-color: >
+          [[[
+            const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+            if (UNAV.includes(entity.state)) return "rgba(158, 158, 158, 0.1)";
+            if (entity.state !== "on") return "rgba(158, 158, 158, 0.2)";
+            return "rgba(33, 150, 243, 0.2)";
+          ]]]
+    label:
+      - white-space: normal
+      - line-height: 1.4
