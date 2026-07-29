@@ -42,8 +42,32 @@ XL_CARDS = {
     "carte_arrosage_climat_synthese_xl": "sensor.arrosage_modulation_reco_climat",
     "carte_arrosage_modulation_synthese_xl": "sensor.arrosage_modulation_duree_applicable",
     "carte_arrosage_session_synthese_xl": "sensor.arrosage_session_etat",
+    "carte_arrosage_dernier_arrosage_synthese_xl": "sensor.arrosage_dernier_effectif",
 }
 GRIS_AUTORISES = {"0.1", "0.2"}
+
+# Sections attendues (refonte UI : un header explicite par bloc)
+SECTIONS_ATTENDUES = [
+    "🌧️ Précipitations", "💧 Diagnostic hydrique", "🌡️ Demande climatique",
+    "🎛️ Décision de durée", "🧾 Session", "🛠️ Exécution",
+]
+# Éléments qui DOIVENT avoir disparu du dashboard (simplification)
+DISPARUS_DASH = [
+    "sensor.jardin_humidite_sol_minimum",
+    "sensor.jardin_humidite_sol_heterogeneite",
+    "custom:mini-graph-card",   # graphes ET₀ / VPD
+    "🔎 Détails",               # section entière supprimée
+]
+# Frontière anti-doublon Session ↔ Dernier arrosage (champs disjoints)
+SESSION_XL = "carte_arrosage_session_synthese_xl"
+DERNIER_XL = "carte_arrosage_dernier_arrosage_synthese_xl"
+INTERDITS_SESSION = [  # trace/résultat → réservés à Dernier arrosage
+    "session_duree_minutes", "session_verdict",
+    "session_modulation_motif", "session_fin_observee",
+]
+INTERDITS_DERNIER = [  # cycle de vie/autorité → réservés à Session
+    "session_debut", "session_fin_prevue",
+]
 
 
 class TolerantLoader(yaml.SafeLoader):
@@ -149,6 +173,54 @@ def test_ui(fails):
     print(f"  {'OK ' if not bad else 'KO '}gris normatifs dans le dashboard ({'oui' if not bad else bad})")
     if bad:
         fails.append(f"ui: gris non normatif dashboard {bad}")
+
+    # (f) sections explicites : un header par bloc
+    for sec in SECTIONS_ATTENDUES:
+        pat = re.compile(r"template:\s*section_header\s*\n\s*name:\s*" + re.escape(sec))
+        ok = bool(pat.search(diag))
+        print(f"  {'OK ' if ok else 'KO '}section « {sec} »")
+        if not ok:
+            fails.append(f"ui: section header manquant {sec}")
+
+    # (g) éléments supprimés réellement absents du dashboard
+    for gone in DISPARUS_DASH:
+        ok = gone not in diag
+        print(f"  {'OK ' if ok else 'KO '}absent du dashboard : {gone}")
+        if not ok:
+            fails.append(f"ui: élément non supprimé {gone}")
+
+    # (h) min/écart retirés aussi du label du XL hydrique
+    sol = (TPL_DIR / "carte_arrosage_sol_synthese_xl.yaml").read_text(encoding="utf-8")
+    for gone in ("sol_minimum", "sol_heterogeneite"):
+        ok = gone not in sol
+        print(f"  {'OK ' if ok else 'KO '}XL hydrique sans {gone}")
+        if not ok:
+            fails.append(f"ui: XL hydrique référence encore {gone}")
+
+    # (i) frontière anti-doublon Session ↔ Dernier arrosage (champs disjoints)
+    sess = (TPL_DIR / f"{SESSION_XL}.yaml").read_text(encoding="utf-8")
+    dern = (TPL_DIR / f"{DERNIER_XL}.yaml").read_text(encoding="utf-8")
+    for token in INTERDITS_SESSION:
+        ok = token not in sess
+        print(f"  {'OK ' if ok else 'KO '}Session XL ne restitue pas « {token} »")
+        if not ok:
+            fails.append(f"ui: doublon — Session XL contient {token}")
+    for token in INTERDITS_DERNIER:
+        ok = token not in dern
+        print(f"  {'OK ' if ok else 'KO '}Dernier arrosage XL ne restitue pas « {token} »")
+        if not ok:
+            fails.append(f"ui: doublon — Dernier arrosage XL contient {token}")
+    # et chacun porte bien SES champs
+    for token in INTERDITS_DERNIER:  # champs propres à Session
+        ok = token in sess
+        print(f"  {'OK ' if ok else 'KO '}Session XL porte « {token} »")
+        if not ok:
+            fails.append(f"ui: Session XL devrait porter {token}")
+    for token in INTERDITS_SESSION:  # champs propres à Dernier arrosage
+        ok = token in dern
+        print(f"  {'OK ' if ok else 'KO '}Dernier arrosage XL porte « {token} »")
+        if not ok:
+            fails.append(f"ui: Dernier arrosage XL devrait porter {token}")
 
 
 def main() -> int:
