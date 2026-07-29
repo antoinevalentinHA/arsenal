@@ -222,6 +222,14 @@ def test_ui(fails):
         if not ok:
             fails.append(f"ui: Dernier arrosage XL devrait porter {token}")
 
+    # (j) fuseau : la carte Dernier arrosage ancre un device_class timestamp
+    #     (état UTC) → doit convertir en heure LOCALE (new Date), jamais
+    #     trancher l'ISO brut pour l'heure (sinon décalage UTC visible).
+    ok_tz = "new Date(" in dern
+    print(f"  {'OK ' if ok_tz else 'KO '}Dernier arrosage XL convertit le timestamp en heure locale (new Date)")
+    if not ok_tz:
+        fails.append("ui: Dernier arrosage XL n'effectue pas la conversion UTC→locale (new Date absent)")
+
 
 def main() -> int:
     fails = []
