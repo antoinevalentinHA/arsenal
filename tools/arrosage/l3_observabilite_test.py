@@ -230,6 +230,67 @@ def test_ui(fails):
     if not ok_tz:
         fails.append("ui: Dernier arrosage XL n'effectue pas la conversion UTC→locale (new Date absent)")
 
+    # (k) section Session conditionnée à une session EN COURS (structure YAML) :
+    #     header + carte dans le MÊME vertical-stack d'un `type: conditional`
+    #     gouverné par binary_sensor.arrosage_session_en_cours `state: "on"`
+    #     exact (⇒ off/unknown/unavailable masquent toute la section, jamais
+    #     assimilés à une session active) ; 🛠️ Exécution reste inconditionnel.
+    print("\n=== 3) UI — section Session conditionnelle (session en cours) ===")
+    ddata = yaml.load(diag, Loader=TolerantLoader)
+    stack = ((ddata.get("views") or [{}])[0].get("cards") or [{}])[0].get("cards") or []
+
+    def _tpl(x):
+        return x.get("template") if isinstance(x, dict) else None
+
+    def _is_header(x, name):
+        return isinstance(x, dict) and _tpl(x) == "section_header" and str(x.get("name", "")).strip() == name
+
+    # localiser le conditional Session
+    sess_cond = None
+    for it in stack:
+        if isinstance(it, dict) and it.get("type") == "conditional":
+            conds = it.get("conditions") or []
+            if any(isinstance(c, dict) and c.get("entity") == "binary_sensor.arrosage_session_en_cours" for c in conds):
+                sess_cond = it
+                break
+    ok = sess_cond is not None
+    print(f"  {'OK ' if ok else 'KO '}bloc `conditional` sur binary_sensor.arrosage_session_en_cours présent")
+    if not ok:
+        fails.append("ui: pas de conditional Session sur arrosage_session_en_cours")
+    else:
+        cond = next(c for c in sess_cond["conditions"] if c.get("entity") == "binary_sensor.arrosage_session_en_cours")
+        ok_state = cond.get("state") == "on"
+        print(f"  {'OK ' if ok_state else 'KO '}condition `state: on` exacte (off/unknown/unavailable ⇒ masqué)")
+        if not ok_state:
+            fails.append(f"ui: condition Session doit être state:'on' exact (trouvé {cond.get('state')!r})")
+
+        inner = sess_cond.get("card") or {}
+        ok_vs = inner.get("type") == "vertical-stack"
+        inner_cards = inner.get("cards") or []
+        has_header = any(_is_header(x, "🧾 Session") for x in inner_cards)
+        has_xl = any(_tpl(x) == "carte_arrosage_session_synthese_xl" for x in inner_cards)
+        ok_together = ok_vs and has_header and has_xl
+        print(f"  {'OK ' if ok_together else 'KO '}header 🧾 Session + carte XL dans le MÊME vertical-stack (masqués ensemble)")
+        if not ok_together:
+            fails.append(f"ui: header+carte Session pas groupés dans le conditional (vs={ok_vs}, header={has_header}, xl={has_xl})")
+
+    # header et carte Session NE doivent PAS rester au niveau supérieur (hors conditional)
+    top_header = any(_is_header(x, "🧾 Session") for x in stack)
+    top_xl = any(_tpl(x) == "carte_arrosage_session_synthese_xl" for x in stack)
+    ok_notop = (not top_header) and (not top_xl)
+    print(f"  {'OK ' if ok_notop else 'KO '}Session absente du niveau supérieur (uniquement sous conditional)")
+    if not ok_notop:
+        fails.append(f"ui: Session encore au top-level (header={top_header}, xl={top_xl})")
+
+    # 🛠️ Exécution reste STRICTEMENT inconditionnel (enfants directs du stack)
+    exec_header = any(_is_header(x, "🛠️ Exécution") for x in stack)
+    exec_station = any(_tpl(x) == "status_72_on_off" for x in stack)
+    exec_dernier = any(_tpl(x) == "carte_arrosage_dernier_arrosage_synthese_xl" for x in stack)
+    ok_exec = exec_header and exec_station and exec_dernier
+    print(f"  {'OK ' if ok_exec else 'KO '}Exécution inconditionnelle : header + Station 1 + Dernier arrosage au top-level")
+    if not ok_exec:
+        fails.append(f"ui: Exécution doit rester inconditionnelle (header={exec_header}, station={exec_station}, dernier={exec_dernier})")
+
 
 def main() -> int:
     fails = []

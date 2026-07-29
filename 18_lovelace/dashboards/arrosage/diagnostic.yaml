@@ -108,14 +108,28 @@ views:
 
           # =========================================================
           # 🧾 Session — état courant + autorité de fin
+          #    Visible UNIQUEMENT quand une session est EN COURS. Une session
+          #    close appartient à l'historique du dernier arrosage (bloc
+          #    🛠️ Exécution ci-dessous) : on ne la restitue pas ici en double.
+          #    Header + carte dans le MÊME vertical-stack du conditional ⇒
+          #    masqués ensemble (jamais de header orphelin). `state: "on"`
+          #    exact ⇒ off / unknown / unavailable masquent toute la section
+          #    (indisponibilité JAMAIS assimilée à une session active).
           # =========================================================
-          - type: custom:button-card
-            template: section_header
-            name: 🧾 Session
+          - type: conditional
+            conditions:
+              - entity: binary_sensor.arrosage_session_en_cours
+                state: "on"
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: section_header
+                  name: 🧾 Session
 
-          - type: custom:button-card
-            template: carte_arrosage_session_synthese_xl
-            entity: sensor.arrosage_session_etat
+                - type: custom:button-card
+                  template: carte_arrosage_session_synthese_xl
+                  entity: sensor.arrosage_session_etat
 
           # =========================================================
           # 🛠️ Exécution — l'acte, sa preuve et la trace du dernier cycle
