@@ -595,35 +595,14 @@ include:
     # Observabilité dashboard : verdict + cause d'écart. Lecture seule.
     - sensor.clim_ventilation_diagnostic
 
-    # =====================================================
-    # ==== ❄️ CLIM — ÉCHEC EXÉCUTION PERSISTANT (INSTRUMENTATION TEMPORAIRE C13) ====
-    # =====================================================
-    # RECORDER — Population B
-    # Rôle      : latch d'échec `input_boolean.clim_execution_echec` + budget de
-    #             reprise `counter.clim_execution_retry_count` (auto 10030000000121 ;
-    #             contrat clim 08_execution.md, dette D5).
-    # Utilité   : PROUVER, à la prochaine occurrence réelle, la séquence de
-    #             notification d'échec persistant — latch=on ET budget>2 ⇒ création,
-    #             puis latch=off ⇒ retrait. Complète les call_service déjà captés.
-    #             Sans ces deux états, la séquence est invisible après coup.
-    # Logbook   : acceptable — binaire + compteur, changements uniquement en échec (rare).
-    # Cardinalité : binaire (on/off) ; compteur borné à valeurs faibles (0..3).
-    # Fréquence : << 5/h — nul en nominal ; quelques changements groupés lors d'un échec.
-    # NB : lecture seule ; aucune logique métier ne lit cet HISTORIQUE recorder
-    #      (les automations lisent l'état LIVE — invariant d'indépendance préservé).
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
-    # Chantier   : C13 — notification d'échec d'exécution persistant clim, dette D5 (plan d'action transverse mergé)
-    # Objet      : historisation temporaire pour capturer une occurrence réelle rare
-    #              (ou un test provoqué décidé par le propriétaire).
-    # Ajouté     : 2026-07-13 — activation effective au redémarrage Home Assistant
-    # Réévaluer  : 2026-11-10 (T0 + 120 j) — RÉÉVALUATION propriétaire OBLIGATOIRE,
-    #              PAS une suppression automatique : maintien motivé · retrait ·
-    #              modification de la stratégie de preuve · autorisation d'un test provoqué.
-    #              Aucun maintien silencieux au-delà.
-    # Retrait    : dès preuve acquise ET chantier C13 clôturé ; maintien tant que
-    #              C13 est actif ET l'instrumentation nécessaire.
-    - input_boolean.clim_execution_echec
-    - counter.clim_execution_retry_count
+    # ---- (retiré 2026-07-29) Microscope C13 « échec exécution persistant clim » ----
+    # input_boolean.clim_execution_echec + counter.clim_execution_retry_count :
+    # historisation temporaire retirée. Critère de retrait du bloc satisfait —
+    # « dès preuve acquise ET chantier C13 clôturé » : C13 (dette D5) CLOS le
+    # 2026-07-23 (preuve terrain provoquée, notification créée < 2 s ; cf. registre
+    # ⑤). Les deux entités restent VIVES (lues en LIVE par l'automation
+    # 10030000000121) ; seule leur historisation recorder est retirée. Aucune
+    # logique métier ne lisait cet historique (invariant d'indépendance préservé).
 
     # =====================================================
     # ==== 💡 ÉCLAIRAGE SÉJOUR — CALIBRATION LUMINOSITÉ (INSTRUMENTATION TEMPORAIRE C22) ====
