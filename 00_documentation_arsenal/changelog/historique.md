@@ -45,7 +45,7 @@ Le point que ce document veut rendre lisible : **comment une installation HA est
 | mai 2026 | v14 | **Le pivot de gouvernance** : nomenclature canonique, `contrats/` = point d'entrée unique, doc avant code |
 | mai → juin 2026 | v15 | L'ère de l'outillage : deadlines persistantes, doctrines, auto-audit, **lint et CI documentaire**, checkers |
 | juin → juillet 2026 | v16 | **Navigation documentaire gouvernée**, puis le **tournant de l'abstention** : un capteur qui ne sait pas s'abstient au lieu d'inventer |
-| juillet 2026 | v17 | **Le modèle devient refactorable** : pièces et personnes renommées à travers tout le stack ; le contrat cesse de décrire l'existant pour **prescrire une cible** |
+| juillet 2026 | v17 | **Le modèle devient refactorable**, puis **l'autorité devient révocable** : le contrat cesse de décrire l'existant pour **prescrire une cible** ; Arsenal peut rendre la main sans cesser d'être le seul décideur |
 
 ---
 
@@ -276,7 +276,7 @@ La série v16 est longue (v16.0.0 → v16.4.2) et se lit en quatre sous-arcs.
 
 ---
 
-## Phase N — Série v17 (juillet 2026) — *le modèle devient refactorable*
+## Phase N — Série v17 (juillet 2026) — *le modèle devient refactorable, puis l'autorité devient révocable*
 ### Ce qui s'est passé
 
 **Le modèle physique du logement se refactore (v17.0.0 → v17.0.1).** `chambre_arnaud` devient `chambre_enfants` et `chambre_matthieu` devient `salle_de_jeux` — non pas un renommage cosmétique, mais un **changement de modèle** propagé à travers ~167 fichiers : le périmètre « chambres » passe de 3 à 2 pièces, les agrégats thermiques et le besoin de chauffe sont recalculés en conséquence, les contrats de bornes thermiques suivent, les stations Netatmo et leurs prises sont renommées. La v17.0.1 solde l'opération côté instance par une migration du registre d'entités Home Assistant, **historique préservé**, sans changement de YAML.
@@ -287,8 +287,12 @@ La série v16 est longue (v16.0.0 → v16.4.2) et se lit en quatre sous-arcs.
 
 **Le contrat devient une cible (v17.0.3).** Le contrat VMC passe de v1.3 à **v2.4 et change de statut** : « cible contractuelle validée — implémentation à mettre en conformité ». Le contrat ne décrit plus l'existant, il **prescrit un état à atteindre**, et le runtime y est amené lot par lot (L1 → L7.7) : besoins par pièce portés par des machines à état persistantes, verdict réduit à une agrégation pure, frontière de libération modulée par une mesure extérieure, entrée d'aération retirée des entrées décisionnelles. La CI suit le mouvement : `check_vmc_initialisation_contracts.py` ne cherche plus un motif dans le texte mais **évalue le prédicat Jinja contre des scénarios** — un contrôle de comportement, non de lexique.
 
+**L'autorité devient révocable (v17.1.0).** La doctrine `autorite_de_domaine.md` naît et amende `principes_generaux.md` §2 : l'unicité de l'autorité porte sur le **nombre** de décideurs à un instant, **jamais sur leur identité**. Formule inscrite — « unicité de l'autorité, révocabilité de sa délégation » — et sept invariants opposables (INV-AUT-1 à 7), dont l'interdiction de **reprise silencieuse**. Elle est instanciée sur quatre domaines : VMC en pilote (contrat v2.6, §16), puis climatisation, chauffage, déshumidificateur. Chacun reçoit un **titulaire** (`automatique` / `manuel`), une consigne manuelle, et une **décision exécutoire** distincte de la décision automatique — laquelle continue d'être calculée en manuel, mais comme **décision théorique**, exposée sans être appliquée. Le geste utilisateur change de statut : `input_boolean.mode_confort_chauffage`, override opérateur historique, **quitte l'interface** et redevient un simple contexte de panne secteur. Enfin, l'anti-fallback s'applique à la commande elle-même — le `default:` qui repliait la VMC en basse vitesse est supprimé, le Guard climatisation s'abstient au lieu de couper : une décision indéterminée ne produit plus d'action, elle laisse le physique en l'état.
+
 ### Leçon retenue
 > **Ce qui était réputé figé devient un artefact versionné.** Le nom d'une pièce, l'identité des personnes, l'implémentation entière d'un domaine : trois choses qu'on ne touche pas dans une installation ordinaire, parce que le coût du refactoring y est inconnu et le risque de régression total. Contrats, checkers et registre rendent ces refactorings **sûrs et donc possibles** — c'est le dividende du fil B, encaissé dix mois après son amorce. Et le contrat franchit un dernier seuil : de *reflet* de l'existant (v9), puis de *point d'entrée* (v14), il devient **cible opposable** que l'implémentation doit rejoindre, sous une CI qui vérifie un comportement plutôt qu'une forme.
+>
+> **Et l'unicité du décideur cesse d'être l'unicité d'Arsenal.** Depuis v8.3, « un seul décideur » et « Arsenal décide » étaient la même phrase — personne n'avait eu besoin de les distinguer. v17.1 établit que c'était une **assimilation**, non une propriété : le titulaire peut changer sans qu'à aucun instant deux décideurs coexistent. Ce que la série livre n'est donc pas un « mode manuel » — agir à la main était déjà possible, par flags, *à l'intérieur* du régime automatique — mais une **titularité révocable**, avec sa transition explicite et son interdiction de reprise silencieuse. Au passage l'abstention de v16.4 change d'objet : elle ne protège plus seulement contre une **mesure** fabriquée, elle interdit à la **chaîne de commande** de retomber sur une valeur par défaut quand elle ne sait plus qui décide.
 
 ---
 
