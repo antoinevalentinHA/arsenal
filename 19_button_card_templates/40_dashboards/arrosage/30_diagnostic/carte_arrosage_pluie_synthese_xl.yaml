@@ -13,8 +13,8 @@
 #                fiabilité (confirmée = fait observé / présumée = prévu).
 #     - label  → contexte pluie : cumuls 24/48/72 h, pluie prévue,
 #                et raison(s) courte(s) traduites depuis le motif.
-#     - couleur → bleu si suspension active (fait vs présomption),
-#                gris sinon (palette pluie existante).
+#     - couleur → bleu (information/diagnostic) si suspension active,
+#                gris neutre sinon, gris indispo si source absente.
 #   Remplace le couple « grille KPI + carte raison » : aligne la
 #   section Précipitations sur les autres sections (une carte XL).
 #
@@ -108,9 +108,6 @@ carte_arrosage_pluie_synthese_xl:
             const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
             if (UNAV.includes(entity.state)) return "rgba(158, 158, 158, 0.1)";
             if (entity.state !== "on") return "rgba(158, 158, 158, 0.2)";
-            const f = (entity.attributes?.fiabilite || "").toString().trim();
-            if (f === "confirme") return "rgba(33, 150, 243, 0.25)";
-            if (f === "presume") return "rgba(33, 150, 243, 0.15)";
             return "rgba(33, 150, 243, 0.2)";
           ]]]
     label:
