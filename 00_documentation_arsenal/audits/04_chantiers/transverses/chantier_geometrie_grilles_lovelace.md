@@ -1,8 +1,10 @@
 # 🛠️ ARSENAL — CHANTIER · CH-LL-CI-2 — Géométrie des grilles Lovelace (R-LL-GRID-1 / R-LL-GRID-2)
 
 > **Statut : OUVERT (2026-07-29).** Norme propriétaire mergée (PR #629) ;
-> implémentation par lots successifs. Ce document est le **propriétaire de suivi**
-> du chantier ; le statut vivant est au [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md).
+> **lot G1 livré (PR #631, `R-LL-GRID-1` bloquant)** ; **lot NAS qualifié**
+> (verdict ci-dessous). Implémentation par lots successifs. Ce document est le
+> **propriétaire de suivi** du chantier ; le statut vivant est au
+> [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md).
 
 ## 📌 Cadre
 
@@ -91,6 +93,35 @@ ni correction** :
   arbitrage dédié**.
 
 Aucune activation bloquante de G2 avant qualification de ces cas.
+
+**Qualification (2026-07-29) — grilles `nas.yaml:187` (section Disque 1) et
+`:246` (section Disque 2).** Les deux grilles sont `columns: 2` avec deux cartes
+`type: conditional` en enfants directs (socle `carte_alerte_binaire_critique`).
+
+- **Intention UI** : rangée d'alertes SMART critiques par disque ; chaque carte
+  n'apparaît que si son `binary_sensor` vaut `on` (« Durée de vie restante » et
+  « Secteurs défectueux »).
+- **Cardinalités effectivement possibles** : les deux conditions portent sur deux
+  `binary_sensor` **indépendants** (aucune exclusion mutuelle ni complémentarité)
+  → nombre de cellules visibles ∈ **{0, 1, 2}**.
+- **Comportement visuel (`columns: 2`)** : `0` → grille vide (cardinalité nulle
+  **admise**, hors périmètre) ; **`1` → rangée partiellement remplie** ; `2` →
+  rangée complète.
+- **Conclusion : NON CONFORME** au regard de `R-LL-GRID-2`. La cardinalité `1`
+  est admissible et non divisible par `columns` (=2) ; la garantie « toute
+  combinaison d'états admise divisible par `columns` » **n'est pas démontrable**
+  (conditions indépendantes, aucun motif reconnu tel que « conditions
+  complémentaires sur une même entité »). Incompatibilité **structurelle
+  démontrée**, indépendante de l'état runtime des disques ; **aucun défaut runtime
+  présumé**.
+
+Conséquence : correction éventuelle **différée à un lot dédié**, sur arbitrage, et
+**avant** activation bloquante de G2. Aucune modification du YAML NAS à ce stade.
+
+**Observation incidente** (hors géométrie, hors `R-LL-GRID-2`, ni présumée défaut
+ni corrigée) : la grille d'alertes de la section « Disque 1 » (`:187`) référence
+des capteurs `…drive_2…`, comme celle de « Disque 2 » (`:246`). Signalée pour
+arbitrage distinct.
 
 ### Lot G2 — Géométrie dynamique (BLOQUANT)
 
