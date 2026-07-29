@@ -40,8 +40,15 @@
 #   Gardes        : binary_sensor.rain_bird_pont_donnees_disponibles
 #                   binary_sensor.arrosage_rain_bird_preconditions_runtime
 #                   sensor.rain_bird_bat_bt_2_e9a3_active_station (repos avant lancement)
-#   Durée         : input_number.arrosage_rainbird_station_1_duree_minutes (helper opérateur, borné [1,60])
-#                   number.rain_bird_bat_bt_2_e9a3_station_1_duration (réglée depuis le helper, clampée)
+#   Durée         : décision modulée sensor.arrosage_modulation_duree_applicable
+#                   (contrat 19_modulation_duree.md ; SNAPSHOT au démarrage). Son
+#                   état encode déjà le retour à la base (off / contrôle indispo).
+#                   Repli EXPLICITE (motif tracé) sur la base opérateur
+#                   input_number.arrosage_rainbird_station_1_duree_minutes ([1,60])
+#                   si la décision est indisponible ou numériquement invalide.
+#                   number.rain_bird_bat_bt_2_e9a3_station_1_duration reçoit la
+#                   MÊME durée figée (dead-man présumé, jamais autorité de fin).
+#   Motif session : input_text.arrosage_session_modulation_motif (writer unique = ce Run)
 #   Commande      : switch.rain_bird_bat_bt_2_e9a3_station_1
 #   Confirmation  : switch.rain_bird_bat_bt_2_e9a3_station_1 == on (PREUVE PRIMAIRE)
 #   Diag (notif)  : sensor.rain_bird_pont_sante,
@@ -89,12 +96,62 @@ arrosage_rain_bird_station_1_courte_supervisee:
         station_switch: switch.rain_bird_bat_bt_2_e9a3_station_1
         station_duration: number.rain_bird_bat_bt_2_e9a3_station_1_duration
         active_sensor: sensor.rain_bird_bat_bt_2_e9a3_active_station
-        # Durée opérateur lue depuis le helper borné, clampée défensivement à [1,60]
-        # (repli 2 si indisponible). Le number.… natif n'est jamais exposé à l'UI.
-        duree_minutes: "{{ [[states('input_number.arrosage_rainbird_station_1_duree_minutes') | int(2), 1] | max, 60] | min }}"
+        # ============================================================
+        # SNAPSHOT MODULATION (C11 P4, L2) — LU UNE SEULE FOIS ICI, figé
+        # pour toute la session. Aucune relecture live ensuite de la
+        # décision, de ses attributs, des recos sol/climat ni du helper
+        # nominal : la suite du Run n'utilise que ces scalaires.
+        # ============================================================
+        # Qualification DÉFENSIVE (arbitrages C/D) : une durée n'est valide
+        # que NUMÉRIQUE, ENTIÈRE et dans [1,60] — jamais tronquée ni clampée
+        # en douce. La constante de repli `2` est SUPPRIMÉE.
+        mod_etat: "{{ states('sensor.arrosage_modulation_duree_applicable') }}"
+        mod_motif_raw: "{{ state_attr('sensor.arrosage_modulation_duree_applicable', 'motif_global') }}"
+        base_raw: "{{ states('input_number.arrosage_rainbird_station_1_duree_minutes') }}"
+        mod_numeric: "{{ is_number(mod_etat) }}"
+        mod_valide: "{{ is_number(mod_etat) and ((mod_etat | float) % 1 == 0) and (1 <= (mod_etat | float) <= 60) }}"
+        base_valide: "{{ is_number(base_raw) and ((base_raw | float) % 1 == 0) and (1 <= (base_raw | float) <= 60) }}"
+        # BASE VALIDE = condition NÉCESSAIRE de lancement : la durée modulée
+        # dérive de la base opérateur et ne peut JAMAIS autoriser un Run quand
+        # la base n'est plus exploitable (valeur périmée, ordre de MAJ inter-
+        # entités, incohérence momentanée, régression future d'availability).
+        # mod_valide ne fait que CHOISIR si la durée modulée remplace la base.
+        duree_exploitable: "{{ base_valide | bool }}"
+        # Durée figée (entier). Conversion explicite float|int (25.0 -> 25).
+        # Sélection : base invalide -> 0 (refus) ; base valide + décision valide
+        # -> décision ; base valide sinon -> base.
+        duree_minutes: "{{ (mod_etat | float | int) if ((base_valide | bool) and (mod_valide | bool)) else ((base_raw | float | int) if (base_valide | bool) else 0) }}"
+        # Motif figé (writer unique = ce Run). Priorité à l'état de la BASE quand
+        # elle est invalide : aucune décision numérique ne la contourne.
+        # Vocabulaire : 04_input_texts/arrosage/session.yaml.
+        modulation_motif: "{{ ('base_invalide' if is_number(base_raw) else 'base_indisponible') if not (base_valide | bool) else (mod_motif_raw if ((mod_valide | bool) and (mod_motif_raw is not none) and (mod_motif_raw not in ['None', 'unknown', 'unavailable', ''])) else ('decision_motif_indisponible' if (mod_valide | bool) else ('decision_indisponible' if not (mod_numeric | bool) else 'decision_invalide'))) }}"
         idle_states: ['idle', 'none', 'off', '']
         dispo_ok: "{{ is_state('binary_sensor.rain_bird_pont_donnees_disponibles', 'on') }}"
         precond_ok: "{{ is_state('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'on') }}"
+
+    # =========================================================
+    # 🛡️ GARDE DURÉE (C11 P4, L2) — refus si aucune durée exploitable
+    # =========================================================
+    # Ni la décision modulée ni la durée nominale ne sont exploitables
+    # (numérique entière [1,60]) : refus AVANT toute ouverture de session,
+    # toute écriture de durée native et toute commande du switch. Patron de
+    # refus identique aux gardes ci-dessous ; aucune constante de repli.
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ not (duree_exploitable | bool) }}"
+          sequence:
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_parent_1_notify
+                titre: "💧 Arrosage – Station 1 refusée (durée)"
+                message: >-
+                  Lancement station 1 refusé : durée inexploitable, aucune
+                  commande native envoyée.
+                  Décision modulée : {{ mod_etat }}.
+                  Durée nominale : {{ base_raw }}.
+                  Motif : {{ modulation_motif }}.
+            - stop: "Refus : durée inexploitable (base et décision non valides)"
 
     # =========================================================
     # 🛡️ GARDES COMPLÈTES — refus propre, aucune commande native
@@ -151,7 +208,14 @@ arrosage_rain_bird_station_1_courte_supervisee:
       target:
         entity_id: input_datetime.arrosage_session_fin_prevue
       data:
-        datetime: "{{ (now() + timedelta(minutes=duree_minutes | int(2))).strftime('%Y-%m-%d %H:%M:%S') }}"
+        # Autorité UNIQUE de fin. Même durée figée que session_duree et natif.
+        datetime: "{{ (now() + timedelta(minutes=duree_minutes | int)).strftime('%Y-%m-%d %H:%M:%S') }}"
+    # 🧾 Motif de modulation figé (snapshot) — writer unique = ce Run.
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.arrosage_session_modulation_motif
+      data:
+        value: "{{ modulation_motif }}"
     - service: input_text.set_value
       target:
         entity_id: input_text.arrosage_session_verdict
