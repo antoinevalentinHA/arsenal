@@ -1,0 +1,172 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Arrosage — Modulation de durée : décision backend (C11 P4, L1)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Produire la DÉCISION de durée applicable modulée (contrat
+#   19_modulation_duree.md), à partir de la durée nominale opérateur et
+#   des recommandations des canaux sol (primaire) et climat (secondaire).
+#   Couche RECOMMANDATION + DÉCISION (PAS observation).
+#
+#   ⚠️ L1 — AUCUN BRANCHEMENT DANS LE RUN. Le Run continue de lire la
+#   durée nominale ; le branchement au point unique est le lot L2.
+#
+# 🧱 ARCHITECTURE (3 entités sémantiques — AUCUN JSON transporté en état)
+#   - sensor.arrosage_modulation_reco_sol    : état = STATUT sol
+#       (reduction/neutre/abstention) ; attributs facteur, motif.
+#   - sensor.arrosage_modulation_reco_climat : état = STATUT climat
+#       (neutre/abstention) ; attributs facteur, motif.
+#   - sensor.arrosage_modulation_duree_applicable : état = DURÉE (min) ;
+#       attributs = trace de composition + facteurs théorique/appliqué + motif.
+#   Chaque état porte une valeur sémantique courte. La décision CONSOMME les
+#   deux recos (répétition limitée et contrôlée, pas de bus JSON interne).
+#   Une abstention/erreur d'un canal ⇒ facteur lu = 1,0 (neutre), la décision
+#   RESTE disponible tant que la durée nominale est numérique.
+#
+# 🧱 MODÈLE M4 (contrat 19 §5) — précédence d'abstention puis composition
+#   ordonnée MULTIPLICATIVE : nominale × facteur_sol × facteur_climat
+#   → arrondi (demi → entier pair) → clamp [1,60].
+#
+# 🔢 CALIBRATION L1 (mise en service minimale, recalibrable — contrat §6)
+#   Réduction sol = 0,95 (perturbation initiale minimale réversible), gate :
+#   état sol `complet` ET médiane disponible ET médiane ≥ seuil déclenchement.
+#   Allongements sol et climat = 1,0 (non calibrés, différés preuve runtime).
+#
+# 🎛️ CONTRÔLE (input_boolean.arrosage_modulation_duree_actif)
+#   - `on`        : modulation autorisée (facteur appliqué = théorique).
+#   - `off`       : désactivation OPÉRATEUR ⇒ durée = base, appliqué = 1,0,
+#                   motif `modulation_desactivee`.
+#   - unknown/unavailable : contrôle NON QUALIFIÉ ⇒ durée = base, appliqué
+#                   = 1,0, motif `controle_modulation_indisponible` (JAMAIS
+#                   présenté comme une désactivation volontaire).
+#
+# 🔗 ENTRÉES (entités réelles existantes — lecture LIVE)
+#   Base   : input_number.arrosage_rainbird_station_1_duree_minutes ([1,60])
+#   Seuil  : input_number.arrosage_seuil_humidite_declenchement
+#   Sol    : sensor.jardin_reservoir_sol_etat · sensor.jardin_humidite_sol_mediane
+#   Climat : sensor.arrosage_demande_climatique_etat
+#   Actif  : input_boolean.arrosage_modulation_duree_actif
+#
+# 🚫 NE FAIT PAS
+#   - N'écrit AUCUN helper ; ne pilote rien ; ne touche pas la décision « quand ».
+#   - Le Run ne la consomme pas encore (L2).
+#
+# 🏷️ STATUT
+#   Décision backend — modulation de durée (C11 P4, L1)
+# ==========================================================
+
+- sensor:
+
+    # ===== Recommandation CANAL SOL (primaire) — état = statut =====
+    - name: "Arrosage modulation reco sol"
+      unique_id: arrosage_modulation_reco_sol
+      default_entity_id: sensor.arrosage_modulation_reco_sol
+      icon: mdi:water-percent
+      state: >
+        {% set etat = states('sensor.jardin_reservoir_sol_etat') %}
+        {% set mediane = states('sensor.jardin_humidite_sol_mediane') | float(none) %}
+        {% set seuil = states('input_number.arrosage_seuil_humidite_declenchement') | float(none) %}
+        {% if etat == 'complet' and mediane is not none %}
+        {{ 'reduction' if (seuil is not none and mediane >= seuil) else 'neutre' }}
+        {% elif etat == 'degrade' %}neutre
+        {% else %}abstention{% endif %}
+      attributes:
+        facteur: >
+          {% set etat = states('sensor.jardin_reservoir_sol_etat') %}
+          {% set mediane = states('sensor.jardin_humidite_sol_mediane') | float(none) %}
+          {% set seuil = states('input_number.arrosage_seuil_humidite_declenchement') | float(none) %}
+          {% if etat == 'complet' and mediane is not none and seuil is not none and mediane >= seuil %}0.95{% else %}1.0{% endif %}
+        motif: >
+          {% set etat = states('sensor.jardin_reservoir_sol_etat') %}
+          {% set mediane = states('sensor.jardin_humidite_sol_mediane') | float(none) %}
+          {% set seuil = states('input_number.arrosage_seuil_humidite_declenchement') | float(none) %}
+          {% if etat == 'complet' and mediane is not none %}
+          {{ 'sol_complet_mediane_ge_seuil' if (seuil is not none and mediane >= seuil) else 'sol_complet_mediane_sous_seuil_allongement_differe' }}
+          {% elif etat == 'degrade' %}sol_degrade_confiance_insuffisante_pour_reduire
+          {% else %}sol_non_qualifie{% endif %}
+
+    # ===== Recommandation CANAL CLIMAT (secondaire) — état = statut =====
+    # L1 : allongement non calibré ⇒ facteur neutre 1,0 ; climat ne réduit jamais.
+    - name: "Arrosage modulation reco climat"
+      unique_id: arrosage_modulation_reco_climat
+      default_entity_id: sensor.arrosage_modulation_reco_climat
+      icon: mdi:sun-thermometer-outline
+      state: >
+        {% set etat = states('sensor.arrosage_demande_climatique_etat') %}
+        {% if etat in ['complet', 'degrade'] %}neutre
+        {% else %}abstention{% endif %}
+      attributes:
+        facteur: "1.0"
+        motif: >
+          {% set etat = states('sensor.arrosage_demande_climatique_etat') %}
+          {% if etat in ['complet', 'degrade'] %}allongement_climatique_non_calibre
+          {% elif etat == 'indisponible' %}climat_indisponible
+          {% else %}climat_etat_indetermine{% endif %}
+
+    # ===== DÉCISION : durée applicable (min) =====
+    - name: "Arrosage modulation durée applicable"
+      unique_id: arrosage_modulation_duree_applicable
+      default_entity_id: sensor.arrosage_modulation_duree_applicable
+      unit_of_measurement: "min"
+      icon: mdi:timer-cog-outline
+      # Disponible dès que la durée NOMINALE est numérique ; l'abstention d'un
+      # canal ne rend JAMAIS la décision indisponible.
+      availability: >
+        {{ is_number(states('input_number.arrosage_rainbird_station_1_duree_minutes')) }}
+      state: >
+        {% set base = states('input_number.arrosage_rainbird_station_1_duree_minutes') | float(1) %}
+        {% set applied = is_state('input_boolean.arrosage_modulation_duree_actif', 'on') %}
+        {% set sol_f = state_attr('sensor.arrosage_modulation_reco_sol', 'facteur') | float(1.0) %}
+        {% set cli_f = state_attr('sensor.arrosage_modulation_reco_climat', 'facteur') | float(1.0) %}
+        {% set fa = (sol_f * cli_f) if applied else 1.0 %}
+        {% set dva = base * fa %}
+        {% set fl = dva | int %}
+        {% set frac = dva - fl %}
+        {% set r = fl if frac < 0.5 else (fl + 1 if frac > 0.5 else (fl if (fl % 2) == 0 else fl + 1)) %}
+        {{ [[r, 1] | max, 60] | min }}
+      attributes:
+        duree_nominale: "{{ states('input_number.arrosage_rainbird_station_1_duree_minutes') | float(1) }}"
+        modulation_controle: >
+          {% set m = states('input_boolean.arrosage_modulation_duree_actif') %}
+          {{ 'on' if m == 'on' else ('off' if m == 'off' else 'indisponible') }}
+        sol_statut: "{{ states('sensor.arrosage_modulation_reco_sol') }}"
+        sol_facteur: "{{ state_attr('sensor.arrosage_modulation_reco_sol', 'facteur') | float(1.0) }}"
+        sol_motif: "{{ state_attr('sensor.arrosage_modulation_reco_sol', 'motif') }}"
+        climat_statut: "{{ states('sensor.arrosage_modulation_reco_climat') }}"
+        climat_facteur: "{{ state_attr('sensor.arrosage_modulation_reco_climat', 'facteur') | float(1.0) }}"
+        climat_motif: "{{ state_attr('sensor.arrosage_modulation_reco_climat', 'motif') }}"
+        duree_apres_sol: >
+          {% set base = states('input_number.arrosage_rainbird_station_1_duree_minutes') | float(1) %}
+          {% set applied = is_state('input_boolean.arrosage_modulation_duree_actif', 'on') %}
+          {% set sol_f = state_attr('sensor.arrosage_modulation_reco_sol', 'facteur') | float(1.0) %}
+          {{ (base * (sol_f if applied else 1.0)) | round(4) }}
+        duree_avant_arrondi: >
+          {% set base = states('input_number.arrosage_rainbird_station_1_duree_minutes') | float(1) %}
+          {% set applied = is_state('input_boolean.arrosage_modulation_duree_actif', 'on') %}
+          {% set sol_f = state_attr('sensor.arrosage_modulation_reco_sol', 'facteur') | float(1.0) %}
+          {% set cli_f = state_attr('sensor.arrosage_modulation_reco_climat', 'facteur') | float(1.0) %}
+          {{ (base * ((sol_f * cli_f) if applied else 1.0)) | round(4) }}
+        facteur_theorique: >
+          {% set sol_f = state_attr('sensor.arrosage_modulation_reco_sol', 'facteur') | float(1.0) %}
+          {% set cli_f = state_attr('sensor.arrosage_modulation_reco_climat', 'facteur') | float(1.0) %}
+          {{ (sol_f * cli_f) | round(4) }}
+        facteur_applique: >
+          {% set applied = is_state('input_boolean.arrosage_modulation_duree_actif', 'on') %}
+          {% set sol_f = state_attr('sensor.arrosage_modulation_reco_sol', 'facteur') | float(1.0) %}
+          {% set cli_f = state_attr('sensor.arrosage_modulation_reco_climat', 'facteur') | float(1.0) %}
+          {{ ((sol_f * cli_f) if applied else 1.0) | round(4) }}
+        motif_global: >
+          {% set m = states('input_boolean.arrosage_modulation_duree_actif') %}
+          {% if m == 'off' %}modulation_desactivee
+          {% elif m != 'on' %}controle_modulation_indisponible
+          {% else %}
+          {% set ss = states('sensor.arrosage_modulation_reco_sol') %}
+          {% set cs = states('sensor.arrosage_modulation_reco_climat') %}
+          {% set sol_f = state_attr('sensor.arrosage_modulation_reco_sol', 'facteur') | float(1.0) %}
+          {% if sol_f < 1 %}reduction_sol
+          {% elif ss == 'abstention' and cs == 'abstention' %}abstention_double
+          {% elif ss == 'abstention' %}abstention_sol
+          {% elif cs == 'abstention' %}abstention_climat
+          {% else %}neutre{% endif %}
+          {% endif %}
+        note: "Décision de durée modulée (contrat 19). L1 : non consommée par le Run (branchement = L2)."
