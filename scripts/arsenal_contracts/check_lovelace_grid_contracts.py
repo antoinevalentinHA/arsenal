@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-"""R-LL-GRID-1 — Complétude structurelle des grilles Lovelace statiques.
+"""R-LL-GRID-1 / R-LL-GRID-2 — Complétude des grilles Lovelace (statiques + dynamiques).
 
 Chantier : CH-LL-CI-2
-Contrat  : R-LL-GRID-1
+Contrats : R-LL-GRID-1 (grilles statiques) + R-LL-GRID-2 (grilles dynamiques)
 Slug     : lovelace_grid
 Doctrine : 00_documentation_arsenal/ui/pattern_dashboard.md
            § « Géométrie des grilles locales »
@@ -11,25 +11,33 @@ Doctrine : 00_documentation_arsenal/ui/pattern_dashboard.md
 Pourquoi ce checker
 -------------------
 La norme propriétaire (`pattern_dashboard.md`) rend opposable la géométrie des
-cartes `type: grid`. Ce lot G1 contrôle, de façon **bloquante et déterministe**,
-la seule **complétude structurelle statique** : une grille dont aucune cellule
-directe ne peut disparaître au runtime doit déclarer `columns` (entier
-strictement positif), porter une liste `cards` non vide, et présenter un nombre
-de cellules directes divisible par `columns`.
+cartes `type: grid`. Ce checker contrôle, de façon **bloquante et déterministe** :
+  - G1 (grilles STATIQUES) : `columns` entier strictement positif, `cards` liste
+    non vide, nombre de cellules directes divisible par `columns` ;
+  - G2 (grilles DYNAMIQUES) : la cardinalité visible reste divisible par
+    `columns` pour toute combinaison d'états admise, **garantie par un motif
+    statiquement démontrable** ; sinon NON CONFORME (aucune dérogation).
 
-Le contrôle G2 (géométrie dynamique) N'EST PAS implémenté dans ce lot : les
-grilles dynamiques sont recensées, comptées à part, exclues de G1, et JAMAIS
-annoncées comme conformes à G2.
+Un succès G1 ne prouve jamais G2 : les deux contrats sont évalués séparément.
 
-Classification (trois états explicites)
----------------------------------------
-  - STATIQUE démontrée : aucune cellule directe susceptible de disparaître ->
-    les quatre invariants G1 s'appliquent.
-  - DYNAMIQUE reconnue : au moins une cellule directe `type: conditional` ou
-    portant une clé `visibility:` -> recensée, hors G1.
+Motifs G2 reconnus (statiquement démontrables)
+----------------------------------------------
+  - A : `columns == 1` -> toute cardinalité est divisible -> conforme ;
+  - B : cellules FIXES (toujours présentes) + paires de conditionnels
+        COMPLÉMENTAIRES sur une même entité (`state: V` / `state_not: V`, même
+        valeur) contribuant exactement 1 cellule chacune -> cardinalité visible
+        CONSTANTE = fixes + paires, qui doit être divisible par `columns`.
+Tout autre cas (conditions indépendantes, `visibility:` directe, forme de
+condition non reconnue, tag non résolu) -> NON CONFORME par défaut.
+
+Classification (états explicites)
+---------------------------------
+  - STATIQUE : aucune cellule directe ne peut disparaître -> invariants G1.
+  - DYNAMIQUE : au moins une cellule directe `type: conditional` ou portant une
+    clé `visibility:` -> évaluée par G2 (motifs A/B), conforme ou non conforme.
   - NON ANALYSABLE : structure/classification non déterminable de façon fiable
-    -> échec explicite. Il est INTERDIT de classer statique par défaut une
-    structure non comprise. Aucun fallback silencieux.
+    -> échec explicite. Il est INTERDIT de classer statique/conforme par défaut
+    une structure non comprise. Aucun fallback silencieux.
 
 Cellule directe
 ---------------
@@ -59,7 +67,8 @@ périmètre et ignorées.
 
 Sortie / codes
 --------------
-  - exit 0 : conforme (toutes grilles statiques conformes, 0 non analysable) ;
+  - exit 0 : conforme (grilles statiques G1-conformes, dynamiques G2-conformes,
+             0 non analysable) ;
   - exit 1 : violation contractuelle ou structure non analysable ;
   - exit 2 : échec interne ou auto-test défaillant.
 
@@ -206,7 +215,8 @@ def resolve_include_arity(source_file: Path, raw: str):
 # Classifications possibles.
 CLS_STATIC_OK = "static_conform"
 CLS_STATIC_KO = "static_violation"
-CLS_DYNAMIC = "dynamic"
+CLS_DYNAMIC_OK = "dynamic_conform"    # R-LL-GRID-2 : motif reconnu (A ou B)
+CLS_DYNAMIC_KO = "dynamic_violation"  # R-LL-GRID-2 : non conforme (nc par défaut)
 CLS_UNANALYSABLE = "non_analysable"
 
 
@@ -220,6 +230,137 @@ def _is_disappearing_cell(cell) -> bool:
     return False
 
 
+def _parse_strict_state_condition(cell):
+    """Motif B (strict). Pour une carte `type: conditional` à condition UNIQUE de
+    type état, retourne `(entity, kind, value)` avec kind ∈ {'eq','neq'} ; sinon
+    None (condition non reconnue → non conforme par défaut).
+
+    Formes acceptées (les deux présentes dans le corpus) :
+      - courte   : `{entity: X, state: V}` ou `{entity: X, state_not: V}` ;
+      - explicite: `{condition: state, entity: X, state[/state_not]: V}`.
+    Valeur non scalaire (liste/dict), double clé, condition multiple → None.
+    """
+    if not (isinstance(cell, dict) and cell.get("type") == "conditional"):
+        return None
+    conds = cell.get("conditions")
+    if not isinstance(conds, list) or len(conds) != 1:
+        return None
+    c = conds[0]
+    if not isinstance(c, dict):
+        return None
+    ctype = c.get("condition")
+    if ctype is not None and ctype != "state":
+        return None
+    entity = c.get("entity")
+    if not isinstance(entity, str) or not entity:
+        return None
+    has_eq = "state" in c
+    has_neq = "state_not" in c
+    if has_eq == has_neq:  # ni l'un ni l'autre, ou les deux -> non reconnu
+        return None
+    value = c.get("state") if has_eq else c.get("state_not")
+    if value is None or isinstance(value, (list, dict)):
+        return None
+    return (entity, "eq" if has_eq else "neq", value)
+
+
+def evaluate_dynamic_g2(node: dict, source_file: Path, cards: list):
+    """R-LL-GRID-2 — évalue une grille DYNAMIQUE. Retourne (CLS_DYNAMIC_OK|KO, diags).
+
+    Motifs statiquement démontrables reconnus :
+      - A : `columns == 1` -> toute cardinalité (0,1,2…) divisible -> conforme ;
+      - B : cellules FIXES + paires de conditionnels COMPLÉMENTAIRES sur une
+            même entité (`state: V` / `state_not: V`) contribuant exactement 1
+            chacune -> cardinalité visible CONSTANTE = fixes + paires, qui doit
+            être divisible par `columns`.
+    Tout autre cas (conditions indépendantes, `visibility:`, forme non reconnue,
+    tag non résolu) -> NON CONFORME par défaut. Aucune dérogation.
+    """
+    line = node.get("__line__", "?")
+    p = f"{rel(source_file)}:{line} : R-LL-GRID-2 —"
+    columns = node.get("columns", MISSING)
+    col_ok = (
+        columns is not MISSING
+        and isinstance(columns, int)
+        and not isinstance(columns, bool)
+        and columns > 0
+    )
+
+    # --- Motif A : columns == 1 ---
+    if col_ok and columns == 1:
+        return CLS_DYNAMIC_OK, []
+
+    # --- Motif B : fixes + paires complémentaires ---
+    fixed = 0
+    state_conds = []            # (entity, kind, value) reconnus
+    reasons: list[str] = []
+    for cell in cards:
+        if isinstance(cell, dict) and cell.get("type") == "conditional":
+            pc = _parse_strict_state_condition(cell)
+            if pc is None:
+                reasons.append("conditionnel non reconnu (motif état/état_non strict requis)")
+            else:
+                state_conds.append(pc)
+        elif isinstance(cell, dict) and "visibility" in cell:
+            reasons.append("cellule à `visibility:` (non reconnue comme partitionnante)")
+        elif isinstance(cell, Tagged):
+            if cell.kind == "include":
+                ok, why = resolve_include_arity(source_file, cell.raw)
+                if ok:
+                    fixed += 1
+                else:
+                    reasons.append(f"include direct non résolu ({why})")
+            else:
+                reasons.append(f"tag !{cell.kind} non analysable")
+        elif isinstance(cell, dict):
+            fixed += 1
+        else:
+            kind = "null" if cell is None else type(cell).__name__
+            reasons.append(f"cellule non analysable (type {kind})")
+
+    if reasons:
+        return CLS_DYNAMIC_KO, [
+            f"{p} grille dynamique non conforme — aucun motif reconnu "
+            f"(columns≠1 ; {'; '.join(sorted(set(reasons)))}). "
+            f"Restructurer (p. ex. `columns: 1`) ou refuser."
+        ]
+
+    # Appariement complémentaire strict, par entité.
+    from collections import defaultdict
+    by_entity = defaultdict(list)
+    for entity, kind, value in state_conds:
+        by_entity[entity].append((kind, value))
+    pairs = 0
+    for entity, conds in by_entity.items():
+        if len(conds) == 2:
+            kinds = {k for k, _ in conds}
+            vals = {v for _, v in conds}
+            if kinds == {"eq", "neq"} and len(vals) == 1:
+                pairs += 1
+                continue
+        return CLS_DYNAMIC_KO, [
+            f"{p} grille dynamique non conforme — conditions non complémentaires "
+            f"sur `{entity}` (paire `state`/`state_not` de même valeur requise ; "
+            f"conditions indépendantes ou non appariées). Restructurer "
+            f"(p. ex. `columns: 1`)."
+        ]
+
+    if not col_ok:
+        return CLS_DYNAMIC_KO, [
+            f"{p} grille dynamique non conforme — `columns` absent ou invalide "
+            f"(obtenu : {columns!r})."
+        ]
+
+    visible = fixed + pairs  # cardinalité visible CONSTANTE
+    if visible % columns != 0:
+        return CLS_DYNAMIC_KO, [
+            f"{p} grille dynamique non conforme — cardinalité visible constante "
+            f"{visible} non divisible par columns={columns} "
+            f"(fixes={fixed}, paires complémentaires={pairs})."
+        ]
+    return CLS_DYNAMIC_OK, []
+
+
 def evaluate_grid(node: dict, source_file: Path):
     """Retourne (classification, [diagnostics])."""
     line = node.get("__line__", "?")
@@ -228,9 +369,10 @@ def evaluate_grid(node: dict, source_file: Path):
     columns = node.get("columns", MISSING)
 
     # --- 1) DYNAMIQUE : marqueur littéral direct (uniquement si cards est une liste) ---
+    #        -> évaluée par R-LL-GRID-2 (motifs A/B), plus « exclue » comme au lot G1.
     if isinstance(cards, list):
         if any(_is_disappearing_cell(c) for c in cards):
-            return CLS_DYNAMIC, []
+            return evaluate_dynamic_g2(node, source_file, cards)
 
     # --- 2) `cards` non énumérable statiquement (tag) -> NON ANALYSABLE ---
     if isinstance(cards, Tagged):
@@ -341,6 +483,7 @@ class Report:
         self.static = 0
         self.static_conform = 0
         self.dynamic = 0
+        self.dynamic_conform = 0
         self.unanalysable = 0
         self.diagnostics: list[str] = []
         # (rel_file, line, classification) — pour l'auto-test
@@ -372,7 +515,10 @@ def analyze(lovelace_dir: Path) -> Report:
             r.diagnostics.extend(diags)
             r.records.append((rel(path), node.get("__line__", "?"), cls))
 
-            if cls == CLS_DYNAMIC:
+            if cls == CLS_DYNAMIC_OK:
+                r.dynamic += 1
+                r.dynamic_conform += 1
+            elif cls == CLS_DYNAMIC_KO:
                 r.dynamic += 1
             elif cls == CLS_UNANALYSABLE:
                 r.unanalysable += 1
@@ -502,6 +648,65 @@ def selftest() -> list[str]:
         # 20) cards via tag (non énumérable) -> non analysable
         _write(ll, "d/c20.yaml",
                "type: grid\ncolumns: 2\ncards: !include ../includes/carte_unique.yaml\n")
+        # 21) DYNAMIQUE, motif A (columns 1 + conditionnel) -> conforme G2
+        _write(ll, "d/c21.yaml",
+               "type: grid\ncolumns: 1\ncards:\n"
+               + card("Fixe")
+               + "      - type: conditional\n"
+                 "        conditions:\n"
+                 "          - entity: binary_sensor.y\n"
+                 "            state: 'on'\n"
+                 "        card:\n"
+                 "          type: custom:button-card\n")
+        # 22) DYNAMIQUE, motif B (1 fixe + paire complémentaire même entité,
+        #     formes courte ET explicite ; columns 2 -> visible constant 2) -> conforme G2
+        _write(ll, "d/c22.yaml",
+               "type: grid\ncolumns: 2\ncards:\n"
+               + card("Fixe")
+               + "      - type: conditional\n"
+                 "        conditions:\n"
+                 "          - entity: timer.x\n"
+                 "            state: active\n"
+                 "        card:\n"
+                 "          type: custom:button-card\n"
+                 "      - type: conditional\n"
+                 "        conditions:\n"
+                 "          - condition: state\n"
+                 "            entity: timer.x\n"
+                 "            state_not: active\n"
+                 "        card:\n"
+                 "          type: custom:button-card\n")
+        # 23) DYNAMIQUE, conditions INDÉPENDANTES (2 entités, columns 2) -> violation G2
+        _write(ll, "d/c23.yaml",
+               "type: grid\ncolumns: 2\ncards:\n"
+               "      - type: conditional\n"
+               "        conditions:\n"
+               "          - entity: binary_sensor.a\n"
+               "            state: 'on'\n"
+               "        card:\n"
+               "          type: custom:button-card\n"
+               "      - type: conditional\n"
+               "        conditions:\n"
+               "          - entity: binary_sensor.b\n"
+               "            state: 'on'\n"
+               "        card:\n"
+               "          type: custom:button-card\n")
+        # 24) DYNAMIQUE, paire complémentaire mais visible=1 non divisible par 2 -> violation G2
+        _write(ll, "d/c24.yaml",
+               "type: grid\ncolumns: 2\ncards:\n"
+               "      - type: conditional\n"
+               "        conditions:\n"
+               "          - entity: timer.z\n"
+               "            state: active\n"
+               "        card:\n"
+               "          type: custom:button-card\n"
+               "      - type: conditional\n"
+               "        conditions:\n"
+               "          - condition: state\n"
+               "            entity: timer.z\n"
+               "            state_not: active\n"
+               "        card:\n"
+               "          type: custom:button-card\n")
 
         r = analyze(ll)
 
@@ -522,12 +727,16 @@ def selftest() -> list[str]:
             "c10.yaml": [CLS_STATIC_KO],
             "c11.yaml": [CLS_STATIC_KO],
             "c12.yaml": [CLS_STATIC_OK],
-            "c13.yaml": [CLS_DYNAMIC],
-            "c14.yaml": [CLS_DYNAMIC],
+            "c13.yaml": [CLS_DYNAMIC_KO],   # 1 fixe + 1 conditionnel non apparié
+            "c14.yaml": [CLS_DYNAMIC_KO],   # `visibility:` -> nc par défaut
             "c16.yaml": [CLS_STATIC_OK],
             "c17.yaml": [CLS_UNANALYSABLE],
             "c18.yaml": [CLS_UNANALYSABLE],
             "c20.yaml": [CLS_UNANALYSABLE],
+            "c21.yaml": [CLS_DYNAMIC_OK],   # motif A (columns 1)
+            "c22.yaml": [CLS_DYNAMIC_OK],   # motif B (paire complémentaire)
+            "c23.yaml": [CLS_DYNAMIC_KO],   # conditions indépendantes
+            "c24.yaml": [CLS_DYNAMIC_KO],   # paire OK mais visible=1 non divisible
         }
         for frag, exp in expect.items():
             got = cls_of(frag)
@@ -561,6 +770,9 @@ def selftest() -> list[str]:
             ("c10.yaml", "`cards` doit être une liste non vide"),
             ("c17.yaml", "carte-racine unique"),
             ("c18.yaml", "carte-racine unique"),
+            ("c23.yaml", "non complémentaires"),
+            ("c24.yaml", "non divisible par columns"),
+            ("c14.yaml", "aucun motif reconnu"),
         ]
         for frag, msg in checks:
             if not any(frag in d and msg in d for d in r.diagnostics):
@@ -569,9 +781,14 @@ def selftest() -> list[str]:
                 )
 
         # Comptes agrégés attendus sur les fixtures.
-        # dynamiques = c13, c14
-        if r.dynamic != 2:
-            failures.append(f"auto-test : dynamiques attendu 2, obtenu {r.dynamic}")
+        # dynamiques = c13, c14, c21, c22, c23, c24
+        if r.dynamic != 6:
+            failures.append(f"auto-test : dynamiques attendu 6, obtenu {r.dynamic}")
+        # dynamiques conformes G2 = c21 (motif A), c22 (motif B)
+        if r.dynamic_conform != 2:
+            failures.append(
+                f"auto-test : dynamiques conformes G2 attendu 2, obtenu {r.dynamic_conform}"
+            )
         # non analysables = c17, c18, c20
         if r.unanalysable != 3:
             failures.append(
@@ -586,9 +803,14 @@ def selftest() -> list[str]:
 # ==========================================================
 
 def main() -> int:
-    print("Arsenal — Validation contractuelle : Grilles Lovelace (R-LL-GRID-1)")
-    print("Règle : toute grille statique `type: grid` a `columns` entier > 0, "
-          "`cards` liste non vide, cellules directes divisibles par `columns`.\n")
+    print("Arsenal — Validation contractuelle : Grilles Lovelace "
+          "(R-LL-GRID-1 / R-LL-GRID-2)")
+    print("Règle G1 : toute grille STATIQUE a `columns` entier > 0, `cards` liste "
+          "non vide, cellules directes divisibles par `columns`.")
+    print("Règle G2 : toute grille DYNAMIQUE garantit une cardinalité visible "
+          "divisible par `columns` par un motif statiquement démontrable "
+          "(A: columns==1 ; B: fixes + paires complémentaires sur une même "
+          "entité) ; sinon non conforme.\n")
 
     # Auto-test AVANT le scan réel.
     st = selftest()
@@ -597,12 +819,13 @@ def main() -> int:
         for f in st:
             print(f"  - {f}")
         return 2
-    print("✔ auto-test conforme (20 cas : statiques / dynamiques / non analysables "
-          "/ includes / imbrication / hors périmètre)")
+    print("✔ auto-test conforme (24 cas : statiques / dynamiques G2 motifs A·B / "
+          "non analysables / includes / imbrication / hors périmètre)")
 
     r = analyze(LOVELACE)
 
     static_violations = r.static - r.static_conform
+    dynamic_violations = r.dynamic - r.dynamic_conform
 
     if r.diagnostics:
         print(f"\n❌ DIAGNOSTICS ({len(r.diagnostics)}) :")
@@ -613,18 +836,18 @@ def main() -> int:
     print(f"  fichiers YAML analysés          : {r.files}")
     print(f"  grilles totales                 : {r.grids_total}")
     print(f"  grilles statiques               : {r.static}")
-    print(f"  grilles dynamiques (exclues G1) : {r.dynamic}")
+    print(f"    dont conformes G1             : {r.static_conform}")
+    print(f"    dont violations G1            : {static_violations}")
+    print(f"  grilles dynamiques              : {r.dynamic}")
+    print(f"    dont conformes G2             : {r.dynamic_conform}")
+    print(f"    dont violations G2            : {dynamic_violations}")
     print(f"  grilles non analysables         : {r.unanalysable}")
-    print(f"  grilles statiques conformes     : {r.static_conform}")
-    print(f"  violations G1 (grilles)         : {static_violations}")
-    print("\n  Note : R-LL-GRID-2 (géométrie dynamique) N'EST PAS implémenté dans "
-          "ce lot ;\n         les grilles dynamiques ne sont PAS déclarées conformes à G2.")
 
-    if static_violations or r.unanalysable:
-        print("\n❌ CONTRAT LOVELACE_GRID (R-LL-GRID-1) NON CONFORME")
+    if static_violations or dynamic_violations or r.unanalysable:
+        print("\n❌ CONTRAT LOVELACE_GRID (R-LL-GRID-1 / R-LL-GRID-2) NON CONFORME")
         return 1
 
-    print("\n✅ CONTRAT LOVELACE_GRID (R-LL-GRID-1) CONFORME")
+    print("\n✅ CONTRAT LOVELACE_GRID (R-LL-GRID-1 / R-LL-GRID-2) CONFORME")
     return 0
 
 
