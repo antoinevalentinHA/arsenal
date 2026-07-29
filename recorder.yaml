@@ -295,33 +295,15 @@ include:
     - binary_sensor.palmares_pluie_journalier_anomalie
     - sensor.pression_chambre_enfants
 
-    # =====================================================
-    # ==== 🌧️ PLUIE — ÉPISODE (INSTRUMENTATION TEMPORAIRE C16) ====
-    # =====================================================
-    # RECORDER — Population B
-    # Rôle      : état d'épisode de pluie `input_boolean.pluie_en_cours`
-    #             (ouvert par maj_sensor/on, fermé par maj_sensor/off ; chantier C16).
-    # Utilité   : PROUVER l'ouverture et la fermeture NOMINALES d'un épisode aux
-    #             côtés de l'évidence déjà historisée
-    #             (binary_sensor.pluie_evidence_active) — corréler évidence ↔ épisode
-    #             pour valider le correctif de l'état collant. Sans cet historique,
-    #             l'état d'épisode est invisible après coup.
-    # Logbook   : acceptable — binaire, quelques transitions/jour en pluie, nul sinon.
-    # Cardinalité : binaire (on/off) — finie.
-    # Fréquence : << 5/h — un épisode réel = 1 ouverture + 1 fermeture ; temps sec = 0.
-    # NB : lecture seule ; aucune logique métier ne lit cet HISTORIQUE recorder
-    #      (les automations lisent l'état LIVE — invariant d'indépendance préservé).
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
-    # Chantier   : C16 — état collant `pluie_en_cours` (plan d'action transverse mergé)
-    # Objet      : historisation temporaire pour prouver l'ouverture/fermeture nominale
-    #              d'épisode (occurrence naturelle : prochaine pluie réelle).
-    # Ajouté     : 2026-07-13 — activation effective au redémarrage Home Assistant
-    # Réévaluer  : 2026-09-11 (T0 + 60 j) — RÉÉVALUATION propriétaire OBLIGATOIRE,
-    #              PAS une suppression automatique : maintien motivé · retrait ·
-    #              modification de la stratégie de preuve. Aucun maintien silencieux au-delà.
-    # Retrait    : dès preuve acquise ET chantier C16 clôturé ; maintien tant que
-    #              C16 est actif ET l'instrumentation nécessaire.
-    - input_boolean.pluie_en_cours
+    # ---- (retiré 2026-07-29) Microscope C16 « épisode de pluie » ----
+    # input_boolean.pluie_en_cours : historisation temporaire retirée. Critère de
+    # retrait du bloc satisfait — « dès preuve acquise ET chantier C16 clôturé » :
+    # C16 CLOS le 2026-07-29 (preuve terrain hors ligne, backup 2026-07-29 —
+    # fermeture symétrique 8/8 à 0 s sur 8 épisodes réels, état collant non
+    # reproduit ; cf. registre ⑤ et analyses/c16_episodes_terrain_20260729).
+    # L'entité reste VIVE (lue en LIVE par les automations pluie) ; seule son
+    # historisation recorder est retirée. L'évidence consolidée
+    # binary_sensor.pluie_evidence_active reste historisée (production pluie).
 
     # =====================================================
     # ==== 🛰️ RAIN BIRD — PONT / QUALIFICATION P2 & P6 ====
