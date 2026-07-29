@@ -4,7 +4,7 @@
 |---|---|
 | **Type** | Cadrage / arbitrage de chantier (conception préalable, **sans implémentation**) |
 | **Domaine** | Arrosage — durée d'arrosage (combien de temps), modulation par critères physiques |
-| **Statut** | **Ouvert en cible doctrinale — NON lançable en runtime à ce stade.** Aucun lot runtime actionnable. Aucune décision finale, aucun seuil, aucun automatisme. |
+| **Statut** | **Réveillé (2026-07-29) — P1·P2·P3 réunis ⇒ ouverture de P4 (rédaction du contrat « modulation de durée »).** Toujours **aucun runtime** : contrat avant runtime, sans exception (§5·§7). Aucune décision finale, aucun seuil, aucun automatisme tant que le contrat P4 n'est pas figé. |
 | **Version** | 0.1 (cadrage) |
 | **Date** | 2026-06-30 |
 | **Dépôt** | `antoinevalentinHA/arsenal` @ HEAD `f011851` |
@@ -133,9 +133,15 @@ Le chantier ne devient **lançable en runtime** qu'une fois **tous** réunis :
 - **P1 — Validation terrain de C10.** Arrosage effectif confirmé et comportement
   sur la durée observé sur plusieurs cycles
   ([`plan_action_arrosage.md`](../../03_plans_action/arrosage/plan_action_arrosage.md) §8).
-- **P2 — Capteurs sol fiabilisés.** Observation suffisante du réservoir sol pour
-  faire confiance au signal de déficit, avec **courbes de tarissement** collectées
-  ([`plan_observation_hydrique_v0.md`](plan_observation_hydrique_v0.md)).
+- **P2 — Capteurs sol fiabilisés. ✅ FAIT (2026-07-29)** — parc passé à **6 sondes**
+  (mi-juillet) ; ré-observation T07 sur base fraîche : séchage réel **−3,3 pt/jour**
+  sur jours secs, **VPD-dépendant** (binning horaire monotone 1→3,5 kPa) et
+  **au-dessus du bruit à l'échelle journalière** (|moy|/σ = 3,44). Le critère de
+  bascule **(b) est recalé à l'échelle journalière** (arbitrage propriétaire, le
+  plan v0 le laissait ouvert), échelle pertinente pour une durée d'arrosage.
+  Réserves non bloquantes : fenêtre pleinement 6 sondes (30 j purs) ~2026-08-20,
+  échantillon haute-VPD mince, médiane seule
+  ([`plan_observation_hydrique_v0.md`](plan_observation_hydrique_v0.md) §3 bis T07).
 - **P3 — Runtime du canal demande climatique livré. ✅ FAIT** — ET₀/VPD/état
   produits en **observation / diagnostic seul** (`12_template_sensors/arrosage/demande_climatique.yaml`),
   Tmin/Tmax (extrêmes jardin) + Tmean (`sensor.temperature_exterieure_moyenne_jour`,

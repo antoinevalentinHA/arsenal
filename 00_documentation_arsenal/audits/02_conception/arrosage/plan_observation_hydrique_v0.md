@@ -278,6 +278,48 @@ disponible, entités hors recorder) ; **juillet chaud seul**. Aucune règle, auc
 seuil, aucun runtime ; **durée de base inchangée** (`input_number.arrosage_
 rainbird_station_1_duree_minutes` non touché).
 
+### 2026-07-29 — ré-observation T07 (parc 6 sondes, +6 j) & bascule du critère (b) à l'échelle journalière
+
+Rejeu du protocole T06 sur la base fraîche `recorder_20260729.db` (backup
+hors ligne 2026-07-29, **lecture seule**), fenêtre **2026-07-14 → 2026-07-29**
+(~15 j en régime 6 sondes, vs ~9 j à T06), avec les **améliorations posées à
+T06** : grille régulière **30 min** (pente 1 h) et évaluation du **critère (b) à
+l'échelle journalière**. Analyse complète : `arsenal-runtime/analyses/c11_p2_reobservation_20260729`.
+
+**Séchage (pts/h) biné par VPD (n=668, hors arrosage/pluie)** : tendance
+**monotone franche** — ~0 sous 1 kPa, puis −0,18 / −0,31 / −0,32 / −0,39 / −0,36
+pt/h sur 1,0→3,5 kPa ; bin **3,5–5 kPa** à −0,71 (|moy|/σ=1,62) mais **mince
+(n=8)**. Plus net qu'à T06.
+
+**Critère (b) à l'échelle journalière** : sur **7 jours sans arrosage ni pluie**,
+Δ médiane midi→midi = **−3,30 pt/jour** (−2,0 à −4,7), σ=0,96 ⇒ **|moy|/σ = 3,44**.
+Le signal **domine largement le bruit** à l'échelle qui gouverne une durée
+d'arrosage. Cela **confirme l'hypothèse de T06** : (b) échouait à l'échelle
+**horaire** parce qu'il confrontait un signal journalier à un bruit horaire
+(oscillation diurne rosée/redistribution). Corrélation Δ-journalier ↔ VPD-moyen
+r=−0,32 (faible, bon signe ; la dépendance VPD est portée par le binning horaire).
+
+**Confrontation aux critères de bascule (§3 bis / T05)** : **(a) amélioré**
+(monotone 1→3,5 kPa) ; **(b) atteint à l'échelle journalière** (échoue encore en
+horaire hors bin mince) ; **(c) confirmé** (7 jours secs soutenus).
+
+**Arbitrage propriétaire pris (2026-07-29) — révision du critère (b).** Le critère
+(b) est **recalé à l'échelle journalière** (seuil |moy|/σ > 1 sur le Δ médiane
+midi→midi des jours secs), échelle jugée pertinente pour une modulation de durée.
+À cette échelle **(b) est satisfait (3,44)**. En conséquence, **P2 est réuni** :
+capteurs sol (parc 6 sondes) jugés suffisamment fiables et courbes de tarissement
+collectées (séchage réel −3,3 pt/j, VPD-dépendant). **P1 (C10 clos) ✅ · P2 ✅ ·
+P3 ✅ ⇒ déclencheur de réveil de C11 atteint** ⇒ ouverture de **P4** (rédaction du
+contrat « modulation de durée », **contrat avant runtime**).
+
+**Réserves non bloquantes** : fenêtre **pleinement** 6 sondes (30 j purs)
+disponible ~2026-08-20 (consolidera (a) et l'échantillon haute-VPD, n=8 > 3,5 kPa
+encore mince) ; **médiane seule** (sondes par point hors recorder) ; **juillet
+chaud seul**. Le scan brut de « phases franches » min/max est **confondu par
+l'oscillation diurne** — métrique retenue = **net journalier** (robuste), pas les
+pentes de segments. Aucune règle, aucun seuil, aucun runtime ; **durée de base
+inchangée**.
+
 ---
 
 ## 4. Critères de sortie vers v0.5 (indicatifs, **non normatifs**)
