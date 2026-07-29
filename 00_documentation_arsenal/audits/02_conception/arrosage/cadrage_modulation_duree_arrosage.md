@@ -106,10 +106,15 @@ opposable tant que le contrat n'est pas écrit.**
    actuel ; la modulation est une **surcouche optionnelle**.
 4. **Retour garanti à durée fixe.** En cas de désactivation, d'indisponibilité ou
    de doute, le système **retombe** sur la durée de base, de façon déterministe.
-5. **Observation à blanc avant branchement.** Le facteur est d'abord **exposé en
-   diagnostic** (calculé, non appliqué) et observé, sur le modèle « recommandation
-   non actionnable » ([`13`](../../../contrats/arrosage/13_observation_hydrique_jardin.md) §6),
-   **avant** toute influence sur la durée réelle.
+5. **Branchement effectif, observabilité et validation runtime.** La durée modulée
+   est **branchée au point unique du Run** ; son **observabilité est disponible dès
+   la mise en service** (durée nominale, facteurs et statuts par canal, durée avant
+   arrondi, durée applicable, motif, durée figée) ; la **validation** se fait **en
+   runtime après branchement** (Run à durée ≠ base, cohérence snapshot / `fin_prevue`
+   / native, retour exact à la base sur abstention ou désactivation). **Aucune phase
+   préalable d'observation à blanc** (durée calculée sans être appliquée) n'est
+   requise. Détail normatif :
+   [`19_modulation_duree.md`](../../../contrats/arrosage/19_modulation_duree.md) §12.
 6. **Données dégradées ⇒ jamais de réduction automatique.** Garde anti-faux-négatif
    ([`04_besoin_hydrique.md`](../../../contrats/arrosage/04_besoin_hydrique.md) §4) :
    une entrée muette ou dégradée **ne raccourcit jamais** l'arrosage par défaut —
