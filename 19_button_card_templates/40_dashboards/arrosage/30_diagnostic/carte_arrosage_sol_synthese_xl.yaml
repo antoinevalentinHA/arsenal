@@ -1,0 +1,97 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Arrosage — Diagnostic hydrique (synthèse XL)
+#
+# 🗂️ COUCHE : diagnostic
+# 🧱 TYPE UI : synthèse XL (état + contexte interprété)
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Répondre en UNE carte XL : « le sol a-t-il besoin d'eau, et avec
+#   quel niveau de confiance ? »
+#     - state  → verdict de BESOIN HYDRIQUE (binary_sensor.arrosage_besoin_sol
+#                attribut `motif`) — PAS la recommandation de modulation.
+#     - label  → contexte réservoir : état, points frais, médiane, min, écart.
+#     - couleur → dérivée du motif de besoin (palette arrosage existante).
+#
+# 📡 SOURCE (lecture seule — le runtime décide, l'UI restitue)
+#   entity: binary_sensor.arrosage_besoin_sol (attributes.motif)
+#   + sensor.jardin_reservoir_sol_etat / _points_frais / _mediane /
+#     _minimum / _heterogeneite (états bruts, lus via states[...])
+#
+# ⚙️ LOGIQUE UI (traduction/assemblage, AUCUN calcul métier)
+#   - Mappe des codes backend en libellés FR ; concatène des états bruts.
+#   - Ne calcule NI besoin, NI seuil, NI médiane ; aucune soustraction.
+#   - unknown/unavailable/attribut absent ⇒ "—" (jamais masqué).
+#   - Distinction assumée : le BESOIN hydrique (ce state) ≠ la
+#     recommandation de MODULATION (bloc Décision) — libellés distincts.
+#
+# 🔗 SATELLITE DE : socle_status_label_xl
+# 🏷️ STATUT : Diagnostic UI — Arsenal (C11 P4, refonte)
+# ==========================================================
+
+carte_arrosage_sol_synthese_xl:
+  template: socle_status_label_xl
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: true
+  name: Diagnostic hydrique
+  icon: mdi:sprout
+
+  triggers_update:
+    - sensor.jardin_reservoir_sol_etat
+    - sensor.jardin_humidite_sol_points_frais
+    - sensor.jardin_humidite_sol_mediane
+    - sensor.jardin_humidite_sol_minimum
+    - sensor.jardin_humidite_sol_heterogeneite
+
+  state_display: >
+    [[[
+      const m = (entity.attributes?.motif || "").toString().trim();
+      const map = {
+        "sous_seuil": "Sol sous seuil",
+        "maintenu_hysteresis": "Besoin maintenu (hystérésis)",
+        "suffisant": "Sol suffisant",
+        "indisponible": "Sol indisponible",
+      };
+      return map[m] || "—";
+    ]]]
+
+  label: >
+    [[[
+      const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+      const val = (id) => { const s = states?.[id]?.state; return UNAV.includes(s) ? null : s; };
+      const etatMap = { complet: "complet", degrade: "dégradé", insuffisant: "insuffisant", indisponible: "indisponible" };
+      const res = val("sensor.jardin_reservoir_sol_etat");
+      const pts = val("sensor.jardin_humidite_sol_points_frais");
+      const med = val("sensor.jardin_humidite_sol_mediane");
+      const mn = val("sensor.jardin_humidite_sol_minimum");
+      const het = val("sensor.jardin_humidite_sol_heterogeneite");
+      const l1 = "réservoir " + (res ? (etatMap[res] || res) : "—")
+               + " · " + (pts !== null ? pts + "/6 points frais" : "points frais —");
+      const l2 = "médiane " + (med !== null ? med + " %" : "—")
+               + " · min " + (mn !== null ? mn + " %" : "—")
+               + " · écart " + (het !== null ? het + " %" : "—");
+      return l1 + "<br>" + l2;
+    ]]]
+
+  styles:
+    card:
+      - height: auto
+      - min-height: 88px
+      - background-color: >
+          [[[
+            const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+            if (UNAV.includes(entity.state)) return "rgba(158, 158, 158, 0.1)";
+            const m = (entity.attributes?.motif || "").toString().trim();
+            if (m === "sous_seuil") return "rgba(255, 152, 0, 0.2)";
+            if (m === "maintenu_hysteresis") return "rgba(255, 235, 59, 0.2)";
+            if (m === "suffisant") return "rgba(76, 175, 80, 0.2)";
+            if (m === "indisponible") return "rgba(158, 158, 158, 0.1)";
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]
+    label:
+      - white-space: normal
+      - line-height: 1.4
