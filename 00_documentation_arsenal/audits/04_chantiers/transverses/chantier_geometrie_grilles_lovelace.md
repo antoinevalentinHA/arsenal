@@ -1,9 +1,9 @@
 # 🛠️ ARSENAL — CHANTIER · CH-LL-CI-2 — Géométrie des grilles Lovelace (R-LL-GRID-1 / R-LL-GRID-2)
 
-> **Statut : OUVERT (2026-07-29).** Norme propriétaire mergée (PR #629) ;
-> **lot G1 livré (PR #631, `R-LL-GRID-1` bloquant)** ; **lot NAS qualifié puis
-> résolu** (pleine largeur — verdict et résolution ci-dessous). Implémentation
-> par lots successifs. Ce document est le
+> **Statut : CLOS (2026-07-29).** Chantier livré de bout en bout : norme mergée
+> (#629) → ouverture (#630) → **G1 bloquant** (#631) → **qualification NAS**
+> (#632) → **résolution NAS** (#633) → **G2 bloquant** (#635). Tous les critères
+> de clôture sont satisfaits (voir plus bas). Ce document est le
 > **propriétaire de suivi** du chantier ; le statut vivant est au
 > [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md).
 
@@ -137,9 +137,24 @@ arbitrage distinct.
 - **Pré-requis** : qualification préalable des deux grilles du NAS maison
   effectuée (lot NAS).
 
-### Lot Clôture
+### Lot Clôture — soldé (2026-07-29)
 
-- Bilan des lots ; passage du registre des chantiers en « clos ».
+Bilan des lots, tous livrés et mergés :
+- **G1** (#631) — complétude structurelle statique bloquante (`R-LL-GRID-1`).
+- **NAS** — qualification (#632, verdict non conforme au regard de `R-LL-GRID-2`,
+  sans présumer de défaut runtime) puis résolution (#633, alertes SMART en
+  `columns: 1` pleine largeur → conforme ; affichage sain inchangé).
+- **G2** (#635) — géométrie dynamique bloquante (`R-LL-GRID-2`) par **extension**
+  du checker : motifs A (`columns==1`) / B (paires complémentaires strictes sur
+  une même entité) ; tout autre cas non conforme par défaut, aucune dérogation.
+
+Garde-fou d'un invariant déjà vrai : scan réel **273 grilles · 270 statiques
+(270 G1-conformes) · 3 dynamiques (3 G2-conformes) · 0 violation**.
+
+Reste optionnel, **hors chantier** : l'observation incidente `drive_2` sous la
+section « Disque 1 » de `nas.yaml` (hors géométrie, arbitrage distinct).
+
+Registre des chantiers passé en « Clos récents ».
 
 ## ✅ Critères de clôture
 
