@@ -1,8 +1,9 @@
 # 🛠️ ARSENAL — CHANTIER · CH-LL-CI-2 — Géométrie des grilles Lovelace (R-LL-GRID-1 / R-LL-GRID-2)
 
 > **Statut : OUVERT (2026-07-29).** Norme propriétaire mergée (PR #629) ;
-> **lot G1 livré (PR #631, `R-LL-GRID-1` bloquant)** ; **lot NAS qualifié**
-> (verdict ci-dessous). Implémentation par lots successifs. Ce document est le
+> **lot G1 livré (PR #631, `R-LL-GRID-1` bloquant)** ; **lot NAS qualifié puis
+> résolu** (pleine largeur — verdict et résolution ci-dessous). Implémentation
+> par lots successifs. Ce document est le
 > **propriétaire de suivi** du chantier ; le statut vivant est au
 > [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md).
 
@@ -115,8 +116,12 @@ Aucune activation bloquante de G2 avant qualification de ces cas.
   démontrée**, indépendante de l'état runtime des disques ; **aucun défaut runtime
   présumé**.
 
-Conséquence : correction éventuelle **différée à un lot dédié**, sur arbitrage, et
-**avant** activation bloquante de G2. Aucune modification du YAML NAS à ce stade.
+**Résolution (2026-07-29).** Sur arbitrage : les deux grilles passent en
+`columns: 1` — alertes SMART **en pleine largeur** (`18_lovelace/dashboards/systeme/nas.yaml`).
+Toute cardinalité admise (0, 1, 2) devient divisible par `columns` (=1) →
+**conforme `R-LL-GRID-2`**, statiquement démontrable. L'affichage à l'état sain
+(0 alerte) est **inchangé** ; seul le cas « 1 alerte » passe de demi- à pleine
+largeur. Correction réalisée **avant** toute activation bloquante de G2.
 
 **Observation incidente** (hors géométrie, hors `R-LL-GRID-2`, ni présumée défaut
 ni corrigée) : la grille d'alertes de la section « Disque 1 » (`:187`) référence

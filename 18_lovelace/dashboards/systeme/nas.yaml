@@ -186,7 +186,7 @@ views:
 
               - type: grid
                 square: false
-                columns: 2
+                columns: 1
                 cards:
                   - type: conditional
                     conditions:
@@ -245,7 +245,7 @@ views:
 
               - type: grid
                 square: false
-                columns: 2
+                columns: 1
                 cards:
                   - type: conditional
                     conditions:
