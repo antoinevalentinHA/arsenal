@@ -197,6 +197,94 @@ UI Arsenal
 
 ---
 
+🟨 GÉOMÉTRIE DES GRILLES LOCALES — R-LL-GRID-1 / R-LL-GRID-2
+
+Portée
+Ces règles s'appliquent à toute carte `type: grid` de la couche Lovelace
+Arsenal, qu'elle soit déclarée dans un dashboard ou dans un include de
+`18_lovelace/includes/`. Elles ne s'appliquent qu'aux cartes déclarant
+`type: grid`.
+
+Hors périmètre (modèles distincts, non régis par ces règles) :
+- `custom:grid-layout` et les géométries CSS `grid-template-columns` ;
+- `custom:auto-entities` (nombre d'éléments déterminé au runtime) ;
+- `horizontal-stack` ;
+- toute structure ne déclarant pas `type: grid`.
+Ces structures pourront faire l'objet de règles propres si un besoin est établi.
+
+Cellule directe
+La géométrie d'une grille se compte en CELLULES DIRECTES :
+- chaque entrée directe de `cards:` compte pour exactement une cellule ;
+- une stack, une grille imbriquée ou une carte complexe reste UNE seule
+  cellule de la grille parente ;
+- un `!include` en entrée directe compte pour une cellule à condition qu'il
+  résolve vers une carte-racine unique ;
+- le contenu interne d'une cellule n'affecte jamais le nombre de cellules de
+  la grille parente.
+
+────────────────────────────────────────────────────────
+R-LL-GRID-1 — Grille STATIQUE : complétude structurelle (BLOQUANT)
+────────────────────────────────────────────────────────
+Une grille est STATIQUE lorsque chacune de ses cellules directes conserve sa
+présence dans la géométrie (aucune cellule directe susceptible de disparaître
+au runtime).
+Toute grille statique DOIT respecter les quatre invariants :
+1. `columns` est déclaré explicitement ;
+2. `columns` est un entier strictement positif ;
+3. `cards` est une liste non vide ;
+4. le nombre de cellules directes est divisible par `columns`.
+Les grilles à `columns: 1` restent dans le périmètre : leur divisibilité est
+triviale, mais les invariants 1 à 3 leur demeurent opposables.
+
+────────────────────────────────────────────────────────
+R-LL-GRID-2 — Grille DYNAMIQUE : maîtrise de la géométrie (BLOQUANT)
+────────────────────────────────────────────────────────
+Une grille est DYNAMIQUE lorsqu'elle contient directement au moins une carte
+susceptible de disparaître de la géométrie, notamment `type: conditional`.
+
+Exigence de garantie
+Une grille dynamique DOIT garantir, pour TOUTES les combinaisons d'états
+admises, un nombre de cellules visibles divisible par `columns` (aucune rangée
+partiellement remplie).
+Les cardinalités admises sont donc `0`, `columns`, `2 × columns`, etc. Une
+cardinalité nulle ne produit aucune rangée incomplète : elle n'est pas, à elle
+seule, visée par la présente règle. L'éventuelle interdiction d'une grille
+runtime vide constitue un invariant UX distinct, hors du présent périmètre.
+
+Démontrabilité statique
+Cette garantie DOIT être statiquement démontrable. Le contrôle ne reconnaît
+que des motifs dont la complétude est prouvable sans exécution : il ne simule
+jamais les combinaisons d'états Home Assistant.
+Lorsque la garantie n'est PAS statiquement démontrable, la grille est NON
+CONFORME. Elle doit alors être restructurée en une forme dont la complétude
+est démontrable, ou la carte fautive retirée. Il n'existe aucun mécanisme
+déclaratif de dérogation ni de qualification manuelle.
+
+Deux mises en garde (ni l'une ni l'autre ne vaut autorisation générale) :
+- la divisibilité structurelle du YAML NE PROUVE PAS la complétude visuelle :
+  une grille structurellement divisible dont les cellules conditionnelles
+  dépendent de conditions INDÉPENDANTES peut afficher une rangée incomplète
+  (p. ex. une seule cellule visible dans une grille à 2 colonnes) — elle est
+  non conforme ;
+- un nombre de cellules structurellement NON divisible peut produire une
+  géométrie constante et complète lorsque des cellules conditionnelles sont
+  régies par des conditions COMPLÉMENTAIRES sur une même entité (partition
+  exhaustive et mutuellement exclusive) : ce motif est un candidat à une
+  reconnaissance G2 précise, non une dispense.
+
+Un succès R-LL-GRID-1 ne constitue jamais une preuve R-LL-GRID-2.
+
+Responsabilité de la CI
+- R-LL-GRID-1 (grilles statiques) : contrôle bloquant, déterministe, statique.
+- R-LL-GRID-2 (grilles dynamiques) : contrôle bloquant, limité aux motifs dont
+  la complétude est statiquement démontrable ; tout autre motif dynamique est
+  non conforme (à restructurer ou refuser).
+- Aucune simulation générale des états Home Assistant.
+- Aucun mécanisme de dérogation déclarative ni de qualification manuelle.
+- Un succès R-LL-GRID-1 ne prouve jamais R-LL-GRID-2.
+
+---
+
 📐 ALIGNEMENT VERTICAL — RÈGLE FONDAMENTALE
 
 But :
