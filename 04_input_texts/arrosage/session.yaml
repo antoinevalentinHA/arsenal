@@ -49,3 +49,37 @@ arrosage_session_verdict:
   # PAS de clé `initial` (doctrine restauration_etat_helpers) : premier
   # boot = unknown, traité comme « aucune session tracée » par les templates.
   icon: mdi:clipboard-text-clock
+
+# ----------------------------------------------------------
+# 🎛️ MOTIF DE MODULATION DE DURÉE (C11 P4, L2)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker le MOTIF de modulation FIGÉ (snapshot) au démarrage de la
+#   session : origine de la durée appliquée par le Run (décision modulée,
+#   retour à la base, ou anomalie de décision). Distinct de
+#   `arrosage_session_verdict` (cycle de vie) : NE PAS le détourner.
+#
+# 🧮 VOCABULAIRE ÉCRIT PAR LE RUN (codes internes, writer UNIQUE = Run)
+#   Décision modulée valide (motif de la décision, contrat 19) :
+#   - `reduction_sol` · `neutre` · `abstention_sol` · `abstention_climat`
+#     · `abstention_double` · `modulation_desactivee`
+#     · `controle_modulation_indisponible`
+#   Défensifs (posés par le Run) :
+#   - `decision_motif_indisponible` : décision valide mais motif absent/invalide ;
+#   - `decision_indisponible`       : décision unknown/unavailable, base valide ;
+#   - `decision_invalide`           : décision numérique mais non entière / hors
+#                                     [1,60], base valide ;
+#   - `base_invalide` / `base_indisponible` : base inexploitable (Run REFUSÉ,
+#                                     aucune session ouverte — trace du refus).
+#
+# 🚫 INTERDITS
+#   - Confondre avec `arrosage_session_verdict` (writers/vocabulaire distincts)
+#   - Lire ce helper dans la décision V1 ou dans le flux du Run (observabilité pure)
+#
+# 🏷️ STATUT
+#   Observabilité session — modulation de durée (C11 P4, L2)
+arrosage_session_modulation_motif:
+  name: "Arrosage — Session motif modulation"
+  # PAS de clé `initial` (doctrine restauration_etat_helpers) : premier boot
+  # = unknown, traité comme « aucune session tracée ». Writer unique = Run.
+  icon: mdi:tune-variant

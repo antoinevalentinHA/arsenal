@@ -480,6 +480,44 @@ include:
     - input_text.arrosage_session_verdict
 
     # =====================================================
+    # ==== 💧 ARROSAGE — MODULATION DE DURÉE (INSTRUMENTATION TEMPORAIRE C11 P4) ====
+    # =====================================================
+    # RECORDER — Population B
+    # Rôle      : décision de durée modulée (contrat 19), son interrupteur
+    #             d'activation et le motif FIGÉ de session, pour la validation
+    #             runtime du branchement L2 (C11 P4).
+    # Utilité   : PROUVER en terrain (a) une réduction réelle (durée applicable
+    #             < base au déclenchement), (b) le retour exact à la base quand
+    #             la modulation est désactivée/indisponible, (c) la cohérence
+    #             décision ↔ durée figée de session, (d) qu'une évolution des
+    #             recommandations pendant un Run ne modifie pas la trace figée.
+    # Déjà historisés (NON redupliqués) : durée figée
+    #             (input_number.arrosage_session_duree_minutes), fin prévue et
+    #             base (input_number.arrosage_rainbird_station_1_duree_minutes).
+    # Attributs : le recorder conserve l'ÉTAT ET les ATTRIBUTS (motif_global,
+    #             sol_*/climat_*, duree_*/facteur_*) de la décision dans les
+    #             états bruts (purge 30 j), interrogeables hors ligne pour la
+    #             preuve L4 — même patron que arrosage_besoin_sol/intention +
+    #             `motif`. Pas de LTS (état non numérique measurement) : portée 30 j.
+    # Non ajoutés : sensor.arrosage_modulation_reco_sol / reco_climat — leurs
+    #             statuts/facteurs/motifs sont déjà exposés en attributs de la
+    #             décision (historisation séparée redondante).
+    # Logbook   : acceptable — décision à quelques MAJ/h (médiane/base/contrôle) ;
+    #             booléen et motif de session à changements rares.
+    # NB : lecture seule ; aucune logique métier ne lit cet HISTORIQUE recorder.
+    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # Chantier   : C11 P4 — modulation bornée de durée, validation runtime du branchement (L2/L4)
+    # Ajouté     : 2026-07-29 (L3)
+    # Réévaluer  : à la validation runtime (L4) — RÉÉVALUATION propriétaire
+    #              OBLIGATOIRE : maintien motivé · retrait · modification de la
+    #              stratégie de preuve. Aucun maintien silencieux au-delà.
+    # Retrait    : dès preuves runtime acquises (réduction, retour base, cohérence,
+    #              non-altération) ET P4 clôturé.
+    - input_boolean.arrosage_modulation_duree_actif
+    - sensor.arrosage_modulation_duree_applicable
+    - input_text.arrosage_session_modulation_motif
+
+    # =====================================================
     # ==== 🎛️ MODES DE LA MAISON ====
     # =====================================================
     - input_select.mode_maison

@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN
+#     Arrosage — Modulation de durée : interrupteur d'activation (C11 P4)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Interrupteur DURABLE d'activation de la modulation de durée
+#   d'arrosage (contrat 19_modulation_duree.md). Sur 'on', la durée
+#   applicable modulée s'applique ; sur 'off', RETOUR EXACT à la durée
+#   nominale opérateur (input_number.arrosage_rainbird_station_1_duree_minutes)
+#   SANS désactiver l'arrosage automatique (distinct de l'interrupteur
+#   maître arrosage_automatique_actif). Réglage opérateur, pas un
+#   drapeau de recette.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage d'état binaire uniquement
+#   - Aucun calcul, aucune logique de décision locale
+#   - Aucun comportement autonome, aucune action directe
+#   - Consommé (lecture LIVE) par la décision backend
+#     sensor.arrosage_modulation_duree_applicable ; jamais écrit par elle.
+#
+# 🔖 NATURE
+#   Paramètre métier | Intention persistante d'activation (override opérateur)
+#
+# 🧱 RESTAURATION D'ÉTAT (doctrine restauration_etat_helpers.md, R02)
+#   PAS de clé `initial` : cet interrupteur porte une INTENTION PERSISTANTE
+#   opérateur qui DOIT survivre au redémarrage. `initial` est INTERDIT
+#   (INV-INIT, R02). Sans `initial`, HA restaure la dernière valeur réglée.
+#   Repli de lecture côté consommateur (R04) : la décision backend teste
+#   `is_state(..., 'on')` — un état non 'on' (dont unknown au tout premier
+#   démarrage) ⇒ modulation neutre = durée de base (fail-safe).
+#
+# 🚫 INTERDITS
+#   - Confondre état et décision
+#   - Déclencher directement un arrosage / couper l'arrosage automatique
+#   - En faire un drapeau de validation / qualification terrain
+#
+# 🏷️ STATUT
+#   Socle arrosage — modulation de durée (C11 P4, L1)
+# ==========================================================
+
+arrosage_modulation_duree_actif:
+  name: "Arrosage modulation durée — Activation"
+  icon: mdi:tune-variant
