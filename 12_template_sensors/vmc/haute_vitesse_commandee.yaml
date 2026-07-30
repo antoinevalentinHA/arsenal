@@ -15,7 +15,9 @@
 #   lecture de l'état physique. Fonction pure de :
 #     input_select.vmc_titulaire_autorite,
 #     input_select.vmc_consigne_manuelle,
-#     binary_sensor.vmc_haute_vitesse_requise.
+#     binary_sensor.vmc_haute_vitesse_requise,
+#     sensor.atmo_france_pm10_bordeaux,      (veto §17)
+#     sensor.atmo_france_pm25_bordeaux.      (veto §17)
 #
 # 🚫 ANTI-FALLBACK STRICT (§16.2) — availability
 #   La décision exécutoire n'est VALIDE que si le titulaire porte
@@ -27,12 +29,17 @@
 #   AUCUNE valeur n'est substituée. L'application (PR C) s'abstient
 #   sur une décision exécutoire indisponible.
 #
-# 🧊 PR B (échafaudage) — INERTE
-#   Aucun consommateur d'exécution : gestion_auto reste inchangé
-#   et consomme encore binary_sensor.vmc_haute_vitesse_requise.
-#   En régime automatique (bootstrap), la présente décision est
-#   ÉQUIVALENTE à la décision automatique. La bascule (application
-#   + conformité) est le couple L4+L6 de la PR C.
+# 🌫️ VETO SANITAIRE D'IMPORT — POLLUTION (§17, contrat v2.7)
+#   En régime AUTOMATIQUE uniquement, la haute vitesse commandée
+#   vaut « requise ET NON veto ». Le veto est actif si l'indice
+#   PM10 OU PM2.5 COURANT ∈ {4,5,6,7} (« Mauvais » ou pire ; 7
+#   Évènement inclus). Régime MANUEL : consigne souveraine, le
+#   veto ne s'exerce pas (§17.6). Donnée non exploitable (`0`
+#   « Indisponible »/valeur forcée en cas d'échec, unknown,
+#   unavailable, non numérique) → AUCUN veto déduit (§17.4) ;
+#   `availability` INCHANGÉE. Voies (§5,§6) et vmc_haute_vitesse_requise
+#   (§3.1) NON modifiées : seul le régime COMMANDÉ est suspendu.
+#   Entités J+1 et indice global : HORS décision (§17.2).
 #
 # ⚠️ Exposition de la cause d'indisponibilité (§16.2)
 #   Quand cette entité est unavailable, HA masque ses attributs :
@@ -58,11 +65,16 @@
 
       # ON = haute, OFF = basse. Les entrées sont garanties valides
       # par l'availability ci-dessus (pas de valeur inventée).
+      # Régime automatique : requise ET NON veto pollution (§17).
+      # Régime manuel : consigne souveraine, veto non exercé (§17.6).
       state: >
         {% if is_state('input_select.vmc_titulaire_autorite', 'manuel') %}
           {{ is_state('input_select.vmc_consigne_manuelle', 'haute') }}
         {% else %}
-          {{ is_state('binary_sensor.vmc_haute_vitesse_requise', 'on') }}
+          {% set pm10 = states('sensor.atmo_france_pm10_bordeaux') | int(0) %}
+          {% set pm25 = states('sensor.atmo_france_pm25_bordeaux') | int(0) %}
+          {% set veto = pm10 in [4, 5, 6, 7] or pm25 in [4, 5, 6, 7] %}
+          {{ is_state('binary_sensor.vmc_haute_vitesse_requise', 'on') and not veto }}
         {% endif %}
 
       icon: >
@@ -94,3 +106,38 @@
           {% else %}
             indisponible
           {% endif %}
+
+        # §17.7 — état du veto pollution, TROIS états distincts.
+        # Non exploitable N'EST PAS « inactif » (§17.4) : c'est
+        # « indisponible », aucun veto déduit.
+        veto_pollution: >
+          {% set pm10 = states('sensor.atmo_france_pm10_bordeaux') | int(0) %}
+          {% set pm25 = states('sensor.atmo_france_pm25_bordeaux') | int(0) %}
+          {% set pm10_ok = pm10 >= 1 and pm10 <= 7 %}
+          {% set pm25_ok = pm25 >= 1 and pm25 <= 7 %}
+          {% if pm10 in [4, 5, 6, 7] or pm25 in [4, 5, 6, 7] %}
+            actif
+          {% elif not pm10_ok and not pm25_ok %}
+            indisponible
+          {% else %}
+            inactif
+          {% endif %}
+
+        # §17.7 — valeurs PM COURANTES utilisées (état brut, jamais un
+        # repli numérique). J+1 et indice global : hors décision (§17.2).
+        pm10_indice: >
+          {{ states('sensor.atmo_france_pm10_bordeaux') }}
+
+        pm25_indice: >
+          {{ states('sensor.atmo_france_pm25_bordeaux') }}
+
+        # §17.7 — distinction « requise mais suspendue par veto » vs
+        # « non requise ». Vrai uniquement en automatique, requise ON et
+        # veto actif (en manuel le veto ne s'exerce pas, §17.6).
+        requise_mais_vetoee: >
+          {% set pm10 = states('sensor.atmo_france_pm10_bordeaux') | int(0) %}
+          {% set pm25 = states('sensor.atmo_france_pm25_bordeaux') | int(0) %}
+          {% set veto = pm10 in [4, 5, 6, 7] or pm25 in [4, 5, 6, 7] %}
+          {{ is_state('input_select.vmc_titulaire_autorite', 'automatique')
+             and is_state('binary_sensor.vmc_haute_vitesse_requise', 'on')
+             and veto }}
