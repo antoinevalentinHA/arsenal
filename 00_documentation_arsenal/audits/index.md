@@ -107,6 +107,7 @@
 
 ### Perception externe
 - [perception_externe/rapport_perception_externe_depot.md](01_rapports/perception_externe/rapport_perception_externe_depot.md)
+- [perception_externe/analyse_impact_integration_atmofrance.md](01_rapports/perception_externe/analyse_impact_integration_atmofrance.md)  _(analyse d'impact **lecture seule** de l'intégration `atmofrance` — qualité de l'air extérieur, fraîchement installée ; **débranchée de la logique Arsenal** à ce jour. **Aération–recommandation** = terrain d'accueil naturel (inhibiteur « air extérieur dégradé » ; arbitrage sanitaire **pollution ↔ CO₂** à trancher). **VMC** = l'idée « basse vitesse en pic particulaire » **heurte §1.2 (hiérarchie O1/O2/CO₂) + §7.4 (interdiction déguisée)** du contrat v2.6 — non implémentable en l'état ; couverte dans l'immédiat par l'autorité manuelle (§16) et l'affichage contextuel (§10.5). Périphériques : clim (transitif), notifications (domaine propre requis), résilience (`0 = Indisponible` masqué), recorder. **Aucun runtime/contrat/UI/checker modifié**)_
 
 ### Alarme
 - [alarme/audit_alarme_rapport_officiel.md](01_rapports/alarme/audit_alarme_rapport_officiel.md)
