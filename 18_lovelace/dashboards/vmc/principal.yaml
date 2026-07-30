@@ -148,11 +148,41 @@ views:
                 card:
                   type: vertical-stack
                   cards:
-                    # Décision d'Arsenal (en auto, requise == commandée).
+                    # Décision d'Arsenal — l'intention métier (requise). En veto
+                    # pollution (§17), elle peut valoir « Requise » alors que la
+                    # VMC reste basse : la bannière conditionnelle ci-dessous
+                    # l'explique, sans reconstruire aucune logique métier.
                     - type: custom:button-card
                       template: carte_vmc_haute_vitesse_requise
                       entity: binary_sensor.vmc_haute_vitesse_requise
                       name: Décision d'Arsenal
+
+                    # Bannière conditionnelle — visible UNIQUEMENT quand la haute
+                    # vitesse est requise mais suspendue par le veto pollution.
+                    # Lit DIRECTEMENT l'attribut backend requise_mais_vetoee
+                    # (§17.7) ; disparaît (display:none) quand il est faux ou
+                    # indisponible. Hors grille (enfant direct du vertical-stack) :
+                    # R-LL-GRID sans objet. Fond bleu du socle info (🔵 =
+                    # information / ventilation / supervision, 02_palette.md) —
+                    # aucune couleur surchargée : le registre explicatif est celui
+                    # du socle, pas un avertissement sémantique. trim() car HA ne
+                    # strippe pas les valeurs d'attribut rendues.
+                    - type: custom:button-card
+                      template: socle_info_72
+                      entity: binary_sensor.vmc_haute_vitesse_commandee
+                      icon: mdi:weather-hazy
+                      name: Pollution extérieure
+                      state_display: Haute vitesse requise, maintien en basse vitesse
+                      styles:
+                        card:
+                          - display: |
+                              [[[
+                                const a = entity && entity.attributes
+                                  ? entity.attributes.requise_mais_vetoee : undefined;
+                                const v = (a === undefined || a === null)
+                                  ? '' : String(a).trim().toLowerCase();
+                                return v === 'true' ? '' : 'none';
+                              ]]]
 
                     # ==========================================
                     # ⚙️ CONDITIONS ACTUELLES (auto) — le « pourquoi »
