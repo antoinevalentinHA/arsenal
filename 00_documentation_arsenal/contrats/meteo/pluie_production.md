@@ -74,6 +74,14 @@ design** (INV-PROD-2) : aucune n'est réductible à une autre.
 > ([`../arrosage/20_arbitrage_pluie_besoin.md`](../arrosage/20_arbitrage_pluie_besoin.md)),
 > jamais à cette couche.
 
+> **Disponibilité de `proba_pct` (fait runtime établi — 2026-07-30, C41).** Les sources
+> `weather` **natives et gratuites** testées à Bordeaux (Met.no, Open-Meteo,
+> Météo-France) **n'exposent pas** de probabilité horaire par échéance dans
+> `weather.get_forecasts` : `proba_pct` y est **honnêtement `null`** (et
+> `probabilite_max_pct = inconnu`) — conforme à **INV-PROD-7** (présomption ≠ fait ;
+> jamais 0 factice). L'exploitation d'une **crédibilité probabiliste** côté arbitrage
+> est donc **différée** (limite assumée, cf. [`../arrosage/20_arbitrage_pluie_besoin.md`](../arrosage/20_arbitrage_pluie_besoin.md) §17).
+
 ## 6. Distinction métier structurante — chambres ≠ séjour
 
 **Opposable.** Les deux chaînes poursuivent des objectifs **différents** ; elles ne

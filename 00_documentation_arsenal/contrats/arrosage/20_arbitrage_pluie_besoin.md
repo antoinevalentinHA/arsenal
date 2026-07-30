@@ -1,8 +1,8 @@
 # CONTRAT ARSENAL — ARROSAGE
 ## 20 — Arbitrage pluie ↔ besoin hydrique (couche réaction / décision pluie)
 
-**Version contrat :** v0.2 — amendée 2026-07-30 : runtime C41 livré et branché ; valeurs candidates consignées (§17).
-**Statut :** **Normatif — spécification ; runtime livré et branché (C41), en validation runtime (§16).**
+**Version contrat :** v0.3 — amendée 2026-07-30 : clôture C41 ; limitation assumée de la crédibilité future (aucune probabilité horaire native gratuite par échéance) ; `report_pluie_credible` non atteignable en l'état ; piste concordance multi-source **écartée dans le périmètre actuel** (sobriété).
+**Statut :** **Normatif — spécification ; runtime livré et branché (C41) ; chantier CLOS (2026-07-30).** Canaux **observé** et **futur factuel** opérationnels ; `report_pluie_credible` **non atteignable** avec les sources natives gratuites retenues (crédibilité future différée — §16/§17).
 Le **verdict riche** est produit par `sensor.arrosage_pluie_arbitrage` (writer unique) ;
 `binary_sensor.arrosage_suspension_pluie` en est la **projection dérivée** (identité
 conservée, consommée par la décision `17` inchangée). Les **valeurs** (seuils,
@@ -285,22 +285,35 @@ norme** et **ne fige aucune valeur**.)*
 - ❌ tout **runtime / UI / helper / automation / script / template / checker /
   `entity_id`** dans ce lot documentaire.
 
-## 16. Critères de validation
+## 16. Validation runtime — bilan à la clôture (C41, 2026-07-30)
 
-La cible est un **arbitrage réellement branché** (pas d'observation à blanc
-prolongée), validé **en runtime** après mise en service. La validation devra couvrir
-au minimum :
-- les **six verdicts** atteignables sur des situations réelles ou reconstituées,
-  chacun **explicable** par ses facteurs ;
-- la **projection booléenne** conforme (§10 : serrée uniquement sur
-  `attente_infiltration` / `report_pluie_credible` ; relâchée sinon, y compris
-  `pluie_indecidable`) ;
-- la **direction de défaillance** (§11) : donnée pluie manquante ⇒ `pluie_indecidable`,
-  projection relâchée, aucun ordre d'arroser, aucune abstention générale ;
-- le **caractère borné et stable** du report (pas d'oscillation sur prévision
-  changeante) ;
-- l'**absence de régression** de `17` (aucune autre garde modifiée) ;
+La validation runtime est **partielle et honnêtement bornée** ; elle **ne prétend
+pas** que les six verdicts ont été observés ni que `report_pluie_credible` est validé.
+
+**Validé en runtime :**
+- **canal observé** opérationnel (apport monotone `pluie_total_local` consommé) ;
+- **canal futur factuel** opérationnel : échéances + quantités Met.no **réellement
+  consommées** par le writer, événements construits ;
+- **deux verdicts observés** : `aucune_suspension` et `pluie_future_insuffisante`
+  (ex. événement futur 1,7 mm < 5 mm ⇒ `pluie_future_insuffisante`,
+  `nb_evenements_futurs = 1`, `nb_evenements_qualifiants = 0`, `prev_disponible = true`,
+  `donnees_manquantes = aucune`, projection dérivée `off`) ;
+- **projection booléenne** conforme (§10 : serrée uniquement sur
+  `attente_infiltration` / `report_pluie_credible` ; relâchée sinon) ;
+- **direction de défaillance** sûre (§11) : crédibilité/probabilité absente ⇒ **aucune
+  suspension fabriquée**, `unknown`/`unavailable` **jamais** lus comme 0 ;
+- **absence de bug de matérialisation** : attribut `echeances` publié après le premier
+  déclenchement post-redémarrage, `datetime` sérialisé en chaîne ISO (l'hypothèse d'un
+  défaut de sérialisation a été **infirmée** : `derniere_maj`/`last_updated` concordants) ;
+- **absence de régression** de `17` (aucune autre garde modifiée) ;
 - le **diagnostic** (§12) exposant verdict + facteurs + qualité + données manquantes.
+
+**Non validé (limite assumée, §17) :**
+- `report_pluie_credible` : **non atteignable** avec les sources natives gratuites
+  retenues (aucune probabilité horaire par échéance) ⇒ verdict **non observé** ;
+- `attente_infiltration`, `besoin_etabli_prioritaire`, `pluie_indecidable` : **non
+  encore observés** (dépendants de conditions réelles) — atteignables selon l'oracle
+  (31 cas), **non prouvés** en runtime.
 
 ## 17. Limites & preuves manquantes
 
@@ -316,6 +329,23 @@ au minimum :
 - La **qualification d'un niveau** de besoin (au-delà du seuil binaire actuel) et
   l'exploitation de la **probabilité** / du **délai avant pluie** sont **à établir**
   (cadrage).
+- **Limite assumée — crédibilité future indisponible (clôture C41).** À la clôture,
+  aucune source `weather` **native, gratuite et recevable** testée à Bordeaux (Met.no,
+  Open-Meteo, Météo-France) n'expose, via `weather.get_forecasts`, de **probabilité
+  horaire attachée à chaque échéance** ; `proba_pct` est honnêtement `null` et
+  `probabilite_max_pct = inconnu` (cf. [`../meteo/pluie_production.md`](../meteo/pluie_production.md)
+  INV-PROD-7). Le scalaire Météo-France `rain_chance` n'a **pas** de fenêtre établie
+  comme alignable aux échéances Met.no ; le nowcast `1_hour_forecast` (~1 h) **ne
+  qualifie pas** un événement à 12–24 h ; AccuWeather est écarté (dépendance payante).
+  Le canal futur reste exploitable pour **l'existence et la quantité** d'une pluie
+  annoncée, mais **ne peut établir la crédibilité** requise par `report_pluie_credible`
+  (§8–9). Cette limite **ne provoque aucune suspension** et **ne transforme aucune
+  donnée inconnue en valeur favorable**. La piste d'une **concordance multi-source**
+  est **écartée dans le périmètre actuel** (complexité disproportionnée au besoin —
+  sobriété) ; elle n'est **ni impossible en logique, ni définitivement interdite**.
+  **Évolution future possible** *si* une source native, gratuite et réellement
+  probabiliste (ou une doctrine de concordance prouvée) devient disponible **sans
+  complexité disproportionnée** — **sans échéance ni chantier latent**.
 - Ce contrat **spécifie** l'état cible ; il **ne préjuge pas** de la forme runtime
   exacte (template, attributs, helper) ni des `entity_id`, décidés à l'implémentation
   (convention de nommage conceptuel du domaine, [`README.md`](README.md)).
