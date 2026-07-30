@@ -2,7 +2,7 @@
 # 📛 Domaine : Ventilation mécanique contrôlée (VMC)
 # 🧠 Nature : Pilotage automatique contractuel
 #
-# Version : v2.7
+# Version : v2.8
 # Statut  : Cible contractuelle validée — implémentation à mettre en conformité
 #
 # Évolution v2.5 : introduction de l'autorité de domaine (régimes automatique /
@@ -19,6 +19,12 @@
 # et `binary_sensor.vmc_haute_vitesse_requise` (§3.1) restent inchangées.
 # Documentaire, sans runtime. Arbitrage propriétaire :
 # `audits/04_chantiers/vmc/arbitrage_veto_pollution_vmc.md`.
+# Évolution v2.8 : la durée minimale de descente (§8.2, §8.3) est restreinte au
+# SEUL régime automatique. En régime manuel, la descente en basse vitesse est
+# immédiate et inconditionnelle — la consigne de l'utilisateur reprend l'autorité
+# (§16.1) et n'est ni différée ni bloquée par ce paramètre exécutif, au même titre
+# que sa consigne surpasse le veto sanitaire (§17). Voir §8.3, §16.5. Arbitrage
+# propriétaire : `audits/04_chantiers/vmc/arbitrage_descente_immediate_manuel_vmc.md`.
 #
 # Ce document définit EXHAUSTIVEMENT le comportement attendu
 # du système VMC automatisé, indépendamment de son implémentation
@@ -652,6 +658,7 @@ immédiate de l'application.
 
 - Passage en **haute vitesse** : immédiat
 - Retour en **basse vitesse** : différé par une **durée minimale configurable**
+  **en régime automatique** ; **immédiat en régime manuel** (§8.3, §16.5)
 
 ### 8.3 Nature exécutive de la durée minimale
 
@@ -666,7 +673,11 @@ Elle existe pour protéger le matériel et éviter les commutations rapprochées
 - elle ne peut **ni remplacer, ni compenser, ni tenir lieu** de la condition
   métier de libération (§6.4) ;
 - elle n'apparaît pas dans la décision métier ;
-- toute nouvelle demande d'activation annule un retour différé en cours.
+- toute nouvelle demande d'activation annule un retour différé en cours ;
+- elle s'applique au **seul régime automatique** : elle protège la **boucle
+  automatique** contre les commutations rapprochées. En **régime manuel**, la
+  descente est **immédiate** (§16.5, §16.1) — la consigne de l'utilisateur, qui
+  reprend l'autorité, n'est ni différée ni bloquée par ce paramètre.
 
 | Niveau | Question |
 |---|---|
@@ -1389,9 +1400,13 @@ Trois niveaux **distincts**, à ne jamais amalgamer :
   surfacer**, non d'une boucle logicielle.
 - **Durée minimale de descente.** La durée minimale de retour en basse vitesse
   (§8.2, §8.3) est une **règle exécutive** de protection contre les commutations
-  rapprochées ; elle est **commune aux deux régimes** (montée immédiate, descente
-  différée). Elle n'est **pas** la protection impérative — celle-ci est le XOR
-  (niveau a).
+  rapprochées de la **boucle automatique** ; elle s'applique au **seul régime
+  automatique** (montée immédiate, descente différée). En **régime manuel**, la
+  descente est **immédiate et inconditionnelle** : la consigne de l'utilisateur,
+  qui **reprend l'autorité** (§16.1), n'est ni différée ni bloquée par ce
+  paramètre — au même titre que sa consigne **surpasse le veto** sanitaire (§17).
+  Elle n'est **pas** la protection impérative — celle-ci est le XOR (niveau a),
+  **commun aux deux régimes**.
 
 ### 16.6 État de l'implémentation — livrée et conforme
 
