@@ -1,8 +1,8 @@
 # CONTRAT ARSENAL — ARROSAGE
 ## 19 — Modulation bornée de la durée d'arrosage (P4)
 
-**Version contrat :** v0.1
-**Statut :** **Normatif — spécification P4 ; runtime NON livré.** Définit la
+**Version contrat :** v0.2 — amendée 2026‑07‑29 : statut aligné sur le runtime livré et branché ; limite d'accessibilité de la réduction sol en régime automatique explicitée (§5.3).
+**Statut :** **Normatif — spécification P4 ; runtime livré et branché, en validation runtime (§12).** Définit la
 **fonction de modulation** de la **durée** d'un arrosage de la station 1 par des
 **critères physiques** (réservoir sol, demande climatique), sa **composition**,
 ses **invariants de sûreté** et ses **critères de validation**. **Contrat avant
@@ -129,6 +129,18 @@ Sur un signal **fiable et explicitement qualifié**, `facteur_sol` peut :
   **amplement satisfait** (recommandation fiable et qualifiée) ;
 - rester **neutre** (`facteur_sol = 1`) — y compris par **abstention** (§5.1) ;
 - **allonger** la durée (`facteur_sol > 1`) lorsqu'un **déficit fiable** le justifie.
+
+> **Accessibilité de la réduction en régime automatique (limite actuelle).** La
+> décision d'arroser ([`17`](17_decision_v1.md)) exige une **médiane sous le
+> seuil** (`médiane < seuil`) ; la **réduction** sol (`facteur_sol < 1`) exige au
+> contraire une **médiane au moins égale au seuil** (`médiane ≥ seuil`, sol
+> « complet »). Ces conditions étant **normalement disjointes**, la réduction est
+> **en pratique inaccessible** en régime automatique — hors éventuelle **bande
+> d'hystérésis** (besoin maintenu) ou **exécution manuelle** du Run. La modulation
+> réellement exercée en automatique est alors **nominale**, ou **majorée de
+> `1,05`** sous forte demande climatique qualifiée (§5.4). **Aucune sobriété
+> automatique effective n'est démontrée à ce stade** ; l'ouverture éventuelle de
+> la réduction relève d'une **décision propriétaire ultérieure**.
 
 ### 5.4 Rôle du canal climatique (secondaire)
 

@@ -53,10 +53,15 @@ SECTIONS_ATTENDUES = [
 ]
 # Éléments qui DOIVENT avoir disparu du dashboard (simplification)
 DISPARUS_DASH = [
-    "sensor.jardin_humidite_sol_minimum",
-    "sensor.jardin_humidite_sol_heterogeneite",
     "custom:mini-graph-card",   # graphes ET₀ / VPD
     "🔎 Détails",               # section entière supprimée
+]
+# Sentinelles d'observation du sol RÉTABLIES dans le dashboard (point le plus
+# sec + hétérogénéité) — grandeurs backend déjà calculées, restituées en lecture
+# seule (contrat 15 §3, non décisionnelles).
+SENTINELLES_SOL = [
+    "sensor.jardin_humidite_sol_minimum",
+    "sensor.jardin_humidite_sol_heterogeneite",
 ]
 # Frontière anti-doublon Session ↔ Dernier arrosage (champs disjoints)
 SESSION_XL = "carte_arrosage_session_synthese_xl"
@@ -189,13 +194,15 @@ def test_ui(fails):
         if not ok:
             fails.append(f"ui: élément non supprimé {gone}")
 
-    # (h) min/écart retirés aussi du label du XL hydrique
-    sol = (TPL_DIR / "carte_arrosage_sol_synthese_xl.yaml").read_text(encoding="utf-8")
-    for gone in ("sol_minimum", "sol_heterogeneite"):
-        ok = gone not in sol
-        print(f"  {'OK ' if ok else 'KO '}XL hydrique sans {gone}")
+    # (h) le dashboard RESTITUE de nouveau le point le plus sec (minimum) et
+    #     l'hétérogénéité — sentinelles d'observation réintroduites via un
+    #     template KPI existant (backend seul producteur du sens ; aucune
+    #     autorité décisionnelle conférée au minimum, contrat 15 §3).
+    for needed in SENTINELLES_SOL:
+        ok = needed in diag
+        print(f"  {'OK ' if ok else 'KO '}dashboard restitue la sentinelle {needed}")
         if not ok:
-            fails.append(f"ui: XL hydrique référence encore {gone}")
+            fails.append(f"ui: dashboard ne restitue pas la sentinelle {needed}")
 
     # (i) frontière anti-doublon Session ↔ Dernier arrosage (champs disjoints)
     sess = (TPL_DIR / f"{SESSION_XL}.yaml").read_text(encoding="utf-8")
