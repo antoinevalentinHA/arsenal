@@ -1,0 +1,95 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Arrosage — Précipitations : verdict d'arbitrage (synthèse XL)
+#
+# 🗂️ COUCHE : diagnostic
+# 🧱 TYPE UI : synthèse XL (état + contexte interprété)
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Restituer en UNE carte XL le VERDICT d'arbitrage pluie ↔ besoin
+#   (vérité métier, contrat 20 §9) et ses facteurs.
+#     - state  → verdict mappé en libellé FR.
+#     - label  → motif + facteurs (besoin établi, canaux disponibles,
+#                nb événements futurs / qualifiants) + données manquantes.
+#     - couleur → bleu si suspension serrée (attente_infiltration /
+#                report_pluie_credible), gris indispo si indécidable ou état
+#                absent, gris neutre sinon.
+#
+# 📡 SOURCE (lecture seule — le runtime décide, l'UI restitue)
+#   entity: sensor.arrosage_pluie_arbitrage
+#       state                          → un des six verdicts
+#       attributes.motif / besoin_etabli / prev_disponible / obs_disponible
+#       attributes.nb_evenements_futurs / nb_evenements_qualifiants
+#       attributes.donnees_manquantes
+#
+# ⚙️ LOGIQUE UI (traduction/assemblage, AUCUN calcul métier)
+#   - Mappe verdict/motif backend en libellés FR ; concatène des attributs bruts.
+#   - unknown/unavailable/attribut absent ⇒ "—" (jamais masqué).
+#   - Le minimum/booléen n'a aucune autorité : la carte restitue le verdict.
+#
+# 🔗 SATELLITE DE : socle_status_label_xl
+# 🏷️ STATUT : Diagnostic UI — Arsenal (C41, arbitrage pluie)
+# ==========================================================
+
+carte_arrosage_pluie_verdict_synthese_xl:
+  template: socle_status_label_xl
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: true
+  name: Précipitations
+  icon: mdi:weather-rainy
+
+  triggers_update:
+    - sensor.arrosage_pluie_arbitrage
+
+  state_display: >
+    [[[
+      const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+      const v = entity.state;
+      if (UNAV.includes(v)) return "—";
+      const map = {
+        "aucune_suspension": "Aucune suspension",
+        "attente_infiltration": "Attente d'infiltration",
+        "report_pluie_credible": "Report — pluie crédible",
+        "pluie_future_insuffisante": "Pluie future insuffisante",
+        "besoin_etabli_prioritaire": "Besoin prioritaire",
+        "pluie_indecidable": "Pluie indécidable",
+      };
+      return map[v] || "—";
+    ]]]
+
+  label: >
+    [[[
+      const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+      const a = entity.attributes || {};
+      const val = (x) => (UNAV.includes(x) ? null : x);
+      const besoin = val(a.besoin_etabli);
+      const besoinTxt = besoin === null ? "—"
+        : ((besoin === true || besoin === "True" || besoin === "on") ? "établi" : "absent");
+      const nbF = val(a.nb_evenements_futurs);
+      const nbQ = val(a.nb_evenements_qualifiants);
+      const evTxt = (nbF === null ? "—" : nbF) + " futur(s) · " + (nbQ === null ? "—" : nbQ) + " qualifiant(s)";
+      const manq = val(a.donnees_manquantes);
+      const l1 = "besoin " + besoinTxt + " · " + evTxt;
+      const l2 = "données manquantes : " + (manq === null ? "—" : manq);
+      return l1 + "<br>" + l2;
+    ]]]
+
+  styles:
+    card:
+      - height: auto
+      - min-height: 88px
+      - background-color: >
+          [[[
+            const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+            const v = entity.state;
+            if (UNAV.includes(v) || v === "pluie_indecidable") return "rgba(158, 158, 158, 0.1)";
+            if (v === "attente_infiltration" || v === "report_pluie_credible") return "rgba(33, 150, 243, 0.2)";
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]
+    label:
+      - white-space: normal
+      - line-height: 1.4

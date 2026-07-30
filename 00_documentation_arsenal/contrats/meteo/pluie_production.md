@@ -62,6 +62,18 @@ design** (INV-PROD-2) : aucune n'est réductible à une autre.
 | `sensor.pluie_prevue` | **Pluie prévue** | présomption d'horizon (jamais un fait) | prévision Met.no | horizon réglable | arrosage (prudence), affichage |
 | `sensor.pluie_cumul_{24,48,72}h`, `sensor.pluie_journaliere` | **Cumuls / mesure** | mémoire quantitative | `sensor.pluie_total_local` | — | arrosage, palmarès, UI |
 
+> **Faits temporels de `pluie_prevue` (attribut `echeances`).** `sensor.pluie_prevue`
+> expose, en plus de son état (cumul mm sur l'horizon), un attribut **`echeances`**
+> : liste **bornée** (horizon) des créneaux futurs sous forme de **faits bruts**
+> `{ datetime (absolu), mm, proba_pct }`, issus du **même et unique** appel
+> `weather.get_forecasts` (aucun second appel ailleurs). Ce sont des **faits**
+> (production, INV-PROD-1) : **aucun seuil, aucune qualification, aucun verdict**
+> n'y est appliqué. Le **délai** avant un créneau se dérive côté consommateur par
+> `datetime − now`. La **qualification métier** (crédibilité, quantité utile,
+> événement, report) appartient **exclusivement** au consommateur d'arbitrage
+> ([`../arrosage/20_arbitrage_pluie_besoin.md`](../arrosage/20_arbitrage_pluie_besoin.md)),
+> jamais à cette couche.
+
 ## 6. Distinction métier structurante — chambres ≠ séjour
 
 **Opposable.** Les deux chaînes poursuivent des objectifs **différents** ; elles ne

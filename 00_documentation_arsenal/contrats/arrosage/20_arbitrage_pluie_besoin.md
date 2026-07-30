@@ -1,13 +1,14 @@
 # CONTRAT ARSENAL — ARROSAGE
 ## 20 — Arbitrage pluie ↔ besoin hydrique (couche réaction / décision pluie)
 
-**Version contrat :** v0.1
-**Statut :** **Normatif — spécification ; runtime de l'arbitrage NON livré.** Aujourd'hui,
-seule une **projection booléenne** existe au runtime (`binary_sensor.arrosage_suspension_pluie`),
-calculée directement sur des cumuls et une prévision en millimètres ; ce contrat la
-**re-qualifie** comme **projection dérivée** d'un **verdict d'arbitrage riche** qui,
-lui, **reste à implémenter**. Ce document **ne crée aucun** YAML, helper, entité,
-automation, script, template, checker ni `entity_id`.
+**Version contrat :** v0.2 — amendée 2026-07-30 : runtime C41 livré et branché ; valeurs candidates consignées (§17).
+**Statut :** **Normatif — spécification ; runtime livré et branché (C41), en validation runtime (§16).**
+Le **verdict riche** est produit par `sensor.arrosage_pluie_arbitrage` (writer unique) ;
+`binary_sensor.arrosage_suspension_pluie` en est la **projection dérivée** (identité
+conservée, consommée par la décision `17` inchangée). Les **valeurs** (seuils,
+crédibilité, durées) sont des **candidats calibrables** (§17), non des vérités
+prouvées. Ce document reste la **référence normative** ; le runtime vit dans ses
+fichiers.
 
 > **Positionnement (frontières).** Ce contrat définit **comment la pluie doit
 > peser sur la décision d'arroser** : une **couche de réaction / décision**, en
@@ -303,10 +304,15 @@ au minimum :
 
 ## 17. Limites & preuves manquantes
 
-- **Aucune valeur n'est fixée** : seuils de crédibilité / quantité utile, fenêtres
-  de pluie passée, durée d'attente d'infiltration, durée maximale de report,
-  amortissement anti-oscillation — **tous différés** au cadrage puis à la **preuve
-  runtime/terrain**.
+- **Valeurs candidates initiales (calibrables — non prouvées)**, portées par des
+  helpers sans `initial` : apport observé qualifiant **5 mm**
+  (`arrosage_pluie_suspension_mm_24h`, rôle repositionné en seuil d'apport, non
+  plus verrou de fenêtre) ; quantité future utile **5 mm**
+  (`arrosage_pluie_prevue_mm_seuil`, **distincte** du seuil observé) ; crédibilité
+  min **60 %** ; horizon / délai max **24 h** ; attente d'infiltration **6 h** ;
+  tolérance après échéance **3 h**. Les cumuls **48 h / 72 h** sont **diagnostic
+  seul** (plus de verrou opérationnel). Ces valeurs sont **différées à la preuve**
+  (§16, cadrage) et recalibrables sans changement d'architecture.
 - La **qualification d'un niveau** de besoin (au-delà du seuil binaire actuel) et
   l'exploitation de la **probabilité** / du **délai avant pluie** sont **à établir**
   (cadrage).

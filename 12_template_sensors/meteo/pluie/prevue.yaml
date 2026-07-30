@@ -105,6 +105,28 @@
           {% endfor %}
           {{ ns.p if ns.p is not none else 'inconnu' }}
 
+        # Faits temporels+météo par échéance, BORNÉS à l'horizon, transportés en
+        # JSON (précédent : sensor.jardin_humidite_sol_valeurs_fraiches). Faits
+        # BRUTS uniquement — datetime ABSOLU, mm, probabilité % — AUCUN seuil,
+        # AUCUNE qualification métier (la qualification appartient au writer du
+        # verdict C41 ; contrat 20 §4, meteo/pluie_production.md). Le délai est
+        # dérivé par le consommateur via (datetime − now).
+        echeances_json: >
+          {% set ns = namespace(items=[]) %}
+          {% for it in forecasts %}
+            {% if it.datetime is defined and it.precipitation is defined %}
+              {% set ts = as_timestamp(as_local(as_datetime(it.datetime))) %}
+              {% if ts >= now_ts and ts < target_ts %}
+                {% set ns.items = ns.items + [{
+                  'datetime': it.datetime,
+                  'mm': (it.precipitation | float(0)) | round(2),
+                  'proba_pct': (it.precipitation_probability | float(0)) | round(0) if it.precipitation_probability is defined else none
+                }] %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items | tojson }}
+
   sensor:
     - name: "Pluie prévue"
       unique_id: pluie_prevue
@@ -125,4 +147,7 @@
         horizon_heures: "{{ h }}"
         echeances_couvertes: "{{ nb_echeances }}"
         probabilite_max_pct: "{{ proba_max }}"
+        # Faits temporels bruts par échéance (JSON borné) — voir echeances_json.
+        # Consommé par le writer d'arbitrage pluie (C41) ; aucune qualification ici.
+        echeances: "{{ echeances_json }}"
         derniere_maj: "{{ now().isoformat() }}"
