@@ -37,7 +37,9 @@ arrosage_rainbird_station_1_duree_minutes:
   #    la durée à une valeur fixe à CHAQUE redémarrage, écrasant le réglage
   #    opérateur. Sans `initial`, HA restaure la dernière valeur réglée.
   #    Au tout premier démarrage (entité inexistante) → `unknown`, sans danger :
-  #    le script Run clampe avec repli 2 (`| int(2)` puis borne [1,60]).
+  #    le script Run EXIGE une base numérique entière dans [1,60] et REFUSE
+  #    proprement le lancement si elle ne l'est pas (aucun repli silencieux ;
+  #    la constante de repli `2` a été supprimée du Run).
   unit_of_measurement: "min"
   mode: box
   icon: mdi:timer-sand

@@ -56,6 +56,31 @@ views:
             template: carte_arrosage_sol_synthese_xl
             entity: binary_sensor.arrosage_besoin_sol
 
+          # Sentinelles d'observation du sol — grandeurs déjà calculées par le
+          # backend (reservoir_sol.yaml), restituées ici en LECTURE SEULE :
+          #   « Point le plus sec » = minimum des points frais ;
+          #   « Hétérogénéité »     = étendue (max − min) des points frais.
+          # NI seuil, NI jugement, NI déclenchement : le point le plus sec est
+          # une SENTINELLE et ne commande JAMAIS seul l'arrosage (contrat 15 §3).
+          # Le VERDICT de besoin et la médiane (base de décision) restent portés
+          # par la carte de synthèse XL ci-dessus (le runtime décide, l'UI
+          # restitue). Grille STATIQUE 2×1 cellule (R-LL-GRID-1).
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: carte_kpi_bleu
+                entity: sensor.jardin_humidite_sol_minimum
+                name: Point le plus sec
+                icon: mdi:water-alert-outline
+
+              - type: custom:button-card
+                template: carte_kpi_bleu
+                entity: sensor.jardin_humidite_sol_heterogeneite
+                name: Hétérogénéité
+                icon: mdi:arrow-expand-vertical
+
           # =========================================================
           # 🌡️ Demande climatique — ET₀/VPD → statut
           # =========================================================

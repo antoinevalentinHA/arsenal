@@ -15,7 +15,7 @@ le contrat reste la référence normative de ce qui doit être observé.
 > réservoir sol, **sans** créer le runtime, **sans** décider la recommandation,
 > **sans** choisir de seuil hydrique final.
 
-> **Garde-fou de lecture.** Une zone Rain Bird, **trois points de mesure**. Aucune
+> **Garde-fou de lecture.** Une zone Rain Bird, **six points de mesure**. Aucune
 > grandeur de ce contrat n'est une **décision** : ce sont des **observations
 > lentes**. **Pas de score unique**, **pas de seuil chiffré opposable**.
 
@@ -53,7 +53,7 @@ recommandation** et **ne pilotent rien**.
 
 - **Grandeur candidate v0 : médiane des points frais utilisables.**
 - **Justification** : plus **robuste** qu'une moyenne simple ; **ne masque pas**
-  autant les extrêmes ; **cohérente** avec seulement trois points ; reste une
+  autant les extrêmes ; **cohérente** avec un petit nombre de points ; reste une
   **observation**, pas une décision.
 
 **Disponibilité (installation mono-zone, six points de mesure) :**
@@ -144,8 +144,8 @@ Vocabulaire candidat v0, **strictement diagnostic / observation** :
 
 | État | Sens (lecture du canal, **pas** une décision) |
 |---|---|
-| `complet` | 3/3 points frais et cohérents |
-| `degrade` | un point manquant/stale/suspect ; agrégats exploitables avec réserve |
+| `complet` | 5-6/6 points frais et cohérents (cf. §5) |
+| `degrade` | un ou plusieurs points manquants/stale/suspects (3-4/6 frais) ; agrégats exploitables avec réserve |
 | `insuffisant` | trop peu de points frais pour une lecture représentative |
 | `indisponible` | aucun point frais exploitable |
 | `heterogene` | points frais mais **étendue forte** (désaccord marqué) |
@@ -165,8 +165,8 @@ Le contrat 15 **dépend** du contrat [`14`](14_qualite_donnees_sol.md) :
 - les points **indisponibles** **n'entrent pas** dans les agrégats ;
 - les points **suspects** **ne sont pas exclus automatiquement** sans **critère
   robuste** ([`14`](14_qualite_donnees_sol.md) §5) ;
-- une lecture fondée sur **moins de 3 points** est marquée **dégradée** ou
-  **insuffisante** selon le cas (§5/§6) ;
+- une lecture fondée sur un **nombre réduit de points frais** est marquée
+  **dégradée** (3-4/6) ou **insuffisante** (1-2/6) selon le cas (§5/§6) ;
 - l'agrégat **expose toujours sa qualité / confiance** (nombre de points frais,
   état du canal).
 
