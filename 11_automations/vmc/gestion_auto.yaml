@@ -17,11 +17,17 @@
 #     ABSTENTION (aucune commande) ; le physique conserve son dernier
 #     régime valide. AUCUN `default` vers la basse vitesse.
 #
-# 🔁 POLITIQUE TEMPORELLE (§8.2, §8.3)
-#   - Montée (haute) : immédiate.
-#   - Descente (basse) : durée minimale EXÉCUTIVE — appliquée sur la
-#     seule TRANSITION de décision (trigger 'decision') ; immédiate au
-#     démarrage et sur récupération.
+# 🔁 POLITIQUE TEMPORELLE (§8.2, §8.3, §16.5)
+#   - Montée (haute) : immédiate (tous régimes).
+#   - Descente (basse) EN RÉGIME AUTOMATIQUE : durée minimale EXÉCUTIVE —
+#     appliquée sur la seule TRANSITION de décision (trigger 'decision') ;
+#     immédiate au démarrage et sur récupération.
+#   - Descente (basse) EN RÉGIME MANUEL : IMMÉDIATE et inconditionnelle
+#     (§16.5). La durée mini protège la BOUCLE AUTOMATIQUE, pas un geste
+#     humain : la consigne de l'utilisateur, qui reprend l'autorité (§16.1),
+#     n'est ni différée ni bloquée par ce paramètre. Le régime est lu sur le
+#     SEUL attribut `titulaire` de la décision exécutoire — aucune lecture
+#     des helpers, aucune reconstruction.
 #   - mode restart : une nouvelle demande annule une descente différée.
 #
 # 🩹 RÉCUPÉRATION APRÈS FAIL-SAFE (§16.5)
@@ -42,7 +48,8 @@
   description: >
     Applique la vitesse de la VMC selon la décision exécutoire unique
     binary_sensor.vmc_haute_vitesse_commandee (C36 §16.2), en respectant
-    une durée minimale exécutive au retour en basse vitesse, en
+    une durée minimale exécutive au retour en basse vitesse EN RÉGIME
+    AUTOMATIQUE (descente immédiate en régime manuel, §16.5), en
     s'abstenant si la décision exécutoire est indisponible, et en
     ré-appliquant la décision sur un front stabilisé de récupération.
   mode: restart
@@ -103,25 +110,50 @@
             - service: script.vmc_haute_vitesse
 
         # ==================================================
-        # 🔽 BASSE VITESSE — durée mini exécutive sur transition
+        # 🔽 BASSE VITESSE
+        #   - Régime MANUEL      : descente IMMÉDIATE et inconditionnelle (§16.5).
+        #   - Régime AUTOMATIQUE : durée mini exécutive sur transition (§8.2/§8.3).
         # ==================================================
         - conditions:
             - condition: state
               entity_id: binary_sensor.vmc_haute_vitesse_commandee
               state: "off"
           sequence:
-            # Durée illisible : aucune descente (anti-fallback paramètre, §12.3).
-            - condition: template
-              value_template: "{{ duree_min_lisible }}"
+            - choose:
+                # ------------------------------------------------------
+                # 🖐️ RÉGIME MANUEL — descente IMMÉDIATE et inconditionnelle
+                #   (§16.5, §16.1). Une commande manuelle explicite n'est ni
+                #   différée ni bloquée par la durée mini : celle-ci protège la
+                #   BOUCLE AUTOMATIQUE contre les commutations rapprochées, non
+                #   un geste humain délibéré — au même titre que la consigne
+                #   manuelle surpasse le veto sanitaire (§17). Le paramètre de
+                #   durée n'est pas lu ici : une descente manuelle aboutit même
+                #   si le helper est illisible. Régime lu sur le SEUL attribut
+                #   `titulaire` de la décision exécutoire (aucune reconstruction).
+                # ------------------------------------------------------
+                - conditions:
+                    - condition: template
+                      value_template: >
+                        {{ state_attr('binary_sensor.vmc_haute_vitesse_commandee',
+                                      'titulaire') == 'manuel' }}
+                  sequence: []
 
-            # Délai UNIQUEMENT sur une transition de décision (anti-commutation).
-            # Au démarrage et sur front de récupération : application immédiate.
-            - if:
+              # --------------------------------------------------------
+              # ⚙️ RÉGIME AUTOMATIQUE — durée mini exécutive (inchangé).
+              # --------------------------------------------------------
+              default:
+                # Durée illisible : aucune descente (anti-fallback paramètre, §12.3).
                 - condition: template
-                  value_template: "{{ trigger.id == 'decision' }}"
-              then:
-                - delay:
-                    seconds: "{{ (duree_min_minutes * 60) | int }}"
+                  value_template: "{{ duree_min_lisible }}"
+
+                # Délai UNIQUEMENT sur une transition de décision (anti-commutation).
+                # Au démarrage et sur front de récupération : application immédiate.
+                - if:
+                    - condition: template
+                      value_template: "{{ trigger.id == 'decision' }}"
+                  then:
+                    - delay:
+                        seconds: "{{ (duree_min_minutes * 60) | int }}"
 
             # Réévaluation post-délai : si une demande est revenue, le mode
             # restart a déjà annulé cette séquence. Garde reload / état modifié.
