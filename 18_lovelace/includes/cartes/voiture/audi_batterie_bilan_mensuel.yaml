@@ -8,9 +8,14 @@ content: >
      à la boucle, la liste restait vide et le bilan sans historique. #}
   {% set ns = namespace(valeurs=[]) %}
   {% for ligne in lignes %}
-    {% set match = ligne | regex_search('([0-9]+\\.?[0-9]*)') %}
-    {% if match %}
-      {% set ns.valeurs = ns.valeurs + [match | float] %}
+    {# regex_search renvoie un booléen (True/False), pas la capture :
+       True|float valait 1.0, donc maxv était toujours 1.0 et la perte
+       dégénérait en (1 - actuel)*100. On extrait la valeur km réelle
+       (après le ` : `) avec regex_findall, qui renvoie bien la liste
+       des nombres. #}
+    {% set km = ligne.split(' : ') | last | regex_findall('[0-9]+\\.?[0-9]*') | first %}
+    {% if km %}
+      {% set ns.valeurs = ns.valeurs + [km | float] %}
     {% endif %}
   {% endfor %}
   {% set valeurs = ns.valeurs %}
