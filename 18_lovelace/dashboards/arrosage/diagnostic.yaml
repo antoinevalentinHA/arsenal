@@ -35,15 +35,17 @@ views:
       - type: vertical-stack
         cards:
           # =========================================================
-          # 🌧️ Précipitations — faits pluie → conclusion (suspension)
+          # 🌧️ Précipitations — verdict d'arbitrage pluie ↔ besoin (C41)
+          #   Vérité métier = sensor.arrosage_pluie_arbitrage (six verdicts) ;
+          #   binary_sensor.arrosage_suspension_pluie n'en est que la projection.
           # =========================================================
           - type: custom:button-card
             template: section_header
             name: 🌧️ Précipitations
 
           - type: custom:button-card
-            template: carte_arrosage_pluie_synthese_xl
-            entity: binary_sensor.arrosage_suspension_pluie
+            template: carte_arrosage_pluie_verdict_synthese_xl
+            entity: sensor.arrosage_pluie_arbitrage
 
           # =========================================================
           # 💧 Diagnostic hydrique — besoin sol + confiance réservoir

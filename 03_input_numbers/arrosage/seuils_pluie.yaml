@@ -18,13 +18,18 @@
 # 🏷️ NATURE
 #   Paramètre métier | Seuil de prudence
 #
-# 🧱 VALEURS PAR DÉFAUT (validées au démarrage)
-#   - 24 h           : 5 mm
-#   - 48 h           : 10 mm
-#   - 72 h           : 12 mm  (sous-linéaire : l'évapotranspiration
-#                      érode la contribution de la pluie ancienne)
-#   - pluie prévue   : 5 mm sur l'horizon
-#   - horizon prévue : 24 h
+# 🧱 VALEURS PAR DÉFAUT (candidates calibrables — cf. C41 / cadrage)
+#   - 24 h           : 5 mm   ⚠️ RÔLE C41 : seuil d'APPORT OBSERVÉ qualifiant
+#                      (nouvel apport monotone `pluie_total_local − ref`
+#                      ⇒ une attente d'infiltration) — plus un verrou de fenêtre.
+#   - 48 h           : 10 mm  ⚠️ C41 : DIAGNOSTIC / CONTEXTE UNIQUEMENT
+#   - 72 h           : 12 mm  ⚠️ C41 : DIAGNOSTIC / CONTEXTE UNIQUEMENT
+#                      (n'exercent plus de verrou opérationnel — arbitrage L3)
+#   - pluie prévue   : 5 mm sur l'horizon (QUANTITÉ FUTURE UTILE, distincte du 24 h)
+#   - horizon prévue : 24 h  (aussi : DÉLAI MAX d'un report — C41)
+#   - crédibilité min pluie prévue : 60 %  (C41)
+#   - attente d'infiltration       : 6 h   (C41)
+#   - tolérance après échéance     : 3 h   (C41)
 #
 # 🚫 INTERDITS
 #   - Confondre stockage et décision
@@ -90,5 +95,43 @@ arrosage_pluie_prevue_horizon_heures:
   step: 1
   # ⚠️ PAS de clé `initial` : voir arrosage_pluie_suspension_mm_24h.
   #    Horizon AJUSTABLE — défaut métier : 24 h (cf. en-tête).
+  #    C41 : sert aussi de DÉLAI MAX d'un report (onset ≤ horizon).
+  unit_of_measurement: h
+  mode: box
+
+# ==========================================================
+# C41 — Arbitrage pluie ↔ besoin (contrat 20). Candidats calibrables.
+# Aucun `initial` (restauration HA) ; valeurs de départ documentées en en-tête.
+# ==========================================================
+arrosage_pluie_prevue_credibilite_min_pct:
+  name: "Arrosage — Crédibilité min pluie prévue"
+  icon: mdi:percent-outline
+  min: 0
+  max: 100
+  step: 5
+  # ⚠️ PAS de clé `initial` : voir arrosage_pluie_suspension_mm_24h.
+  #    Crédibilité minimale (min proba du préfixe qualifiant) — candidat : 60 %.
+  unit_of_measurement: "%"
+  mode: box
+
+arrosage_pluie_attente_infiltration_heures:
+  name: "Arrosage — Attente d'infiltration"
+  icon: mdi:timer-sand
+  min: 0
+  max: 48
+  step: 1
+  # ⚠️ PAS de clé `initial` : voir arrosage_pluie_suspension_mm_24h.
+  #    Durée bornée d'attente après un apport observé qualifiant — candidat : 6 h.
+  unit_of_measurement: h
+  mode: box
+
+arrosage_pluie_prevue_tolerance_echeance_heures:
+  name: "Arrosage — Tolérance après échéance"
+  icon: mdi:clock-alert-outline
+  min: 0
+  max: 24
+  step: 1
+  # ⚠️ PAS de clé `initial` : voir arrosage_pluie_suspension_mm_24h.
+  #    Grâce après l'échéance qualifiée avant expiration du report — candidat : 3 h.
   unit_of_measurement: h
   mode: box

@@ -1,0 +1,295 @@
+# ==========================================================
+# 🧠 ARSENAL — TRIGGERED TEMPLATE SENSOR
+#     Arrosage — Arbitrage pluie ↔ besoin (verdict) — C41
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   WRITER UNIQUE du VERDICT d'arbitrage pluie (contrat 20 §9) ET des
+#   ENGAGEMENTS (infiltration, report) portés dans SES attributs restaurés.
+#   Le verdict est la VÉRITÉ MÉTIER ; la suspension booléenne
+#   (binary_sensor.arrosage_suspension_pluie) en est une PROJECTION DÉRIVÉE
+#   (contrat 20 §10), redéfinie dans suspension_pluie.yaml.
+#
+#   Six verdicts EXCLUSIFS (littéral, contrat 20 §9) :
+#     aucune_suspension · attente_infiltration · report_pluie_credible ·
+#     pluie_future_insuffisante · besoin_etabli_prioritaire · pluie_indecidable
+#
+# 🧱 PRINCIPES (contrat 20 + arbitrages A–H)
+#   - La pluie ne fait que FREINER ; jamais d'ordre d'arroser (frein additif 06 §7.3).
+#   - unknown/unavailable ≠ 0 ≠ « pas de pluie » ≠ « pas de besoin ».
+#   - Canaux OBSERVÉ (pluie_total_local, monotone) et PRÉVU (pluie_prevue)
+#     INDÉPENDANTS : l'indisponibilité de l'un ne bloque pas l'autre.
+#   - Apport observé CONSOMMÉ UNE FOIS (référence `infiltr_ref_total`
+#     avancée) ⇒ pas de réouverture sur le même cumul.
+#   - Événement futur = créneaux CONTIGUS mm>0 (créneau sec ⇒ clôt) ; quantité
+#     utile, crédibilité (min proba du préfixe) et délai portent sur le MÊME
+#     événement ; jamais un score, jamais probabilité×quantité.
+#   - `report_expire` FIGÉ à l'ouverture, jamais repoussé. Contradiction forte
+#     (C-forte-1 : plus d'événement suffisant ; C-forte-2 : aucun événement
+#     suffisant avec onset < report_expire). Oscillation de proba ⇒ pas de
+#     révocation.
+#   - Un report présent au tick n'est jamais RÉOUVERT le même tick (un
+#     déplacement n'ouvre pas d'engagement).
+#   - État restauré ≠ preuve : revalidation au `start` ; les attributs
+#     DIAGNOSTIQUES restaurés ne sont JAMAIS lus pour décider (recalculés).
+#
+# 🔗 ENTRÉES (lecture LIVE ; aucun 2e appel weather.get_forecasts — c'est
+#   pluie_prevue qui appelle la prévision) :
+#     sensor.pluie_total_local (mm, monotone)         — canal observé (apport)
+#     sensor.pluie_prevue (état mm + attribut `echeances` JSON) — canal prévu
+#     binary_sensor.arrosage_besoin_sol               — besoin établi
+#     input_number.arrosage_pluie_suspension_mm_24h   — SEUIL APPORT OBSERVÉ
+#     input_number.arrosage_pluie_prevue_mm_seuil     — QUANTITÉ FUTURE UTILE
+#     input_number.arrosage_pluie_prevue_credibilite_min_pct
+#     input_number.arrosage_pluie_prevue_horizon_heures        — délai max
+#     input_number.arrosage_pluie_attente_infiltration_heures
+#     input_number.arrosage_pluie_prevue_tolerance_echeance_heures
+#   Contexte (diagnostic seul, PAS de verrou — arbitrage L3) :
+#     sensor.pluie_cumul_48h / _72h
+#
+# 🚫 NE FAIT PAS : n'écrit aucun helper ; ne pilote rien ; n'exécute rien ;
+#   ne rappelle pas la prévision ; ne décide pas « quand » (contrat 17).
+#
+# 🏷️ STATUT : Décision backend — arbitrage pluie (C41), en validation runtime.
+# ==========================================================
+
+- trigger:
+    - platform: homeassistant
+      event: start
+    - platform: time_pattern
+      minutes: 0
+      seconds: 0
+    - platform: state
+      entity_id:
+        - sensor.pluie_prevue
+        - sensor.pluie_total_local
+        - sensor.pluie_cumul_48h
+        - sensor.pluie_cumul_72h
+        - sensor.jardin_humidite_sol_mediane
+        - sensor.jardin_reservoir_sol_etat
+        - binary_sensor.arrosage_besoin_sol
+        - input_number.arrosage_pluie_suspension_mm_24h
+        - input_number.arrosage_pluie_prevue_mm_seuil
+        - input_number.arrosage_pluie_prevue_credibilite_min_pct
+        - input_number.arrosage_pluie_prevue_horizon_heures
+        - input_number.arrosage_pluie_attente_infiltration_heures
+        - input_number.arrosage_pluie_prevue_tolerance_echeance_heures
+
+  action:
+    - variables:
+        indispo: ['unknown', 'unavailable', 'none', 'None', '']
+        now_dt: "{{ now() }}"
+        now_ts: "{{ as_timestamp(now()) }}"
+        is_start: "{{ trigger is defined and trigger.platform == 'homeassistant' }}"
+
+        # ----- Helpers (guardés is_number ; aucun repli silencieux) -----
+        seuil_apport: "{{ states('input_number.arrosage_pluie_suspension_mm_24h') | float(none) }}"
+        qty_utile: "{{ states('input_number.arrosage_pluie_prevue_mm_seuil') | float(none) }}"
+        cred_min: "{{ states('input_number.arrosage_pluie_prevue_credibilite_min_pct') | float(none) }}"
+        horizon_h: "{{ states('input_number.arrosage_pluie_prevue_horizon_heures') | float(none) }}"
+        attente_h: "{{ states('input_number.arrosage_pluie_attente_infiltration_heures') | float(none) }}"
+        tolerance_h: "{{ states('input_number.arrosage_pluie_prevue_tolerance_echeance_heures') | float(none) }}"
+
+        # ----- Canal OBSERVÉ (total monotone) -----
+        total_raw: "{{ states('sensor.pluie_total_local') }}"
+        obs_dispo: "{{ states('sensor.pluie_total_local') is not none and is_number(states('sensor.pluie_total_local')) }}"
+        T: "{{ states('sensor.pluie_total_local') | float(none) }}"
+
+        # ----- Canal PRÉVU -----
+        prev_raw: "{{ states('sensor.pluie_prevue') }}"
+        prev_dispo: "{{ states('sensor.pluie_prevue') not in indispo and is_number(states('sensor.pluie_prevue')) }}"
+        ech_raw: "{{ state_attr('sensor.pluie_prevue', 'echeances') }}"
+
+        # ----- Besoin établi -----
+        besoin: "{{ is_state('binary_sensor.arrosage_besoin_sol', 'on') }}"
+
+        # ----- Échéances futures normalisées [{ts, mm, proba}] -----
+        echeances: >
+          {% set out = namespace(items=[]) %}
+          {% if prev_dispo and ech_raw not in indispo and ech_raw is not none %}
+            {% set lst = ech_raw | from_json %}
+            {% for it in lst %}
+              {% if it.datetime is defined and it.mm is defined %}
+                {% set ts = as_timestamp(as_datetime(it.datetime)) %}
+                {% if ts is not none and ts >= now_ts %}
+                  {% set out.items = out.items + [{'ts': ts, 'mm': it.mm | float(0),
+                     'proba': (it.proba_pct | float(0)) if it.proba_pct is defined and it.proba_pct is not none else 0.0}] %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          {{ out.items }}
+
+        # ----- Regroupement en événements (contiguïté stricte mm>0) -----
+        events: >
+          {% set ns = namespace(events=[], cur=[]) %}
+          {% for e in echeances %}
+            {% if e.mm > 0 %}
+              {% set ns.cur = ns.cur + [e] %}
+            {% else %}
+              {% if ns.cur | length > 0 %}{% set ns.events = ns.events + [ns.cur] %}{% endif %}
+              {% set ns.cur = [] %}
+            {% endif %}
+          {% endfor %}
+          {% if ns.cur | length > 0 %}{% set ns.events = ns.events + [ns.cur] %}{% endif %}
+          {{ ns.events }}
+
+        # ----- Événements qualifiants [{onset_ts, echeance_q_ts, Q, cred}] -----
+        qualifiants: >
+          {% set qn = namespace(items=[]) %}
+          {% if qty_utile is not none and cred_min is not none and horizon_h is not none %}
+            {% for ev in events %}
+              {% set p = namespace(cum=0.0, prefix=[]) %}
+              {% for e in ev %}
+                {% if p.cum < qty_utile %}
+                  {% set p.prefix = p.prefix + [e] %}
+                  {% set p.cum = p.cum + e.mm %}
+                {% endif %}
+              {% endfor %}
+              {% set Q = ev | map(attribute='mm') | sum %}
+              {% set onset = ev[0].ts %}
+              {% set delai_h = (onset - now_ts) / 3600.0 %}
+              {% set cred = (p.prefix | map(attribute='proba') | min) if p.prefix | length > 0 else 0.0 %}
+              {% if p.cum >= qty_utile and cred >= cred_min and delai_h <= horizon_h and onset >= now_ts %}
+                {% set qn.items = qn.items + [{'onset': onset, 'ech_q': p.prefix[-1].ts, 'Q': Q, 'cred': cred}] %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          {{ qn.items }}
+
+        # ----- Engagements RESTAURÉS (attributs de CE sensor) -----
+        r_infiltr_ech: "{{ this.attributes.infiltr_echeance if this is defined and this.attributes is defined else none }}"
+        r_ref: "{{ (this.attributes.infiltr_ref_total | float(none)) if this is defined and this.attributes is defined else none }}"
+        r_rep_expire: "{{ this.attributes.report_expire if this is defined and this.attributes is defined else none }}"
+        r_rep_onset: "{{ this.attributes.report_onset if this is defined and this.attributes is defined else none }}"
+        r_rep_ech_q: "{{ this.attributes.report_echeance_qualifiee if this is defined and this.attributes is defined else none }}"
+
+        r_infiltr_ech_ts: "{{ as_timestamp(as_datetime(r_infiltr_ech)) if r_infiltr_ech not in indispo and r_infiltr_ech is not none else none }}"
+        r_rep_expire_ts: "{{ as_timestamp(as_datetime(r_rep_expire)) if r_rep_expire not in indispo and r_rep_expire is not none else none }}"
+
+        # ----- Décision (mirroir de l'oracle arbitrage_pluie_verdict_test.py) -----
+        decision: >
+          {% set d = namespace(verdict=none,
+             infiltr_ech=r_infiltr_ech_ts, ref=r_ref,
+             rep_onset=r_rep_onset, rep_ech_q=r_rep_ech_q, rep_expire=r_rep_expire_ts,
+             motif='') %}
+
+          {# Revalidation au start : état restauré != preuve #}
+          {% if is_start %}
+            {% if not (d.infiltr_ech is not none and now_ts < d.infiltr_ech) %}{% set d.infiltr_ech = none %}{% endif %}
+            {% if d.ref is none or (T is not none and d.ref > T) %}{% set d.ref = T %}{% endif %}
+            {% set maintien_ok = false %}
+            {% if d.rep_expire is not none and now_ts < d.rep_expire and prev_dispo %}
+              {% for q in events %}
+                {% if (q | map(attribute='mm') | sum) >= (qty_utile | float(9e9)) and q[0].ts < d.rep_expire %}{% set maintien_ok = true %}{% endif %}
+              {% endfor %}
+            {% endif %}
+            {% if not maintien_ok %}{% set d.rep_onset = none %}{% set d.rep_ech_q = none %}{% set d.rep_expire = none %}{% endif %}
+          {% endif %}
+
+          {% if d.ref is none and T is not none %}{% set d.ref = T %}{% endif %}
+
+          {# Priorité 1 : infiltration active #}
+          {% if d.verdict is none and d.infiltr_ech is not none and now_ts < d.infiltr_ech %}
+            {% set d.verdict = 'attente_infiltration' %}{% set d.motif = 'infiltration_active' %}
+          {% endif %}
+
+          {# infiltration expirée : absorber (ref<-T) #}
+          {% if d.verdict is none and d.infiltr_ech is not none and now_ts >= d.infiltr_ech %}
+            {% if T is not none %}{% set d.ref = T %}{% endif %}{% set d.infiltr_ech = none %}
+          {% endif %}
+
+          {# Priorité 2 : nouvel apport observé qualifiant #}
+          {% if d.verdict is none and T is not none and d.ref is not none and seuil_apport is not none and (T - d.ref) >= seuil_apport %}
+            {% set d.infiltr_ech = now_ts + attente_h * 3600.0 %}{% set d.ref = T %}
+            {% set d.verdict = 'attente_infiltration' %}{% set d.motif = 'apport_observe_qualifiant' %}
+          {% endif %}
+
+          {# report présent à l'entrée prio 3 ⇒ interdit réouverture ce tick #}
+          {% set had_report = d.rep_expire is not none %}
+
+          {# Priorité 3 : report actif #}
+          {% if d.verdict is none and d.rep_expire is not none and now_ts < d.rep_expire %}
+            {% set cforte_ok = false %}
+            {% if prev_dispo and qty_utile is not none %}
+              {% for q in events %}
+                {% if (q | map(attribute='mm') | sum) >= qty_utile and q[0].ts < d.rep_expire %}{% set cforte_ok = true %}{% endif %}
+              {% endfor %}
+            {% endif %}
+            {% if cforte_ok %}
+              {% set d.verdict = 'report_pluie_credible' %}{% set d.motif = 'report_maintenu' %}
+            {% else %}
+              {% set d.rep_onset = none %}{% set d.rep_ech_q = none %}{% set d.rep_expire = none %}
+            {% endif %}
+          {% endif %}
+          {% if d.verdict is none and d.rep_expire is not none and now_ts >= d.rep_expire %}
+            {% set d.rep_onset = none %}{% set d.rep_ech_q = none %}{% set d.rep_expire = none %}
+          {% endif %}
+
+          {# Priorité 4 : évaluation fraîche #}
+          {% if d.verdict is none %}
+            {% if prev_dispo %}
+              {% if qualifiants | length > 0 and not had_report %}
+                {% set best = (qualifiants | sort(attribute='onset'))[0] %}
+                {% set d.rep_onset = best.onset %}{% set d.rep_ech_q = best.ech_q %}
+                {% set d.rep_expire = best.ech_q + tolerance_h * 3600.0 %}
+                {% set d.verdict = 'report_pluie_credible' %}{% set d.motif = 'report_ouvert' %}
+              {% elif besoin %}
+                {% set d.verdict = 'besoin_etabli_prioritaire' %}{% set d.motif = 'besoin_departage' %}
+              {% elif echeances | selectattr('mm', '>', 0) | list | length > 0 %}
+                {% set d.verdict = 'pluie_future_insuffisante' %}{% set d.motif = 'future_insuffisante' %}
+              {% else %}
+                {% set d.verdict = 'aucune_suspension' %}{% set d.motif = 'aucune' %}
+              {% endif %}
+            {% else %}
+              {% set d.verdict = 'pluie_indecidable' %}{% set d.motif = 'donnees_pluie_insuffisantes' %}
+            {% endif %}
+          {% endif %}
+
+          {{ {'verdict': d.verdict, 'motif': d.motif,
+              'infiltr_ech': d.infiltr_ech, 'ref': d.ref,
+              'rep_onset': d.rep_onset, 'rep_ech_q': d.rep_ech_q, 'rep_expire': d.rep_expire} }}
+
+        # ----- Sérialisation ISO des engagements (restaurables) -----
+        infiltr_echeance_iso: "{{ (decision.infiltr_ech | as_datetime | as_local).isoformat() if decision.infiltr_ech is not none else '' }}"
+        report_onset_iso: "{{ (decision.rep_onset | as_datetime | as_local).isoformat() if decision.rep_onset is not none else '' }}"
+        report_ech_q_iso: "{{ (decision.rep_ech_q | as_datetime | as_local).isoformat() if decision.rep_ech_q is not none else '' }}"
+        report_expire_iso: "{{ (decision.rep_expire | as_datetime | as_local).isoformat() if decision.rep_expire is not none else '' }}"
+
+  sensor:
+    - name: "Arrosage arbitrage pluie"
+      unique_id: arrosage_pluie_arbitrage
+      default_entity_id: sensor.arrosage_pluie_arbitrage
+      icon: >
+        {% set v = decision.verdict %}
+        {% if v == 'attente_infiltration' %}mdi:water-percent
+        {% elif v == 'report_pluie_credible' %}mdi:weather-rainy
+        {% elif v == 'besoin_etabli_prioritaire' %}mdi:sprout-outline
+        {% elif v == 'pluie_future_insuffisante' %}mdi:weather-partly-rainy
+        {% elif v == 'aucune_suspension' %}mdi:watering-can
+        {% else %}mdi:help-rhombus-outline{% endif %}
+      state: "{{ decision.verdict }}"
+      attributes:
+        # --- ENGAGEMENT (restauré, lu seulement après revalidation) ---
+        infiltr_echeance: "{{ infiltr_echeance_iso }}"
+        infiltr_ref_total: "{{ decision.ref if decision.ref is not none else '' }}"
+        report_onset: "{{ report_onset_iso }}"
+        report_echeance_qualifiee: "{{ report_ech_q_iso }}"
+        report_expire: "{{ report_expire_iso }}"
+        motif: "{{ decision.motif }}"
+        # --- PROJECTION (dérivée ; consommée par suspension_pluie.yaml) ---
+        suspension_derivee: "{{ 'on' if decision.verdict in ['attente_infiltration', 'report_pluie_credible'] else 'off' }}"
+        # --- DIAGNOSTIC COURANT (recalculé ; JAMAIS lu pour décider) ---
+        obs_disponible: "{{ obs_dispo }}"
+        prev_disponible: "{{ prev_dispo }}"
+        besoin_etabli: "{{ besoin }}"
+        nb_evenements_futurs: "{{ events | length }}"
+        nb_evenements_qualifiants: "{{ qualifiants | length }}"
+        cumul_48h_contexte: "{{ states('sensor.pluie_cumul_48h') }}"
+        cumul_72h_contexte: "{{ states('sensor.pluie_cumul_72h') }}"
+        donnees_manquantes: >
+          {% set m = namespace(l=[]) %}
+          {% if not obs_dispo %}{% set m.l = m.l + ['canal_observe'] %}{% endif %}
+          {% if not prev_dispo %}{% set m.l = m.l + ['canal_prevu'] %}{% endif %}
+          {% if seuil_apport is none or qty_utile is none or cred_min is none or horizon_h is none or attente_h is none or tolerance_h is none %}{% set m.l = m.l + ['helper_seuil'] %}{% endif %}
+          {{ m.l | join(', ') if m.l | length > 0 else 'aucune' }}
+        note: "Verdict d'arbitrage pluie (contrat 20). Vérité métier ; la suspension booléenne en dérive. Valeurs seuils = candidats calibrables (C41). En validation runtime."
