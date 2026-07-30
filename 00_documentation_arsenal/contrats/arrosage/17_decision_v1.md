@@ -116,6 +116,14 @@ paramètres opérateur, en **déléguant l'exécution** au script supervisé ép
 > jamais sur un ACK seul, [`06`](06_observation_et_preuves.md)) — il ne l'invente
 > pas comme entrée.
 
+> **Entrée « suspension pluie » — renvoi (C41).** La **signification** et
+> l'**arbitrage** dont dérive `binary_sensor.arrosage_suspension_pluie` sont
+> spécifiés par [`20_arbitrage_pluie_besoin.md`](20_arbitrage_pluie_besoin.md) : ce
+> booléen est une **projection dérivée** d'un **verdict d'arbitrage pluie riche**
+> (pluie observée / pluie future / besoin établi), **jamais** l'autorité sémantique
+> du domaine. La **règle de décision de `17` est inchangée** : elle consomme cette
+> entrée telle quelle, comme **frein additif** ([`06`](06_observation_et_preuves.md) §7.3).
+
 ---
 
 ## 3. Règle de décision paramétrable
@@ -280,6 +288,7 @@ décision ni à **retarder** l'automatisation.
 - Mode manuel supervisé (script Run délégué, gardes) : [`11_mode_manuel_supervise.md`](11_mode_manuel_supervise.md)
 - Canal réservoir sol (médiane / état consommés) : [`15_canal_reservoir_sol.md`](15_canal_reservoir_sol.md)
 - Canal demande climatique (calibration future) : [`16_canal_demande_climatique.md`](16_canal_demande_climatique.md)
+- Arbitrage pluie ↔ besoin (spécifie l'entrée « suspension pluie ») : [`20_arbitrage_pluie_besoin.md`](20_arbitrage_pluie_besoin.md)
 - Pré-requis runtime (barrière documentaire P1–P7) : [`10_prerequis_runtime.md`](10_prerequis_runtime.md)
 - Phase 0 terrain (référence, non suspensive pour la V1) : [`07_phase_0_terrain.md`](07_phase_0_terrain.md)
 - Index du domaine : [`README.md`](README.md)
