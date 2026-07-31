@@ -172,6 +172,20 @@ Trois principes non négociables structurent le tout :
 
 ---
 
+## Intégrations forkées dont Arsenal dépend
+
+Quelques intégrations sont chargées depuis des forks personnels plutôt que depuis leur version amont, parce qu'Arsenal a besoin de correctifs que l'amont n'a pas publiés. Chaque fork indique la branche réellement servie et suit son amont ; les correctifs sont proposés à l'amont chaque fois que celui-ci peut les prendre.
+
+- Climatisation — [`ha_airstage`](https://github.com/antoinevalentinHA/ha_airstage) · amont [`danielkaldheim/ha_airstage`](https://github.com/danielkaldheim/ha_airstage)
+- Stockage batterie — [`hassio-bluetti-bt`](https://github.com/antoinevalentinHA/hassio-bluetti-bt) et sa bibliothèque [`bluetti-bt-lib`](https://github.com/antoinevalentinHA/bluetti-bt-lib) · amont [`Patrick762/hassio-bluetti-bt`](https://github.com/Patrick762/hassio-bluetti-bt) et [`Patrick762/bluetti-bt-lib`](https://github.com/Patrick762/bluetti-bt-lib)
+- Comptage électrique — [`ha-linky`](https://github.com/antoinevalentinHA/ha-linky) · amont [`bokub/ha-linky`](https://github.com/bokub/ha-linky)
+- Qualité de l'air — [`atmofrance`](https://github.com/antoinevalentinHA/atmofrance) · amont [`sebcaps/atmofrance`](https://github.com/sebcaps/atmofrance)
+- Firmware du pont d'arrosage — [`rainbird-esp32-elegoo`](https://github.com/antoinevalentinHA/rainbird-esp32-elegoo), dérivé de [`rainbird-esp32`](https://github.com/antoinevalentinHA/rainbird-esp32)
+
+[`audi_connect_ha`](https://github.com/antoinevalentinHA/audi_connect_ha) relève d'un autre cas : c'est un fork de contribution, destiné à porter des correctifs vers [`audiconnect/audi_connect_ha`](https://github.com/audiconnect/audi_connect_ha). Arsenal tourne sur la version officielle — ce n'est donc pas une dépendance.
+
+---
+
 ## Pourquoi c'est gouverné
 
 [![Arsenal Validation](https://github.com/antoinevalentinHA/arsenal/actions/workflows/validation.yml/badge.svg)](https://github.com/antoinevalentinHA/arsenal/actions/workflows/validation.yml)
