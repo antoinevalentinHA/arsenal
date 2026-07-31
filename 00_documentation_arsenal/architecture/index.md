@@ -77,6 +77,7 @@
 | [notifications_mobiles.md](./notifications_mobiles.md) | Architecture notifications mobiles |
 | [ouvertures.md](./ouvertures.md) | Architecture ouvertures |
 | [voiture.md](./voiture.md) | Architecture voiture (Audi A3 e-tron) |
+| [volets.md](./volets.md) | Architecture volets (pont commercial iDiamant) |
 
 ---
 
