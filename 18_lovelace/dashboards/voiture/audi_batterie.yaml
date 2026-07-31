@@ -48,15 +48,67 @@ views:
           # ------------------------------------------------------
           # 📊 Graphique statistique (moyennes glissantes)
           # ------------------------------------------------------
-          - type: statistics-graph
-            chart_type: line
-            period: week
-            days_to_show: 365
-            entities:
+          # ℹ️ Rendu via apexcharts-card plutôt que statistics-graph :
+          #    ce dernier génère automatiquement 3 séries min/moyenne/max
+          #    partageant le même libellé long (« Moyenne hebdomadaire
+          #    (km) »), tronqué sur mobile → légende illisible.
+          #    Ici chaque série porte un nom explicite et distinct.
+          - type: custom:apexcharts-card
+
+            header:
+              show: true
+              title: Autonomie — tendance (365 j)
+
+            graph_span: 365d
+            span:
+              end: day
+
+            apex_config:
+              chart:
+                height: 260
+              stroke:
+                curve: smooth
+              grid:
+                borderColor: rgba(0,0,0,0.08)
+              tooltip:
+                shared: true
+              legend:
+                show: true
+                position: bottom
+                horizontalAlign: center
+
+            yaxis:
+              - min: 28
+                max: 36
+                decimals: 0
+
+            series:
               - entity: sensor.autonomie_audi_e_tron_mensuelle
-                name: Moyenne hebdomadaire (km)
-                stat_types:
-                  - mean
+                name: Autonomie min (km)
+                type: line
+                stroke_width: 1.5
+                color: "rgba(144, 202, 249, 0.7)"
+                statistics:
+                  type: min
+                  period: week
+
+              - entity: sensor.autonomie_audi_e_tron_mensuelle
+                name: Autonomie moyenne (km)
+                type: line
+                stroke_width: 3
+                color: "rgba(33, 150, 243, 1)"
+                statistics:
+                  type: mean
+                  period: week
+
+              - entity: sensor.autonomie_audi_e_tron_mensuelle
+                name: Autonomie max (km)
+                type: line
+                stroke_width: 1.5
+                color: "rgba(144, 202, 249, 0.7)"
+                statistics:
+                  type: max
+                  period: week
 
           # ------------------------------------------------------
           # 📊 Co-visualisation autonomie / température snapshot
