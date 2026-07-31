@@ -75,7 +75,7 @@ côté Volets.
 |---|---|
 | **Rôle** | Contrôleur / pont des volets roulants (canal « RF / Volets ») |
 | **Type** | Passerelle commerciale propriétaire (Netatmo / Legrand) — boîte noire |
-| **Adresse LAN** | `192.168.1.33` |
+| **Adresse LAN** | Adresse fixe sur le LAN — mapping hôte/IP porté par [`ping_lan_synthese.md`](../contrats/ping_lan_synthese.md) |
 | **Sonde de présence réseau** | `binary_sensor.idiamant` (intégration Ping native) |
 | **Alimentation** | `switch.prise_palier` — secteur direct (cf. [`infrastructure_puissance.md`](infrastructure_puissance.md)) |
 | **Criticité (supervision LAN)** | *importante* (classe « RF / Volets », cf. [`ping_lan_synthese.md`](../contrats/ping_lan_synthese.md)) |
@@ -112,7 +112,7 @@ sans aucune prise sur le protocole.
 ```
 Volets roulants (moteurs RF)
         ↓  (protocole propriétaire — boîte noire)
-Pont iDiamant (produit commercial)          ← 192.168.1.33
+Pont iDiamant (produit commercial)          ← hôte fixe sur le LAN
         ↓  (entités cover.*)
 Entités cover.* Home Assistant (transport)  ← PRODUIT PAR LE PONT
         ↓
