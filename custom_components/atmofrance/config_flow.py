@@ -1,5 +1,6 @@
 import logging
 import voluptuous as vol
+from aiohttp.client import ClientError
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.config_entries import (
@@ -27,14 +28,22 @@ from .const import (
     CONF_INCLUDE_POLLUTION,
     CONF_INCLUDE_POLLUTION_FORECAST,
 )
-from .api import AtmoFranceDataApi, INSEEAPI
+from .api import (
+    AtmoFranceDataApi,
+    INSEEAPI,
+    InvalidAuthError,
+    TooManyRequestsError,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 AUTHENT_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_USERNAME, default=""): cv.string,
-        vol.Required(CONF_PASSWORD, default=""): cv.string,
+        # A password selector masks the field; cv.string showed it in clear.
+        vol.Required(CONF_PASSWORD, default=""): selector.TextSelector(
+            selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
+        ),
     }
 )
 ZIPCODE_SCHEMA = vol.Schema(
@@ -57,23 +66,39 @@ INCLUDED_FORECAST_SENSOR_SCHEMA = vol.Schema(
 
 
 async def validate_credentials(hass: HomeAssistant, data: dict) -> None:
-    """Validate user credential to access API"""
+    """Validate user credential to access API.
+
+    Raises TooManyRequestsError (HTTP 429), ConnectionRefusedError (rejected
+    credentials or any other non-200 answer) or ClientError/TimeoutError
+    (the API could not be reached at all).
+    """
     session = async_get_clientsession(hass)
-    try:
-        client = AtmoFranceDataApi(data, session, hass=hass)
-        await client.async_get_token()
-    except ValueError as exc:
-        raise exc
+    client = AtmoFranceDataApi(data, session, hass=hass)
+    await client.async_get_token()
 
 
 async def get_insee_code(hass: HomeAssistant, data: dict) -> None:
-    """Get Insee code from zip code"""
+    """Get Insee code from zip code.
+
+    Raises ValueError (unknown zip code) or ClientError/TimeoutError (the
+    geo.api.gouv.fr service could not be reached).
+    """
     session = async_get_clientsession(hass)
+    client = INSEEAPI(session)
+    return await client.get_data(data)
+
+
+async def _validate_step(hass: HomeAssistant, user_input: dict) -> dict:
+    """Try the credentials, returning the errors dict the form expects."""
     try:
-        client = INSEEAPI(session)
-        return await client.get_data(data)
-    except ValueError as exc:
-        raise exc
+        await validate_credentials(hass, user_input)
+    except TooManyRequestsError:
+        return {"base": "too_many_requests"}
+    except (InvalidAuthError, ConnectionRefusedError):
+        return {"base": "auth"}
+    except (ClientError, TimeoutError):
+        return {"base": "cannot_connect"}
+    return {}
 
 
 def _build_place_key(city) -> str:
@@ -115,14 +140,32 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         errors = {}
         _LOGGER.debug("in async_step_user !!")
         if user_input is not None:
-            try:
-                await validate_credentials(self.hass, user_input)
-            except ValueError:
-                errors["base"] = "auth"
+            errors = await _validate_step(self.hass, user_input)
             if not errors:
                 self.data = user_input
                 return await self.async_step_location()
         return self._show_setup_form("user", user_input, AUTHENT_SCHEMA, errors)
+
+    async def async_step_reauth(self, entry_data):
+        """Triggered by ConfigEntryAuthFailed when the API rejects us."""
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(self, user_input=None):
+        """Ask for fresh credentials and keep the existing entry."""
+        errors = {}
+        entry = self._get_reauth_entry()
+        if user_input is not None:
+            errors = await _validate_step(self.hass, user_input)
+            if not errors:
+                return self.async_update_reload_and_abort(
+                    entry, data_updates=user_input)
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=self.add_suggested_values_to_schema(
+                AUTHENT_SCHEMA, {CONF_USERNAME: entry.data.get(CONF_USERNAME)}),
+            errors=errors,
+        )
 
     async def async_step_location(self, user_input=None):
         """Handle location step"""
@@ -138,6 +181,8 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
                     )
                 except ValueError:
                     errors["base"] = "noinsee"
+                except (ClientError, TimeoutError):
+                    errors["base"] = "cannot_connect"
                 if not errors:
                     return await self.async_step_multilocation()
                 else:
@@ -173,6 +218,9 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         self.data[CONF_INSEE_CODE] = city_infos[0]
         self.data[CONF_CITY] = city_infos[1]
         self.data[CONF_INSEE_EPCI] = city_infos[2]
+        # One entry per commune: the INSEE code is what the API is keyed on.
+        await self.async_set_unique_id(self.data[CONF_INSEE_CODE])
+        self._abort_if_unique_id_configured()
         return await self.async_step_location(self.data)
 
     async def async_step_sensors_type(self, user_input=None):
@@ -222,7 +270,12 @@ class ConfigOptionFlowHandler(OptionsFlow):
                     CONF_INCLUDE_POLLEN)
                 return await self.async_step_forecast()
 
-        return self.async_show_form(step_id="init", data_schema=self.add_suggested_values_to_schema(INCLUDED_SENSOR_SCHEMA, self.config_entry.options), errors={})
+        return self.async_show_form(
+            step_id="init",
+            data_schema=self.add_suggested_values_to_schema(
+                INCLUDED_SENSOR_SCHEMA, self.config_entry.options),
+            errors=errors,
+        )
 
     async def async_step_forecast(self, user_input=None) -> ConfigFlowResult:
         errors = {}
@@ -233,4 +286,9 @@ class ConfigOptionFlowHandler(OptionsFlow):
                 CONF_INCLUDE_POLLEN_FORECAST)
             return self.async_create_entry(title=self.config_entry.title, data=self.newOption)
 
-        return self.async_show_form(step_id="forecast", data_schema=self.add_suggested_values_to_schema(INCLUDED_FORECAST_SENSOR_SCHEMA, self.config_entry.options), errors={})
+        return self.async_show_form(
+            step_id="forecast",
+            data_schema=self.add_suggested_values_to_schema(
+                INCLUDED_FORECAST_SENSOR_SCHEMA, self.config_entry.options),
+            errors=errors,
+        )

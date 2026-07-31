@@ -2,6 +2,8 @@
     "config": {
         "error": {
             "auth": "Impossible to get auth token. Check your credentials",
+            "cannot_connect": "Unable to reach the service. Check your network connection and the logs.",
+            "too_many_requests": "Too many requests sent to the Atmo France API. Please wait a few minutes and try again.",
             "noinsee": "Impossible to get INSEE code. Check ZIP code and logs.",
             "need_one_option": "At least one option must be selected"
         },
@@ -9,7 +11,7 @@
             "user": {
                 "data": {
                     "username": "Username",
-                    "password": "Password "
+                    "password": "Password"
                 },
                 "description": "Enter your Atmo Data credentials.",
                 "title": "Authentication"
@@ -41,9 +43,21 @@
                     "include_pollen_forecast": "Pollen forecast",
                     "include_pollution_forecast": "Pollution forecast"
                 },
-                "title": "Forecast ndicator type selection",
+                "title": "Forecast indicator type selection",
                 "description": "Select sensor type"
+            },
+            "reauth_confirm": {
+                "title": "Re-authentication",
+                "description": "Your Atmo France credentials were rejected. Please enter them again.",
+                "data": {
+                    "username": "Username",
+                    "password": "Password"
+                }
             }
+        },
+        "abort": {
+            "already_configured": "This city is already configured",
+            "reauth_successful": "Re-authentication was successful"
         }
     },
     "options": {

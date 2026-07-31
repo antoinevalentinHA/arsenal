@@ -2,6 +2,8 @@
     "config": {
         "error": {
             "auth": "Impossivel obter o token de autenticação verifica as tuas credenciais",
+            "cannot_connect": "Não foi possível contactar o serviço. Verifica a tua ligação de rede e os logs.",
+            "too_many_requests": "Demasiados pedidos enviados à API Atmo France. Aguarda alguns minutos e tenta novamente.",
             "noinsee": "Impossivel obter o código INSEE verifica o teu código portal ou então os logs."
         },
         "step": {
@@ -26,7 +28,19 @@
                 },
                 "title": "Muitos Resultados encontrados",
                 "description": "Seleciona a cidade"
+            },
+            "reauth_confirm": {
+                "title": "Reautenticação",
+                "description": "As tuas credenciais Atmo France foram recusadas. Introduz-as novamente.",
+                "data": {
+                    "username": "Utilizador",
+                    "password": "Senha"
+                }
             }
+        },
+        "abort": {
+            "already_configured": "Esta cidade já está configurada",
+            "reauth_successful": "Reautenticação concluída com sucesso"
         }
     }
 }

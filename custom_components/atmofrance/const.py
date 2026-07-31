@@ -1,7 +1,7 @@
 """ Les constantes pour l'intégration Atmo France """
 from dataclasses import dataclass
 from enum import Enum
-from homeassistant.const import Platform, CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+from homeassistant.const import Platform
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntityDescription,
@@ -13,7 +13,6 @@ from homeassistant.components.sensor import (
 DOMAIN = "atmofrance"
 NAME = "Atmo France"
 PLATFORMS: list[Platform] = [Platform.SENSOR]
-CLIENT_TIMEOUT = 10
 BASE_URL = "https://admindata.atmo-france.org"
 AUTH_URL = f"{BASE_URL}/api/login"
 DATA_URL = f"{BASE_URL}/api/data"  # 112 : pollution ; 122 : pollen
@@ -71,6 +70,22 @@ LEVEL_COLOR = {
     6: "#872181",
     7: "#888",
 }
+
+# Atmo France ne documente pas l'unite dans la charge utile. Les valeurs
+# observees (conc_gram=8.2 pour un niveau "Faible") correspondent a l'echelle
+# standard des pollens en grains/m3, pas aux ug/m3 declares jusqu'ici.
+POLLEN_CONCENTRATION_UNIT = "grains/m³"
+
+# Combien de jours de prévision chaque flux publie réellement, observé sur
+# l'API le 30/07/2026 après le rafraîchissement de 12h00 :
+#   pollution (112) -> 2 dates : J et J+1
+#   pollen    (122) -> 3 dates : J, J+1 et J+2
+# Créer des capteurs pour un jour que le flux ne publie jamais ne produirait
+# que des entités éternellement inconnues, d'où la distinction. Un jour
+# annoncé mais pas encore publié remonte None, donc « Inconnu » — pas une
+# valeur inventée.
+POLLUTION_FORECAST_DAYS = 1
+POLLEN_FORECAST_DAYS = 2
 
 REFRESH_INTERVALL = 60
 
@@ -187,49 +202,43 @@ POLLEN_CONC_SENSORS: tuple[AtmoFranceSensorEntityDescription, ...] = (
     AtmoFranceSensorEntityDescription(
         key="conc_ambr",
         name="Concentration Ambroisie",
-        device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
         icon="mdi:tree",
-        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        native_unit_of_measurement=POLLEN_CONCENTRATION_UNIT,
         state_class=SensorStateClass.MEASUREMENT,
         json_key="conc_ambr",),
     AtmoFranceSensorEntityDescription(
         key="conc_arm",
         name="Concentration Armoise",
-        device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
         icon="mdi:tree",
-        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        native_unit_of_measurement=POLLEN_CONCENTRATION_UNIT,
         state_class=SensorStateClass.MEASUREMENT,
         json_key="conc_arm",),
     AtmoFranceSensorEntityDescription(
         key="conc_aul",
         name="Concentration Aulne",
-        device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
         icon="mdi:tree",
-        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        native_unit_of_measurement=POLLEN_CONCENTRATION_UNIT,
         state_class=SensorStateClass.MEASUREMENT,
         json_key="conc_aul",),
     AtmoFranceSensorEntityDescription(
         key="conc_gram",
         name="Concentration Graminé",
-        device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
         icon="mdi:grass",
-        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        native_unit_of_measurement=POLLEN_CONCENTRATION_UNIT,
         state_class=SensorStateClass.MEASUREMENT,
         json_key="conc_gram",),
     AtmoFranceSensorEntityDescription(
         key="conc_boul",
         name="Concentration Bouleau",
-        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-        device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
+        native_unit_of_measurement=POLLEN_CONCENTRATION_UNIT,
         icon="mdi:tree",
         state_class=SensorStateClass.MEASUREMENT,
         json_key="conc_boul",),
     AtmoFranceSensorEntityDescription(
         key="conc_oliv",
         name="Concentration Olivier",
-        device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
         icon="mdi:tree",
-        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        native_unit_of_measurement=POLLEN_CONCENTRATION_UNIT,
         state_class=SensorStateClass.MEASUREMENT,
         json_key="conc_oliv",),
 )

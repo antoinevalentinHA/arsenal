@@ -2,6 +2,8 @@
     "config": {
         "error": {
             "auth": "Impossible de recupérer le token. Vérifiez vos identifiants",
+            "cannot_connect": "Service injoignable. Vérifiez votre connexion réseau et les logs.",
+            "too_many_requests": "Trop de requêtes envoyées à l'API Atmo France. Patientez quelques minutes avant de réessayer.",
             "noinsee": "Impossible de récupérer le code INSEE. Vérifiez le code postal et les logs.",
             "need_one_option": "Au moins un des deux indicateurs doit être actif"
         },
@@ -43,7 +45,19 @@
                 },
                 "title": "Sélection des indicateurs prévisionnels",
                 "description": "Selectionnez les indicateurs à inclure"
+            },
+            "reauth_confirm": {
+                "title": "Ré-authentification",
+                "description": "Vos identifiants Atmo France ont été refusés. Saisissez-les à nouveau.",
+                "data": {
+                    "username": "Nom d'utilisateur",
+                    "password": "Mot de passe"
+                }
             }
+        },
+        "abort": {
+            "already_configured": "Cette commune est déjà configurée",
+            "reauth_successful": "Ré-authentification réussie"
         }
     },
     "options": {
