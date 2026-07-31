@@ -3,7 +3,7 @@
 # 🧠 Nature : Pilotage automatique contractuel
 #
 # Version : v2.8
-# Statut  : Cible contractuelle validée — implémentation à mettre en conformité
+# Statut  : Cible contractuelle validée — implémentation livrée et conforme
 #
 # Évolution v2.5 : introduction de l'autorité de domaine (régimes automatique /
 # manuel), pilote du chantier C36 — voir §16.
@@ -33,9 +33,16 @@
 # Aucun arbitrage métier n'est ouvert. Restent des paramètres
 # à calibrer (§14) et des effets attendus à vérifier (§15).
 #
-# L'implémentation en vigueur ne satisfait pas encore la présente
-# version. Conformément à la doctrine Arsenal, c'est l'implémentation
-# qui est en écart, et non le contrat.
+# L'implémentation en vigueur satisfait la présente version. La mise
+# en conformité au contrat (chantier C35) est close depuis le
+# 2026-07-24 : les six écarts recensés sont résorbés en code et en CI.
+# L'autorité de domaine est livrée et conforme (§16.6), le veto
+# pollution également (§17.10).
+#
+# Deux réserves demeurent, et ne constituent pas un écart de
+# conformité : les paramètres du §14 sont PROVISOIRES — leur
+# calibration définitive et la vérification de l'effet §15.1 sont
+# parquées, faute d'observabilité de la chaîne de décision.
 # ==========================================================
 
 
