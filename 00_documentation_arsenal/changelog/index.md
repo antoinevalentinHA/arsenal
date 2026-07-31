@@ -1646,6 +1646,21 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Lovelace — jaune ambré `rgb(255, 193, 7)` ajouté à l'Exception 3 (vigilance) et à `bouton_navigation_dynamique` ; `sensor.etat_arrosage_dashboard` recalculé sur le besoin sol couvert / non couvert ; durée d'arrosage déclarée partagée manuel ↔ automatique ; sections « Autorité & reprise en main » sur les 4 dashboards.
 - Registres — C10, C13, C34 et C35 clos ; C36 à C40 ajoutés en clos récents ; contrats 297 → 300, doctrines 13 → 14 ; ajout des changelogs gelés v17.0.2 et v17.0.3 ; `historique.md` complété (phase M réécrite, phase N série v17).
 
+---
+
+## 🧠 ARSENAL HA — [v17.1.1](changelogs/v17/v17_1_1.md) — STABLE — 2026-07-30
+**Tags :** arrosage, meteo, vmc, lovelace, voiture, contrats, ci, checkers, recorder, registres
+
+**Signal net :**
+- Arrosage (C11 P4) — modulation bornée de la durée : contrat `19_modulation_duree.md`, `sensor.arrosage_modulation_{reco_sol,reco_climat,duree_applicable}` (facteurs 0,95 sol / 1,05 climat, bornage [1,60]), `input_boolean.arrosage_modulation_duree_actif` ; le Run fige la durée en snapshot unique, refuse le lancement sur base inexploitable et trace le motif dans `input_text.arrosage_session_modulation_motif` ; suppression du repli `| int(2)`.
+- Arrosage (C41) — arbitrage pluie ↔ besoin : contrat `20_arbitrage_pluie_besoin.md` et `sensor.arrosage_pluie_arbitrage` (6 verdicts) ; `binary_sensor.arrosage_suspension_pluie` réécrit en projection dérivée, `unique_id` et décision V1 inchangés ; nouveaux helpers de crédibilité, d'attente d'infiltration et de tolérance d'échéance.
+- Météo — `sensor.pluie_prevue` expose l'attribut `echeances` (faits bruts `{datetime, mm, proba_pct}` bornés à l'horizon, même appel `weather.get_forecasts`) ; `pluie_production.md` consigne l'absence de probabilité horaire native gratuite (`proba_pct` = `null`, INV-PROD-7).
+- VMC — `contrats/vmc.md` v2.6 → v2.8 : §17 veto sanitaire d'import sur PM10 / PM2.5 courant ∈ `{4,5,6,7}` en régime automatique (implémenté dans `vmc_haute_vitesse_commandee`, attributs `veto_pollution` / `requise_mais_vetoee`, bannière conditionnelle au dashboard), et durée minimale de descente restreinte au régime automatique — descente immédiate en manuel (`gestion_auto.yaml`).
+- Lovelace (CH-LL-CI-2) — règles `R-LL-GRID-1` / `R-LL-GRID-2` dans `ui/pattern_dashboard.md`, checker `check_lovelace_grid_contracts.py` et workflow bloquant `contracts_lovelace_grid.yml` ; dashboard de diagnostic arrosage restructuré en 6 sections à cartes de synthèse XL.
+- Correctif — bilan mensuel batterie Audi : `regex_search` renvoyait un booléen, `maxv` valait toujours 1,0 et la perte dégénérait en `(1 − actuel) × 100`.
+- Recorder — ajout de `sensor.arrosage_pluie_arbitrage` et du microscope C11 P4 ; retrait des microscopes C16 et C13, chantiers clos (entités conservées vives).
+- Registres — C16 clos (2026-07-29), C41 clos (2026-07-30), CH-LL-CI-2 clos ; C11 réveillé puis P4 livré ; contrats 300 → 302, checkers 86 → 87, workflows 91 → 92 ; ajout du changelog gelé v17.1.0.
+
 ==================================================
 FIN INDEX
 ==================================================
