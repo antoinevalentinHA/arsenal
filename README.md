@@ -71,6 +71,20 @@ Contracts are reference documents confronted with the code, and the discipline i
 
 ---
 
+## Forked integrations Arsenal depends on
+
+A few integrations are loaded from personal forks rather than from their upstream release, because Arsenal needs fixes upstream has not shipped. Each fork states the branch actually served and tracks its upstream; fixes are proposed upstream whenever upstream can take them.
+
+- Air conditioning — [`ha_airstage`](https://github.com/antoinevalentinHA/ha_airstage) · upstream [`danielkaldheim/ha_airstage`](https://github.com/danielkaldheim/ha_airstage)
+- Battery storage — [`hassio-bluetti-bt`](https://github.com/antoinevalentinHA/hassio-bluetti-bt) and its library [`bluetti-bt-lib`](https://github.com/antoinevalentinHA/bluetti-bt-lib) · upstream [`Patrick762/hassio-bluetti-bt`](https://github.com/Patrick762/hassio-bluetti-bt) and [`Patrick762/bluetti-bt-lib`](https://github.com/Patrick762/bluetti-bt-lib)
+- Electricity metering — [`ha-linky`](https://github.com/antoinevalentinHA/ha-linky) · upstream [`bokub/ha-linky`](https://github.com/bokub/ha-linky)
+- Air quality — [`atmofrance`](https://github.com/antoinevalentinHA/atmofrance) · upstream [`sebcaps/atmofrance`](https://github.com/sebcaps/atmofrance)
+- Irrigation bridge firmware — [`rainbird-esp32-elegoo`](https://github.com/antoinevalentinHA/rainbird-esp32-elegoo), derived from [`rainbird-esp32`](https://github.com/antoinevalentinHA/rainbird-esp32)
+
+[`audi_connect_ha`](https://github.com/antoinevalentinHA/audi_connect_ha) is a separate case: it is a contribution fork used to carry fixes toward [`audiconnect/audi_connect_ha`](https://github.com/audiconnect/audi_connect_ha). Arsenal runs the official release, so it is not a dependency.
+
+---
+
 ## Interface preview
 
 A few live views, as they run. They are **dense by design**: the UI observes states, it does not compute them.
