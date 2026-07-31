@@ -17,7 +17,7 @@
 # (§17). En régime automatique, un indice PM10 ou PM2.5 courant « Mauvais » ou pire
 # suspend la haute vitesse à la composition exécutoire (§16.2) ; les voies (§5, §6)
 # et `binary_sensor.vmc_haute_vitesse_requise` (§3.1) restent inchangées.
-# Documentaire, sans runtime. Arbitrage propriétaire :
+# Implémentation livrée dans la même release (§17.10). Arbitrage propriétaire :
 # `audits/04_chantiers/vmc/arbitrage_veto_pollution_vmc.md`.
 # Évolution v2.8 : la durée minimale de descente (§8.2, §8.3) est restreinte au
 # SEUL régime automatique. En régime manuel, la descente en basse vitesse est
@@ -1457,40 +1457,84 @@ qualifiée, un **veto sanitaire explicite** suspend la haute vitesse. Le veto ag
 (§3.1), ni une frontière ; il n'est ni une entrée de besoin (§4.3), ni un
 modulateur (§7.4).
 
-- **Signal.** Indices **PM10 courant** ou **PM2.5 courant** de la zone (échelle
-  ATMO discrète). Les entités **J+1** et l'**indice global** sont **exclus** de
-  l'autorité du veto (indice global : affichage/diagnostic admis, §10.5).
-- **Frontière.** Veto **actif** si PM10 **ou** PM2.5 courant ∈ **{4, 5, 6, 7}**
-  (« Mauvais » ou pire ; `7 — Évènement` **inclus**). Entrée `≥ 4`, libération
-  `< 4`, **sans hystérésis** ni conservation d'état (indice = classe discrète
-  journalière).
-- **Effet.** En **régime automatique** : `haute vitesse commandée = haute vitesse
-  requise ET NON veto` (§16.2). La VMC reste en **basse vitesse**, état toujours
-  valide ; la **ventilation permanente** (§13.3) est préservée. `…_requise` et les
-  voies restent **calculées et lisibles** — seul le régime **commandé** est
-  suspendu.
-- **Autorité.** Veto **actif en automatique uniquement**. En **manuel**,
-  l'occupant **reprend l'autorité** (§16.1) : sa consigne souveraine **surpasse le
-  veto** — parce que le titulaire a changé, non parce que le veto serait mineur.
-- **Donnée non exploitable.** `0` (« Indisponible », **aussi** la valeur forcée en
-  cas d'échec de la source), `unknown`, `unavailable`, valeur non numérique :
-  **aucun veto n'est déduit** — « **absence de preuve permettant d'appliquer le
-  veto** », jamais « air extérieur bon ». L'indisponibilité est **exposée** au
-  diagnostic, distincte d'un veto actif et d'un veto inactif.
-- **Explicabilité (§10.6).** Une haute vitesse **requise mais suspendue par le
-  veto** est restituée comme telle, distincte d'une « non requise ».
-- **Contrepartie assumée.** Pendant un veto, un besoin CO₂ ou humidité actif
-  **n'est pas servi** par la haute vitesse ; le niveau intérieur peut monter.
-  Levier résiduel : la prise de main manuelle. Arbitrage assumé du propriétaire.
-- **Hors périmètre.** Hystérésis, conservation temporisée, garde de panne durable,
-  filtration, usage des J+1/indice global comme autorité, et tout
-  runtime/helper/UI/Recorder (implémentation = lot ultérieur). Les `entity_id`
-  (sources PM et porteur du veto) sont **préattribués avant runtime**.
+### 17.1 Principe
+
+Le veto est une **suspension explicite**, non une entrée de besoin. Il ne crée
+aucun état propre et ne consulte aucun besoin.
+
+### 17.2 Signal
+
+Indices **PM10 courant** ou **PM2.5 courant** de la zone (échelle ATMO discrète).
+Les entités **J+1** et l'**indice global** sont **exclus** de l'autorité du veto
+(indice global : affichage/diagnostic admis, §10.5).
+
+### 17.3 Frontière
+
+Veto **actif** si PM10 **ou** PM2.5 courant ∈ **{4, 5, 6, 7}** (« Mauvais » ou
+pire ; `7 — Évènement` **inclus**). Entrée `≥ 4`, libération `< 4`, **sans
+hystérésis** ni conservation d'état (indice = classe discrète journalière).
+
+### 17.4 Donnée non exploitable
+
+`0` (« Indisponible », **aussi** la valeur forcée en cas d'échec de la source),
+`unknown`, `unavailable`, valeur non numérique : **aucun veto n'est déduit** —
+« **absence de preuve permettant d'appliquer le veto** », jamais « air extérieur
+bon ». L'indisponibilité est **exposée** au diagnostic, distincte d'un veto actif
+et d'un veto inactif.
+
+### 17.5 Effet
+
+En **régime automatique** : `haute vitesse commandée = haute vitesse requise ET
+NON veto` (§16.2). La VMC reste en **basse vitesse**, état toujours valide ; la
+**ventilation permanente** (§13.3) est préservée. `…_requise` et les voies restent
+**calculées et lisibles** — seul le régime **commandé** est suspendu.
+
+### 17.6 Autorité
+
+Veto **actif en automatique uniquement**. En **manuel**, l'occupant **reprend
+l'autorité** (§16.1) : sa consigne souveraine **surpasse le veto** — parce que le
+titulaire a changé, non parce que le veto serait mineur.
+
+### 17.7 Explicabilité et exposition (§10.6)
+
+L'état du veto est exposé au diagnostic en **trois valeurs distinctes** — actif,
+inactif, indisponible (§17.4) — accompagné des **valeurs PM courantes** réellement
+consommées. Une haute vitesse **requise mais suspendue par le veto** est restituée
+comme telle, distincte d'une « non requise ».
+
+### 17.8 Contrepartie assumée
+
+Pendant un veto, un besoin CO₂ ou humidité actif **n'est pas servi** par la haute
+vitesse ; le niveau intérieur peut monter. Levier résiduel : la prise de main
+manuelle. Arbitrage assumé du propriétaire.
+
+### 17.9 Hors périmètre
+
+Hystérésis, conservation temporisée, garde de panne durable, filtration, usage des
+J+1 / indice global comme autorité, veto pollution de l'aération naturelle
+(domaine distinct), et **historisation Recorder** du veto.
+
+### 17.10 État de l'implémentation — livrée
+
+Les comportements §17.1 à §17.7 sont **spécifiés, opposables et livrés** :
+
+- le veto est **composé en ligne** dans la décision exécutoire
+  (`binary_sensor.vmc_haute_vitesse_commandee`), branche **automatique** seule,
+  sur `sensor.atmo_france_pm10_bordeaux` et `sensor.atmo_france_pm25_bordeaux` ;
+  aucun helper ni porteur de veto distinct n'est créé ;
+- la **disponibilité** de la décision exécutoire est **inchangée** (§16.2) : le
+  veto ne la rend jamais indisponible ;
+- l'**exposition** (§17.7) est portée par les attributs de cette même décision —
+  état du veto en trois valeurs, indices PM courants, et distinction « requise
+  mais suspendue » ;
+- l'**UI** restitue cette distinction sans reconstruire aucune logique métier.
+
+Aucune entité n'est historisée au Recorder au titre du veto (§17.9).
 
 
 # ==========================================================
 # FIN DU CONTRAT — VMC
-# Version v2.7 — cible contractuelle validée
-# Implémentation livrée et conforme jusqu'à v2.6 (pilote VMC de C36)
-# Veto pollution (§17) : spécifié — implémentation ultérieure
+# Version v2.8 — cible contractuelle validée
+# Implémentation livrée et conforme (pilote VMC de C36 ; veto pollution §17 ;
+# descente immédiate en régime manuel §8.3 / §16.5)
 # ==========================================================
