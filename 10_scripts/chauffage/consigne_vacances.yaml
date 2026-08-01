@@ -21,7 +21,24 @@
 #     - Idempotent
 #     - Sans logique decisionnelle chauffage
 #
+# 🌦️ CONDITIONNEMENT SAISONNIER
+#     La surcote Vacances ne protege le bati que pendant les
+#     saisons de chauffe. En ete, le chauffage ne chauffe pas :
+#     la surcote n'a aucun effet thermique et ne fait que degrader
+#     la lisibilite de la consigne reduite affichee.
+#     - Hors ete : comportement nominal (sauvegarde + application).
+#     - Ete : la surcote est garantie ABSENTE. Si une adaptation
+#         est en vigueur (sauvegarde valide), la consigne reduite
+#         est restauree ; sinon abstention.
+#     La saison est CONSOMMEE depuis `input_select.saison` (source
+#     de verite metier unique) — aucun recalcul local. Si la saison
+#     est indisponible, on retombe sur le comportement nominal
+#     (fail-safe vers la protection du bati).
+#
 # 🧠 PRINCIPE
+#     - Si contexte ete :
+#         garantir l'absence de surcote (restauration si adaptee,
+#         sinon abstention), avec trace locale
 #     - Si les preconditions sont invalides :
 #         abstention stricte avec trace locale
 #     - Si aucune sauvegarde n’existe (sentinelle = 0) :
@@ -42,6 +59,7 @@
 #     - input_number.chauffage_consigne_reduite
 #     - input_number.chauffage_consigne_vacances
 #     - input_number.chauffage_consigne_reduite_sauvegarde
+#     - input_select.saison (contexte saisonnier, lecture seule)
 #
 # ⚠️ INVARIANT
 #     `input_number.chauffage_consigne_reduite_sauvegarde`
@@ -68,7 +86,66 @@ vacances_adapter_consigne_reduite:
           {% else %}
             {{ none }}
           {% endif %}
+        # Contexte saisonnier consomme depuis la source de verite metier
+        # unique. Toute valeur autre que 'Été' (dont unknown/unavailable)
+        # laisse le comportement nominal actif : fail-safe vers la
+        # protection du bati.
+        est_ete: >
+          {{ states('input_select.saison') == 'Été' }}
     - choose:
+        # ----------------------------------------------------------
+        # ÉTÉ — la surcote Vacances n'a aucun effet thermique
+        # (le chauffage ne chauffe pas) et degrade la lisibilite de
+        # la consigne reduite. On garantit son absence : restauration
+        # si une adaptation est en vigueur, sinon abstention.
+        # Idempotent, reversible, sans decision chauffage.
+        # ----------------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: "{{ est_ete }}"
+          sequence:
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ sauvegarde_existante is none }}"
+                  sequence:
+                    - service: system_log.write
+                      data:
+                        level: warning
+                        message: >
+                          Vacances - Adapter consigne reduite :
+                          contexte ete, sauvegarde indisponible
+                          (unknown/unavailable), abstention.
+                - conditions:
+                    - condition: template
+                      value_template: "{{ sauvegarde_existante > 0 }}"
+                  sequence:
+                    - service: input_number.set_value
+                      target:
+                        entity_id: input_number.chauffage_consigne_reduite
+                      data:
+                        value: "{{ sauvegarde_existante }}"
+                    - service: input_number.set_value
+                      target:
+                        entity_id: input_number.chauffage_consigne_reduite_sauvegarde
+                      data:
+                        value: 0
+                    - service: system_log.write
+                      data:
+                        level: info
+                        message: >
+                          Vacances - Adapter consigne reduite :
+                          contexte ete, surcote Vacances retiree,
+                          consigne reduite restauree a
+                          {{ sauvegarde_existante }}.
+              default:
+                - service: system_log.write
+                  data:
+                    level: info
+                    message: >
+                      Vacances - Adapter consigne reduite :
+                      contexte ete, aucune surcote en vigueur,
+                      abstention.
         - conditions:
             - condition: template
               value_template: >
