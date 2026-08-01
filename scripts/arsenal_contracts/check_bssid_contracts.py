@@ -206,6 +206,43 @@ def test_presence_wifi_reads_bssid_maison_only() -> None:
     ok("T09 — presence_wifi_maison consomme bssid_maison")
 
 
+def test_presence_wifi_normalisation_et_validation() -> None:
+    """
+    T09b — binary_sensor.presence_wifi_maison normalise ET valide les BSSID
+    avant comparaison (contrat §4/§6).
+
+    Sans validation stricte du format canonique (12 hex), un téléphone hors
+    du Wi-Fi maison (BSSID '' / unknown / unavailable) peut matcher un jeton
+    vide d'un référentiel vide et fabriquer une présence fantôme — laquelle
+    remonte jusqu'à binary_sensor.presence_famille_unifiee et bloque à tort
+    l'activation du mode vacances.
+
+    Scope : 12_template_sensors/presence/securite/wifi.yaml
+    """
+    if not FILE_WIFI_PRESENCE.is_file():
+        error("T09b: wifi.yaml introuvable dans 12_template_sensors/presence/securite/")
+        return
+    content = read(FILE_WIFI_PRESENCE)
+
+    for transform, label in [
+        (r'\|\s*lower', "| lower"),
+        (r"replace\(['\"]:['\"]", "replace(':','')"),
+        (r"replace\(['\"][-]['\"]", "replace('-','')"),
+    ]:
+        if not re.search(transform, content):
+            error(
+                f"T09b: normalisation '{label}' absente dans presence_wifi_maison "
+                f"— contrat §6 non respecté"
+            )
+    if not re.search(r"regex_match\(\s*['\"]\^\[0-9a-f\]\{12\}\$['\"]", content):
+        error(
+            "T09b: validation du format canonique '^[0-9a-f]{12}$' absente dans "
+            "presence_wifi_maison — un BSSID vide/mal formé pourrait matcher "
+            "(présence fantôme)"
+        )
+    ok("T09b — presence_wifi_maison normalise et valide les BSSID")
+
+
 def test_apprentissage_triggered_by_nouveau_bssid() -> None:
     """
     T10 — L'automation d'apprentissage se déclenche sur binary_sensor.wifi_nouveau_bssid.
@@ -355,6 +392,7 @@ TESTS = [
     test_nouveau_bssid_enforces_source_person_coupling,
     test_nouveau_bssid_normalisation,
     test_presence_wifi_reads_bssid_maison_only,
+    test_presence_wifi_normalisation_et_validation,
     test_apprentissage_triggered_by_nouveau_bssid,
     test_apprentissage_writes_bssid_maison,
     test_apprentissage_enforces_source_person_coupling,

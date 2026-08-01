@@ -23,20 +23,33 @@
       device_class: presence
 
       state: >
-        {# --- BSSID considérés comme "maison" --- #}
-        {% set raw = states('input_text.bssid_maison') | lower %}
-        {% set bssids_maison = raw.split(',') | map('trim') | list %}
+        {# --- Référentiel BSSID "maison" : normalisation + validation canonique --- #}
+        {# Contrat bssid.md §4/§6 : 12 hex minuscules, sans séparateur.        #}
+        {# Les jetons vides ou mal formés (ex. référentiel vide → ['']) sont   #}
+        {# rejetés, sinon un téléphone absent (BSSID '') matcherait un jeton    #}
+        {# vide et fabriquerait une présence fantôme.                          #}
+        {% set raw_maison = states('input_text.bssid_maison') | string %}
+        {% set ns = namespace(maison=[]) %}
+        {% for item in raw_maison.split(',') %}
+          {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
+          {% if b | regex_match('^[0-9a-f]{12}$') %}
+            {% set ns.maison = ns.maison + [b] %}
+          {% endif %}
+        {% endfor %}
 
         {# --- Entités des capteurs Wi-Fi via helpers --- #}
-        {% set wifi_parent_1   = states('input_text.telephone_parent_1_wifi_bssid') %}
+        {% set wifi_parent_1 = states('input_text.telephone_parent_1_wifi_bssid') %}
         {% set wifi_parent_2 = states('input_text.telephone_parent_2_wifi_bssid') %}
 
-        {# --- BSSID actuels des téléphones --- #}
-        {% set bssid_parent_1   = states(wifi_parent_1)   | lower %}
-        {% set bssid_parent_2 = states(wifi_parent_2) | lower %}
+        {# --- BSSID actuels des téléphones : même normalisation canonique --- #}
+        {# Un téléphone hors du Wi-Fi maison rapporte '' / unknown /            #}
+        {# unavailable : la validation 12 hex garantit qu'il ne peut jamais     #}
+        {# matcher le référentiel.                                             #}
+        {% set bssid_parent_1 = states(wifi_parent_1) | string | trim | lower | replace(':', '') | replace('-', '') %}
+        {% set bssid_parent_2 = states(wifi_parent_2) | string | trim | lower | replace(':', '') | replace('-', '') %}
 
-        {# --- Présence si un téléphone est connecté à un BSSID "maison" --- #}
+        {# --- Présence si un téléphone valide est connecté à un BSSID "maison" --- #}
         {{
-          bssid_parent_1 in bssids_maison
-          or bssid_parent_2 in bssids_maison
+          (bssid_parent_1 | regex_match('^[0-9a-f]{12}$') and bssid_parent_1 in ns.maison)
+          or (bssid_parent_2 | regex_match('^[0-9a-f]{12}$') and bssid_parent_2 in ns.maison)
         }}

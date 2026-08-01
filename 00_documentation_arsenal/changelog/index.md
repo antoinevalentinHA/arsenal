@@ -1661,6 +1661,14 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Recorder — ajout de `sensor.arrosage_pluie_arbitrage` et du microscope C11 P4 ; retrait des microscopes C16 et C13, chantiers clos (entités conservées vives).
 - Registres — C16 clos (2026-07-29), C41 clos (2026-07-30), CH-LL-CI-2 clos ; C11 réveillé puis P4 livré ; contrats 300 → 302, checkers 86 → 87, workflows 91 → 92 ; ajout du changelog gelé v17.1.0.
 
+## 🧠 ARSENAL HA — [v17.1.2](changelogs/v17/v17_1_2.md) — STABLE — 2026-08-01
+**Tags :** presence, modes, vacances, wifi, bssid, ci, checkers, correctif
+
+**Signal net :**
+- Correctif présence Wi-Fi — `binary_sensor.presence_wifi_maison` fabriquait une présence fantôme quand la famille était absente : faute de normalisation/validation canonique, un téléphone hors du Wi-Fi maison (BSSID `''` / `unknown` / `unavailable`) matchait un jeton vide du référentiel (`'' in ['']`), remontait jusqu'à `presence_famille_unifiee` et bloquait l'activation du mode vacances (dashboard « Vacances inactives — Présence famille détectée »).
+- Runtime — `presence/securite/wifi.yaml` normalise (`trim`/`lower`/`replace(':','')`/`replace('-','')`) puis valide strictement (`^[0-9a-f]{12}$`) le référentiel et les BSSID des téléphones avant comparaison, en miroir de `wifi_nouveau_bssid` ; corrige aussi un faux négatif latent (BSSID à deux-points jamais matché). `unique_id`, `entity_id` et source unique inchangés.
+- CI — ajout du test `T09b` à `check_bssid_contracts.py` : verrou anti-régression exigeant normalisation canonique + validation de format dans `presence_wifi_maison`.
+
 ==================================================
 FIN INDEX
 ==================================================
