@@ -36,6 +36,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     config = FullDeviceConfig.from_dict(entry.data)
 
     if config is None:
+        logging.getLogger(__name__).error(
+            "Failed to parse config entry data for '%s'. "
+            "This may happen when upgrading from v0.1.6 to v0.2.x "
+            "due to missing 'use_encryption' field.",
+            entry.title,
+        )
         return False
 
     logger = logging.getLogger(

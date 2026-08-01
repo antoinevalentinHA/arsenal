@@ -28,7 +28,7 @@ class InitialDeviceConfig:
             raw.get(CONF_ADDRESS),
             raw.get(CONF_NAME),
             raw.get(CONF_TYPE),
-            raw.get(CONF_USE_ENCRYPTION),
+            raw.get(CONF_USE_ENCRYPTION, False),
         )
 
     @property
@@ -46,5 +46,5 @@ class InitialDeviceConfig:
             isinstance(raw.get(CONF_ADDRESS), str)
             and isinstance(raw.get(CONF_NAME), str)
             and isinstance(raw.get(CONF_TYPE), str)
-            and isinstance(raw.get(CONF_USE_ENCRYPTION), bool)
+            and isinstance(raw.get(CONF_USE_ENCRYPTION, False), bool)
         )

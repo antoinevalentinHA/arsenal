@@ -33,15 +33,15 @@ class PollingCoordinator(DataUpdateCoordinator):
         )
 
         self.config = config
+        self.reader = None
 
         # Create client
         self.logger.info("Creating client for %s", config.name)
         bluetti_device = build_device(config.name)
 
         if bluetti_device is None:
-            self.logger.error("Device is unknown type")
-            self.async_shutdown()
-            return None
+            self.logger.error("Device is unknown type: %s", config.name)
+            return
 
         self.reader = DeviceReader(
             config.address,
@@ -69,6 +69,14 @@ class PollingCoordinator(DataUpdateCoordinator):
             is False
         ):
             self.logger.warning("Device not connected")
+            self.last_update_success = False
+            return None
+
+        if self.reader is None:
+            self.logger.error(
+                "Reader not initialized - device type may be unsupported: %s",
+                self.config.name,
+            )
             self.last_update_success = False
             return None
 
