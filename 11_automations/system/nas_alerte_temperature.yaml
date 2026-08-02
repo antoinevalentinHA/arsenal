@@ -20,8 +20,8 @@
 #
 #  🧩 UTILISATION
 #     - Déclenchement :
-#         • température moyenne du disque ≥ 40 °C
-#           maintenue pendant au moins 10 minutes
+#         • température moyenne du disque ≥ 55 °C
+#           maintenue pendant au moins 30 minutes
 #     - Action :
 #         • envoi d’une notification mobile prioritaire
 #           avec tag dédié pour persistance
@@ -35,8 +35,8 @@
 - id: '10120000000005'
   alias: "Système - Alerte NAS"
   description: >
-    Notifie le téléphone si la température du disque NAS dépasse 40°C
-    pendant au moins 10 minutes.
+    Notifie le téléphone si la température du disque NAS dépasse 55°C
+    pendant au moins 30 minutes.
   mode: single
 
   # ======================================================
@@ -45,8 +45,8 @@
   trigger:
     - platform: numeric_state
       entity_id: sensor.nas_valentin_volume_1_temperature_moyenne_du_disque
-      above: 40
-      for: "00:10:00"
+      above: 55
+      for: "00:30:00"
 
   # ======================================================
   # 🔄 Action — Notification mobile prioritaire
@@ -57,8 +57,7 @@
         cible: input_text.telephone_parent_1_notify
         titre: "💽 NAS – Température disque élevée"
         message: >
-          ⚠️ Température moyenne du disque : {{ states('sensor.nas_valentin_volume_1_temperature_moyenne_du_disque') }} °C (≥ 40 °C).  
-          Vérifie la ventilation et l’emplacement du NAS.
+          Température moyenne du disque : {{ states('sensor.nas_valentin_volume_1_temperature_moyenne_du_disque') }} °C (seuil : 55 °C).
         extra:
           tag: "alert_nas_disks_temp"
           ttl: 0
