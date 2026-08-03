@@ -30,12 +30,19 @@
 #
 #  🧠 CONTRAINTE MATÉRIELLE (GARAGE)
 #
-#     L’éclairage du garage est piloté via SwitchBot
-#     et ne supporte qu’une commande de type TOGGLE.
+#     L’éclairage du garage est commandé par un module
+#     Zigbee intégré à l’un des deux interrupteurs d’un
+#     ancien va-et-vient. Le second interrupteur est
+#     physiquement condamné : l’état logique ne peut donc
+#     pas diverger d’une action manuelle sur le va-et-vient.
 #
-#     - Aucune commande ON / OFF directe possible
-#     - Toute action passe obligatoirement par :
+#     Le module supporte le ON / OFF direct, mais tout
+#     pilotage passe VOLONTAIREMENT par :
 #         script.garage_toggle
+#
+#     Ce détour préserve la cohérence de l’état logique de
+#     référence : le relais n’est pas considéré comme preuve
+#     suffisante de l’état réel de la lampe au sens du contrat.
 #
 #     L’état logique de référence est porté par :
 #         input_boolean.garage_light_state
