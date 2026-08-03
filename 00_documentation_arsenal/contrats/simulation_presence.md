@@ -17,7 +17,7 @@ Elle est **strictement cosmétique** et ne doit **jamais** :
 
 * **Séparation stricte des rôles** :
 
-  * Paramètres → Génération → Interprétation → Action → Vigilance
+  * Paramètres → Génération → Interprétation → Autorisation → Action
 * **Aucune logique cachée dans l'UI**
 * **Aucune action directe depuis un script de calcul**
 * **Aucune dépendance temporelle implicite**
@@ -165,18 +165,22 @@ Caractéristiques :
 
 ---
 
-### 6️⃣ Vigilance hors boucle (sécurité douce)
+### 6️⃣ Vigilance hors boucle (sécurité douce) — **retirée**
 
-* Automation de surveillance passive :
-
-  * Détection d'un cycle anormalement long
-  * Référence : `duree_max_cycle_simulation_presence + marge`
-
-Comportement :
-
-* **Aucune correction automatique**
-* **Notification utilisateur uniquement**
-* Hors boucle de décision
+> **Couche historique, retirée du périmètre.** Cette vigilance passive
+> répondait à une couche d'exécution initialement fragile — modules SwitchBot
+> actionnant mécaniquement des interrupteurs — où un cycle pouvait rester
+> « collé » sans preuve d'état fiable.
+>
+> La fiabilisation de l'exécution (modules Zigbee pilotant directement les
+> luminaires) a supprimé le mode de défaillance que cette couche surveillait.
+> **Aucune automation de vigilance n'est donc requise ni attendue.**
+>
+> Doctrine conservée pour mémoire, si elle devait un jour réapparaître :
+> surveillance **passive uniquement** (détection d'un cycle anormalement long,
+> référence `duree_max_cycle_simulation_presence + marge`), **notification
+> utilisateur seule**, **aucune correction automatique**, hors boucle de
+> décision.
 
 ---
 
@@ -212,6 +216,9 @@ Le mode test **n'altère pas** la logique métier.
 * **Système complet et clos**
 * **Contractualisé Arsenal v12.x** — révisé sur base runtime 2026.5
 * **Aucune dépendance externe non maîtrisée**
+* **Révision** : couche §6 (vigilance hors boucle) retirée — devenue sans objet
+  après fiabilisation de la couche d'exécution (Zigbee à contrôle direct
+  remplaçant les exécutants SwitchBot fragiles).
 
 Toute évolution future devra :
 
