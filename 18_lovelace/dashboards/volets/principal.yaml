@@ -139,7 +139,7 @@ views:
 
               - type: custom:button-card
                 template: sub_section_header
-                name: 🧸 Salle de Jeux
+                name: 🎲 Salle de Jeux
 
           - type: grid
             columns: 2
