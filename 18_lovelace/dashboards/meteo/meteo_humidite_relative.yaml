@@ -82,20 +82,6 @@ views:
           # ======================================================
           - !include ../../includes/section_headers/etage.yaml
 
-          # Occupant unique : carte pleine largeur, hors grille.
-          - type: custom:button-card
-            template: socle_kpi
-            entity: sensor.humidite_relative_salle_de_jeux
-            name: Salle de Jeux
-            icon: mdi:water-percent
-            triggers_update:
-              - sensor.couleur_humidite_relative_salle_de_jeux
-
-          # ======================================================
-          # 🛏️ CHAMBRES
-          # ======================================================
-          - !include ../../includes/section_headers/chambres.yaml
-
           - square: false
             type: grid
             columns: 2
@@ -115,6 +101,15 @@ views:
                 icon: mdi:water-percent
                 triggers_update:
                   - sensor.couleur_humidite_relative_chambre_enfants
+
+          # Salle de Jeux : carte pleine largeur, hors grille.
+          - type: custom:button-card
+            template: socle_kpi
+            entity: sensor.humidite_relative_salle_de_jeux
+            name: Salle de Jeux
+            icon: mdi:water-percent
+            triggers_update:
+              - sensor.couleur_humidite_relative_salle_de_jeux
 
           # ======================================================
           # 🚿 SALLES DE BAIN
