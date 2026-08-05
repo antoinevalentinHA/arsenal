@@ -78,11 +78,27 @@ class AirstageAcEntity(AirstageEntity):
 
         Instead we patch the commanded values into the coordinator's cached
         ``parameters`` list — the source ``_ac`` rebuilds its state from — and
-        notify the coordinator's listeners. Every entity of the device then
-        reflects the target immediately, and the next *scheduled* poll (well
-        past the unit's convergence window) reconciles with the device without
-        an early stale read. ``updates`` maps a ``pyairstage`` ``ACParameter``
-        to its raw value; both are stringified to match the on-device format.
+        publish them. Every entity of the device then reflects the target
+        immediately, and the next *scheduled* poll (well past the unit's
+        convergence window) reconciles with the device without an early stale
+        read. ``updates`` maps a ``pyairstage`` ``ACParameter`` to its raw
+        value; both are stringified to match the on-device format.
+
+        Stringification is load-bearing and relies on Python 3.11+ enum
+        semantics: ``ACParameter`` is a ``StrEnum`` (``str()`` yields
+        ``"iu_fan_spd"``) and ``FanSpeed`` / ``BooleanProperty`` are
+        ``IntEnum`` (``str()`` yields ``"2"`` / ``"1"``). On <= 3.10 these
+        would render as ``"FanSpeed.QUIET"`` and silently poison the cache.
+
+        Publishing goes through ``async_set_updated_data`` rather than
+        ``async_update_listeners`` so the poll timer is *reset*: the former
+        unsubscribes the pending refresh and reschedules a full interval.
+        Without it a write landing seconds before an already-scheduled poll
+        would still be read back stale — the very race this avoids, only
+        rarer. It also forces ``last_update_success = True``, so it is only
+        used when the coordinator is already healthy; while the device is
+        unreachable we fall back to notifying listeners, which reflects the
+        command without claiming an availability we have not verified.
         """
         data = self.coordinator.data
         if not data or self.ac_key not in data:
@@ -94,7 +110,10 @@ class AirstageAcEntity(AirstageEntity):
             if name in wanted:
                 parameter["value"] = wanted[name]
 
-        self.coordinator.async_update_listeners()
+        if self.coordinator.last_update_success:
+            self.coordinator.async_set_updated_data(data)
+        else:
+            self.coordinator.async_update_listeners()
 
     @property
     def extra_state_attributes(self) -> dict:
