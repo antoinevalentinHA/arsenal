@@ -123,11 +123,11 @@ views:
                   confirm: Confirmez-vous la fermeture des volets du séjour ?
 
           ######################################################
-          # 👶 ENFANTS
+          # 🧒 ENFANTS
           ######################################################
           - type: custom:button-card
             template: section_header
-            name: 👶 Enfants
+            name: 🧒 Enfants
 
           - type: grid
             columns: 2
@@ -139,7 +139,7 @@ views:
 
               - type: custom:button-card
                 template: sub_section_header
-                name: 🧸 Salle de Jeux
+                name: 🎲 Salle de Jeux
 
           - type: grid
             columns: 2
@@ -173,7 +173,7 @@ views:
 
           - type: custom:button-card
             template: sub_section_header
-            name: 👶 Global
+            name: 🧒 Global
 
           - type: grid
             columns: 2

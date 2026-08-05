@@ -74,7 +74,7 @@
 
   action:
     # ------------------------------------------------------
-    # 👶 Reset immediate presences enfants
+    # 🧒 Reset immediate presences enfants
     # ------------------------------------------------------
     - action: input_boolean.turn_off
       target:

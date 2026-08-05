@@ -152,7 +152,7 @@ temperature_max_jour_courant_chambre_enfants:
   icon: mdi:thermometer-chevron-up
 
 ############################################################
-# 👶 Salle de Jeux
+# 🧒 Salle de Jeux
 ############################################################
 
 temperature_min_jour_courant_salle_de_jeux:

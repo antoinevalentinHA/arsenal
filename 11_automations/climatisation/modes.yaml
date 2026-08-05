@@ -85,7 +85,7 @@
     - platform: state
       entity_id: input_select.mode_maison
 
-    # 👶 Activation/désactivation babysitting
+    # 🧒 Activation/désactivation babysitting
     - platform: state
       entity_id: input_boolean.mode_babysitting
 
