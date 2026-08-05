@@ -65,7 +65,7 @@ views:
                   - sensor.couleur_humidex_sejour
 
           # ======================================================
-          # 🪜 ÉTAGE
+          # 🔝 ÉTAGE
           # ======================================================
           - !include ../../includes/section_headers/etage.yaml
 

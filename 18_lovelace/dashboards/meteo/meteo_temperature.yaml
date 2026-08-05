@@ -90,7 +90,7 @@ views:
                   - sensor.couleur_temperature_sejour
 
           # ======================================================
-          # 🪜 ÉTAGE
+          # 🔝 ÉTAGE
           # ======================================================
           - !include ../../includes/section_headers/etage.yaml
 
