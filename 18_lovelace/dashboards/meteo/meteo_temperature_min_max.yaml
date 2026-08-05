@@ -60,7 +60,7 @@ views:
                 icon: mdi:thermometer
 
           # ======================================================
-          # 🪜 ÉTAGE
+          # 🔝 ÉTAGE
           # ======================================================
           - !include ../../includes/section_headers/etage.yaml
 

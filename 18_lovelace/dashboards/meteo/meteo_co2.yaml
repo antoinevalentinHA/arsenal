@@ -48,7 +48,7 @@ views:
                   - sensor.couleur_co2_sejour
 
           # ======================================================
-          # 🪜 ÉTAGE
+          # 🔝 ÉTAGE
           # ======================================================
           - !include ../../includes/section_headers/etage.yaml
 
