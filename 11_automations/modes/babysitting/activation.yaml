@@ -73,7 +73,7 @@
   # ======================================================
   action:
 
-    # 👶 Forcer présence enfants
+    # 🧒 Forcer présence enfants
     - action: input_boolean.turn_on
       target:
         entity_id:
