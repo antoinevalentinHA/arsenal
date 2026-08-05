@@ -100,31 +100,6 @@ views:
             cards:
               - type: custom:button-card
                 template: socle_kpi
-                entity: sensor.temperature_salle_de_jeux
-                name: Salle de Jeux
-                icon: mdi:thermometer
-                triggers_update:
-                  - sensor.couleur_temperature_salle_de_jeux
-
-              - type: custom:button-card
-                template: socle_kpi
-                entity: sensor.temperature_palier
-                name: Palier
-                icon: mdi:thermometer
-                triggers_update:
-                  - sensor.couleur_temperature_palier
-
-          # ======================================================
-          # 🛏️ CHAMBRES
-          # ======================================================
-          - !include ../../includes/section_headers/chambres.yaml
-
-          - square: false
-            type: grid
-            columns: 2
-            cards:
-              - type: custom:button-card
-                template: socle_kpi
                 entity: sensor.temperature_chambre_parents
                 name: Parents
                 icon: mdi:thermometer
@@ -138,6 +113,22 @@ views:
                 icon: mdi:thermometer
                 triggers_update:
                   - sensor.couleur_temperature_chambre_enfants
+
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.temperature_palier
+                name: Palier
+                icon: mdi:thermometer
+                triggers_update:
+                  - sensor.couleur_temperature_palier
+
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.temperature_salle_de_jeux
+                name: Salle de Jeux
+                icon: mdi:thermometer
+                triggers_update:
+                  - sensor.couleur_temperature_salle_de_jeux
 
           # ======================================================
           # 🚿 SALLES DE BAIN
