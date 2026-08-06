@@ -57,6 +57,7 @@ Désinfection au retour de vacances :
 - ✅ Sur échec, timeout, interruption ou preuve indisponible, la dette **reste due** (jamais brûlée sans verdict positif)
 - ✅ La reprise après redémarrage est une réconciliation **gardée et idempotente** (jamais une relance aveugle)
 - ✅ La séquence de retour est déconflictée des autres cycles ECS (pré-vérification du verrou `input_boolean.ecs_cycle_en_cours`)
+- ✅ Sur `reussite` **uniquement**, la séquence appelle **une fois** `script.bouclage_ecs_5_minutes` (primitive existante) ; ECS **ne pilote jamais** `switch.prise_bouclage` et **ne crée aucune vérité de bouclage** ; la boucle n'est **jamais** déclarée « désinfectée » (retour non prouvé, faute de sonde). Mécanisme souverain : `05` §3.3
 
 > **Réconciliation (cible — écart runtime tracé).** À `origin/main` = `6068926`, la dette est
 > réinitialisée **immédiatement après l'appel** du script (avant `ecs_fin_cycle_signal`) et **sans**

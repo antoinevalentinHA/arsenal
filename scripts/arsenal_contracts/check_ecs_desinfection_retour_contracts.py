@@ -77,6 +77,10 @@ VERDICT_ENTITY = "input_select.ecs_desinfection_retour_verdict"
 FROZEN_RESUME = "ecs_resume_dernier_cycle_fige"
 VERDICT_OPTIONS = ["en_attente", "en_cours", "reussite", "echec", "timeout", "preuve_indisponible"]
 
+# Circulation post-réussite — réutilisation de la primitive de bouclage existante
+BOUCLAGE_PRIMITIVE = "script.bouclage_ecs_5_minutes"
+BOUCLAGE_FLAG = "bouclage_ecs_5_minutes_en_cours"
+
 SCAN_DIRS = [ROOT / "11_automations", ROOT / "10_scripts"]
 
 SOVEREIGN = "ecs_desinfection_retour_due"          # input_boolean (clé + suffixe)
@@ -498,6 +502,74 @@ def test_correlation_fin_canonique():
 
 
 # ---------------------------------------------------------------------------
+# Circulation bouclage 5 min après réussite (réutilisation de la primitive)
+# Invariants : appel du primitif UNIQUEMENT dans la branche `reussite` corrélée ;
+# aucun appel sur echec/timeout/preuve_indisponible ; ECS ne pilote jamais la
+# pompe ; unicité par les gardes existantes. Détection sémantique, sans PyYAML.
+# ---------------------------------------------------------------------------
+
+def _index_of(lines, needle):
+    return next((i for i, l in enumerate(lines) if needle in l), None)
+
+
+def test_bouclage_appele_dans_reussite():
+    """L'appel de `script.bouclage_ecs_5_minutes` existe et suit le verdict
+    `reussite` ET la corrélation (branche réussite corrélée)."""
+    lines = strip_comments(read(CONSUMER)).splitlines()
+    idx = _index_of(lines, BOUCLAGE_PRIMITIVE)
+    check(idx is not None, f"T20 — appel de `{BOUCLAGE_PRIMITIVE}` introuvable dans {rel(CONSUMER)}")
+    if idx is not None:
+        preceding = "\n".join(lines[:idx])
+        check(_OPT_RE("reussite").search(preceding) is not None,
+              "T20 — l'appel du bouclage n'est pas dans la branche `reussite`")
+        check("desinfection" in preceding and FROZEN_RESUME in preceding,
+              "T20 — l'appel du bouclage n'est pas gardé par la corrélation (mode désinfection/résumé figé)")
+    ok("T20 — bouclage appelé dans la branche `reussite` corrélée")
+
+
+def test_bouclage_pas_dans_branches_negatives():
+    """Aucun appel du primitif dans les fenêtres `echec` / `timeout` /
+    `preuve_indisponible` (le bouclage ne part que sur réussite)."""
+    lines = strip_comments(read(CONSUMER)).splitlines()
+    for opt in ("echec", "timeout", "preuve_indisponible"):
+        for i, line in enumerate(lines):
+            if _OPT_RE(opt).search(line):
+                window = "\n".join(lines[i:i + 12])
+                check(BOUCLAGE_PRIMITIVE not in window,
+                      f"T21 — `{BOUCLAGE_PRIMITIVE}` appelé dans une branche `{opt}` (interdit)")
+    ok("T21 — aucun bouclage sur echec / timeout / preuve_indisponible")
+
+
+def test_ecs_ne_pilote_pas_le_switch():
+    """ECS ne pilote JAMAIS `switch.prise_bouclage` directement ; aucun nouvel
+    écrivain du switch n'est introduit côté ECS."""
+    for path in (LAUNCHER, CONSUMER):
+        body = strip_comments(read(path))
+        bad = re.search(r"switch\.turn_(on|off)[\s\S]{0,120}prise_bouclage", body)
+        check(bad is None,
+              f"T22 — {rel(path)} pilote directement `switch.prise_bouclage` "
+              f"(interdit ; passer par `{BOUCLAGE_PRIMITIVE}`)")
+    ok("T22 — ECS n'écrit jamais le switch (primitive existante uniquement)")
+
+
+def test_appel_unique_par_reussite():
+    """Unicité de l'appel : garde par les vérités EXISTANTES — l'automation de
+    finalisation se conditionne à `verdict == en_cours` ET `dette == on`
+    (retombées après consommation), sans nouveau verrou. Un seul appel figure
+    dans le fichier."""
+    body = strip_comments(read(CONSUMER))
+    check(_STATE_RE("en_cours").search(body) is not None,
+          "T23 — garde d'unicité absente : le finaliseur ne se conditionne pas à `verdict == en_cours`")
+    check(re.search(r"entity_id\s*:\s*input_boolean\.ecs_desinfection_retour_due", body) is not None
+          and _STATE_RE("on").search(body) is not None,
+          "T23 — garde d'unicité absente : le finaliseur ne se conditionne pas à `dette == on`")
+    check(body.count(BOUCLAGE_PRIMITIVE) == 1,
+          f"T23 — `{BOUCLAGE_PRIMITIVE}` apparaît {body.count(BOUCLAGE_PRIMITIVE)} fois "
+          f"(attendu 1 : un seul appel par réussite)")
+    ok("T23 — appel unique par réussite via les gardes existantes")
+
+
+# ---------------------------------------------------------------------------
 # Registre
 # ---------------------------------------------------------------------------
 
@@ -521,6 +593,10 @@ TESTS = [
     test_deconfliction_hebdo,
     test_timeout_distinct_de_reussite,
     test_correlation_fin_canonique,
+    test_bouclage_appele_dans_reussite,
+    test_bouclage_pas_dans_branches_negatives,
+    test_ecs_ne_pilote_pas_le_switch,
+    test_appel_unique_par_reussite,
 ]
 
 if __name__ == "__main__":

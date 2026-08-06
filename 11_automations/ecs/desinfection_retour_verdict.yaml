@@ -109,6 +109,24 @@
                           (désinfection valide + complétion canonique). Dette consommée.
                         entity_id: input_select.ecs_desinfection_retour_verdict
 
+                    # 🔁 Circulation bouclage 5 min via la primitive EXISTANTE.
+                    # Ordre : verdict `reussite` écrit + dette consommée AVANT l'appel
+                    # ⇒ la garde d'unicité (condition top-level dette `on` + verdict
+                    # `en_cours`) est déjà retombée, garantissant un seul appel par
+                    # réussite (automation `mode: single`). ECS n'écrit jamais
+                    # `switch.prise_bouclage` : le domaine Bouclage exécute et borne
+                    # (timer 5 min, arrêt/purge existants). Boucle NON prouvée
+                    # thermiquement (pas de sonde) ; tronçons terminaux hors garantie.
+                    - action: script.bouclage_ecs_5_minutes
+                    - action: logbook.log
+                      data:
+                        name: "ECS Désinfection"
+                        message: >
+                          🔁 Circulation bouclage 5 min demandée (primitive existante).
+                          Ballon désinfecté prouvé ; boucle non prouvée thermiquement ;
+                          tronçons terminaux hors garantie.
+                        entity_id: input_boolean.bouclage_ecs_5_minutes_en_cours
+
                 # ❌ Échec : désinfection non valide → dette conservée
                 - conditions:
                     - condition: template

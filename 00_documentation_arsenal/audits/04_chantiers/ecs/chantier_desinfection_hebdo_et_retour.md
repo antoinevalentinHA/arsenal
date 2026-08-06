@@ -530,7 +530,58 @@ souverain. **Lot 2 non clôturé** tant que la trace terrain est vide. **Lots 3-
 
 ---
 
-*Chantier — Lot 1 livré (#664) ; Lot 2 **runtime livré** (1 helper verdict + automation `10250000000033`,
-`10250000000021` restructurée, déconfliction hebdo, CI F2 étendue). IDs auto-attribués sous gouvernance,
-timeout T-B. Invariants portés par les contrats amendés (§4). **Chantier non clôturé** (validation terrain
-en attente). Lots 3-5 exclus.*
+### 10.13 Circulation bouclage 5 min après réussite (complément minimal)
+
+**Besoin.** Après une désinfection de retour **réussie**, lancer **une fois** la circulation de bouclage
+existante, en réutilisant **intégralement** le sous-système Bouclage — **sans** nouvelle machine d'état,
+autorisation, durée, helper ou écrivain du switch.
+
+**Réutilisation de l'existant.**
+- **Primitive d'action** : `script.bouclage_ecs_5_minutes` — démarre `timer.bouclage_ecs_5_minutes`
+  (5 min, `restore: true`), pose le drapeau `input_boolean.bouclage_ecs_5_minutes_en_cours`, allume
+  `switch.prise_bouclage`. **Seul écrivain autorisé** du switch (hors automations bouclage) ; borné et
+  **présence-indépendant** (cycle manuel).
+- **Arrêt / purge** : `10260000000002` (fin de timer → flag off + switch off hors AUTO) et
+  `10260000000007` (purge du flag au démarrage). **Non modifiés.**
+- **Drapeau d'exécution** : `input_boolean.bouclage_ecs_5_minutes_en_cours` (existant) ; corroboration
+  possible via `sensor.prise_bouclage_energy`. **Aucune seconde vérité de bouclage.**
+
+**Architecture (aucun nouvel objet, aucun nouvel ID).** Un seul point d'appel : la branche `reussite`
+de l'automation de finalisation **existante** `10250000000033`. Ordre :
+1. écrire le verdict `reussite` ;
+2. **consommer la dette** (`turn_off`) — ce qui fait retomber la garde d'unicité (condition top-level
+   `verdict == en_cours` **et** `dette == on`) ;
+3. appeler **une fois** `script.bouclage_ecs_5_minutes`.
+
+**Idempotence.** Un seul appel par réussite, garanti par les **vérités existantes** : `mode: single`,
+et le finaliseur ne se ré-arme pas (dette `off`, verdict `reussite`). Aucun bouclage sur `echec`,
+`timeout`, `preuve_indisponible`, complétion étrangère (mode ≠ désinfection), événement dupliqué ou
+dette déjà consommée.
+
+**CI (extension de `check_ecs_desinfection_retour_contracts.py`, sans PyYAML).** T20 (appel dans la
+branche `reussite` corrélée), T21 (aucun appel sur echec/timeout/preuve), T22 (ECS n'écrit jamais le
+switch), T23 (appel unique via les gardes existantes). **6/6 mutations rouges**, baseline verte. Le
+checker Bouclage reste **inchangé et vert** (T11 « écrivains du switch » satisfait : l'appel n'écrit pas
+le switch).
+
+**Contrats amendés (minimal, sans duplication).** `05` §3.3 (décision ECS : appel unique post-réussite,
+limite de preuve) ; `09` §2 (invariant : circulation via la primitive, jamais d'écriture directe du
+switch, jamais « boucle désinfectée ») ; `bouclage.md` (§ Orchestration client : `10250000000033` client
+autorisé de la primitive existante).
+
+**Limite de preuve.** Prouvé : **ballon désinfecté** (`reussite`) + **circulation 5 min demandée**
+(primitive + drapeau). **Non prouvé** : température du **retour de boucle** (aucune sonde) ; la boucle
+n'est **jamais** déclarée « désinfectée » ; **tronçons terminaux** non bouclés **hors garantie**.
+
+**Preuve terrain restante (non exécutée).** Après une réussite réelle : observer `10250000000033` →
+`input_boolean.bouclage_ecs_5_minutes_en_cours` passe `on`, `switch.prise_bouclage` `on`, arrêt
+automatique à 5 min ; aucun bouclage sur échec/timeout ; dette OFF uniquement sur réussite. **Non
+clôturé** tant que la trace terrain est vide.
+
+---
+
+*Chantier — Lot 1 livré (#664) ; Lot 2 **runtime livré** (#665). Complément minimal : circulation
+bouclage 5 min après réussite (§10.13) — réutilisation **intégrale** de `script.bouclage_ecs_5_minutes`,
+un seul appel dans la branche `reussite` de `10250000000033`, **aucun nouvel objet/ID/durée/écrivain du
+switch**. Invariants portés par les contrats amendés (§4). **Chantier non clôturé** (validation terrain
+en attente).*

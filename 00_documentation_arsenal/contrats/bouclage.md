@@ -429,6 +429,14 @@ Interdits :
 - ne modifie aucun état,
 - ne décide aucune autorisation.
 
+> **Client ECS — désinfection au retour.** `script.bouclage_ecs_5_minutes` peut aussi être appelé
+> **une fois** par l'automation de finalisation `10250000000033` **sur le verdict `reussite`** de la
+> désinfection de retour (circulation sanitaire de remise en service). Cet appel **réutilise
+> intégralement** la primitive existante : **aucun nouvel écrivain** de `switch.prise_bouclage`, aucune
+> nouvelle durée, aucune machine d'état, aucune vérité de bouclage propre à ECS. L'exécution reste
+> rapportée par `input_boolean.bouclage_ecs_5_minutes_en_cours` ; la décision « circuler après
+> réussite » est portée souverainement par ECS (`contrats/ecs/05` §3.3).
+
 ---
 
 ## 🔒 INVARIANTS STRUCTURANTS
