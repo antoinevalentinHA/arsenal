@@ -9,6 +9,9 @@ Contrats : 00_fondations_et_statut, 01_principes_perimetre_et_roles,
 
 import re
 import sys
+
+import yaml
+
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -320,6 +323,124 @@ def test_helpers_passifs():
 
 
 # ---------------------------------------------------------------------------
+# F1 — Désinfection hebdomadaire : autorisation effective (§09 §2)
+# ---------------------------------------------------------------------------
+# Réalise l'invariant §09 §2 « Désinfection hebdomadaire » :
+#   « Une désinfection hebdomadaire automatique ne peut être lancée que si
+#     input_boolean.ecs_desinfection_active == on (lecteur-condition unique =
+#     la veille hebdomadaire 10250000000002) ; le capteur de créneau reste un
+#     calcul pur jour+heure ; ecs_blocage_planifiee n'est jamais réutilisé ;
+#     le helper autorise/interdit, il ne déclenche jamais. »
+# Détection sémantique (commentaires retirés, indépendante de la position de
+# ligne et du formatage) — ne se couple ni aux commentaires ni à l'ordre exact.
+
+VEILLE_DESINFECTION = ROOT / "11_automations/ecs/veilles/veille_desinfection.yaml"
+CRENEAU_DESINFECTION = ROOT / "12_template_sensors/ecs/fenetres_chauffe/desinfection.yaml"
+CYCLE_SCRIPT = ROOT / "10_scripts/ecs/cycle.yaml"
+AUTORISATION_HEBDO = "input_boolean.ecs_desinfection_active"
+
+
+def _iter_conditions(node):
+    """Parcourt récursivement les conditions d'une automation (y compris les
+    blocs imbriqués `and`/`or`/`not` via leur clé `conditions`)."""
+    if isinstance(node, list):
+        for item in node:
+            yield from _iter_conditions(item)
+    elif isinstance(node, dict):
+        yield node
+        if "conditions" in node:
+            yield from _iter_conditions(node["conditions"])
+
+
+def _condition_exige_etat(automations_yaml: str, entity: str, etat: str) -> bool:
+    """Vrai si UNE condition d'état de l'automation exige `entity == etat`.
+    Parse structurel (YAML) : indépendant du formatage, de l'ordre des clés et
+    de la position de ligne — l'état lu appartient bien à la MÊME condition que
+    l'entité (pas de fuite sur une condition voisine)."""
+    try:
+        docs = yaml.safe_load(automations_yaml)
+    except yaml.YAMLError:
+        return False
+    if isinstance(docs, dict):
+        docs = [docs]
+    if not isinstance(docs, list):
+        return False
+    for auto in docs:
+        if not isinstance(auto, dict):
+            continue
+        for cond in _iter_conditions(auto.get("condition")):
+            if not isinstance(cond, dict) or cond.get("condition") != "state":
+                continue
+            ent = cond.get("entity_id")
+            ents = ent if isinstance(ent, list) else [ent]
+            state = cond.get("state")
+            states = state if isinstance(state, list) else [state]
+            if entity in ents and etat in [str(s) for s in states]:
+                return True
+    return False
+
+
+def test_veille_desinfection_lit_autorisation():
+    """§09 §2 : la veille hebdomadaire exige `ecs_desinfection_active == on`."""
+    check(
+        _condition_exige_etat(read(VEILLE_DESINFECTION), AUTORISATION_HEBDO, "on"),
+        f"F1/T11 — la veille de désinfection ({VEILLE_DESINFECTION.relative_to(ROOT)}) "
+        f"n'exige pas `{AUTORISATION_HEBDO} == on` en condition d'état "
+        f"(autorisation hebdomadaire effective, §09 §2)",
+    )
+    ok("T11 — veille désinfection : autorisation hebdomadaire exigée (== on) (§09 §2)")
+
+
+def test_veille_desinfection_identite_preservee():
+    """L'ancrage suppose l'identité de la veille : id + alias inchangés."""
+    cleaned = strip_comments(read(VEILLE_DESINFECTION))
+    check(
+        'id: "10250000000002"' in cleaned,
+        'F1/T12 — id "10250000000002" absent de la veille de désinfection (identité à préserver)',
+    )
+    check(
+        'alias: "ECS - Veille désinfection"' in cleaned,
+        'F1/T12 — alias "ECS - Veille désinfection" absent (identité à préserver)',
+    )
+    ok("T12 — identité de la veille de désinfection (id + alias) préservée")
+
+
+def test_creneau_desinfection_reste_pur():
+    """§09 §2 : le capteur de créneau ne lit jamais l'autorisation (calcul pur)."""
+    cleaned = strip_comments(read(CRENEAU_DESINFECTION))
+    check(
+        AUTORISATION_HEBDO not in cleaned,
+        f"F1/T13 — `{AUTORISATION_HEBDO}` détecté dans le capteur de créneau "
+        f"({CRENEAU_DESINFECTION.relative_to(ROOT)}) — il doit rester un calcul pur "
+        f"jour+heure (§09 §2)",
+    )
+    ok("T13 — capteur de créneau : calcul pur, sans l'autorisation (§09 §2)")
+
+
+def test_veille_desinfection_sans_blocage_planifiee():
+    """§09 §2 / §05 §3.1 : ecs_blocage_planifiee reste hors de cette chaîne."""
+    cleaned = strip_comments(read(VEILLE_DESINFECTION))
+    check(
+        "ecs_blocage_planifiee" not in cleaned,
+        "F1/T14 — `ecs_blocage_planifiee` détecté dans la veille de désinfection — "
+        "son lecteur-condition unique est `veille_chauffe_ponctuelle` (§09 §2, §05 §3.1)",
+    )
+    ok("T14 — veille désinfection sans `ecs_blocage_planifiee` (§09 §2)")
+
+
+def test_cycle_script_sans_autorisation_hebdo():
+    """§09 §2 : la décision d'autorisation vit dans la veille, pas dans le script."""
+    cleaned = strip_comments(read(CYCLE_SCRIPT))
+    check(
+        AUTORISATION_HEBDO not in cleaned,
+        f"F1/T15 — `{AUTORISATION_HEBDO}` détecté dans le script de cycle "
+        f"({CYCLE_SCRIPT.relative_to(ROOT)}) — l'orchestrateur ne porte pas cette "
+        f"décision (§09 §2 ; §01 §6)",
+    )
+    ok("T15 — script de cycle sans décision d'autorisation hebdomadaire (§09 §2)")
+
+
+# ---------------------------------------------------------------------------
 # Registre
 # ---------------------------------------------------------------------------
 
@@ -334,6 +455,11 @@ TESTS = [
     test_autocorrect_no_cycle_trigger,
     test_autocorrect_single_entity_type,
     test_helpers_passifs,
+    test_veille_desinfection_lit_autorisation,
+    test_veille_desinfection_identite_preservee,
+    test_creneau_desinfection_reste_pur,
+    test_veille_desinfection_sans_blocage_planifiee,
+    test_cycle_script_sans_autorisation_hebdo,
 ]
 
 if __name__ == "__main__":
