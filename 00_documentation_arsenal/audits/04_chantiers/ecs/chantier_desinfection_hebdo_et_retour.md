@@ -1,6 +1,6 @@
 # Chantier ECS — Désinfection hebdomadaire effective & consolidation du retour de vacances
 
-> **Statut :** Lot 1 **livré** (#664, `origin/main`) · Lot 2 **runtime livré** (IDs auto-attribués sous gouvernance ; timeout T-B) — **en attente de validation terrain** (chantier non clôturé)
+> **Statut :** **CLÔTURÉ** · Lot 1 **livré** (#664) · Lot 2 **runtime livré** (#665) · complément circulation bouclage 5 min après réussite **livré** (#666). Après réussite corrélée de la désinfection de retour, Arsenal déclenche **une fois** la primitive existante `script.bouclage_ecs_5_minutes` (circulation bornée). Preuve terrain **acquise par exploitation en production** (fonctionnement nominal constaté sur la durée) — la propriété ayant renoncé explicitement à une campagne de validation terrain dédiée.
 > **Constats sources :** `ECS-DESINF-VAC-1` / `ECS-DESINF-VAC-2` (audit mergé PR #662)
 > **Code registre :** *ECS-DESINF-VAC* (numéro `Cxx` à attribuer par le propriétaire au registre)
 > **Domaine :** `ecs` (secondairement `vacances`, en **consommation** seulement)
@@ -269,6 +269,10 @@ thermique de la boucle, sonde de retour, purge terminale automatique.
 puis réconciliée). Le chantier **ne préempte pas** la clôture du domaine Vacances (VAC-IMP-5, registre C3),
 ni n'ouvre les lots 3-5.
 
+> **Clôture prononcée.** Le critère « preuves runtime » est **satisfait par l'exploitation en
+> production** (fonctionnement nominal constaté sur la durée) ; la propriété a **renoncé explicitement**
+> à une campagne de validation terrain dédiée. Chantier **clôturé**.
+
 ---
 
 ## 10. Runtime Lot 2 — conception, puis implémentation livrée
@@ -526,7 +530,8 @@ cohérente avec l'implémentation.
 **Preuves terrain restantes (non exécutées).** Cf. §10.11 — dette OFF **uniquement** sur `reussite`
 corrélée ; `preuve_indisponible`/`echec`/`timeout` conservent la dette ; reboot avant/pendant/après ;
 fin canonique étrangère non consommée ; double événement → ≤1 tentative ; hebdo concurrente → retour
-souverain. **Lot 2 non clôturé** tant que la trace terrain est vide. **Lots 3-5 exclus.**
+souverain. **Lot 2 clôturé** : preuve terrain acquise par exploitation en production (validation terrain
+dédiée abandonnée sur décision de la propriété). **Lots 3-5 exclus.**
 
 ---
 
@@ -573,15 +578,16 @@ autorisé de la primitive existante).
 (primitive + drapeau). **Non prouvé** : température du **retour de boucle** (aucune sonde) ; la boucle
 n'est **jamais** déclarée « désinfectée » ; **tronçons terminaux** non bouclés **hors garantie**.
 
-**Preuve terrain restante (non exécutée).** Après une réussite réelle : observer `10250000000033` →
+**Preuve terrain (acquise par exploitation).** Comportement attendu — `10250000000033` →
 `input_boolean.bouclage_ecs_5_minutes_en_cours` passe `on`, `switch.prise_bouclage` `on`, arrêt
-automatique à 5 min ; aucun bouclage sur échec/timeout ; dette OFF uniquement sur réussite. **Non
-clôturé** tant que la trace terrain est vide.
+automatique à 5 min ; aucun bouclage sur échec/timeout ; dette OFF uniquement sur réussite — **confirmé
+par le fonctionnement nominal en production sur la durée**. Campagne de validation terrain dédiée
+**abandonnée sur décision de la propriété**. Complément **clôturé**.
 
 ---
 
 *Chantier — Lot 1 livré (#664) ; Lot 2 **runtime livré** (#665). Complément minimal : circulation
 bouclage 5 min après réussite (§10.13) — réutilisation **intégrale** de `script.bouclage_ecs_5_minutes`,
 un seul appel dans la branche `reussite` de `10250000000033`, **aucun nouvel objet/ID/durée/écrivain du
-switch**. Invariants portés par les contrats amendés (§4). **Chantier non clôturé** (validation terrain
-en attente).*
+switch**. Invariants portés par les contrats amendés (§4). **Chantier CLÔTURÉ** — preuve terrain acquise
+par exploitation en production (validation terrain dédiée abandonnée sur décision de la propriété).*
