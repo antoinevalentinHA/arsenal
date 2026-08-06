@@ -107,20 +107,115 @@ une catégorie mémoire (label `helper:memory` ou équivalent).
 - pose (`→ on`) : exclusivement l'automation déclenchée par l'événement
   `timer.finished` de `timer.vacances_longues_ecs` (complétion naturelle).
   L'identifiant de cette automation sera attribué lors du patch runtime.
-- réinitialisation (`→ off`) : exclusivement après consommation, dans
-  l'automation « ECS - Désinfection fin vacances »
-  (`11_automations/ecs/desinfection_retour_vacances.yaml`).
+- réinitialisation (`→ off`) : exclusivement par l'**autorité de séquence de
+  retour**, et **uniquement après un verdict final positif** (`reussite`, cf.
+  §3.3). L'entité et l'identifiant de cette autorité seront attribués lors du
+  patch runtime (objet proposé — cf.
+  `04_chantiers/ecs/chantier_desinfection_hebdo_et_retour.md`).
 - interdictions : `timer.cancel` (retour anticipé) ne pose jamais cet état ;
-  aucune écriture manuelle ; aucun autre écrivain.
+  aucune écriture manuelle ; aucun autre écrivain ; **aucune consommation avant
+  verdict positif**.
 
-Idempotence : la consommation exécute la désinfection au plus une fois puis
-repositionne l'état à `off`. Un état `on` présent au démarrage est consommé une
-seule fois (pas de double exécution).
+Consommation (cible) : la dette n'est remise à `off` qu'après le verdict
+`reussite` de la séquence (§3.3). Un appel de script accepté, un verrou pris,
+une consigne envoyée, une température momentanément atteinte ou une fin d'appel
+de script **ne valent pas** verdict. Sur échec, timeout, interruption ou preuve
+indisponible, la dette **reste due**.
+
+Idempotence : la désinfection de retour s'exécute au plus une fois par légitimité
+établie. Un état `on` présent au démarrage est **réconcilié** (cf. §3.3 et
+`10` §4.1), jamais relancé aveuglément ni consommé sans verdict positif.
+
+> **Réconciliation (cible — écart runtime tracé, `origin/main` = `6068926`).** Le runtime
+> réinitialise aujourd'hui la dette **immédiatement après l'appel** du script
+> (`11_automations/ecs/desinfection_retour_vacances.yaml`), **avant** `ecs_fin_cycle_signal`,
+> et **sans** trigger de réconciliation au démarrage (constats `ECS-DESINF-VAC`, chantier Lot 2).
+> Le présent texte est la **cible** ; il est souverain pour le mécanisme de consommation.
 
 Projection d'observabilité : `binary_sensor.ecs_desinfection_retour_vacances_autorisee`
 est conservé comme projection 1:1 de `input_boolean.ecs_desinfection_retour_due`.
 Il n'a plus de rôle décisionnel et ne lit plus `timer.vacances_longues_ecs` ni
 son attribut `remaining`.
+
+---
+
+### 3.3 Verdict de séquence de désinfection-retour et consommation de la dette
+
+La consommation de la dette (§3.2) est subordonnée à un **verdict de séquence**. Ce document est
+**souverain** pour ce modèle ; `09` §2 en énonce les invariants, `10` §4.1 en porte la réconciliation
+au reboot. **Aucune entité n'est créée par le présent texte** : l'entité porteuse du verdict et
+l'autorité de séquence sont des **objets proposés** dont le nom/identifiant seront attribués au patch
+runtime (cf. `04_chantiers/ecs/chantier_desinfection_hebdo_et_retour.md`).
+
+États de verdict (vocabulaire canonique candidat) :
+
+- `en_attente` — dette due, séquence non démarrée
+- `en_cours` — cycle demandé / en cours, verdict non tranché
+- `reussite` — ballon désinfecté **prouvé** : cible atteinte en mesure fraîche **et** complétion
+  canonique `ecs_fin_cycle_signal`
+- `echec` — cible non atteinte, cycle invalidé, ou refus initial
+- `timeout` — attente bornée expirée sans preuve d'atteinte
+- `preuve_indisponible` — mesure requise non fraîche (`provenance != 'mesure'`) au moment requis
+
+Autorité et écriture :
+
+- **autorité du verdict** : l'autorité de séquence de retour (objet proposé), **écrivain unique** du
+  verdict et **seul** écrivain OFF de la dette
+- **preuve exigée pour `reussite`** : atteinte `≥ cible − epsilon` en mesure fraîche **ET**
+  `ecs_fin_cycle_signal` (fin exploitable, cf. `10` §8) — jamais une fin d'appel de script ni un pic instantané
+- **consommation de la dette** : autorisée **si et seulement si** verdict `reussite`
+- **cas interdisant la consommation** : `echec`, `timeout`, `preuve_indisponible`, `en_attente`,
+  `en_cours` ⇒ dette **conservée**
+
+Fail-safe : tout état `unknown`/`unavailable` ou toute mesure non fraîche **n'est jamais** interprété
+comme `reussite`. Un cycle interrompu (absence de `ecs_fin_cycle_signal`) ne produit jamais `reussite`.
+
+Reprise gardée (réconciliation, cf. `10` §4.1) : au démarrage, une dette `on` est réconciliée **sans
+relance aveugle**. La reprise **ne lance pas** de cycle si l'une des gardes est fausse :
+
+- la dette est `off` ;
+- un cycle ECS est déjà en cours (`input_boolean.ecs_cycle_en_cours == on`) ;
+- les observations thermiques nécessaires sont indisponibles ;
+- un verdict positif antérieur solde déjà la dette.
+
+La reprise est **idempotente** : au plus une exécution par légitimité établie.
+
+> **Limite de périmètre.** Le verdict `reussite` de la présente phase atteste la désinfection du
+> **ballon**. Il ne préjuge **pas** du traitement thermique du réseau bouclé (maintien, circulation,
+> sonde de retour) — réservé aux lots ultérieurs (cf. chantier §8). Aucun verdict « boucle » n'est
+> contractualisé ici.
+
+---
+
+### 3.4 Autorité effective de la désinfection hebdomadaire (`ecs_desinfection_active`)
+
+`input_boolean.ecs_desinfection_active` est l'**autorité d'autorisation** de la désinfection ECS
+**hebdomadaire** (récurrente, sur créneau *jour + heure*). Ce document est **souverain** pour son cycle
+de vie ; `09` §2 en énonce l'invariant.
+
+Sémantique : `on` = désinfection hebdomadaire autorisée ; `off` = interdite. Le helper **autorise ou
+interdit**, il **ne déclenche jamais**.
+
+Lecteur-condition (cible) : **unique** = la veille hebdomadaire `10250000000002`, qui exige
+`ecs_desinfection_active == on` pour lancer un cycle. Le capteur de créneau
+`binary_sensor.ecs_creneau_desinfection_en_cours` reste un **calcul pur** *jour+heure* et **ne lit
+jamais** cette autorisation. `input_boolean.ecs_blocage_planifiee` reste **hors** de cette chaîne
+(§3.1).
+
+Cycle de vie (existant, inchangé) :
+
+- extinction : à l'entrée effective en Vacances (`binary_sensor.vacances_actives → on`,
+  `11_automations/modes/vacances/application_debut.yaml`) ⇒ inhibition de la désinfection hebdomadaire
+  pendant l'absence
+- réarmement : au retour (`input_select.mode_maison → Normal`, `11_automations/modes/normal.yaml`)
+
+Conséquence : rendre le lecteur effectif rend **opérant** le toggle manuel **et** inhibe la désinfection
+hebdomadaire en vacances via le cycle de vie **déjà en place** — sans nouvel écrivain.
+
+> **Réconciliation (cible — écart runtime tracé, `origin/main` = `6068926`).** Aucun lecteur-condition
+> ne consomme aujourd'hui `ecs_desinfection_active` (constat `ECS-DESINF-VAC-2`) : l'interrupteur est
+> **inerte** et la désinfection hebdomadaire n'est pas inhibée en vacances (`ECS-DESINF-VAC-1`).
+> Correction : chantier Lot 1.
 
 ---
 

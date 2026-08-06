@@ -67,6 +67,21 @@ valeur `initial`. En cas de reboot :
   démarrage) ;
 - aucune écriture ne le force à `off` sur `homeassistant: start`.
 
+Réconciliation au démarrage (cible) : une dette `on` non consommée doit pouvoir
+être **réconciliée** après un redémarrage, **sans relance aveugle**. La reprise
+n'exécute la séquence de retour que si **toutes** les gardes sont vraies : dette
+`on`, mode maison compatible avec une désinfection de retour, aucun cycle ECS en
+cours (`input_boolean.ecs_cycle_en_cours == off`), observations thermiques
+disponibles, et aucun verdict positif antérieur ne solde déjà la dette. La reprise
+est **idempotente** (au plus une exécution par légitimité). Le mécanisme de verdict
+et de consommation est souverainement défini en `05` §3.3 ; les invariants en
+`09` §2.
+
+> **Écart runtime tracé (`origin/main` = `6068926`).** L'automation consommatrice
+> n'a aujourd'hui **aucun** trigger `homeassistant: start` : une dette survivant à
+> un reboot avec `mode_maison` déjà `Normal` n'est pas réconciliée. Cible portée par
+> `04_chantiers/ecs/chantier_desinfection_hebdo_et_retour.md` (Lot 2).
+
 Risque résiduel reconnu (non traité dans ce correctif) : un événement
 `timer.finished` de `timer.vacances_longues_ecs` survenant pendant un arrêt de
 Home Assistant peut ne pas être rejoué au redémarrage ; une légitimité pourrait
