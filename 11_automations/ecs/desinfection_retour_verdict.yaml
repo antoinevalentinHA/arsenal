@@ -22,12 +22,22 @@
 #  ⏱️ TIMEOUT (T-B, borne canonique existante)
 #     Aucune durée nouvelle. Le verdict `timeout` est posé lorsque la
 #     fenêtre d'inertie post-cycle (timer.fenetre_inertie_chauffe_ecs)
-#     est ANNULÉE (préemptée par un autre cycle) : la complétion
-#     canonique de la tentative n'arrivera plus.
+#     DISPARAÎT alors qu'elle portait la complétion de la tentative :
+#     la complétion canonique n'arrivera plus.
+#
+#     ⚠️ La détection se fait par TRANSITION D'ÉTAT `active` → `idle`,
+#     JAMAIS par l'événement brut `timer.cancelled` : Home Assistant
+#     émet cet événement même sur un timer déjà `idle`, or 10250000000027
+#     annule la fenêtre au DÉMARRAGE de CHAQUE cycle ECS — y compris
+#     celui de la tentative elle-même. L'événement brut posait donc
+#     `timeout` sur la tentative en train de démarrer, rendant `reussite`
+#     structurellement inatteignable et la dette inconsommable.
+#     Le trigger d'état ne s'arme que si une fenêtre existait réellement.
 #
 #  🔗 DÉPENDANCES
 #     Lit    : input_boolean.ecs_fin_cycle_signal (événementiel)
-#              timer.fenetre_inertie_chauffe_ecs (timer.cancelled)
+#              timer.fenetre_inertie_chauffe_ecs (état active → idle)
+#              input_boolean.ecs_cycle_en_cours (discrimine préemption / échéance)
 #              input_select.ecs_desinfection_retour_verdict
 #              input_boolean.ecs_desinfection_retour_due
 #              input_text.ecs_resume_dernier_cycle_fige (mode|valide figés)
@@ -55,11 +65,13 @@
       to: "on"
       id: completion
 
-    # ⏱️ Préemption de la fenêtre d'inertie → timeout (borne canonique T-B)
-    - platform: event
-      event_type: timer.cancelled
-      event_data:
-        entity_id: timer.fenetre_inertie_chauffe_ecs
+    # ⏱️ Disparition de la fenêtre d'inertie → candidat timeout (borne T-B)
+    #    Trigger d'ÉTAT, et non `event_type: timer.cancelled` (cf. en-tête) :
+    #    seule une fenêtre RÉELLEMENT ouverte produit `active` → `idle`.
+    - platform: state
+      entity_id: timer.fenetre_inertie_chauffe_ecs
+      from: "active"
+      to: "idle"
       id: preemption
 
   condition:
@@ -155,6 +167,14 @@
         - conditions:
             - condition: trigger
               id: preemption
+            # 🔑 Discrimine la PRÉEMPTION de l'ÉCHÉANCE NATURELLE.
+            # Seule une reprise de cycle annule la fenêtre (10250000000027
+            # annule sur `ecs_cycle_en_cours` off→on) ⇒ le verrou est `on`.
+            # À l'échéance naturelle le verrou est `off` et la complétion
+            # canonique suit son cours (branche A) : aucun timeout ici.
+            - condition: state
+              entity_id: input_boolean.ecs_cycle_en_cours
+              state: "on"
           sequence:
             - action: input_select.select_option
               target:

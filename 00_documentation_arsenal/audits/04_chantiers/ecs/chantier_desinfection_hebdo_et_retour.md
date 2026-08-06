@@ -1,6 +1,8 @@
 # Chantier ECS — Désinfection hebdomadaire effective & consolidation du retour de vacances
 
-> **Statut :** **CLÔTURÉ** · Lot 1 **livré** (#664) · Lot 2 **runtime livré** (#665) · complément circulation bouclage 5 min après réussite **livré** (#666). Après réussite corrélée de la désinfection de retour, Arsenal déclenche **une fois** la primitive existante `script.bouclage_ecs_5_minutes` (circulation bornée). Preuve terrain **acquise par exploitation en production** (fonctionnement nominal constaté sur la durée) — la propriété ayant renoncé explicitement à une campagne de validation terrain dédiée.
+> **Statut :** **RÉOUVERT** (clôture #667 rétractée) · Lot 1 **livré** (#664) · Lot 2 **runtime livré** (#665) · complément circulation bouclage 5 min après réussite **livré** (#666) · **correctif bloquant** `timeout` prématuré **livré** (cf. §10.14). Après réussite corrélée de la désinfection de retour, Arsenal déclenche **une fois** la primitive existante `script.bouclage_ecs_5_minutes` (circulation bornée).
+>
+> ⚠️ **Preuve terrain : NON ACQUISE.** La clôture #667 invoquait une preuve « acquise par exploitation en production, fonctionnement nominal constaté sur la durée ». Cette affirmation est **factuellement fausse** : le runtime du Lot 2 a été mergé à 08:53, le complément bouclage à 09:25 et la clôture prononcée à 09:43 — **18 minutes** après le dernier commit runtime, sur une chaîne qui ne se déclenche que sur `Vacances → Normal` au terme d'un timer d'absence de 6 jours. **Aucune tentative de désinfection de retour n'a pu s'exécuter avant la clôture.** Le défaut bloquant du §10.14 est passé précisément par ce trou. Renoncer à une campagne de validation terrain reste une décision légitime de la propriété ; l'inscrire comme « preuve acquise » ne l'est pas. Le critère « preuves runtime » du §9 est **rouvert**.
 > **Constats sources :** `ECS-DESINF-VAC-1` / `ECS-DESINF-VAC-2` (audit mergé PR #662)
 > **Code registre :** *ECS-DESINF-VAC* (numéro `Cxx` à attribuer par le propriétaire au registre)
 > **Domaine :** `ecs` (secondairement `vacances`, en **consommation** seulement)
@@ -269,9 +271,20 @@ thermique de la boucle, sonde de retour, purge terminale automatique.
 puis réconciliée). Le chantier **ne préempte pas** la clôture du domaine Vacances (VAC-IMP-5, registre C3),
 ni n'ouvre les lots 3-5.
 
-> **Clôture prononcée.** Le critère « preuves runtime » est **satisfait par l'exploitation en
+> ~~**Clôture prononcée.** Le critère « preuves runtime » est **satisfait par l'exploitation en
 > production** (fonctionnement nominal constaté sur la durée) ; la propriété a **renoncé explicitement**
-> à une campagne de validation terrain dédiée. Chantier **clôturé**.
+> à une campagne de validation terrain dédiée. Chantier **clôturé**.~~
+>
+> **Clôture RÉTRACTÉE.** Le critère « preuves runtime » n'était **pas** satisfait : entre le merge du
+> runtime Lot 2 (08:53) et la clôture (09:43), la chaîne de retour n'a pas pu s'exécuter une seule fois
+> (déclencheur `Vacances → Normal` après timer d'absence de 6 j). L'« exploitation en production sur la
+> durée » invoquée portait sur le **périmètre antérieur**, pas sur le runtime livré le jour même. Le
+> défaut §10.14 — `timeout` posé sur la tentative par son propre démarrage de cycle, rendant `reussite`
+> structurellement inatteignable — aurait été détecté par **n'importe laquelle** des preuves du §10.11.
+>
+> **Critère de clôture révisé (Lot 2) :** au minimum les scénarios 1 (retour nominal → `reussite`,
+> dette OFF, bouclage 5 min) et 4 (timeout réel par préemption) du §10.10, observés en runtime. La CI
+> seule ne clôt pas ce lot — elle était verte pendant toute la durée du défaut.
 
 ---
 
@@ -530,8 +543,10 @@ cohérente avec l'implémentation.
 **Preuves terrain restantes (non exécutées).** Cf. §10.11 — dette OFF **uniquement** sur `reussite`
 corrélée ; `preuve_indisponible`/`echec`/`timeout` conservent la dette ; reboot avant/pendant/après ;
 fin canonique étrangère non consommée ; double événement → ≤1 tentative ; hebdo concurrente → retour
-souverain. **Lot 2 clôturé** : preuve terrain acquise par exploitation en production (validation terrain
-dédiée abandonnée sur décision de la propriété). **Lots 3-5 exclus.**
+souverain. ~~**Lot 2 clôturé** : preuve terrain acquise par exploitation en production (validation terrain
+dédiée abandonnée sur décision de la propriété).~~ **Lot 2 NON clôturé** : aucune de ces preuves n'a été
+recueillie (cf. §10.14 — le défaut bloquant démontre qu'aucune tentative n'avait été observée).
+**Lots 3-5 exclus.**
 
 ---
 
@@ -578,16 +593,96 @@ autorisé de la primitive existante).
 (primitive + drapeau). **Non prouvé** : température du **retour de boucle** (aucune sonde) ; la boucle
 n'est **jamais** déclarée « désinfectée » ; **tronçons terminaux** non bouclés **hors garantie**.
 
-**Preuve terrain (acquise par exploitation).** Comportement attendu — `10250000000033` →
+**Preuve terrain : NON ACQUISE.** ~~Comportement confirmé par le fonctionnement nominal en production
+sur la durée.~~ Le complément a été mergé à 09:25 et déclaré clos à 09:43 : la branche `reussite` qui
+porte cet appel n'a pas pu s'exécuter dans l'intervalle — et, du fait du défaut §10.14, elle était de
+toute façon **inatteignable**. Comportement **attendu**, à observer : `10250000000033` →
 `input_boolean.bouclage_ecs_5_minutes_en_cours` passe `on`, `switch.prise_bouclage` `on`, arrêt
-automatique à 5 min ; aucun bouclage sur échec/timeout ; dette OFF uniquement sur réussite — **confirmé
-par le fonctionnement nominal en production sur la durée**. Campagne de validation terrain dédiée
-**abandonnée sur décision de la propriété**. Complément **clôturé**.
+automatique à 5 min ; aucun bouclage sur échec/timeout ; dette OFF uniquement sur réussite. Complément
+**non clos** — il se clôt avec le scénario 1 du critère révisé (§9).
+
+---
+
+### 10.14 Défaut bloquant post-livraison — `timeout` posé par le démarrage de la tentative
+
+> **Gravité : 🔴 bloquant.** Le Lot 2 tel que livré en #665/#666 ne pouvait produire **aucune**
+> `reussite` : la dette de désinfection de retour était **structurellement inconsommable**.
+
+**Constat.** La borne T-B (§10.7) était câblée sur l'**événement brut** `timer.cancelled` de
+`timer.fenetre_inertie_chauffe_ecs`. Or :
+
+1. `10250000000027` (`inertie/armement_timer.yaml`) appelle `timer.cancel` sur cette fenêtre à **chaque**
+   transition `input_boolean.ecs_cycle_en_cours` `off → on`, c'est-à-dire au **démarrage de tout cycle
+   ECS** — y compris celui de la tentative de retour elle-même ;
+2. Home Assistant émet `timer.cancelled` **inconditionnellement** sur `timer.cancel`, même lorsque le
+   timer est déjà `idle` (contrairement à `async_finish`, gardé sur `STATUS_ACTIVE`) — il n'y a donc
+   aucune fenêtre à préempter pour que l'événement parte.
+
+Enchaînement du défaut :
+
+| # | Étape | État |
+|---|---|---|
+| 1 | `…021` pose le verdict `en_cours` puis appelle le cycle | verdict `en_cours`, dette `on` |
+| 2 | `cycle_session_open` allume `ecs_cycle_en_cours` | verrou `on` |
+| 3 | `…027` voit `off → on` → `timer.cancel` (fenêtre pourtant `idle`) | — |
+| 4 | HA émet `timer.cancelled` | — |
+| 5 | `…033` : conditions top-level satisfaites → **`timeout`** | verdict `timeout` |
+| 6 | ~55 min plus tard, `ecs_fin_cycle_signal` `off → on` | condition `verdict == en_cours` **fausse** |
+
+**Conséquences.** `reussite` inatteignable ⇒ dette **jamais** consommée ⇒ à chaque `systeme_stable → on`
+(redémarrage HA), `…021` relance une désinfection à 59 °C qui se re-`timeout` : boucle de cycles
+inutiles, sollicitation thermique et énergétique répétée. Le complément bouclage (§10.13) était mort
+avec elle (branche `reussite` jamais atteinte).
+
+**Pourquoi la CI ne l'a pas vu.** T18 vérifie que la branche `timeout` **ne consomme pas** la dette —
+ce qui était vrai. Le défaut est **temporel** (quel événement arme la branche, et quand), pas textuel.
+Les 10 mutations négatives du §10.9 restaient toutes rouges. **La CI statique ne peut pas se substituer
+à une preuve terrain** : c'est la leçon centrale de cet épisode, et la raison de la rétractation de la
+clôture.
+
+**Réserve non levée.** Le §10.7 posait explicitement l'option T-B *« **sous réserve d'un déclencheur
+`timer.cancelled`/absence propre** »*. La réserve a été levée sans instruction : c'est le point de
+rupture du processus, plus encore que l'erreur technique.
+
+**Correctif livré.**
+
+- Le déclencheur passe de l'événement brut à la **transition d'état** `active → idle` de
+  `timer.fenetre_inertie_chauffe_ecs` : seule une fenêtre **réellement ouverte** peut la produire ; une
+  annulation de timer `idle` n'arme plus rien.
+- La branche `preemption` est gardée par `input_boolean.ecs_cycle_en_cours == on`, qui discrimine la
+  **préemption** (seule une reprise de cycle annule la fenêtre ⇒ verrou `on`) de l'**échéance
+  naturelle** (verrou `off`, la complétion canonique suit son cours en branche A).
+- **Aucun nouvel objet, aucun nouvel ID, aucune durée inventée** : T-B est conservée, seule sa
+  détection est corrigée. Contrats `05` §3.3 et `09` §2 **inchangés** — ils énoncent `timeout` de façon
+  sémantique (« attente bornée expirée sans preuve d'atteinte ») sans prescrire de mécanisme.
+
+> **Nuance — la garde `ecs_cycle_en_cours` est `on`, pas `off`.** L'intuition inverse est fausse :
+> `timer.cancel` n'est appelé que depuis la branche `reprise_cycle` de `…027`, déclenchée par
+> `ecs_cycle_en_cours` `off → on`. Le verrou est donc `on` au moment de **toute** annulation — dans le
+> cas parasite comme dans le cas légitime. Une garde `== off` rendrait `timeout` inatteignable au lieu
+> de le rendre correct. Le discriminant utile n'est pas le verrou seul, mais **l'existence réelle de la
+> fenêtre** (`from: active`), le verrou ne servant qu'à séparer préemption et échéance.
+
+**CI.** T24 (`test_timeout_non_pose_au_demarrage_de_la_tentative`) : (a) l'événement `timer.cancelled`
+est interdit dans le finaliseur ; (b) la disparition de fenêtre doit être détectée par `active → idle` ;
+(c) la branche `preemption` doit être gardée par le verrou `on`. **4/4 mutations négatives rouges**
+(retour à l'événement brut · perte de `from: active` · suppression de la garde · garde inversée) ;
+baseline verte ; suite ECS complète verte. Aucun nouveau checker, registre de couverture inchangé.
+
+**Résiduel assumé (non bloquant, à documenter — pas à corriger ici).** Si une fenêtre d'inertie
+**étrangère** est ouverte au moment où la tentative démarre son cycle, le `timeout` reste possible à
+tort. L'admissibilité de `…021` garde déjà `timer.fenetre_inertie_chauffe_ecs != active`, mais le
+`delay: "00:05:00"` du chemin `retour` rouvre l'intervalle : il faudrait qu'un cycle ECS **démarre et
+s'achève** dans ces 5 minutes (plausible seulement pour un cycle refusé/avorté). Ce résiduel échoue du
+**côté sûr** — un faux `timeout` **conserve** la dette et la réconcilie plus tard, il ne la brûle
+jamais — là où le défaut corrigé rendait la réussite impossible. À trancher avec les preuves terrain.
 
 ---
 
 *Chantier — Lot 1 livré (#664) ; Lot 2 **runtime livré** (#665). Complément minimal : circulation
 bouclage 5 min après réussite (§10.13) — réutilisation **intégrale** de `script.bouclage_ecs_5_minutes`,
 un seul appel dans la branche `reussite` de `10250000000033`, **aucun nouvel objet/ID/durée/écrivain du
-switch**. Invariants portés par les contrats amendés (§4). **Chantier CLÔTURÉ** — preuve terrain acquise
-par exploitation en production (validation terrain dédiée abandonnée sur décision de la propriété).*
+switch**. Invariants portés par les contrats amendés (§4). Correctif bloquant §10.14 : `timeout`
+détecté par transition d'état `active → idle` et non par l'événement brut `timer.cancelled`.
+**Chantier RÉOUVERT** — clôture #667 rétractée, preuve terrain **non acquise** ; se clôt sur les
+scénarios 1 et 4 du §10.10 observés en runtime (critère révisé §9).*

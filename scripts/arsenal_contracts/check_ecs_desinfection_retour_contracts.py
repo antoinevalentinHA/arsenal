@@ -81,6 +81,10 @@ VERDICT_OPTIONS = ["en_attente", "en_cours", "reussite", "echec", "timeout", "pr
 BOUCLAGE_PRIMITIVE = "script.bouclage_ecs_5_minutes"
 BOUCLAGE_FLAG = "bouclage_ecs_5_minutes_en_cours"
 
+# Borne de timeout T-B — fenêtre d'inertie post-cycle et verrou de cycle
+INERTIE_TIMER = "timer.fenetre_inertie_chauffe_ecs"
+CYCLE_LOCK = "input_boolean.ecs_cycle_en_cours"
+
 SCAN_DIRS = [ROOT / "11_automations", ROOT / "10_scripts"]
 
 SOVEREIGN = "ecs_desinfection_retour_due"          # input_boolean (clé + suffixe)
@@ -570,6 +574,84 @@ def test_appel_unique_par_reussite():
 
 
 # ---------------------------------------------------------------------------
+# T24 — Le timeout n'est jamais posé au démarrage de la tentative (§3.3)
+# ---------------------------------------------------------------------------
+
+def test_timeout_non_pose_au_demarrage_de_la_tentative():
+    """
+    §3.3 — `timeout` signifie « attente bornée expirée sans preuve d'atteinte ».
+    Il ne doit JAMAIS pouvoir être posé au démarrage de la tentative elle-même.
+
+    Défaut fermé ici : `10250000000027` annule la fenêtre d'inertie sur CHAQUE
+    transition `ecs_cycle_en_cours` off→on, et Home Assistant émet
+    `timer.cancelled` même sur un timer déjà `idle`. Un trigger sur l'événement
+    brut posait donc `timeout` au démarrage du cycle de la tentative, rendant
+    `reussite` structurellement inatteignable et la dette inconsommable.
+
+    Le finaliseur doit donc :
+      (a) ne pas s'armer sur l'événement `timer.cancelled` ;
+      (b) détecter la disparition de fenêtre par la transition d'état
+          `active` → `idle` (seule une fenêtre réellement ouverte la produit) ;
+      (c) discriminer préemption / échéance naturelle par le verrou de cycle
+          `on` (seule une reprise de cycle annule la fenêtre ; à l'échéance
+          naturelle le verrou est `off` et la complétion canonique suit).
+    """
+    body = strip_comments(read(CONSUMER))
+    lines = body.splitlines()
+
+    # (a) — l'événement brut est structurellement ambigu : interdit
+    check(
+        "timer.cancelled" not in body,
+        f"T24 — {rel(CONSUMER)} s'arme sur l'événement `timer.cancelled` : HA l'émet "
+        f"même sur un timer `idle` et 10250000000027 annule la fenêtre au démarrage "
+        f"de CHAQUE cycle ⇒ `timeout` posé sur la tentative elle-même",
+    )
+
+    # (b) — trigger d'état qualifié `active` → `idle` sur la fenêtre d'inertie
+    trigger_ok = False
+    for i, line in enumerate(lines):
+        if INERTIE_TIMER not in line:
+            continue
+        window = "\n".join(lines[max(0, i - 3):i + 5])
+        if (re.search(r"platform\s*:\s*state", window)
+                and re.search(r"from\s*:\s*['\"]?active['\"]?", window)
+                and re.search(r"to\s*:\s*['\"]?idle['\"]?", window)):
+            trigger_ok = True
+            break
+    check(
+        trigger_ok,
+        f"T24 — {rel(CONSUMER)} ne détecte pas la disparition de la fenêtre par "
+        f"transition d'état `active` → `idle` de `{INERTIE_TIMER}` (une annulation "
+        f"de timer `idle` ne doit pas pouvoir armer le timeout)",
+    )
+
+    # (c) — branche préemption gardée par le verrou de cycle `on`
+    branch_ok = False
+    for i, line in enumerate(lines):
+        if not re.search(r"id\s*:\s*['\"]?preemption['\"]?", line):
+            continue
+        preceding = "\n".join(lines[max(0, i - 3):i])
+        if "condition" not in preceding or "trigger" not in preceding:
+            continue  # définition du trigger, pas la branche du `choose`
+        window = lines[i:i + 10]
+        for j, wline in enumerate(window):
+            if CYCLE_LOCK not in wline:
+                continue
+            near = "\n".join(window[j:j + 3])
+            if re.search(r"state\s*:\s*['\"]?on['\"]?\s*$", near, re.MULTILINE):
+                branch_ok = True
+                break
+    check(
+        branch_ok,
+        f"T24 — la branche `preemption` de {rel(CONSUMER)} n'est pas gardée par "
+        f"`{CYCLE_LOCK} == on` : une échéance naturelle de la fenêtre serait "
+        f"traitée comme un timeout (perte de la réussite corrélée)",
+    )
+
+    ok("T24 — timeout jamais posé au démarrage de la tentative (§3.3)")
+
+
+# ---------------------------------------------------------------------------
 # Registre
 # ---------------------------------------------------------------------------
 
@@ -597,6 +679,7 @@ TESTS = [
     test_bouclage_pas_dans_branches_negatives,
     test_ecs_ne_pilote_pas_le_switch,
     test_appel_unique_par_reussite,
+    test_timeout_non_pose_au_demarrage_de_la_tentative,
 ]
 
 if __name__ == "__main__":
