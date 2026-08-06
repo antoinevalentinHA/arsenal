@@ -25,15 +25,6 @@ utility_meter: !include utility_meter.yaml
 # Configuration lovelace (mode yaml, ressources et dashboards)
 lovelace: !include 18_lovelace/lovelace_main.yaml
 
-# Configuration http (proxys et adresses de confiance)
-http:
-  use_x_forwarded_for: true
-  trusted_proxies:
-    - !secret trusted_proxy_lan
-    - !secret trusted_proxy_vpn
-    - 127.0.0.1
-    - ::1
-
 # URLs d'accès à home assistant (externe et interne)
 homeassistant:
   external_url: !secret ha_external_url
