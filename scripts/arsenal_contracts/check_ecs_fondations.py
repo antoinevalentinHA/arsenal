@@ -320,6 +320,112 @@ def test_helpers_passifs():
 
 
 # ---------------------------------------------------------------------------
+# F1 — Désinfection hebdomadaire : autorisation effective (§09 §2)
+# ---------------------------------------------------------------------------
+# Réalise l'invariant §09 §2 « Désinfection hebdomadaire » :
+#   « Une désinfection hebdomadaire automatique ne peut être lancée que si
+#     input_boolean.ecs_desinfection_active == on (lecteur-condition unique =
+#     la veille hebdomadaire 10250000000002) ; le capteur de créneau reste un
+#     calcul pur jour+heure ; ecs_blocage_planifiee n'est jamais réutilisé ;
+#     le helper autorise/interdit, il ne déclenche jamais. »
+# Détection sémantique (commentaires retirés, indépendante de la position de
+# ligne et du formatage) — ne se couple ni aux commentaires ni à l'ordre exact.
+
+VEILLE_DESINFECTION = ROOT / "11_automations/ecs/veilles/veille_desinfection.yaml"
+CRENEAU_DESINFECTION = ROOT / "12_template_sensors/ecs/fenetres_chauffe/desinfection.yaml"
+CYCLE_SCRIPT = ROOT / "10_scripts/ecs/cycle.yaml"
+AUTORISATION_HEBDO = "input_boolean.ecs_desinfection_active"
+
+
+_ITEM_RE = re.compile(r"^\s*-\s")  # début d'un item de liste YAML
+
+
+def _condition_exige_etat(cleaned: str, entity: str, etat: str) -> bool:
+    """Vrai si une condition d'état exige `entity == etat`. Sans dépendance
+    externe : l'état lu est borné à l'ENTRÉE de condition contenant l'entité
+    (délimitée par les items de liste `- …`), donc il ne peut pas « fuir » sur
+    une condition voisine. Indépendant des commentaires (déjà retirés) et de la
+    position de ligne ; tolère l'ordre des clés au sein de l'entrée."""
+    lines = cleaned.splitlines()
+    ent_re = re.compile(r"^\s*entity_id\s*:\s*" + re.escape(entity) + r"\s*$")
+    etat_re = re.compile(r"^\s*state\s*:\s*['\"]?" + re.escape(etat) + r"['\"]?\s*$")
+    for i, line in enumerate(lines):
+        if not ent_re.match(line):
+            continue
+        # Bornes de l'entrée : remonter au `- …` ouvrant, descendre au `- …` suivant.
+        start = i
+        while start > 0 and not _ITEM_RE.match(lines[start]):
+            start -= 1
+        end = i + 1
+        while end < len(lines) and not _ITEM_RE.match(lines[end]):
+            end += 1
+        if any(etat_re.match(x) for x in lines[start:end]):
+            return True
+    return False
+
+
+def test_veille_desinfection_lit_autorisation():
+    """§09 §2 : la veille hebdomadaire exige `ecs_desinfection_active == on`."""
+    cleaned = strip_comments(read(VEILLE_DESINFECTION))
+    check(
+        _condition_exige_etat(cleaned, AUTORISATION_HEBDO, "on"),
+        f"F1/T11 — la veille de désinfection ({VEILLE_DESINFECTION.relative_to(ROOT)}) "
+        f"n'exige pas `{AUTORISATION_HEBDO} == on` en condition d'état "
+        f"(autorisation hebdomadaire effective, §09 §2)",
+    )
+    ok("T11 — veille désinfection : autorisation hebdomadaire exigée (== on) (§09 §2)")
+
+
+def test_veille_desinfection_identite_preservee():
+    """L'ancrage suppose l'identité de la veille : id + alias inchangés."""
+    cleaned = strip_comments(read(VEILLE_DESINFECTION))
+    check(
+        'id: "10250000000002"' in cleaned,
+        'F1/T12 — id "10250000000002" absent de la veille de désinfection (identité à préserver)',
+    )
+    check(
+        'alias: "ECS - Veille désinfection"' in cleaned,
+        'F1/T12 — alias "ECS - Veille désinfection" absent (identité à préserver)',
+    )
+    ok("T12 — identité de la veille de désinfection (id + alias) préservée")
+
+
+def test_creneau_desinfection_reste_pur():
+    """§09 §2 : le capteur de créneau ne lit jamais l'autorisation (calcul pur)."""
+    cleaned = strip_comments(read(CRENEAU_DESINFECTION))
+    check(
+        AUTORISATION_HEBDO not in cleaned,
+        f"F1/T13 — `{AUTORISATION_HEBDO}` détecté dans le capteur de créneau "
+        f"({CRENEAU_DESINFECTION.relative_to(ROOT)}) — il doit rester un calcul pur "
+        f"jour+heure (§09 §2)",
+    )
+    ok("T13 — capteur de créneau : calcul pur, sans l'autorisation (§09 §2)")
+
+
+def test_veille_desinfection_sans_blocage_planifiee():
+    """§09 §2 / §05 §3.1 : ecs_blocage_planifiee reste hors de cette chaîne."""
+    cleaned = strip_comments(read(VEILLE_DESINFECTION))
+    check(
+        "ecs_blocage_planifiee" not in cleaned,
+        "F1/T14 — `ecs_blocage_planifiee` détecté dans la veille de désinfection — "
+        "son lecteur-condition unique est `veille_chauffe_ponctuelle` (§09 §2, §05 §3.1)",
+    )
+    ok("T14 — veille désinfection sans `ecs_blocage_planifiee` (§09 §2)")
+
+
+def test_cycle_script_sans_autorisation_hebdo():
+    """§09 §2 : la décision d'autorisation vit dans la veille, pas dans le script."""
+    cleaned = strip_comments(read(CYCLE_SCRIPT))
+    check(
+        AUTORISATION_HEBDO not in cleaned,
+        f"F1/T15 — `{AUTORISATION_HEBDO}` détecté dans le script de cycle "
+        f"({CYCLE_SCRIPT.relative_to(ROOT)}) — l'orchestrateur ne porte pas cette "
+        f"décision (§09 §2 ; §01 §6)",
+    )
+    ok("T15 — script de cycle sans décision d'autorisation hebdomadaire (§09 §2)")
+
+
+# ---------------------------------------------------------------------------
 # Registre
 # ---------------------------------------------------------------------------
 
@@ -334,6 +440,11 @@ TESTS = [
     test_autocorrect_no_cycle_trigger,
     test_autocorrect_single_entity_type,
     test_helpers_passifs,
+    test_veille_desinfection_lit_autorisation,
+    test_veille_desinfection_identite_preservee,
+    test_creneau_desinfection_reste_pur,
+    test_veille_desinfection_sans_blocage_planifiee,
+    test_cycle_script_sans_autorisation_hebdo,
 ]
 
 if __name__ == "__main__":

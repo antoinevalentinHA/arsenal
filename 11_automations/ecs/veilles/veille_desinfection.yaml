@@ -42,6 +42,11 @@
       entity_id: input_boolean.systeme_stable
       state: "on"
 
+    # 🔒 AUTORISATION MÉTIER — désinfection hebdomadaire
+    - condition: state
+      entity_id: input_boolean.ecs_desinfection_active
+      state: "on"
+
     - condition: state
       entity_id: binary_sensor.ecs_creneau_desinfection_en_cours
       state: "on"
