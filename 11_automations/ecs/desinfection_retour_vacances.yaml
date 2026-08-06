@@ -1,68 +1,166 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     ECS – Desinfection au retour de Vacances
+#     ECS – Désinfection au retour de Vacances (lanceur + réconciliation)
 #  ----------------------------------------------------------
-#  🎯 RÔLE :
-#     Lancer une désinfection ECS UNIQUE lors d’un retour
-#     de vacances, uniquement si ce retour est légitime
-#     au regard de la durée d’absence.
+#  🎯 RÔLE (Runtime Lot 2)
+#     Autorité de LANCEMENT et de RÉCONCILIATION de la séquence de
+#     désinfection au retour d'une absence longue.
 #
-#  🧱 PRINCIPE :
-#     - Déclenchement sur sortie explicite du mode Vacances
-#     - Autorisation portée par l'état souverain
-#       input_boolean.ecs_desinfection_retour_due (helper:decision)
-#     - Réinitialise (OFF) cet état souverain après consommation
-#     - Aucun raisonnement temporel interne
+#     - Décide l'admissibilité d'une tentative
+#     - Réconcilie une tentative périmée au démarrage (sans relance aveugle)
+#     - Pose le verdict `en_cours` puis lance le cycle
 #
-#  🔗 DÉPENDANCES :
-#     Lit     : input_boolean.ecs_desinfection_retour_due
-#     Appelle : script.chauffage_ecs_cycle (mode désinfection)
-#     Écrit   : input_boolean.ecs_desinfection_retour_due (OFF, consommation)
+#     ⚠️ NE CONSOMME PLUS la dette : la consommation est portée par
+#     l'automation 10250000000033 (verdict complétion), uniquement sur
+#     `reussite` corrélée. Un simple retour d'appel de script ne vaut
+#     jamais réussite (contrat 09 §2 / 05 §3.2-3.3).
 #
-#  🧠 NOTE :
-#     binary_sensor.ecs_desinfection_retour_vacances_autorisee
-#     est une projection d'observabilité NON décisionnelle.
+#  🔗 DÉPENDANCES
+#     Lit    : input_boolean.ecs_desinfection_retour_due (dette)
+#              input_select.ecs_desinfection_retour_verdict (vérité de séquence)
+#              input_boolean.ecs_cycle_en_cours (verrou)
+#              timer.fenetre_inertie_chauffe_ecs (complétion pendante)
+#              input_boolean.systeme_stable, input_select.mode_maison
+#              sensor.ecs_temperature_ballon_securisee (+ provenance)
+#     Appelle: script.chauffage_ecs_cycle (mode désinfection)
+#     Écrit  : input_select.ecs_desinfection_retour_verdict
+#              (en_attente / en_cours / preuve_indisponible)
 #
+#  🚫 N'ÉCRIT PAS la dette ; ne lit pas `remaining`/`finishes_at`.
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
 - id: "10250000000021"
   alias: "ECS - Désinfection fin vacances"
   description: >
-    Lance une désinfection ECS unique au retour de vacances,
-    uniquement si la durée d’absence le justifie.
+    Lanceur et réconciliation de la séquence de désinfection au retour
+    d'une absence longue : décide l'admissibilité, pose le verdict
+    `en_cours`, puis lance le cycle. Ne consomme pas la dette.
 
   mode: single
 
   trigger:
+    # 🔁 Retour effectif : sortie du mode Vacances
     - platform: state
       entity_id: input_select.mode_maison
       from: "Vacances"
       to: "Normal"
+      id: retour
 
-  condition:
-    # 🧠 Autorisation métier : état souverain (vacances longues menées à terme)
-    - condition: state
-      entity_id: input_boolean.ecs_desinfection_retour_due
-      state: "on"
+    # ♻️ Réconciliation au démarrage (stabilité système)
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: reconciliation
 
   action:
-    # ⏳ Délai de stabilisation post-retour
-    - delay: "00:05:00"
+    # ======================================================
+    # 1️⃣ Réconciliation d'un verdict `en_cours` périmé
+    #    (aucun cycle en cours ET aucune complétion pendante)
+    # ======================================================
+    - if:
+        - condition: state
+          entity_id: input_select.ecs_desinfection_retour_verdict
+          state: "en_cours"
+        - condition: state
+          entity_id: input_boolean.ecs_cycle_en_cours
+          state: "off"
+        - condition: not
+          conditions:
+            - condition: state
+              entity_id: timer.fenetre_inertie_chauffe_ecs
+              state: "active"
+      then:
+        - action: input_select.select_option
+          target:
+            entity_id: input_select.ecs_desinfection_retour_verdict
+          data:
+            option: "en_attente"
 
-    # 🚀 Lancement du cycle ECS en mode désinfection
-    - service: script.chauffage_ecs_cycle
-      data:
-        mode: "desinfection"
+    # ======================================================
+    # 2️⃣ Admissibilité / lancement (première branche satisfaite)
+    # ======================================================
+    - choose:
+        # ----------------------------------------------------
+        # 2a) Refus — preuve thermique indisponible (dette conservée)
+        # ----------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.ecs_desinfection_retour_due
+              state: "on"
+            - condition: state
+              entity_id: input_boolean.ecs_cycle_en_cours
+              state: "off"
+            - condition: template
+              value_template: >
+                {{ state_attr('sensor.ecs_temperature_ballon_securisee', 'provenance') != 'mesure' }}
+          sequence:
+            - action: input_select.select_option
+              target:
+                entity_id: input_select.ecs_desinfection_retour_verdict
+              data:
+                option: "preuve_indisponible"
 
-    # 🧾 Journalisation
-    - service: logbook.log
-      data:
-        name: "ECS Désinfection"
-        message: "💧 Cycle de désinfection lancé automatiquement au retour de vacances."
-        entity_id: script.chauffage_ecs_cycle
+        # ----------------------------------------------------
+        # 2b) Lancement admissible d'une tentative unique
+        # ----------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.ecs_desinfection_retour_due
+              state: "on"
+            # pas de tentative déjà en cours (anti-double-lancement)
+            - condition: not
+              conditions:
+                - condition: state
+                  entity_id: input_select.ecs_desinfection_retour_verdict
+                  state: "en_cours"
+            # déconfliction : aucun cycle ECS en cours
+            - condition: state
+              entity_id: input_boolean.ecs_cycle_en_cours
+              state: "off"
+            # aucune complétion canonique déjà pendante (fenêtre d'inertie)
+            - condition: not
+              conditions:
+                - condition: state
+                  entity_id: timer.fenetre_inertie_chauffe_ecs
+                  state: "active"
+            - condition: state
+              entity_id: input_boolean.systeme_stable
+              state: "on"
+            # contexte maison compatible
+            - condition: state
+              entity_id: input_select.mode_maison
+              state: "Normal"
+            # preuve thermique fraîche (provenance == mesure)
+            - condition: template
+              value_template: >
+                {{ states('sensor.ecs_temperature_ballon_securisee') | is_number
+                   and state_attr('sensor.ecs_temperature_ballon_securisee', 'provenance') == 'mesure' }}
+          sequence:
+            # 🔒 Pose du verdict `en_cours` (vérité « tentative active »)
+            - action: input_select.select_option
+              target:
+                entity_id: input_select.ecs_desinfection_retour_verdict
+              data:
+                option: "en_cours"
 
-    # ♻️ Consommation : réinitialisation de l'état souverain (idempotence)
-    - service: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.ecs_desinfection_retour_due
+            # ⏳ Délai de stabilisation post-retour (uniquement sur retour effectif)
+            - if:
+                - condition: trigger
+                  id: retour
+              then:
+                - delay: "00:05:00"
+
+            # 🚀 Lancement du cycle ECS en mode désinfection
+            - action: script.chauffage_ecs_cycle
+              data:
+                mode: "desinfection"
+
+            # 🧾 Journalisation (aucune consommation de dette ici)
+            - action: logbook.log
+              data:
+                name: "ECS Désinfection"
+                message: >
+                  💧 Désinfection retour : tentative lancée (verdict en_cours).
+                  Dette conservée jusqu'au verdict final corrélé.
+                entity_id: input_select.ecs_desinfection_retour_verdict

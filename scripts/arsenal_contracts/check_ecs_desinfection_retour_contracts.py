@@ -62,9 +62,20 @@ def ok(label: str) -> None:
 # ---------------------------------------------------------------------------
 
 POSER = ROOT / "11_automations/ecs/desinfection_retour_pose_due.yaml"
-CONSUMER = ROOT / "11_automations/ecs/desinfection_retour_vacances.yaml"
+# Lanceur + réconciliation (Runtime Lot 2) : pose le verdict et lance le cycle ;
+# n'écrit PLUS la dette (la consommation est portée par le verdict de complétion).
+LAUNCHER = ROOT / "11_automations/ecs/desinfection_retour_vacances.yaml"
+# Consommateur souverain de la dette (OFF) = automation de verdict de complétion (…033).
+CONSUMER = ROOT / "11_automations/ecs/desinfection_retour_verdict.yaml"
 SOVEREIGN_FILE = ROOT / "05_input_booleans/ecs/desinfection_retour_due.yaml"
 TIMER_FILE = ROOT / "08_timers/ecs/desinfection_vacances.yaml"
+
+# Vérité de séquence (Runtime Lot 2)
+VERDICT_HELPER = ROOT / "06_input_selects/ecs/desinfection_retour_verdict.yaml"
+VEILLE_HEBDO = ROOT / "11_automations/ecs/veilles/veille_desinfection.yaml"
+VERDICT_ENTITY = "input_select.ecs_desinfection_retour_verdict"
+FROZEN_RESUME = "ecs_resume_dernier_cycle_fige"
+VERDICT_OPTIONS = ["en_attente", "en_cours", "reussite", "echec", "timeout", "preuve_indisponible"]
 
 SCAN_DIRS = [ROOT / "11_automations", ROOT / "10_scripts"]
 
@@ -281,7 +292,7 @@ def test_pas_de_lecture_remaining():
     `finishes_at` relève de la même dépendance temporelle fragile. Ni la pose ni
     le consommateur ne doivent lire ces attributs.
     """
-    for path in (POSER, CONSUMER):
+    for path in (POSER, CONSUMER, LAUNCHER):
         content = strip_comments(read(path))
         check(
             "remaining" not in content,
@@ -348,6 +359,145 @@ def test_mode_maison_cardinalite():
 
 
 # ---------------------------------------------------------------------------
+# Runtime Lot 2 — consommation post-verdict, corrélation, déconfliction
+# Réalise les invariants « désinfection au retour » de 09 §2 et le mécanisme
+# souverain de 05 §3.2/§3.3. Détection sémantique (commentaires retirés),
+# sans dépendance externe (le runner CI n'a pas PyYAML).
+# ---------------------------------------------------------------------------
+
+_OPT_RE = lambda opt: re.compile(r"option\s*:\s*['\"]?" + re.escape(opt) + r"['\"]?")
+_STATE_RE = lambda opt: re.compile(r"state\s*:\s*['\"]?" + re.escape(opt) + r"['\"]?")
+
+
+def test_dette_consommee_seulement_sur_reussite():
+    """
+    §2/§3.3 : la dette n'est éteinte QUE dans un contexte de réussite corrélée
+    (verdict `reussite`), jamais après un simple appel de script. Chaque
+    `turn_off` de la dette doit être précédé d'un basculement de verdict
+    `reussite` (fenêtre proche).
+    """
+    lines = strip_comments(read(CONSUMER)).splitlines()
+    found_gated = False
+    for i, line in enumerate(lines):
+        if "input_boolean.turn_off" not in line:
+            continue
+        window = "\n".join(lines[max(0, i - 10):i + 6])
+        if SOVEREIGN not in window:
+            continue
+        preceding = "\n".join(lines[max(0, i - 14):i])
+        if _OPT_RE("reussite").search(preceding):
+            found_gated = True
+        else:
+            check(False, f"T11 — turn_off de {SOVEREIGN} non gardé par le verdict "
+                         f"`reussite` ({rel(CONSUMER)}, ligne ~{i + 1})")
+    check(found_gated, f"T11 — aucune consommation de {SOVEREIGN} gardée par `reussite` "
+                       f"dans {rel(CONSUMER)}")
+    ok("T11 — dette consommée uniquement sur réussite corrélée (§2/§3.3)")
+
+
+def test_launcher_ne_consomme_pas():
+    """§3.2 : le lanceur (…021) n'écrit JAMAIS la dette OFF — la consommation
+    immédiate après l'appel du script est interdite."""
+    off_writers = files_calling_service_on_target("input_boolean.turn_off", SOVEREIGN)
+    check(
+        LAUNCHER not in off_writers,
+        f"T12 — le lanceur {rel(LAUNCHER)} écrit OFF {SOVEREIGN} — consommation "
+        f"immédiate après l'appel du script interdite (§3.2)",
+    )
+    ok("T12 — le lanceur ne consomme pas la dette (§3.2)")
+
+
+def test_launcher_pose_en_cours_avant_lancement():
+    """§3.3 : le lanceur pose le verdict `en_cours` AVANT d'appeler le cycle."""
+    body = strip_comments(read(LAUNCHER))
+    m_en_cours = _OPT_RE("en_cours").search(body)
+    m_call = re.search(r"script\.chauffage_ecs_cycle", body)
+    check(m_en_cours is not None, "T13 — le lanceur ne pose pas le verdict `en_cours`")
+    check(m_call is not None, "T13 — le lanceur n'appelle pas `script.chauffage_ecs_cycle`")
+    if m_en_cours and m_call:
+        check(m_en_cours.start() < m_call.start(),
+              "T13 — le verdict `en_cours` doit être posé AVANT l'appel du cycle")
+    ok("T13 — lanceur : `en_cours` posé avant le lancement (§3.3)")
+
+
+def test_launcher_reprise_boot_gardee():
+    """§3.3 / 10 §4.1 : le lanceur porte une réconciliation au démarrage
+    (trigger `systeme_stable → on` ou `homeassistant: start`)."""
+    body = strip_comments(read(LAUNCHER))
+    check(
+        ("systeme_stable" in body) or ("homeassistant" in body),
+        "T14 — le lanceur n'a aucune reprise au démarrage (systeme_stable / homeassistant)",
+    )
+    ok("T14 — reprise au démarrage présente dans le lanceur (10 §4.1)")
+
+
+def test_launcher_verrou_et_anti_double():
+    """Déconfliction : le lanceur pré-vérifie le verrou `ecs_cycle_en_cours` et
+    empêche un double lancement (garde d'état sur le verdict `en_cours`)."""
+    body = strip_comments(read(LAUNCHER))
+    check("ecs_cycle_en_cours" in body,
+          "T15 — le lanceur ne pré-vérifie pas le verrou `ecs_cycle_en_cours`")
+    check(_STATE_RE("en_cours").search(body) is not None,
+          "T15 — le lanceur ne garde pas contre une tentative déjà `en_cours` (anti-double)")
+    ok("T15 — lanceur : pré-vérif verrou + anti-double-lancement")
+
+
+def test_verdict_helper_declare():
+    """05 §3.3 : l'input_select verdict est déclaré avec les 6 options canoniques."""
+    body = read(VERDICT_HELPER)
+    check(
+        bool(re.search(r"^\s*ecs_desinfection_retour_verdict\s*:", body, re.MULTILINE)),
+        f"T16 — verdict `ecs_desinfection_retour_verdict` non déclaré ({rel(VERDICT_HELPER)})",
+    )
+    for opt in VERDICT_OPTIONS:
+        check(re.search(rf"-\s*{re.escape(opt)}\b", body) is not None,
+              f"T16 — option `{opt}` absente du verdict")
+    ok("T16 — verdict input_select déclaré (6 options, 05 §3.3)")
+
+
+def test_deconfliction_hebdo():
+    """09 §2 / 05 §3.4 : l'hebdomadaire (…002) s'abstient tant qu'une tentative
+    de retour est active (garde sur le verdict `en_cours`)."""
+    body = strip_comments(read(VEILLE_HEBDO))
+    check(
+        VERDICT_ENTITY in body and _STATE_RE("en_cours").search(body) is not None,
+        f"T17 — la veille hebdomadaire ne se déconflicte pas du retour "
+        f"(garde `{VERDICT_ENTITY} == en_cours` absente) — {rel(VEILLE_HEBDO)}",
+    )
+    ok("T17 — déconfliction hebdo par le verdict de retour (09 §2 / 05 §3.4)")
+
+
+def test_timeout_distinct_de_reussite():
+    """§3.3 : la branche timeout existe et NE consomme PAS la dette
+    (timeout ≠ réussite ; aucun fallback vers `reussite`)."""
+    lines = strip_comments(read(CONSUMER)).splitlines()
+    body = "\n".join(lines)
+    check(_OPT_RE("timeout").search(body) is not None,
+          "T18 — le verdict de complétion ne produit pas d'état `timeout`")
+    for i, line in enumerate(lines):
+        if _OPT_RE("timeout").search(line):
+            window = "\n".join(lines[i:i + 8])
+            check(
+                not ("input_boolean.turn_off" in window and SOVEREIGN in window),
+                "T18 — la branche `timeout` consomme la dette (timeout traité comme réussite)",
+            )
+    ok("T18 — timeout distinct de réussite, dette conservée (§3.3)")
+
+
+def test_correlation_fin_canonique():
+    """§3.3 : la réussite est corrélée — le verdict lit le résumé figé
+    (mode désinfection) ET la complétion canonique, pas le seul signal global."""
+    body = strip_comments(read(CONSUMER))
+    check("ecs_fin_cycle_signal" in body,
+          "T19 — le verdict n'observe pas la complétion canonique `ecs_fin_cycle_signal`")
+    check(FROZEN_RESUME in body,
+          f"T19 — le verdict ne lit pas le résumé figé `{FROZEN_RESUME}` (corrélation)")
+    check("desinfection" in body,
+          "T19 — le verdict ne corrèle pas sur `mode == desinfection`")
+    ok("T19 — réussite corrélée (résumé figé + complétion canonique) (§3.3)")
+
+
+# ---------------------------------------------------------------------------
 # Registre
 # ---------------------------------------------------------------------------
 
@@ -362,6 +512,15 @@ TESTS = [
     test_pas_de_lecture_remaining,
     test_timer_souverain_declare,
     test_mode_maison_cardinalite,
+    test_dette_consommee_seulement_sur_reussite,
+    test_launcher_ne_consomme_pas,
+    test_launcher_pose_en_cours_avant_lancement,
+    test_launcher_reprise_boot_gardee,
+    test_launcher_verrou_et_anti_double,
+    test_verdict_helper_declare,
+    test_deconfliction_hebdo,
+    test_timeout_distinct_de_reussite,
+    test_correlation_fin_canonique,
 ]
 
 if __name__ == "__main__":

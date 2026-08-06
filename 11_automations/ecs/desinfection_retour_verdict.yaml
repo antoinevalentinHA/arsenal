@@ -1,0 +1,152 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     ECS – Désinfection retour : verdict de complétion (Runtime Lot 2)
+#  ----------------------------------------------------------
+#  🎯 RÔLE
+#     Trancher le verdict FINAL d'une tentative de désinfection de
+#     retour et, sur réussite corrélée UNIQUEMENT, consommer la dette.
+#
+#     Autorité de consommation (OFF) de input_boolean.ecs_desinfection_retour_due.
+#
+#  🧱 PRINCIPE — corrélation déterministe (sans UUID)
+#     La tentative active est identifiée par le verdict `en_cours`
+#     (posé par 10250000000021) ; la déconfliction interdit toute
+#     désinfection hebdomadaire concurrente. La réussite exige donc,
+#     à la complétion canonique :
+#       - dette encore `on`
+#       - verdict `en_cours`
+#       - résumé figé de cycle `mode == 'desinfection'`
+#       - cycle `valide == 'oui'` (preuve thermique gelée)
+#       - complétion canonique observée (ecs_fin_cycle_signal off→on)
+#
+#  ⏱️ TIMEOUT (T-B, borne canonique existante)
+#     Aucune durée nouvelle. Le verdict `timeout` est posé lorsque la
+#     fenêtre d'inertie post-cycle (timer.fenetre_inertie_chauffe_ecs)
+#     est ANNULÉE (préemptée par un autre cycle) : la complétion
+#     canonique de la tentative n'arrivera plus.
+#
+#  🔗 DÉPENDANCES
+#     Lit    : input_boolean.ecs_fin_cycle_signal (événementiel)
+#              timer.fenetre_inertie_chauffe_ecs (timer.cancelled)
+#              input_select.ecs_desinfection_retour_verdict
+#              input_boolean.ecs_desinfection_retour_due
+#              input_text.ecs_resume_dernier_cycle_fige (mode|valide figés)
+#     Écrit  : input_select.ecs_desinfection_retour_verdict (reussite/echec/timeout)
+#              input_boolean.ecs_desinfection_retour_due (OFF — UNIQUEMENT sur reussite)
+#
+#  🚫 NE LIT PAS `remaining`/`finishes_at` ; ne pilote aucun équipement.
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: "10250000000033"
+  alias: "ECS - Désinfection retour verdict complétion"
+  description: >
+    Tranche le verdict final de la désinfection de retour et consomme la
+    dette uniquement sur réussite corrélée. Pose `timeout` si la
+    complétion canonique est préemptée.
+
+  mode: single
+
+  trigger:
+    # ✅ Complétion canonique (fin exploitable du cycle)
+    - platform: state
+      entity_id: input_boolean.ecs_fin_cycle_signal
+      from: "off"
+      to: "on"
+      id: completion
+
+    # ⏱️ Préemption de la fenêtre d'inertie → timeout (borne canonique T-B)
+    - platform: event
+      event_type: timer.cancelled
+      event_data:
+        entity_id: timer.fenetre_inertie_chauffe_ecs
+      id: preemption
+
+  condition:
+    # Ne finalise qu'une tentative de retour active…
+    - condition: state
+      entity_id: input_select.ecs_desinfection_retour_verdict
+      state: "en_cours"
+    # …dont la dette est encore due (idempotence : au plus une consommation).
+    - condition: state
+      entity_id: input_boolean.ecs_desinfection_retour_due
+      state: "on"
+
+  action:
+    - choose:
+        # ==================================================
+        # A) Complétion canonique corrélée
+        # ==================================================
+        - conditions:
+            - condition: trigger
+              id: completion
+          sequence:
+            - variables:
+                resume: "{{ states('input_text.ecs_resume_dernier_cycle_fige') }}"
+                parts: "{{ (resume | string).split('|') }}"
+                mode_fige: "{{ parts[1] if (parts | length >= 6) else '' }}"
+                valide_fige: "{{ parts[5] if (parts | length >= 6) else '' }}"
+            - choose:
+                # ✅ Réussite : désinfection valide corrélée → dette consommée
+                - conditions:
+                    - condition: template
+                      value_template: >
+                        {{ mode_fige == 'desinfection' and valide_fige == 'oui' }}
+                  sequence:
+                    - action: input_select.select_option
+                      target:
+                        entity_id: input_select.ecs_desinfection_retour_verdict
+                      data:
+                        option: "reussite"
+                    - action: input_boolean.turn_off
+                      target:
+                        entity_id: input_boolean.ecs_desinfection_retour_due
+                    - action: logbook.log
+                      data:
+                        name: "ECS Désinfection"
+                        message: >
+                          ✅ Désinfection retour : réussite corrélée
+                          (désinfection valide + complétion canonique). Dette consommée.
+                        entity_id: input_select.ecs_desinfection_retour_verdict
+
+                # ❌ Échec : désinfection non valide → dette conservée
+                - conditions:
+                    - condition: template
+                      value_template: >
+                        {{ mode_fige == 'desinfection' and valide_fige != 'oui' }}
+                  sequence:
+                    - action: input_select.select_option
+                      target:
+                        entity_id: input_select.ecs_desinfection_retour_verdict
+                      data:
+                        option: "echec"
+                    - action: logbook.log
+                      data:
+                        name: "ECS Désinfection"
+                        message: >
+                          ❌ Désinfection retour : échec (cycle non valide au gel).
+                          Dette conservée.
+                        entity_id: input_select.ecs_desinfection_retour_verdict
+
+                # 🚫 Complétion étrangère (mode != désinfection) → ignorer,
+                #    la tentative reste `en_cours` (aucune action).
+
+        # ==================================================
+        # B) Préemption de l'inertie → timeout (dette conservée)
+        # ==================================================
+        - conditions:
+            - condition: trigger
+              id: preemption
+          sequence:
+            - action: input_select.select_option
+              target:
+                entity_id: input_select.ecs_desinfection_retour_verdict
+              data:
+                option: "timeout"
+            - action: logbook.log
+              data:
+                name: "ECS Désinfection"
+                message: >
+                  ⏱️ Désinfection retour : timeout (complétion canonique préemptée).
+                  Dette conservée, réconciliation ultérieure.
+                entity_id: input_select.ecs_desinfection_retour_verdict

@@ -1,6 +1,6 @@
 # Chantier ECS — Désinfection hebdomadaire effective & consolidation du retour de vacances
 
-> **Statut :** ouverture documentaire de chantier — **gouvernance seule, aucun runtime**
+> **Statut :** Lot 1 **livré** (#664, `origin/main`) · Lot 2 **runtime livré** (IDs auto-attribués sous gouvernance ; timeout T-B) — **en attente de validation terrain** (chantier non clôturé)
 > **Constats sources :** `ECS-DESINF-VAC-1` / `ECS-DESINF-VAC-2` (audit mergé PR #662)
 > **Code registre :** *ECS-DESINF-VAC* (numéro `Cxx` à attribuer par le propriétaire au registre)
 > **Domaine :** `ecs` (secondairement `vacances`, en **consommation** seulement)
@@ -271,6 +271,266 @@ ni n'ouvre les lots 3-5.
 
 ---
 
-*Ouverture de chantier — gouvernance seule, lecture seule du runtime. Aucun YAML/checker/UI modifié ;
-aucun ID inventé ; aucun commit. Les invariants normatifs sont portés par les contrats amendés (§4),
-ce document en est l'ouverture et le plan.*
+## 10. Runtime Lot 2 — conception, puis implémentation livrée
+
+> **Statut : runtime livré.** La correction de gouvernance a autorisé l'auto-attribution des IDs
+> d'automation (sous respect strict du préfixe/format/unicité/checkers) et retenu **T-B** (bornes
+> canoniques existantes). L'architecture a été **resserrée** : **un seul** nouvel helper (verdict typé),
+> **aucun** booléen `sequence_active` (l'état `en_cours` du verdict porte cette vérité), réutilisation de
+> `10250000000021` (lancement **et** réconciliation démarrage), **une seule** nouvelle automation
+> (finalisation corrélée `10250000000033`). Les §10.1-10.11 documentent la conception ; **§10.12** acte
+> l'implémentation réellement livrée (qui prime en cas d'écart de désignation).
+
+### 10.1 Réconciliation runtime (ancrages `origin/main` = `3cfece5`)
+
+- **A1 — Dette `input_boolean.ecs_desinfection_retour_due`.** Écrivain **ON unique** = `10250000000032`
+  (`timer.finished` de `timer.vacances_longues_ecs`). Écrivain **OFF actuel** = `10250000000021`
+  (`desinfection_retour_vacances.yaml:66-68`). **Moment de consommation** : l'automation appelle
+  `script.chauffage_ecs_cycle` en **service bloquant** (`:54-56`) — elle attend donc la fin d'exécution
+  du cycle (jusqu'à ~40 min désinfection + boosts), puis journalise et éteint la dette — **avant** la
+  complétion canonique (`ecs_fin_cycle_signal`, émise +15 min à l'inertie). Persistance : sans `initial`
+  (`10_resilience` §4.1). **Boot** : trigger **unique** `mode_maison Vacances→Normal` — pas de
+  `homeassistant: start`. **Risque brûlée** : `continue_on_timeout: true` dans `cycle.yaml` ⇒ le script
+  **retourne** même sur non-atteinte/timeout ⇒ dette éteinte sans réussite. **Risque bloquée** : dette
+  survivant à un reboot avec `mode_maison` déjà `Normal` n'est jamais reconsommée.
+- **A2 — Complétion canonique.** `input_boolean.ecs_fin_cycle_signal` **posé** par `10250000000026`
+  (`inertie/gel.yaml`) à `timer.finished` de `timer.fenetre_inertie_chauffe_ecs` (15 min), après gel ;
+  **ACK/OFF** par `10250000000019` (`auto_ajustement_offset.yaml`, gardé `ecs_autocorrect_active == on`).
+  **Périmètre : GLOBAL** — le signal ne porte **aucune** identité de cycle/mode. **Risque** : un signal
+  émis par un cycle **ponctuel/vaisselle/hebdo** solderait une dette de retour si la séquence se
+  contentait d'attendre `ecs_fin_cycle_signal == on` (⇒ corrélation obligatoire, §10.4). L'ACK par
+  `…019` impose une lecture **événementielle** (`off→on`), pas un sondage d'état.
+- **A3 — Résultats exposés par `script.chauffage_ecs_cycle`.** `input_text.ecs_cycle_last_action_status`
+  (`applied` / autre — statut d'**application de consigne**, pas verdict de séquence) ; `stop:`/`logbook`
+  (traces, non opposables) ; garde fraîcheur ballon (`provenance == 'mesure'`, fail-closed) ; retour
+  consigne basse vérifié. **Aucun** verdict réussite/échec/timeout durable. La **vérité exploitable** de
+  fin est le **résumé figé** `input_text.ecs_resume_dernier_cycle_fige` au format opposable
+  `date|mode|consigne|t0|boost|valide` (gel `…026` ; `valide=oui` ssi `duree>0 ET temp_max_reelle>0 ET
+  (temp_max_reelle − t0) ≥ 0.5`).
+- **A4 — Watchdogs.** `timer.ecs_cycle_watchdog` (**30 min**, `restore: true`) borne le **verrou**
+  `ecs_cycle_en_cours` (watchdog `10250000000008` → rabaissement + libération) ; `10250000000022`
+  (`reset_verrou_cycle`) purge un verrou incohérent au boot. Sémantique = **sûreté du verrou**, **pas**
+  « séquence en attente de complétion » ⇒ non détournable tel quel comme timeout de séquence (A4/§10.7).
+- **A5 — Redémarrage.** Aucune réconciliation dette au boot aujourd'hui (A1). Scénarios cibles en §10.6.
+- **A6 — Déconfliction.** L'hebdo (`10250000000002`) porte `ecs_cycle_en_cours == off` **et** (Lot 1)
+  `ecs_desinfection_active == on` ; le retour (`…021`) **ne porte pas** `ecs_cycle_en_cours == off`.
+  Le verrou de cycle (`cycle_session_open`, anti-zombie 300 s) sérialise **un** cycle à la fois.
+- **A7 — Patron de verdict.** Arsenal type les états de commande/verdict par **`input_select`** (ex.
+  `input_select` « Audi — état commande climatisation » : `Au repos / En cours / Confirmée / Non
+  confirmée (timeout)`, **écrivain unique** = un script). Le verdict de retour doit suivre ce patron
+  (input_select typé), **pas** un `input_text` libre.
+
+### 10.2 Architecture retenue (autorité de séquence souveraine)
+
+Chaîne : **dette due → admissibilité → lancement → observation → verdict → consommation éventuelle**.
+- **Décision** : la **séquence de retour** (automations dédiées) décide admissibilité, lancement,
+  attente, abstention, verdict, et consommation de la dette. **Écrivain OFF unique** de la dette.
+- **Action** : `script.chauffage_ecs_cycle` reste l'**orchestrateur d'exécution** (inchangé) ; il ne
+  devient pas autorité de la dette.
+- **Observation** : verrou (`ecs_cycle_en_cours`), fraîcheur ballon (`provenance`), statut d'application,
+  **complétion canonique** (`ecs_fin_cycle_signal` **corrélée**, §10.4), watchdog, indisponibilités.
+- **Diagnostic** : le **verdict** (input_select) expose la conclusion sans commander l'action.
+
+### 10.3 Objets requis (attribution propriétaire) — **aucun inventé ici**
+
+| Désignation abstraite | Type | Rôle | Emplacement proposé | Alias descriptif (non définitif) | Attribution |
+|---|---|---|---|---|---|
+| `OBJET_VERDICT_A_ATTRIBUER` | `input_select` | verdict de séquence (options ↔ `05` §3.3 : `en_attente/en_cours/reussite/echec/timeout/preuve_indisponible`) ; **écrivain unique** = séquence | `06_input_selects/ecs/desinfection_retour_verdict.yaml` | « ECS — Verdict désinfection retour » | **helper à créer** |
+| `OBJET_SEQUENCE_ACTIVE_A_ATTRIBUER` | `input_boolean` | verrou de séquence / tentative de retour active (anti-double-lancement + corrélation) ; `initial: off` + purge boot | `05_input_booleans/ecs/desinfection_retour_sequence_active.yaml` | « ECS — Séquence désinfection retour active » | **helper à créer** |
+| `AUTOMATION_ID_A_ATTRIBUER_1` | automation | **verdict à la complétion** : trigger `ecs_fin_cycle_signal: off→on` ; si séquence active + résumé figé corrélé (§10.4) → `reussite`+dette OFF ou `echec` ; libère la séquence | `11_automations/ecs/desinfection_retour_verdict.yaml` | « ECS — Désinfection retour : verdict complétion » | **ID à attribuer** |
+| `AUTOMATION_ID_A_ATTRIBUER_2` | automation | **réconciliation boot** : trigger `homeassistant: start` (+ `systeme_stable → on`) ; gardes §10.6 ; lance **au plus une** tentative ou conserve la dette | `11_automations/ecs/desinfection_retour_reconciliation_boot.yaml` | « ECS — Désinfection retour : réconciliation démarrage » | **ID à attribuer** |
+| `AUTOMATION_ID_A_ATTRIBUER_3` *(conditionnel — cf. arbitrage §10.7)* | automation | **finaliseur timeout** : si la complétion canonique n'arrive pas dans la borne retenue → `timeout`, dette conservée, séquence libérée | `11_automations/ecs/desinfection_retour_timeout.yaml` | « ECS — Désinfection retour : finaliseur timeout » | **ID à attribuer** |
+| `10250000000021` *(existant)* | automation | **lanceur** restructuré : admissibilité → `en_cours` + séquence active → lancement (bloquant) → **ne consomme plus** la dette | (fichier existant) | inchangé | **ID conservé** |
+
+Nombre d'**IDs d'automation** nouveaux : **2 (min) à 3 (avec finaliseur timeout)**. Nombre de **helpers**
+nouveaux : **2**. Aucun nouvel écrivain de `switch.prise_bouclage` ; aucun objet Bouclage.
+
+### 10.4 Corrélation de tentative (déterministe, sans UUID)
+
+Arsenal ne pose pas d'UUID sur les cycles ⇒ corrélation **déterministe par état**, pas par identifiant
+dynamique :
+1. le lanceur pose `OBJET_SEQUENCE_ACTIVE_A_ATTRIBUER = on` **avant** l'appel du cycle ;
+2. le verrou `ecs_cycle_en_cours` sérialise **un seul** cycle à la fois (anti-zombie 300 s) ;
+3. la **déconfliction** (§10.5) empêche toute **autre** désinfection (hebdo) pendant qu'une séquence de
+   retour est active ⇒ le seul cycle `mode==desinfection` produisant un résumé figé pendant la fenêtre
+   est **la tentative de retour** ;
+4. `AUTOMATION_ID_A_ATTRIBUER_1`, sur l'événement `ecs_fin_cycle_signal: off→on`, lit
+   `input_text.ecs_resume_dernier_cycle_fige` : **`mode == 'desinfection'` ET `valide == 'oui'`** ⇒
+   `reussite` (dette OFF) ; `valide == 'non'` ⇒ `echec` (dette conservée) ; **jamais** `reussite` sur un
+   signal dont le résumé figé n'est pas une désinfection valide (⇒ fin canonique **étrangère** ignorée) ;
+5. nettoyage de `OBJET_SEQUENCE_ACTIVE_A_ATTRIBUER` sur `reussite`, `echec`, `timeout`, `reboot`.
+
+> **À valider propriétaire.** La corrélation par `mode==desinfection` s'appuie sur la déconfliction
+> (§10.5). Si un jour l'hebdo et le retour pouvaient coexister, il faudrait un marqueur de séquence plus
+> fort (état dédié comparé au moment du gel). Non requis dans le périmètre actuel (retour souverain).
+
+### 10.5 Déconfliction (minimale, conforme au contrat posé)
+
+- pré-vérification `ecs_cycle_en_cours == off` dans l'**admissibilité** du lanceur (`…021`) ;
+- `OBJET_SEQUENCE_ACTIVE_A_ATTRIBUER` empêche deux tentatives simultanées et tout second lancement sur
+  double événement / reboot rapproché ;
+- **hebdo non souveraine tant qu'une dette de retour est en traitement** : ajouter à la veille hebdo
+  `10250000000002` la garde `OBJET_SEQUENCE_ACTIVE_A_ATTRIBUER == off` (déconfliction **déjà
+  contractualisée** `09` §2 / `05` §3.4 « le retour est souverain ») — **modification minimale du Lot 1**,
+  strictement nécessaire, **sans** toucher le capteur de créneau ni le script ;
+- OFF de la dette : **écrivain unique** = `AUTOMATION_ID_A_ATTRIBUER_1` (retrait de l'OFF de `…021`) ;
+- **aucun** changement au domaine Bouclage.
+
+### 10.6 Reprise au boot (réconciliation gardée, idempotente)
+
+`AUTOMATION_ID_A_ATTRIBUER_2`, sur `homeassistant: start` (+ `systeme_stable → on`), **ne lance** que si
+**toutes** les gardes sont vraies : dette `on` · contexte maison compatible · `systeme_stable == on` ·
+`ecs_cycle_en_cours == off` · `OBJET_SEQUENCE_ACTIVE_A_ATTRIBUER == off` · verdict ≠ `reussite` ·
+observations fraîches disponibles. Sinon : conserver la dette, ou produire `preuve_indisponible`/`echec`.
+Jamais de boucle sur chaque reboot/disponibilité (idempotence via `OBJET_SEQUENCE_ACTIVE_A_ATTRIBUER` et
+le verdict). Une tentative incomplète héritée d'un reboot est **invalidée** (séquence purgée), jamais
+comptée réussie sans résumé figé corrélé.
+
+### 10.7 Arbitrage timeout (à trancher propriétaire)
+
+Le passage `en_cours → timeout` (complétion canonique jamais reçue : inertie annulée par un cycle
+préemptant, ou cycle non finalisé) exige une **borne**. Aucune borne contractuelle existante ne
+correspond exactement :
+- **Option T-A — réutiliser `timer.ecs_cycle_watchdog` (30 min)** : déjà contractuel, mais sémantique =
+  sûreté du verrou, pas « séquence en attente » ; il expire *pendant* les longues désinfections (wait
+  40 min) — **inadapté** comme borne de séquence.
+- **Option T-B — s'appuyer sur la fenêtre d'inertie (`timer.fenetre_inertie_chauffe_ecs`, 15 min)**
+  comme échéance de corrélation post-cycle : la complétion canonique **est** l'échéance de ce timer ; si
+  elle est annulée (préemption), conclure `timeout`. Réutilise une borne existante, sémantiquement
+  proche. **Recommandée**, sous réserve d'un déclencheur `timer.cancelled`/absence propre.
+- **Option T-C — nouveau timer dédié borné** : nécessite un **objet + une durée** attribués (valeur
+  **non inventée** ici). Plus explicite, coût d'un objet supplémentaire.
+
+**Aucune durée n'est inventée.** Décision requise avant l'écriture du finaliseur
+`AUTOMATION_ID_A_ATTRIBUER_3` (Option T-C) ou de son intégration au verdict (T-A/T-B).
+
+### 10.8 Machine d'état (conforme `05` §3.3)
+
+`en_attente` → (admissibilité vraie) `en_cours` [pose séquence active, lancement] → sur
+`ecs_fin_cycle_signal` corrélé : `valide=oui` → **`reussite`** [dette OFF] · `valide=non` → **`echec`** ·
+(borne §10.7 dépassée sans signal) → **`timeout`** · (obs non fraîche à l'admissibilité ou à la
+corrélation) → **`preuve_indisponible`**. Tous les états terminaux **libèrent** la séquence ; seuls
+`echec/timeout/preuve_indisponible/en_attente/en_cours` **conservent** la dette ; seul `reussite`
+la consomme.
+
+### 10.9 Plan CI Lot 2 (Phase H — non exécuté, faute d'objets)
+
+Extension de `check_ecs_desinfection_retour_contracts.py` (autorité `09` §2/§3 — **le bon checker**),
+à écrire **après** attribution, garantissant : ON unique (dette) ; **OFF unique = la séquence** ;
+consommation **seulement** sur `reussite` ; **interdiction** d'OFF immédiat après l'appel du script dans
+`…021` ; présence d'une reprise boot **gardée** ; pré-vérif `ecs_cycle_en_cours == off` ; verrou de
+séquence ; **corrélation** (le verdict lit le résumé figé, pas le seul signal) ; `timeout`/`unknown`
+distincts de `reussite` ; hebdo gardée par la séquence active ; IDs/alias existants inchangés.
+**Mutations négatives** : OFF immédiat après appel · `timeout`→succès · signal global consommé sans
+corrélation · reprise boot sans garde · double tentative · lancement malgré `ecs_cycle_en_cours == on` ·
+`unknown`→réussite · second écrivain OFF · hebdo concurrente · suppression du verdict. *(Détection
+sémantique, sans dépendance externe — cf. leçon Lot 1 : le runner CI n'a pas PyYAML ; analyse de chaîne
+bornée à l'entrée.)*
+
+### 10.10 Matrice comportementale (conceptuelle — objets non attribués)
+
+| # | Scénario | Résultat conçu |
+|---|---|---|
+| 1 | Retour nominal (dette on, admissible, preuve + fin canonique corrélée) | `reussite`, dette OFF |
+| 2 | Refus initial (obs indispo) | pas de lancement, `preuve_indisponible`, dette **on** |
+| 3 | Cycle déjà actif (`ecs_cycle_en_cours == on`) | pas de 2ᵉ lancement, dette **on**, reprise ultérieure |
+| 4 | Timeout (pas de fin corrélée dans la borne §10.7) | `timeout`, dette **on** |
+| 5 | Reboot avant lancement (maison Normal) | réconciliation gardée, ≤ 1 lancement |
+| 6 | Reboot pendant le cycle | tentative invalidée, aucune fausse réussite, dette **on** |
+| 7 | Fin canonique étrangère (autre cycle) | résumé figé non `desinfection`/`valide` ⇒ **non consommée** |
+| 8 | Double événement (transition + stabilité) | ≤ 1 tentative (séquence active) |
+| 9 | Réussite puis événement dupliqué | dette déjà OFF, aucun nouveau cycle |
+| 10 | Hebdo concurrente (créneau ouvert, dette active) | hebdo gardée par séquence active ⇒ retour souverain, pas de double cycle |
+
+### 10.11 Preuves runtime futures (à recueillir, non exécutées)
+
+Procédure : poser la dette (fin naturelle du timer 6 j simulée par un timer court en test), déclencher
+`Vacances→Normal`, observer `OBJET_VERDICT_A_ATTRIBUER` (`en_cours`→`reussite`), la trace de `…021`, la
+trace de `AUTOMATION_ID_A_ATTRIBUER_1` sur `ecs_fin_cycle_signal`, `input_text.ecs_resume_dernier_cycle_fige`
+(`…|desinfection|…|oui`), la dette (OFF sur réussite seulement). Cas : refus (obs indispo) ; cycle actif ;
+timeout (préemption de l'inertie) ; reboot avant/pendant/après ; fin canonique étrangère ; double
+événement. Critère succès : dette OFF **uniquement** sur `reussite` corrélée ; échec/timeout/reboot
+conservent la dette et exposent le verdict. **Aucune preuve terrain n'est fournie par la seule CI.**
+
+---
+
+### 10.12 Implémentation livrée (Runtime Lot 2)
+
+**Architecture retenue (minimale).** Autorité de séquence souveraine portée par **le verdict typé**
+(unique vérité de séquence, l'état `en_cours` valant « tentative active ») ; `script.chauffage_ecs_cycle`
+inchangé ; corrélation **déterministe sans UUID** (résumé figé `mode==desinfection` & `valide==oui`,
+garantie par la déconfliction) ; **timeout T-B** = préemption de la fenêtre d'inertie (aucune durée
+nouvelle) ; consommation de la dette **uniquement** sur `reussite`.
+
+**Objets réellement livrés.**
+
+| Objet | Type | Rôle | Attribution |
+|---|---|---|---|
+| `input_select.ecs_desinfection_retour_verdict` | helper | **unique** vérité de séquence (6 options `05` §3.3) ; sans `initial` (réconciliation boot voit `en_cours`) | **créé** — `06_input_selects/ecs/desinfection_retour_verdict.yaml` |
+| `10250000000021` | automation | **réutilisée** : lanceur + réconciliation démarrage (triggers `Vacances→Normal` **et** `systeme_stable→on`) ; pose `en_cours`/`preuve_indisponible` ; **ne consomme plus** la dette | modifiée — `11_automations/ecs/desinfection_retour_vacances.yaml` |
+| `10250000000033` | automation | **nouvelle** : verdict de complétion — corrélation → `reussite`(+dette OFF)/`echec` ; préemption inertie → `timeout` | **créée** — `11_automations/ecs/desinfection_retour_verdict.yaml` |
+| `10250000000002` | automation | déconfliction : garde `verdict != en_cours` (hebdo non souveraine pendant une tentative) | modifiée — `veilles/veille_desinfection.yaml` |
+
+> **Simplification vs conception (§10.3).** Le booléen `sequence_active` est **supprimé** (l'état
+> `en_cours` du verdict le remplace) ; **une seule** nouvelle automation au lieu de 2-3 (la réconciliation
+> boot est absorbée par `10250000000021`, le timeout par `10250000000033` via `timer.cancelled`). Résultat :
+> **1 helper + 1 nouvelle automation** (au lieu de 2 helpers + 2-3 automations).
+
+**Attribution de l'ID `10250000000033`.** Méthode : **prochain ID libre séquentiel** du domaine ECS
+(convention `generate_next_id_from_prefix`). Préfixe `1025` = ecs (`06_input_selects/system/prefix_id.yaml`).
+IDs voisins examinés : `…031` (retry, pris), `…032` (pose, pris), `…033` (**libre**), `…034` (libre).
+Preuve d'unicité : `git grep` de tous les IDs `1025` (14 chiffres) sur le dépôt — 28 IDs, `…033` **absent**.
+Format : 14 chiffres exacts ✔ (checker `check_automation_ids_contracts`). Domaine : fichier sous
+`11_automations/ecs/` ✔ (`check_automation_prefix_domain_contracts`).
+
+**Preuve d'unicité de la vérité de séquence.** Le verdict `input_select` est l'**écrivain unique** de la
+vérité de séquence ; `en_cours` porte « tentative active » (aucun booléen concurrent). Deux écrivains,
+**par transition disjointe** : `…021` (`en_attente`/`en_cours`/`preuve_indisponible`) et `…033`
+(`reussite`/`echec`/`timeout`). La dette a un **OFF unique** = `…033` (checker T04/T11/T12).
+
+**Traitement du timeout (T-B).** Aucune durée inventée : `…033` pose `timeout` sur l'événement
+`timer.cancelled` de `timer.fenetre_inertie_chauffe_ecs` (la complétion canonique de la tentative a été
+préemptée par un autre cycle) ; la dette est **conservée**, réconciliée au prochain déclencheur admissible
+(retour effectif ou `systeme_stable→on`).
+
+**Traitement du boot.** `…021` (trigger `systeme_stable→on`) : (1) réconcilie un `en_cours` **périmé**
+(aucun cycle, aucune inertie) → `en_attente` ; (2) relance **au plus une** tentative si toutes les gardes
+sont vraies (dette on, verdict ≠ en_cours, verrou off, inertie non active, système stable, mode Normal,
+ballon frais). Idempotent, jamais de relance aveugle.
+
+**Corrélation de la fin canonique.** `…033` est **événementiel** (`ecs_fin_cycle_signal: off→on`), gardé
+par `verdict == en_cours` **et** `dette == on` ; il lit le **résumé figé**
+`input_text.ecs_resume_dernier_cycle_fige` (`mode==desinfection` & `valide==oui`) → `reussite`. Un signal
+d'un **autre** cycle est écarté (verdict ≠ en_cours après préemption→timeout, et/ou `mode != desinfection`
+ignoré). Aucune lecture de `remaining`/`finishes_at`.
+
+**Fichiers modifiés / créés (5).**
+- **créé** `06_input_selects/ecs/desinfection_retour_verdict.yaml`
+- **créé** `11_automations/ecs/desinfection_retour_verdict.yaml` (`10250000000033`)
+- **modifié** `11_automations/ecs/desinfection_retour_vacances.yaml` (`10250000000021` restructurée)
+- **modifié** `11_automations/ecs/veilles/veille_desinfection.yaml` (déconfliction, Lot 1 préservé)
+- **modifié** `scripts/arsenal_contracts/check_ecs_desinfection_retour_contracts.py` (T11-T19 + OFF-writer repointé)
+
+**CI (F2).** Extension de `check_ecs_desinfection_retour_contracts.py` (autorité `09` §2/§3) : T11 (dette
+OFF seulement sur `reussite`), T12 (lanceur ne consomme pas), T13 (`en_cours` avant lancement), T14
+(reprise boot), T15 (verrou + anti-double), T16 (verdict 6 options), T17 (déconfliction hebdo), T18
+(timeout ≠ réussite), T19 (corrélation résumé figé). **Détection sémantique, sans PyYAML** (leçon Lot 1).
+**10/10 mutations négatives** vérifiées rouges ; baseline verte. Aucun nouveau checker/workflow ; registre
+de couverture inchangé.
+
+**Preuves statiques obtenues.** YAML valide (5 fichiers) ; checkers ECS (fondations, retour, cycle,
+sécurité, offsets) verts ; `check_automation_ids`/`prefix_domain`/`06_input_selects`/`initial_key`/
+`ci_coverage_registry`/`recorder` verts ; `git diff --check` OK ; matrice des 10 scénarios (§10.10)
+cohérente avec l'implémentation.
+
+**Preuves terrain restantes (non exécutées).** Cf. §10.11 — dette OFF **uniquement** sur `reussite`
+corrélée ; `preuve_indisponible`/`echec`/`timeout` conservent la dette ; reboot avant/pendant/après ;
+fin canonique étrangère non consommée ; double événement → ≤1 tentative ; hebdo concurrente → retour
+souverain. **Lot 2 non clôturé** tant que la trace terrain est vide. **Lots 3-5 exclus.**
+
+---
+
+*Chantier — Lot 1 livré (#664) ; Lot 2 **runtime livré** (1 helper verdict + automation `10250000000033`,
+`10250000000021` restructurée, déconfliction hebdo, CI F2 étendue). IDs auto-attribués sous gouvernance,
+timeout T-B. Invariants portés par les contrats amendés (§4). **Chantier non clôturé** (validation terrain
+en attente). Lots 3-5 exclus.*

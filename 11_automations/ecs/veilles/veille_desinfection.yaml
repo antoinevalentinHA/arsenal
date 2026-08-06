@@ -55,6 +55,14 @@
       entity_id: input_boolean.ecs_cycle_en_cours
       state: "off"
 
+    # 🔒 DÉCONFLICTION — désinfection de retour souveraine (contrat 09 §2 / 05 §3.4) :
+    # l'hebdomadaire s'abstient tant qu'une tentative de retour est active (verdict en_cours).
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id: input_select.ecs_desinfection_retour_verdict
+          state: "en_cours"
+
   action:
     - service: script.chauffage_ecs_cycle
       data:
