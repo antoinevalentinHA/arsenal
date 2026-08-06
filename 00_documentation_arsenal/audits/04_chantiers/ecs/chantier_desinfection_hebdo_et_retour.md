@@ -1,6 +1,6 @@
 # Chantier ECS — Désinfection hebdomadaire effective & consolidation du retour de vacances
 
-> **Statut :** Lot 1 **livré** (#664, `origin/main`) · Lot 2 **conception préparatoire** — **GO PARTIEL, attribution d'ID/objets requise** (aucun runtime Lot 2 créé)
+> **Statut :** Lot 1 **livré** (#664, `origin/main`) · Lot 2 **runtime livré** (IDs auto-attribués sous gouvernance ; timeout T-B) — **en attente de validation terrain** (chantier non clôturé)
 > **Constats sources :** `ECS-DESINF-VAC-1` / `ECS-DESINF-VAC-2` (audit mergé PR #662)
 > **Code registre :** *ECS-DESINF-VAC* (numéro `Cxx` à attribuer par le propriétaire au registre)
 > **Domaine :** `ecs` (secondairement `vacances`, en **consommation** seulement)
@@ -271,13 +271,15 @@ ni n'ouvre les lots 3-5.
 
 ---
 
-## 10. Runtime Lot 2 — conception préparatoire (IDs/objets à attribuer)
+## 10. Runtime Lot 2 — conception, puis implémentation livrée
 
-> **Statut de cette section : conception, aucun runtime créé.** L'architecture retenue exige des
-> **objets nouveaux attribués par le propriétaire** (helpers + IDs d'automation) ; les fichiers runtime
-> ne sont **pas** créés tant que les IDs manquent, et l'automation existante `10250000000021` **n'est pas**
-> modifiée en isolation (une modification partielle briserait la consommation de la dette). Verdict de
-> phase : **GO PARTIEL — ATTRIBUTION D'ID REQUISE** (+ un arbitrage timeout, §10.7).
+> **Statut : runtime livré.** La correction de gouvernance a autorisé l'auto-attribution des IDs
+> d'automation (sous respect strict du préfixe/format/unicité/checkers) et retenu **T-B** (bornes
+> canoniques existantes). L'architecture a été **resserrée** : **un seul** nouvel helper (verdict typé),
+> **aucun** booléen `sequence_active` (l'état `en_cours` du verdict porte cette vérité), réutilisation de
+> `10250000000021` (lancement **et** réconciliation démarrage), **une seule** nouvelle automation
+> (finalisation corrélée `10250000000033`). Les §10.1-10.11 documentent la conception ; **§10.12** acte
+> l'implémentation réellement livrée (qui prime en cas d'écart de désignation).
 
 ### 10.1 Réconciliation runtime (ancrages `origin/main` = `3cfece5`)
 
@@ -452,7 +454,83 @@ conservent la dette et exposent le verdict. **Aucune preuve terrain n'est fourni
 
 ---
 
-*Chantier — Lot 1 livré (#664) ; Lot 2 en conception préparatoire. Aucun runtime Lot 2 créé, aucun ID
-inventé (désignations abstraites `*_A_ATTRIBUER`). Les invariants normatifs restent portés par les
-contrats amendés (§4). Verdict de phase : **GO PARTIEL — ATTRIBUTION D'ID REQUISE** (+ arbitrage timeout
-§10.7). Lots 3-5 exclus.*
+### 10.12 Implémentation livrée (Runtime Lot 2)
+
+**Architecture retenue (minimale).** Autorité de séquence souveraine portée par **le verdict typé**
+(unique vérité de séquence, l'état `en_cours` valant « tentative active ») ; `script.chauffage_ecs_cycle`
+inchangé ; corrélation **déterministe sans UUID** (résumé figé `mode==desinfection` & `valide==oui`,
+garantie par la déconfliction) ; **timeout T-B** = préemption de la fenêtre d'inertie (aucune durée
+nouvelle) ; consommation de la dette **uniquement** sur `reussite`.
+
+**Objets réellement livrés.**
+
+| Objet | Type | Rôle | Attribution |
+|---|---|---|---|
+| `input_select.ecs_desinfection_retour_verdict` | helper | **unique** vérité de séquence (6 options `05` §3.3) ; sans `initial` (réconciliation boot voit `en_cours`) | **créé** — `06_input_selects/ecs/desinfection_retour_verdict.yaml` |
+| `10250000000021` | automation | **réutilisée** : lanceur + réconciliation démarrage (triggers `Vacances→Normal` **et** `systeme_stable→on`) ; pose `en_cours`/`preuve_indisponible` ; **ne consomme plus** la dette | modifiée — `11_automations/ecs/desinfection_retour_vacances.yaml` |
+| `10250000000033` | automation | **nouvelle** : verdict de complétion — corrélation → `reussite`(+dette OFF)/`echec` ; préemption inertie → `timeout` | **créée** — `11_automations/ecs/desinfection_retour_verdict.yaml` |
+| `10250000000002` | automation | déconfliction : garde `verdict != en_cours` (hebdo non souveraine pendant une tentative) | modifiée — `veilles/veille_desinfection.yaml` |
+
+> **Simplification vs conception (§10.3).** Le booléen `sequence_active` est **supprimé** (l'état
+> `en_cours` du verdict le remplace) ; **une seule** nouvelle automation au lieu de 2-3 (la réconciliation
+> boot est absorbée par `10250000000021`, le timeout par `10250000000033` via `timer.cancelled`). Résultat :
+> **1 helper + 1 nouvelle automation** (au lieu de 2 helpers + 2-3 automations).
+
+**Attribution de l'ID `10250000000033`.** Méthode : **prochain ID libre séquentiel** du domaine ECS
+(convention `generate_next_id_from_prefix`). Préfixe `1025` = ecs (`06_input_selects/system/prefix_id.yaml`).
+IDs voisins examinés : `…031` (retry, pris), `…032` (pose, pris), `…033` (**libre**), `…034` (libre).
+Preuve d'unicité : `git grep` de tous les IDs `1025` (14 chiffres) sur le dépôt — 28 IDs, `…033` **absent**.
+Format : 14 chiffres exacts ✔ (checker `check_automation_ids_contracts`). Domaine : fichier sous
+`11_automations/ecs/` ✔ (`check_automation_prefix_domain_contracts`).
+
+**Preuve d'unicité de la vérité de séquence.** Le verdict `input_select` est l'**écrivain unique** de la
+vérité de séquence ; `en_cours` porte « tentative active » (aucun booléen concurrent). Deux écrivains,
+**par transition disjointe** : `…021` (`en_attente`/`en_cours`/`preuve_indisponible`) et `…033`
+(`reussite`/`echec`/`timeout`). La dette a un **OFF unique** = `…033` (checker T04/T11/T12).
+
+**Traitement du timeout (T-B).** Aucune durée inventée : `…033` pose `timeout` sur l'événement
+`timer.cancelled` de `timer.fenetre_inertie_chauffe_ecs` (la complétion canonique de la tentative a été
+préemptée par un autre cycle) ; la dette est **conservée**, réconciliée au prochain déclencheur admissible
+(retour effectif ou `systeme_stable→on`).
+
+**Traitement du boot.** `…021` (trigger `systeme_stable→on`) : (1) réconcilie un `en_cours` **périmé**
+(aucun cycle, aucune inertie) → `en_attente` ; (2) relance **au plus une** tentative si toutes les gardes
+sont vraies (dette on, verdict ≠ en_cours, verrou off, inertie non active, système stable, mode Normal,
+ballon frais). Idempotent, jamais de relance aveugle.
+
+**Corrélation de la fin canonique.** `…033` est **événementiel** (`ecs_fin_cycle_signal: off→on`), gardé
+par `verdict == en_cours` **et** `dette == on` ; il lit le **résumé figé**
+`input_text.ecs_resume_dernier_cycle_fige` (`mode==desinfection` & `valide==oui`) → `reussite`. Un signal
+d'un **autre** cycle est écarté (verdict ≠ en_cours après préemption→timeout, et/ou `mode != desinfection`
+ignoré). Aucune lecture de `remaining`/`finishes_at`.
+
+**Fichiers modifiés / créés (5).**
+- **créé** `06_input_selects/ecs/desinfection_retour_verdict.yaml`
+- **créé** `11_automations/ecs/desinfection_retour_verdict.yaml` (`10250000000033`)
+- **modifié** `11_automations/ecs/desinfection_retour_vacances.yaml` (`10250000000021` restructurée)
+- **modifié** `11_automations/ecs/veilles/veille_desinfection.yaml` (déconfliction, Lot 1 préservé)
+- **modifié** `scripts/arsenal_contracts/check_ecs_desinfection_retour_contracts.py` (T11-T19 + OFF-writer repointé)
+
+**CI (F2).** Extension de `check_ecs_desinfection_retour_contracts.py` (autorité `09` §2/§3) : T11 (dette
+OFF seulement sur `reussite`), T12 (lanceur ne consomme pas), T13 (`en_cours` avant lancement), T14
+(reprise boot), T15 (verrou + anti-double), T16 (verdict 6 options), T17 (déconfliction hebdo), T18
+(timeout ≠ réussite), T19 (corrélation résumé figé). **Détection sémantique, sans PyYAML** (leçon Lot 1).
+**10/10 mutations négatives** vérifiées rouges ; baseline verte. Aucun nouveau checker/workflow ; registre
+de couverture inchangé.
+
+**Preuves statiques obtenues.** YAML valide (5 fichiers) ; checkers ECS (fondations, retour, cycle,
+sécurité, offsets) verts ; `check_automation_ids`/`prefix_domain`/`06_input_selects`/`initial_key`/
+`ci_coverage_registry`/`recorder` verts ; `git diff --check` OK ; matrice des 10 scénarios (§10.10)
+cohérente avec l'implémentation.
+
+**Preuves terrain restantes (non exécutées).** Cf. §10.11 — dette OFF **uniquement** sur `reussite`
+corrélée ; `preuve_indisponible`/`echec`/`timeout` conservent la dette ; reboot avant/pendant/après ;
+fin canonique étrangère non consommée ; double événement → ≤1 tentative ; hebdo concurrente → retour
+souverain. **Lot 2 non clôturé** tant que la trace terrain est vide. **Lots 3-5 exclus.**
+
+---
+
+*Chantier — Lot 1 livré (#664) ; Lot 2 **runtime livré** (1 helper verdict + automation `10250000000033`,
+`10250000000021` restructurée, déconfliction hebdo, CI F2 étendue). IDs auto-attribués sous gouvernance,
+timeout T-B. Invariants portés par les contrats amendés (§4). **Chantier non clôturé** (validation terrain
+en attente). Lots 3-5 exclus.*

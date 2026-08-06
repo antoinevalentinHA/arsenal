@@ -1,0 +1,50 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT :
+#     ECS – Verdict de séquence « désinfection au retour de vacances »
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter l'UNIQUE vérité de séquence de la désinfection de retour
+#   (Runtime Lot 2). Le verdict est la seule autorité d'état de la
+#   séquence : il porte aussi la vérité « une tentative est en cours »
+#   (état `en_cours`), sans helper booléen distinct.
+#
+# 🧩 SÉMANTIQUE (contrat 05 §3.3)
+#   - en_attente          : dette due, séquence non démarrée
+#   - en_cours            : cycle demandé / en cours, verdict non tranché
+#                           (⇒ vaut « tentative active » : anti-double-lancement
+#                            + garde de corrélation + déconfliction hebdo)
+#   - reussite            : ballon désinfecté prouvé (désinfection valide +
+#                           complétion canonique corrélée) — SEUL état consommant la dette
+#   - echec               : cible non atteinte / cycle invalidé / refus
+#   - timeout             : complétion canonique préemptée (fenêtre d'inertie annulée)
+#   - preuve_indisponible : mesure ballon non fraîche (provenance != mesure)
+#
+# 🔗 AUTORITÉ
+#   Écrivain unique = la séquence de retour :
+#     - 10250000000021 (lanceur + réconciliation démarrage) : en_attente/en_cours/preuve_indisponible
+#     - 10250000000033 (verdict complétion)                 : reussite/echec/timeout
+#   Aucun autre écrivain.
+#
+# ⚙️ PERSISTANCE
+#   - Pas de clé `initial` : l'état est restauré au redémarrage
+#     (un `en_cours` survivant à un reboot est réconcilié par 10250000000021).
+#   - Première valeur par défaut au tout premier démarrage = `en_attente`
+#     (première option, comportement natif input_select).
+#
+# 🚫 NE FAIT PAS
+#   - Ne déclenche rien ; ne pilote rien ; n'est pas un ordre.
+#
+# 🏷️ STATUT
+#   Diagnostic / vérité de séquence — Arsenal (ECS-DESINF-VAC Lot 2)
+# ==========================================================
+
+ecs_desinfection_retour_verdict:
+  name: "ECS – Verdict désinfection retour"
+  options:
+    - en_attente
+    - en_cours
+    - reussite
+    - echec
+    - timeout
+    - preuve_indisponible
+  icon: mdi:shield-check
