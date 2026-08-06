@@ -180,10 +180,18 @@ relance aveugle**. La reprise **ne lance pas** de cycle si l'une des gardes est 
 
 La reprise est **idempotente** : au plus une exécution par légitimité établie.
 
-> **Limite de périmètre.** Le verdict `reussite` de la présente phase atteste la désinfection du
-> **ballon**. Il ne préjuge **pas** du traitement thermique du réseau bouclé (maintien, circulation,
-> sonde de retour) — réservé aux lots ultérieurs (cf. chantier §8). Aucun verdict « boucle » n'est
-> contractualisé ici.
+**Circulation post-réussite (minimale, primitive existante).** Sur le verdict `reussite` — et
+uniquement là — la séquence de retour appelle **une fois** `script.bouclage_ecs_5_minutes` (primitive
+de bouclage **existante**, cf. `contrats/bouclage.md`) : décision ECS de circuler après réussite,
+exécution et bornage (timer 5 min) assurés par le domaine Bouclage. Le lancement unique par réussite
+découle des gardes **existantes** (verdict `en_cours` + dette `on`, retombées après consommation) ;
+**aucun nouvel objet, aucun verrou, aucune durée** ne sont créés. ECS ne pilote **jamais**
+`switch.prise_bouclage` directement et **n'introduit aucune vérité de bouclage** propre.
+
+> **Limite de preuve.** Le résultat prouvé se limite à : **ballon désinfecté** (verdict `reussite`) +
+> **circulation 5 min demandée** selon la primitive existante. La température du **retour de boucle**
+> n'est **pas** prouvée (aucune sonde) ; la boucle n'est **jamais** déclarée « désinfectée » ; les
+> tronçons terminaux non bouclés restent **hors garantie**. Aucun verdict « boucle » n'est créé.
 
 ---
 
