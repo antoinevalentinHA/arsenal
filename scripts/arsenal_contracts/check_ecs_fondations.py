@@ -9,9 +9,6 @@ Contrats : 00_fondations_et_statut, 01_principes_perimetre_et_roles,
 
 import re
 import sys
-
-import yaml
-
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -340,50 +337,38 @@ CYCLE_SCRIPT = ROOT / "10_scripts/ecs/cycle.yaml"
 AUTORISATION_HEBDO = "input_boolean.ecs_desinfection_active"
 
 
-def _iter_conditions(node):
-    """Parcourt récursivement les conditions d'une automation (y compris les
-    blocs imbriqués `and`/`or`/`not` via leur clé `conditions`)."""
-    if isinstance(node, list):
-        for item in node:
-            yield from _iter_conditions(item)
-    elif isinstance(node, dict):
-        yield node
-        if "conditions" in node:
-            yield from _iter_conditions(node["conditions"])
+_ITEM_RE = re.compile(r"^\s*-\s")  # début d'un item de liste YAML
 
 
-def _condition_exige_etat(automations_yaml: str, entity: str, etat: str) -> bool:
-    """Vrai si UNE condition d'état de l'automation exige `entity == etat`.
-    Parse structurel (YAML) : indépendant du formatage, de l'ordre des clés et
-    de la position de ligne — l'état lu appartient bien à la MÊME condition que
-    l'entité (pas de fuite sur une condition voisine)."""
-    try:
-        docs = yaml.safe_load(automations_yaml)
-    except yaml.YAMLError:
-        return False
-    if isinstance(docs, dict):
-        docs = [docs]
-    if not isinstance(docs, list):
-        return False
-    for auto in docs:
-        if not isinstance(auto, dict):
+def _condition_exige_etat(cleaned: str, entity: str, etat: str) -> bool:
+    """Vrai si une condition d'état exige `entity == etat`. Sans dépendance
+    externe : l'état lu est borné à l'ENTRÉE de condition contenant l'entité
+    (délimitée par les items de liste `- …`), donc il ne peut pas « fuir » sur
+    une condition voisine. Indépendant des commentaires (déjà retirés) et de la
+    position de ligne ; tolère l'ordre des clés au sein de l'entrée."""
+    lines = cleaned.splitlines()
+    ent_re = re.compile(r"^\s*entity_id\s*:\s*" + re.escape(entity) + r"\s*$")
+    etat_re = re.compile(r"^\s*state\s*:\s*['\"]?" + re.escape(etat) + r"['\"]?\s*$")
+    for i, line in enumerate(lines):
+        if not ent_re.match(line):
             continue
-        for cond in _iter_conditions(auto.get("condition")):
-            if not isinstance(cond, dict) or cond.get("condition") != "state":
-                continue
-            ent = cond.get("entity_id")
-            ents = ent if isinstance(ent, list) else [ent]
-            state = cond.get("state")
-            states = state if isinstance(state, list) else [state]
-            if entity in ents and etat in [str(s) for s in states]:
-                return True
+        # Bornes de l'entrée : remonter au `- …` ouvrant, descendre au `- …` suivant.
+        start = i
+        while start > 0 and not _ITEM_RE.match(lines[start]):
+            start -= 1
+        end = i + 1
+        while end < len(lines) and not _ITEM_RE.match(lines[end]):
+            end += 1
+        if any(etat_re.match(x) for x in lines[start:end]):
+            return True
     return False
 
 
 def test_veille_desinfection_lit_autorisation():
     """§09 §2 : la veille hebdomadaire exige `ecs_desinfection_active == on`."""
+    cleaned = strip_comments(read(VEILLE_DESINFECTION))
     check(
-        _condition_exige_etat(read(VEILLE_DESINFECTION), AUTORISATION_HEBDO, "on"),
+        _condition_exige_etat(cleaned, AUTORISATION_HEBDO, "on"),
         f"F1/T11 — la veille de désinfection ({VEILLE_DESINFECTION.relative_to(ROOT)}) "
         f"n'exige pas `{AUTORISATION_HEBDO} == on` en condition d'état "
         f"(autorisation hebdomadaire effective, §09 §2)",
