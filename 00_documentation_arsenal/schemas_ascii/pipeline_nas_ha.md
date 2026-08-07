@@ -210,7 +210,7 @@
                                             │  Arsenal - Quarantine Purger
                                             │  utilisateur   : antoinevalentin
                                             │  planification : quotidienne
-                                            │  heure         : 05:00
+                                            │  heure         : 04:05
                                             │
                                             │  mode :
                                             │  --apply
