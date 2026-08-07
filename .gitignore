@@ -163,3 +163,10 @@ mosquitto.db
 
 *_sanitized.*
 *_redacted.*
+# =====================================================
+# ==== Documentation privée (infra, IP, VPN, topologie)
+# ==== -> jamais dans le dépôt public. Placer ces docs
+# ==== dans un dossier _prive/ (co-localisé, ignoré).
+# =====================================================
+
+_prive/
