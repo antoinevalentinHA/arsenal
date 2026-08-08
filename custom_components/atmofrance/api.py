@@ -132,11 +132,11 @@ class AtmoFranceDataApi:
                 f"Failed to get authent token, with error status : {request.status}"
             )
 
-    async def get_data(self, insee_code, type: URL_CODE) -> dict:
+    async def get_data(self, insee_code, url_code: URL_CODE) -> dict:
         """Get Data from AtmoFrance API"""
         today = datetime.now(
             ZoneInfo(self._hass.config.time_zone)).strftime("%Y-%m-%d")
-        url = f'{DATA_URL}/{type.value}/{{"code_zone":{{"operator":"=","value":"{
+        url = f'{DATA_URL}/{url_code.value}/{{"code_zone":{{"operator":"=","value":"{
             insee_code}"}},"date_ech":{{"operator":">=","value":"{today}"}}}}?withGeom=false'
 
         # Two attempts at most: the second one only happens when a cached token
@@ -153,8 +153,9 @@ class AtmoFranceDataApi:
                     "Too many request error from the server. Try again in %s ", err)
                 return None
             except (ClientError, TimeoutError) as err:
-                _LOGGER.error(
-                    "Failed to reach the authentication endpoint: %s", err)
+                _LOGGER.warning(
+                    "Failed to reach the authentication endpoint: %s: %s",
+                    type(err).__name__, err)
                 return None
 
             headers = {"Authorization": f"Bearer {self._token}"}
@@ -169,8 +170,14 @@ class AtmoFranceDataApi:
                     continue
                 payload = await result.json()
             except (ClientError, TimeoutError) as err:
-                _LOGGER.error(
-                    "Failed to get data for INSEE %s: %s", insee_code, err)
+                # Le type compte autant que le message : TimeoutError et
+                # plusieurs exceptions aiohttp ont un str() vide, et la ligne
+                # se réduisait alors à « Failed to get data for INSEE X: ».
+                # Warning et non error : le coordinateur lève UpdateFailed
+                # juste après, que HA journalise déjà en erreur.
+                _LOGGER.warning(
+                    "Failed to get data for INSEE %s: %s: %s",
+                    insee_code, type(err).__name__, err)
                 return None
             break
 
