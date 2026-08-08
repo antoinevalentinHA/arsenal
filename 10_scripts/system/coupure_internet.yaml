@@ -20,12 +20,26 @@
 # ----------------------------------------------------------
 # ⚙️ COMPORTEMENT
 #
-#   - Déclenche un cycle d’alimentation physique
-#     via le script bas niveau dédié
-#
-#   - Trace explicitement l’action :
-#       • notification persistante (historique local)
+#   - Trace explicitement l’action AVANT toute coupure :
 #       • notification mobile (information utilisateur)
+#     ➜ envoyée tant que le réseau est encore disponible.
+#
+#   - Déclenche ENSUITE le cycle d’alimentation physique
+#     via le script bas niveau dédié, en mode DÉTACHÉ
+#     (script.turn_on = « fire-and-forget »).
+#
+#   ⚠️ POURQUOI DÉTACHÉ
+#     Ce script est appelé depuis le dashboard (hold_action).
+#     Le frontend ATTEND la fin de l’exécution du service.
+#     Or couper l’alim de la box coupe aussi la connexion HA
+#     ↔ frontend. Si le cycle était appelé en synchrone, le
+#     service ne rendrait jamais la main pendant la coupure et
+#     le frontend afficherait un FAUX échec « connection lost »
+#     alors que le redémarrage a bien lieu.
+#
+#     En détachant le cycle, redemarrer_box rend la main au
+#     frontend IMMÉDIATEMENT (acquittement reçu), puis la
+#     coupure survient — sans erreur remontée à l’utilisateur.
 #
 # ----------------------------------------------------------
 # 🔒 GARANTIES
@@ -70,8 +84,7 @@ redemarrer_box:
   description: Déclenche un cycle d’alimentation de la box avec traçabilité utilisateur
   mode: single
   sequence:
-    - action: script.cycle_alimentation_box
-
+    # 1️⃣ Notifier PENDANT que le réseau est encore disponible.
     - action: script.notification_envoyer
       data:
         cible: input_text.telephone_parent_1_notify
@@ -79,3 +92,12 @@ redemarrer_box:
         message: >
           {{ now().strftime('%d/%m %H:%M') }}
           La box Internet a été redémarrée manuellement.
+
+    # 2️⃣ Lancer le cycle d'alimentation en DÉTACHÉ.
+    #    script.turn_on rend la main immédiatement : le service
+    #    redemarrer_box se termine et acquitte le frontend AVANT
+    #    que la coupure ne survienne (évite le faux « connection
+    #    lost » côté dashboard).
+    - action: script.turn_on
+      target:
+        entity_id: script.cycle_alimentation_box
