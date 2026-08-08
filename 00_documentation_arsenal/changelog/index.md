@@ -1661,6 +1661,21 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Recorder — ajout de `sensor.arrosage_pluie_arbitrage` et du microscope C11 P4 ; retrait des microscopes C16 et C13, chantiers clos (entités conservées vives).
 - Registres — C16 clos (2026-07-29), C41 clos (2026-07-30), CH-LL-CI-2 clos ; C11 réveillé puis P4 livré ; contrats 300 → 302, checkers 86 → 87, workflows 91 → 92 ; ajout du changelog gelé v17.1.0.
 
+---
+
+## 🧠 ARSENAL HA — [v17.1.2](changelogs/v17/v17_1_2.md) — STABLE — 2026-08-06
+**Tags :** ecs, chauffage, vmc, eclairage, volets, voiture, lovelace, contrats, checkers, architecture, registres
+
+**Signal net :**
+- ECS (ECS-DESINF-VAC, lots 1 et 2) — la veille hebdomadaire `10250000000002` exige `input_boolean.ecs_desinfection_active == on`, ce qui inhibe la désinfection hebdomadaire en vacances via le cycle de vie déjà en place ; ajout de `input_select.ecs_desinfection_retour_verdict` (6 états) et de l'automation de verdict `10250000000033`, seul écrivain `off` de la dette et seulement sur `reussite` corrélée ; `10250000000021` devient lanceur et réconciliation au démarrage ; appel unique de `script.bouclage_ecs_5_minutes` sur réussite. Contrats `ecs/05` (§3.2 réécrit, §3.3 et §3.4 ajoutés), `ecs/09`, `ecs/10` et `bouclage.md` amendés ; +13 tests dans `check_ecs_desinfection_retour_contracts.py`, +5 dans `check_ecs_fondations.py`.
+- Chauffage — surcote Vacances conditionnée à la saison : `10_scripts/chauffage/consigne_vacances.yaml` lit `input_select.saison` et garantit l'absence de surcote en `Été` (restauration depuis la sauvegarde puis remise à `0`, abstention sinon) ; contrat `66_adaptation_consigne_vacances.md` complété d'un invariant et d'une section « Conditionnement saisonnier ».
+- VMC — `contrats/vmc.md` passe en « implémentation livrée et conforme » ; §17 restructuré en `17.1` à `17.9` à contenu inchangé, ajout du §17.10 (veto composé en ligne dans `vmc_haute_vitesse_commandee`, disponibilité inchangée, aucune historisation Recorder).
+- Simulation de présence — retrait du §6 « Vigilance hors boucle » du périmètre (mode de défaillance disparu avec le passage des exécutants SwitchBot aux modules Zigbee) ; commentaire de contrainte matérielle du garage mis à jour, pilotage maintenu via `script.garage_toggle`.
+- Architecture — ajout de `architecture/volets.md` (pont commercial iDiamant, chaîne et frontière de responsabilité, non contractuel) et de sa ligne d'index ; `ecosysteme_depots_satellites.md` : `bluetti-bt-lib` en `v1.1.0`, `bluetti_bt` en `0.2.2`, constat 3 barré et daté.
+- Lovelace — suppression de `section_headers/chambres.yaml` : Étage et Chambres fusionnés sur six dashboards météo, Salle de Jeux et Palier repositionnés ; en-têtes 🪜 → 🔝, 👶 → 🧒, 🧸 → 🎲 propagés au runtime et aux dashboards ; graphe d'autonomie Audi passé de `statistics-graph` à `apexcharts-card` (3 séries nommées min / moyenne / max).
+- Paramétrage — alerte température NAS portée de 40 °C / 10 min à 55 °C / 30 min ; suppression du bloc `http:` (`trusted_proxies`) de `configuration.yaml`.
+- Registres — ajout de `ECS-DESINF-VAC` au registre des chantiers (code `Cxx` à attribuer, gouvernance seule) ; deux entrées à `audits/index.md` ; ajout du changelog gelé v17.1.1.
+
 ==================================================
 FIN INDEX
 ==================================================
