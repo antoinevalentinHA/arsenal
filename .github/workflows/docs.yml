@@ -1,10 +1,15 @@
 name: Arsenal Docs
 
 on:
+  # P3 (audit CI) : docs_lint scanne le perimetre 00_documentation_arsenal (defaut) et les
+  # gates DOC-CI-* portent sur ce meme arbre ; l'outillage vit sous scripts/docs_lint/. Une PR
+  # sans changement docs n'a rien a linter ici. `main` non protege : run skippe = merge non
+  # bloque (pas de sentinelle).
   push:
-    branches: [main]        # post-merge : re-valide main. Les branches de PR
-  pull_request:             # sont couvertes par pull_request, sans doubler
-                            # l'execution (audit CI, P1 anti-double-run).
+    branches: [main]        # post-merge : re-valide main (si un chemin change). Les PR
+    paths: ["00_documentation_arsenal/**", "scripts/docs_lint/**", ".github/workflows/docs.yml"]
+  pull_request:             # passent par pull_request, sans doubler (P1).
+    paths: ["00_documentation_arsenal/**", "scripts/docs_lint/**", ".github/workflows/docs.yml"]
 
 # Annule les runs obsoletes d'une branche ; ne coupe jamais main (P2).
 concurrency:
