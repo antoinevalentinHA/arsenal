@@ -1,10 +1,15 @@
 name: Arsenal Validation
 
 on:
+  # P3 (audit CI) : ne se declenche que sur un changement YAML. check_configuration_includes
+  # ne lit que configuration.yaml + ses includes (tous YAML), et yamllint ne lint que du YAML :
+  # une PR purement docs/.py/.png n'a rien a valider ici. `main` n'est pas protege (aucun
+  # check requis), donc un run skippe ne bloque aucun merge — pas besoin de sentinelle.
   push:
-    branches: [main]        # post-merge : re-valide main. Les branches de PR
-  pull_request:             # sont couvertes par pull_request, sans doubler
-                            # l'execution (audit CI, P1 anti-double-run).
+    branches: [main]        # post-merge : re-valide main (si YAML change). Les PR
+    paths: ["**.yaml", "**.yml"]
+  pull_request:             # passent par pull_request, sans doubler (P1).
+    paths: ["**.yaml", "**.yml"]
 
 # Annule les runs obsoletes d'une branche ; ne coupe jamais main (P2).
 concurrency:

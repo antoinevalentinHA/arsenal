@@ -1,10 +1,14 @@
 name: Arsenal Doctrine
 
 on:
+  # P3 (audit CI) : ne lit que 12_template_sensors/ (platform: template interdit) et
+  # 11_automations/ (cle mode: obligatoire). Aucune autre source normative -> filtre sur
+  # ces deux arbres. `main` non protege : un run skippe ne bloque aucun merge (pas de sentinelle).
   push:
-    branches: [main]        # post-merge : re-valide main. Les branches de PR
-  pull_request:             # sont couvertes par pull_request, sans doubler
-                            # l'execution (audit CI, P1 anti-double-run).
+    branches: [main]        # post-merge : re-valide main (si un chemin change). Les PR
+    paths: ["12_template_sensors/**", "11_automations/**", ".github/workflows/doctrine.yml"]
+  pull_request:             # passent par pull_request, sans doubler (P1).
+    paths: ["12_template_sensors/**", "11_automations/**", ".github/workflows/doctrine.yml"]
 
 # Annule les runs obsoletes d'une branche ; ne coupe jamais main (P2).
 concurrency:

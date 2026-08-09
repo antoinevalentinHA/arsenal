@@ -1,25 +1,32 @@
 # ==========================================================
-#  Arsenal — Contrats (exécution consolidée)
+#  Arsenal — Contrats (exécution consolidée, job unique)
 #  ----------------------------------------------------------
-#  Remplace ~86 workflows `contracts_*.yml` (une VM par checker)
-#  par UNE matrice par domaine. Chaque checker Arsenal étant un
-#  scan de ~1 s, l'overhead de VM (~25-30 s) dominait : on
-#  regroupe sans rien changer aux checkers (sous-processus isolé,
-#  selftest auto-détecté, tous lancés, exit 1 si un seul échoue).
+#  Remplace ~86 workflows `contracts_*.yml` (une VM par checker),
+#  puis la matrice à 7 jobs, par UN SEUL job. Chaque checker
+#  Arsenal étant un scan de ~1 s, l'overhead de VM (~25-30 s)
+#  dominait : regrouper les 86 checkers dans une seule VM minimise
+#  le nombre de machines démarrées (audit CI, P5 — arbitrage
+#  ressources > latence). run_checkers.py isole chaque checker dans
+#  un sous-processus : aucun état partagé, selftest auto-détecté,
+#  tous lancés, exit 1 si un seul échoue — parité inchangée.
 #
 #  Complétude (aucun checker oublié) prouvée INDÉPENDAMMENT par
 #  check_ci_coverage_registry.py (INTEG-1), inchangé : tout
 #  check_*.py doit apparaître dans un workflow — ils sont tous
 #  nommés ci-dessous (sauf check_configuration_includes.py, porté
 #  par validation.yml).
+#
+#  Ce workflow reste TOUJOURS actif (aucun filtre `paths`) : son
+#  checker de couverture compte les .md de contrats et doctrines,
+#  donc un changement documentaire doit pouvoir le redéclencher.
 # ==========================================================
 name: Arsenal Contracts
 
 on:
   push:
     branches: [main]        # post-merge : re-valide main. Les branches de PR
-  pull_request:             # sont couvertes par l'evenement pull_request, sans
-                            # doubler l'execution (audit CI, P1 anti-double-run).
+  pull_request:             # sont couvertes par pull_request, sans doubler
+                            # l'execution (audit CI, P1 anti-double-run).
 
 # Un seul run par (workflow, ref) : les pushes obsoletes d'une branche sont
 # annules. On ne coupe JAMAIS une validation de main (P2 anti-rafale).
@@ -29,37 +36,119 @@ concurrency:
 
 jobs:
   contracts:
+    name: contracts (tous les checkers — job unique)
     runs-on: ubuntu-latest
     env:
       # Consommés par check_resilience_integrations_contracts.py ; inertes ailleurs.
       RESILIENCE_CHECK_MODE: report
       STRICT_ON_NEW: "1"
-    strategy:
-      fail-fast: false
-      matrix:
-        group:
-          - name: ecs
-            checkers: "check_boiler_transactionnel_contracts.py check_bouclage_contracts.py check_ecs_cycle.py check_ecs_desinfection_retour_contracts.py check_ecs_fondations.py check_ecs_offsets_params_contracts.py check_ecs_securite.py"
-          - name: clim_chauffage
-            checkers: "check_chauffage_courbe_etancheite_contracts.py check_climatisation_admissibilite_contracts.py check_climatisation_seuils_cool_contracts.py check_climatisation_ventilation_contracts.py"
-          - name: air_humidite
-            checkers: "check_aeration_m0_recover_contracts.py check_aeration_m1_contracts.py check_aeration_m2_contracts.py check_aeration_m3_contracts.py check_aeration_m4_contracts.py check_aeration_m5_contracts.py check_aeration_m6_contracts.py check_aeration_recommandation_contracts.py check_deshum_guard_contracts.py check_deshum_tx_contracts.py check_deshumidificateur_metier_contracts.py check_hr_consolidation_contracts.py check_hr_stabilisation_contracts.py check_humidite_relative_jardin_contracts.py check_vmc_contracts.py check_vmc_initialisation_contracts.py"
-          - name: meteo_jardin
-            checkers: "check_palmares_temperature_journalier_chaud_contracts.py check_palmares_temperature_journalier_froid_contracts.py check_palmares_temperature_min_journaliere_haute_contracts.py check_pluie_production_contracts.py check_temperature_jardin_contracts.py check_volets_pluie_contracts.py"
-          - name: ui_lovelace
-            checkers: "check_19_button_card_templates_contracts.py check_lovelace_grid_contracts.py check_lovelace_includes_contracts.py check_lovelace_navigation_contracts.py check_lovelace_no_inline_templating_contracts.py check_lovelace_section_headers_contracts.py check_ui_couleurs_contracts.py check_ui_runtime_colors_contracts.py check_ui_semantic_colors_contracts.py check_ui_semantic_colors_hierarchy_contracts.py"
-          - name: presence_maison
-            checkers: "check_alarme_contracts.py check_babysitting_contracts.py check_bssid_contracts.py check_eclairage_entree_contracts.py check_eclairage_jardin_contracts.py check_eclairage_sejour_contracts.py check_garage_toggle_contracts.py check_mobile_high_accuracy_contracts.py check_presence_contracts.py check_simulation_presence_contracts.py check_sommeil_contracts.py check_vacances_contracts.py check_visite_contracts.py check_voiture_contracts.py check_zones_contracts.py"
-          - name: helpers_infra
-            checkers: "check_01_customize_contracts.py check_02_groups_contracts.py check_03_input_numbers_contracts.py check_06_input_selects_contracts.py check_arsenal_self_contracts.py check_automation_ids_contracts.py check_automation_prefix_domain_contracts.py check_batteries_contracts.py check_ci_coverage_registry.py check_consolidation_contracts.py check_counters_contracts.py check_diagnostic_netatmo_contracts.py check_initial_key_contracts.py check_input_booleans_contracts.py check_input_datetimes_contracts.py check_input_texts_contracts.py check_notifications_contracts.py check_parametres_invalides_contracts.py check_prefix_id_contracts.py check_recorder_contracts.py check_redondance_contracts.py check_registre_chantiers.py check_resilience_integrations_contracts.py check_source_isolation_contracts.py check_stabilisation_contracts.py check_switchbot_transactionnel_contracts.py check_timers_contracts.py check_ups_arret_ha_contracts.py"
-    name: contracts (${{ matrix.group.name }})
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Dépendances (union des checkers regroupés)
+      - name: Dépendances (union des checkers)
         run: pip install pyyaml jinja2
-      - name: Checkers du groupe ${{ matrix.group.name }}
-        run: python3 scripts/ci/run_checkers.py ${{ matrix.group.checkers }}
+      - name: Tous les checkers de contrat
+        shell: bash
+        run: |
+          # Liste explicite (source de vérité du regroupement) : chaque nom
+          # apparait ici, donc INTEG-1 reste vert. Groupée par domaine pour la
+          # lecture ; l'ordre n'a aucune incidence (sous-processus isolés).
+          CHECKERS=(
+            # --- ecs (7) ---
+            check_boiler_transactionnel_contracts.py
+            check_bouclage_contracts.py
+            check_ecs_cycle.py
+            check_ecs_desinfection_retour_contracts.py
+            check_ecs_fondations.py
+            check_ecs_offsets_params_contracts.py
+            check_ecs_securite.py
+            # --- clim_chauffage (4) ---
+            check_chauffage_courbe_etancheite_contracts.py
+            check_climatisation_admissibilite_contracts.py
+            check_climatisation_seuils_cool_contracts.py
+            check_climatisation_ventilation_contracts.py
+            # --- air_humidite (16) ---
+            check_aeration_m0_recover_contracts.py
+            check_aeration_m1_contracts.py
+            check_aeration_m2_contracts.py
+            check_aeration_m3_contracts.py
+            check_aeration_m4_contracts.py
+            check_aeration_m5_contracts.py
+            check_aeration_m6_contracts.py
+            check_aeration_recommandation_contracts.py
+            check_deshum_guard_contracts.py
+            check_deshum_tx_contracts.py
+            check_deshumidificateur_metier_contracts.py
+            check_hr_consolidation_contracts.py
+            check_hr_stabilisation_contracts.py
+            check_humidite_relative_jardin_contracts.py
+            check_vmc_contracts.py
+            check_vmc_initialisation_contracts.py
+            # --- meteo_jardin (6) ---
+            check_palmares_temperature_journalier_chaud_contracts.py
+            check_palmares_temperature_journalier_froid_contracts.py
+            check_palmares_temperature_min_journaliere_haute_contracts.py
+            check_pluie_production_contracts.py
+            check_temperature_jardin_contracts.py
+            check_volets_pluie_contracts.py
+            # --- ui_lovelace (10) ---
+            check_19_button_card_templates_contracts.py
+            check_lovelace_grid_contracts.py
+            check_lovelace_includes_contracts.py
+            check_lovelace_navigation_contracts.py
+            check_lovelace_no_inline_templating_contracts.py
+            check_lovelace_section_headers_contracts.py
+            check_ui_couleurs_contracts.py
+            check_ui_runtime_colors_contracts.py
+            check_ui_semantic_colors_contracts.py
+            check_ui_semantic_colors_hierarchy_contracts.py
+            # --- presence_maison (15) ---
+            check_alarme_contracts.py
+            check_babysitting_contracts.py
+            check_bssid_contracts.py
+            check_eclairage_entree_contracts.py
+            check_eclairage_jardin_contracts.py
+            check_eclairage_sejour_contracts.py
+            check_garage_toggle_contracts.py
+            check_mobile_high_accuracy_contracts.py
+            check_presence_contracts.py
+            check_simulation_presence_contracts.py
+            check_sommeil_contracts.py
+            check_vacances_contracts.py
+            check_visite_contracts.py
+            check_voiture_contracts.py
+            check_zones_contracts.py
+            # --- helpers_infra (28) ---
+            check_01_customize_contracts.py
+            check_02_groups_contracts.py
+            check_03_input_numbers_contracts.py
+            check_06_input_selects_contracts.py
+            check_arsenal_self_contracts.py
+            check_automation_ids_contracts.py
+            check_automation_prefix_domain_contracts.py
+            check_batteries_contracts.py
+            check_ci_coverage_registry.py
+            check_consolidation_contracts.py
+            check_counters_contracts.py
+            check_diagnostic_netatmo_contracts.py
+            check_initial_key_contracts.py
+            check_input_booleans_contracts.py
+            check_input_datetimes_contracts.py
+            check_input_texts_contracts.py
+            check_notifications_contracts.py
+            check_parametres_invalides_contracts.py
+            check_prefix_id_contracts.py
+            check_recorder_contracts.py
+            check_redondance_contracts.py
+            check_registre_chantiers.py
+            check_resilience_integrations_contracts.py
+            check_source_isolation_contracts.py
+            check_stabilisation_contracts.py
+            check_switchbot_transactionnel_contracts.py
+            check_timers_contracts.py
+            check_ups_arret_ha_contracts.py
+          )
+          python3 scripts/ci/run_checkers.py "${CHECKERS[@]}"
