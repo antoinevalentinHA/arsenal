@@ -25,7 +25,7 @@
         ] %}
         {% set valides = valeurs | reject('equalto', none) | list %}
         {% if valides | length == 0 %}
-          unknown
+          {{ none }}
         {% else %}
           {{ (valides | sum / (valides | length)) | round(0) }}
         {% endif %}
@@ -46,7 +46,7 @@
         ] %}
         {% set valides = valeurs | reject('equalto', none) | list %}
         {% if valides | length == 0 %}
-          unknown
+          {{ none }}
         {% else %}
           {{ (valides | sum / (valides | length)) | round(0) }}
         {% endif %}
