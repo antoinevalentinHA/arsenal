@@ -23,6 +23,11 @@ on:
 permissions:
   contents: read
 
+# Annule les runs obsoletes d'une branche ; ne coupe jamais main (audit CI, P2).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   audit-publication:
     name: Scanner sécurité publication (bloquant)
