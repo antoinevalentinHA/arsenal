@@ -2,7 +2,14 @@ name: Arsenal Validation
 
 on:
   push:
-  pull_request:
+    branches: [main]        # post-merge : re-valide main. Les branches de PR
+  pull_request:             # sont couvertes par pull_request, sans doubler
+                            # l'execution (audit CI, P1 anti-double-run).
+
+# Annule les runs obsoletes d'une branche ; ne coupe jamais main (P2).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   validate:

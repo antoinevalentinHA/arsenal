@@ -11,6 +11,9 @@ name: "Arsenal CI — Chauffage (etages 1, 2 & 3 : lint, decision, execution)"
 
 on:
   push:
+    branches: [main]        # post-merge : re-valide main (si un chemin ci-dessous
+                            # change). Les PR passent par l'evenement pull_request,
+                            # sans doubler l'execution (audit CI, P1).
     paths:
       # Code de l'outil : tout changement re-declenche le self-test + lint.
       - "tools/arsenal_ci/**"
@@ -49,6 +52,11 @@ env:
 
 permissions:
   contents: read
+
+# Annule les runs obsoletes d'une branche ; ne coupe jamais main (audit CI, P2).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   # ---------------------------------------------------------------- self-test
