@@ -154,26 +154,41 @@
     - delay: "00:00:02"
 
     # ♻️ Reinitialisation min/max hebdo depuis capteurs
-    - action: input_number.set_value
-      target:
-        entity_id:
-          - input_number.atelier_komori_temperature_min
-          - input_number.atelier_komori_temperature_max
-      data:
-        value: "{{ states('sensor.temperature_komori') | float }}"
+    # Chaque machine est gardee independamment : un capteur
+    # `unavailable`/`unknown` est saute proprement (pas d'exception,
+    # pas d'ecriture de fausse donnee) sans bloquer les suivantes.
+    - if:
+        - condition: template
+          value_template: "{{ states('sensor.temperature_komori') | float(none) is not none }}"
+      then:
+        - action: input_number.set_value
+          target:
+            entity_id:
+              - input_number.atelier_komori_temperature_min
+              - input_number.atelier_komori_temperature_max
+          data:
+            value: "{{ states('sensor.temperature_komori') | float }}"
 
-    - action: input_number.set_value
-      target:
-        entity_id:
-          - input_number.atelier_bobst_temperature_min
-          - input_number.atelier_bobst_temperature_max
-      data:
-        value: "{{ states('sensor.temperature_bobst') | float }}"
+    - if:
+        - condition: template
+          value_template: "{{ states('sensor.temperature_bobst') | float(none) is not none }}"
+      then:
+        - action: input_number.set_value
+          target:
+            entity_id:
+              - input_number.atelier_bobst_temperature_min
+              - input_number.atelier_bobst_temperature_max
+          data:
+            value: "{{ states('sensor.temperature_bobst') | float }}"
 
-    - action: input_number.set_value
-      target:
-        entity_id:
-          - input_number.atelier_media_temperature_min
-          - input_number.atelier_media_temperature_max
-      data:
-        value: "{{ states('sensor.temperature_media') | float }}"
+    - if:
+        - condition: template
+          value_template: "{{ states('sensor.temperature_media') | float(none) is not none }}"
+      then:
+        - action: input_number.set_value
+          target:
+            entity_id:
+              - input_number.atelier_media_temperature_min
+              - input_number.atelier_media_temperature_max
+          data:
+            value: "{{ states('sensor.temperature_media') | float }}"
