@@ -48,5 +48,13 @@
           and is_state('binary_sensor.presence_famille_unifiee', 'off')
           and is_state('input_boolean.visite_en_cours', 'off')
         }}
+      # Robustesse au rechargement des templates : si une dependance template
+      # (vacances_demandees ou presence_famille_unifiee) est indisponible, ce
+      # capteur passe a `unavailable` au lieu de s'effondrer a `off` via
+      # is_state(), ce qui evite les fronts descendants fantomes chez ses
+      # consommateurs (ex. cycle pre-confort).
+      availability: >
+        {{ states('binary_sensor.vacances_demandees') not in ['unknown', 'unavailable']
+           and states('binary_sensor.presence_famille_unifiee') not in ['unknown', 'unavailable'] }}
       icon: >
         mdi:beach

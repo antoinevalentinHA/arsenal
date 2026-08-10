@@ -47,5 +47,11 @@
           and is_state('binary_sensor.parametres_invalides_vacances', 'off')
           and is_state('input_boolean.vacances_fenetre_active', 'on')
         }}
+      # Robustesse au rechargement des templates : si la dependance template
+      # est indisponible (unknown/unavailable, typiquement pendant un reload),
+      # ce capteur passe a `unavailable` au lieu de s'effondrer a `off` via
+      # is_state(). Evite les fronts descendants fantomes en cascade.
+      availability: >
+        {{ states('binary_sensor.parametres_invalides_vacances') not in ['unknown', 'unavailable'] }}
       icon: >
         mdi:calendar-check

@@ -51,5 +51,12 @@
           is_state('input_boolean.vacances_demande_manuel', 'on')
           or is_state('binary_sensor.vacances_planifiees_actives', 'on')
         }}
+      # Robustesse au rechargement des templates : si la dependance template
+      # (vacances_planifiees_actives) est indisponible, ce capteur passe a
+      # `unavailable` au lieu de produire un faux `off`. C'est ce faux `off`
+      # qui declenchait a tort la fin de projection Vacances (et, en cascade,
+      # la desinfection ECS de retour) lors d'un simple reload de templates.
+      availability: >
+        {{ states('binary_sensor.vacances_planifiees_actives') not in ['unknown', 'unavailable'] }}
       icon: >
         mdi:beach
