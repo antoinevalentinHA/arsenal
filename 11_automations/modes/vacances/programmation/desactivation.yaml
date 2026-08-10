@@ -53,9 +53,13 @@
   mode: restart
 
   trigger:
+    # Defense en profondeur : un `off` transitoire (flap au reload, glitch)
+    # qui revient tout seul ne doit jamais faire sortir du mode Vacances.
+    # Seul un `off` stable sur 10 s bascule la projection.
     - platform: state
       entity_id: binary_sensor.vacances_demandees
       to: "off"
+      for: "00:00:10"
 
     - platform: homeassistant
       event: start
