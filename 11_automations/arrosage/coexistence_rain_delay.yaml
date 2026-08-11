@@ -15,6 +15,12 @@
 #   - à chaque changement de fraîcheur du pont (R6) → ré-application
 #     immédiate : un pont qui (re)devient frais peut être re-neutralisé,
 #     un pont périmé cesse aussitôt d'être renouvelé (03 §6) ;
+#   - à chaque bord de disponibilité du CANAL SOL (médiane dispo ⇔ n>=2
+#     points frais) → ré-application immédiate : canal sol inexploitable ⇒
+#     Arsenal aveugle ⇒ retrait du rain_delay et RETOUR AU SECOURS (03 §5,
+#     « capteurs sol indisponibles → le secours reste le filet ») ; retour
+#     du canal ⇒ neutralisation re-posée. Bords seuls (to/from unavailable),
+#     pas de spam sur la valeur de la médiane ;
 #   - au démarrage de Home Assistant → réaffirme l'état voulu.
 #
 # 🧯 FAIL-SAFE PAR CONSTRUCTION
@@ -55,6 +61,22 @@
     - id: fraicheur
       platform: state
       entity_id: binary_sensor.rain_bird_pont_donnees_fraiches
+
+    # Bord de DISPONIBILITÉ du canal sol (médiane ⇔ n>=2 points frais). On ne
+    # déclenche que sur les transitions exploitable↔inexploitable (to/from
+    # 'unavailable'), PAS sur les changements de valeur de la médiane (pas de
+    # spam). Perte du canal ⇒ réévaluation immédiate ⇒ retrait rain_delay
+    # (secours rendu). Retour du canal ⇒ neutralisation re-posée. Sans ce
+    # trigger, le seul /12h laisserait le secours neutralisé jusqu'à 12 h.
+    - id: sol_indisponible
+      platform: state
+      entity_id: sensor.jardin_humidite_sol_mediane
+      to: "unavailable"
+
+    - id: sol_retour
+      platform: state
+      entity_id: sensor.jardin_humidite_sol_mediane
+      from: "unavailable"
 
     - id: demarrage
       platform: homeassistant

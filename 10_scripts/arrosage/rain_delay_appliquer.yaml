@@ -54,14 +54,22 @@ arrosage_rain_bird_rain_delay_appliquer:
         # R6 (03 §6 / 17 §1) : fraîcheur = liveness. unknown/unavailable ⇒ non frais
         # ⇒ pas de neutralisation ⇒ expiration ⇒ secours (direction sûre).
         frais_ok: "{{ is_state('binary_sensor.rain_bird_pont_donnees_fraiches', 'on') }}"
+        # Exploitabilité du canal sol = DISPONIBILITÉ de la médiane (n>=2 points
+        # frais). MÊME autorité que la décision (intention.yaml, gate
+        # `mediane_exploitable` #688 ; contrat 15 §5 : la médiane, PAS le libellé).
+        # Canal sol inexploitable ⇒ Arsenal est AVEUGLE (ne peut plus décider) ⇒
+        # rendre la main au secours (contrat 03 §5 « capteurs sol indisponibles →
+        # le secours reste le filet » ; anti-pattern §5 : ne pas bloquer Arsenal ET
+        # le secours). is_number gère unknown/unavailable (⇒ non exploitable).
+        sol_exploitable: "{{ is_number(states('sensor.jardin_humidite_sol_mediane')) }}"
 
     - choose:
-        # Arsenal autorité + pont joignable ET FRAIS → neutralisation temporaire.
-        # La fraîcheur ne gate QUE cette branche : un pont périmé cesse d'être
-        # neutralisé, rain_delay expire, le secours reprend (03 §5/§6).
+        # Arsenal autorité + pont joignable ET FRAIS + CANAL SOL EXPLOITABLE →
+        # neutralisation temporaire. Arsenal est réellement capable de décider :
+        # le secours peut rester dormant. La fraîcheur ne gate QUE cette branche.
         - conditions:
             - condition: template
-              value_template: "{{ maitre_on and dispo_ok and frais_ok }}"
+              value_template: "{{ maitre_on and dispo_ok and frais_ok and sol_exploitable }}"
           sequence:
             - service: number.set_value
               target:
@@ -69,7 +77,23 @@ arrosage_rain_bird_rain_delay_appliquer:
               data:
                 value: "{{ valeur_active }}"
 
-        # Arsenal en retrait + pont joignable → rendre la main au secours
+        # Arsenal AVEUGLE : maître on + pont sain (dispo+frais) MAIS canal sol
+        # inexploitable (médiane indisponible, <2 sondes fraîches). Arsenal ne peut
+        # plus décider ⇒ RENDRE LA MAIN au secours SANS attendre l'expiration
+        # native (jusqu'à 2 j = privation persistante puisque le /12h reconduit,
+        # contrat 03 §5/§7.6) : écriture EXPLICITE rain_delay=0, symétrique du
+        # retrait « maître off » ci-dessous (rendre la main = direction sûre).
+        - conditions:
+            - condition: template
+              value_template: "{{ maitre_on and dispo_ok and frais_ok and not sol_exploitable }}"
+          sequence:
+            - service: number.set_value
+              target:
+                entity_id: "{{ rd_entity }}"
+              data:
+                value: 0
+
+        # Arsenal en retrait (maître off) + pont joignable → rendre la main au secours
         - conditions:
             - condition: template
               value_template: "{{ not maitre_on and dispo_ok }}"
@@ -80,4 +104,6 @@ arrosage_rain_bird_rain_delay_appliquer:
               data:
                 value: 0
       # default : pont indisponible OU non frais (maître on) → aucune écriture
-      #           → rain_delay expire → secours Rain Bird reprend (03 §5/§6)
+      #           → rain_delay expire → secours Rain Bird reprend (03 §5/§6).
+      #           Le canal sol inexploitable sur pont SAIN est traité au-dessus
+      #           (retrait explicite) ; sur pont non frais, le dead-man suffit.
