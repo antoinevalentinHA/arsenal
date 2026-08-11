@@ -229,6 +229,25 @@ distingue au minimum :
   déclenchement, dose-réponse 35 min montrant un **sur-arrosage récurrent** —
   pic 36–51 % ≫ seuil 30 %, séchage ≈ −3,3 pt/j VPD-dépendant), **puis confirmés
   par preuve runtime** sur la modulation branchée (§12).
+- **Réduction sol graduée par la marge (calibration initiale T08, 2026-08-11 —
+  réversible, à confirmer runtime §12).** La réduction n'est plus un palier fixe
+  `0,95` mais une **fonction croissante de la marge sol** `m = médiane − seuil`
+  (**canal sol pur** — aucune lecture climat, séparation §5.2 préservée) :
+  `facteur_sol = 1 − (1 − f_sol_min) · min(m, marge_pleine) / marge_pleine`,
+  **définie seulement pour `m ≥ 0`** (sol au moins au seuil ; `m < 0` ⇒ `1,0`,
+  jamais de réduction sur déficit réel). **Valeurs initiales proposées** :
+  `f_sol_min = 0,80` (réduction max **−20 %**) ; `marge_pleine = 6 pts`
+  (réduction maximale atteinte à `médiane ≥ seuil + 6`). Justification données :
+  sur-remplissage **systématique** (T08 : **14/14** arrosages, pic médian
+  **≈ +20 pts** au-dessus du seuil ⇒ large réserve avant tout risque de
+  sous-arrosage) ; à la marge médiane observée au front (~1,5 pt) le facteur vaut
+  **≈ 0,95** (continuité avec le palier antérieur), et se creuse à **0,80** aux
+  fortes marges. Sous **forte demande** le **plancher nominal** (§5.5) absorbe
+  intégralement la réduction (`max(base, base × 0,80 × 1,05) = base`) : la
+  réduction ne s'exerce donc **qu'en demande faible/normale**, là où l'eau
+  économisée ne manquera pas. **Recalibrable** (amplitude et `marge_pleine`) après
+  preuve runtime — le **levier dominant** du sur-remplissage reste la **durée de
+  base opérateur** (§4), hors périmètre modulation.
 - **Forte demande climatique — facteur d'allongement et seuils (§5.4/§5.5)** —
   **calibration initiale réversible**, **non** des vérités agronomiques
   définitives : **facteur `1,05`** (allongement **réel**) déclenché à

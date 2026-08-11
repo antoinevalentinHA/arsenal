@@ -25,9 +25,16 @@
 #   ordonnée MULTIPLICATIVE : nominale × facteur_sol × facteur_climat
 #   → arrondi (demi → entier pair) → clamp [1,60].
 #
-# 🔢 CALIBRATION (mise en service minimale, recalibrable — contrat §6)
-#   Réduction sol = 0,95 (perturbation initiale minimale réversible), gate sol :
-#   état sol `complet` ET médiane disponible ET médiane ≥ seuil déclenchement.
+# 🔢 CALIBRATION (recalibrable — contrat §6)
+#   Réduction sol GRADUÉE par la marge m = médiane − seuil (canal sol PUR, aucune
+#   lecture climat) : facteur_sol = 1 − (1 − F_SOL_MIN)·min(m, MARGE_PLEINE)/MARGE_PLEINE,
+#   pour m ≥ 0 ; m < 0 ⇒ 1,0 (jamais de réduction sur déficit réel).
+#   Valeurs T08 (2026-08-11, réversibles) : F_SOL_MIN = 0,80 (−20 % max),
+#   MARGE_PLEINE = 6 pts. À la marge ~1,5 observée au front, facteur ≈ 0,95
+#   (continuité) ; se creuse à 0,80 aux fortes marges. Gate sol : état `complet`
+#   ET médiane dispo ET médiane ≥ seuil. Sous forte demande, le plancher nominal
+#   (§5.5) absorbe la réduction (durée = base). Levier dominant du sur-remplissage
+#   = durée de base opérateur, HORS modulation.
 #   Allongement sol = 1,0 (non calibré, différé preuve runtime).
 #   ALLONGEMENT climatique RÉEL (contrat 19 §5.5) : forte demande qualifiée
 #   (climat 'complet' ET (ET₀ >= 6,0 OU VPD >= 2,3)) ⇒ facteur climat = 1,05.
@@ -82,7 +89,14 @@
           {% set etat = states('sensor.jardin_reservoir_sol_etat') %}
           {% set mediane = states('sensor.jardin_humidite_sol_mediane') | float(none) %}
           {% set seuil = states('input_number.arrosage_seuil_humidite_declenchement') | float(none) %}
-          {% if etat == 'complet' and mediane is not none and seuil is not none and mediane >= seuil %}0.95{% else %}1.0{% endif %}
+          {# Réduction GRADUÉE par la marge sol m = médiane − seuil (canal sol pur).
+             Calibration T08 (contrat 19 §6), réversible. #}
+          {% set F_SOL_MIN = 0.80 %}
+          {% set MARGE_PLEINE = 6.0 %}
+          {% if etat == 'complet' and mediane is not none and seuil is not none and mediane >= seuil %}
+          {% set m = [mediane - seuil, MARGE_PLEINE] | min %}
+          {{ (1.0 - (1.0 - F_SOL_MIN) * (m / MARGE_PLEINE)) | round(4) }}
+          {% else %}1.0{% endif %}
         motif: >
           {% set etat = states('sensor.jardin_reservoir_sol_etat') %}
           {% set mediane = states('sensor.jardin_humidite_sol_mediane') | float(none) %}
@@ -91,6 +105,12 @@
           {{ 'sol_complet_mediane_ge_seuil' if (seuil is not none and mediane >= seuil) else 'sol_complet_mediane_sous_seuil_allongement_differe' }}
           {% elif etat == 'degrade' %}sol_degrade_confiance_insuffisante_pour_reduire
           {% else %}sol_non_qualifie{% endif %}
+        # Marge sol exposée (observabilité §10) : m = médiane − seuil, pilote
+        # la graduation de la réduction (canal sol pur). None si non calculable.
+        marge: >
+          {% set mediane = states('sensor.jardin_humidite_sol_mediane') | float(none) %}
+          {% set seuil = states('input_number.arrosage_seuil_humidite_declenchement') | float(none) %}
+          {{ (mediane - seuil) | round(2) if (mediane is not none and seuil is not none) else 'None' }}
 
     # ===== Recommandation CANAL CLIMAT (secondaire) — état = statut =====
     # Allongement non calibré ⇒ facteur neutre 1,0 (le climat ne réduit jamais).
