@@ -198,8 +198,13 @@
             {% if T is not none %}{% set d.ref = T %}{% endif %}{% set d.infiltr_ech = none %}
           {% endif %}
 
-          {# Priorité 2 : nouvel apport observé qualifiant #}
-          {% if d.verdict is none and T is not none and d.ref is not none and seuil_apport is not none and (T - d.ref) >= seuil_apport %}
+          {# Priorité 2 : nouvel apport observé qualifiant.
+             attente_h GARDÉ is not none : la borne d'infiltration en dépend
+             (attente_h * 3600). Indisponible ⇒ on n'entre PAS dans la branche
+             (aucun repli inventé, aucune valeur métier fabriquée) ; l'apport
+             n'est pas consommé (d.ref inchangé) et l'infiltration s'armera au
+             tick suivant, une fois attente_h revenu. #}
+          {% if d.verdict is none and T is not none and d.ref is not none and seuil_apport is not none and attente_h is not none and (T - d.ref) >= seuil_apport %}
             {% set d.infiltr_ech = now_ts + attente_h * 3600.0 %}{% set d.ref = T %}
             {% set d.verdict = 'attente_infiltration' %}{% set d.motif = 'apport_observe_qualifiant' %}
           {% endif %}
