@@ -1676,6 +1676,20 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Paramétrage — alerte température NAS portée de 40 °C / 10 min à 55 °C / 30 min ; suppression du bloc `http:` (`trusted_proxies`) de `configuration.yaml`.
 - Registres — ajout de `ECS-DESINF-VAC` au registre des chantiers (code `Cxx` à attribuer, gouvernance seule) ; deux entrées à `audits/index.md` ; ajout du changelog gelé v17.1.1.
 
+---
+
+## 🧠 ARSENAL HA — [v17.1.3](changelogs/v17/v17_1_3.md) — STABLE — 2026-08-10
+**Tags :** ci, checkers, ecs, vacances, meteo, imprimerie, systeme, audits, registres
+
+**Signal net :**
+- CI — suppression des 86 workflows `contracts_*.yml` et ajout de `contracts_all.yml` : les 86 checkers de contrat tournent dans un job unique via `scripts/ci/run_checkers.py` (sous-processus isolés, selftest auto-détecté, tous lancés, exit 1 si un seul échoue). Motif : ~1 s de calcul utile par checker pour ~25-30 s d'overhead de VM, jusqu'au throttling Actions du 2026-08-06. Aucun checker modifié ; complétude prouvée par `INTEG-1`.
+- CI — `push` limité à `branches: [main]` sur les workflows globaux (fin de la double exécution `push` + `pull_request`), bloc `concurrency` avec `cancel-in-progress` sauf sur `main`, et filtres `paths:` ciblés réintroduits sur `validation`, `doctrine` et `docs` ; `contracts_all` reste sans filtre.
+- ECS — correctif bloquant du verdict de désinfection de retour : la borne de timeout était armée par l'événement brut `timer.cancelled`, émis par Home Assistant même sur un timer `idle`, alors que `10250000000027` annule la fenêtre d'inertie au démarrage de chaque cycle ; la tentative se posait `timeout` à elle-même, `reussite` était inatteignable et la dette inconsommable. Détection remplacée par la transition d'état `active → idle` avec garde `ecs_cycle_en_cours == on` ; ajout du test T24.
+- ECS — chantier `ECS-DESINF-VAC` réouvert, clôture rétractée : la preuve terrain invoquée ne pouvait pas exister (18 min entre le dernier commit runtime et la clôture, sur une chaîne déclenchée par `Vacances → Normal` après un timer de 6 j). Critère de clôture révisé aux scénarios 1 et 4 du §10.10, observés en runtime.
+- Vacances — ajout d'une clé `availability:` sur `vacances_demandees`, `vacances_planifiees_actives` et `vacances_actives` : une dépendance template indisponible produit `unavailable` au lieu d'un faux `off` ; `for: "00:00:10"` ajouté au trigger de désactivation. Audit reload-flap consigné, trois chaînes physiques encore exposées, remédiation non appliquée.
+- Correctifs — moyennes CO₂ d'étage renvoyant `{{ none }}` au lieu de la chaîne `unknown` ; `redemarrer_box` lance le cycle d'alimentation en détaché, supprimant le faux « connection lost » au dashboard ; archivage atelier Imprimerie gardé capteur par capteur.
+- Registres — `REGISTRE_COUVERTURE_VERIFICATION.md` : workflows 92 → 7, `contracts_*` 86 → 1, checkers inchangés à 87, couplage 1:1 abandonné au profit de N:1 ; deux entrées de journal (2026-08-06 et 2026-08-09) ; ajout du changelog gelé v17.1.2.
+
 ==================================================
 FIN INDEX
 ==================================================
