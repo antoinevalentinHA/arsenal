@@ -1,6 +1,6 @@
 # 🧠 ARSENAL — RAPPORT : Aération — clôture d'épisode bloquée sur front fugitif (`aeration_episode_en_cours` collant)
 
-> **Statut** : correctif **runtime + CI livrés** (PR #359, mergé le 2026-07-14) ; **validation terrain (reboot) en attente**.
+> **Statut** : correctif **runtime + CI livrés** (PR #359, mergé le 2026-07-14) ; **validation terrain — scénario (a) validé sur données L4 (2026-08-11), reste (b) acte opérateur** (cf. §Trace terrain).
 > **Date** : 2026-07-14.
 > **Nature** : correction structurelle d'un défaut de robustesse (réouverture corrective d'un domaine clos — cf. `05_clotures/aeration/cloture_aeration_recommandation.md`).
 > **Chantier** : **C19** au [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md) (① Actifs).
@@ -58,6 +58,24 @@ Le scénario B1 (reboot) est prouvé **statiquement** par l'oracle ; il reste à
 - (b) front consommé simulé (interrupteur maître off au moment de la fermeture, puis on) ⇒ clôture.
 
 **Les corrections ne valent pas validation terrain.** Clôture de C19 après (a) et (b).
+
+### Trace terrain
+
+> **Provenance (2026-08-11).** Analyse hors ligne **L4** de la sauvegarde `recorder_20260811.db`
+> (`states` 2026-07-11 → 2026-08-11 ; 29 épisodes, 62 reboots). Reproductible :
+> `arsenal-runtime/analyses/c19_reboot_episode_20260811/` (`analyse_c19.py`, lecture seule). **Aucune
+> panne provoquée.**
+
+| Scénario | Date | Résultat | Observation / preuve |
+|---|---|---|---|
+| **(a)** reboot pendant épisode `on` + fenêtres fermées ⇒ clôture M2 | 2026-07-14 | **PASS** | reboot **11:35:37** en épisode actif (07:16→11:44) **fenêtres fermées** ⇒ épisode **clôturé à 11:44** (~9 min après reboot, après stabilisation) |
+| **(a)** — robustesse (contre-preuve du défaut collant) | 2026-07-11→08-11 | **PASS** | **6** reboots survenus pendant un épisode actif (dont 2 dans le même épisode de 11,8 h le 19/07), **tous suivis d'une clôture** ; **29/29** épisodes clôturés, **0 collant** ; **29/29** clôtures sur **fenêtres fermées** (signature M2). Le défaut « épisode collant au front fugitif » **ne se reproduit pas** |
+| **(b)** front consommé simulé (interrupteur maître off→on) | *(à faire)* | **NON EXERCÉ** | **acte opérateur** ; n'apparaît pas dans la trace naturelle. À exercer pour compléter |
+
+> **Réserve.** Le capteur diagnostic `binary_sensor.chauffage_aeration_cloture_en_retard` (`delay_on 60 s`)
+> et `*fermeture_stable` **ne sont pas historisés** : le délai interne de M2 et le déclenchement du
+> diagnostic « clôture en retard » ne sont pas mesurables hors ligne — seul le **résultat** (épisode
+> clôturé, non collant) l'est. **Scénario (a) validé sur données réelles ; reste (b).**
 
 ## 🔗 Lien contractuel
 
