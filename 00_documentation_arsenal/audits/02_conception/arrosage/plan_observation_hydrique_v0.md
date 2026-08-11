@@ -320,6 +320,61 @@ l'oscillation diurne** — métrique retenue = **net journalier** (robuste), pas
 pentes de segments. Aucune règle, aucun seuil, aucun runtime ; **durée de base
 inchangée**.
 
+### 2026-08-11 — ré-observation T08 (mois plein 6 sondes) : P2 consolidé & dose-réponse pour la modulation
+
+Rejeu du protocole T06 corrigé sur la base fraîche `recorder_20260811.db`
+(backup HA 2026.8.1, daté **2026-08-11 00:30 UTC** — le nom `automatic_backup_
+2026_8_1` désigne la **version HA**, pas une date ; **lecture seule**), fenêtre
+**2026-07-11 → 2026-08-11** (**31 j**, dont **99,9 % en régime 6 points frais**,
+715 h). C'est la **fenêtre « 30 j purs »** que T07 attendait pour ~2026-08-20,
+disponible plus tôt. Analyse complète :
+`arsenal-runtime/analyses/c11_p2_reobservation_20260811/SYNTHESE.md`.
+
+**Séchage horaire biné par VPD** (grille 30 min, pente 1 h, n=1338) : monotone et
+croissant — ~0 sous 1 kPa, puis −0,19 / −0,19 / −0,33 / −0,22 / −0,19 / −0,32 pt/h
+sur 1,0→4,0 kPa. |moy|/σ horaire encore < 1 (jitter de quantification de la
+médiane, attendu).
+
+**Test propre au multi-jours (nouveauté T08)** — pente de chaque **phase de
+séchage franche** (≥ 36 h, sans arrosage/pluie par construction) vs sa **VPD
+moyenne**, sur **10 phases** : **r = −0,74** ; régression **pente = 0,068 −
+0,162·VPD** pt/h/kPa (≈ −0,09 pt/h à 1 kPa, −0,34 à 2,5 kPa, soit **−3 à −8
+pt/jour**). Cette métrique (moyenne sur ≥ 36 h) **lave l'oscillation diurne** qui
+confondait le scan de segments à T07 ; le signal ressort net et ordonné. À
+l'échelle journalière : 16/30 jours purs en séchage net (la corrélation Δ24 h ↔
+VPD est brouillée par les jours d'arrosage matinal, d'où la métrique par phase).
+
+**Confrontation aux critères (§3 bis / T05)** : **(a) ✅** (monotone ≤ 2,5 kPa,
+r=−0,74) ; **(b) ✅ à l'échelle multi-jours** (r=−0,74 sur 10 phases ; échoue encore
+en horaire par construction) ; **(c) ✅ largement** (10 phases). **P2 confirmé et
+consolidé** sur un mois plein ; la réserve « 30 j purs » de T07 est **levée**.
+
+**Portée modulation (C11/P4 — déjà livrée, contrat [`19`](../../../contrats/arrosage/19_modulation_duree.md)).**
+T08 fournit la **dose-réponse** que le contrat 19 §6 demandait d'établir par les
+données, et éclaire la **révision de la calibration** (arbitrages propriétaires,
+**aucun appliqué ici**) :
+- **canal climat binaire** : allongement **+5 % en tout-ou-rien** (`facteur =
+  1,05` si `ET₀ ≥ 6,0` **ou** `VPD ≥ 2,3`) alors que la réponse observée est
+  **continue et monotone** ⇒ un **facteur gradué** (proportionnel à la VPD
+  au-dessus d'un plancher, borné) suivrait mieux la physique ;
+- **amplitude** : `1,05` ≈ **+2 min sur 35** — quasi cosmétique face à un séchage
+  de ~7 pt/j ; un `f_climat_max` plus large est **désormais justifiable** par les
+  données (décision propriétaire) ;
+- **seuils** : distributions mois plein (pondérées durée) — VPD P50/P75/P90 =
+  1,15 / **1,78** / 2,60 ; ET₀ P50/P75/P90 = 3,42 / **5,18** / 6,55. Les seuils
+  runtime **2,3 / 6,0** sont au **~P87 / P86** (haut décile), **pas** au « quartile
+  supérieur » revendiqué au §6 (P75 = 1,78 / 5,18) ; `demande_forte` actif
+  **~19 %** du temps. À réaligner (redescendre aux vrais P75) ou à re-documenter ;
+- **réduction sol** (`0,95`) : reste **structurellement inaccessible** en
+  automatique (conditions `médiane < seuil` pour arroser vs `médiane ≥ seuil`
+  pour réduire, disjointes — §5.3). Limite de **conception**, pas de calibration ;
+  T08 ne la débloque pas.
+
+Lecture prudente : **médiane seule** (sondes par point hors recorder) ; **été
+chaud seul** ; `recorder_20260811.db` **gitignoré** (non versionné, traçabilité
+par la SYNTHESE). Aucune règle, aucun seuil, aucun runtime touché ; **durée de
+base inchangée** (`input_number.arrosage_rainbird_station_1_duree_minutes`).
+
 ---
 
 ## 4. Critères de sortie vers v0.5 (indicatifs, **non normatifs**)
