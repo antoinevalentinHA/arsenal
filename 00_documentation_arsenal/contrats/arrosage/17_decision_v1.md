@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — ARROSAGE
 ## 17 — Décision d'arrosage V1 (paramétrable, livrable)
 
-**Version contrat :** v1.1 — amendée **C18 (Lot 1)**, 2026-07-12 : réconciliation du rôle de `pont_sante` (diagnostic, non décisionnel — §2 / §3, D-C18-B)
+**Version contrat :** v1.2 — amendée 2026-08-11 : **réalignement 6 sondes** du gate sol (§2 / §3 cond.7 / §3.7). Le gate décisionnel porte sur l'**exploitabilité de la médiane** (publiée **dès 2 points frais**), **non** sur le **libellé d'état** diagnostique (`insuffisant`/`degrade`), conformément au contrat [`15`](15_canal_reservoir_sol.md) §5 (« le libellé ne pilote aucune décision »). Suppression des formulations héritées du parc 3 sondes (« 2/3 · 1/3 · 0/3 »). Aucun seuil métier modifié. — v1.1 — amendée **C18 (Lot 1)**, 2026-07-12 : réconciliation du rôle de `pont_sante` (diagnostic, non décisionnel — §2 / §3, D-C18-B)
 **Statut :** **Normatif — décision V1 ; runtime V1 réalisé (mergé, publié v16.3).**
 Définit la **fonction de décision** d'un arrosage automatique **V1** mono-station :
 ses **entrées**, sa **règle paramétrable**, ses **invariants de sûreté** et la
@@ -100,7 +100,8 @@ paramètres opérateur, en **déléguant l'exécution** au script supervisé ép
 | Entrée | Rôle dans la décision | Source (entité réelle) |
 |---|---|---|
 | **Humidité représentative du sol** (médiane) | Mesure du « réservoir » : basse ⇒ besoin | `sensor.jardin_humidite_sol_mediane` ([`15`](15_canal_reservoir_sol.md)) |
-| **État du canal réservoir sol** | Qualité de lecture : `indisponible`/`insuffisant` ⇒ prudence | `sensor.jardin_reservoir_sol_etat` ([`15`](15_canal_reservoir_sol.md)) |
+| **Exploitabilité de la médiane** | Gate sol : médiane **disponible dès 2 points frais** ⇒ décision recevable ; **< 2 points ⇒ abstention** | disponibilité de `sensor.jardin_humidite_sol_mediane` ([`15`](15_canal_reservoir_sol.md) §2/§5) |
+| **État du canal réservoir sol** | **Diagnostic** de qualité de lecture — **pas** un gate décisionnel (le gate porte sur la disponibilité de la médiane, §3.7) | `sensor.jardin_reservoir_sol_etat` ([`15`](15_canal_reservoir_sol.md)) |
 | **Suspension pluie** | Pluie observée/prévue ⇒ **inhibe** l'arrosage | `binary_sensor.arrosage_suspension_pluie` |
 | **Fenêtre horaire Arsenal** | Arsenal n'agit que dans la fenêtre, **disjointe** du secours | `input_datetime.arrosage_fenetre_debut` / `_fin` |
 | **Cooldown / intervalle minimal** | Délai minimal entre deux arrosages Arsenal (anti-acharnement) | `input_number.arrosage_intervalle_minimal_heures` |
@@ -149,11 +150,15 @@ besoin → décision de 04/05, mais **concret et paramétré**.
 6. **préconditions runtime `on`** (`binary_sensor.arrosage_rain_bird_preconditions_runtime`)
    et **données du pont disponibles** (`binary_sensor.rain_bird_pont_donnees_disponibles = on`)
    — le **pont exploitable** pour exécuter et observer ;
-7. **aucune inconnue critique** : état réservoir sol `indisponible`/`insuffisant`
-   ⇒ **abstention prudente** (jamais conclure « sol humide » par défaut,
-   [`04`](04_besoin_hydrique.md) §4). L'état **`degrade` (2/3 points frais) est
-   recevable** : il peut **porter une intention positive** si la médiane (alors
-   exploitable, [`15`](15_canal_reservoir_sol.md) §2/§5) passe sous le seuil.
+7. **aucune inconnue critique** : le gate sol porte sur l'**exploitabilité de la
+   médiane** — publiée **dès 2 points frais** ([`15`](15_canal_reservoir_sol.md)
+   §2/§5), **indépendamment du libellé d'état** (diagnostic). **Médiane
+   indisponible** (**moins de 2 points frais**) ⇒ **abstention prudente** (jamais
+   conclure « sol humide » par défaut, [`04`](04_besoin_hydrique.md) §4). Une
+   **lecture dégradée mais exploitable** (**≥ 2 points frais**) **peut porter une
+   intention positive** si la médiane passe sous le seuil ; le **libellé**
+   (`insuffisant`/`degrade`/`complet`) **ne gate pas** la décision
+   ([`15`](15_canal_reservoir_sol.md) §5).
 
 > **Réconciliation D-C18-B (Lot 1) — `pont_sante` n'est PAS une entrée de décision.**
 > Une version antérieure listait `sensor.rain_bird_pont_sante` parmi les entrées (§2) et
@@ -174,14 +179,17 @@ Tous les seuils/bornes/fenêtres sont des **helpers réglables** (cf. encart
 figées doctrinalement.
 
 > **Arbitrage §7 — Option A (décision opérateur, V1 mono-zone actuelle).** La
-> multiplicité des trois capteurs sol sert à **fiabiliser** la décision, pas à la
-> **bloquer** dès qu'un capteur manque : le canal `degrade` (2/3 points frais) est
-> donc **exploitable** et la médiane est disponible dès **2 points frais**
-> ([`15`](15_canal_reservoir_sol.md) §2/§5). L'**abstention** reste entière à
-> **1/3** (`insuffisant`) et **0/3** (`indisponible`). Cet arbitrage ne change que
-> la **recevabilité d'une lecture dégradée** ; il **ne modifie ni la séparation
-> décision / action**, ni l'exécution déléguée (§5), ni aucun seuil métier
-> d'humidité.
+> multiplicité des capteurs sol (parc à **6 points de mesure** d'une zone unique)
+> sert à **fiabiliser** la décision, pas à la **bloquer** dès qu'un capteur
+> manque : la médiane est **exploitable dès 2 points frais**
+> ([`15`](15_canal_reservoir_sol.md) §2/§5) et peut alors porter une intention
+> positive. L'**abstention** reste entière **en deçà de 2 points frais** (médiane
+> indisponible). Le **gate décisionnel porte sur la disponibilité de la médiane**,
+> **non** sur le **libellé d'état** qualitatif (`insuffisant`/`degrade`/`complet`),
+> qui demeure **diagnostic** ([`15`](15_canal_reservoir_sol.md) §5). Cet arbitrage
+> ne change que la **recevabilité d'une lecture dégradée** ; il **ne modifie ni la
+> séparation décision / action**, ni l'exécution déléguée (§5), ni aucun seuil
+> métier d'humidité.
 
 ---
 
