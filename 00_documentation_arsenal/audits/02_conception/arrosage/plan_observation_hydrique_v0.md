@@ -365,10 +365,15 @@ données, et éclaire la **révision de la calibration** (arbitrages propriétai
   runtime **2,3 / 6,0** sont au **~P87 / P86** (haut décile), **pas** au « quartile
   supérieur » revendiqué au §6 (P75 = 1,78 / 5,18) ; `demande_forte` actif
   **~19 %** du temps. À réaligner (redescendre aux vrais P75) ou à re-documenter ;
-- **réduction sol** (`0,95`) : reste **structurellement inaccessible** en
-  automatique (conditions `médiane < seuil` pour arroser vs `médiane ≥ seuil`
-  pour réduire, disjointes — §5.3). Limite de **conception**, pas de calibration ;
-  T08 ne la débloque pas.
+- **réduction sol** (`0,95`) : contrairement à ce que supposait le §5.3, elle
+  **n'est PAS inaccessible** — l'arrosage se déclenche fréquemment à `médiane ≥
+  seuil` (**11/14** déclenchements ; gate point-sec au-delà de `médiane < seuil`),
+  et la réduction **s'exerce déjà** (`duree_applicable` = **24 min**, base 25 ×
+  0,95, à plusieurs Runs d'août). La limite est l'**amplitude** (−1 min) face au
+  **sur-remplissage systématique** (**14/14** arrosages, pic médian **≈ +20 pts**
+  au-dessus du seuil). **Levier dominant = la durée de base opérateur** (25 min
+  sur-remplit à ~50 %), que la modulation ne réécrit jamais — arbitrage
+  propriétaire distinct. §5.3 corrigé en conséquence.
 
 Lecture prudente : **médiane seule** (sondes par point hors recorder) ; **été
 chaud seul** ; `recorder_20260811.db` **gitignoré** (non versionné, traçabilité

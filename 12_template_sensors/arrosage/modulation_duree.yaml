@@ -53,8 +53,10 @@
 #   Actif  : input_boolean.arrosage_modulation_duree_actif
 #
 # 🚫 NE FAIT PAS
-#   - N'écrit AUCUN helper ; ne pilote rien ; ne touche pas la décision « quand ».
-#   - Le Run ne la consomme pas encore (L2).
+#   - N'écrit AUCUN helper ; ne touche pas la décision « quand » (§9.1).
+#   - Ce SENSOR reste pur (aucun pilotage). Le Run, LUI, CONSOMME la décision :
+#     station_1_courte_supervisee.yaml fige `duree_applicable` comme durée du
+#     cycle (L2 fait/branché). Modifier ces facteurs modifie l'arrosage réel.
 #
 # 🏷️ STATUT
 #   Décision backend — modulation de durée (C11 P4, L1)
@@ -96,9 +98,11 @@
     #   demande_forte : climat 'complet' ET (ET₀ >= seuil OU VPD >= seuil) ;
     #   neutre        : climat 'complet' ET demande faible/normale ;
     #   abstention    : climat non pleinement qualifié (degrade/indispo/indéterminé).
-    # SEUILS = calibration INITIALE de protection (≈ quartile supérieur des
-    # distributions observées ~1 mois), recalibrables après validation runtime
-    # (contrat 19 §6). Constantes explicites ci-dessous, PAS de helper.
+    # SEUILS = calibration INITIALE de protection. NB (T08, mois plein) : 2,3/6,0
+    # sont en réalité au HAUT DÉCILE (~P87 VPD / ~P86 ET₀ ; demande_forte ~19 %
+    # du temps), PAS au « quartile supérieur » (vrais P75 = 1,78 / 5,18). Conservés
+    # en l'état : les abaisser augmenterait l'allongement donc l'eau (cf. contrat
+    # 19 §6). Recalibrables après validation runtime. Constantes, PAS de helper.
     - name: "Arrosage modulation reco climat"
       unique_id: arrosage_modulation_reco_climat
       default_entity_id: sensor.arrosage_modulation_reco_climat

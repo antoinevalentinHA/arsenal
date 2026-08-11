@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — ARROSAGE
 ## 19 — Modulation bornée de la durée d'arrosage (P4)
 
-**Version contrat :** v0.2 — amendée 2026‑07‑29 : statut aligné sur le runtime livré et branché ; limite d'accessibilité de la réduction sol en régime automatique explicitée (§5.3).
+**Version contrat :** v0.3 — amendée 2026‑08‑11 (T08, mois plein 6 sondes) : §5.3 **corrigé** — la réduction sol n'est PAS inaccessible en automatique (elle s'exerce déjà, 24 min ; limite = amplitude vs sur-remplissage systématique +20 pts, levier dominant = durée de base opérateur) ; §6 — seuils climat re-documentés (haut décile ~P87/P86, non « quartile supérieur »), conservés. — v0.2 (2026‑07‑29) : statut aligné sur le runtime livré et branché ; accessibilité de la réduction sol explicitée (§5.3).
 **Statut :** **Normatif — spécification P4 ; runtime livré et branché, en validation runtime (§12).** Définit la
 **fonction de modulation** de la **durée** d'un arrosage de la station 1 par des
 **critères physiques** (réservoir sol, demande climatique), sa **composition**,
@@ -130,17 +130,26 @@ Sur un signal **fiable et explicitement qualifié**, `facteur_sol` peut :
 - rester **neutre** (`facteur_sol = 1`) — y compris par **abstention** (§5.1) ;
 - **allonger** la durée (`facteur_sol > 1`) lorsqu'un **déficit fiable** le justifie.
 
-> **Accessibilité de la réduction en régime automatique (limite actuelle).** La
-> décision d'arroser ([`17`](17_decision_v1.md)) exige une **médiane sous le
-> seuil** (`médiane < seuil`) ; la **réduction** sol (`facteur_sol < 1`) exige au
-> contraire une **médiane au moins égale au seuil** (`médiane ≥ seuil`, sol
-> « complet »). Ces conditions étant **normalement disjointes**, la réduction est
-> **en pratique inaccessible** en régime automatique — hors éventuelle **bande
-> d'hystérésis** (besoin maintenu) ou **exécution manuelle** du Run. La modulation
-> réellement exercée en automatique est alors **nominale**, ou **majorée de
-> `1,05`** sous forte demande climatique qualifiée (§5.4). **Aucune sobriété
-> automatique effective n'est démontrée à ce stade** ; l'ouverture éventuelle de
-> la réduction relève d'une **décision propriétaire ultérieure**.
+> **Accessibilité de la réduction en régime automatique — corrigée par les
+> données (T08, 2026-08-11).** Une lecture antérieure jugeait la réduction
+> « en pratique inaccessible » en automatique, au motif que la décision d'arroser
+> exigerait `médiane < seuil` tandis que la réduction exige `médiane ≥ seuil`
+> (conditions supposées disjointes). **L'observation runtime infirme ce
+> raisonnement** : la décision « quand » ([`17`](17_decision_v1.md)) comporte
+> d'**autres portes** que `médiane < seuil` (point sec / hétérogénéité), si bien
+> que l'arrosage se déclenche **fréquemment à `médiane ≥ seuil`** (T08 : **11
+> déclenchements sur 14** ont une médiane ≥ seuil au front). La réduction `0,95`
+> **s'exerce donc réellement** en automatique — `sensor.arrosage_modulation_duree_
+> applicable` figée à **24 min** (base 25 × 0,95) à plusieurs Runs d'août 2026.
+> **La limite n'est pas l'accessibilité mais l'amplitude** : `−5 %` ≈ **−1 min**,
+> négligeable face au **sur-remplissage systématique** mesuré (T08 : **14/14**
+> arrosages dépassent le seuil, pic médian **≈ +20 pts** au-dessus du seuil). Le
+> **levier dominant** de ce sur-remplissage est la **durée de base opérateur**
+> (§4), que la modulation **ne réécrit jamais** — son ajustement est un
+> **arbitrage propriétaire** distinct. L'amplitude et la graduation de la réduction
+> `facteur_sol` (p. ex. graduation par la **marge sol** `médiane − seuil`, canal
+> sol pur, sans fusion climatique §5.2) sont **recalibrables par preuve runtime**
+> (§6, §12) — **décision propriétaire**, aucune valeur imposée ici.
 
 ### 5.4 Rôle du canal climatique (secondaire)
 
@@ -223,8 +232,14 @@ distingue au minimum :
 - **Forte demande climatique — facteur d'allongement et seuils (§5.4/§5.5)** —
   **calibration initiale réversible**, **non** des vérités agronomiques
   définitives : **facteur `1,05`** (allongement **réel**) déclenché à
-  **ET₀ ≥ 6,0 mm·j⁻¹** **OU** **VPD ≥ 2,3 kPa** (≈ **quartile supérieur** des
-  distributions réellement observées, ~1 mois). Sous forte demande, le **plancher
+  **ET₀ ≥ 6,0 mm·j⁻¹** **OU** **VPD ≥ 2,3 kPa**. Ces seuils correspondent en
+  réalité au **haut décile** des distributions observées (T08, mois plein pondéré
+  durée : VPD `≥ 2,3` ≈ **P87** ; ET₀ `≥ 6,0` ≈ **P86** ; `demande_forte` actif
+  **~19 % du temps**) — et **non** au « quartile supérieur » (les vrais **P75**
+  sont **VPD 1,78 kPa** / **ET₀ 5,18 mm·j⁻¹**). Choix **conservé en l'état** :
+  abaisser les seuils au P75 **augmenterait** la fréquence de l'allongement `1,05`
+  donc la **consommation d'eau**, à rebours de la finalité F1 sur un système au
+  **sur-remplissage documenté** (§5.3). Sous forte demande, le **plancher
   nominal** (§5.5) garantit que la durée ne descend jamais sous la base.
   **Recalibrables** après validation runtime. Implémentés en **constantes nommées
   et commentées** dans le runtime — **pas de helper**, pas de réglage UI.
