@@ -1249,6 +1249,18 @@ observé et cet ordre de grandeur devra être **expliqué avant clôture**. Un t
 écart ne remet pas en cause les frontières : il signale que le modèle d'impact
 était incomplet, et doit être compris comme tel.
 
+> **Vérification (2026-08-11) — obligation discharge.** L7.6 ayant historisé la
+> chaîne de décision, l'effet a été mesuré hors ligne sur ~19 j postérieurs au
+> déploiement (analyse `arsenal-runtime/analyses/c35_l8_l9_effet_20260811`) :
+> régime observé **~25,6 h ramenées à 21 j, 13 épisodes**, contre les ~58 h / 8
+> épisodes de l'ordre de grandeur ci-dessus. **Écart substantiel (−56 % d'heures,
+> plus d'épisodes), expliqué** : le modèle de simulation **surestimait** — charge
+> CO₂/humidité estivale faible et ventilation naturelle d'été écrêtant la demande ;
+> la voie CO₂ séjour est bien le moteur dominant (8/13 montées). **Confirmation
+> terrain opérateur** : la VMC répond désormais aux douches d'été, ce qu'elle ne
+> faisait pas. Les **frontières du §4.2 sont maintenues** (l'écart ne les vise
+> pas, conformément au paragraphe ci-dessus).
+
 
 ---
 

@@ -4,13 +4,13 @@
 |---|---|
 | **Chantier** | Mettre l'implémentation VMC en conformité avec la **cible contractuelle v2.0**, dont le modèle de décision a été révisé : retrait du rôle décisionnel du verdict d'aération, besoins hystérétiques autonomes, état par pièce, frontières ON/OFF réellement exercées, restauration au redémarrage, maintien du besoin sur mesure inexploitable, explicabilité. |
 | **Domaine** | VMC. |
-| **Statut** | **CLÔTURÉ (voie B) le 2026-07-24.** Conformité **structurelle atteinte** : les 6 écarts du §2 sont résorbés (code + CI ; 5 pleinement, n°5 sur sa prescription, limite d'exposabilité du cas 4 consignée au contrat **§9.1 quater**) ; contrat `vmc.md` **v2.4** normatif ; runtime **L7.0 → L7.7 mergé** (#526 → #533) et **déployé (2026-07-22)** (deux défauts de déploiement corrigés) ; **amorçage manuel des paramètres effectué (2026-07-24)**. **Réserves parquées, non solvables faute d'observabilité** (doctrine de solvabilité probatoire, cf. C31) : calibration définitive (critère §9.2) et effet après-changement §15.1 (critère §9.9) — chaîne de décision **non historisée** (R1 avéré, 1 entité sur 11 dans les 38 bases), régime grande vitesse quasi inobservé ; **paramètres provisoires**. Détail : **bloc de clôture ci-dessous** ; l'historique lot-par-lot est conservé dans les `realisation_l7x` / `arbitrage_*` du dossier. |
+| **Statut** | **CLÔTURÉ (voie B) le 2026-07-24.** Conformité **structurelle atteinte** : les 6 écarts du §2 sont résorbés (code + CI ; 5 pleinement, n°5 sur sa prescription, limite d'exposabilité du cas 4 consignée au contrat **§9.1 quater**) ; contrat `vmc.md` **v2.4** normatif ; runtime **L7.0 → L7.7 mergé** (#526 → #533) et **déployé (2026-07-22)** (deux défauts de déploiement corrigés) ; **amorçage manuel des paramètres effectué (2026-07-24)**. **Réserve §15.1 LEVÉE (2026-08-11)** : L7.6 a historisé la chaîne de décision (déclencheur de réouverture réalisé), l'analyse L8/L9 vérifie l'effet et **explique l'écart**, **confirmé au terrain** (preuve L5 opérateur : douches d'été servies). **Seule réserve subsistante — parquée, non bloquante** : calibration définitive fine (critère §9.2, faute d'étiquetage manuel §4.D) ; **paramètres provisoires révisables**. **C35 demeure CLOS (voie B)**, 9/10 critères pleinement satisfaits. Détail : **bloc de clôture + consolidation 2026-08-11 ci-dessous** ; l'historique lot-par-lot est conservé dans les `realisation_l7x` / `arbitrage_*` du dossier. |
 | **Priorité** | **P2** — l'écart n'expose à aucun risque de sûreté : le fail-safe physique et l'invariant XOR des relais sont inchangés et hors périmètre. L'enjeu est fonctionnel (besoin d'extraction non servi) et de gouvernance (contrat non implémenté). |
 | **Ouvert le** | 2026-07-21. |
 | **Prochain jalon** | **Néant — chantier clos (voie B).** Les preuves après-changement (L8/L9, critères §9.2 et §9.9) sont **requalifiées non solvables** et **parquées** (cf. bloc de clôture). **Réouverture conditionnelle** : historisation ciblée de la chaîne de décision (cf. L6) **ou** observation répétée du régime grande vitesse. |
 | **Registre** | Chantier **C35** — **⑤ Clos récents** (clôturé le 2026-07-24, voie B), cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi du chantier.** |
 
-> **CHANTIER CLOS (voie B) — 2026-07-24.** La **mise en conformité structurelle est faite** (6 écarts résorbés, contrat `vmc.md` **v2.4**, runtime L7.0 → L7.7 mergé et déployé, amorçage manuel effectué). La **calibration définitive** et l'**effet après-changement (§15.1)** sont **requalifiés non solvables faute d'observabilité** et **parqués** (chaîne de décision non historisée — R1 avéré ; régime grande vitesse quasi inobservé) ; les paramètres restent **provisoires**. Décision propriétaire de **solvabilité probatoire** (doctrine C31). **Bloc de clôture : ci-dessous.** *(Le document définissait périmètre, séquence et critères ; l'historique lot-par-lot est conservé ci-après et dans les `realisation_l7x` / `arbitrage_*`.)*
+> **CHANTIER CLOS (voie B) — 2026-07-24.** La **mise en conformité structurelle est faite** (6 écarts résorbés, contrat `vmc.md` **v2.4**, runtime L7.0 → L7.7 mergé et déployé, amorçage manuel effectué). L'**effet après-changement (§15.1)** est désormais **vérifié et l'écart expliqué** (L7.6 a historisé la chaîne, analyse L8/L9 + **confirmation terrain opérateur du 2026-08-11**) : **réserve §15.1 levée**. Reste **parquée, non bloquante, la seule calibration définitive fine** (faute d'étiquetage manuel §4.D) ; paramètres **provisoires**. Décision propriétaire de **solvabilité probatoire** (doctrine C31). **Bloc de clôture + consolidation 2026-08-11 : ci-dessous.** *(Le document définissait périmètre, séquence et critères ; l'historique lot-par-lot est conservé ci-après et dans les `realisation_l7x` / `arbitrage_*`.)*
 
 ---
 
@@ -29,8 +29,8 @@ sur la **conformité structurelle**, atteinte.
 | 6 — six écarts résorbés | ✅ **structurellement** : 5 pleinement, n°5 sur prescription ; limite d'exposabilité du cas 4 consignée au contrat **§9.1 quater** (porteur `input_boolean`), portage `input_select` **non entrepris** (coût injustifié pour un P2) |
 | 7 — l'UI n'affiche que ce qui est appliqué | ✅ (L7.7) |
 | 8 — checker aération ne référence plus la VMC | ✅ (L7.2 / L7.7) |
-| **2 — calibration définitive** | ⏸ **PARQUÉ — non solvable.** Paramètres provisoires arbitrés, motivés et tracés (passe 5) ; calibration définitive impossible faute d'observabilité (étiquetage manuel §4.D **jamais produit**, régime non observé) |
-| **9 — effet §15.1 vérifié après changement** | ⏸ **PARQUÉ — non solvable.** R1 avéré : chaîne de décision **non historisée** (1 entité sur 11 dans les 38 bases) ⇒ toute preuve après-changement comparerait des *résultats*, pas des décisions ; comparaison basse / haute vitesse non concluante |
+| **2 — calibration définitive** | ⏸ **PARQUÉ — non solvable (seule réserve subsistante).** Paramètres provisoires arbitrés, motivés et tracés (passe 5) ; calibration **fine** (seuils, bande morte, durée minimale) impossible faute d'**étiquetage manuel §4.D** — jamais produit. La confirmation opérateur du 2026-08-11 est **qualitative** (le déclenchement a lieu), non la calibration des seuils. **Non bloquant ; paramètres révisables.** |
+| **9 — effet §15.1 vérifié après changement** | ✅ **RÉSOLU (2026-08-11).** Réouverture **consommée** : L7.6 (#532, déployé 22/07) a historisé les 6 entités « pour L8 ». Analyse L8/L9 hors ligne — [`arsenal-runtime/analyses/c35_l8_l9_effet_20260811`] : voie CO₂ séjour = moteur dominant (8/13), régime observé **~25,6 h / 21 j éq., 13 épisodes** contre **~58 h / 8 épisodes** prédits ⇒ **écart substantiel EXPLIQUÉ** (le §15.1 impose d'**expliquer** l'écart, non de matcher le chiffre : modèle de simulation surestimant — charge estivale faible, ventilation naturelle). **Confirmation terrain opérateur (preuve L5, 2026-08-11)** : *« la VMC ne se lançait jamais pendant une douche l'été ; maintenant si »* — effet qualitatif visé **atteint**. |
 | 10 — passe documentaire finale | ✅ (la présente clôture) |
 
 **Réserves parquées — non bloquantes, réouverture conditionnelle.** La calibration fine et la preuve
@@ -39,8 +39,21 @@ par L6) **ou** si le **régime grande vitesse** devenait fréquemment observable
 actionnable** : c'est une **limite d'observabilité, pas un défaut**. Les paramètres provisoires restent
 révisables.
 
-**Ce que la clôture n'affirme pas.** Que le comportement révisé est **prouvé meilleur en usage** : il
-est **conforme au contrat** (structure) ; son **effet** reste **non mesuré** (réserve ci-dessus).
+> **Consolidation de clôture — 2026-08-11.** La **première** condition de réouverture s'est **réalisée** :
+> L7.6 (#532, déployé le 2026-07-22) a historisé les 6 entités de la chaîne de décision « pour L8 », et la
+> sauvegarde `recorder_20260811.db` en porte ~3 semaines. L'analyse hors ligne L8/L9
+> ([`arsenal-runtime/analyses/c35_l8_l9_effet_20260811`], lecture seule, reproductible) **résout le critère
+> §9 n°9** : effet §15.1 vérifié, **écart substantiel expliqué**, **confirmé au terrain par l'opérateur**
+> (preuve L5 : douches d'été désormais servies). **La réserve §15.1 est levée.** Il **subsiste une seule
+> réserve parquée — le critère §9 n°2 (calibration définitive fine)** — non solvable faute d'étiquetage
+> manuel §4.D ; **non bloquante**, paramètres provisoires révisables. **C35 demeure CLOS (voie B),
+> désormais avec 9 des 10 critères pleinement satisfaits et le dernier documenté comme réserve
+> d'observabilité assumée.**
+
+**Ce que la clôture n'affirme pas.** Que les **paramètres actuels sont optimaux** : la calibration fine
+(§14) n'est pas prouvée (réserve n°2). Ce que la clôture affirme désormais, en revanche : le comportement
+révisé produit l'**effet fonctionnel visé** — extraction déclenchée sur besoin CO₂ et sur douche estivale
+— **mesuré (L8/L9) et confirmé au terrain (L5)**.
 
 **Runtime & déploiement.** L7.0 → L7.7 mergés (#526 → #533), `vmc.md` **v2.4** normatif ; déployé le
 2026-07-22 (deux défauts corrigés, cf. [`correctif_deploiement_l7_vmc.md`](correctif_deploiement_l7_vmc.md)) ;
