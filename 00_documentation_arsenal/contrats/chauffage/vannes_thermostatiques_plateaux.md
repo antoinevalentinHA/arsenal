@@ -64,8 +64,14 @@ Bornes : `min: 0`, `max: 30`, `step: 0.1`. **Stockage uniquement** — aucun cal
 
 Seuls **deux** writers peuvent écrire ces helpers :
 
-1. **Automation** `update_plateaux_thermostatiques` (`Chauffage – Mémorisation plateaux`, `mode: single`) — écriture **automatique** : déclenchée par un changement d'état des capteurs `plateau_thermostatique_chambre_*`, elle met à jour l'`input_number` **uniquement si** `variance < 0.02` **et** que la variation dépasse `0.1 °C` (évite les écritures inutiles et les boucles d'auto-mémorisation).
+1. **Automation** `update_plateaux_thermostatiques` (`Chauffage – Mémorisation plateaux`, `mode: single`) — écriture **automatique** : déclenchée par un changement d'état des capteurs `plateau_thermostatique_chambre_*`, elle met à jour l'`input_number` **uniquement si** la valeur détectée est **strictement positive** et **située dans la plage déclarée du helper** (§6), **et** si `variance < 0.02` **et** que la variation dépasse `0.1 °C` (évite les écritures inutiles et les boucles d'auto-mémorisation).
 2. **Script** `reset_plateau_piece` — écriture **manuelle** (cf. §8).
+
+> **Garde d'intégrité d'écriture.** La condition de plage énonce une règle de cohérence entre writer et helper : *un writer ne présente jamais à un helper une valeur située hors de la plage déclarée par ce helper*.
+>
+> Cette garde **ne qualifie pas la pertinence métier de l'observation**. Une stabilité thermique hors plage reste une observation valide : le capteur de détection la publie telle quelle (§5), sans masquage ni écrêtage. Elle n'est simplement pas présentée au helper de mémoire.
+>
+> La condition de valeur strictement positive est de même nature et existe dans le runtime depuis l'origine ; elle est documentée ici par **conformité au comportement en place**, et ne constitue pas une règle nouvelle.
 
 Tout autre writer est interdit. Toute écriture doit rester **traçable à son auteur** (automation ou reset).
 
