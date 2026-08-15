@@ -11,6 +11,8 @@
 #    - On determine la piece automatiquement
 #    - On exige variance < 0.02
 #    - On exige variation > 0.1°C
+#    - On exige une valeur dans la plage declaree du helper
+#      (garde d'integrite d'ecriture, sans semantique thermique)
 #
 #  Objectif :
 #    -> Eviter les ecritures inutiles
@@ -61,6 +63,11 @@
     # 3) différence > 0.1°C -> on evite la sur-ecriture
     - condition: template
       value_template: "{{ delta > 0.1 }}"
+
+    # 4) garde d'integrite d'ecriture : on ne presente jamais au helper
+    #    une valeur hors de sa plage declaree (input_number max: 30)
+    - condition: template
+      value_template: "{{ current_value <= 30 }}"
 
   action:
     - service: input_number.set_value
