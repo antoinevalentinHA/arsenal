@@ -2,12 +2,12 @@
     "domain": "atmofrance",
     "name": "Atmo France",
     "codeowners": [
-        "@sebcaps"
+        "@antoinevalentinHA"
     ],
     "config_flow": true,
-    "documentation": "https://github.com/sebcaps/atmofrance",
+    "documentation": "https://github.com/antoinevalentinHA/atmofrance",
     "integration_type": "device",
     "iot_class": "cloud_polling",
-    "issue_tracker": "https://github.com/sebcaps/atmofrance/issues",
-    "version": "2.1.8"
+    "issue_tracker": "https://github.com/antoinevalentinHA/atmofrance/issues",
+    "version": "2.1.10"
 }

@@ -192,15 +192,22 @@ class AtmoFranceApiCoordinator(DataUpdateCoordinator):
     async def _fetch(self, url_code: URL_CODE):
         """Fetch one indicator, mapping failures onto what HA expects.
 
-        Rejected credentials become ConfigEntryAuthFailed, which is what starts
-        the reauth flow; everything else is a transient UpdateFailed.
+        Rejected credentials become ConfigEntryAuthFailed, which starts the
+        reauth flow. A failed request becomes UpdateFailed.
+
+        An answered request holding no row is neither: Atmo France clears and
+        republishes its dataset around midday, so between roughly midnight and
+        that republication the API answers perfectly well and has nothing to
+        give. Reporting that as a fetch failure produced a daily error and left
+        every entity unavailable for half the day. It now succeeds with an
+        empty payload, and each sensor reports its own value as unknown.
         """
         try:
             data = await self.api.get_data(
                 self.config.data[self._source], url_code)
         except InvalidAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
-        if not data:
+        if data is None:  # the request itself failed
             raise UpdateFailed(
                 f'No Data from Atmo France for INSEE code {
                     self.config.data[self._source]} and date {date.today().strftime("%Y-%m-%d")}'

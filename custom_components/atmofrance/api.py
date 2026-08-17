@@ -203,7 +203,11 @@ class AtmoFranceDataApi:
             )
         else:  # no result
             self._data = None
-            _LOGGER.warning(
+            # Debug and not warning: Atmo France clears its dataset overnight
+            # and republishes around midday, so an empty answer every morning
+            # is the normal state of affairs, not an anomaly. The visible
+            # signal is the sensors reporting unknown.
+            _LOGGER.debug(
                 "No data for INSEE %s and date %s", insee_code, today)
         return features
 
