@@ -11,6 +11,7 @@
 | **Plan d'action** | [`plan_action_politique_absence_vacances_cool.md`](../../03_plans_action/climatisation/plan_action_politique_absence_vacances_cool.md) |
 | **Dépendance aval** | **C21** (préparation du retour) dépend de ce chantier |
 | **Registre** | [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md) (ligne C20, co-commit) |
+| **Runbook de clôture (S7/S8)** | [`runbook_s7_s8_geste_operateur_absence_cool.md`](runbook_s7_s8_geste_operateur_absence_cool.md) — **seul reste bloquant** ; l'analyse L4 (2026-08-11, reconfirmée 17/08) a démontré **9/12 PASS, 0 FAIL**, S7/S8 exigent un geste opérateur de ~2 min |
 
 > **Nature de ce document.** Ouverture **formelle** et **gouvernance** : périmètre, décisions, invariants, critères d'acceptation, découpage en lots. Il **ne modifie aucun runtime, contrat, checker, UI ou entité** et **ne fige aucune correction**. Chaque lot fera l'objet d'un travail dédié avec point d'arrêt.
 

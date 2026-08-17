@@ -383,6 +383,20 @@ Les **historiques existants** servent à **concevoir et tester** le modèle et �
 (dose-réponse fiable, bornes définitives) sont obtenues **ensuite sur la modulation
 réellement branchée**.
 
+> **Vérification runtime (2026-08-17) — analyse L4 hors ligne.** Sur `recorder_20260817.db`
+> (~19 j depuis le déploiement P4), analyse `arsenal-runtime/analyses/c11_p4_validation_20260817` :
+> les points **acquis** de la séquence §4 sont —
+> **(a) Run avec durée ≠ base** : 7 cycles réels `reduction_sol` à **24 min** (nominal 25), du
+> 02 au 09-08 ; snapshot cohérent (`arrosage_session_duree_minutes` = 24 = durée applicable) ;
+> **(b) retour exact au nominal** : 3 cycles `neutre` à 25 min ;
+> **(c) bornes §6** : `state` ∈ [20, 26], clamp [1, 60] jamais franchi, arrondi minute (0 non-entier) ;
+> **(d) plancher nominal** : 573 évaluations sous-nominal, **toutes** `reduction_sol` pur, **0**
+> descente avec allongement/compensation ⇒ *« réduction + climat ne descend jamais sous la base »* tient.
+> **Réserves honnêtes (C11 reste ouvert)** : les motifs `allongement_climatique`, `compensation_sol_climat`
+> et les abstentions n'apparaissent **qu'en évaluation continue** (jamais consommés par un Run réel — aucun
+> arrosage n'a coïncidé avec une demande climatique forte) ; une **seule base** (25 min) a été exercée.
+> La réserve P2 « fenêtre 6 sondes » est **atteinte** (`points_frais = 6` au 17/08).
+
 ---
 
 ## 13. Critères de clôture P4
