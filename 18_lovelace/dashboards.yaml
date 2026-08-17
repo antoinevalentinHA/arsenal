@@ -278,6 +278,13 @@ audi-securite-dashboard:
   show_in_sidebar: false
   filename: 18_lovelace/dashboards/voiture/audi_securite.yaml
 
+audi-position-dashboard:
+  mode: yaml
+  title: Position
+  icon: mdi:map-marker
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/voiture/audi_position.yaml
+
 imprimerie-bruit-dashboard:
   mode: yaml
   title: Bruit
