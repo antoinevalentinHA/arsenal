@@ -1,0 +1,48 @@
+# ==========================================================
+# 📍 DASHBOARD : Audi A3 e-tron — Position
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Restituer la position courante du véhicule et offrir le
+#   départ en navigation vers cette position.
+#
+# 💡 Objectif :
+#     - localiser la voiture sur une carte SCOPÉE au seul véhicule
+#     - lancer un itinéraire Google Maps vers ses coordonnées
+#
+# 🧩 Structure :
+#   1️⃣ Position (carte + action de navigation)
+#
+# 🔒 Vie privée :
+#   La carte est bornée à une liste d'entités explicite d'une
+#   seule entrée (cf. l'en-tête de `includes/cartes/voiture/
+#   position_carte.yaml`). Aucune personne, aucune zone, aucun
+#   capteur météo géolocalisé. Jamais `auto`.
+#
+# ✅ Compatible : Lovelace / button-card / HA 2024.8+
+# ==========================================================
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges: !include ../../includes/badges/base.yaml
+
+    # ==========================================================
+    # 🧩 CONTENEUR PRINCIPAL
+    # ==========================================================
+    cards:
+      - type: vertical-stack
+        cards:
+          # ------------------------------------------------------
+          # 🧭 Navigation voiture
+          # ------------------------------------------------------
+          - !include ../../includes/navigation/voiture.yaml
+
+          # ==========================================================
+          # 📍 SECTION : Position
+          # ==========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 📍 Position
+
+          - !include ../../includes/cartes/voiture/position_carte.yaml
+
+          - !include ../../includes/cartes/voiture/position_navigation_google_maps.yaml

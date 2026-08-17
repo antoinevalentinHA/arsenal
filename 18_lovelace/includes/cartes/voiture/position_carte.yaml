@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE METIER (INCLUDE)
+#     Voiture — Position du véhicule (carte scopée)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Projeter la position courante de l'Audi A3 e-tron, et
+#   ELLE SEULE, sur une carte Lovelace.
+#
+# 🔒 PÉRIMÈTRE — CONTRAINTE DE VIE PRIVÉE (normative)
+#   La liste `entities` est EXPLICITE et tient UNE entrée.
+#   Interdits sur cette carte :
+#     - `auto` / `auto-entities` sous quelque forme que ce soit
+#     - `geo_location_sources` (agrège des sources tierces)
+#     - toute `person.*`, `zone.*` ou capteur météo géolocalisé
+#   Ajouter une entité ici, c'est publier une position de plus
+#   sur l'écran : l'ajout se décide, il ne se déduit pas.
+#
+#   ⚠️ Ne pas confondre avec le dashboard `map` natif de Home
+#   Assistant (intégration `map`, embarquée par `default_config`) :
+#   celui-là repose sur la STRATÉGIE `map`, qui agrège
+#   automatiquement TOUTE entité porteuse de lat/lon. Il est
+#   masqué côté HA (`show_in_sidebar: false`, hors dépôt) et
+#   n'a aucun rapport avec cette carte.
+#
+# 📡 SOURCE
+#   - device_tracker.audi_a3_sportback_e_tron_position
+#     (intégration audiconnect ; attributs `latitude`/`longitude`)
+#
+# 🗄️ HISTORIQUE
+#   `hours_to_show: 0` — aucun tracé de trajet.
+#   Cohérent avec `recorder.yaml`, qui fonctionne en LISTE BLANCHE
+#   et n'inclut pas ce device_tracker : aucune position n'est
+#   persistée en base, il n'y a donc aucun historique à dessiner.
+# ==========================================================
+
+type: map
+entities:
+  - entity: device_tracker.audi_a3_sportback_e_tron_position
+
+# Cadrage sur le véhicule (marqueur unique) au zoom `default_zoom`.
+auto_fit: true
+default_zoom: 15
+
+# Aucun tracé historique (cf. § HISTORIQUE ci-dessus).
+hours_to_show: 0
+
+theme_mode: auto
+aspect_ratio: "16:9"

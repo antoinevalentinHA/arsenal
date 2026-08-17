@@ -1,7 +1,7 @@
 type: custom:layout-card
 layout_type: custom:grid-layout
 layout:
-  grid-template-columns: 1fr repeat(3, 50px) 1fr
+  grid-template-columns: 1fr repeat(4, 50px) 1fr
   justify-items: center
   align-items: center
 cards:
@@ -23,6 +23,19 @@ cards:
     view_layout:
       grid-column: 3
     template: bouton_navigation_badge_carre
+    name: Position
+    icon: mdi:map-marker
+    tap_action:
+      action: navigate
+      navigation_path: /audi-position-dashboard
+    styles:
+      icon:
+        - color: '#E65100'
+
+  - type: custom:button-card
+    view_layout:
+      grid-column: 4
+    template: bouton_navigation_badge_carre
     name: Sécurité
     icon: mdi:shield
     tap_action:
@@ -34,7 +47,7 @@ cards:
 
   - type: custom:button-card
     view_layout:
-      grid-column: 4
+      grid-column: 5
     template: bouton_navigation_badge_carre
     name: Batterie
     icon: mdi:battery

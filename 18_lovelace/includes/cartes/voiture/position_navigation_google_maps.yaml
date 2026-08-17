@@ -1,0 +1,79 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE METIER (INCLUDE)
+#     Voiture — Naviguer vers la voiture (Google Maps)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Ouvrir un itinéraire Google Maps vers les coordonnées
+#   COURANTES du véhicule. Sur l'app companion, l'URL bascule
+#   dans l'app Google Maps et lance le guidage.
+#
+# 📡 SOURCE
+#   - device_tracker.audi_a3_sportback_e_tron_position
+#     attributs `latitude` / `longitude` (floats, source GPS)
+#
+# ⚙️ LOGIQUE UI
+#   - PROJECTION PURE : l'URL est construite à partir des
+#     attributs de l'entité, rien n'est décidé ni arbitré ici.
+#   - Aucune coordonnée n'est écrite en dur (contrat publication
+#     S8 : `latitude:`/`longitude:` littéraux = CRITICAL bloquant).
+#   - Honnêteté de repos : coordonnées absentes / illisibles →
+#     fond gris indispo et `url_path` nul (Home Assistant refuse
+#     alors l'ouverture au lieu de lancer une URL tronquée).
+#   - Tap direct, sans confirmation : ouvrir un itinéraire est
+#     une action de lecture, réversible, sans effet sur le véhicule.
+#
+# 🧩 IMPLÉMENTATION
+#   Template JS button-card `[[[ ]]]`, et NON du Jinja `{{ }}` :
+#   Lovelace n'interprète pas Jinja hors carte `markdown`. Le
+#   bundle vendorisé `www/button-card/button-card.js` passe bien
+#   `tap_action.url_path` par `_getTemplateOrValue`, donc les
+#   templates JS y sont évalués.
+#
+# 🔗 DÉRIVE DE : socle_action_simple
+# ==========================================================
+
+type: custom:button-card
+template: socle_action_simple
+
+# `entity` n'est PAS affichée (le socle masque state et label) :
+# elle abonne la carte aux changements de position, pour que
+# l'URL et la couleur de fond suivent le véhicule.
+entity: device_tracker.audi_a3_sportback_e_tron_position
+
+name: Naviguer vers la voiture
+icon: mdi:google-maps
+
+tap_action:
+  action: url
+  url_path: >
+    [[[
+      const lat = entity?.attributes?.latitude;
+      const lon = entity?.attributes?.longitude;
+
+      if (typeof lat !== "number" || typeof lon !== "number") {
+        return null;
+      }
+
+      return "https://www.google.com/maps/dir/?api=1"
+        + "&destination=" + lat + "," + lon
+        + "&travelmode=driving";
+    ]]]
+
+hold_action:
+  action: none
+double_tap_action:
+  action: none
+
+styles:
+  card:
+    - background-color: >
+        [[[
+          const lat = entity?.attributes?.latitude;
+          const lon = entity?.attributes?.longitude;
+
+          if (typeof lat !== "number" || typeof lon !== "number") {
+            return "rgba(158, 158, 158, 0.1)";  // ⚪ indispo
+          }
+
+          return "rgba(33, 150, 243, 0.2)";     // 🔵 itinéraire disponible
+        ]]]
