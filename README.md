@@ -14,7 +14,7 @@
 
 It is a complete system, observable file by file — and governed like software.
 
-*In figures: 46 domains, every one under a written contract — ~1,750 YAML files, ~3,900 entities, 91 CI workflows.*
+*In figures: 46 domains, every one under a written contract — ~1,800 YAML files, ~3,900 entities, 87 contract checkers run in CI.*
 
 > 📖 The full documentation is written in French. This page is an English entry point; deeper documents (contracts, architecture, audits) remain in French, and each is linked below.
 

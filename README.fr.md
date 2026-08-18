@@ -11,7 +11,7 @@ Arsenal est une configuration Home Assistant **utilisée en production dans une 
 
 C'est un système complet, observable fichier par fichier — et gouverné comme un logiciel.
 
-*En chiffres : 46 domaines, tous sous contrat écrit — ~1 750 fichiers YAML, ~3 900 entités, 91 workflows de CI.*
+*En chiffres : 46 domaines, tous sous contrat écrit — ~1 800 fichiers YAML, ~3 900 entités, 87 checkers de contrat exécutés en CI.*
 
 ![Vue d'accueil Arsenal — grille des domaines et confort thermique](00_documentation_arsenal/ui/captures/accueil.png)<br>
 *Tableau de bord d'accueil : tous les domaines d'un coup d'œil.*
