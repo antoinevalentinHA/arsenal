@@ -1690,6 +1690,22 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Correctifs — moyennes CO₂ d'étage renvoyant `{{ none }}` au lieu de la chaîne `unknown` ; `redemarrer_box` lance le cycle d'alimentation en détaché, supprimant le faux « connection lost » au dashboard ; archivage atelier Imprimerie gardé capteur par capteur.
 - Registres — `REGISTRE_COUVERTURE_VERIFICATION.md` : workflows 92 → 7, `contracts_*` 86 → 1, checkers inchangés à 87, couplage 1:1 abandonné au profit de N:1 ; deux entrées de journal (2026-08-06 et 2026-08-09) ; ajout du changelog gelé v17.1.2.
 
+---
+
+## 🧠 ARSENAL HA — [v17.1.4](changelogs/v17/v17_1_4.md) — STABLE — 2026-08-17
+**Tags :** arrosage, climatisation, vmc, aeration, chauffage, voiture, lovelace, contrats, audits, registres
+
+**Signal net :**
+- Arrosage — réalignement 6 sondes du gate sol : `contrats/arrosage/17_decision_v1.md` v1.1 → v1.2, le gate porte sur l'exploitabilité de la médiane (publiée dès 2 points frais) et non sur le libellé `sensor.jardin_reservoir_sol_etat`, requalifié diagnostic ; `intention.yaml` lit `mediane_exploitable` dans le `state` et ses attributs de motif.
+- Arrosage — coexistence avec le secours Rain Bird : `rain_delay_appliquer.yaml` exige `sol_exploitable` pour neutraliser, et écrit explicitement `rain_delay = 0` quand le canal sol devient inexploitable sur pont sain ; `coexistence_rain_delay.yaml` gagne les triggers de bord `sol_indisponible` / `sol_retour`. Garde `attente_h is not none` ajoutée à la branche d'apport observé de `arbitrage_pluie.yaml`.
+- Arrosage (C11 P4) — ré-observation T08 sur un mois plein 6 sondes : `r = −0,74` par phase de séchage, P2 consolidé, réserve « 30 jours purs » levée. Contrat `19` v0.2 → v0.3 : §5.3 corrigé (la réduction sol s'exerce déjà — 24 min ; la limite est l'amplitude face à un sur-remplissage de 14/14 arrosages, pic médian ≈ +20 pts), seuils climatiques requalifiés au haut décile et conservés, vérification runtime du 2026-08-17 ajoutée au §12.
+- Arrosage — `modulation_duree.yaml` : `facteur_sol` passe du palier `0,95` à une graduation par la marge sol (`F_SOL_MIN = 0,80`, `MARGE_PLEINE = 6` pts, canal sol pur) ; ajout de l'attribut `marge`.
+- Climatisation (C20) — trace §4 du protocole de validation terrain renseignée par analyse L4 : 9 PASS, 0 FAIL ; S7/S8 non exercés (le helper de durée n'a jamais changé), S12 en preuve UI opérateur. Ajout du runbook de geste opérateur S7/S8, seul reste bloquant de la clôture.
+- VMC (C35) — réserve §15.1 levée : l'historisation posée par L7.6 rend l'effet mesurable, régime observé ~25,6 h / 13 épisodes contre ~58 h / 8 attendus, écart de −56 % expliqué et confirmé au terrain. Seule subsiste la réserve de calibration fine.
+- Aération (C19) — scénario (a) validé sur données réelles : 29 épisodes sur 29 clôturés, aucun collant, 6 reboots en épisode actif tous suivis d'une clôture ; reste le scénario (b), acte opérateur.
+- Chauffage — garde d'intégrité d'écriture sur la mémorisation des plateaux TRV (`current_value <= 30`, plage déclarée du helper), consignée au contrat sans qualifier la pertinence métier de l'observation.
+- Voiture — dashboard Position : carte `map` bornée à une liste `entities` d'une seule entrée (`auto`, `auto-entities` et `geo_location_sources` interdits, `hours_to_show: 0`) et bouton d'itinéraire Google Maps construit depuis les attributs de position, sans coordonnée en dur.
+
 ==================================================
 FIN INDEX
 ==================================================
