@@ -43,8 +43,13 @@
 #     2. Blocage aération
 #     3. Fenêtres ouvertes (avec délai)
 #     4. Absence effective Vacances (binary_sensor.vacances_actives = on)
-#        - Pré-confort actif -> Confort
+#        - Pré-confort actif ET autorisation cible == comfort -> Confort
 #        - Sinon -> Réduit
+#          (contrat 65__amendement R-65.4 : le pré-confort est une exception
+#           au contexte d'absence, jamais à la pertinence thermique. La garde
+#           est une égalité positive stricte au jeton `comfort` — un état non
+#           exploitable n'établit simplement pas l'exception, il n'est pas
+#           requalifié en `reduced`.)
 #     5. Poêle actif
 #
 #   🌡️ NIVEAU 3 — CONFORT D'OPPORTUNITÉ (RÉGIME AUTOMATIQUE)
@@ -62,7 +67,7 @@
 #   ➜ Fin de blocage ≠ reprise par principe
 #   ➜ Passage en Confort uniquement si le calcul métier courant
 #     conclut explicitement à un besoin valide
-#     ou au pré-confort Vacances contractuellement autorisé
+#     ou au pré-confort Vacances, lui-même subordonné à l'autorisation cible
 #
 #   Objectifs :
 #     - Zéro effet yo-yo
@@ -119,8 +124,10 @@
 #     aeration_en_cours            — aération en cours et confirmée
 #     blocage_aeration_en_cours    — blocage aération actif
 #     fenetre_ouverte_maison       — fenêtre ouverte (avec délai)
-#     pre_confort_vacances         — pré-confort retour Vacances actif
-#     mode_maison_vacances         — absence effective Vacances (sans pré-confort)
+#     pre_confort_vacances         — pré-confort Vacances actif ET thermiquement permis
+#     mode_maison_vacances         — absence effective Vacances sans exception
+#                                    pré-confort établie (pré-confort inactif,
+#                                    ou actif mais autorisation cible ≠ comfort)
 #     poele_actif                  — poêle en fonctionnement
 #     besoin_thermique             — présence + cible = comfort
 #     presence_on                  — présence + cible = neutre
@@ -209,7 +216,8 @@ chauffage_decision_centrale:
             reduced
 
           {% elif is_state('binary_sensor.vacances_actives', 'on') %}
-            {% if is_state('input_boolean.pre_confort_actif_calcule', 'on') %}
+            {% if is_state('input_boolean.pre_confort_actif_calcule', 'on')
+                  and is_state('sensor.chauffage_autorisation_cible', 'comfort') %}
               comfort
             {% else %}
               reduced
@@ -251,7 +259,8 @@ chauffage_decision_centrale:
             fenetre_ouverte_maison
 
           {% elif is_state('binary_sensor.vacances_actives', 'on') %}
-            {% if is_state('input_boolean.pre_confort_actif_calcule', 'on') %}
+            {% if is_state('input_boolean.pre_confort_actif_calcule', 'on')
+                  and is_state('sensor.chauffage_autorisation_cible', 'comfort') %}
               pre_confort_vacances
             {% else %}
               mode_maison_vacances
