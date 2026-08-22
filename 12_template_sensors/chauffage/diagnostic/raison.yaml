@@ -88,7 +88,8 @@
           fenetre_ouverte_maison
 
         {% elif is_state('binary_sensor.vacances_actives', 'on') %}
-          {% if is_state('input_boolean.pre_confort_actif_calcule', 'on') %}
+          {% if is_state('input_boolean.pre_confort_actif_calcule', 'on')
+                and is_state('sensor.chauffage_autorisation_cible', 'comfort') %}
             pre_confort_vacances
           {% else %}
             mode_maison_vacances

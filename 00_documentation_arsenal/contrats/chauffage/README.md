@@ -30,7 +30,7 @@ réservent des plages pour des contrats futurs.
 
 ## Fichiers complémentaires
 
-### `__amendement` (8 fichiers)
+### `__amendement` (9 fichiers)
 
 Un fichier `NN_contrat__amendement.md` **complète** son contrat parent — il ne le remplace pas.
 
@@ -46,6 +46,7 @@ Contrats avec amendement :
 - [`30_decision_centrale__amendement.md`](30_decision_centrale__amendement.md)
 - [`40_blocages__amendement.md`](40_blocages__amendement.md)
 - [`50_standby_hysteresis__amendement.md`](50_standby_hysteresis__amendement.md)
+- [`65_pre_confort_retour_vacances__amendement.md`](65_pre_confort_retour_vacances__amendement.md)
 - [`70_autorisation_thermostat__amendement.md`](70_autorisation_thermostat__amendement.md)
 - [`90_semantique_thermique__amendement.md`](90_semantique_thermique__amendement.md)
 
