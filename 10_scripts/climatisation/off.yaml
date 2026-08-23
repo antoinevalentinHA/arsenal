@@ -27,9 +27,9 @@
 #   résultat et la reprise restent à `script.clim_execution` (post-condition
 #   + reprise différée), qui n'était jamais atteinte quand l'exception
 #   remontait. Prérequis : `continue_on_error` ne contient que les
-#   `HomeAssistantError` ; la garde n'opère donc qu'une fois l'intégration
-#   Airstage traduisant ses échecs de transport (cf. contrat 08, § « Échec
-#   d'émission », et sa réserve datée).
+#   `HomeAssistantError` ; la garde repose donc sur la traduction des échecs
+#   de transport par l'intégration Airstage, en place depuis la
+#   resynchronisation du fork (cf. contrat 08, § « Échec d'émission »).
 # ==========================================================
 
 clim_exec_apply_off:

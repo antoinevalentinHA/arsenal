@@ -111,15 +111,35 @@ qualification et de conclusion sont **inconditionnellement atteintes**.
 > traduction, l'exception traverse la garde et avorte le script — marquage et
 > reprise compris.
 >
-> **État au 2026-08-23 :** la traduction n'est pas encore en place côté Airstage.
-> Elle est portée par la PR `antoinevalentinHA/ha_airstage#7` (décorateur
-> `entity.airstage_command`) et ne parviendra au runtime qu'une fois cette PR
-> fusionnée **puis** la copie vendorisée resynchronisée dans
-> `custom_components/fujitsu_airstage/`. Jusque-là, la présente clause décrit la
-> cible contractuelle, pas le comportement observable : la couche Exécution
-> continue d'avorter sur `ApiError`. Cette réserve se lève par la
-> resynchronisation du fork, sans modification du présent contrat ni du runtime
-> climatisation.
+> **Prérequis satisfait depuis le 2026-08-23.** Le fork Airstage traduit les
+> échecs de transport de ses commandes d'écriture (`entity.airstage_command`,
+> `antoinevalentinHA/ha_airstage#7`), et la copie vendorisée de
+> `custom_components/fujitsu_airstage/` porte cette traduction depuis la
+> resynchronisation `8f843fb`. La clause ci-dessus est donc opérante.
+>
+> **Ce qui reste non prouvé :** la chaîne complète — commande refusée, échec
+> contenu, post-condition constatée, reprise armée — n'a pas encore été observée
+> en conditions réelles. Le protocole est décrit au § « Vérification terrain »
+> ci-dessous. Tant qu'il n'a pas été exercé, la garantie est établie par
+> construction, pas par observation.
+
+### Vérification terrain — protocole
+
+1. Rendre le module injoignable (couper son alimentation ou son accès réseau),
+   sans attendre que les entités passent `unavailable` — le cas visé est
+   précisément celui où elles restent connues de Home Assistant.
+2. Provoquer une exécution : changer `sensor.clim_mode_commande` ou appeler
+   `script.clim_execution`.
+3. Constater, dans l'ordre :
+   - le journal porte une ligne d'erreur **sans pile d'appels** (et non plus une
+     trace complète) ;
+   - `input_boolean.clim_execution_echec` passe à `on` ;
+   - `counter.clim_execution_retry_count` vaut 1 ;
+   - `timer.clim_retry` est armé à 30 s.
+4. Rétablir le module et vérifier que la reprise applique la cible.
+
+L'échec de l'une de ces constatations invalide la clause de non-fatalité et non
+la politique de reprise, qui lui est antérieure.
 
 ### Cause de l'échec — reconstruction structurelle, sans état durable
 
