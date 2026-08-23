@@ -21,8 +21,9 @@ Registre des écarts de ce fork (`antoinevalentinHA/ha_airstage`, branche
 | `entity.py`, `climate.py`, `switch.py` | Décorateur `airstage_command` : les échecs de transport des commandes d'écriture (`ApiError`, `aiohttp.ClientError`, `OSError`) sont traduits en `HomeAssistantError`. Sans quoi Home Assistant les classe « Unexpected error » — trace complète, et surtout hors de portée de `continue_on_error`, qui ne contient que les `HomeAssistantError` : l'appelant était avorté en cours de séquence. `update_handle_factory` partage désormais ce décorateur. Erreurs de programmation et `CancelledError` jamais masquées. |
 | `entity.py`, `climate.py`, `switch.py` | Écriture optimiste locale au lieu de `poll-after-set` : le coordinateur est patché en cache et notifie ses listeners, supprimant le flapping de la vitesse de ventilation. |
 | `__init__.py` | Setup : `ConfigEntryNotReady` sur indisponibilité transitoire au boot. Coordinateur (refresh) : `ApiError` **et** fuites non-`ApiError` (`KeyError`/`ValueError`/`TypeError`, `OSError`) → `UpdateFailed`, sur les deux chemins (cloud et local). |
-| `const.py` | `AIRSTAGE_SYNC_LOCAL_INTERVAL` 10 s → 60 s. `AIRSTAGE_LOCAL_RETRY` = 5 (identique à l'upstream net : abaissé à 3 puis restauré à 5 dans l'historique interne). |
-| `manifest.json` | Pin `pyairstage>=2.4.1,<3` (voir « Décision de dépendance »). `version` 1.8.1 → 1.7.1. `use_https` et `AIRSTAGE_LOCAL_TIMEOUT_SECONDS` retirés. |
+| `const.py` | `AIRSTAGE_SYNC_LOCAL_INTERVAL` 10 s → 60 s. `AIRSTAGE_LOCAL_RETRY` = 5 (identique à l'upstream net : abaissé à 3 puis restauré à 5 dans l'historique interne). Constantes retirées : `AIRSTAGE_LOCAL_TIMEOUT_SECONDS` et `CONF_USE_HTTPS` — ces paramètres n'appartiennent pas à la signature `ApiLocal` de la lignée 2.x. |
+| `config_flow.py`, `strings.json`, `translations/en.json`, `translations/nl.json` | Retrait du champ `use_https` de bout en bout : schémas de configuration et appels `ApiLocal` (`config_flow.py`), libellés d'interface (`strings.json` et les deux traductions). Corollaire du retrait de `CONF_USE_HTTPS` ci-dessus. |
+| `manifest.json` | Pin `pyairstage>=2.4.1,<3` (voir « Décision de dépendance »). `version` 1.8.1 → 1.7.1. |
 
 Le détail versionné et daté de ces patchs est tenu dans `CHANGELOG.arsenal.md`.
 
