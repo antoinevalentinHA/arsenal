@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — CLIMATISATION
 ## 07 — Exécution — Application idempotente
 
-**Version contrat :** v1.4
+**Version contrat :** v1.5
 
 ---
 
@@ -83,7 +83,32 @@ En cas d'échec d'application, trois conclusions sont distinguées :
 |---|---|---|
 | Abstention silencieuse | Cible hors contrat | Aucun marquage, aucune reprise |
 | Échec infra | Entités indisponibles au moment de l'appel | Marquage + reprise différée |
-| Échec post-condition | Commande émise mais état cible non atteint | Marquage + reprise différée |
+| Échec post-condition | Commande émise mais état cible non atteint — que la commande ait été refusée à l'émission (module injoignable) ou acceptée sans effet | Marquage + reprise différée |
+
+### Échec d'émission — non-fatalité obligatoire
+
+Une commande peut échouer **à l'émission**, alors même que les entités d'exécution
+sont connues de Home Assistant : le module Airstage est hors du réseau (perte Wi-Fi,
+unité débranchée) et l'appel de service remonte une erreur. Ce cas n'est **pas** un
+échec infra au sens du tableau ci-dessus : les entités n'étaient pas `unavailable`,
+rien ne pouvait être anticipé avant l'appel.
+
+**Règle opposable — la couche Exécution conclut toujours.** Aucun échec de commande
+ne peut interrompre la séquence avant sa qualification. Les appels physiques des
+exécutants (`clim_exec_apply_*`) et les appels d'exécutants du script d'exécution
+portent `continue_on_error: true` : la séquence va à son terme, la post-condition
+constate l'état cible non atteint, et la reprise différée s'arme normalement.
+
+Ce n'est ni un retry (l'étape échouée n'est jamais ré-émise dans la même exécution),
+ni une abstention (l'échec est marqué) : c'est la garantie que les étapes de
+qualification et de conclusion sont **inconditionnellement atteintes**.
+
+> **Prérequis d'intégration.** `continue_on_error` ne contient que les
+> `HomeAssistantError` : Home Assistant traite toute autre exception comme un défaut
+> de programmation et la laisse remonter. Le fork Airstage traduit donc les échecs de
+> transport de ses commandes d'écriture (`entity.airstage_command`). Sans cette
+> traduction, la garantie ci-dessus est inopérante — l'exception traverse la garde et
+> avorte le script, marquage et reprise compris.
 
 ### Cause de l'échec — reconstruction structurelle, sans état durable
 

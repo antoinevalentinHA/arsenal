@@ -1,7 +1,10 @@
 """Airstage parent entity class."""
 
+from collections.abc import Awaitable, Callable
+from functools import wraps
 from typing import Any
 
+import aiohttp
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -10,6 +13,53 @@ from pyairstage.airstageApi import ApiError
 
 from .const import DOMAIN
 from .models import AirstageData
+
+# Transport failures a write command can surface when the indoor unit drops off
+# the LAN (Wi-Fi loss, unit unplugged, module rebooting).
+#   - ``ApiError``      : pyairstage gave up after its own retries.
+#   - ``aiohttp`` errors: leak straight through when pyairstage does not wrap
+#     them (``ClientConnectorError`` also derives from ``OSError``, but
+#     ``ClientError`` as a whole does not).
+#   - ``OSError``       : raw socket failures, and ``TimeoutError``, which is an
+#     ``OSError`` subclass since Python 3.10.
+# ``asyncio.CancelledError`` derives from ``BaseException`` and is therefore
+# never swallowed here — a stopped script must still stop.
+_COMMAND_TRANSPORT_ERRORS = (ApiError, aiohttp.ClientError, OSError)
+
+
+def airstage_command(
+    func: Callable[..., Awaitable[Any]],
+) -> Callable[..., Awaitable[Any]]:
+    """Surface a write command's transport failures as ``HomeAssistantError``.
+
+    Without this, an unreachable unit raises ``pyairstage`` / ``aiohttp``
+    exceptions straight out of the service call. Home Assistant classifies
+    those as *unexpected*: the caller gets a full traceback in the log, and —
+    decisively — the failure escapes ``continue_on_error``, which by design
+    only ever swallows ``HomeAssistantError``. Any script commanding the unit
+    is then aborted mid-sequence, skipping whatever bookkeeping followed
+    (post-condition check, failure marking, scheduled retry).
+
+    Translating the failure keeps the same command *failing* — nothing is
+    silently ignored — but as an error Home Assistant understands: logged
+    without a stack trace, and containable by the caller. Read paths are not
+    concerned: they serve the coordinator cache, whose own failures are
+    already mapped to ``UpdateFailed``.
+    """
+
+    @wraps(func)
+    async def _wrapper(*args: Any, **kwargs: Any) -> Any:
+        try:
+            return await func(*args, **kwargs)
+        except HomeAssistantError:
+            # Already translated (typically by a nested decorated command).
+            raise
+        except _COMMAND_TRANSPORT_ERRORS as err:
+            raise HomeAssistantError(
+                f"Airstage command {func.__name__} failed: {err}"
+            ) from err
+
+    return _wrapper
 
 
 class AirstageEntity(CoordinatorEntity):
