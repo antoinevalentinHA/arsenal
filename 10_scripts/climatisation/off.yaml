@@ -17,6 +17,19 @@
 #   - si climate.clim est actif, il est coupé
 #   - après stabilisation courte, switch.clim_power est coupé
 #   - si tout est déjà arrêté, abstention silencieuse
+#
+# 🧯 ÉCHEC DE COMMANDE (module injoignable)
+#   Une commande peut échouer alors que les entités restent connues de
+#   Home Assistant : module Airstage hors du réseau (perte Wi-Fi, unité
+#   débranchée). L'échec est NON FATAL ici — `continue_on_error` laisse la
+#   séquence aller à son terme au lieu d'avorter l'appelant en cours de route.
+#   Ce script ne constate ni ne rattrape rien de plus : la qualification du
+#   résultat et la reprise restent à `script.clim_execution` (post-condition
+#   + reprise différée), qui n'était jamais atteinte quand l'exception
+#   remontait. Prérequis : `continue_on_error` ne contient que les
+#   `HomeAssistantError` ; la garde repose donc sur la traduction des échecs
+#   de transport par l'intégration Airstage, en place depuis la
+#   resynchronisation du fork (cf. contrat 08, § « Échec d'émission »).
 # ==========================================================
 
 clim_exec_apply_off:
@@ -35,6 +48,7 @@ clim_exec_apply_off:
         - conditions: "{{ clim_active }}"
           sequence:
             - service: climate.turn_off
+              continue_on_error: true
               target:
                 entity_id: climate.clim
             - delay: "00:00:01"
@@ -43,5 +57,6 @@ clim_exec_apply_off:
         - conditions: "{{ power_on }}"
           sequence:
             - service: switch.turn_off
+              continue_on_error: true
               target:
                 entity_id: switch.clim_power

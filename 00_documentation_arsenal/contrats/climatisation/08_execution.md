@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — CLIMATISATION
 ## 07 — Exécution — Application idempotente
 
-**Version contrat :** v1.4
+**Version contrat :** v1.5
 
 ---
 
@@ -83,7 +83,63 @@ En cas d'échec d'application, trois conclusions sont distinguées :
 |---|---|---|
 | Abstention silencieuse | Cible hors contrat | Aucun marquage, aucune reprise |
 | Échec infra | Entités indisponibles au moment de l'appel | Marquage + reprise différée |
-| Échec post-condition | Commande émise mais état cible non atteint | Marquage + reprise différée |
+| Échec post-condition | Commande émise mais état cible non atteint — que la commande ait été refusée à l'émission (module injoignable) ou acceptée sans effet | Marquage + reprise différée |
+
+### Échec d'émission — non-fatalité obligatoire
+
+Une commande peut échouer **à l'émission**, alors même que les entités d'exécution
+sont connues de Home Assistant : le module Airstage est hors du réseau (perte Wi-Fi,
+unité débranchée) et l'appel de service remonte une erreur. Ce cas n'est **pas** un
+échec infra au sens du tableau ci-dessus : les entités n'étaient pas `unavailable`,
+rien ne pouvait être anticipé avant l'appel.
+
+**Règle opposable — la couche Exécution conclut toujours.** Aucun échec de commande
+ne peut interrompre la séquence avant sa qualification. Les appels physiques des
+exécutants (`clim_exec_apply_*`) et les appels d'exécutants du script d'exécution
+portent `continue_on_error: true` : la séquence va à son terme, la post-condition
+constate l'état cible non atteint, et la reprise différée s'arme normalement.
+
+Ce n'est ni un retry (l'étape échouée n'est jamais ré-émise dans la même exécution),
+ni une abstention (l'échec est marqué) : c'est la garantie que les étapes de
+qualification et de conclusion sont **inconditionnellement atteintes**.
+
+> **Prérequis d'intégration — la garantie est conditionnelle.**
+> `continue_on_error` ne contient que les `HomeAssistantError` : Home Assistant
+> traite toute autre exception comme un défaut de programmation et la laisse
+> remonter. La garde ci-dessus n'opère donc que si l'intégration qui porte la
+> commande traduit ses échecs de transport en `HomeAssistantError`. Sans cette
+> traduction, l'exception traverse la garde et avorte le script — marquage et
+> reprise compris.
+>
+> **Prérequis satisfait depuis le 2026-08-23.** Le fork Airstage traduit les
+> échecs de transport de ses commandes d'écriture (`entity.airstage_command`,
+> `antoinevalentinHA/ha_airstage#7`), et la copie vendorisée de
+> `custom_components/fujitsu_airstage/` porte cette traduction depuis la
+> resynchronisation `8f843fb`. La clause ci-dessus est donc opérante.
+>
+> **Ce qui reste non prouvé :** la chaîne complète — commande refusée, échec
+> contenu, post-condition constatée, reprise armée — n'a pas encore été observée
+> en conditions réelles. Le protocole est décrit au § « Vérification terrain »
+> ci-dessous. Tant qu'il n'a pas été exercé, la garantie est établie par
+> construction, pas par observation.
+
+### Vérification terrain — protocole
+
+1. Rendre le module injoignable (couper son alimentation ou son accès réseau),
+   sans attendre que les entités passent `unavailable` — le cas visé est
+   précisément celui où elles restent connues de Home Assistant.
+2. Provoquer une exécution : changer `sensor.clim_mode_commande` ou appeler
+   `script.clim_execution`.
+3. Constater, dans l'ordre :
+   - le journal porte une ligne d'erreur **sans pile d'appels** (et non plus une
+     trace complète) ;
+   - `input_boolean.clim_execution_echec` passe à `on` ;
+   - `counter.clim_execution_retry_count` vaut 1 ;
+   - `timer.clim_retry` est armé à 30 s.
+4. Rétablir le module et vérifier que la reprise applique la cible.
+
+L'échec de l'une de ces constatations invalide la clause de non-fatalité et non
+la politique de reprise, qui lui est antérieure.
 
 ### Cause de l'échec — reconstruction structurelle, sans état durable
 

@@ -18,6 +18,22 @@
 #       2. infra indisponible   → échec infra, reprise programmée
 #       3. post-condition KO    → échec d'exécution, reprise programmée
 #
+# 🧯 CONCLUSION INCONDITIONNELLE
+#   Une commande physique peut échouer alors que les entités sont connues de
+#   Home Assistant : module Airstage injoignable sur le réseau. L'exception
+#   remontait alors jusqu'ici et avortait le script AVANT les étapes 5 et 6 —
+#   aucun marquage d'échec, aucune reprise programmée, et une trace complète
+#   dans le journal. `continue_on_error` sur les appels aux exécutants borne
+#   cet échec : la séquence atteint toujours sa qualification, qui constate
+#   la post-condition non tenue et déclenche la reprise différée.
+#   Ce n'est pas un retry (l'étape échouée n'est pas ré-émise) et ce n'est pas
+#   une abstention (l'échec est marqué) : c'est la garantie que la couche
+#   Exécution conclut toujours.
+#   Prérequis : `continue_on_error` ne contient que les `HomeAssistantError` ;
+#   la garde repose donc sur la traduction des échecs de transport par
+#   l'intégration Airstage, en place depuis la resynchronisation du fork
+#   (cf. contrat 08, § « Échec d'émission »).
+#
 # 🔌 DÉPENDANCES
 #   - sensor.clim_mode_commande  (décision exécutoire ; auto ⇒ = clim_target_mode)
 #   - climate.clim
@@ -73,6 +89,7 @@ clim_execution:
               value_template: "{{ execution_possible and target == 'cool' }}"
           sequence:
             - service: script.clim_exec_apply_cool
+              continue_on_error: true
 
         # --------------------------------------------------
         # MODE DRY
@@ -82,6 +99,7 @@ clim_execution:
               value_template: "{{ execution_possible and target == 'dry' }}"
           sequence:
             - service: script.clim_exec_apply_dry
+              continue_on_error: true
 
         # --------------------------------------------------
         # MODE HEAT
@@ -91,6 +109,7 @@ clim_execution:
               value_template: "{{ execution_possible and target == 'heat' }}"
           sequence:
             - service: script.clim_exec_apply_heat
+              continue_on_error: true
 
         # --------------------------------------------------
         # MODE OFF
@@ -100,6 +119,7 @@ clim_execution:
               value_template: "{{ execution_possible and target == 'off' }}"
           sequence:
             - service: script.clim_exec_apply_off
+              continue_on_error: true
 
     # ======================================================
     # 4. STABILISATION

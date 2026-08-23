@@ -17,6 +17,19 @@
 #   - si switch.clim_power est off, il est allumé
 #   - après stabilisation courte, climate.clim est positionné sur heat
 #   - si l'état réel est déjà conforme, abstention silencieuse
+#
+# 🧯 ÉCHEC DE COMMANDE (module injoignable)
+#   Une commande peut échouer alors que les entités restent connues de
+#   Home Assistant : module Airstage hors du réseau (perte Wi-Fi, unité
+#   débranchée). L'échec est NON FATAL ici — `continue_on_error` laisse la
+#   séquence aller à son terme au lieu d'avorter l'appelant en cours de route.
+#   Ce script ne constate ni ne rattrape rien de plus : la qualification du
+#   résultat et la reprise restent à `script.clim_execution` (post-condition
+#   + reprise différée), qui n'était jamais atteinte quand l'exception
+#   remontait. Prérequis : `continue_on_error` ne contient que les
+#   `HomeAssistantError` ; la garde repose donc sur la traduction des échecs
+#   de transport par l'intégration Airstage, en place depuis la
+#   resynchronisation du fork (cf. contrat 08, § « Échec d'émission »).
 # ==========================================================
 
 clim_exec_apply_heat:
@@ -32,6 +45,7 @@ clim_exec_apply_heat:
         - conditions: "{{ power != 'on' }}"
           sequence:
             - service: switch.turn_on
+              continue_on_error: true
               target:
                 entity_id: switch.clim_power
             - delay: "00:00:10"
@@ -43,6 +57,7 @@ clim_exec_apply_heat:
         - conditions: "{{ states('climate.clim') != 'heat' }}"
           sequence:
             - service: climate.set_hvac_mode
+              continue_on_error: true
               target:
                 entity_id: climate.clim
               data:
