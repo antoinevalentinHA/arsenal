@@ -117,10 +117,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     f"Local Airstage device {entry.data[CONF_DEVICE_ID]} "
                     f"at {entry.data[CONF_IP_ADDRESS]} not reachable: {err}"
                 ) from err
-            except (KeyError, ValueError, TypeError) as err:
-                # A malformed / partial device response should be treated as a
-                # transient update failure (coordinator keeps retrying and
-                # recovers on the next poll) rather than an unhandled error.
+            except (KeyError, ValueError, TypeError, OSError) as err:
+                # A malformed / partial device response, or a socket failure
+                # pyairstage did not wrap, should be treated as a transient
+                # update failure (coordinator keeps retrying and recovers on
+                # the next poll) rather than an unhandled error. Mirrors the
+                # cloud path above.
                 raise UpdateFailed(
                     f"Local Airstage device {entry.data[CONF_DEVICE_ID]} "
                     f"at {entry.data[CONF_IP_ADDRESS]} returned an "

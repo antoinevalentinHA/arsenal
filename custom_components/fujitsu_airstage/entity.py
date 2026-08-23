@@ -1,7 +1,10 @@
 """Airstage parent entity class."""
 
+from collections.abc import Awaitable, Callable
+from functools import wraps
 from typing import Any
 
+import aiohttp
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -10,6 +13,54 @@ from pyairstage.airstageApi import ApiError
 
 from .const import DOMAIN
 from .models import AirstageData
+
+# Failures the API layer can surface when the unit drops off the network
+# (Wi-Fi loss, unit unplugged, module rebooting):
+#   - ``ApiError``       : pyairstage gave up after its own retries.
+#   - ``aiohttp`` errors : leak through when pyairstage does not wrap them
+#     (``ClientConnectorError`` also derives from ``OSError``, but
+#     ``ClientError`` as a whole does not).
+#   - ``OSError``        : raw socket failures, and ``TimeoutError``, an
+#     ``OSError`` subclass since Python 3.10.
+TRANSPORT_ERRORS = (ApiError, aiohttp.ClientError, OSError)
+
+
+def airstage_command(
+    func: Callable[..., Awaitable[Any]],
+) -> Callable[..., Awaitable[Any]]:
+    """Surface a command's transport failures as ``HomeAssistantError``.
+
+    Without this, an unreachable unit raises ``pyairstage`` / ``aiohttp``
+    exceptions straight out of the service call. Home Assistant classifies
+    anything that is not a ``HomeAssistantError`` as a *programming error*:
+    it is logged as "Unexpected error" with a full stack trace and — the part
+    that actually hurts — it escapes ``continue_on_error``, which by design
+    only ever contains ``HomeAssistantError``. A script commanding the unit is
+    then aborted mid-sequence, skipping whatever followed the failed step
+    (post-condition checks, failure flags, scheduled retries), so a transient
+    network glitch silently disables the caller's own recovery path.
+
+    Translating keeps the command *failing* — nothing is swallowed — but as an
+    error Home Assistant understands: logged without a stack trace, and
+    containable by the caller. ``CancelledError`` derives from
+    ``BaseException`` and is never caught here: a stopped script still stops.
+    Programming errors (``KeyError``, ``ValueError``, ...) are left to
+    propagate, so real bugs stay visible.
+    """
+
+    @wraps(func)
+    async def _wrapper(*args: Any, **kwargs: Any) -> Any:
+        try:
+            return await func(*args, **kwargs)
+        except HomeAssistantError:
+            # Already translated (typically by a nested decorated command).
+            raise
+        except TRANSPORT_ERRORS as err:
+            raise HomeAssistantError(
+                f"Airstage command {func.__name__} failed: {err}"
+            ) from err
+
+    return _wrapper
 
 
 class AirstageEntity(CoordinatorEntity):
@@ -28,14 +79,12 @@ class AirstageEntity(CoordinatorEntity):
         Adds an error handler and coordinator refresh, and presets keys.
         """
 
-        async def update_handle(*values):
-            try:
-                if await func(*keys, *values):
-                    await self.coordinator.async_refresh()
-            except ApiError as err:
-                raise HomeAssistantError(err) from err
+        @airstage_command
+        async def async_update_ac(*values):
+            if await func(*keys, *values):
+                await self.coordinator.async_refresh()
 
-        return update_handle
+        return async_update_ac
 
 
 class AirstageAcEntity(AirstageEntity):
@@ -117,8 +166,18 @@ class AirstageAcEntity(AirstageEntity):
 
     @property
     def extra_state_attributes(self) -> dict:
-        devices = self.instance.coordinator.data
+        """Expose the device's raw parameters.
+
+        Read defensively: the coordinator can hold no data at all (first
+        refresh not through yet) or a payload without this device, and an
+        exception raised here breaks the entity's whole state write.
+        """
+        devices = self.coordinator.data
+        if not devices or self.ac_key not in devices:
+            return {}
+
         return {
-            str(x["name"]).replace("iu_", ""): x["value"]
-            for x in devices[self.ac_key]["parameters"]
+            str(name).replace("iu_", ""): parameter.get("value")
+            for parameter in devices[self.ac_key].get("parameters", [])
+            if (name := parameter.get("name")) is not None
         }
