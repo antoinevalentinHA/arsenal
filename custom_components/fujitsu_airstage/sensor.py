@@ -65,6 +65,7 @@ class AirstageTemp(AirstageAcEntity, SensorEntity):
     _attr_device_class = SensorDeviceClass.TEMPERATURE
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_suggested_display_precision = 1
 
     def __init__(
         self,
@@ -91,7 +92,7 @@ class AirstageTemp(AirstageAcEntity, SensorEntity):
             if value is None:
                 return None
 
-            return Decimal(value)
+            return Decimal(str(value))
 
         if self.parameter is constants.ACParameter.OUTDOOR_TEMPERATURE:
             try:
@@ -102,4 +103,4 @@ class AirstageTemp(AirstageAcEntity, SensorEntity):
             if value is None:
                 return None
 
-            return Decimal(value)
+            return Decimal(str(value))

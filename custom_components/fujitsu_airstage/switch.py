@@ -10,7 +10,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyairstage import constants
 
 from .const import DOMAIN as AIRSTAGE_DOMAIN
-from .entity import AirstageAcEntity
+from .entity import AirstageAcEntity, airstage_command
 from .models import AirstageData
 
 # get_fan_speed() returns a FanSpeedDescriptors value, while set_fan_speed()
@@ -74,6 +74,7 @@ class AirstageEcoSwitch(AirstageAcEntity, SwitchEntity):
         """Return the eco mode status."""
         return self._ac.get_economy_mode() == constants.BooleanDescriptors.ON
 
+    @airstage_command
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn eco mode on."""
         await self._ac.set_economy_mode(constants.BooleanProperty.ON)
@@ -81,6 +82,7 @@ class AirstageEcoSwitch(AirstageAcEntity, SwitchEntity):
             {constants.ACParameter.ECONOMY_MODE: constants.BooleanProperty.ON}
         )
 
+    @airstage_command
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn eco mode off."""
         await self._ac.set_economy_mode(constants.BooleanProperty.OFF)
@@ -106,6 +108,7 @@ class AirstagePowerfulSwitch(AirstageAcEntity, SwitchEntity):
         """Return the powerful status."""
         return self._ac.get_powerful_mode() == constants.BooleanDescriptors.ON
 
+    @airstage_command
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn powerful on."""
         await self._ac.set_powerful_mode(constants.BooleanProperty.ON)
@@ -113,6 +116,7 @@ class AirstagePowerfulSwitch(AirstageAcEntity, SwitchEntity):
             {constants.ACParameter.POWERFUL_MODE: constants.BooleanProperty.ON}
         )
 
+    @airstage_command
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn powerful off."""
         await self._ac.set_powerful_mode(constants.BooleanProperty.OFF)
@@ -138,6 +142,7 @@ class AirstageOutdoorLowNoiseSwitch(AirstageAcEntity, SwitchEntity):
         """Return the outdoor unit low noise" status."""
         return self._ac.get_outdoor_low_noise() == constants.BooleanDescriptors.ON
 
+    @airstage_command
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn outdoor unit low noise" on."""
         await self._ac.set_outdoor_low_noise(constants.BooleanProperty.ON)
@@ -145,6 +150,7 @@ class AirstageOutdoorLowNoiseSwitch(AirstageAcEntity, SwitchEntity):
             {constants.ACParameter.OUTDOOR_LOW_NOISE: constants.BooleanProperty.ON}
         )
 
+    @airstage_command
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn outdoor unit low noise" off."""
         await self._ac.set_outdoor_low_noise(constants.BooleanProperty.OFF)
@@ -178,6 +184,7 @@ class AirstageEnergySaveFanSwitch(AirstageAcEntity, SwitchEntity):
 
         return state == constants.BooleanDescriptors.ON
 
+    @airstage_command
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn energy saving fan on."""
         await self._ac.set_energy_save_fan(constants.BooleanProperty.ON)
@@ -185,6 +192,7 @@ class AirstageEnergySaveFanSwitch(AirstageAcEntity, SwitchEntity):
             {constants.ACParameter.ENERGY_SAVE_FAN: constants.BooleanProperty.ON}
         )
 
+    @airstage_command
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn energy saving fan off."""
         await self._ac.set_energy_save_fan(constants.BooleanProperty.OFF)
@@ -220,6 +228,7 @@ class AirstageQuietFanSwitch(AirstageAcEntity, SwitchEntity):
 
         return speed == constants.FanSpeedDescriptors.QUIET
 
+    @airstage_command
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn quiet fan on."""
         try:
@@ -232,6 +241,7 @@ class AirstageQuietFanSwitch(AirstageAcEntity, SwitchEntity):
             {constants.ACParameter.FAN_SPEED: constants.FanSpeed.QUIET}
         )
 
+    @airstage_command
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn quiet fan off, restoring the last known manual fan speed."""
         target = self._previous_fan_speed or constants.FanSpeed.LOW
@@ -263,6 +273,7 @@ class AirstageIndoorLedSwitch(AirstageAcEntity, SwitchEntity):
             return "mdi:led-on"
         return "mdi:led-variant-off"
 
+    @airstage_command
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn energy saving fan on."""
         await self._ac.set_indoor_led(constants.BooleanProperty.ON)
@@ -270,6 +281,7 @@ class AirstageIndoorLedSwitch(AirstageAcEntity, SwitchEntity):
             {constants.ACParameter.INDOOR_LED: constants.BooleanProperty.ON}
         )
 
+    @airstage_command
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn energy saving fan off."""
         await self._ac.set_indoor_led(constants.BooleanProperty.OFF)
@@ -309,6 +321,7 @@ class AirstagePowerSwitch(AirstageAcEntity, SwitchEntity):
             return "mdi:power"
         return "mdi:power-off"
 
+    @airstage_command
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn power on."""
         await self._ac.turn_on()
@@ -316,6 +329,7 @@ class AirstagePowerSwitch(AirstageAcEntity, SwitchEntity):
             {constants.ACParameter.ONOFF_MODE: constants.BooleanProperty.ON}
         )
 
+    @airstage_command
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn power off."""
         await self._ac.turn_off()
@@ -341,6 +355,7 @@ class AirstageHumanDetectionAutoSaveSwitch(AirstageAcEntity, SwitchEntity):
         """Return the Human Detection Auto Save status."""
         return self._ac.get_hmn_detection_auto_save() == constants.BooleanDescriptors.ON
 
+    @airstage_command
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn Human Detection Auto Save on."""
         await self._ac.set_hmn_detection_auto_save(constants.BooleanProperty.ON)
@@ -352,6 +367,7 @@ class AirstageHumanDetectionAutoSaveSwitch(AirstageAcEntity, SwitchEntity):
             }
         )
 
+    @airstage_command
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn Human Detection Auto Save off."""
         await self._ac.set_hmn_detection_auto_save(constants.BooleanProperty.OFF)
