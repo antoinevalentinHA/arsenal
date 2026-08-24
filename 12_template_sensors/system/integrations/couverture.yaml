@@ -1,0 +1,142 @@
+# ==========================================================
+#  🧠 ARSENAL — TEMPLATE BINARY SENSOR
+#     Couverture des entrées de configuration (contrôle runtime)
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Vérifier que, dans chaque domaine portant au moins une
+#     chaîne de résilience, toute entrée active est SOIT
+#     couverte par un périmètre, SOIT dérogée explicitement.
+#
+#  📐 CONTRAT — resilience_integrations.md v3.0 §10.2
+#     R-COUVERTURE-1 : couverture exhaustive BORNÉE aux domaines
+#     portant une chaîne, avec dérogations déclarées. Une entrée
+#     ni couverte ni dérogée est un ÉCART.
+#     R-COUVERTURE-2 : une dérogation porte entrée, motif, et
+#     critère de levée.
+#     R-COUVERTURE-3 : contrôle runtime, alimenté par
+#     `integration_entities()`.
+#
+#  ⚠️ POURQUOI `integration_entities()` ET NON UN BALAYAGE DE `states`
+#     Un balayage de `states` établirait une souscription à TOUS
+#     les changements d'état du système — coût permanent
+#     injustifiable pour une observation rare (R-AXE3-6).
+#     `integration_entities()` n'établit AUCUNE souscription :
+#     vérifié le 2026-08-24 dans l'éditeur de modèles, qui
+#     indique explicitement « n'écoute aucun événement ».
+#     Corollaire : la lecture n'étant pas réactive, les
+#     déclencheurs explicites sont OBLIGATOIRES (R-AXE3-4).
+#
+#  🧱 CE QU'IL DÉTECTE
+#     Pour chaque domaine sous couverture : les entrées présentes
+#     qui ne sont ni dans un périmètre déclaré, ni dérogées.
+#
+#  🚫 DEUX LIMITES ASSUMÉES — un `off` ne prouve pas l'exhaustivité
+#     1. Une entrée SANS AUCUNE ENTITÉ est invisible ici. Ce
+#        contrôle trouve des trous ; il ne prouve pas qu'il n'y
+#        en a plus.
+#     2. Les domaines dont la chaîne n'a PAS de périmètre
+#        (`disponibilite_native`, cf. Zigbee2MQTT) sont exclus du
+#        décompte et listés ci-dessous. Leur absence est un FAIT
+#        DOCUMENTÉ, pas un trou.
+#
+#  🚫 INTERDITS
+#     - Déclencher une action depuis ce fichier
+#     - Balayer `states` pour énumérer les entrées
+#     - Ajouter un domaine à `sans_perimetre` pour faire taire un
+#       écart : cette liste est réservée aux chaînes réellement
+#       dépourvues de groupe source
+#     - Inscrire une dérogation ici sans l'inscrire au registre
+#       avec son motif et son critère de levée (R-COUVERTURE-2)
+# ==========================================================
+
+- trigger:
+    - platform: event
+      event_type: event_template_reloaded
+    - platform: homeassistant
+      event: start
+    - platform: time_pattern
+      hours: "/1"
+
+  binary_sensor:
+    - name: "Couverture entrees resilience incomplete"
+      unique_id: couverture_entrees_resilience_incomplete
+      default_entity_id: binary_sensor.couverture_entrees_resilience_incomplete
+      icon: mdi:shield-alert-outline
+
+      state: >
+        {% set couples = [
+          ('netatmo',            ['group.netatmo_capteurs']),
+          ('fujitsu_airstage',   ['group.fujitsu_capteurs']),
+          ('homekit_controller', ['group.homekit_station_enfants',
+                                  'group.homekit_station_salle_de_jeux',
+                                  'group.homekit_prise_control']),
+          ('overkiz',            ['group.petite_maison_cumulus']),
+          ('switchbot',          ['group.switchbot_capteurs']),
+          ('switchbot_cloud',    ['group.switchbot_capteurs']),
+          ('synology_dsm',       ['group.synology_capteurs']),
+          ('audiconnect',        ['group.audi_capteurs']),
+          ('withings',           ['group.withings_capteurs'])
+        ] %}
+        {# Dérogations : AUCUNE à ce jour. Toute entrée ajoutée ici DOIT
+           figurer au registre avec motif et critère de levée. #}
+        {% set derogations = [] %}
+        {% set ns = namespace(ecarts=0) %}
+        {% for dom, groupes in couples %}
+          {% set presentes = integration_entities(dom)
+             | map('config_entry_id') | reject('none') | unique | list %}
+          {% set nsg = namespace(couv=[]) %}
+          {% for g in groupes %}
+            {% set nsg.couv = nsg.couv + (expand(g) | map(attribute='entity_id')
+               | map('config_entry_id') | reject('none') | list) %}
+          {% endfor %}
+          {% for e in presentes %}
+            {% if e not in nsg.couv and e not in derogations %}
+              {% set ns.ecarts = ns.ecarts + 1 %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+        {{ ns.ecarts > 0 }}
+
+      attributes:
+        # Domaines sous couverture dont la chaîne n'a pas de périmètre :
+        # exclus du décompte, et c'est un fait documenté.
+        sans_perimetre: "mqtt (Zigbee2MQTT — chaîne en disponibilité native, binaire de bridge)"
+
+        detail: >
+          {% set couples = [
+            ('netatmo',            ['group.netatmo_capteurs']),
+            ('fujitsu_airstage',   ['group.fujitsu_capteurs']),
+            ('homekit_controller', ['group.homekit_station_enfants',
+                                    'group.homekit_station_salle_de_jeux',
+                                    'group.homekit_prise_control']),
+            ('overkiz',            ['group.petite_maison_cumulus']),
+            ('switchbot',          ['group.switchbot_capteurs']),
+            ('switchbot_cloud',    ['group.switchbot_capteurs']),
+            ('synology_dsm',       ['group.synology_capteurs']),
+            ('audiconnect',        ['group.audi_capteurs']),
+            ('withings',           ['group.withings_capteurs'])
+          ] %}
+          {% set derogations = [] %}
+          {% set ns = namespace(lignes=[]) %}
+          {% for dom, groupes in couples %}
+            {% set presentes = integration_entities(dom)
+               | map('config_entry_id') | reject('none') | unique | list %}
+            {% set nsg = namespace(couv=[], manque=[]) %}
+            {% for g in groupes %}
+              {% set nsg.couv = nsg.couv + (expand(g) | map(attribute='entity_id')
+                 | map('config_entry_id') | reject('none') | list) %}
+            {% endfor %}
+            {% for e in presentes %}
+              {% if e not in nsg.couv and e not in derogations %}
+                {% set nsg.manque = nsg.manque + [config_entry_attr(e, 'title')] %}
+              {% endif %}
+            {% endfor %}
+            {% if nsg.manque %}
+              {% set ns.lignes = ns.lignes + [
+                 dom ~ ' : ' ~ (presentes | count - nsg.manque | count) ~ '/'
+                 ~ (presentes | count) ~ ' — non couvert(es) : '
+                 ~ (nsg.manque | join(', ')) ] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.lignes | join(' | ') if ns.lignes
+             else 'toutes les entrees des domaines sous couverture sont couvertes ou derogees' }}
