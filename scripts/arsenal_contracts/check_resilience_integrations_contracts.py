@@ -832,6 +832,53 @@ def evaluate(integ, ctx):
                     manques.append("pas de délégation au script canon")
                 record(nom, "R12", FAIL, "câblage action disponibilité incomplet : " + ", ".join(manques))
 
+    # ---------- R18 : cohérence du ciblage (R-ANCRAGE-4/5/6) ----------
+    # Deux façons de désigner ce que l'action répare, et une seule à la fois :
+    #   - `entry_id`      : l'entrée est NOMMÉE, via un secret. Le couplage
+    #                       détection ↔ action est déclaratif — et INVÉRIFIABLE,
+    #                       aucun contrôle ne pouvant lire un secret.
+    #   - `reload_target` : l'action CIBLE le périmètre observé. Le couplage
+    #                       devient structurel (R-ANCRAGE-5).
+    #
+    # Ce que cette règle interdit :
+    #  a) les deux ensemble — le script canon les refuse déjà au runtime, mais
+    #     l'écart doit être vu AVANT le déploiement ;
+    #  b) un `reload_target` pointant AILLEURS que le périmètre observé : ce
+    #     serait très exactement la chaîne mal ancrée que R-ANCRAGE-1 proscrit,
+    #     avec en prime une action sur un périmètre que personne n'observe ;
+    #  c) ni l'un ni l'autre sur une chaîne dont l'action est censée exister.
+    if mode not in ("disponibilite_native", "orpheline_a_arbitrer") and autom_obj is not None:
+        data18 = attempt_call(autom_obj) or {}
+        cible = data18.get("reload_target")
+        nomme = data18.get("entry_id")
+        groupe_decl = (integ.get("groupe_source") or {}).get("entity_id")
+        entry_ref = integ.get("entry_ref")
+
+        if cible is not None and nomme is not None:
+            record(nom, "R18", FAIL,
+                   "entry_id ET reload_target transmis ensemble — désignation ambiguë")
+        elif cible is not None:
+            if cible != groupe_decl:
+                record(nom, "R18", FAIL,
+                       f"reload_target ({cible}) != périmètre observé ({groupe_decl}) "
+                       f"— l'action réparerait un périmètre que rien n'observe")
+            elif entry_ref != "non_applicable":
+                record(nom, "R18", FAIL,
+                       f"action ciblée mais entry_ref encore déclaré ({entry_ref}) "
+                       f"— le registre décrit un secret que plus personne n'utilise")
+            else:
+                record(nom, "R18", PASS,
+                       f"action ciblée sur le périmètre observé ({short_id(cible)})")
+        elif nomme is not None:
+            if entry_ref == "non_applicable":
+                record(nom, "R18", FAIL,
+                       "entry_id transmis mais entry_ref = non_applicable au registre")
+            else:
+                record(nom, "R18", PASS, f"action sur entrée nommée ({entry_ref})")
+        else:
+            record(nom, "R18", FAIL,
+                   "ni entry_id ni reload_target : l'action ne désigne aucune entrée")
+
     # ---------- R13 : garde réseau WAN (intégrations cloud) ----------
     # Exclut le mode disponibilite_native (Zigbee).
     if mode != "disponibilite_native":
