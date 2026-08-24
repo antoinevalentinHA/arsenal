@@ -1,7 +1,7 @@
 # ARSENAL — Contrat de résilience des intégrations
 
 **Composant :** `arsenal-ha`
-**Version :** v2.0
+**Version :** v2.1
 **Scope :** Détection et relance automatique des intégrations critiques (gel des données, indisponibilité des entités, échec de configuration d'une entrée).
 **Maille de couverture :** l'**entrée de configuration** (*config entry*) — voir §12.
 **Mode d'application :** report-only — voir §10 et le registre.
@@ -325,11 +325,19 @@ Le précédent propriétaire dans le corpus est [`homekit_diagnostic.md`](homeki
 |---|---|
 | **Objet** | Escalade reload d'entrée → power-cycle, pour un pont matériel dont le reload seul ne suffit pas |
 | **Qualification** | **Réserve différée solvable** — **non bloquante** |
-| **Propriétaire** | Contrat de domaine du pont concerné (à rédiger) |
+| **Propriétaire** | Contrat de domaine du pont concerné |
 | **Critère de levée** | Rédaction dudit contrat de domaine, **ou** preuve terrain qu'un reload d'entrée suffit seul |
-| **Réévaluation** | À la prochaine occurrence documentée d'un échec de configuration non résolu par le reload |
+| **Statut** | ✅ **LEVÉE le 2026-08-24** — critère rempli par la rédaction de [`pont_idiamant.md`](pont_idiamant.md) v1.0 |
 
-Cette réserve est **déclarée non bloquante** : l'axe 3 et la remédiation par reload ont une valeur propre, indépendante de l'escalade physique. Ne pas la déclarer en ferait une dette perpétuelle silencieuse, ce que R-QUALIF-1 de la doctrine interdit.
+**Levée (v2.1).** Le premier contrat de domaine consommant cette frontière est
+[`pont_idiamant.md`](pont_idiamant.md) : il définit une escalade bornée à deux échelons
+(reload, puis power-cycle unique au seuil de 2 tentatives), ses gardes, et son anti-boucle.
+Il confirme R-FRONTIERE-2 par l'usage : la remédiation physique vit bien dans le contrat de
+domaine, jamais ici.
+
+La frontière du §14.1 reste **pleinement en vigueur** pour tout autre équipement : la levée
+concerne le pont iDiamant, pas la règle. Tout nouveau besoin d'escalade physique exige son
+propre contrat de domaine.
 
 ### 14.2 Ping et santé applicative
 
@@ -385,8 +393,9 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 - **v1.0** — Contrat initial. Deux axes orthogonaux (fraîcheur / disponibilité), script canon de recovery, registre CI, mode report-only.
 - **v1.1** — Ajout de l'invariant 11 et du §11 : garde réseau WAN pour les intégrations `cloud_wan`, garde paramétrée (`wan_entity`) et jamais codée en dur, classification `cloud_wan` / `local_lan`. Conformité déclarée à `pannes/internet/30`.
 - **v1.1 (révision)** — Définition de la fraîcheur fondée sur `last_reported` (liveness) ; invariant 1 reformulé ; usage de `last_updated`/`last_changed` proscrit sur cet axe.
+- **v2.1** — Levée de la réserve §14.1 : le contrat de domaine attendu existe ([`pont_idiamant.md`](pont_idiamant.md) v1.0, 2026-08-24). R-FRONTIERE-2 est confirmée par l'usage — la remédiation physique vit dans le contrat de domaine. La frontière elle-même est inchangée et reste opposable pour tout autre équipement. Aucun invariant, aucun axe, aucune règle d'ancrage modifiés.
 - **v2.0** — **Changement de maille.** La couverture se déclare et se vérifie par **entrée de configuration** et non plus par intégration (§12, invariant 12, R-MAILLE-1/2). Ajout de la règle d'**ancrage détection ↔ action** et de la notion de **chaîne mal ancrée** (§12.3, invariant 13, R-ANCRAGE-1). Ajout d'un **troisième axe — échec de configuration** (§13, invariant 14), avec qualification des états d'entrée, débounce obligatoire sur `setup_retry`, exclusion des entrées désactivées, et contrainte de réactivité (R-AXE3-4/5/6) articulée avec `gestion_du_temps.md` sans déroger à l'invariant 10. Ajout de l'invariant 15 et du §12.5 sur l'**honnêteté de l'indicateur** (R-UI-1/2). Ajout du §14, **frontières de propriété** : la remédiation physique reste au contrat de domaine (R-FRONTIERE-2, réserve qualifiée), le ping n'est jamais preuve de santé d'entrée (R-FRONTIERE-3). Ajout du §10.1, **dette de migration** du registre et du checker, qualifiée non bloquante. Ajout du §15, leçon terrain 2026-08-23. Les §1 à §11 conservent leur numérotation ; aucun invariant existant n'est supprimé ni affaibli.
 
 ---
 
-*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.0*
+*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.1*

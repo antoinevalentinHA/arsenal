@@ -1,0 +1,115 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Pont iDiamant – Escalade power-cycle (échelon 2)
+#
+#  ID : 10120000000030
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Franchir le second échelon de remédiation du pont de
+#     volets iDiamant lorsque le rechargement logiciel de son
+#     entrée de configuration a échoué : couper puis rendre
+#     l'alimentation de la prise qui l'alimente.
+#
+#  📐 CONTRAT — contrats/pont_idiamant.md v1.0
+#     - R-PONT-2 : quand le pont est figé applicativement,
+#       aucune relance logicielle ne le réveille. Preuve
+#       terrain du 2026-08-24 (§7) : 25 h de réessais natifs
+#       + 1 reload Arsenal sans effet, puis retour immédiat
+#       après une coupure de quelques secondes.
+#     - R-PONT-3 : palier à 2 tentatives — arbitrage de coût
+#       d'indisponibilité, pas affirmation sur le nombre de
+#       reloads nécessaires.
+#     - R-PONT-4 : TIR UNIQUE par épisode. Le compteur n'est
+#       JAMAIS remis à zéro ici — c'est précisément ce qui
+#       empêche le palier d'être franchi deux fois. L'épisode
+#       se termine par retour OK (reset naturel) ou par le
+#       blocage au plafond du script canon.
+#     - R-PONT-5 : action déléguée au script utilitaire
+#       générique existant, jamais un second script.
+#
+#  🛡️ GARDES — cf. contrat §5
+#     - systeme_stable : pas d'action pendant l'instabilité
+#       post-démarrage.
+#     - panne_secteur_en_cours : `switch.prise_palier` est en
+#       SECTEUR DIRECT, non secourue. Pendant une coupure,
+#       l'indisponibilité du pont est un KO attendu et la
+#       prise n'est pas commandable — couper serait futile.
+#     - incident encore constaté : le palier peut être franchi
+#       alors que le pont vient de revenir. Couper un
+#       équipement sain serait une régression.
+#
+#  ⚠️ GARDE VOLONTAIREMENT ABSENTE — R-PONT-6
+#     `binary_sensor.acces_externe` n'est PAS testé ici, alors
+#     qu'il l'est dans la politique des stations Netatmo.
+#     Les stations dépendent d'un support cloud ; ce pont est
+#     `local_lan` (service HAP local). Reprendre cette garde
+#     par mimétisme inhiberait un équipement local sur un
+#     signal WAN — interdit par resilience_integrations.md §6.
+#     NE PAS « aligner » les deux politiques.
+#
+#  🧱 LATENCE — R-PONT-7
+#     La garde « incident encore constaté » ne repose PAS sur
+#     le seul axe 3 : sa lecture peut être périmée d'un tick
+#     (5 min). L'axe disponibilité, lui, est réactif. Les deux
+#     sont donc testés en OU.
+# ==========================================================
+
+- id: "10120000000030"
+  alias: "Système - Pont iDiamant - Escalade power-cycle"
+  description: >
+    Échelon 2 de la remédiation du pont de volets iDiamant : power-cycle unique
+    de la prise d'alimentation après 2 tentatives de reload infructueuses.
+    Consomme le compteur de la chaîne de résilience de l'entrée ; ne le
+    réinitialise jamais.
+
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    # Franchissement du palier : le compteur passe de <= 1 à > 1.
+    # `numeric_state` ne se redéclenche pas tant que la valeur ne
+    # repasse pas sous le seuil — ce qui, combiné à R-PONT-4
+    # (aucune remise à zéro ici), garantit le tir unique.
+    - platform: numeric_state
+      entity_id: input_number.homekit_prise_control_reload_tentatives
+      above: 1
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+    # Prise en secteur direct : power-cycler pendant une panne secteur
+    # est futile (la prise n'est pas commandable, le KO est attendu).
+    - condition: state
+      entity_id: binary_sensor.panne_secteur_en_cours
+      state: "off"
+
+    # Incident encore constaté au moment d'agir. L'axe disponibilité est
+    # réactif ; l'axe 3 peut être périmé d'un tick (R-PONT-7). Les deux
+    # en OU : il suffit qu'un seul atteste encore l'incident.
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: binary_sensor.indisponibilite_franche_homekit_prise_control
+          state: "on"
+        - condition: state
+          entity_id: binary_sensor.echec_configuration_homekit_prise_control
+          state: "on"
+
+  action:
+    # Coupure franche puis remise sous tension. Le script refuse d'agir
+    # si la prise est `unknown` / `unavailable` (garde-fou infra interne).
+    - action: script.reboot_netatmo
+      data:
+        switch_entity: "switch.prise_palier"
+
+    - action: script.notification_envoyer
+      data:
+        cible: input_text.telephone_parent_1_notify
+        titre: "🔌 Pont iDiamant — power-cycle"
+        message: >
+          {{ now().strftime('%d/%m %H:%M') }}
+          Pont de volets redémarré électriquement après
+          {{ states('input_number.homekit_prise_control_reload_tentatives') | int(0) }}
+          rechargement(s) d'entrée sans effet. Action unique pour cet épisode.
