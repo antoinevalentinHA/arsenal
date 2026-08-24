@@ -36,8 +36,22 @@ switchbot_capteurs:
     ########################################################
     # 🚿 SALLES DE BAINS
     ########################################################
-    - sensor.temperature_sdb_parents
-    - sensor.humidite_relative_sdb_parents
+    # ⚠️ RETIRÉS le 2026-08-24 — `sensor.temperature_sdb_parents` et
+    # `sensor.humidite_relative_sdb_parents` NE SONT PLUS DU SWITCHBOT.
+    # Le capteur physique de la SDB parents a été remplacé par un Zigbee ;
+    # les entity_id ont été conservés, si bien que la composition textuelle
+    # du groupe n'a jamais bougé alors que l'intégration sous-jacente, elle,
+    # est passée à `mqtt` (entrée « Mosquitto broker »).
+    #
+    # Aucune analyse statique ne peut voir ça : l'entity_id reste valide, ce
+    # n'est pas une entité dérivée, aucune ligne du dépôt n'a changé. Seul le
+    # contrôle runtime de fermeture de domaine le détecte
+    # (`binary_sensor.ancrage_chaines_resilience_non_conforme`).
+    #
+    # Leur résilience est assurée par la chaîne Zigbee2MQTT, au niveau du
+    # bridge — c'est le bon modèle pour un appareil Zigbee. Les réintégrer
+    # ici étendrait la surveillance ET, sous ciblage, la réparation à
+    # l'intégration MQTT (R-ANCRAGE-6).
     - sensor.temperature_sdb_enfants
     - sensor.humidite_relative_sdb_enfants
 
