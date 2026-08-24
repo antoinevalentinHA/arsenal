@@ -346,6 +346,10 @@ integrations:
     # par appareil si une remediation par appareil s'avere utile.
     derogations_couverture:
       - entree: "Bot Chambre parents"
+        # Cle de la derogation au runtime : l'entree est RESOLUE par ce
+        # temoin (config_entry_id), jamais designee par son titre —
+        # un titre n'est ni stable ni unique (R-ANCRAGE-9).
+        temoin: switch.bot_chambre_parents
         motif: >-
           Actionneur couvert par le socle transactionnel SwitchBot
           (switchbot_transactionnel.md, niveau A) : verrou, cooldown,
@@ -355,6 +359,10 @@ integrations:
           Sortie du registre transactionnel, ou preuve terrain qu'un reload
           d'entree recupere une session BLE perdue.
       - entree: "Bot Déshumidificateur"
+        # Cle de la derogation au runtime : l'entree est RESOLUE par ce
+        # temoin (config_entry_id), jamais designee par son titre —
+        # un titre n'est ni stable ni unique (R-ANCRAGE-9).
+        temoin: switch.deshumidificateur
         motif: >-
           Actionneur retire du registre transactionnel en C40 au profit de
           l'ecrivain unique script.set_deshumidificateur_state. Son

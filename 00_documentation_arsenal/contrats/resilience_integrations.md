@@ -1,7 +1,7 @@
 # ARSENAL — Contrat de résilience des intégrations
 
 **Composant :** `arsenal-ha`
-**Version :** v3.3
+**Version :** v3.4
 **Scope :** Détection et relance automatique des intégrations critiques (gel des données, indisponibilité des entités, échec de configuration d'une entrée).
 **Maille de couverture :** l'**entrée de configuration** (*config entry*) — voir §12.
 **Mode d'application :** report-only — voir §10 et le registre.
@@ -317,6 +317,26 @@ couvert » est un silence légitime reproduit la panne d'origine.
 > interdite — c'est la transposition de R-QUALIF-3 de
 > [`solvabilite_probatoire.md`](../architecture/03_doctrines/solvabilite_probatoire.md)
 > au domaine de la couverture : sans critère, elle est perpétuelle par construction.
+
+> **R-COUVERTURE-4 (opposable — clé d'une dérogation).** Une dérogation se déclare
+> par **entité témoin**, jamais par titre d'entrée (R-ANCRAGE-9) ni par motif de
+> nommage. Le témoin est une entité de l'entrée, écrite en clair, qui **résout**
+> l'entrée à l'exécution via `config_entry_id()`.
+>
+> Ce que chaque option coûte :
+>
+> | Clé | Défaillance |
+> |---|---|
+> | **Titre** | Deux entrées d'un même domaine peuvent le partager — les deux stations HomeKit s'appellent « Weather Station ». Une dérogation en dérobe **deux**, en silence. |
+> | **Motif** (`switch.bot_*`) | Auto-déroge toute entrée future que personne n'a examinée, **et** manque celles qui ne suivent pas la convention — `switch.deshumidificateur` n'a pas le préfixe. Se trompe dans les deux sens. |
+> | **Témoin** | Une entité n'appartient qu'à une entrée : la dérogation ne peut pas déborder. |
+>
+> **Le mode de défaillance du témoin doit rester bruyant.** Si le témoin
+> disparaît, il ne résout plus, l'entrée cesse d'être dérogée et **redevient un
+> écart visible** — une dérogation périmée se signale au lieu de survivre. Le
+> détail du contrôle doit en outre **nommer le témoin mort** : sans cela on
+> chercherait une entrée nouvelle là où il n'y a qu'un témoin obsolète, deux
+> diagnostics très différents.
 
 > **R-COUVERTURE-3 (contrôle).** Le contrôle de couverture est **runtime** — les
 > entrées présentes n'existent que dans Home Assistant. Il s'alimente à
@@ -823,6 +843,7 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 
 ## 16. Historique de version
 
+- **v3.4** — Ajout de **R-COUVERTURE-4** (§10.2) : une dérogation de couverture se déclare par **entité témoin**, jamais par titre ni par motif de nommage. Conséquence directe de R-ANCRAGE-9 (v3.3) — le contrôle de couverture indexait encore par titre, alors que les deux stations HomeKit prouvent qu'un titre n'est pas une clé ; une dérogation pouvait en dérober deux en silence. Un motif aurait été pire : il auto-dérogerait les entrées futures **et** manquerait celles hors convention. Le mode de défaillance d'un témoin est bruyant par construction — un témoin disparu rend l'entrée non couverte, donc visible — et le détail du contrôle nomme désormais le témoin mort.
 - **v3.3** — **Ciblage par défaut.** Ajout de **R-ANCRAGE-8** (§12.5.2) : sur un périmètre éligible, l'action DOIT cibler le périmètre ; `entry_id` n'est retenu que là où la **détection** en exige déjà un — aujourd'hui l'axe échec de configuration seul. Motif décisif : la justesse d'un `entry_id` n'est **vérifiable par personne**, aucun contrôle ne pouvant lire `secrets.yaml` ; une chaîne pouvait observer une entrée et en réparer une autre sans qu'un seul indicateur bouge. Ajout de **R-ANCRAGE-9** : le titre d'une entrée n'est ni stable ni unique — les deux stations HomeKit portent le même — et ne doit jamais servir de clé. Réserve « entrée sans entité intargetable » **levée et bornée** : une entité `unavailable` reste ciblable (mesuré), et le seul cas dangereux vide le périmètre, que le contrôle d'ancrage signale déjà. Six chaînes migrées ; ajout de **R18** au checker. Le classement des familles de périmètres passe du mécanisme à l'**invariant** : migrer au ciblage ne fait pas sortir de `mono`.
 - **v3.2** — Ajout du **§9.1** et de **R-OBS-1** : tout capteur de la couche observation de la résilience doit inclure `event_template_reloaded`. Un rechargement des modèles ne déclenche ni `homeassistant: start` ni un tick, et les sources d'un capteur de résilience ne bougent pas en fonctionnement normal — le capteur restait donc `unknown` jusqu'au prochain incident, affichant un gris indiscernable d'une panne. **R-AXE3-4 est amendée** : sa formulation d'origine, qui n'exigeait que le tick et le démarrage, était incomplète et a produit le défaut deux fois. Ajout de **R17** au checker, borné aux fichiers énumérés de cette couche — la règle n'est **pas** étendue aux ~700 blocs à déclencheurs du dépôt, dont les sources tiquent assez pour que la fenêtre aveugle se referme seule.
 - **v1.0** — Contrat initial. Deux axes orthogonaux (fraîcheur / disponibilité), script canon de recovery, registre CI, mode report-only.
@@ -843,4 +864,4 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 
 ---
 
-*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v3.3*
+*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v3.4*

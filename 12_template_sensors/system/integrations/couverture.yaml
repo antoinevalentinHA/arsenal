@@ -39,6 +39,29 @@
 #        décompte et listés ci-dessous. Leur absence est un FAIT
 #        DOCUMENTÉ, pas un trou.
 #
+#  🔑 UNE DÉROGATION SE DÉCLARE PAR ENTITÉ TÉMOIN, JAMAIS PAR TITRE
+#     Contrat §12.5.2, R-ANCRAGE-9 et R-COUVERTURE-4.
+#     Le titre d'une entrée n'est ni stable ni unique : il est
+#     choisi par l'intégration, souvent dérivé d'un compte ou d'un
+#     identifiant matériel, et deux entrées d'un même domaine
+#     peuvent porter le MÊME. Mesuré le 2026-08-24 : les deux
+#     stations HomeKit s'appellent toutes deux « Weather Station ».
+#     Déroger par titre aurait donc pu en dérober deux d'un coup,
+#     sans que rien ne le dise.
+#
+#     Un TÉMOIN est une entité de l'entrée, écrite en clair ici.
+#     Elle ne DÉSIGNE pas l'entrée, elle la RÉSOUT à l'exécution
+#     par `config_entry_id()` — une entité appartenant à une seule
+#     entrée, la dérogation ne peut pas déborder.
+#
+#     Mode de défaillance, et il est BRUYANT : si le témoin
+#     disparaît (renommage, remplacement de matériel), il ne
+#     résout plus, l'entrée cesse d'être dérogée et REDEVIENT un
+#     écart visible. Une dérogation périmée se signale d'elle-même
+#     au lieu de survivre en silence. L'attribut `detail` nomme en
+#     plus le témoin mort, faute de quoi on chercherait une entrée
+#     nouvelle là où il n'y a qu'un témoin obsolète.
+#
 #  🚫 INTERDITS
 #     - Déclencher une action depuis ce fichier
 #     - Balayer `states` pour énumérer les entrées
@@ -47,9 +70,14 @@
 #       dépourvues de groupe source
 #     - Inscrire une dérogation ici sans l'inscrire au registre
 #       avec son motif et son critère de levée (R-COUVERTURE-2)
-#     - Déroger par MOTIF plutôt que par libellé nominatif : un
+#     - Déroger par TITRE d'entrée (R-ANCRAGE-9) : un titre n'est
+#       pas une clé
+#     - Déroger par MOTIF plutôt que par témoin nominatif : un
 #       motif auto-dérogerait des entrées futures que personne
-#       n'aurait examinées
+#       n'aurait examinées — et raterait celles qui ne suivent pas
+#       la convention de nommage. `switch.bot_*` illustre les deux
+#       travers à la fois : il dérogerait tout futur Bot, et
+#       manquerait `switch.deshumidificateur`
 # ==========================================================
 
 - trigger:
@@ -80,15 +108,19 @@
           ('audiconnect',        ['group.audi_capteurs']),
           ('withings',           ['group.withings_capteurs'])
         ] %}
-        {# Dérogations déclarées, par LIBELLÉ D'ENTRÉE — chacune figure au
+        {# Dérogations déclarées, par ENTITÉ TÉMOIN — chacune figure au
            registre avec son motif et son critère de levée (R-COUVERTURE-2).
-           ⚠️ Liste NOMINATIVE, jamais un motif : un motif `switch.bot_*`
+           Le témoin ne désigne pas l'entrée : il la RÉSOUT, à l'exécution.
+           ⚠️ Liste NOMINATIVE, jamais un motif : `switch.bot_*`
            auto-dérogerait tout futur Bot sans que personne ne l'écrive —
-           très exactement le silence que R-COUVERTURE-1 interdit. #}
-        {% set derogations_libelles = [
-          'Bot Chambre parents',
-          'Bot Déshumidificateur'
+           et raterait `switch.deshumidificateur`, qui ne porte pas le
+           préfixe. Un motif se trompe dans les deux sens à la fois. #}
+        {% set derogations_temoins = [
+          'switch.bot_chambre_parents',
+          'switch.deshumidificateur'
         ] %}
+        {% set derogees = derogations_temoins
+           | map('config_entry_id') | reject('none') | unique | list %}
         {% set ns = namespace(ecarts=0) %}
         {% for dom, groupes in couples %}
           {% set presentes = integration_entities(dom)
@@ -99,8 +131,7 @@
                | map('config_entry_id') | reject('none') | list) %}
           {% endfor %}
           {% for e in presentes %}
-            {% if e not in nsg.couv
-                  and config_entry_attr(e, 'title') not in derogations_libelles %}
+            {% if e not in nsg.couv and e not in derogees %}
               {% set ns.ecarts = ns.ecarts + 1 %}
             {% endif %}
           {% endfor %}
@@ -126,10 +157,18 @@
             ('audiconnect',        ['group.audi_capteurs']),
             ('withings',           ['group.withings_capteurs'])
           ] %}
-          {% set derogations_libelles = [
-            'Bot Chambre parents',
-            'Bot Déshumidificateur'
+          {% set derogations_temoins = [
+            'switch.bot_chambre_parents',
+            'switch.deshumidificateur'
           ] %}
+          {% set derogees = derogations_temoins
+             | map('config_entry_id') | reject('none') | unique | list %}
+          {% set nsm = namespace(morts=[]) %}
+          {% for w in derogations_temoins %}
+            {% if config_entry_id(w) is none %}
+              {% set nsm.morts = nsm.morts + [w] %}
+            {% endif %}
+          {% endfor %}
           {% set ns = namespace(lignes=[]) %}
           {% for dom, groupes in couples %}
             {% set presentes = integration_entities(dom)
@@ -140,8 +179,7 @@
                  | map('config_entry_id') | reject('none') | list) %}
             {% endfor %}
             {% for e in presentes %}
-              {% if e not in nsg.couv
-                    and config_entry_attr(e, 'title') not in derogations_libelles %}
+              {% if e not in nsg.couv and e not in derogees %}
                 {% set nsg.manque = nsg.manque + [config_entry_attr(e, 'title')] %}
               {% endif %}
             {% endfor %}
@@ -152,5 +190,11 @@
                  ~ (nsg.manque | join(', ')) ] %}
             {% endif %}
           {% endfor %}
-          {{ ns.lignes | join(' | ') if ns.lignes
-             else 'toutes les entrees des domaines sous couverture sont couvertes ou derogees' }}
+          {% set base = ns.lignes | join(' | ') if ns.lignes
+             else 'toutes les entrees des domaines sous couverture sont couvertes ou derogees' %}
+          {# Un temoin qui ne resout plus signale une derogation PERIMEE. L'ecart
+             remonte de toute facon (l'entree redevient non couverte), mais sans
+             ce message on chercherait une entree nouvelle au lieu d'un temoin
+             mort — deux diagnostics tres differents. #}
+          {{ base ~ (' || TEMOIN(S) DE DEROGATION SANS ENTREE : '
+             ~ (nsm.morts | join(', ')) if nsm.morts else '') }}
