@@ -1,0 +1,113 @@
+# ==========================================================
+#  🧠 ARSENAL — TEMPLATE BINARY SENSOR
+#     Ancrage des chaînes de résilience (contrôle runtime)
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Vérifier que chaque périmètre de détection déclaré est
+#     ancré sur UNE SEULE entrée de configuration.
+#
+#  📐 CONTRAT — resilience_integrations.md §12.3 / §12.4
+#     R-ANCRAGE-1 : le périmètre observé doit appartenir à
+#     l'entrée que l'action répare.
+#     R-ANCRAGE-2 : aucune entité dérivée dans le périmètre.
+#
+#  ⚠️ POURQUOI CE CONTRÔLE EST RUNTIME ET NON CI
+#     L'appartenance d'une entité à une entrée n'existe QUE
+#     dans le registre d'entités de Home Assistant. Elle se lit
+#     par `config_entry_id()`, une fonction de template — donc
+#     indisponible à une analyse statique du dépôt.
+#
+#     La CI couvre le volet statiquement décidable (règle R15 :
+#     aucune entité produite par les templates du dépôt dans un
+#     périmètre). Ce capteur couvre le reste : l'appartenance
+#     réelle. Les deux sont complémentaires, aucun ne remplace
+#     l'autre.
+#
+#  🧱 CE QU'IL DÉTECTE
+#     - périmètre couvrant PLUSIEURS entrées -> mal ancré
+#     - membre sans entrée de configuration  -> dérivé ou
+#       étranger (R-ANCRAGE-2)
+#     - groupe vide ou introuvable
+#
+#  🕒 CADENCE
+#     La composition d'un groupe ne change qu'au déploiement.
+#     Un réveil toutes les 6 h suffit largement ; `config_entry_id`
+#     n'étant pas réactive, un capteur sans trigger figerait sa
+#     valeur au démarrage. Couche OBSERVATION : ce tick ne
+#     déclenche aucune action (R-AXE3-5).
+#
+#  📋 ÉNUMÉRATION DÉCLARATIVE
+#     La liste des groupes est écrite en clair — ce ne sont pas
+#     des secrets. Aucun balayage de `states` (R-AXE3-6) : le
+#     capteur ne s'abonne qu'aux groupes qu'il cite.
+#
+#  🚫 INTERDITS
+#     - Déclencher une action depuis ce fichier
+#     - Balayer les entités du système pour découvrir les groupes
+#     - Retirer un groupe de la liste pour faire taire un écart
+# ==========================================================
+
+- trigger:
+    - platform: time_pattern
+      hours: "/6"
+    - platform: homeassistant
+      event: start
+
+  binary_sensor:
+    - name: "Ancrage chaines resilience non conforme"
+      unique_id: ancrage_chaines_resilience_non_conforme
+      default_entity_id: binary_sensor.ancrage_chaines_resilience_non_conforme
+      icon: mdi:link-variant-off
+
+      state: >
+        {% set groupes = [
+          'group.netatmo_capteurs',
+          'group.fujitsu_capteurs',
+          'group.homekit_station_enfants',
+          'group.homekit_station_salle_de_jeux',
+          'group.petite_maison_cumulus',
+          'group.switchbot_capteurs',
+          'group.synology_capteurs',
+          'group.homekit_prise_control',
+          'group.audi_capteurs',
+          'group.withings_capteurs'
+        ] %}
+        {% set ns = namespace(fautifs=0) %}
+        {% for g in groupes %}
+          {% set membres = expand(g) | map(attribute='entity_id') | list %}
+          {% set entrees = membres | map('config_entry_id') | unique | list %}
+          {% if membres | count == 0
+                or entrees | count != 1
+                or none in entrees %}
+            {% set ns.fautifs = ns.fautifs + 1 %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.fautifs > 0 }}
+
+      attributes:
+        detail: >
+          {% set groupes = [
+            'group.netatmo_capteurs',
+            'group.fujitsu_capteurs',
+            'group.homekit_station_enfants',
+            'group.homekit_station_salle_de_jeux',
+            'group.petite_maison_cumulus',
+            'group.switchbot_capteurs',
+            'group.synology_capteurs',
+            'group.homekit_prise_control',
+            'group.audi_capteurs',
+            'group.withings_capteurs'
+          ] %}
+          {% set ns = namespace(lignes=[]) %}
+          {% for g in groupes %}
+            {% set membres = expand(g) | map(attribute='entity_id') | list %}
+            {% set entrees = membres | map('config_entry_id') | unique | list %}
+            {% if membres | count == 0 %}
+              {% set ns.lignes = ns.lignes + [g ~ ' : groupe vide'] %}
+            {% elif none in entrees %}
+              {% set ns.lignes = ns.lignes + [g ~ ' : membre(s) sans entree de configuration'] %}
+            {% elif entrees | count != 1 %}
+              {% set ns.lignes = ns.lignes + [g ~ ' : ' ~ (entrees | count) ~ ' entrees'] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.lignes | join(' | ') if ns.lignes else 'toutes les chaines sont ancrees sur une entree unique' }}

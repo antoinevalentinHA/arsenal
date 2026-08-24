@@ -1,7 +1,7 @@
 # ARSENAL — Contrat de résilience des intégrations
 
 **Composant :** `arsenal-ha`
-**Version :** v2.4
+**Version :** v2.5
 **Scope :** Détection et relance automatique des intégrations critiques (gel des données, indisponibilité des entités, échec de configuration d'une entrée).
 **Maille de couverture :** l'**entrée de configuration** (*config entry*) — voir §12.
 **Mode d'application :** report-only — voir §10 et le registre.
@@ -98,7 +98,7 @@ périmètre parfaitement sain**.
 **Diagnostic** — groupe source **restreint à une entrée** (§12.3) ; capteur d'âge ; binaire gel avéré ; binaire indisponibilité franche ; binaire échec de configuration ; binaire retour OK ; binaire recovery en cours.
 **Décision** — automation déclenchant sur gel **et** indisponibilité **et** échec de configuration **et** fin de backoff **et** retour OK, sous garde `input_boolean.systeme_stable = on`, en `mode: single`, sans `time_pattern`.
 **Action** — délégation à `script.resilience_integration_recover` ; timer de backoff dédié ; compteur de tentatives dédié ; `entry_id` désignant l'entrée effectivement observée.
-**UI** — exposition non trompeuse de l'état des axes et du recovery, à la maille de l'entrée (§12.5).
+**UI** — exposition non trompeuse de l'état des axes et du recovery, à la maille de l'entrée (§12.6).
 
 ### 4.1 Cycle de vie d'un épisode de recovery
 
@@ -150,7 +150,7 @@ l'épisode, elles ne le referment pas.
 12. **Maille entrée de configuration** — la couverture se déclare, se câble et se vérifie **par entrée**, jamais par domaine ni par nom commercial (§12).
 13. **Ancrage détection ↔ action** — le périmètre observé appartient à l'entrée que l'action répare (§12.3).
 14. **Axe échec de configuration** — troisième axe, observé sur l'état de l'entrée, débouncé, soumis aux gardes communes (§13).
-15. **Honnêteté de l'indicateur** — aucun indicateur ne peut afficher sain un domaine dont une entrée est en échec ou non couverte (§12.5).
+15. **Honnêteté de l'indicateur** — aucun indicateur ne peut afficher sain un domaine dont une entrée est en échec ou non couverte (§12.6).
 
 ---
 
@@ -216,7 +216,16 @@ Le registre et le checker **implémentent encore la maille v1.1** : une ligne pa
 > 2. le checker vérifie l'**ancrage** — les membres du groupe source appartiennent-ils tous à l'entrée que l'action recharge (§12.4) ;
 > 3. le checker vérifie l'existence du **maillon axe 3** pour les entrées qui le requièrent.
 
-**Résorption partielle (v2.2).** Les points 2 et 3 ci-dessus sont **partiellement traités** : le checker modélise désormais l'axe 3 (règle R7 généralisée en « câblage multi-axes », qui exige le trigger et la transmission au canon de **chaque axe déclaré présent**), et il traite `non_applicable` comme ce que le registre dit qu'il est — hors périmètre, jamais un maillon manquant. Reste ouvert : l'énumération des entrées par `entry_id` et la vérification de l'**ancrage** (point 1).
+**Résorption (v2.5).** Les trois points sont traités, dans les limites de ce qu'une analyse statique peut établir :
+1. le registre énumère les **entrées** — chaque chaîne déclare `maille`, `domaine_integration`, `entree_libelle` et `entry_ref` (référence de la clé `secrets.yaml`, l'identifiant lui-même n'étant jamais publié). Un domaine portant plusieurs chaînes est désormais **lisible en direct** ;
+2. l'**ancrage** est contrôlé par R-ANCRAGE-3 (§12.4) — volet statique en CI (R15), volet runtime par capteur dédié. La CI ne peut pas porter le volet runtime, et le contrat le dit plutôt que de le laisser croire ;
+3. le maillon **axe 3** est vérifié depuis la v2.2 (R7 multi-axes).
+
+S'ajoute **R16** : champs de maille obligatoires, et interdiction de mutualiser un groupe source, un timer de backoff ou un compteur entre deux chaînes.
+
+**Ce qui reste hors de portée d'un contrôle**, et doit être dit : ni la CI ni le capteur runtime ne détectent une entrée **qui n'est déclarée nulle part**. Énumérer les entrées réellement présentes suppose de parcourir le registre de configuration de Home Assistant ; le contrôle actuel vérifie la cohérence de ce qui est déclaré, pas l'exhaustivité de la déclaration.
+
+**Qualification historique** (au sens de [`solvabilite_probatoire.md`](../architecture/03_doctrines/solvabilite_probatoire.md) §3) : **réserve différée solvable**, **non bloquante**. Les points 2 et 3 ci-dessus sont **partiellement traités** : le checker modélise désormais l'axe 3 (règle R7 généralisée en « câblage multi-axes », qui exige le trigger et la transmission au canon de **chaque axe déclaré présent**), et il traite `non_applicable` comme ce que le registre dit qu'il est — hors périmètre, jamais un maillon manquant. Reste ouvert : l'énumération des entrées par `entry_id` et la vérification de l'**ancrage** (point 1).
 
 **Qualification** (au sens de [`solvabilite_probatoire.md`](../architecture/03_doctrines/solvabilite_probatoire.md) §3) : **réserve différée solvable**, **non bloquante**. La preuve nécessaire est productible — `config_entry_id()` et `config_entry_attr()` sont disponibles et vérifiés (§13.3).
 **Propriétaire :** chantier de mise en conformité du registre de résilience.
@@ -325,13 +334,47 @@ Une chaîne mal ancrée est **non conforme**, au même titre qu'une chaîne orph
 > si `config_entry_id()` retourne l'entrée observée. Toute entité sans entrée de
 > configuration est **de facto** dérivée ou étrangère, donc irrecevable.
 
-### 12.4 Vérifiabilité mécanique
+### 12.4 Vérifiabilité — deux moitiés, aucune ne remplace l'autre
 
-`config_entry_id(entity_id)` restitue l'entrée d'appartenance d'une entité. L'ancrage est donc **mécaniquement vérifiable** : membres du groupe source → ensemble des `entry_id` d'appartenance → comparaison avec l'`entry_id` transmis à l'action. Un ensemble de cardinalité différente de 1, ou différent de l'`entry_id` de l'action, constitue l'écart.
+L'ancrage est mécaniquement vérifiable, mais **pas au même endroit** selon ce qu'on vérifie.
 
-Cette vérification relève du checker (§10.1).
+> **R-ANCRAGE-3 (opposable).** Le contrôle d'ancrage se décompose en deux volets,
+> et **aucun des deux ne suffit seul** :
+>
+> | Volet | Ce qu'il vérifie | Où |
+> |---|---|---|
+> | **Statique** | Aucun membre du périmètre n'est une entité **produite par les templates du dépôt** — donc dérivée par construction (R-ANCRAGE-2) | CI, règle **R15** |
+> | **Runtime** | Les membres appartiennent tous à **une seule et même entrée** (R-ANCRAGE-1) | `binary_sensor.ancrage_chaines_resilience_non_conforme` |
+>
+> Le volet runtime **ne peut pas** être porté par la CI : l'appartenance d'une
+> entité à une entrée n'existe que dans le registre d'entités de Home Assistant
+> et se lit par `config_entry_id()`, une fonction de template. Aucune analyse
+> statique du dépôt n'y a accès.
+>
+> Prétendre le contraire serait plus dangereux que l'absence de contrôle : une
+> CI verte serait lue comme une preuve d'ancrage qu'elle n'a pas produite.
 
-### 12.5 Honnêteté de l'indicateur
+Le volet statique n'est pas un lot de consolation : c'est lui qui capte le cas le
+plus dangereux — une entité dérivée qui, portant sa propre cadence et sa propre
+disponibilité, **neutralise les deux axes** sans qu'aucun maillon soit manquant
+(§15, quatrième enseignement).
+
+### 12.5 Domaines dont les entrées sont des appareils
+
+Certains domaines créent **une entrée par appareil** — le périmètre métier utile
+couvre alors naturellement plusieurs entrées.
+
+Cette configuration ne rend pas la maille caduque : chaque entrée charge et
+échoue toujours indépendamment. Elle déplace la question sur l'**action** :
+
+> **R-ANCRAGE-4.** Lorsqu'un périmètre couvre légitimement plusieurs entrées d'un
+> même domaine, l'action de recovery **DOIT** couvrir **toutes** ces entrées, ou
+> l'écart **DOIT** être inscrit au registre comme arbitrage ouvert, avec ce qu'il
+> coûte. Recharger une entrée sur N en réponse à une panne qui les concerne
+> toutes est une **remédiation partielle silencieuse** — la chaîne se déclare
+> réparée alors qu'elle n'a traité qu'une fraction du périmètre.
+
+### 12.6 Honnêteté de l'indicateur
 
 > **R-UI-1 (opposable).** Un indicateur de santé **ne doit jamais** afficher sain un domaine dont une entrée est en échec ou non couverte.
 
@@ -548,6 +591,7 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 - **v1.0** — Contrat initial. Deux axes orthogonaux (fraîcheur / disponibilité), script canon de recovery, registre CI, mode report-only.
 - **v1.1** — Ajout de l'invariant 11 et du §11 : garde réseau WAN pour les intégrations `cloud_wan`, garde paramétrée (`wan_entity`) et jamais codée en dur, classification `cloud_wan` / `local_lan`. Conformité déclarée à `pannes/internet/30`.
 - **v1.1 (révision)** — Définition de la fraîcheur fondée sur `last_reported` (liveness) ; invariant 1 reformulé ; usage de `last_updated`/`last_changed` proscrit sur cet axe.
+- **v2.5** — **Contrôle d'ancrage effectif.** Ajout de **R-ANCRAGE-3** (§12.4) : le contrôle se décompose en un volet **statique** (CI, règle R15 — aucune entité dérivée dans un périmètre) et un volet **runtime** (capteur dédié — appartenance réelle à une entrée unique) ; aucun ne remplace l'autre, et la CI **ne peut pas** porter le second, `config_entry_id()` étant une fonction de template. Ajout de **R-ANCRAGE-4** (§12.5) : un périmètre couvrant légitimement plusieurs entrées exige une action couvrant **toutes** ces entrées, ou l'inscription de l'écart au registre — recharger une entrée sur N est une remédiation partielle silencieuse. Ajout de **R16** au checker (champs de maille obligatoires, mutualisation interdite). Registre migré à la maille entrée. Dette §10.1 résorbée, avec énoncé explicite de ce qui reste hors de portée d'un contrôle. Ancien §12.5 renuméroté §12.6.
 - **v2.4** — Ajout de **R-ANCRAGE-2** (§12.3) : le périmètre de détection ne contient que des entités **produites directement par l'entrée** ; toute entité dérivée (template, consolidation, façade, valeur stabilisée) est interdite, car elle porte sa propre cadence et sa propre disponibilité et peut neutraliser les deux axes simultanément. Test de recevabilité par `config_entry_id()`. Quatrième enseignement terrain en §15 : deux façades inter-intégrations rendaient la chaîne HomeKit aveugle sur ses deux axes, sans qu'aucun maillon soit manquant.
 - **v2.3** — **Cycle de vie de l'épisode de recovery** (§4.1, R-RECOV-1/2/3). « Recovery en cours » décrit l'ouverture d'un épisode et non l'état du backoff : la définition précédente, en dent de scie, pouvait couper la temporisation du retour OK et laisser un épisode ouvert indéfiniment. Un blocage au plafond cesse d'être terminal — un retour constaté referme l'épisode, réarme la chaîne et le notifie. La notification de « retour OK », exigée par l'invariant 9 mais jamais câblée, est ajoutée au script canon. Invariants 5 et 7 amendés. Ajout de R-AXE1-3 : l'inapplicabilité de l'axe fraîcheur se déclare par `axe_fraicheur: false`, jamais par un seuil sentinelle. Troisième enseignement terrain en §15.
 - **v2.2** — Ajout de la **condition d'applicabilité de l'axe fraîcheur** (§3.1, R-AXE1-1/2) : cet axe présuppose une écriture périodique du coordinateur ; sur des entités en push pur, il est **inapplicable** et doit être déclaré `non_applicable`, jamais re-seuillé. Invariant 1 amendé en conséquence. Résorption partielle de la dette §10.1 : le checker modélise désormais l'axe 3 (R7 généralisée au multi-axes) et traite `non_applicable` conformément au vocabulaire du registre. Second enseignement terrain du 2026-08-24 consigné en §15.
@@ -556,4 +600,4 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 
 ---
 
-*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.4*
+*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.5*

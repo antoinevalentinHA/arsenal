@@ -22,8 +22,19 @@ meta:
   # encore des integrations designees par un nom commercial. Dette
   # declaree et qualifiee NON BLOQUANTE au contrat (§10.1) ; le checker
   # ne sait donc pas constater une entree non couverte.
-  maille_cible: entree_de_configuration
-  maille_effective: integration
+  # La maille est desormais EFFECTIVE : chaque chaine declare le domaine
+  # d'integration qu'elle sert et la reference (cle secrets.yaml) de son
+  # entree. Un domaine portant plusieurs chaines est ainsi visible en
+  # lecture directe du registre — c'est exactement ce qui manquait quand
+  # `homekit_controller` en portait trois sous une seule ligne.
+  maille: entree_de_configuration
+  # Controle d'ancrage : deux moities complementaires.
+  #  - CI (R15) : volet statiquement decidable — aucune entite produite
+  #    par les templates du depot dans un perimetre de detection.
+  #  - Runtime  : `binary_sensor.ancrage_chaines_resilience_non_conforme`
+  #    — appartenance reelle a une entree unique, via config_entry_id(),
+  #    fonction de template donc inaccessible a l'analyse statique.
+  controle_ancrage_runtime: binary_sensor.ancrage_chaines_resilience_non_conforme
   mode: report-only
   vocabulaire_statut: [present, absent_non_conforme_temporaire, non_applicable]
   delay_on_gel_reference: "00:05:00"   # ancre *age_gel_delay_5
@@ -43,6 +54,10 @@ integrations:
     mode: fraicheur+disponibilite
     classe_reseau: cloud_wan
     statut_attendu: active
+    maille: entree_de_configuration
+    domaine_integration: netatmo
+    entree_libelle: "Netatmo"
+    entry_ref: netatmo_entry_id
     groupe_source:           { statut: present, entity_id: group.netatmo_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.netatmo_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_netatmo }
@@ -62,6 +77,10 @@ integrations:
     mode: fraicheur+disponibilite
     classe_reseau: local_lan
     statut_attendu: active
+    maille: entree_de_configuration
+    domaine_integration: fujitsu_airstage
+    entree_libelle: "Airstage"
+    entry_ref: airstage_entry_id
     groupe_source:           { statut: present, entity_id: group.fujitsu_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.fujitsu_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_airstage }
@@ -92,6 +111,7 @@ integrations:
     maille: entree_de_configuration
     domaine_integration: homekit_controller
     entree_libelle: "Weather Station — Station Enfants"
+    entry_ref: homekit_station_enfants_entry_id
     groupe_source:           { statut: present, entity_id: group.homekit_station_enfants }
     capteur_age:             { statut: present, entity_id: sensor.homekit_station_enfants_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_homekit_station_enfants }
@@ -114,6 +134,7 @@ integrations:
     maille: entree_de_configuration
     domaine_integration: homekit_controller
     entree_libelle: "Weather Station — Station Salle de Jeux"
+    entry_ref: homekit_station_salle_de_jeux_entry_id
     groupe_source:           { statut: present, entity_id: group.homekit_station_salle_de_jeux }
     capteur_age:             { statut: present, entity_id: sensor.homekit_station_salle_de_jeux_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_homekit_station_salle_de_jeux }
@@ -133,6 +154,10 @@ integrations:
     mode: fraicheur+disponibilite
     classe_reseau: cloud_wan
     statut_attendu: active
+    maille: entree_de_configuration
+    domaine_integration: overkiz
+    entree_libelle: "Overkiz"
+    entry_ref: overkiz_entry_id
     groupe_source:           { statut: present, entity_id: group.petite_maison_cumulus }
     capteur_age:             { statut: present, entity_id: sensor.petite_maison_cumulus_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_overkiz }
@@ -153,6 +178,10 @@ integrations:
     mode: fraicheur+disponibilite
     classe_reseau: local_lan
     statut_attendu: active
+    maille: entree_de_configuration
+    domaine_integration: switchbot
+    entree_libelle: "SwitchBot"
+    entry_ref: switchbot_entry_id
     groupe_source:           { statut: present, entity_id: group.switchbot_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.switchbot_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_switchbot }
@@ -167,11 +196,39 @@ integrations:
     seuil_automation_constate: 45
     delay_on_gel: "00:05:00"
     exceptions_temporaires: []
+    # ARBITRAGE OUVERT — constate au runtime le 2026-08-24 par
+    # `binary_sensor.ancrage_chaines_resilience_non_conforme`.
+    #
+    # `group.switchbot_capteurs` couvre SIX entrees de configuration :
+    # chaque appareil SwitchBot est sa propre entree. C'est LEGITIME —
+    # le perimetre metier utile est bien l'ensemble des capteurs.
+    #
+    # L'ecart n'est donc PAS de detection mais d'ACTION (R-ANCRAGE-4) :
+    # l'appel `op: attempt` transmet UN entry_id, si bien qu'une panne
+    # SwitchBot globale n'est rechargee qu'au sixieme. Les cinq autres
+    # entrees restent en l'etat. Remediation partielle silencieuse.
+    #
+    # Scission en six chaines ECARTEE : aucune remediation utile par
+    # appareil BLE (portee, batterie) — ce seraient six chaines
+    # orphelines, interdites par le contrat.
+    #
+    # Piste retenue, a traiter dans sa propre passe : faire porter
+    # l'action sur TOUTES les entrees du domaine plutot que sur une
+    # seule. A verifier avant engagement.
+    #
+    # Qualification (solvabilite_probatoire.md §3) : reserve differee
+    # solvable, NON BLOQUANTE. Critere de levee : action couvrant les
+    # six entrees, ou requalification explicite en exception documentee.
+    arbitrage_ouvert: action_partielle_perimetre_multi_entrees
 
   - nom: Synology
     mode: fraicheur+disponibilite
     classe_reseau: local_lan
     statut_attendu: active
+    maille: entree_de_configuration
+    domaine_integration: synology_dsm
+    entree_libelle: "Synology DSM"
+    entry_ref: synology_entry_id
     groupe_source:           { statut: present, entity_id: group.synology_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.synology_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_synology }
@@ -201,6 +258,7 @@ integrations:
     maille: entree_de_configuration
     domaine_integration: homekit_controller
     entree_libelle: "Prise Control"
+    entry_ref: homekit_prise_control_entry_id
     # L'entry_id de cette entree est instance-specifique : il vit dans
     # secrets.yaml sous la cle `homekit_prise_control_entry_id`, referencee
     # par l'automation et par le capteur d'etat d'entree. Aucune valeur
@@ -240,6 +298,10 @@ integrations:
     mode: disponibilite_native
     classe_reseau: local_lan
     statut_attendu: modele_reference
+    maille: entree_de_configuration
+    domaine_integration: mqtt
+    entree_libelle: "Zigbee2MQTT (add-on)"
+    entry_ref: non_applicable
     groupe_source:           { statut: non_applicable, entity_id: null }
     capteur_age:             { statut: non_applicable, entity_id: null }
     binaire_gel:             { statut: non_applicable, entity_id: null }
@@ -267,6 +329,10 @@ integrations:
     mode: orpheline_a_arbitrer
     classe_reseau: cloud_wan
     statut_attendu: orpheline
+    maille: entree_de_configuration
+    domaine_integration: audiconnect
+    entree_libelle: "Audi Connect"
+    entry_ref: non_applicable
     groupe_source:           { statut: present, entity_id: group.audi_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.audi_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_audi }
@@ -289,6 +355,10 @@ integrations:
     mode: orpheline_a_arbitrer
     classe_reseau: cloud_wan
     statut_attendu: orpheline
+    maille: entree_de_configuration
+    domaine_integration: withings
+    entree_libelle: "Withings"
+    entry_ref: non_applicable
     groupe_source:           { statut: present, entity_id: group.withings_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.withings_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_withings }
