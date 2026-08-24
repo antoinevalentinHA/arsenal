@@ -1,7 +1,7 @@
 # ARSENAL — Contrat de résilience des intégrations
 
 **Composant :** `arsenal-ha`
-**Version :** v2.8
+**Version :** v2.9
 **Scope :** Détection et relance automatique des intégrations critiques (gel des données, indisponibilité des entités, échec de configuration d'une entrée).
 **Maille de couverture :** l'**entrée de configuration** (*config entry*) — voir §12.
 **Mode d'application :** report-only — voir §10 et le registre.
@@ -224,6 +224,38 @@ Le registre et le checker **implémentent encore la maille v1.1** : une ligne pa
 S'ajoute **R16** : champs de maille obligatoires, et interdiction de mutualiser un groupe source, un timer de backoff ou un compteur entre deux chaînes.
 
 **Ce qui reste hors de portée d'un contrôle**, et doit être dit : ni la CI ni le capteur runtime ne détectent une entrée **qui n'est déclarée nulle part**. Énumérer les entrées réellement présentes suppose de parcourir le registre de configuration de Home Assistant ; le contrôle actuel vérifie la cohérence de ce qui est déclaré, pas l'exhaustivité de la déclaration.
+
+### 10.2 Ce que « couverture » signifie — arbitrage non tranché
+
+Une cartographie runtime du 2026-08-24 (consignée au registre) a comparé, pour
+chaque domaine, les entrées **présentes** aux entrées **couvertes** par les
+périmètres déclarés. Elle a mis au jour un écart — quatre entrées `switchbot`
+couvertes sur sept — et, ce faisant, une question que le contrat ne tranche pas.
+
+> **R-COUVERTURE-1 (question ouverte, opposable en tant que telle).** Le présent
+> contrat ne définit pas ce qu'une chaîne **doit** couvrir. Deux modèles
+> s'excluent :
+>
+> - **Couverture volontaire** — une chaîne couvre exactement ce que son périmètre
+>   déclare. Cohérent et vérifiable, mais l'apparition d'une nouvelle entrée ne
+>   l'intègre jamais à la résilience, et **rien ne le signale**.
+> - **Couverture exhaustive** — une chaîne doit couvrir toutes les entrées actives
+>   de son domaine ; tout écart est une dérogation inscrite au registre.
+>
+> Tant que ce choix n'est pas fait, un constat du type « 4 entrées couvertes sur
+> 7 » n'est **ni conforme ni non conforme** : il est **indécidable** au regard du
+> contrat. C'est un défaut du contrat, pas du runtime.
+
+**Réserve qualifiée** (au sens de [`solvabilite_probatoire.md`](../architecture/03_doctrines/solvabilite_probatoire.md) §3) :
+*réserve différée solvable*, **non bloquante**. Propriétaire : le présent contrat.
+Critère de levée : choix explicite d'un des deux modèles, et — si le modèle
+exhaustif est retenu — définition du contrôle qui compare déclaré et présent.
+
+**Limite de la mesure, à ne pas oublier en la relisant.** Le balayage ne voit que
+les entrées ayant au moins une entité dans le state machine. Il peut **trouver des
+trous**, il ne peut pas **prouver l'exhaustivité**. Retenir le modèle exhaustif
+n'effacerait donc pas la limite énoncée juste au-dessus : il la rendrait seulement
+opposable là où elle est mesurable.
 
 **Qualification historique** (au sens de [`solvabilite_probatoire.md`](../architecture/03_doctrines/solvabilite_probatoire.md) §3) : **réserve différée solvable**, **non bloquante**. Les points 2 et 3 ci-dessus sont **partiellement traités** : le checker modélise désormais l'axe 3 (règle R7 généralisée en « câblage multi-axes », qui exige le trigger et la transmission au canon de **chaque axe déclaré présent**), et il traite `non_applicable` comme ce que le registre dit qu'il est — hors périmètre, jamais un maillon manquant. Reste ouvert : l'énumération des entrées par `entry_id` et la vérification de l'**ancrage** (point 1).
 
@@ -662,6 +694,7 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 - **v1.0** — Contrat initial. Deux axes orthogonaux (fraîcheur / disponibilité), script canon de recovery, registre CI, mode report-only.
 - **v1.1** — Ajout de l'invariant 11 et du §11 : garde réseau WAN pour les intégrations `cloud_wan`, garde paramétrée (`wan_entity`) et jamais codée en dur, classification `cloud_wan` / `local_lan`. Conformité déclarée à `pannes/internet/30`.
 - **v1.1 (révision)** — Définition de la fraîcheur fondée sur `last_reported` (liveness) ; invariant 1 reformulé ; usage de `last_updated`/`last_changed` proscrit sur cet axe.
+- **v2.9** — Ajout du **§10.2** et de **R-COUVERTURE-1** : le contrat ne définissait pas ce qu'une chaîne **doit** couvrir. Deux modèles s'excluent — couverture volontaire ou exhaustive — et tant que le choix n'est pas fait, un écart de couverture est **indécidable** plutôt que conforme ou non conforme. Réserve qualifiée non bloquante, avec critère de levée. Cartographie runtime du 2026-08-24 consignée au registre, avec sa limite : elle trouve des trous, elle ne prouve pas l'exhaustivité.
 - **v2.8** — Ajout de **R-ANCRAGE-7** (§12.5.1) : l'appartenance d'un périmètre à son domaine est une propriété du **runtime**, pas du dépôt. Un remplacement de matériel réutilisant un `entity_id` la modifie sans qu'aucun fichier ne change — origine constatée de l'écart SwitchBot. Justification première du contrôle runtime de fermeture de domaine : détecter une **dérive du réel sous un code correct**.
 - **v2.7** — Ajout de **R-ANCRAGE-6** (§12.5) : la **fermeture du périmètre sur son domaine** est une **condition d'éligibilité au ciblage**. Sous ciblage, le groupe devient une ACL d'action — une entité étrangère étend la réparation à une intégration tierce, et le retrait de la dernière entité d'une entrée l'en exclut silencieusement. Leçon terrain : la première application de R-ANCRAGE-5 (SwitchBot) a été **annulée le jour même**, le périmètre résolvant des entrées `switchbot`, `switchbot_cloud` et `mqtt`. Le contrôle runtime détecte désormais la non-fermeture de domaine.
 - **v2.6** — Ajout de **R-ANCRAGE-5** (§12.5) : moyen canonique de satisfaire R-ANCRAGE-4 — le paramètre `reload_target` du script canon fait **cibler le périmètre** par l'action, qui en dérive et ne peut donc plus en diverger. Corollaire : un périmètre multi-entrées n'est fautif que si l'action ne couvre qu'une entrée ; le contrôle runtime distingue désormais les deux familles. Comportement vérifié en terrain. Première application : SwitchBot, dont l'arbitrage ouvert de la v2.5 est **résolu**.
@@ -674,4 +707,4 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 
 ---
 
-*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.8*
+*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.9*
