@@ -1,5 +1,5 @@
 # Contrat — Diagnostic station météo Netatmo
-**Arsenal** · Couche observation · v1.3
+**Arsenal** · Couche observation · v1.4
 
 ---
 
@@ -20,8 +20,8 @@ Il répond à : **« la station entière est-elle suffisamment vivante pour qu'u
 | Catégorie | Entités |
 |-----------|---------|
 | **Ping** | `binary_sensor.station_meteo_netatmo_1` |
-| **Températures** | `sensor.temperature_chambre_enfants_1` · `sensor.temperature_chambre_parents_1` · `sensor.temperature_jardin_1` · `sensor.temperature_petite_maison` · `sensor.temperature_sejour_1` |
-| **Humidités** | `sensor.humidite_relative_chambre_enfants_1` · `sensor.humidite_relative_chambre_parents_1` · `sensor.humidite_relative_jardin_1` · `sensor.humidite_relative_petite_maison` · `sensor.humidite_relative_sejour_1` |
+| **Températures** | `sensor.temperature_chambre_enfants_1` · `sensor.temperature_chambre_parents_1` · `sensor.temperature_jardin_1` · `sensor.temperature_petite_maison_1` · `sensor.temperature_sejour_1` |
+| **Humidités** | `sensor.humidite_relative_chambre_enfants_1` · `sensor.humidite_relative_chambre_parents_1` · `sensor.humidite_relative_jardin_1` · `sensor.humidite_relative_petite_maison_1` · `sensor.humidite_relative_sejour_1` |
 | **CO2** | `sensor.co2_chambre_enfants` · `sensor.co2_chambre_parents` · `sensor.co2_petite_maison` · `sensor.co2_sejour` |
 | **Bruit** | `sensor.bruit_chambre_enfants` |
 
@@ -61,6 +61,31 @@ La logique est la suivante :
 - **jardin présent** → très bon signal, mais pas de statut privilégié
 - **jardin absent, autres mesures présentes** → station vivante
 - **aucune donnée exploitable** → seulement là on entre dans la branche de diagnostic muet
+
+### 2.4 Les preuves de vie sont des capteurs de la station — jamais des dérivées
+
+> **R-DIAG-1 (opposable).** Une preuve de vie **DOIT** être une entité produite
+> par la station elle-même. Une entité **dérivée** — consolidation, façade,
+> valeur stabilisée — est **interdite** comme preuve de vie, quand bien même son
+> état est numérique.
+
+Une dérivée porte sa propre logique de disponibilité. Si elle consolide des
+sources appartenant à **plusieurs intégrations**, elle reste numérique tant
+qu'**une seule** de ces sources vit — y compris une source étrangère à la station
+diagnostiquée. Le diagnostic répondrait alors « station vivante » sur la foi d'un
+appareil qui n'en fait pas partie, et la remédiation du §9.1 ne se déclencherait
+jamais.
+
+**Corrigé le 2026-08-24.** Les preuves petite maison de la station 1 étaient
+`sensor.temperature_petite_maison` et `sensor.humidite_relative_petite_maison` :
+deux façades consolidant une source HomeKit (`_1`) **et** une source SwitchBot
+(`_2`), adossées à un capteur stabilisé à mémoire (TTL 1800 s, 7200 s post-boot).
+Station Netatmo entièrement morte et SwitchBot vivant, le diagnostic serait resté
+`ok` et **aucun power-cycle n'aurait été déclenché**. Elles sont remplacées par
+leurs sources de station, `*_petite_maison_1`.
+
+Règle sœur côté résilience des intégrations : **R-ANCRAGE-2** de
+[`resilience_integrations.md`](resilience_integrations.md) §12.3.
 
 ### 2.3 Rôle du ping
 
@@ -240,7 +265,9 @@ Les deux états muets autorisent une remédiation par l'alimentation. L'action e
 
 Invariants de la politique :
 
-- **Ciblage par station.** Chaque station a sa prise et son diagnostic ; la remédiation n'agit que sur la prise de la station effectivement muette — jamais globalement. La détection agrégée par fraîcheur (`sensor.homekit_age_donnees`) est **inapte** au ciblage : elle suit le capteur le plus frais du groupe combiné, si bien qu'une station muette y est masquée par l'autre station saine. Le diagnostic **par station** est donc la seule autorité de déclenchement légitime.
+- **Ciblage par station.** Chaque station a sa prise et son diagnostic ; la remédiation n'agit que sur la prise de la station effectivement muette — jamais globalement. La détection agrégée par fraîcheur était **inapte** au ciblage : elle suivait le capteur le plus frais d'un groupe combinant les deux stations, si bien qu'une station muette y était masquée par l'autre station saine. Le diagnostic **par station** est donc la seule autorité de déclenchement légitime.
+
+> **Mise à jour 2026-08-24.** Le capteur agrégé qui motivait cet avertissement (`sensor.homekit_age_donnees`) **n'existe plus** : la scission à la maille « entrée de configuration » lui a substitué un capteur d'âge **par station**, chacun ancré sur le groupe de sa propre entrée (cf. [`resilience_integrations.md`](resilience_integrations.md) §12). L'invariant de ciblage par station est inchangé — il est désormais **structurellement soutenu** au lieu d'être seulement prescrit.
 - **Débounce sur `muet_ping_ok` uniquement.** La temporisation (`for: 00:20:00`) confirme la persistance. `muet_ping_ko` reste immédiat.
 - **Tir unique, aucune boucle ni retry.** Une impulsion par épisode (`mode: single`) ; aucune escalade ni relance automatique en cas d'échec.
 - **Gardes communes aux deux états.** L'action n'est exécutée que si : `input_boolean.systeme_stable = on` (garde de démarrage, §3), `binary_sensor.panne_secteur_en_cours = off` (un silence sous coupure secteur est un KO attendu, non un gel — la prise est elle-même sur secteur), `input_boolean.reboot_box_en_cours = off` et `binary_sensor.acces_externe = on` (pas de superposition à une campagne de remédiation réseau).
@@ -302,8 +329,9 @@ Conséquence architecturale (v1.1 → v1.2) : à ce stade, aucune remédiation a
 - **v1.0** — Contrat initial. États : `ok` / `ko_homekit` / `ko_reseau`.
 - **v1.1** — Renommage des états vers une forme strictement observationnelle suite à une leçon terrain (§11). `ko_homekit` → `muet_ping_ok`, `ko_reseau` → `muet_ping_ko`. Ajout du §10 (règle de nommage), du §11 (leçon terrain), précision en §2.3 sur la portée réelle du ping. Aucune modification de la logique d'évaluation.
 - **v1.2** — Précision de la garde de démarrage en §3 (`muet_ping_ko`) : la remédiation automatique consommant cet état (redémarrage électrique de station) est subordonnée à `input_boolean.systeme_stable = on`, afin d'éviter un power-cycle parasite déclenché par un `muet_ping_ko` artefact d'initialisation post-redémarrage de Home Assistant. Aucune modification de la logique d'évaluation.
+- **v1.4** — Ajout du §2.4 et de **R-DIAG-1** : une preuve de vie doit être un capteur de la station, jamais une entité dérivée. Correction des deux preuves petite maison de la station 1, qui étaient des façades inter-intégrations (HomeKit + SwitchBot) à mémoire : elles pouvaient maintenir le diagnostic à `ok` station morte, et donc inhiber la remédiation du §9.1. Mise à jour du §9.1 : le capteur agrégé `sensor.homekit_age_donnees` n'existe plus, remplacé par un capteur d'âge par entrée. Aucune modification de la logique d'évaluation ni des noms d'états.
 - **v1.3** — Levée de l'abstention de remédiation sur `muet_ping_ok` (§11) au profit d'une **politique explicite et bornée** (§9.1), motivée par la leçon terrain 2026-05-06 et sa récurrence 2026-07 : un unique power-cycle de la prise de la station, **ciblé par station**, déclenché sur `muet_ping_ok` **après persistance ≥ 20 min** (débounce), `muet_ping_ko` restant immédiat. Extension explicite de la garde de démarrage `systeme_stable` à `muet_ping_ok` (§3). Gardes communes inchangées (`systeme_stable`, `panne_secteur_en_cours`, `reboot_box_en_cours`, `acces_externe`). **Aucune modification de la logique d'évaluation du diagnostic** ni des noms d'états, qui restent purement observationnels (§10).
 
 ---
 
-*Arsenal — document contractuel · couche observation · diagnostic Netatmo · v1.3*
+*Arsenal — document contractuel · couche observation · diagnostic Netatmo · v1.4*

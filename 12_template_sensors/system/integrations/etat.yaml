@@ -154,36 +154,72 @@
     # HOMEKIT
     # ==========================================================
 
-    - name: "Recovery en cours — HomeKit"
-      unique_id: recovery_en_cours_homekit
-      default_entity_id: binary_sensor.recovery_en_cours_homekit
+    # Axe fraicheur APPLICABLE aux deux stations : constate le
+    # 2026-08-24, age reel de 3,8 et 3,9 min hors facades, en
+    # variation continue (R-AXE1-1). Seuil de gel 45 min conserve.
+    - name: "Recovery en cours — HomeKit Station Enfants"
+      unique_id: recovery_en_cours_homekit_station_enfants
+      default_entity_id: binary_sensor.recovery_en_cours_homekit_station_enfants
       state: >
-        {{ is_state('timer.homekit_reload_backoff', 'active')
-           or (states('input_number.homekit_reload_tentatives') | int(0)) > 0 }}
+        {{ is_state('timer.homekit_station_enfants_reload_backoff', 'active')
+           or (states('input_number.homekit_station_enfants_reload_tentatives') | int(0)) > 0 }}
 
-    - name: "Gel avéré — HomeKit"
-      unique_id: gel_avere_homekit
-      default_entity_id: binary_sensor.gel_avere_homekit
+    - name: "Gel avéré — HomeKit Station Enfants"
+      unique_id: gel_avere_homekit_station_enfants
+      default_entity_id: binary_sensor.gel_avere_homekit_station_enfants
       delay_on: *age_gel_delay_5
       state: >
-        {{ (states('sensor.homekit_age_donnees') | int(999)) >= 45 }}
+        {{ (states('sensor.homekit_station_enfants_age_donnees') | int(999)) >= 45 }}
 
-    - name: "Retour OK — HomeKit"
-      unique_id: retour_ok_homekit
-      default_entity_id: binary_sensor.retour_ok_homekit
+    - name: "Retour OK — HomeKit Station Enfants"
+      unique_id: retour_ok_homekit_station_enfants
+      default_entity_id: binary_sensor.retour_ok_homekit_station_enfants
       delay_on: *age_ok_delay
       state: >
         {{
-          is_state('binary_sensor.recovery_en_cours_homekit', 'on')
-          and (states('sensor.homekit_age_donnees') | int(999)) < 10
+          is_state('binary_sensor.recovery_en_cours_homekit_station_enfants', 'on')
+          and (states('sensor.homekit_station_enfants_age_donnees') | int(999)) < 10
         }}
 
-    - name: "Indisponibilité franche — HomeKit"
-      unique_id: indisponibilite_franche_homekit
-      default_entity_id: binary_sensor.indisponibilite_franche_homekit
+    - name: "Indisponibilité franche — HomeKit Station Enfants"
+      unique_id: indisponibilite_franche_homekit_station_enfants
+      default_entity_id: binary_sensor.indisponibilite_franche_homekit_station_enfants
       delay_on: *age_gel_delay_5
       state: >
-        {{ expand('group.homekit_capteurs')
+        {{ expand('group.homekit_station_enfants')
+           | rejectattr('state', 'in', ['unknown', 'unavailable'])
+           | list | count == 0 }}
+
+    - name: "Recovery en cours — HomeKit Station Salle de Jeux"
+      unique_id: recovery_en_cours_homekit_station_salle_de_jeux
+      default_entity_id: binary_sensor.recovery_en_cours_homekit_station_salle_de_jeux
+      state: >
+        {{ is_state('timer.homekit_station_salle_de_jeux_reload_backoff', 'active')
+           or (states('input_number.homekit_station_salle_de_jeux_reload_tentatives') | int(0)) > 0 }}
+
+    - name: "Gel avéré — HomeKit Station Salle de Jeux"
+      unique_id: gel_avere_homekit_station_salle_de_jeux
+      default_entity_id: binary_sensor.gel_avere_homekit_station_salle_de_jeux
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ (states('sensor.homekit_station_salle_de_jeux_age_donnees') | int(999)) >= 45 }}
+
+    - name: "Retour OK — HomeKit Station Salle de Jeux"
+      unique_id: retour_ok_homekit_station_salle_de_jeux
+      default_entity_id: binary_sensor.retour_ok_homekit_station_salle_de_jeux
+      delay_on: *age_ok_delay
+      state: >
+        {{
+          is_state('binary_sensor.recovery_en_cours_homekit_station_salle_de_jeux', 'on')
+          and (states('sensor.homekit_station_salle_de_jeux_age_donnees') | int(999)) < 10
+        }}
+
+    - name: "Indisponibilité franche — HomeKit Station Salle de Jeux"
+      unique_id: indisponibilite_franche_homekit_station_salle_de_jeux
+      default_entity_id: binary_sensor.indisponibilite_franche_homekit_station_salle_de_jeux
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ expand('group.homekit_station_salle_de_jeux')
            | rejectattr('state', 'in', ['unknown', 'unavailable'])
            | list | count == 0 }}
 

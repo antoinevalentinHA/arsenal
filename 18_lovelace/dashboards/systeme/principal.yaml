@@ -264,38 +264,47 @@ views:
             template: section_header
             name: 🌐 Intégrations
 
-          # Deux entrées d'un même domaine (`homekit_controller`) : grille
-          # dédiée à 2 colonnes. Cartes deux fois plus larges — les libellés
-          # tiennent sans être tronqués ni abrégés, et le regroupement visuel
-          # porte l'information « ce sont deux entrées de la même intégration ».
+          # ⚠️ Contrat resilience_integrations.md v2.3 §12.5 (R-UI-1).
+          # Le domaine `homekit_controller` porte TROIS entrées. Une
+          # carte par entrée, sous un sous-titre qui porte le nom du
+          # domaine : aucune carte ne prétend couvrir l'ensemble, et
+          # les libellés restent courts donc entièrement lisibles.
+          - type: custom:button-card
+            template: section_header
+            name: 🍎 HomeKit — 3 entrées
+
           - type: grid
-            columns: 2
+            columns: 3
             square: false
             cards:
-              # ⚠️ Contrat resilience_integrations.md v2.0 §12.5 (R-UI-1).
-              # Cette carte ne couvre PAS le domaine `homekit_controller`
-              # entier : elle est adossée à `sensor.homekit_age_donnees`,
-              # dérivé des seules stations météo. Elle est donc libellée
-              # « Stations » et non « HomeKit », pour ne pas affirmer une
-              # santé de domaine qu'elle ne mesure pas. Le pont de volets
-              # a sa propre carte ci-dessous.
               - type: custom:button-card
                 template: kpi_no_action
-                entity: sensor.homekit_age_donnees
-                name: HomeKit Stations
-                icon: mdi:apple
+                entity: sensor.homekit_station_enfants_age_donnees
+                name: Enfants
+                icon: mdi:home-thermometer-outline
                 variables:
                   ui_profile: arsenal
-                  couleur: sensor.couleur_age_homekit
+                  couleur: sensor.couleur_age_homekit_station_enfants
                 triggers_update:
-                  - sensor.couleur_age_homekit
+                  - sensor.couleur_age_homekit_station_enfants
+
+              - type: custom:button-card
+                template: kpi_no_action
+                entity: sensor.homekit_station_salle_de_jeux_age_donnees
+                name: Salle Jeux
+                icon: mdi:home-thermometer-outline
+                variables:
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_homekit_station_salle_de_jeux
+                triggers_update:
+                  - sensor.couleur_age_homekit_station_salle_de_jeux
 
               # Entrée « Prise Control » (pont volets) — couleur TROIS AXES
-              # (fraîcheur + disponibilité + échec de configuration).
+              # (fraîcheur inapplicable ici : disponibilité + échec de config).
               - type: custom:button-card
                 template: kpi_no_action
                 entity: sensor.homekit_prise_control_age_donnees
-                name: HomeKit Volets
+                name: Volets
                 icon: mdi:window-shutter
                 variables:
                   ui_profile: arsenal

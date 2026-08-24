@@ -77,12 +77,23 @@
       attributes:
         source_group: "group.fujitsu_capteurs"
 
+    # Une entree de configuration = un capteur d'age (v2.3 §12).
+    # `homekit_age_donnees` (groupe agrege des deux stations + deux
+    # facades) est supprime : il ne mesurait la fraicheur d'aucune
+    # entree, et les facades l'empechaient structurellement de monter.
     - <<: *age_donnees_canon
-      name: "Homekit Age Donnees"
-      unique_id: homekit_age_donnees
-      icon: mdi:home-assistant
+      name: "Homekit Station Enfants Age Donnees"
+      unique_id: homekit_station_enfants_age_donnees
+      icon: mdi:home-thermometer-outline
       attributes:
-        source_group: "group.homekit_capteurs"
+        source_group: "group.homekit_station_enfants"
+
+    - <<: *age_donnees_canon
+      name: "Homekit Station Salle De Jeux Age Donnees"
+      unique_id: homekit_station_salle_de_jeux_age_donnees
+      icon: mdi:home-thermometer-outline
+      attributes:
+        source_group: "group.homekit_station_salle_de_jeux"
 
     # Entrée `homekit_controller` du pont de volets (Prise Control).
     # Chaîne ancrée sur CETTE entrée uniquement — cf. contrat

@@ -22,7 +22,8 @@
 - trigger:
     - platform: state
       entity_id:
-        - sensor.homekit_age_donnees
+        - sensor.homekit_station_enfants_age_donnees
+        - sensor.homekit_station_salle_de_jeux_age_donnees
         - sensor.netatmo_age_donnees
         - sensor.switchbot_age_donnees
         - sensor.fujitsu_age_donnees
@@ -33,12 +34,18 @@
       event: start
 
   sensor:
-    - name: "Couleur age HomeKit"
-      unique_id: couleur_age_homekit
+    # Une entree = une couleur. Centre 4 min / bande 2 / seuil 45 :
+    # cadence reelle mesuree a 3,8 et 3,9 min le 2026-08-24, hors
+    # facades. Les anciennes valeurs (centre 1,0 / seuil 15) etaient
+    # calees sur un age artificiellement plafonne a 5 min par le tick
+    # /5 des facades, pas sur la cadence reelle des stations.
+    - name: "Couleur age HomeKit Station Enfants"
+      unique_id: couleur_age_homekit_station_enfants
       availability: &couleur_age_availability >
         {% set integration = this.entity_id | replace('sensor.couleur_age_', '') %}
         {% set src_map = {
-          'homekit': 'sensor.homekit_age_donnees',
+          'homekit_station_enfants': 'sensor.homekit_station_enfants_age_donnees',
+          'homekit_station_salle_de_jeux': 'sensor.homekit_station_salle_de_jeux_age_donnees',
           'netatmo': 'sensor.netatmo_age_donnees',
           'switchbot': 'sensor.switchbot_age_donnees',
           'fujitsu': 'sensor.fujitsu_age_donnees',
@@ -53,7 +60,8 @@
         {% set integration = this.entity_id | replace('sensor.couleur_age_', '') %}
 
         {% set src_map = {
-          'homekit': 'sensor.homekit_age_donnees',
+          'homekit_station_enfants': 'sensor.homekit_station_enfants_age_donnees',
+          'homekit_station_salle_de_jeux': 'sensor.homekit_station_salle_de_jeux_age_donnees',
           'netatmo': 'sensor.netatmo_age_donnees',
           'switchbot': 'sensor.switchbot_age_donnees',
           'fujitsu': 'sensor.fujitsu_age_donnees',
@@ -63,7 +71,8 @@
         } %}
 
         {% set centre_map = {
-          'homekit': 1.0,
+          'homekit_station_enfants': 4.0,
+          'homekit_station_salle_de_jeux': 4.0,
           'netatmo': 2.0,
           'switchbot': 5.0,
           'fujitsu': 2.0,
@@ -73,7 +82,8 @@
         } %}
 
         {% set seuil_map = {
-          'homekit': 15,
+          'homekit_station_enfants': 45,
+          'homekit_station_salle_de_jeux': 45,
           'netatmo': 30,
           'switchbot': 30,
           'fujitsu': 45,
@@ -83,7 +93,8 @@
         } %}
 
         {% set band_map = {
-          'homekit': 0.5,
+          'homekit_station_enfants': 2.0,
+          'homekit_station_salle_de_jeux': 2.0,
           'netatmo': 1.0,
           'switchbot': 2.0,
           'fujitsu': 1.0,
@@ -111,6 +122,11 @@
         {% else %}
           orange
         {% endif %}
+
+    - name: "Couleur age HomeKit Station Salle De Jeux"
+      unique_id: couleur_age_homekit_station_salle_de_jeux
+      availability: *couleur_age_availability
+      state: *couleur_age_logic
 
     - name: "Couleur age Netatmo"
       unique_id: couleur_age_netatmo

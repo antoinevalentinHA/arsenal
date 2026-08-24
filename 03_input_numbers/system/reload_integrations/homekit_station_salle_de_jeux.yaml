@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Système — HomeKit Station Salle de Jeux — Compteur tentatives reload
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker le nombre de tentatives de rechargement de l'entrée
+#   de configuration `homekit_controller` de cette station.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Compteur technique de protection uniquement
+#   - Aucun calcul, aucune logique métier locale
+#
+# 🧱 MAILLE
+#   Propre à UNE entrée de configuration
+#   (resilience_integrations.md v2.3 §12). Jamais mutualisé.
+#
+#   ⚠️ Ce compteur participe à la définition de l'ÉPISODE de
+#   recovery (R-RECOV-1) : une valeur non nulle maintient
+#   l'épisode ouvert. Ne pas le remettre à zéro à la main sans
+#   raison — le retour OK s'en charge.
+#
+# 🏷️ NATURE
+#   Registre technique | Garde-fou système
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et supervision
+#   - Utiliser ce helper comme état de l'entrée de configuration
+#   - Déclencher directement un reload depuis ce helper
+#   - Implémenter localement une logique de retry
+#
+# 🏷️ STATUT
+#   Couche protection système — maille entrée de configuration
+# ==========================================================
+
+homekit_station_salle_de_jeux_reload_tentatives:
+  name: "HomeKit Station Salle de Jeux – Tentatives reload"
+  icon: mdi:reload
+  min: 0
+  max: 50
+  step: 1
+  mode: box

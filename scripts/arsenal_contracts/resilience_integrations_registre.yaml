@@ -77,38 +77,57 @@ integrations:
     delay_on_gel: "00:05:00"
     exceptions_temporaires: []
 
-  - nom: HomeKit
+  # ========================================================
+  # SCISSION DES DEUX STATIONS (2026-08-24)
+  # `homekit_capteurs` melangeait les capteurs des DEUX entrees et
+  # contenait DEUX FACADES inter-integrations a memoire, qui
+  # neutralisaient les deux axes. Voir 02_groups/integrations/homekit.yaml.
+  # Dette `chaine_mal_ancree_multi_entrees` : RESORBEE.
+  # ========================================================
+
+  - nom: HomeKit Station Enfants
     mode: fraicheur+disponibilite
     classe_reseau: local_lan
     statut_attendu: active
-    groupe_source:           { statut: present, entity_id: group.homekit_capteurs }
-    capteur_age:             { statut: present, entity_id: sensor.homekit_age_donnees }
-    binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_homekit }
-    binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_homekit }
-    binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_homekit }
-    binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_homekit }
-    automation:              { statut: present, id: "10120000000019", alias: "Système - Relance HomeKit", fichier: 11_automations/system/reload_integrations/homekit.yaml }
-    timer_backoff:           { statut: present, entity_id: timer.homekit_reload_backoff }
-    compteur_tentatives:     { statut: present, entity_id: input_number.homekit_reload_tentatives }
+    maille: entree_de_configuration
+    domaine_integration: homekit_controller
+    entree_libelle: "Weather Station — Station Enfants"
+    groupe_source:           { statut: present, entity_id: group.homekit_station_enfants }
+    capteur_age:             { statut: present, entity_id: sensor.homekit_station_enfants_age_donnees }
+    binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_homekit_station_enfants }
+    binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_homekit_station_enfants }
+    binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_homekit_station_enfants }
+    binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_homekit_station_enfants }
+    automation:              { statut: present, id: "10120000000019", alias: "Système - Relance HomeKit Station Enfants", fichier: 11_automations/system/reload_integrations/homekit_station_enfants.yaml }
+    timer_backoff:           { statut: present, entity_id: timer.homekit_station_enfants_reload_backoff }
+    compteur_tentatives:     { statut: present, entity_id: input_number.homekit_station_enfants_reload_tentatives }
     action_recovery:         { statut: present, type: reload_entry, via: canon }
     seuil_gel_attendu: 45
     seuil_automation_constate: 45
     delay_on_gel: "00:05:00"
     exceptions_temporaires: []
-    # ⚠️ DETTE v2.0 — CHAINE MAL ANCREE (§12.3, R-ANCRAGE-1).
-    # Le domaine `homekit_controller` porte TROIS entrees de
-    # configuration : deux stations meteo (« Weather Station ») et le
-    # pont de volets (« Prise Control », desormais couvert par sa
-    # propre chaine ci-dessous).
-    # `group.homekit_capteurs` melange les capteurs des DEUX stations,
-    # alors que l'action ne recharge qu'UNE entree (`homekit_entry_id`).
-    # Il contient en outre deux entites sans entree de configuration
-    # (`sensor.temperature_petite_maison`,
-    #  `sensor.humidite_relative_petite_maison`), a arbitrer.
-    # Resorption = scission en une chaine par station. Non traite dans
-    # cette passe : le generateur d'ID est idempotent et ne delivre un
-    # nouvel identifiant qu'une fois le precedent deploye.
-    dette_v2_ancrage: chaine_mal_ancree_multi_entrees
+
+  - nom: HomeKit Station Salle de Jeux
+    mode: fraicheur+disponibilite
+    classe_reseau: local_lan
+    statut_attendu: active
+    maille: entree_de_configuration
+    domaine_integration: homekit_controller
+    entree_libelle: "Weather Station — Station Salle de Jeux"
+    groupe_source:           { statut: present, entity_id: group.homekit_station_salle_de_jeux }
+    capteur_age:             { statut: present, entity_id: sensor.homekit_station_salle_de_jeux_age_donnees }
+    binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_homekit_station_salle_de_jeux }
+    binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_homekit_station_salle_de_jeux }
+    binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_homekit_station_salle_de_jeux }
+    binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_homekit_station_salle_de_jeux }
+    automation:              { statut: present, id: "10120000000031", alias: "Système - Relance HomeKit Station Salle de Jeux", fichier: 11_automations/system/reload_integrations/homekit_station_salle_de_jeux.yaml }
+    timer_backoff:           { statut: present, entity_id: timer.homekit_station_salle_de_jeux_reload_backoff }
+    compteur_tentatives:     { statut: present, entity_id: input_number.homekit_station_salle_de_jeux_reload_tentatives }
+    action_recovery:         { statut: present, type: reload_entry, via: canon }
+    seuil_gel_attendu: 45
+    seuil_automation_constate: 45
+    delay_on_gel: "00:05:00"
+    exceptions_temporaires: []
 
   - nom: Overkiz
     mode: fraicheur+disponibilite

@@ -30,6 +30,18 @@
 # 🚫 CONTRAINTES
 #   - seules des entités sensor à état numérique continu
 #     figurent dans les preuves de vie
+#
+#  ⚠️ PREUVES DE VIE = CAPTEURS DE LA STATION, JAMAIS DE DERIVEES
+#     Les preuves petite maison utilisent les capteurs `_1` de la
+#     station, PAS les facades `sensor.temperature_petite_maison` /
+#     `sensor.humidite_relative_petite_maison`.
+#     Ces facades sont des consolidations INTER-INTEGRATIONS
+#     (source HomeKit `_1` + source SwitchBot `_2`) adossees a un
+#     capteur stabilise A MEMOIRE. Station Netatmo entierement morte
+#     + SwitchBot vivant => facade toujours numerique => diagnostic
+#     `ok` => power-cycle JAMAIS declenche.
+#     Corrige le 2026-08-24. Cf. homekit_diagnostic.md §2.4 et
+#     resilience_integrations.md R-ANCRAGE-2.
 #   - aucun binary_sensor, input_boolean ou état textuel discret
 #     ne doit être ajouté à cette liste sans révision explicite
 #     du contrat
@@ -44,12 +56,12 @@
           states('sensor.temperature_chambre_enfants_1'),
           states('sensor.temperature_chambre_parents_1'),
           states('sensor.temperature_jardin_1'),
-          states('sensor.temperature_petite_maison'),
+          states('sensor.temperature_petite_maison_1'),
           states('sensor.temperature_sejour_1'),
           states('sensor.humidite_relative_chambre_enfants_1'),
           states('sensor.humidite_relative_chambre_parents_1'),
           states('sensor.humidite_relative_jardin_1'),
-          states('sensor.humidite_relative_petite_maison'),
+          states('sensor.humidite_relative_petite_maison_1'),
           states('sensor.humidite_relative_sejour_1'),
           states('sensor.co2_chambre_enfants'),
           states('sensor.co2_chambre_parents'),
