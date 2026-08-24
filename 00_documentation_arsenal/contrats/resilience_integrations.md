@@ -1,7 +1,7 @@
 # ARSENAL — Contrat de résilience des intégrations
 
 **Composant :** `arsenal-ha`
-**Version :** v2.6
+**Version :** v2.7
 **Scope :** Détection et relance automatique des intégrations critiques (gel des données, indisponibilité des entités, échec de configuration d'une entrée).
 **Maille de couverture :** l'**entrée de configuration** (*config entry*) — voir §12.
 **Mode d'application :** report-only — voir §10 et le registre.
@@ -397,6 +397,31 @@ et les recharge toutes.
 24 entités réparties sur 6 entrées a rechargé les 6, constaté par le saut
 simultané de leurs horodatages.*
 
+> **R-ANCRAGE-6 (opposable — condition d'éligibilité au ciblage).** Une chaîne ne
+> peut cibler son périmètre que si ce périmètre est **fermé sur son domaine
+> d'intégration** : toutes les entrées qu'il résout appartiennent au domaine
+> déclaré au registre.
+>
+> **Avec un ciblage, le groupe cesse d'être un ensemble de surveillance pour
+> devenir une ACL d'action** : sa composition décide de ce qui sera rechargé.
+> Une entité étrangère n'y dilue plus seulement un axe — elle **étend la
+> réparation à une intégration tierce**.
+>
+> Symétriquement, retirer la dernière entité représentant une entrée **retire
+> cette entrée de la réparation**, sans qu'aucun axe ne s'en aperçoive. Les deux
+> dérives, élargissement et rétrécissement, sont des écarts.
+
+**Leçon terrain — 2026-08-24, ciblage retiré après coup.** La première
+application de R-ANCRAGE-5 a dû être annulée le jour même. `group.switchbot_capteurs`
+n'était pas fermé sur son domaine : il résolvait des entrées de `switchbot`,
+`switchbot_cloud` **et `mqtt`**. Un déclenchement de la chaîne aurait rechargé
+l'entrée du broker MQTT, avec cascade vers la chaîne Zigbee2MQTT — perte des
+entités MQTT, bascule du bridge, redémarrage de l'add-on.
+
+Le défaut de composition **préexistait** ; il ne diluait qu'un axe. Le ciblage l'a
+transformé en danger d'action. D'où R-ANCRAGE-6 : **la fermeture du périmètre est
+une condition d'éligibilité au ciblage, pas une conséquence.**
+
 ### 12.6 Honnêteté de l'indicateur
 
 > **R-UI-1 (opposable).** Un indicateur de santé **ne doit jamais** afficher sain un domaine dont une entrée est en échec ou non couverte.
@@ -614,6 +639,7 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 - **v1.0** — Contrat initial. Deux axes orthogonaux (fraîcheur / disponibilité), script canon de recovery, registre CI, mode report-only.
 - **v1.1** — Ajout de l'invariant 11 et du §11 : garde réseau WAN pour les intégrations `cloud_wan`, garde paramétrée (`wan_entity`) et jamais codée en dur, classification `cloud_wan` / `local_lan`. Conformité déclarée à `pannes/internet/30`.
 - **v1.1 (révision)** — Définition de la fraîcheur fondée sur `last_reported` (liveness) ; invariant 1 reformulé ; usage de `last_updated`/`last_changed` proscrit sur cet axe.
+- **v2.7** — Ajout de **R-ANCRAGE-6** (§12.5) : la **fermeture du périmètre sur son domaine** est une **condition d'éligibilité au ciblage**. Sous ciblage, le groupe devient une ACL d'action — une entité étrangère étend la réparation à une intégration tierce, et le retrait de la dernière entité d'une entrée l'en exclut silencieusement. Leçon terrain : la première application de R-ANCRAGE-5 (SwitchBot) a été **annulée le jour même**, le périmètre résolvant des entrées `switchbot`, `switchbot_cloud` et `mqtt`. Le contrôle runtime détecte désormais la non-fermeture de domaine.
 - **v2.6** — Ajout de **R-ANCRAGE-5** (§12.5) : moyen canonique de satisfaire R-ANCRAGE-4 — le paramètre `reload_target` du script canon fait **cibler le périmètre** par l'action, qui en dérive et ne peut donc plus en diverger. Corollaire : un périmètre multi-entrées n'est fautif que si l'action ne couvre qu'une entrée ; le contrôle runtime distingue désormais les deux familles. Comportement vérifié en terrain. Première application : SwitchBot, dont l'arbitrage ouvert de la v2.5 est **résolu**.
 - **v2.5** — **Contrôle d'ancrage effectif.** Ajout de **R-ANCRAGE-3** (§12.4) : le contrôle se décompose en un volet **statique** (CI, règle R15 — aucune entité dérivée dans un périmètre) et un volet **runtime** (capteur dédié — appartenance réelle à une entrée unique) ; aucun ne remplace l'autre, et la CI **ne peut pas** porter le second, `config_entry_id()` étant une fonction de template. Ajout de **R-ANCRAGE-4** (§12.5) : un périmètre couvrant légitimement plusieurs entrées exige une action couvrant **toutes** ces entrées, ou l'inscription de l'écart au registre — recharger une entrée sur N est une remédiation partielle silencieuse. Ajout de **R16** au checker (champs de maille obligatoires, mutualisation interdite). Registre migré à la maille entrée. Dette §10.1 résorbée, avec énoncé explicite de ce qui reste hors de portée d'un contrôle. Ancien §12.5 renuméroté §12.6.
 - **v2.4** — Ajout de **R-ANCRAGE-2** (§12.3) : le périmètre de détection ne contient que des entités **produites directement par l'entrée** ; toute entité dérivée (template, consolidation, façade, valeur stabilisée) est interdite, car elle porte sa propre cadence et sa propre disponibilité et peut neutraliser les deux axes simultanément. Test de recevabilité par `config_entry_id()`. Quatrième enseignement terrain en §15 : deux façades inter-intégrations rendaient la chaîne HomeKit aveugle sur ses deux axes, sans qu'aucun maillon soit manquant.
@@ -624,4 +650,4 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 
 ---
 
-*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.6*
+*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.7*

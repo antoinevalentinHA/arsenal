@@ -90,13 +90,27 @@
             ok_minutes: 10
             attempts_entity: input_number.switchbot_reload_tentatives
             backoff_timer: timer.switchbot_reload_backoff
-            # Perimetre multi-entrees LEGITIME : chaque appareil SwitchBot est
-            # sa propre entree de configuration (6 au 2026-08-24). Recharger une
-            # seule entree serait une remediation partielle silencieuse
-            # (R-ANCRAGE-4). On cible le groupe source : HA remonte aux entrees
-            # de chaque entite et les recharge TOUTES.
-            # Verifie le 2026-08-24 : les 6 entrees rechargees en une fois.
-            # `switchbot_entry_id` n'est plus utilise par cette chaine.
-            reload_target: group.switchbot_capteurs
+            # ⚠️ RETOUR ARRIERE — le ciblage par perimetre est RETIRE ici.
+            # `group.switchbot_capteurs` ne contient PAS que du SwitchBot :
+            # il couvre trois domaines — switchbot (BLE), switchbot_cloud
+            # et, surtout, mqtt (`sensor.temperature_sdb_parents` et
+            # `sensor.humidite_relative_sdb_parents`, entree « Mosquitto
+            # broker »). Constate le 2026-08-24.
+            #
+            # Avec `reload_target`, un declenchement de cette chaine aurait
+            # recharge l'entree MQTT : perte breve de toutes les entites
+            # MQTT -> bascule de zigbee2mqtt_bridge_connection_state ->
+            # declenchement de la chaine Zigbee2MQTT -> REDEMARRAGE de
+            # l'add-on. Un capteur BLE obsolete aurait pu faire redemarrer
+            # le Zigbee de la maison.
+            #
+            # On revient donc a la portee EXPLICITE et bornee. Elle reste
+            # partielle (une entree sur six, cf. R-ANCRAGE-4) et l'ecart
+            # redevient un arbitrage ouvert au registre — mais partielle
+            # vaut mieux que debordante.
+            #
+            # Le ciblage ne pourra revenir qu'une fois le perimetre FERME
+            # sur son domaine.
+            entry_id: !secret switchbot_entry_id
             backoff_minutes_cap: 60
             wait_timeout: "00:03:00"

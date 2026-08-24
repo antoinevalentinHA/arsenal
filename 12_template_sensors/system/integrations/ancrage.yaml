@@ -29,6 +29,13 @@
 #     - groupe vide ou introuvable
 #     - périmètre couvrant PLUSIEURS entrées alors que l'action
 #       ne recharge qu'une entrée -> mal ancré (R-ANCRAGE-1)
+#     - périmètre NON FERMÉ sur son domaine : ses entrées
+#       appartiennent à plusieurs intégrations. Contrôle ajouté
+#       après l'incident du 2026-08-24 — `group.switchbot_capteurs`
+#       couvrait switchbot + switchbot_cloud + mqtt, si bien qu'un
+#       rechargement ciblé y aurait rechargé le broker Mosquitto.
+#       Avec un ciblage, le groupe devient une ACL D'ACTION : sa
+#       composition décide de ce qui sera rechargé.
 #
 #  🧭 DEUX FAMILLES DE PÉRIMÈTRES
 #     Un périmètre multi-entrées n'est pas fautif en soi : il
@@ -104,15 +111,18 @@
           'group.synology_capteurs',
           'group.homekit_prise_control',
           'group.audi_capteurs',
-          'group.withings_capteurs'
+          'group.withings_capteurs',
+          'group.switchbot_capteurs'
         ] %}
-        {% set cibles = ['group.switchbot_capteurs'] %}
+        {% set cibles = [] %}
         {% set ns = namespace(fautifs=0) %}
         {% for g in mono + cibles %}
           {% set membres = expand(g) | map(attribute='entity_id') | list %}
           {% set entrees = membres | map('config_entry_id') | unique | list %}
+          {% set domaines = entrees | reject('none') | map('config_entry_attr','domain') | unique | list %}
           {% if membres | count == 0
                 or none in entrees
+                or domaines | count > 1
                 or (g in mono and entrees | count != 1) %}
             {% set ns.fautifs = ns.fautifs + 1 %}
           {% endif %}
@@ -130,9 +140,10 @@
             'group.synology_capteurs',
             'group.homekit_prise_control',
             'group.audi_capteurs',
-            'group.withings_capteurs'
+            'group.withings_capteurs',
+            'group.switchbot_capteurs'
           ] %}
-          {% set cibles = ['group.switchbot_capteurs'] %}
+          {% set cibles = [] %}
           {% set ns = namespace(lignes=[]) %}
           {% for g in mono + cibles %}
             {% set membres = expand(g) | map(attribute='entity_id') | list %}
@@ -141,6 +152,8 @@
               {% set ns.lignes = ns.lignes + [g ~ ' : groupe vide'] %}
             {% elif none in entrees %}
               {% set ns.lignes = ns.lignes + [g ~ ' : membre(s) sans entree de configuration'] %}
+            {% elif (entrees | reject('none') | map('config_entry_attr','domain') | unique | list | count) > 1 %}
+              {% set ns.lignes = ns.lignes + [g ~ ' : perimetre NON FERME, domaines = ' ~ (entrees | reject('none') | map('config_entry_attr','domain') | unique | list | join('+'))] %}
             {% elif g in mono and entrees | count != 1 %}
               {% set ns.lignes = ns.lignes + [g ~ ' : ' ~ (entrees | count) ~ ' entrees pour une action mono-entree'] %}
             {% endif %}
