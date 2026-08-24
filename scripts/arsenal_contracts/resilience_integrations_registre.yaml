@@ -180,7 +180,10 @@ integrations:
     maille: entree_de_configuration
     domaine_integration: homekit_controller
     entree_libelle: "Prise Control"
-    entree_entry_id_secret: homekit_prise_control_entry_id
+    # L'entry_id de cette entree est instance-specifique : il vit dans
+    # secrets.yaml sous la cle `homekit_prise_control_entry_id`, referencee
+    # par l'automation et par le capteur d'etat d'entree. Aucune valeur
+    # d'identifiant n'est publiee dans ce depot.
     groupe_source:           { statut: present, entity_id: group.homekit_prise_control }
     capteur_age:             { statut: present, entity_id: sensor.homekit_prise_control_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_homekit_prise_control }
