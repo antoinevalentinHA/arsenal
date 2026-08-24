@@ -196,36 +196,42 @@ integrations:
     seuil_automation_constate: 45
     delay_on_gel: "00:05:00"
     exceptions_temporaires: []
-    # ⚠️ ARBITRAGE ROUVERT — le 2026-08-24, apres constat terrain.
+    # ⚠️ PERIMETRE NON FERME SUR SON DOMAINE — etat au 2026-08-24.
     #
-    # `group.switchbot_capteurs` n'est PAS ferme sur son domaine. Il couvre
-    # 6 entrees reparties sur TROIS integrations :
-    #   - switchbot        (BLE, appareils)
-    #   - switchbot_cloud  (capteurs Imprimerie)
-    #   - mqtt             (« Mosquitto broker ») :
-    #       sensor.temperature_sdb_parents
-    #       sensor.humidite_relative_sdb_parents
+    # Composition constatee au runtime, apres retrait des 2 entites MQTT :
+    #   switchbot        :  8 entites (BLE via proxys ESP32) — local_lan
+    #   switchbot_cloud  : 14 entites (capteurs Imprimerie)  — cloud_wan
     #
-    # Le ciblage par perimetre (`reload_target`) a donc ete RETIRE : il
-    # aurait recharge l'entree MQTT a chaque declenchement de cette chaine,
-    # avec cascade vers Zigbee2MQTT (perte des entites MQTT -> bascule du
-    # bridge -> redemarrage de l'add-on).
+    # ECART 1 — RESOLU le 2026-08-24. `sensor.temperature_sdb_parents` et
+    # `sensor.humidite_relative_sdb_parents` etaient sur l'entree MQTT
+    # (« Mosquitto broker ») : capteur physique remplace par un Zigbee, les
+    # entity_id conserves, donc derive invisible a toute analyse statique.
+    # Retires du groupe. Leur resilience releve de la chaine Zigbee2MQTT.
     #
-    # Retour a `entry_id` : portee EXPLICITE et bornee. Elle reste partielle
-    # (une entree sur six, R-ANCRAGE-4) — mais partielle vaut mieux que
-    # debordante.
+    # ECART 2 — OUVERT. Le perimetre melange DEUX integrations aux modes de
+    # defaillance sans rapport. Le ciblage par perimetre (`reload_target`)
+    # reste donc interdit ici (R-ANCRAGE-6), et l'action demeure partielle
+    # (une entree sur six, R-ANCRAGE-4).
     #
-    # DEUX ECARTS DISTINCTS, a traiter dans cet ordre :
-    #  1. COMPOSITION — le perimetre n'est pas ferme sur son domaine. Les
-    #     deux capteurs MQTT n'ont rien a faire dans un groupe SwitchBot ;
-    #     ou doivent-ils aller ? Arbitrage proprietaire requis.
-    #  2. ACTION — une fois (1) resolu, le ciblage par perimetre redevient
-    #     envisageable et resorbera l'ecart R-ANCRAGE-4.
+    # ECART 3 — OUVERT, et le plus serieux. UNE PANNE TOTALE DU CLOUD
+    # SWITCHBOT EST INVISIBLE POUR CETTE CHAINE : l'axe disponibilite exige
+    # ZERO membre exploitable, or les 8 capteurs BLE restent vivants ; l'axe
+    # fraicheur prend le membre le plus frais, que les BLE maintiennent bas.
+    # Aucun axe ne se declenche. Meme patron de masquage que les facades
+    # HomeKit du 2026-08-24.
+    # De plus `classe_reseau: local_lan` prive la chaine de garde WAN, alors
+    # que 14 entites sur 22 dependent du cloud. Le contrat §11.5 justifie ce
+    # classement par « BLE via proxys ESP32 » : vrai pour 8 entites, pas 22.
+    #
+    # PISTE — scinder en deux chaines, une par integration : une local_lan
+    # pour le BLE, une cloud_wan avec garde WAN pour l'Imprimerie. Demande
+    # de nouveaux identifiants d'automatisation et rouvre R-ANCRAGE-4 cote
+    # BLE (chaque appareil est sa propre entree). Arbitrage proprietaire.
     #
     # Qualification (solvabilite_probatoire.md §3) : reserve differee
-    # solvable, NON BLOQUANTE pour (2), mais (1) est un defaut de
-    # composition a corriger independamment.
-    arbitrage_ouvert: perimetre_non_ferme_sur_domaine
+    # solvable, NON BLOQUANTE. Critere de levee : scission en deux chaines,
+    # ou requalification explicite en exception documentee.
+    arbitrage_ouvert: perimetre_non_ferme_deux_integrations
 
   - nom: Synology
     mode: fraicheur+disponibilite
