@@ -264,15 +264,17 @@ views:
             template: section_header
             name: 🌐 Intégrations
 
-          # ⚠️ Contrat resilience_integrations.md v2.3 §12.5 (R-UI-1).
-          # Le domaine `homekit_controller` porte TROIS entrées. Une
-          # carte par entrée, sous un sous-titre qui porte le nom du
-          # domaine : aucune carte ne prétend couvrir l'ensemble, et
-          # les libellés restent courts donc entièrement lisibles.
-          - type: custom:button-card
-            template: section_header
-            name: 🍎 HomeKit — 3 entrées
-
+          # ⚠️ Contrat resilience_integrations.md v2.4 §12.5 (R-UI-1).
+          # Le domaine `homekit_controller` porte TROIS entrées : une
+          # carte par entrée, aucune ne prétendant couvrir l'ensemble.
+          # C'est ce qui satisfait R-UI-1 — pas un intitulé de section.
+          #
+          # 🚫 PAS DE SOUS-EN-TÊTE ICI. Un second `section_header` sous
+          # celui d'« Intégrations » aurait le même poids visuel que
+          # lui : il n'exprimerait aucune subordination et suggérerait
+          # une hiérarchie fausse entre deux niveaux de même rang.
+          # Le regroupement des trois entrées est porté par la grille
+          # dédiée et par les icônes, pas par un titre.
           - type: grid
             columns: 3
             square: false
