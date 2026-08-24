@@ -37,6 +37,27 @@ meta:
   controle_ancrage_runtime: binary_sensor.ancrage_chaines_resilience_non_conforme
 
   # ==========================================================
+  # `entree_libelle` EST UNE ETIQUETTE HUMAINE, PAS UN TITRE D'ENTREE
+  # ----------------------------------------------------------
+  # Mesure du 2026-08-24 (Passe 0, editeur de modeles) : les titres
+  # REELS des entrees ne ressemblent pas a ces libelles.
+  #   Netatmo                -> titre reel « Home Assistant Cloud »
+  #   Airstage               -> titre reel « local - <adresse materiel> »
+  #   Overkiz                -> titre reel = l'adresse e-mail du compte
+  #   Synology DSM           -> titre reel = le nom d'hote du NAS
+  #   Les DEUX stations      -> titre reel « Weather Station » — IDENTIQUE
+  #
+  # Trois consequences, toutes opposables :
+  #  1. Ce champ ne PEUT PAS servir de cle vers une entree. Aucun
+  #     controle ne doit s'y adosser pour identifier une entree.
+  #  2. Un titre d'entree n'est PAS UNIQUE (les deux stations le
+  #     prouvent). Tout controle qui indexe par titre confond deux
+  #     entrees sans le dire.
+  #  3. Les titres reels ne sont pas recopies ici : l'un d'eux est une
+  #     adresse e-mail personnelle, et ce depot est publie.
+  # ==========================================================
+
+  # ==========================================================
   # CARTOGRAPHIE DE COUVERTURE — mesure runtime du 2026-08-24
   # ----------------------------------------------------------
   # METHODE : balayage des entites -> config_entry_id -> domaine, compare
@@ -118,7 +139,10 @@ integrations:
     maille: entree_de_configuration
     domaine_integration: netatmo
     entree_libelle: "Netatmo"
-    entry_ref: netatmo_entry_id
+    # 2026-08-24 : action migree au ciblage du perimetre (reload_target,
+    # R-ANCRAGE-5). Plus aucun entry_id declare : l'entree reparee est
+    # derivee du perimetre observe. Secret retire de secrets.yaml.
+    entry_ref: non_applicable
     groupe_source:           { statut: present, entity_id: group.netatmo_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.netatmo_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_netatmo }
@@ -141,7 +165,10 @@ integrations:
     maille: entree_de_configuration
     domaine_integration: fujitsu_airstage
     entree_libelle: "Airstage"
-    entry_ref: airstage_entry_id
+    # 2026-08-24 : action migree au ciblage du perimetre (reload_target,
+    # R-ANCRAGE-5). Plus aucun entry_id declare : l'entree reparee est
+    # derivee du perimetre observe. Secret retire de secrets.yaml.
+    entry_ref: non_applicable
     groupe_source:           { statut: present, entity_id: group.fujitsu_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.fujitsu_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_airstage }
@@ -172,7 +199,10 @@ integrations:
     maille: entree_de_configuration
     domaine_integration: homekit_controller
     entree_libelle: "Weather Station — Station Enfants"
-    entry_ref: homekit_station_enfants_entry_id
+    # 2026-08-24 : action migree au ciblage du perimetre (reload_target,
+    # R-ANCRAGE-5). Plus aucun entry_id declare : l'entree reparee est
+    # derivee du perimetre observe. Secret retire de secrets.yaml.
+    entry_ref: non_applicable
     groupe_source:           { statut: present, entity_id: group.homekit_station_enfants }
     capteur_age:             { statut: present, entity_id: sensor.homekit_station_enfants_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_homekit_station_enfants }
@@ -195,7 +225,10 @@ integrations:
     maille: entree_de_configuration
     domaine_integration: homekit_controller
     entree_libelle: "Weather Station — Station Salle de Jeux"
-    entry_ref: homekit_station_salle_de_jeux_entry_id
+    # 2026-08-24 : action migree au ciblage du perimetre (reload_target,
+    # R-ANCRAGE-5). Plus aucun entry_id declare : l'entree reparee est
+    # derivee du perimetre observe. Secret retire de secrets.yaml.
+    entry_ref: non_applicable
     groupe_source:           { statut: present, entity_id: group.homekit_station_salle_de_jeux }
     capteur_age:             { statut: present, entity_id: sensor.homekit_station_salle_de_jeux_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_homekit_station_salle_de_jeux }
@@ -218,7 +251,10 @@ integrations:
     maille: entree_de_configuration
     domaine_integration: overkiz
     entree_libelle: "Overkiz"
-    entry_ref: overkiz_entry_id
+    # 2026-08-24 : action migree au ciblage du perimetre (reload_target,
+    # R-ANCRAGE-5). Plus aucun entry_id declare : l'entree reparee est
+    # derivee du perimetre observe. Secret retire de secrets.yaml.
+    entry_ref: non_applicable
     groupe_source:           { statut: present, entity_id: group.petite_maison_cumulus }
     capteur_age:             { statut: present, entity_id: sensor.petite_maison_cumulus_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_overkiz }
@@ -333,7 +369,10 @@ integrations:
     maille: entree_de_configuration
     domaine_integration: synology_dsm
     entree_libelle: "Synology DSM"
-    entry_ref: synology_entry_id
+    # 2026-08-24 : action migree au ciblage du perimetre (reload_target,
+    # R-ANCRAGE-5). Plus aucun entry_id declare : l'entree reparee est
+    # derivee du perimetre observe. Secret retire de secrets.yaml.
+    entry_ref: non_applicable
     groupe_source:           { statut: present, entity_id: group.synology_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.synology_age_donnees }
     binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_synology }

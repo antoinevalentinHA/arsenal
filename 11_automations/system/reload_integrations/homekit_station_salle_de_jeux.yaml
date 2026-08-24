@@ -26,6 +26,26 @@
 #     continue (R-AXE1-1). Contrairement au pont de volets, ces
 #     capteurs rapportent périodiquement.
 #
+#  🎯 ACTION CIBLÉE SUR LE PÉRIMÈTRE (group.homekit_station_salle_de_jeux)
+#     Migré le 2026-08-24 : l'action ne désigne plus l'entrée par
+#     un `entry_id` en secret, elle CIBLE le périmètre observé
+#     (R-ANCRAGE-5). L'entrée réparée est donc DÉRIVÉE de ce qui
+#     est observé, et ne peut plus en diverger.
+#
+#     ⚠️ Ce que la migration corrige, et qui était invérifiable :
+#     rien ne prouvait que le secret désignait l'entrée que ce
+#     groupe résout — aucun contrôle ne peut lire un secret. La
+#     Passe 0 du 2026-08-24 l'a rendu visible : les libellés du
+#     registre ne sont pas les titres réels des entrées (« Netatmo »
+#     est en fait « Home Assistant Cloud », « Synology DSM » est
+#     le nom d'hôte du NAS). Le couplage était déclaratif et personne
+#     ne pouvait le vérifier ; il est désormais structurel.
+#
+#     ⚠️ Le groupe devient une ACL D'ACTION : sa composition décide
+#     de ce qui sera rechargé. Éligibilité vérifiée — périmètre
+#     fermé sur son domaine et mono-entrée (R-ANCRAGE-6). Le
+#     contrôle runtime de fermeture existe pour ça et doit rester lu.
+#
 #  🧱 GARDE-FOUS
 #     - Pas de time_pattern
 #     - Exécution uniquement si systeme_stable = on
@@ -98,6 +118,6 @@
             ok_minutes: 10
             attempts_entity: input_number.homekit_station_salle_de_jeux_reload_tentatives
             backoff_timer: timer.homekit_station_salle_de_jeux_reload_backoff
-            entry_id: !secret homekit_station_salle_de_jeux_entry_id
+            reload_target: group.homekit_station_salle_de_jeux
             backoff_minutes_cap: 60
             wait_timeout: "00:03:00"

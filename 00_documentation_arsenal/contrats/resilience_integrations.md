@@ -1,7 +1,7 @@
 # ARSENAL — Contrat de résilience des intégrations
 
 **Composant :** `arsenal-ha`
-**Version :** v3.2
+**Version :** v3.3
 **Scope :** Détection et relance automatique des intégrations critiques (gel des données, indisponibilité des entités, échec de configuration d'une entrée).
 **Maille de couverture :** l'**entrée de configuration** (*config entry*) — voir §12.
 **Mode d'application :** report-only — voir §10 et le registre.
@@ -527,6 +527,63 @@ Le défaut de composition **préexistait** ; il ne diluait qu'un axe. Le ciblage
 transformé en danger d'action. D'où R-ANCRAGE-6 : **la fermeture du périmètre est
 une condition d'éligibilité au ciblage, pas une conséquence.**
 
+### 12.5.2 Ciblage par défaut — arbitrage du 2026-08-24
+
+Jusqu'ici, `reload_target` était présenté comme le **moyen de satisfaire
+R-ANCRAGE-4** sur un périmètre multi-entrées. La question restait ouverte pour
+les périmètres **mono-entrée**, où `entry_id` semblait suffire. L'arbitrage la
+ferme.
+
+> **R-ANCRAGE-8 (opposable).** Sur un périmètre éligible au ciblage
+> (R-ANCRAGE-6), l'action **DOIT** cibler le périmètre. `entry_id` n'est retenu
+> que pour une chaîne dont la **détection** exige déjà un `entry_id` déclaré —
+> aujourd'hui, le seul axe échec de configuration (§13). Ailleurs, nommer
+> l'entrée n'apporte rien et coûte un couplage invérifiable.
+
+**Pourquoi le mono-entrée ne justifiait pas `entry_id`.** L'argument implicite
+était : « une seule entrée, donc nommer ou cibler revient au même ». C'est faux
+sur un point décisif — **ce qui garantit l'équivalence n'est vérifiable par
+personne**. Un `entry_id` vit dans `secrets.yaml` ; aucun contrôle du dépôt ni du
+runtime ne peut lire un secret et confirmer qu'il désigne bien l'entrée que le
+périmètre résout. La chaîne pouvait donc observer une entrée et en réparer une
+autre **indéfiniment, sans qu'aucun vert ne bouge**.
+
+La Passe 0 du 2026-08-24 a rendu la chose tangible : les libellés portés au
+registre ne sont pas les titres réels des entrées — « Netatmo » est en réalité
+« Home Assistant Cloud », « Synology DSM » est le nom d'hôte du NAS, et les **deux**
+stations HomeKit s'appellent « Weather Station ». Rien, dans ce que le dépôt
+écrit, ne permettait de retrouver l'entrée visée.
+
+> **R-ANCRAGE-9 (opposable).** Le **titre d'une entrée de configuration n'est ni
+> stable ni unique**. Il est choisi par l'intégration, souvent dérivé d'un compte
+> ou d'un identifiant matériel, et deux entrées d'un même domaine peuvent porter
+> le **même** titre — constaté sur les deux stations HomeKit. Aucun contrôle ne
+> doit indexer, apparier ou déroger **par titre** : il confondrait deux entrées
+> sans le dire. Un titre sert à l'affichage, jamais de clé.
+
+**Ce que le ciblage change concrètement.** L'entrée réparée est **dérivée** du
+périmètre observé. Le couplage n'est plus une affirmation à croire, il est une
+propriété du câblage — et les dérives qui restent possibles (élargissement,
+rétrécissement) sont précisément celles que le contrôle d'ancrage sait voir.
+
+**Réserve levée — « une entrée sans entité est intargetable ».** L'objection
+était qu'une entrée non représentée dans le registre d'entités ne peut pas être
+ciblée, l'action échouant alors silencieusement. Elle est **bornée**, et sur deux
+points mesurés :
+
+1. Une entité `unavailable` reste **parfaitement ciblable** : `config_entry_id()`
+   la résout. Vérifié le 2026-08-24 sur quatre entités indisponibles d'un
+   périmètre, toutes rattachées à leur entrée.
+2. Le cas résiduel — une entrée n'ayant **plus aucune** entité — vide son
+   périmètre, et le **contrôle d'ancrage le signale déjà** (« groupe vide »).
+
+La condition dangereuse est donc **observable**, ce qui suffit. Elle ne l'est pas
+pour `entry_id`, dont la justesse n'est observable par rien.
+
+**Conformité CI.** La règle **R18** du checker vérifie, par chaîne : jamais
+`entry_id` et `reload_target` ensemble ; un `reload_target` égal au périmètre
+déclaré au registre ; et la cohérence avec `entry_ref`.
+
 ### 12.5.1 Comment un périmètre dérive sans qu'une ligne ne change
 
 L'origine de cet écart mérite d'être retenue, car elle est **structurellement
@@ -766,6 +823,7 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 
 ## 16. Historique de version
 
+- **v3.3** — **Ciblage par défaut.** Ajout de **R-ANCRAGE-8** (§12.5.2) : sur un périmètre éligible, l'action DOIT cibler le périmètre ; `entry_id` n'est retenu que là où la **détection** en exige déjà un — aujourd'hui l'axe échec de configuration seul. Motif décisif : la justesse d'un `entry_id` n'est **vérifiable par personne**, aucun contrôle ne pouvant lire `secrets.yaml` ; une chaîne pouvait observer une entrée et en réparer une autre sans qu'un seul indicateur bouge. Ajout de **R-ANCRAGE-9** : le titre d'une entrée n'est ni stable ni unique — les deux stations HomeKit portent le même — et ne doit jamais servir de clé. Réserve « entrée sans entité intargetable » **levée et bornée** : une entité `unavailable` reste ciblable (mesuré), et le seul cas dangereux vide le périmètre, que le contrôle d'ancrage signale déjà. Six chaînes migrées ; ajout de **R18** au checker. Le classement des familles de périmètres passe du mécanisme à l'**invariant** : migrer au ciblage ne fait pas sortir de `mono`.
 - **v3.2** — Ajout du **§9.1** et de **R-OBS-1** : tout capteur de la couche observation de la résilience doit inclure `event_template_reloaded`. Un rechargement des modèles ne déclenche ni `homeassistant: start` ni un tick, et les sources d'un capteur de résilience ne bougent pas en fonctionnement normal — le capteur restait donc `unknown` jusqu'au prochain incident, affichant un gris indiscernable d'une panne. **R-AXE3-4 est amendée** : sa formulation d'origine, qui n'exigeait que le tick et le démarrage, était incomplète et a produit le défaut deux fois. Ajout de **R17** au checker, borné aux fichiers énumérés de cette couche — la règle n'est **pas** étendue aux ~700 blocs à déclencheurs du dépôt, dont les sources tiquent assez pour que la fenêtre aveugle se referme seule.
 - **v1.0** — Contrat initial. Deux axes orthogonaux (fraîcheur / disponibilité), script canon de recovery, registre CI, mode report-only.
 - **v1.1** — Ajout de l'invariant 11 et du §11 : garde réseau WAN pour les intégrations `cloud_wan`, garde paramétrée (`wan_entity`) et jamais codée en dur, classification `cloud_wan` / `local_lan`. Conformité déclarée à `pannes/internet/30`.
@@ -785,4 +843,4 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 
 ---
 
-*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v3.2*
+*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v3.3*

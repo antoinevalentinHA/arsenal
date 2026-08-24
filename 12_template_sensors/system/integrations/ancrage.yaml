@@ -37,21 +37,28 @@
 #       Avec un ciblage, le groupe devient une ACL D'ACTION : sa
 #       composition décide de ce qui sera rechargé.
 #
-#  🧭 DEUX FAMILLES DE PÉRIMÈTRES
+#  🧭 DEUX FAMILLES DE PÉRIMÈTRES — classées par INVARIANT,
+#     pas par mécanisme d'action
 #     Un périmètre multi-entrées n'est pas fautif en soi : il
 #     l'est quand l'ACTION n'en recharge qu'une (R-ANCRAGE-4).
 #
-#     - `GROUPES_MONO`  : l'action désigne UNE entrée précise
-#       (`entry_id`). Le périmètre DOIT donc tenir dans une
-#       entrée unique, sinon l'action ne répare pas ce qu'elle
-#       observe.
-#     - `GROUPES_CIBLES` : l'action cible le périmètre lui-même
-#       (`reload_target`), donc recharge toutes ses entrées par
-#       construction. Le multi-entrées y est légitime.
+#     - `mono`   : périmètre qui DOIT tenir dans une entrée
+#       unique. Deux entrées y seraient une dérive du réel, que
+#       l'action soit nommée ou ciblée.
+#     - `cibles` : périmètre légitimement MULTI-entrées (cinq
+#       Meters SwitchBot = cinq entrées). L'action y cible le
+#       périmètre, donc les couvre toutes par construction.
 #
-#     ⚠️ Déplacer un groupe de MONO vers CIBLES sans que son
-#     automation transmette réellement `reload_target` revient à
-#     faire taire un écart réel. Les deux doivent bouger ensemble.
+#     ⚠️ CE CLASSEMENT NE SUIT PAS `reload_target`.
+#     Le 2026-08-24, six chaînes sont passées de `entry_id` au
+#     ciblage (R-ANCRAGE-5) et sont RESTÉES en `mono` : leur
+#     domaine ne porte qu'une entrée, et cette assertion garde
+#     toute sa valeur. Les faire glisser vers `cibles` au motif
+#     qu'elles ciblent désormais aurait AFFAIBLI le contrôle —
+#     `cibles` n'assertant rien sur le nombre d'entrées.
+#     Règle : on ne déplace un groupe vers `cibles` que si son
+#     périmètre est réellement multi-entrées, jamais parce que
+#     son action a changé de forme.
 #
 #  🕒 CADENCE — trois déclencheurs, et c'est délibéré
 #     La composition d'un groupe ne change qu'au DÉPLOIEMENT.
@@ -83,8 +90,9 @@
 #     - Déclencher une action depuis ce fichier
 #     - Balayer les entités du système pour découvrir les groupes
 #     - Retirer un groupe de la liste pour faire taire un écart
-#     - Classer un groupe en CIBLES sans que son automation
-#       transmette `reload_target` sur ce même groupe
+#     - Classer un groupe en `cibles` alors que son périmètre
+#       est mono-entrée : ce serait renoncer, sans le dire, à
+#       l'assertion la plus forte que ce contrôle sait produire
 # ==========================================================
 
 - trigger:
@@ -155,7 +163,7 @@
             {% elif (entrees | reject('none') | map('config_entry_attr','domain') | unique | list | count) > 1 %}
               {% set ns.lignes = ns.lignes + [g ~ ' : perimetre NON FERME, domaines = ' ~ (entrees | reject('none') | map('config_entry_attr','domain') | unique | list | join('+'))] %}
             {% elif g in mono and entrees | count != 1 %}
-              {% set ns.lignes = ns.lignes + [g ~ ' : ' ~ (entrees | count) ~ ' entrees pour une action mono-entree'] %}
+              {% set ns.lignes = ns.lignes + [g ~ ' : ' ~ (entrees | count) ~ ' entrees pour un perimetre declare mono-entree'] %}
             {% endif %}
           {% endfor %}
           {{ ns.lignes | join(' | ') if ns.lignes else 'ancrage conforme sur tous les perimetres declares' }}
