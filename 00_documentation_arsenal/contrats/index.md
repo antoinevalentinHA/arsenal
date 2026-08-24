@@ -36,7 +36,7 @@
 | [ping_lan_synthese.md](./ping_lan_synthese.md) | Synthèse ping LAN |
 | [switchbot_transactionnel.md](./switchbot_transactionnel.md) | Socle transactionnel SwitchBot |
 | [homekit_diagnostic.md](./homekit_diagnostic.md) | Diagnostic station Netatmo HomeKit |
-| [resilience_integrations.md](./resilience_integrations.md) | Résilience des intégrations — séparation fraîcheur / disponibilité / recovery |
+| [resilience_integrations.md](./resilience_integrations.md) | Résilience des intégrations — maille entrée de configuration ; axes fraîcheur / disponibilité / échec de configuration ; recovery |
 | [ups_arret_ha.md](./ups_arret_ha.md) | UPS — arrêt Home Assistant |
 | [notifications.md](./notifications.md) | Notifications |
 
