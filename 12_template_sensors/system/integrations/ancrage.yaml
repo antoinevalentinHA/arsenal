@@ -24,10 +24,27 @@
 #     l'autre.
 #
 #  🧱 CE QU'IL DÉTECTE
-#     - périmètre couvrant PLUSIEURS entrées -> mal ancré
 #     - membre sans entrée de configuration  -> dérivé ou
-#       étranger (R-ANCRAGE-2)
+#       étranger (R-ANCRAGE-2). Vérifié sur TOUS les groupes.
 #     - groupe vide ou introuvable
+#     - périmètre couvrant PLUSIEURS entrées alors que l'action
+#       ne recharge qu'une entrée -> mal ancré (R-ANCRAGE-1)
+#
+#  🧭 DEUX FAMILLES DE PÉRIMÈTRES
+#     Un périmètre multi-entrées n'est pas fautif en soi : il
+#     l'est quand l'ACTION n'en recharge qu'une (R-ANCRAGE-4).
+#
+#     - `GROUPES_MONO`  : l'action désigne UNE entrée précise
+#       (`entry_id`). Le périmètre DOIT donc tenir dans une
+#       entrée unique, sinon l'action ne répare pas ce qu'elle
+#       observe.
+#     - `GROUPES_CIBLES` : l'action cible le périmètre lui-même
+#       (`reload_target`), donc recharge toutes ses entrées par
+#       construction. Le multi-entrées y est légitime.
+#
+#     ⚠️ Déplacer un groupe de MONO vers CIBLES sans que son
+#     automation transmette réellement `reload_target` revient à
+#     faire taire un écart réel. Les deux doivent bouger ensemble.
 #
 #  🕒 CADENCE — trois déclencheurs, et c'est délibéré
 #     La composition d'un groupe ne change qu'au DÉPLOIEMENT.
@@ -59,6 +76,8 @@
 #     - Déclencher une action depuis ce fichier
 #     - Balayer les entités du système pour découvrir les groupes
 #     - Retirer un groupe de la liste pour faire taire un écart
+#     - Classer un groupe en CIBLES sans que son automation
+#       transmette `reload_target` sur ce même groupe
 # ==========================================================
 
 - trigger:
@@ -76,25 +95,25 @@
       icon: mdi:link-variant-off
 
       state: >
-        {% set groupes = [
+        {% set mono = [
           'group.netatmo_capteurs',
           'group.fujitsu_capteurs',
           'group.homekit_station_enfants',
           'group.homekit_station_salle_de_jeux',
           'group.petite_maison_cumulus',
-          'group.switchbot_capteurs',
           'group.synology_capteurs',
           'group.homekit_prise_control',
           'group.audi_capteurs',
           'group.withings_capteurs'
         ] %}
+        {% set cibles = ['group.switchbot_capteurs'] %}
         {% set ns = namespace(fautifs=0) %}
-        {% for g in groupes %}
+        {% for g in mono + cibles %}
           {% set membres = expand(g) | map(attribute='entity_id') | list %}
           {% set entrees = membres | map('config_entry_id') | unique | list %}
           {% if membres | count == 0
-                or entrees | count != 1
-                or none in entrees %}
+                or none in entrees
+                or (g in mono and entrees | count != 1) %}
             {% set ns.fautifs = ns.fautifs + 1 %}
           {% endif %}
         {% endfor %}
@@ -102,28 +121,28 @@
 
       attributes:
         detail: >
-          {% set groupes = [
+          {% set mono = [
             'group.netatmo_capteurs',
             'group.fujitsu_capteurs',
             'group.homekit_station_enfants',
             'group.homekit_station_salle_de_jeux',
             'group.petite_maison_cumulus',
-            'group.switchbot_capteurs',
             'group.synology_capteurs',
             'group.homekit_prise_control',
             'group.audi_capteurs',
             'group.withings_capteurs'
           ] %}
+          {% set cibles = ['group.switchbot_capteurs'] %}
           {% set ns = namespace(lignes=[]) %}
-          {% for g in groupes %}
+          {% for g in mono + cibles %}
             {% set membres = expand(g) | map(attribute='entity_id') | list %}
             {% set entrees = membres | map('config_entry_id') | unique | list %}
             {% if membres | count == 0 %}
               {% set ns.lignes = ns.lignes + [g ~ ' : groupe vide'] %}
             {% elif none in entrees %}
               {% set ns.lignes = ns.lignes + [g ~ ' : membre(s) sans entree de configuration'] %}
-            {% elif entrees | count != 1 %}
-              {% set ns.lignes = ns.lignes + [g ~ ' : ' ~ (entrees | count) ~ ' entrees'] %}
+            {% elif g in mono and entrees | count != 1 %}
+              {% set ns.lignes = ns.lignes + [g ~ ' : ' ~ (entrees | count) ~ ' entrees pour une action mono-entree'] %}
             {% endif %}
           {% endfor %}
-          {{ ns.lignes | join(' | ') if ns.lignes else 'toutes les chaines sont ancrees sur une entree unique' }}
+          {{ ns.lignes | join(' | ') if ns.lignes else 'ancrage conforme sur tous les perimetres declares' }}
