@@ -29,6 +29,10 @@
         _age_ok_delay: &age_ok_delay "00:02:00"
         _age_gel_delay_5: &age_gel_delay_5 "00:05:00"
         _age_gel_delay_10: &age_gel_delay_10 "00:10:00"
+        # Axe 3 (échec de configuration) — R-AXE3-2 : le débounce doit
+        # laisser le réessai natif de Home Assistant converger. Valeur
+        # volontairement > au délai de gel de référence (5 min).
+        _echec_entree_delay: &echec_entree_delay "00:15:00"
 
     # ==========================================================
     # AUDI
@@ -164,6 +168,66 @@
         {{ expand('group.homekit_capteurs')
            | rejectattr('state', 'in', ['unknown', 'unavailable'])
            | list | count == 0 }}
+
+    # ==========================================================
+    # HOMEKIT — ENTRÉE « PRISE CONTROL » (pont volets)
+    # ----------------------------------------------------------
+    # Chaîne ancrée sur UNE entrée de configuration
+    # (contrat resilience_integrations.md v2.0 §12.3, R-ANCRAGE-1).
+    # Les trois axes sont câblés : fraîcheur, disponibilité et
+    # échec de configuration.
+    # ==========================================================
+
+    - name: "Recovery en cours — HomeKit Prise Control"
+      unique_id: recovery_en_cours_homekit_prise_control
+      default_entity_id: binary_sensor.recovery_en_cours_homekit_prise_control
+      state: >
+        {{ is_state('timer.homekit_prise_control_reload_backoff', 'active') }}
+
+    - name: "Gel avéré — HomeKit Prise Control"
+      unique_id: gel_avere_homekit_prise_control
+      default_entity_id: binary_sensor.gel_avere_homekit_prise_control
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ (states('sensor.homekit_prise_control_age_donnees') | int(999)) >= 45 }}
+
+    - name: "Indisponibilité franche — HomeKit Prise Control"
+      unique_id: indisponibilite_franche_homekit_prise_control
+      default_entity_id: binary_sensor.indisponibilite_franche_homekit_prise_control
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ expand('group.homekit_prise_control')
+           | rejectattr('state', 'in', ['unknown', 'unavailable'])
+           | list | count == 0 }}
+
+    # Axe 3 — R-AXE3-1/2/3. Sélection POSITIVE des états d'échec :
+    # tout autre état (dont `desactivee`, `introuvable`,
+    # `indetermine`, `setup_in_progress`, `failed_unload`) ne
+    # constitue PAS un incident. `desactivee` est exclu par
+    # construction en amont (R-AXE3-3 : une entrée désactivée par
+    # décision n'est pas en panne).
+    - name: "Échec de configuration — HomeKit Prise Control"
+      unique_id: echec_configuration_homekit_prise_control
+      default_entity_id: binary_sensor.echec_configuration_homekit_prise_control
+      delay_on: *echec_entree_delay
+      state: >
+        {{ states('sensor.etat_entree_homekit_prise_control')
+           in ['setup_retry', 'setup_error', 'migration_error', 'not_loaded'] }}
+
+    # Retour OK : les TROIS axes doivent être revenus au vert.
+    # Un retour de fraîcheur seul ne vaut pas reprise si l'entrée
+    # n'est pas rechargée (invariant 3, non-substitution).
+    - name: "Retour OK — HomeKit Prise Control"
+      unique_id: retour_ok_homekit_prise_control
+      default_entity_id: binary_sensor.retour_ok_homekit_prise_control
+      delay_on: *age_ok_delay
+      state: >
+        {{
+          is_state('binary_sensor.recovery_en_cours_homekit_prise_control', 'on')
+          and (states('sensor.homekit_prise_control_age_donnees') | int(999)) < 10
+          and is_state('binary_sensor.indisponibilite_franche_homekit_prise_control', 'off')
+          and is_state('binary_sensor.echec_configuration_homekit_prise_control', 'off')
+        }}
 
     # ==========================================================
     # NETATMO

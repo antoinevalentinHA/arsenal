@@ -29,6 +29,8 @@ resilience_integration_recover:
       description: "Ex: sensor.vicare_age_donnees"
     unavail_entity:
       description: "Optionnel. Binaire d'indisponibilité franche (ex: binary_sensor.indisponibilite_franche_netatmo). Si 'on', l'incident est confirmé même si l'âge est figé bas."
+    fail_entity:
+      description: "Optionnel. Binaire d'echec de configuration de l'entree (axe 3, contrat v2.0 §13). Si 'on', l'incident est confirme meme si l'age est frais ET les entites presentes : une entree d'un domaine multi-entrees peut echouer pendant qu'une entree voisine maintient le perimetre agrege au vert. Ne jamais substituer unavail_entity a ce parametre (invariant 3)."
     wan_entity:
       description: "Optionnel. Binaire de contexte WAN (ex: binary_sensor.contexte_wan_indisponible). Transmis UNIQUEMENT par les intégrations cloud_wan. Si défini et 'on', la tentative (op=attempt) est inhibée : le support WAN est indisponible, un reload serait futile. Ne jamais transmettre pour une intégration local_lan."
     seuil_minutes:
@@ -109,6 +111,10 @@ resilience_integration_recover:
         unavail: >
           {{ unavail_entity_safe | length > 0
              and is_state(unavail_entity_safe, 'on') }}
+        fail_entity_safe: "{{ fail_entity | default('') }}"
+        fail: >
+          {{ fail_entity_safe | length > 0
+             and is_state(fail_entity_safe, 'on') }}
         age_state: "{{ states(age_entity_safe) }}"
         age: "{{ states(age_entity_safe) | float(default=none) }}"
         seuil: "{{ seuil_minutes | float(default=45) }}"
@@ -172,10 +178,14 @@ resilience_integration_recover:
 
     # Si gel non confirmé / valeur non numérique : on ne fait rien
     # Incident confirmé si l'âge dépasse le seuil (gel silencieux)
-    # OU si l'indisponibilité franche est avérée (unavail = on, âge figé bas).
+    # OU si l'indisponibilité franche est avérée (unavail = on, âge figé bas)
+    # OU si l'entrée de configuration est en échec (fail = on, axe 3) — cas
+    # où l'âge reste frais ET les entités présentes parce qu'une AUTRE entrée
+    # du même domaine peuple le périmètre. Les trois axes sont orthogonaux :
+    # aucun ne se déduit d'un autre (contrat v2.0 §3, invariant 3).
     - condition: template
       value_template: >
-        {{ (age is not none and age >= seuil) or unavail }}
+        {{ (age is not none and age >= seuil) or unavail or fail }}
 
     # Annule un backoff pendu (si on relance à cause d’un nouveau gel)
     - service: timer.cancel
@@ -203,13 +213,17 @@ resilience_integration_recover:
                 addon: "{{ addon_slug }}"
 
     # Attente “retour réel”
-    # Succès = données fraîches (âge < ok) ET indisponibilité franche levée.
-    # Tant qu'un binaire unavail est fourni et reste 'on', on n'a pas récupéré.
+    # Succès = données fraîches (âge < ok) ET indisponibilité franche levée
+    # ET échec de configuration levé. Tant qu'un binaire unavail ou fail est
+    # fourni et reste 'on', on n'a pas récupéré — un retour de fraîcheur seul
+    # ne vaut pas reprise si l'entrée n'est toujours pas chargée.
     - wait_template: >
         {% set v = states(age_entity_safe) | float(default=none) %}
         {% set still_unavail = unavail_entity_safe | length > 0
            and is_state(unavail_entity_safe, 'on') %}
-        {{ v is not none and v < ok and not still_unavail }}
+        {% set still_fail = fail_entity_safe | length > 0
+           and is_state(fail_entity_safe, 'on') %}
+        {{ v is not none and v < ok and not still_unavail and not still_fail }}
       timeout: "{{ timeout }}"
       continue_on_timeout: true
 
@@ -219,7 +233,9 @@ resilience_integration_recover:
             {% set v = states(age_entity_safe) | float(default=none) %}
             {% set still_unavail = unavail_entity_safe | length > 0
                and is_state(unavail_entity_safe, 'on') %}
-            {{ v is not none and v < ok and not still_unavail }}
+            {% set still_fail = fail_entity_safe | length > 0
+               and is_state(fail_entity_safe, 'on') %}
+            {{ v is not none and v < ok and not still_unavail and not still_fail }}
           sequence:
             - service: timer.cancel
               target:

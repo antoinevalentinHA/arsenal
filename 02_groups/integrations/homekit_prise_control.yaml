@@ -1,0 +1,46 @@
+# ==========================================================
+# 🧠 ARSENAL — GROUP
+#     Entrée HomeKit — Prise Control (pont volets)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Regrouper les entités produites par UNE SEULE entrée de
+#   configuration `homekit_controller` : celle du pont de
+#   volets (passerelle Bubendorff, accessoire « Prise Control »).
+#
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Entités de cette entrée de configuration UNIQUEMENT
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
+#
+# 📐 CONTRAT — resilience_integrations.md v2.0
+#   §12.3 R-ANCRAGE-1 : le périmètre de détection d'une chaîne
+#   DOIT être composé exclusivement d'entités appartenant à
+#   l'entrée que son action répare.
+#
+#   Ce groupe est le périmètre d'ancrage de la chaîne de
+#   résilience de cette entrée. Il ne doit JAMAIS accueillir
+#   une entité d'une autre entrée `homekit_controller`
+#   (les deux stations météo ont leurs propres entrées).
+#
+# 🚫 INTERDITS
+#   - Ajouter une entité d'une autre entrée de configuration
+#   - Ajouter les capteurs des stations météo HomeKit
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
+#
+# 🏷️ STATUT
+#   Socle — couche diagnostic résilience (maille entrée)
+# ==========================================================
+
+homekit_prise_control:
+  name: "Entrée HomeKit — Prise Control"
+  entities:
+
+    - cover.sejour_gauche
+    - cover.sejour_droit
+    - cover.chambre_enfants
+    - cover.salle_de_jeux

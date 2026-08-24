@@ -84,6 +84,16 @@
       attributes:
         source_group: "group.homekit_capteurs"
 
+    # Entrée `homekit_controller` du pont de volets (Prise Control).
+    # Chaîne ancrée sur CETTE entrée uniquement — cf. contrat
+    # resilience_integrations.md v2.0 §12.3 (R-ANCRAGE-1).
+    - <<: *age_donnees_canon
+      name: "Homekit Prise Control Age Donnees"
+      unique_id: homekit_prise_control_age_donnees
+      icon: mdi:window-shutter
+      attributes:
+        source_group: "group.homekit_prise_control"
+
     - <<: *age_donnees_canon
       name: "Netatmo Age Donnees"
       unique_id: netatmo_age_donnees

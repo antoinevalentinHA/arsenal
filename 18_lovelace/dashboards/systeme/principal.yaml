@@ -268,16 +268,36 @@ views:
             columns: 4
             square: false
             cards:
+              # ⚠️ Contrat resilience_integrations.md v2.0 §12.5 (R-UI-1).
+              # Cette carte ne couvre PAS le domaine `homekit_controller`
+              # entier : elle est adossée à `sensor.homekit_age_donnees`,
+              # dérivé des seules stations météo. Elle est donc libellée
+              # « Stations » et non « HomeKit », pour ne pas affirmer une
+              # santé de domaine qu'elle ne mesure pas. Le pont de volets
+              # a sa propre carte ci-dessous.
               - type: custom:button-card
                 template: kpi_no_action
                 entity: sensor.homekit_age_donnees
-                name: HomeKit
+                name: HomeKit Stations
                 icon: mdi:apple
                 variables:
                   ui_profile: arsenal
                   couleur: sensor.couleur_age_homekit
                 triggers_update:
                   - sensor.couleur_age_homekit
+
+              # Entrée « Prise Control » (pont volets) — couleur TROIS AXES
+              # (fraîcheur + disponibilité + échec de configuration).
+              - type: custom:button-card
+                template: kpi_no_action
+                entity: sensor.homekit_prise_control_age_donnees
+                name: HomeKit Volets
+                icon: mdi:window-shutter
+                variables:
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_sante_homekit_prise_control
+                triggers_update:
+                  - sensor.couleur_sante_homekit_prise_control
 
               - type: custom:button-card
                 template: kpi_no_action
@@ -312,10 +332,6 @@ views:
                 triggers_update:
                   - sensor.couleur_age_fujitsu
 
-          - type: grid
-            columns: 3
-            square: false
-            cards:
               - type: custom:button-card
                 template: kpi_no_action
                 entity: sensor.petite_maison_cumulus_age_donnees

@@ -1,0 +1,92 @@
+# ==========================================================
+#  🧠 ARSENAL — TEMPLATE SENSORS
+#     État des entrées de configuration (axe 3)
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Lire l'état d'une ENTRÉE DE CONFIGURATION Home Assistant
+#     (config entry) et l'exposer comme état observable.
+#
+#     Cet axe est orthogonal aux deux autres : il voit une entrée
+#     qui échoue pendant qu'une entrée voisine du même domaine
+#     reste saine — cas où fraîcheur et disponibilité restent
+#     toutes deux `off`.
+#
+#  📐 CONTRAT — resilience_integrations.md v2.0 §13
+#     - R-AXE3-1 : observe l'état de l'ENTRÉE, pas ses entités.
+#     - R-AXE3-4 : `config_entry_attr()` N'EST PAS RÉACTIVE — elle
+#       n'émet aucun événement de changement d'état. Un capteur
+#       sans trigger figerait la valeur lue au démarrage et
+#       produirait exactement le faux vert que cet axe existe
+#       pour supprimer. Les déclencheurs explicites ci-dessous
+#       sont donc OBLIGATOIRES, pas décoratifs.
+#     - R-AXE3-5 : ce réveil appartient à la COUCHE OBSERVATION.
+#       Il ne déclenche aucune action. La couche décision se
+#       déclenche sur la transition du binaire dérivé, jamais
+#       sur ce tick. L'invariant 10 reste intact.
+#       Usage autorisé par `03_doctrines/gestion_du_temps.md`
+#       (« surveillance et résilience système » / tick quand
+#       aucun événement n'existe). Cadence volontairement
+#       GROSSIÈRE (/5) : une cadence fine serait du polling.
+#     - R-AXE3-6 : l'énumération des entrées est DÉCLARATIVE.
+#       Interdiction absolue de balayer `states` pour découvrir
+#       les entrées : cela abonnerait le capteur à TOUS les
+#       changements d'état du système.
+#
+#  🔐 ENTRY_ID
+#     L'identifiant d'entrée est instance-spécifique : il est
+#     porté par `secrets.yaml` et injecté en attribut, puis relu
+#     via `this`. Même patron que `source_group` dans le canon
+#     `age_des_donnees.yaml`.
+#
+#     ⚠️ À la toute première évaluation, l'attribut peut ne pas
+#     être encore lisible : l'état vaut alors `indetermine` et se
+#     corrige au tick suivant. C'est volontaire — jamais `loaded`
+#     par défaut, car un défaut optimiste serait un faux vert.
+#
+#  🏷️ ÉTATS PRODUITS (strictement observationnels)
+#     loaded | setup_retry | setup_error | migration_error
+#     not_loaded | setup_in_progress | failed_unload
+#     desactivee   -> entrée désactivée par décision (R-AXE3-3)
+#     introuvable  -> aucune entrée pour cet identifiant
+#     indetermine  -> identifiant pas encore lisible
+#
+#  🚫 INTERDITS
+#     - Nommer une cause de panne dans un état
+#     - Déclencher une action depuis ce fichier
+#     - Substituer cet axe à la fraîcheur ou à la disponibilité
+# ==========================================================
+
+- trigger:
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+
+    # ==========================================================
+    # HOMEKIT — entrée « Prise Control » (pont volets Bubendorff)
+    # ==========================================================
+    - name: "Etat entree HomeKit Prise Control"
+      unique_id: etat_entree_homekit_prise_control
+      default_entity_id: sensor.etat_entree_homekit_prise_control
+      icon: mdi:application-cog-outline
+
+      attributes:
+        entry_id: !secret homekit_prise_control_entry_id
+
+      state: >
+        {% set eid = state_attr(this.entity_id, 'entry_id') %}
+        {% if eid in [none, '', 'unknown', 'unavailable'] %}
+          indetermine
+        {% else %}
+          {% set st = config_entry_attr(eid, 'state') %}
+          {% set dis = config_entry_attr(eid, 'disabled_by') %}
+          {% if st is none %}
+            introuvable
+          {% elif dis is not none %}
+            desactivee
+          {% else %}
+            {{ st }}
+          {% endif %}
+        {% endif %}
