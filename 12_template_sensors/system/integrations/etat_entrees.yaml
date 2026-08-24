@@ -56,7 +56,16 @@
 #     - Substituer cet axe à la fraîcheur ou à la disponibilité
 # ==========================================================
 
+# 🕒 RÉVEIL AU DÉPLOIEMENT — R-OBS-1 (§9.1)
+#   Le tick /5 finit par rendre la valeur, mais laisse jusqu'à
+#   cinq minutes d'`unknown` juste après un rechargement des
+#   modèles — c'est-à-dire au moment précis où l'on regarde si
+#   le déploiement a produit ce qu'on attendait.
+#   `event_template_reloaded` supprime cette fenêtre ; le tick
+#   reste le filet de sécurité (R-AXE3-4).
 - trigger:
+    - platform: event
+      event_type: event_template_reloaded
     - platform: time_pattern
       minutes: "/5"
     - platform: homeassistant
