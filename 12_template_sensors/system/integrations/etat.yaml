@@ -333,38 +333,80 @@
     # SWITCHBOT
     # ==========================================================
 
-    - name: "Recovery en cours — SwitchBot"
-      unique_id: recovery_en_cours_switchbot
-      default_entity_id: binary_sensor.recovery_en_cours_switchbot
-      state: >
-        {{ is_state('timer.switchbot_reload_backoff', 'active')
-           or (states('input_number.switchbot_reload_tentatives') | int(0)) > 0 }}
+    # ==========================================================
+    # SWITCHBOT BLE — 5 entrees, perimetre ferme sur `switchbot`
+    # ⛔ AUCUN BINAIRE DE GEL : axe fraicheur inapplicable
+    #    (Meters en push sur changement, R-AXE1-1 / R-PONT-10).
+    # ==========================================================
 
-    - name: "Gel avéré — SwitchBot"
-      unique_id: gel_avere_switchbot
-      default_entity_id: binary_sensor.gel_avere_switchbot
+    - name: "Recovery en cours — SwitchBot BLE"
+      unique_id: recovery_en_cours_switchbot_ble
+      default_entity_id: binary_sensor.recovery_en_cours_switchbot_ble
+      state: >
+        {{ is_state('timer.switchbot_ble_reload_backoff', 'active')
+           or (states('input_number.switchbot_ble_reload_tentatives') | int(0)) > 0 }}
+
+    - name: "Indisponibilité franche — SwitchBot BLE"
+      unique_id: indisponibilite_franche_switchbot_ble
+      default_entity_id: binary_sensor.indisponibilite_franche_switchbot_ble
       delay_on: *age_gel_delay_5
       state: >
-        {{ (states('sensor.switchbot_age_donnees') | int(999)) >= 45 }}
+        {{ expand('group.switchbot_ble_capteurs')
+           | rejectattr('state', 'in', ['unknown', 'unavailable'])
+           | list | count == 0 }}
 
-    - name: "Retour OK — SwitchBot"
-      unique_id: retour_ok_switchbot
-      default_entity_id: binary_sensor.retour_ok_switchbot
+    # Aucun terme d'age ici : il rouvrirait R-PONT-8 par la meme porte
+    # que sur le pont — l'age d'un Meter en piece stable repasse au-dessus
+    # de 10 min en quelques minutes.
+    - name: "Retour OK — SwitchBot BLE"
+      unique_id: retour_ok_switchbot_ble
+      default_entity_id: binary_sensor.retour_ok_switchbot_ble
       delay_on: *age_ok_delay
       state: >
         {{
-          is_state('binary_sensor.recovery_en_cours_switchbot', 'on')
-          and (states('sensor.switchbot_age_donnees') | int(999)) < 10
+          is_state('binary_sensor.recovery_en_cours_switchbot_ble', 'on')
+          and is_state('binary_sensor.indisponibilite_franche_switchbot_ble', 'off')
         }}
 
-    - name: "Indisponibilité franche — SwitchBot"
-      unique_id: indisponibilite_franche_switchbot
-      default_entity_id: binary_sensor.indisponibilite_franche_switchbot
+    # ==========================================================
+    # SWITCHBOT CLOUD — 1 entree, classe cloud_wan
+    # Axe fraicheur APPLICABLE : cadence mesuree 0,7 a 3,7 min
+    # le 2026-08-24 (R-AXE1-1). Seuil 45.
+    # ==========================================================
+
+    - name: "Recovery en cours — SwitchBot Cloud"
+      unique_id: recovery_en_cours_switchbot_cloud
+      default_entity_id: binary_sensor.recovery_en_cours_switchbot_cloud
+      state: >
+        {{ is_state('timer.switchbot_cloud_reload_backoff', 'active')
+           or (states('input_number.switchbot_cloud_reload_tentatives') | int(0)) > 0 }}
+
+    - name: "Gel avéré — SwitchBot Cloud"
+      unique_id: gel_avere_switchbot_cloud
+      default_entity_id: binary_sensor.gel_avere_switchbot_cloud
       delay_on: *age_gel_delay_5
       state: >
-        {{ expand('group.switchbot_capteurs')
+        {{ (states('sensor.switchbot_cloud_age_donnees') | int(999)) >= 45 }}
+
+    - name: "Indisponibilité franche — SwitchBot Cloud"
+      unique_id: indisponibilite_franche_switchbot_cloud
+      default_entity_id: binary_sensor.indisponibilite_franche_switchbot_cloud
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ expand('group.switchbot_cloud_capteurs')
            | rejectattr('state', 'in', ['unknown', 'unavailable'])
            | list | count == 0 }}
+
+    - name: "Retour OK — SwitchBot Cloud"
+      unique_id: retour_ok_switchbot_cloud
+      default_entity_id: binary_sensor.retour_ok_switchbot_cloud
+      delay_on: *age_ok_delay
+      state: >
+        {{
+          is_state('binary_sensor.recovery_en_cours_switchbot_cloud', 'on')
+          and (states('sensor.switchbot_cloud_age_donnees') | int(999)) < 10
+          and is_state('binary_sensor.indisponibilite_franche_switchbot_cloud', 'off')
+        }}
 
     # ==========================================================
     # SYNOLOGY

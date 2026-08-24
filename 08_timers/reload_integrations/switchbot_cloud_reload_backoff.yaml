@@ -1,0 +1,16 @@
+# ==========================================================
+#  🧠 ARSENAL — TIMER TECHNIQUE
+#     switchbot_cloud_reload_backoff
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Timer de backoff pour "Système - Relance SwitchBot Cloud".
+#     Propre à UN périmètre-domaine (scission du 2026-08-24).
+#  📎 NOTE
+#     Durée redéfinie dynamiquement par le script canon.
+# ==========================================================
+
+switchbot_cloud_reload_backoff:
+  name: "SwitchBot Cloud Reload Backoff"
+  icon: mdi:timer-sand
+  duration: "01:00:00"
+  restore: true

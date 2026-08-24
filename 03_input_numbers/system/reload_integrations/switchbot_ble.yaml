@@ -1,0 +1,36 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Système — SwitchBot BLE — Compteur tentatives reload
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker le nombre de tentatives de rechargement pour le
+#   périmètre SwitchBot BLE (scission du 2026-08-24).
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Compteur technique de protection uniquement
+#   - Aucun calcul, aucune logique métier locale
+#
+#   ⚠️ Participe à la définition de l'ÉPISODE de recovery
+#   (R-RECOV-1) : une valeur non nulle maintient l'épisode
+#   ouvert. Le retour OK s'occupe de la remise à zéro.
+#
+# 🏷️ NATURE
+#   Registre technique | Garde-fou système
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et supervision
+#   - Déclencher directement un reload depuis ce helper
+#   - Implémenter localement une logique de retry
+#
+# 🏷️ STATUT
+#   Couche protection système — maille entrée de configuration
+# ==========================================================
+
+switchbot_ble_reload_tentatives:
+  name: "SwitchBot BLE – Tentatives reload"
+  icon: mdi:reload
+  min: 0
+  max: 50
+  step: 1
+  mode: box

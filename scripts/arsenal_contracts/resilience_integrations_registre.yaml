@@ -235,101 +235,96 @@ integrations:
     a_confirmer_runtime: "Groupe à entités d'état (binary_sensor/number/water_heater) — pertinence seuil 90 et comptage membres exploitables à valider sur données réelles."
     exceptions_temporaires: []
 
-  - nom: SwitchBot
-    mode: fraicheur+disponibilite
+  # ========================================================
+  # SCISSION SWITCHBOT (2026-08-24)
+  # L'ancien perimetre unique melangeait `switchbot` (BLE, push sur
+  # changement, local_lan) et `switchbot_cloud` (polling regulier,
+  # cloud_wan). Trois consequences, toutes constatees :
+  #  - perimetre NON FERME -> inelegible au ciblage (R-ANCRAGE-6) ;
+  #  - une panne TOTALE du cloud etait INVISIBLE, les Meters BLE
+  #    empechant l'axe disponibilite d'atteindre zero ;
+  #  - la chaine etait declaree local_lan, donc SANS garde WAN, alors
+  #    que 14 entites sur 22 dependaient du cloud.
+  # ========================================================
+
+  - nom: SwitchBot BLE
+    mode: disponibilite_seule
     classe_reseau: local_lan
     statut_attendu: active
     maille: entree_de_configuration
     domaine_integration: switchbot
-    entree_libelle: "SwitchBot"
-    entry_ref: switchbot_entry_id
-    groupe_source:           { statut: present, entity_id: group.switchbot_capteurs }
-    capteur_age:             { statut: present, entity_id: sensor.switchbot_age_donnees }
-    binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_switchbot }
-    binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_switchbot }
-    binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_switchbot }
-    binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_switchbot }
-    automation:              { statut: present, id: "10120000000011", alias: "Système - Relance SwitchBot", fichier: 11_automations/system/reload_integrations/switchbot.yaml }
-    timer_backoff:           { statut: present, entity_id: timer.switchbot_reload_backoff }
-    compteur_tentatives:     { statut: present, entity_id: input_number.switchbot_reload_tentatives }
+    entree_libelle: "Meters SwitchBot (5 entrees, une par appareil)"
+    entry_ref: non_applicable
+    groupe_source:           { statut: present, entity_id: group.switchbot_ble_capteurs }
+    capteur_age:             { statut: present, entity_id: sensor.switchbot_ble_age_donnees }
+    binaire_gel:             { statut: non_applicable, entity_id: null, note: "Axe fraicheur inapplicable : Meters en push sur changement. Mesure 2026-08-24 jusqu'a 69 min de silence en piece stable — nominal. Un seuil produirait un faux incident (R-AXE1-1)." }
+    binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_switchbot_ble }
+    binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_switchbot_ble }
+    binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_switchbot_ble }
+    automation:              { statut: present, id: "10120000000011", alias: "Système - Relance SwitchBot BLE", fichier: 11_automations/system/reload_integrations/switchbot_ble.yaml }
+    timer_backoff:           { statut: present, entity_id: timer.switchbot_ble_reload_backoff }
+    compteur_tentatives:     { statut: present, entity_id: input_number.switchbot_ble_reload_tentatives }
     action_recovery:         { statut: present, type: reload_entry, via: canon }
+    action_cible: group.switchbot_ble_capteurs
+    seuil_gel_attendu: null
+    seuil_automation_constate: null
+    delay_on_gel: null
+    couverture_domaine_mesuree: "5/7 couvertes + 2 derogees = 7/7"
+    # ⚠️ LIMITE ASSUMEE — masquage intra-perimetre. L'axe disponibilite
+    # exige zero membre exploitable : la mort d'UN Meter parmi les cinq
+    # reste invisible. « Couverte » au sens de R-COUVERTURE-1 ne signifie
+    # pas « detectable individuellement ». Reserve differee solvable, NON
+    # BLOQUANTE ; critere de levee : observabilite par Meter, ou scission
+    # par appareil si une remediation par appareil s'avere utile.
+    derogations_couverture:
+      - entree: "Bot Chambre parents"
+        motif: >-
+          Actionneur couvert par le socle transactionnel SwitchBot
+          (switchbot_transactionnel.md, niveau A) : verrou, cooldown,
+          compteur d'echecs, verdicts canoniques. Sa panne n'est pas
+          silencieuse. Un reload d'entree ne le repare pas.
+        critere_levee: >-
+          Sortie du registre transactionnel, ou preuve terrain qu'un reload
+          d'entree recupere une session BLE perdue.
+      - entree: "Bot Déshumidificateur"
+        motif: >-
+          Actionneur retire du registre transactionnel en C40 au profit de
+          l'ecrivain unique script.set_deshumidificateur_state. Son
+          indisponibilite est traitee au niveau du domaine : la
+          commandabilite y est une imperative de categorie A qui borne
+          l'execution dans les deux regimes (deshumidificateur/
+          autorite_de_domaine.md) — actionneur indisponible => abstention,
+          jamais action aveugle. Sa panne n'est pas silencieuse.
+        critere_levee: >-
+          La garde de commandabilite cesse de couvrir l'indisponibilite de
+          l'actionneur, ou preuve terrain qu'un reload d'entree le recupere.
+    exceptions_temporaires: []
+
+  - nom: SwitchBot Cloud
+    mode: fraicheur+disponibilite
+    classe_reseau: cloud_wan
+    statut_attendu: active
+    maille: entree_de_configuration
+    domaine_integration: switchbot_cloud
+    entree_libelle: "SwitchBot Cloud — capteurs Imprimerie"
+    entry_ref: non_applicable
+    groupe_source:           { statut: present, entity_id: group.switchbot_cloud_capteurs }
+    capteur_age:             { statut: present, entity_id: sensor.switchbot_cloud_age_donnees }
+    binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_switchbot_cloud }
+    binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_switchbot_cloud }
+    binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_switchbot_cloud }
+    binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_switchbot_cloud }
+    automation:              { statut: present, id: "10120000000032", alias: "Système - Relance SwitchBot Cloud", fichier: 11_automations/system/reload_integrations/switchbot_cloud.yaml }
+    timer_backoff:           { statut: present, entity_id: timer.switchbot_cloud_reload_backoff }
+    compteur_tentatives:     { statut: present, entity_id: input_number.switchbot_cloud_reload_tentatives }
+    action_recovery:         { statut: present, type: reload_entry, via: canon }
+    action_cible: group.switchbot_cloud_capteurs
     seuil_gel_attendu: 45
     seuil_automation_constate: 45
     delay_on_gel: "00:05:00"
-    exceptions_temporaires: []
-    # ⚠️ PERIMETRE NON FERME SUR SON DOMAINE — etat au 2026-08-24.
-    #
-    # Composition constatee au runtime, apres retrait des 2 entites MQTT :
-    #   switchbot        :  8 entites (BLE via proxys ESP32) — local_lan
-    #   switchbot_cloud  : 14 entites (capteurs Imprimerie)  — cloud_wan
-    #
-    # ECART 1 — RESOLU le 2026-08-24. `sensor.temperature_sdb_parents` et
-    # `sensor.humidite_relative_sdb_parents` etaient sur l'entree MQTT
-    # (« Mosquitto broker ») : capteur physique remplace par un Zigbee, les
-    # entity_id conserves, donc derive invisible a toute analyse statique.
-    # Retires du groupe. Leur resilience releve de la chaine Zigbee2MQTT.
-    #
-    # ECART 2 — OUVERT. Le perimetre melange DEUX integrations aux modes de
-    # defaillance sans rapport. Le ciblage par perimetre (`reload_target`)
-    # reste donc interdit ici (R-ANCRAGE-6), et l'action demeure partielle
-    # (une entree sur six, R-ANCRAGE-4).
-    #
-    # ECART 3 — OUVERT, et le plus serieux. UNE PANNE TOTALE DU CLOUD
-    # SWITCHBOT EST INVISIBLE POUR CETTE CHAINE : l'axe disponibilite exige
-    # ZERO membre exploitable, or les 8 capteurs BLE restent vivants ; l'axe
-    # fraicheur prend le membre le plus frais, que les BLE maintiennent bas.
-    # Aucun axe ne se declenche. Meme patron de masquage que les facades
-    # HomeKit du 2026-08-24.
-    # De plus `classe_reseau: local_lan` prive la chaine de garde WAN, alors
-    # que 14 entites sur 22 dependent du cloud. Le contrat §11.5 justifie ce
-    # classement par « BLE via proxys ESP32 » : vrai pour 8 entites, pas 22.
-    #
-    # PISTE — scinder en deux chaines, une par integration : une local_lan
-    # pour le BLE, une cloud_wan avec garde WAN pour l'Imprimerie. Demande
-    # de nouveaux identifiants d'automatisation et rouvre R-ANCRAGE-4 cote
-    # BLE (chaque appareil est sa propre entree). Arbitrage proprietaire.
-    #
-    # Qualification (solvabilite_probatoire.md §3) : reserve differee
-    # solvable, NON BLOQUANTE. Critere de levee : scission en deux chaines,
-    # ou requalification explicite en exception documentee.
-    arbitrage_ouvert: perimetre_non_ferme_deux_integrations
-    # ECART 4 — COUVERTURE INCOMPLETE DU DOMAINE, mesure du 2026-08-24.
-    # 4 entrees `switchbot` couvertes sur 7 presentes. NON COUVERTES :
-    #   - Bot Chambre parents        (actionneur)
-    #   - Bot Deshumidificateur      (actionneur)
-    #   - Meter Petite Maison        (CAPTEUR)
-    #
-    # Les deux « Bot » sont des actionneurs : leur absence d'un groupe
-    # nomme `switchbot_capteurs` est peut-etre deliberee — mais ils ne sont
-    # alors couverts par AUCUNE chaine. Un Bot mort est un interrupteur qui
-    # ne repond plus.
-    #
-    # « Meter Petite Maison » est en revanche un CAPTEUR, et son exclusion
-    # ressemble a un oubli. C'est lui qui fournit
-    # `sensor.temperature_petite_maison_2`, source SwitchBot de la
-    # consolidation petite maison. S'il meurt, aucune chaine ne le remarque.
-    #
-    # Qualification : INDECIDABLE tant que le modele de couverture n'est pas
-    # tranche (voir meta.cartographie_couverture). Ni conforme ni non
-    # conforme — le contrat ne dit pas ce qu'une chaine DOIT couvrir.
-    couverture_domaine_mesuree: "4/7"
-    # ⚠️ ECART DE COUVERTURE — depuis l'arbitrage du 2026-08-24, ces trois
-    # entrees ne sont plus « indecidables » : elles sont EN ECART, faute
-    # d'etre couvertes ou derogees (R-COUVERTURE-1).
-    #
-    # Aucune derogation n'est ecrite ici, et c'est delibere : je ne peux
-    # pas motiver a la place du proprietaire. Trois decisions a prendre :
-    #   - Bot Chambre parents     (actionneur) : couvrir ou deroger ?
-    #   - Bot Deshumidificateur   (actionneur) : couvrir ou deroger ?
-    #   - Meter Petite Maison     (CAPTEUR)    : ressemble a un oubli ;
-    #     il fournit sensor.temperature_petite_maison_2, source SwitchBot
-    #     de la consolidation petite maison.
-    #
-    # Format attendu pour chaque derogation (R-COUVERTURE-2) :
-    #   - entree: "<libelle>"
-    #     motif: "<pourquoi aucune remediation automatique>"
-    #     critere_levee: "<ce qui rendrait la couverture necessaire>"
+    couverture_domaine_mesuree: "1/1"
     derogations_couverture: []
+    exceptions_temporaires: []
 
   - nom: Synology
     mode: fraicheur+disponibilite

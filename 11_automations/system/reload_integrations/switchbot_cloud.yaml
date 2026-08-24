@@ -1,0 +1,108 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     SwitchBot Cloud – Relance entrée (auto)
+#
+#  ID : 10120000000032
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Résilience du périmètre SwitchBot Cloud — capteurs
+#     Imprimerie via l'API SwitchBot. UNE entrée.
+#
+#  🧱 POURQUOI CETTE CHAÎNE EXISTE
+#     Avant la scission du 2026-08-24, ces 14 capteurs
+#     partageaient un périmètre avec les Meters BLE. Une panne
+#     TOTALE du cloud y était INVISIBLE : l'axe disponibilité
+#     exige zéro membre exploitable, or les Meters BLE
+#     restaient vivants. Le cloud n'avait, de fait, aucune
+#     surveillance propre.
+#
+#  ✅ AXES CÂBLÉS
+#     - Fraîcheur     : age >= 45 min pendant 5 min. Applicable,
+#       et constaté : cadence 0,7 à 3,7 min le 2026-08-24.
+#     - Disponibilité : 0 membre exploitable pendant 5 min
+#     - Succès        : âge < 10 min, disponibilité revenue
+#
+#  🌐 CLASSE `cloud_wan` — GARDE WAN OBLIGATOIRE
+#     Ces capteurs deviennent légitimement indisponibles pendant
+#     une panne WAN : c'est un KO ATTENDU, pas un incident, et
+#     un reload y serait futile (invariant 11, §11.1).
+#     C'est le manque le plus grave que la scission corrige :
+#     l'ancienne chaîne était déclarée `local_lan`, donc SANS
+#     garde WAN, alors que 14 de ses 22 entités dépendaient du
+#     cloud.
+#
+#  🧱 GARDE-FOUS
+#     - Pas de time_pattern
+#     - systeme_stable = on
+# ==========================================================
+
+- id: "10120000000032"
+  alias: "Système - Relance SwitchBot Cloud"
+  description: >
+    Résilience du périmètre SwitchBot Cloud (capteurs Imprimerie, une entrée).
+    Deux axes câblés, garde WAN active — une indisponibilité pendant une panne
+    Internet est un KO attendu, pas un incident.
+
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.gel_avere_switchbot_cloud
+      to: "on"
+      id: gel
+
+    - platform: state
+      entity_id: binary_sensor.indisponibilite_franche_switchbot_cloud
+      to: "on"
+      id: indispo
+
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.switchbot_cloud_reload_backoff
+      id: backoff
+
+    - platform: state
+      entity_id: binary_sensor.retour_ok_switchbot_cloud
+      to: "on"
+      id: retour_ok
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+  action:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: retour_ok
+          sequence:
+            - service: script.resilience_integration_recover
+              data:
+                op: reset
+                notify_title_prefix: "SwitchBot Cloud"
+                age_entity: sensor.switchbot_cloud_age_donnees
+                ok_minutes: 10
+                seuil_minutes: 45
+                attempts_entity: input_number.switchbot_cloud_reload_tentatives
+                backoff_timer: timer.switchbot_cloud_reload_backoff
+                backoff_minutes_cap: 60
+
+      default:
+        - service: script.resilience_integration_recover
+          data:
+            op: attempt
+            kind: reload_entry
+            notify_title_prefix: "SwitchBot Cloud"
+            age_entity: sensor.switchbot_cloud_age_donnees
+            unavail_entity: binary_sensor.indisponibilite_franche_switchbot_cloud
+            wan_entity: binary_sensor.contexte_wan_indisponible
+            seuil_minutes: 45
+            ok_minutes: 10
+            attempts_entity: input_number.switchbot_cloud_reload_tentatives
+            backoff_timer: timer.switchbot_cloud_reload_backoff
+            reload_target: group.switchbot_cloud_capteurs
+            backoff_minutes_cap: 60
+            wait_timeout: "00:03:00"

@@ -1,0 +1,107 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     SwitchBot BLE – Relance des entrées (auto)
+#
+#  ID : 10120000000011
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Résilience du périmètre SwitchBot BLE — cinq Meters, cinq
+#     entrées de configuration, via proxys ESP32.
+#
+#  🧱 SCISSION DU 2026-08-24
+#     Cette automation est RE-ANCRÉE : elle couvrait auparavant
+#     un périmètre mêlant `switchbot`, `switchbot_cloud` et
+#     `mqtt`. Son ID ne change pas — la doctrine l'exige.
+#
+#  ✅ AXES CÂBLÉS
+#     - Disponibilité : 0 membre exploitable pendant 5 min
+#     - Succès        : disponibilité revenue, 2 min
+#
+#  ⛔ AXE FRAÎCHEUR — INAPPLICABLE, VOLONTAIREMENT NON CÂBLÉ
+#     Les Meters ne publient QUE sur changement. Mesuré le
+#     2026-08-24 : jusqu'à 69 min de silence pour une pièce
+#     stable — nominal, pas un symptôme. Dans une maison calme
+#     les cinq peuvent se taire ensemble : un seuil de gel
+#     produirait un faux incident. `axe_fraicheur: false` est
+#     transmis au script canon (R-AXE1-3).
+#
+#  🎯 ACTION CIBLÉE SUR LE PÉRIMÈTRE
+#     Le périmètre est FERMÉ sur le domaine `switchbot`, donc
+#     éligible au ciblage (R-ANCRAGE-6). `reload_target` couvre
+#     les CINQ entrées — une seule aurait été une remédiation
+#     partielle silencieuse (R-ANCRAGE-4).
+#     ⚠️ Si une entité étrangère entrait dans ce groupe, le
+#     rechargement s'étendrait à son intégration. Le contrôle de
+#     fermeture de domaine existe pour ça et doit rester lu.
+#
+#  🧱 GARDE-FOUS
+#     - Pas de time_pattern
+#     - systeme_stable = on
+#     - Classe `local_lan` : aucun `wan_entity` transmis
+# ==========================================================
+
+- id: "10120000000011"
+  alias: "Système - Relance SwitchBot BLE"
+  description: >
+    Résilience du périmètre SwitchBot BLE (5 entrées). Détection sur
+    l'indisponibilité franche uniquement — l'axe fraîcheur est inapplicable
+    à des capteurs qui ne publient que sur changement. Action ciblée sur le
+    périmètre : les cinq entrées sont rechargées.
+
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.indisponibilite_franche_switchbot_ble
+      to: "on"
+      id: indispo
+
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.switchbot_ble_reload_backoff
+      id: backoff
+
+    - platform: state
+      entity_id: binary_sensor.retour_ok_switchbot_ble
+      to: "on"
+      id: retour_ok
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+  action:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: retour_ok
+          sequence:
+            - service: script.resilience_integration_recover
+              data:
+                op: reset
+                notify_title_prefix: "SwitchBot BLE"
+                age_entity: sensor.switchbot_ble_age_donnees
+                ok_minutes: 10
+                axe_fraicheur: false
+                attempts_entity: input_number.switchbot_ble_reload_tentatives
+                backoff_timer: timer.switchbot_ble_reload_backoff
+                backoff_minutes_cap: 60
+
+      default:
+        - service: script.resilience_integration_recover
+          data:
+            op: attempt
+            kind: reload_entry
+            notify_title_prefix: "SwitchBot BLE"
+            age_entity: sensor.switchbot_ble_age_donnees
+            unavail_entity: binary_sensor.indisponibilite_franche_switchbot_ble
+            axe_fraicheur: false
+            ok_minutes: 10
+            attempts_entity: input_number.switchbot_ble_reload_tentatives
+            backoff_timer: timer.switchbot_ble_reload_backoff
+            reload_target: group.switchbot_ble_capteurs
+            backoff_minutes_cap: 60
+            wait_timeout: "00:03:00"

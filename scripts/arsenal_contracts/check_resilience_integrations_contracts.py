@@ -602,7 +602,9 @@ def evaluate(integ, ctx):
     # l'attend. Un axe `non_applicable` n'est pas exigé — il est hors périmètre.
     # Modélise désormais l'axe 3 (échec de configuration) : résorption partielle
     # de la dette §10.1 du contrat.
-    if mode in ("fraicheur+disponibilite", "disponibilite+echec_configuration") and autom_obj is not None:
+    if mode in ("fraicheur+disponibilite",
+                "disponibilite+echec_configuration",
+                "disponibilite_seule") and autom_obj is not None:
         ents = automation_entities(autom_obj)
         data = attempt_call(autom_obj)
 

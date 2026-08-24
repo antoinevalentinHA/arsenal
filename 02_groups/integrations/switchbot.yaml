@@ -29,62 +29,100 @@
 #   Socle — Arsenal v14.x
 # ==========================================================
 
-switchbot_capteurs:
-  name: "Capteurs SwitchBot"
+# ----------------------------------------------------------
+# SCISSION DU 2026-08-24 — `switchbot_capteurs` est remplacé par
+# DEUX périmètres, un par intégration.
+#
+# L'ancien groupe unique mélangeait `switchbot` (BLE) et
+# `switchbot_cloud`, deux intégrations aux modes de défaillance
+# sans rapport — plus, jusqu'à ce jour, deux entités `mqtt`.
+#
+# Trois conséquences, toutes constatées :
+#   - périmètre NON FERMÉ sur son domaine, donc inéligible au
+#     ciblage par périmètre (R-ANCRAGE-6) ;
+#   - une panne TOTALE du cloud restait invisible : l'axe
+#     disponibilité exige zéro membre exploitable, or les
+#     capteurs BLE restaient vivants ;
+#   - les deux moitiés n'appellent PAS les mêmes axes (voir
+#     ci-dessous), donc aucun réglage commun n'était juste.
+# ----------------------------------------------------------
+
+# ----------------------------------------------------------
+# BLE — Meters SwitchBot via proxys ESP32. Classe `local_lan`.
+#
+# ⛔ AXE FRAÎCHEUR INAPPLICABLE (R-AXE1-1).
+#    Ces Meters ne publient QUE sur changement. Mesuré le
+#    2026-08-24 : 15,4 / 7,6 / 12,3 / 69,2 / 3,1 minutes — la
+#    valeur de 69 min correspondant à une pièce stable, pas à un
+#    capteur en difficulté. Dans une maison calme, les cinq
+#    peuvent se taire simultanément et l'âge croîtrait sans
+#    borne : un seuil de gel produirait un faux incident.
+#    L'âge reste exposé en observabilité, jamais en déclencheur.
+#
+# 🎯 CINQ ENTRÉES — une par Meter. Le périmètre étant FERMÉ sur
+#    le domaine `switchbot`, l'action peut le CIBLER
+#    (`reload_target`) et couvre alors les cinq (R-ANCRAGE-4).
+#
+# ⚠️ LIMITE ASSUMÉE — masquage intra-périmètre. L'axe
+#    disponibilité exige zéro membre exploitable : la mort d'UN
+#    Meter parmi les cinq reste invisible. « Couverte » au sens
+#    de R-COUVERTURE-1 ne signifie pas « détectable
+#    individuellement ». Consigné au registre.
+# ----------------------------------------------------------
+switchbot_ble_capteurs:
+  name: "SwitchBot BLE — capteurs"
   entities:
 
-    ########################################################
-    # 🚿 SALLES DE BAINS
-    ########################################################
-    # ⚠️ RETIRÉS le 2026-08-24 — `sensor.temperature_sdb_parents` et
-    # `sensor.humidite_relative_sdb_parents` NE SONT PLUS DU SWITCHBOT.
-    # Le capteur physique de la SDB parents a été remplacé par un Zigbee ;
-    # les entity_id ont été conservés, si bien que la composition textuelle
-    # du groupe n'a jamais bougé alors que l'intégration sous-jacente, elle,
-    # est passée à `mqtt` (entrée « Mosquitto broker »).
-    #
-    # Aucune analyse statique ne peut voir ça : l'entity_id reste valide, ce
-    # n'est pas une entité dérivée, aucune ligne du dépôt n'a changé. Seul le
-    # contrôle runtime de fermeture de domaine le détecte
-    # (`binary_sensor.ancrage_chaines_resilience_non_conforme`).
-    #
-    # Leur résilience est assurée par la chaîne Zigbee2MQTT, au niveau du
-    # bridge — c'est le bon modèle pour un appareil Zigbee. Les réintégrer
-    # ici étendrait la surveillance ET, sous ciblage, la réparation à
-    # l'intégration MQTT (R-ANCRAGE-6).
-    - sensor.temperature_sdb_enfants
-    - sensor.humidite_relative_sdb_enfants
-
-
-    ########################################################
-    # 🌿 EXTÉRIEUR
-    ########################################################
-    - sensor.temperature_jardin_3
-    - sensor.humidite_relative_jardin_3
-
-
-    ########################################################
-    # 🏗️ ZONES TECHNIQUES
-    ########################################################
-    - sensor.temperature_garage
-    - sensor.humidite_relative_garage
     - sensor.temperature_cave
     - sensor.humidite_relative_cave
 
-    ########################################################
-    # 🏭️ IMPRIMERIE
-    ########################################################
-    - sensor.humidite_relative_commercial
-    - sensor.temperature_commercial
-    - sensor.humidite_relative_compta
-    - sensor.temperature_compta
-    - sensor.humidite_relative_devis
-    - sensor.temperature_devis
-    - sensor.humidite_relative_direction
-    - sensor.temperature_direction
-    - sensor.humidite_relative_qualite
-    - sensor.temperature_qualite
-    - sensor.humidite_relative_stock_carton
-    - sensor.temperature_stock_carton
-    - sensor.humidite_relative_stock_pf
+    - sensor.temperature_garage
+    - sensor.humidite_relative_garage
+
+    - sensor.temperature_jardin_3
+    - sensor.humidite_relative_jardin_3
+
+    - sensor.temperature_sdb_enfants
+    - sensor.humidite_relative_sdb_enfants
+
+    # Meter Petite Maison — ajouté le 2026-08-24. Son absence était
+    # un ÉCART DE COUVERTURE (R-COUVERTURE-1) et non un choix : c'est
+    # un capteur, et il fournit `sensor.temperature_petite_maison_2`,
+    # source SwitchBot de la consolidation petite maison.
+    - sensor.temperature_petite_maison_2
+    - sensor.humidite_relative_petite_maison_2
+
+# ----------------------------------------------------------
+# CLOUD — capteurs Imprimerie via l'API SwitchBot.
+# Classe `cloud_wan` : garde WAN OBLIGATOIRE (invariant 11).
+#
+# ✅ AXE FRAÎCHEUR APPLICABLE, et c'est constaté : cadence
+#    mesurée le 2026-08-24 à 0,7 / 1,3 / 2,5 / 3,7 minutes —
+#    écriture régulière du coordinateur cloud. Seuil de gel 45.
+#
+# 🎯 UNE SEULE ENTRÉE. Périmètre fermé, ciblable.
+# ----------------------------------------------------------
+switchbot_cloud_capteurs:
+  name: "SwitchBot Cloud — capteurs Imprimerie"
+  entities:
+
     - sensor.temperature_stock_pf
+    - sensor.humidite_relative_stock_pf
+
+    - sensor.temperature_stock_carton
+    - sensor.humidite_relative_stock_carton
+
+    - sensor.temperature_qualite
+    - sensor.humidite_relative_qualite
+
+    - sensor.temperature_direction
+    - sensor.humidite_relative_direction
+
+    - sensor.temperature_devis
+    - sensor.humidite_relative_devis
+
+    - sensor.temperature_compta
+    - sensor.humidite_relative_compta
+
+    - sensor.temperature_commercial
+    - sensor.humidite_relative_commercial
