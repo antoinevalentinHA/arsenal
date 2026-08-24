@@ -1,0 +1,103 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     HomeKit Station Enfants – Relance entrée (auto)
+#
+#  ID : 10120000000019
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Détection + orchestration minimale pour UNE entrée de
+#     configuration `homekit_controller` : la station météo
+#     Netatmo « Station Enfants ». Délègue au script canon
+#     `script.resilience_integration_recover`.
+#
+#  🧱 MAILLE — resilience_integrations.md v2.3 §12
+#     Cette automation couvre UNE entrée, pas le domaine
+#     `homekit_controller`, qui en porte trois. Les deux autres
+#     ont leurs propres chaînes.
+#
+#  ✅ AXES CÂBLÉS
+#     - Fraîcheur    : age_donnees >= 45 min pendant 5 min
+#     - Disponibilité: 0 membre exploitable pendant 5 min
+#     - Succès       : âge < 10 min pendant 2 min
+#     - Backoff      : timer dédié (durée gérée par le script)
+#
+#     L'axe fraîcheur est APPLICABLE ici, et c'est constaté :
+#     âge réel mesuré à 3,8 min le 2026-08-24, en variation
+#     continue (R-AXE1-1). Contrairement au pont de volets, ces
+#     capteurs rapportent périodiquement.
+#
+#  🧱 GARDE-FOUS
+#     - Pas de time_pattern
+#     - Exécution uniquement si systeme_stable = on
+#     - Classe réseau `local_lan` : aucun `wan_entity` transmis
+# ==========================================================
+
+- id: "10120000000019"
+  alias: "Système - Relance HomeKit Station Enfants"
+  description: >
+    Orchestration légère : déclenche la procédure de résilience de l'entrée
+    HomeKit de la station Station Enfants (reload config_entry) sur gel données ou
+    indisponibilité franche, avec backoff et plafond gérés par le script canon.
+
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.gel_avere_homekit_station_enfants
+      to: "on"
+      id: gel
+
+    - platform: state
+      entity_id: binary_sensor.indisponibilite_franche_homekit_station_enfants
+      to: "on"
+      id: indispo
+
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.homekit_station_enfants_reload_backoff
+      id: backoff
+
+    - platform: state
+      entity_id: binary_sensor.retour_ok_homekit_station_enfants
+      to: "on"
+      id: retour_ok
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+  action:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: retour_ok
+          sequence:
+            - service: script.resilience_integration_recover
+              data:
+                op: reset
+                notify_title_prefix: "HomeKit Station Enfants"
+                age_entity: sensor.homekit_station_enfants_age_donnees
+                ok_minutes: 10
+                seuil_minutes: 45
+                attempts_entity: input_number.homekit_station_enfants_reload_tentatives
+                backoff_timer: timer.homekit_station_enfants_reload_backoff
+                backoff_minutes_cap: 60
+
+      default:
+        - service: script.resilience_integration_recover
+          data:
+            op: attempt
+            kind: reload_entry
+            notify_title_prefix: "HomeKit Station Enfants"
+            age_entity: sensor.homekit_station_enfants_age_donnees
+            unavail_entity: binary_sensor.indisponibilite_franche_homekit_station_enfants
+            seuil_minutes: 45
+            ok_minutes: 10
+            attempts_entity: input_number.homekit_station_enfants_reload_tentatives
+            backoff_timer: timer.homekit_station_enfants_reload_backoff
+            entry_id: !secret homekit_station_enfants_entry_id
+            backoff_minutes_cap: 60
+            wait_timeout: "00:03:00"

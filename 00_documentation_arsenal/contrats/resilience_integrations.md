@@ -1,7 +1,7 @@
 # ARSENAL — Contrat de résilience des intégrations
 
 **Composant :** `arsenal-ha`
-**Version :** v2.3
+**Version :** v2.4
 **Scope :** Détection et relance automatique des intégrations critiques (gel des données, indisponibilité des entités, échec de configuration d'une entrée).
 **Maille de couverture :** l'**entrée de configuration** (*config entry*) — voir §12.
 **Mode d'application :** report-only — voir §10 et le registre.
@@ -308,6 +308,23 @@ Une chaîne dont le groupe source contient des entités d'une autre entrée est 
 
 Une chaîne mal ancrée est **non conforme**, au même titre qu'une chaîne orpheline ou aveugle. Elle est **plus dangereuse que les deux** : une chaîne orpheline ne dit rien, une chaîne aveugle ne voit qu'un axe, mais une chaîne mal ancrée **produit un signal vert** sur un périmètre en panne.
 
+> **R-ANCRAGE-2 (opposable).** Le périmètre de détection ne contient que des
+> entités **produites directement par l'entrée**. Y placer une entité **dérivée**
+> — template, consolidation, façade, valeur stabilisée — est **interdit**.
+>
+> Une entité dérivée porte sa **propre cadence de rafraîchissement** et sa
+> **propre logique de disponibilité**, toutes deux découplées de l'intégration
+> observée. Elle peut donc maintenir le périmètre « frais » et « peuplé » alors
+> que l'intégration est morte — et neutraliser **les deux axes à la fois**.
+>
+> Le cas est aggravé si la dérivée est **inter-intégrations** : elle reste alors
+> vivante grâce à une *autre* intégration, et le périmètre ne peut plus jamais
+> se vider. Voir la leçon terrain du §15.
+>
+> Test de recevabilité : une entité est admissible au périmètre si et seulement
+> si `config_entry_id()` retourne l'entrée observée. Toute entité sans entrée de
+> configuration est **de facto** dérivée ou étrangère, donc irrecevable.
+
 ### 12.4 Vérifiabilité mécanique
 
 `config_entry_id(entity_id)` restitue l'entrée d'appartenance d'une entité. L'ancrage est donc **mécaniquement vérifiable** : membres du groupe source → ensemble des `entry_id` d'appartenance → comparaison avec l'`entry_id` transmis à l'action. Un ensemble de cardinalité différente de 1, ou différent de l'`entry_id` de l'action, constitue l'écart.
@@ -487,6 +504,39 @@ Le second point n'avait été demandé par personne : il est apparu en corrigean
 le premier. Une chaîne bloquée à vie est un mode de défaillance silencieux que
 le contrat n'avait jamais nommé.
 
+### Quatrième enseignement — une dérivée dans un périmètre neutralise les deux axes
+
+La scission des deux stations HomeKit (2026-08-24) a mis au jour, dans le groupe
+source historique, **deux façades Arsenal** :
+`sensor.temperature_petite_maison` et `sensor.humidite_relative_petite_maison`.
+
+Ce ne sont pas des entités HomeKit. Ce sont des **consolidations
+inter-intégrations** — source HomeKit `_1` **et** source SwitchBot `_2` —
+adossées à un capteur stabilisé **à mémoire** (TTL 1800 s, 7200 s post-boot),
+rafraîchi par un tick `/5`.
+
+Effet mesuré :
+
+- **axe fraîcheur, mort en permanence** : le tick `/5` rafraîchissait
+  `last_reported` quoi qu'il arrive à HomeKit. L'âge du groupe, pris sur le
+  membre le plus frais, ne pouvait jamais dépasser ~5 min — donc un seuil de gel
+  à 45 min était **structurellement inatteignable** ;
+- **axe disponibilité, aveuglé** : mémoire et source SwitchBot vivante
+  maintenaient des membres exploitables jusqu'à **30 minutes** (2 h post-boot)
+  après la mort réelle de la station.
+
+La chaîne HomeKit était donc **aveugle avant même** le défaut de maille du §15 —
+et l'était depuis l'ajout de ces façades au groupe. Aucun contrôle ne pouvait le
+voir : le registre déclarait tous les maillons `present`, et ils l'étaient.
+
+D'où **R-ANCRAGE-2** (§12.3) : la composition du périmètre est aussi normative
+que son ancrage. Une chaîne peut être ancrée sur la bonne entrée **et** rendue
+aveugle par un seul membre dérivé.
+
+Mesure de contrôle après scission : âge réel de **3,8 min** et **3,9 min** pour
+les deux stations, en variation continue — l'axe fraîcheur y est applicable, et
+c'est désormais constaté (R-AXE1-1) et non supposé.
+
 ### Ce que ce cas n'établit pas
 
 Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle établit un défaut de **détection** et de **maille**, pas l'efficacité d'une action. Le choix entre reload d'entrée seul et escalade vers un power-cycle relève de la réserve du §14.1, et exige sa propre preuve.
@@ -498,6 +548,7 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 - **v1.0** — Contrat initial. Deux axes orthogonaux (fraîcheur / disponibilité), script canon de recovery, registre CI, mode report-only.
 - **v1.1** — Ajout de l'invariant 11 et du §11 : garde réseau WAN pour les intégrations `cloud_wan`, garde paramétrée (`wan_entity`) et jamais codée en dur, classification `cloud_wan` / `local_lan`. Conformité déclarée à `pannes/internet/30`.
 - **v1.1 (révision)** — Définition de la fraîcheur fondée sur `last_reported` (liveness) ; invariant 1 reformulé ; usage de `last_updated`/`last_changed` proscrit sur cet axe.
+- **v2.4** — Ajout de **R-ANCRAGE-2** (§12.3) : le périmètre de détection ne contient que des entités **produites directement par l'entrée** ; toute entité dérivée (template, consolidation, façade, valeur stabilisée) est interdite, car elle porte sa propre cadence et sa propre disponibilité et peut neutraliser les deux axes simultanément. Test de recevabilité par `config_entry_id()`. Quatrième enseignement terrain en §15 : deux façades inter-intégrations rendaient la chaîne HomeKit aveugle sur ses deux axes, sans qu'aucun maillon soit manquant.
 - **v2.3** — **Cycle de vie de l'épisode de recovery** (§4.1, R-RECOV-1/2/3). « Recovery en cours » décrit l'ouverture d'un épisode et non l'état du backoff : la définition précédente, en dent de scie, pouvait couper la temporisation du retour OK et laisser un épisode ouvert indéfiniment. Un blocage au plafond cesse d'être terminal — un retour constaté referme l'épisode, réarme la chaîne et le notifie. La notification de « retour OK », exigée par l'invariant 9 mais jamais câblée, est ajoutée au script canon. Invariants 5 et 7 amendés. Ajout de R-AXE1-3 : l'inapplicabilité de l'axe fraîcheur se déclare par `axe_fraicheur: false`, jamais par un seuil sentinelle. Troisième enseignement terrain en §15.
 - **v2.2** — Ajout de la **condition d'applicabilité de l'axe fraîcheur** (§3.1, R-AXE1-1/2) : cet axe présuppose une écriture périodique du coordinateur ; sur des entités en push pur, il est **inapplicable** et doit être déclaré `non_applicable`, jamais re-seuillé. Invariant 1 amendé en conséquence. Résorption partielle de la dette §10.1 : le checker modélise désormais l'axe 3 (R7 généralisée au multi-axes) et traite `non_applicable` conformément au vocabulaire du registre. Second enseignement terrain du 2026-08-24 consigné en §15.
 - **v2.1** — Levée de la réserve §14.1 : le contrat de domaine attendu existe ([`pont_idiamant.md`](pont_idiamant.md) v1.0, 2026-08-24). R-FRONTIERE-2 est confirmée par l'usage — la remédiation physique vit dans le contrat de domaine. La frontière elle-même est inchangée et reste opposable pour tout autre équipement. Aucun invariant, aucun axe, aucune règle d'ancrage modifiés.
@@ -505,4 +556,4 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 
 ---
 
-*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.3*
+*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.4*

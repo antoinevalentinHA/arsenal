@@ -1,0 +1,22 @@
+# ==========================================================
+#  🧠 ARSENAL — TIMER TECHNIQUE
+#     homekit_station_salle_de_jeux_reload_backoff
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Timer de backoff pour l’automatisation :
+#     "Système - Relance HomeKit Station Salle de Jeux"
+#
+#  🧱 MAILLE
+#     Propre à UNE entrée de configuration
+#     (resilience_integrations.md v2.3 §12). Jamais partagé
+#     avec l'autre station ni avec le pont de volets.
+#
+#  📎 NOTE
+#     La durée est redéfinie dynamiquement par le script canon.
+# ==========================================================
+
+homekit_station_salle_de_jeux_reload_backoff:
+  name: "HomeKit Station Salle de Jeux Reload Backoff"
+  icon: mdi:timer-sand
+  duration: "01:00:00"
+  restore: true

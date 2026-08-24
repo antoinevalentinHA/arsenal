@@ -1,63 +1,110 @@
 # ==========================================================
-# 🧠 ARSENAL — GROUP
-#     Environnement — Capteurs HomeKit
+# 🧠 ARSENAL — GROUPS
+#     Entrées HomeKit — stations météo (une par entrée)
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Regrouper l'ensemble cohérent des capteurs issus de
-#   l'intégration HomeKit sous une référence statique unique.
+#   Regrouper les capteurs de CHAQUE entrée de configuration
+#   `homekit_controller` portant une station météo Netatmo.
 #
-# 🧩 PÉRIMÈTRE
-#   - Agrégation statique uniquement
-#   - Capteurs environnementaux HomeKit uniquement
-#   - Température, humidité, CO₂, qualité de l'air, bruit
-#   - Aucune logique métier
-#   - Aucun calcul d'état implicite
-#   - Aucun comportement dynamique
+# 📐 CONTRAT — resilience_integrations.md v2.3
+#   §12.3 R-ANCRAGE-1 : le périmètre de détection d'une chaîne
+#   DOIT être composé exclusivement d'entités appartenant à
+#   l'entrée que son action répare.
+#
+#   Le domaine `homekit_controller` porte TROIS entrées : les
+#   deux stations ci-dessous et le pont de volets
+#   (`group.homekit_prise_control`). Un groupe par entrée.
+#
+# 🧱 CE QUI A REMPLACÉ `homekit_capteurs`
+#   Le groupe unique historique mélangeait les capteurs des
+#   DEUX stations, et contenait en outre DEUX FAÇADES Arsenal :
+#   `sensor.temperature_petite_maison` et
+#   `sensor.humidite_relative_petite_maison`.
+#
+#   Ces façades sont des consolidations multi-capteurs
+#   INTER-INTÉGRATIONS (source HomeKit `_1` + source SwitchBot
+#   `_2`), adossées à un capteur stabilisé À MÉMOIRE
+#   (TTL 1800 s, 7200 s post-boot) rafraîchi par un tick /5.
+#
+#   Leur présence neutralisait LES DEUX AXES :
+#     - fraîcheur : le tick /5 rafraîchissait `last_reported`
+#       quoi qu'il arrive à HomeKit, donc l'âge du groupe ne
+#       pouvait jamais dépasser ~5 min et le seuil de gel de
+#       45 min était structurellement inatteignable ;
+#     - disponibilité : mémoire + source SwitchBot vivante
+#       maintenaient des membres exploitables jusqu'à 30 min
+#       (2 h post-boot) après la mort réelle de la station.
+#
+#   Elles sont remplacées ici par leurs SOURCES HOMEKIT
+#   (`*_petite_maison_1`, entrée Station Enfants) : même
+#   couverture physique, ancrage correct, aucun trou.
 #
 # 🚫 INTERDITS
-#   - Introduire une logique conditionnelle
-#   - Utiliser le groupe comme autorité décisionnelle
-#   - Mélanger des familles fonctionnelles incohérentes
-#   - Ajouter des entités non issues de HomeKit
-#   - Ajouter des entités purement techniques ou métadonnées
+#   - Réintroduire une façade ou tout capteur dérivé
+#   - Mélanger les capteurs des deux stations
+#   - Ajouter une entité du pont de volets
+#   - Ajouter une entité d'une autre intégration
 #   - Référencer un group.* comme entité membre
 #   - Utiliser la clé all:
 #
 # 🏷️ STATUT
-#   Socle — Arsenal v14.x
+#   Socle — couche diagnostic résilience (maille entrée)
 # ==========================================================
 
-homekit_capteurs:
-  name: "Capteurs Homekit"
+# ----------------------------------------------------------
+# STATION ENFANTS — séjour, petite maison, jardin 1,
+# chambre parents, chambre enfants.
+# Correspond à `sensor.diagnostic_netatmo_enfants`
+# (homekit_diagnostic.md §1, station 1).
+# ----------------------------------------------------------
+homekit_station_enfants:
+  name: "Entrée HomeKit — Station Enfants"
   entities:
 
-    - sensor.bruit_chambre_enfants
-    - sensor.co2_chambre_enfants
-    - sensor.humidite_relative_chambre_enfants_1
-    - sensor.air_quality_chambre_enfants
     - sensor.temperature_chambre_enfants_1
+    - sensor.humidite_relative_chambre_enfants_1
+    - sensor.co2_chambre_enfants
+    - sensor.air_quality_chambre_enfants
+    - sensor.bruit_chambre_enfants
+
+    - sensor.temperature_chambre_parents_1
     - sensor.humidite_relative_chambre_parents_1
     - sensor.co2_chambre_parents
     - sensor.air_quality_chambre_parents
-    - sensor.temperature_chambre_parents_1
-    - sensor.humidite_relative_jardin_1
-    - sensor.temperature_jardin_1
-    - sensor.co2_petite_maison
-    - sensor.humidite_relative_petite_maison
-    - sensor.air_quality_petite_maison
-    - sensor.temperature_petite_maison
-    - sensor.co2_sejour
-    - sensor.humidite_relative_sejour_1
-    - sensor.air_quality_sejour
+
     - sensor.temperature_sejour_1
-    - sensor.air_quality_salle_de_jeux
-    - sensor.co2_salle_de_jeux
-    - sensor.humidite_relative_salle_de_jeux_1
-    - sensor.bruit_salle_de_jeux
+    - sensor.humidite_relative_sejour_1
+    - sensor.co2_sejour
+    - sensor.air_quality_sejour
+
+    # Sources HomeKit de la petite maison — PAS les façades.
+    - sensor.temperature_petite_maison_1
+    - sensor.humidite_relative_petite_maison_1
+    - sensor.co2_petite_maison
+    - sensor.air_quality_petite_maison
+
+    - sensor.temperature_jardin_1
+    - sensor.humidite_relative_jardin_1
+
+# ----------------------------------------------------------
+# STATION SALLE DE JEUX — salle de jeux, entrée, jardin 2.
+# Correspond à `sensor.diagnostic_netatmo_salle_de_jeux`
+# (homekit_diagnostic.md §1, station 2).
+# ----------------------------------------------------------
+homekit_station_salle_de_jeux:
+  name: "Entrée HomeKit — Station Salle de Jeux"
+  entities:
+
     - sensor.temperature_salle_de_jeux_1
-    - sensor.air_quality_entree
-    - sensor.co2_entree
-    - sensor.humidite_relative_entree_1
+    - sensor.humidite_relative_salle_de_jeux_1
+    - sensor.co2_salle_de_jeux
+    - sensor.air_quality_salle_de_jeux
+    - sensor.bruit_salle_de_jeux
+
     - sensor.temperature_entree_1
-    - sensor.humidite_relative_jardin_2
+    - sensor.humidite_relative_entree_1
+    - sensor.co2_entree
+    - sensor.air_quality_entree
+
     - sensor.temperature_jardin_2
+    - sensor.humidite_relative_jardin_2
