@@ -79,6 +79,16 @@ FILES_OBSERVATION_RESILIENCE = [
 ]
 EVENT_RELOAD = "event_template_reloaded"
 
+# R-COUVERTURE-4 (contrat §10.2) — une dérogation se déclare par ENTITÉ TÉMOIN.
+# Le registre porte le motif et le critère de levée ; le fichier runtime porte
+# le filtre effectif. Les deux doivent désigner exactement les mêmes témoins :
+# une dérogation motivée au registre mais absente du runtime ne dérobe rien, et
+# une dérogation câblée au runtime mais absente du registre est un silence sans
+# motif — très exactement ce que R-COUVERTURE-1 interdit.
+FILE_COUVERTURE = ROOT / "12_template_sensors" / "system" / "integrations" / "couverture.yaml"
+RE_TEMOINS = re.compile(
+    r"set\s+derogations_temoins\s*=\s*\[(.*?)\]", re.S)
+
 
 # ──────────────────────────────────────────────────────────────
 # Loader YAML tolérant aux tags HA (!secret, !include, etc.)
@@ -486,6 +496,39 @@ def pont_sante_no_rssi_gate():
 # ──────────────────────────────────────────────────────────────
 # Cœur : évaluation d'une intégration contre le dépôt
 # ──────────────────────────────────────────────────────────────
+
+def temoins_derogation_runtime():
+    """Les listes `derogations_temoins` du fichier de couverture.
+
+    Il y en a DEUX (bloc `state` et attribut `detail`). Elles sont extraites
+    séparément et comparées : si elles divergent, le décompte d'écarts et le
+    message qui l'explique ne parlent pas du même périmètre — un contrôle qui
+    se contredit lui-même est pire qu'un contrôle absent.
+    """
+    if not FILE_COUVERTURE.exists():
+        return None
+    txt = FILE_COUVERTURE.read_text(encoding="utf-8")
+    listes = []
+    for bloc in RE_TEMOINS.findall(txt):
+        listes.append(sorted(re.findall(r"'([^']+)'", bloc)))
+    return listes
+
+
+def temoins_derogation_registre(registre):
+    """Les témoins déclarés au registre, avec leur complétude R-COUVERTURE-2."""
+    temoins, incomplets = [], []
+    for integ in registre.get("integrations", []) or []:
+        for d in integ.get("derogations_couverture", []) or []:
+            w = d.get("temoin")
+            if w:
+                temoins.append(w)
+            else:
+                incomplets.append(f"{integ['nom']}/{d.get('entree', '?')} : temoin absent")
+            if not d.get("motif") or not d.get("critere_levee"):
+                incomplets.append(
+                    f"{integ['nom']}/{d.get('entree', '?')} : motif ou critere_levee absent")
+    return sorted(temoins), incomplets
+
 
 def reveil_au_deploiement(path: Path):
     """R17 / R-OBS-1 — chaque bloc `- trigger:` inclut-il event_template_reloaded ?
@@ -1100,6 +1143,49 @@ def main():
                    f"rechargement des modèles")
     for (_i, regle, cat, msg) in RESULTS:
         if _i == "Réveil observation":
+            sym = {PASS: "✔", DETTE: "⚠", EXCEPTION: "✔", WARN: "⚠", FAIL: "✗"}[cat]
+            tag = "" if cat == PASS else f" {cat}"
+            print(f"  {sym} {regle}{tag} {msg}")
+    print()
+
+    # ---------- R19 : témoins de dérogation, registre <-> runtime ----------
+    # R-COUVERTURE-4. Le registre motive, le runtime filtre. Si les deux
+    # listes divergent, soit une dérogation motivée ne dérobe rien, soit une
+    # entrée est écartée du contrôle sans qu'aucun motif ne soit écrit.
+    print("[Témoins de dérogation — registre <-> runtime (R19)]  global")
+    listes = temoins_derogation_runtime()
+    reg_temoins, incomplets = temoins_derogation_registre(registre)
+    if listes is None:
+        record("Témoins dérogation", "R19", FAIL,
+               f"{FILE_COUVERTURE.name} introuvable")
+    elif not listes:
+        record("Témoins dérogation", "R19", FAIL,
+               f"{FILE_COUVERTURE.name} : aucune liste derogations_temoins trouvée")
+    elif len(set(map(tuple, listes))) > 1:
+        record("Témoins dérogation", "R19", FAIL,
+               f"{FILE_COUVERTURE.name} : les {len(listes)} listes de témoins "
+               f"divergent — le décompte et son explication porteraient sur des "
+               f"périmètres différents")
+    elif listes[0] != reg_temoins:
+        manque_runtime = sorted(set(reg_temoins) - set(listes[0]))
+        manque_registre = sorted(set(listes[0]) - set(reg_temoins))
+        details = []
+        if manque_runtime:
+            details.append("motivé(s) au registre mais non câblé(s) : "
+                           + ", ".join(manque_runtime))
+        if manque_registre:
+            details.append("câblé(s) sans motif au registre : "
+                           + ", ".join(manque_registre))
+        record("Témoins dérogation", "R19", FAIL, " ; ".join(details))
+    elif incomplets:
+        record("Témoins dérogation", "R19", FAIL,
+               "dérogation incomplète (R-COUVERTURE-2) : " + " ; ".join(incomplets))
+    else:
+        record("Témoins dérogation", "R19", PASS,
+               f"{len(reg_temoins)} témoin(s) alignés registre/runtime, "
+               f"motif et critère de levée présents")
+    for (_i, regle, cat, msg) in RESULTS:
+        if _i == "Témoins dérogation":
             sym = {PASS: "✔", DETTE: "⚠", EXCEPTION: "✔", WARN: "⚠", FAIL: "✗"}[cat]
             tag = "" if cat == PASS else f" {cat}"
             print(f"  {sym} {regle}{tag} {msg}")
