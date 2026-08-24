@@ -59,6 +59,7 @@
 | [bouclage.md](./bouclage.md) | Bouclage ECS ⚠️ (voir §Anomalies) |
 | [vmc.md](./vmc.md) | VMC |
 | [volets_pluie.md](./volets_pluie.md) | Volets — pluie |
+| [pont_idiamant.md](./pont_idiamant.md) | Volets — pont iDiamant : supervision et remédiation (escalade reload → power-cycle) |
 | [mouvements.md](./mouvements.md) | Mouvements |
 | [voiture.md](./voiture.md) | Voiture — Audi A3 e-tron |
 

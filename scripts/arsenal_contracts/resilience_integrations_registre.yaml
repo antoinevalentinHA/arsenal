@@ -201,6 +201,10 @@ integrations:
     capteur_etat_entree:     { statut: present, entity_id: sensor.etat_entree_homekit_prise_control }
     binaire_echec_configuration: { statut: present, entity_id: binary_sensor.echec_configuration_homekit_prise_control }
     debounce_echec_configuration: "00:15:00"
+    # ESCALADE (echelon 2) — contrats/pont_idiamant.md v1.0.
+    # Automation 10120000000030 : power-cycle unique de switch.prise_palier
+    # apres 2 tentatives de reload infructueuses. Hors modele du checker
+    # (dette §10.1) : la remediation physique n'est pas modelisee ici.
     a_confirmer_runtime: "Cadence de report des cover.* de cette entree non mesurable pendant l'incident (entites unavailable depuis le 2026-08-23). Le seuil de gel 45 est aligne sur les autres integrations local_lan ; a confirmer sur donnees reelles une fois l'entree rechargee."
     exceptions_temporaires: []
 
