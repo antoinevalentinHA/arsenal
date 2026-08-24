@@ -29,12 +29,26 @@
 #       étranger (R-ANCRAGE-2)
 #     - groupe vide ou introuvable
 #
-#  🕒 CADENCE
-#     La composition d'un groupe ne change qu'au déploiement.
-#     Un réveil toutes les 6 h suffit largement ; `config_entry_id`
-#     n'étant pas réactive, un capteur sans trigger figerait sa
-#     valeur au démarrage. Couche OBSERVATION : ce tick ne
-#     déclenche aucune action (R-AXE3-5).
+#  🕒 CADENCE — trois déclencheurs, et c'est délibéré
+#     La composition d'un groupe ne change qu'au DÉPLOIEMENT.
+#     C'est précisément pour ça qu'un tick très espacé ne suffit
+#     pas : le déploiement est le moment où le contrôle doit
+#     parler, et un rechargement des modèles ne déclenche NI
+#     `homeassistant: start` NI un tick horaire.
+#
+#     - `event_template_reloaded` : évaluation immédiate au
+#       rechargement des modèles. C'est le cas d'usage principal.
+#     - `homeassistant: start` : au démarrage.
+#     - `time_pattern` horaire : filet de sécurité. Si le nom
+#       d'événement ci-dessus devenait faux, le trigger ne
+#       déclencherait simplement jamais (HA n'échoue pas sur un
+#       type d'événement inconnu) et la fenêtre aveugle resterait
+#       bornée à une heure au lieu d'être infinie.
+#
+#     `config_entry_id` n'étant pas réactive, un capteur sans
+#     trigger figerait sa valeur au démarrage.
+#     Couche OBSERVATION : aucun de ces réveils ne déclenche
+#     d'action (R-AXE3-5).
 #
 #  📋 ÉNUMÉRATION DÉCLARATIVE
 #     La liste des groupes est écrite en clair — ce ne sont pas
@@ -48,10 +62,12 @@
 # ==========================================================
 
 - trigger:
-    - platform: time_pattern
-      hours: "/6"
+    - platform: event
+      event_type: event_template_reloaded
     - platform: homeassistant
       event: start
+    - platform: time_pattern
+      hours: "/1"
 
   binary_sensor:
     - name: "Ancrage chaines resilience non conforme"
