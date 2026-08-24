@@ -58,6 +58,27 @@ FILE_SCRIPT_CANON = ROOT / "10_scripts" / "system" / "resilience_integration_rec
 DIR_TIMERS = ROOT / "08_timers" / "reload_integrations"
 DIR_COMPTEURS = ROOT / "03_input_numbers" / "system" / "reload_integrations"
 
+# R-OBS-1 (contrat §9.1) — couche OBSERVATION de la résilience : tout bloc à
+# déclencheurs doit inclure `event_template_reloaded`, faute de quoi le capteur
+# reste `unknown` après un rechargement des modèles. Sur ces capteurs-là, les
+# sources ne bougent pas en fonctionnement normal : la fenêtre aveugle dure
+# jusqu'au prochain incident, et la carte affiche un gris indiscernable d'une
+# panne.
+#
+# ⚠️ PÉRIMÈTRE VOLONTAIREMENT ÉNUMÉRÉ, ET NON « tout 12_template_sensors »
+# Le dépôt compte ~700 blocs à déclencheurs. La très grande majorité dérive
+# des mesures dont les sources tiquent en permanence : elles se réévaluent
+# seules en quelques secondes. Étendre la règle à tout le dépôt imposerait une
+# réécriture de masse sans défaut constaté derrière. Ajouter un fichier ici est
+# une décision, pas une formalité.
+FILES_OBSERVATION_RESILIENCE = [
+    ROOT / "12_template_sensors" / "system" / "integrations" / "ancrage.yaml",
+    ROOT / "12_template_sensors" / "system" / "integrations" / "couverture.yaml",
+    ROOT / "12_template_sensors" / "system" / "integrations" / "etat_entrees.yaml",
+    ROOT / "12_template_sensors" / "couleurs" / "integrations.yaml",
+]
+EVENT_RELOAD = "event_template_reloaded"
+
 
 # ──────────────────────────────────────────────────────────────
 # Loader YAML tolérant aux tags HA (!secret, !include, etc.)
@@ -465,6 +486,40 @@ def pont_sante_no_rssi_gate():
 # ──────────────────────────────────────────────────────────────
 # Cœur : évaluation d'une intégration contre le dépôt
 # ──────────────────────────────────────────────────────────────
+
+def reveil_au_deploiement(path: Path):
+    """R17 / R-OBS-1 — chaque bloc `- trigger:` inclut-il event_template_reloaded ?
+
+    Lecture STRUCTURELLE (YAML), pas textuelle : un fichier peut contenir le nom
+    de l'événement dans un commentaire ou dans un seul bloc sur trois et laisser
+    les autres aveugles. C'est très exactement le cas rencontré le 2026-08-24.
+
+    Retourne (nb_blocs, [index des blocs sans l'événement]).
+    """
+    doc = load_yaml(path)
+    if not isinstance(doc, list):
+        return (0, [])
+    manquants = []
+    blocs = 0
+    for idx, entry in enumerate(doc):
+        if not isinstance(entry, dict):
+            continue
+        triggers = entry.get("trigger") or entry.get("triggers")
+        if triggers is None:
+            continue
+        blocs += 1
+        if isinstance(triggers, dict):
+            triggers = [triggers]
+        couvert = any(
+            isinstance(tr, dict)
+            and (tr.get("platform") == "event" or tr.get("trigger") == "event")
+            and tr.get("event_type") == EVENT_RELOAD
+            for tr in triggers
+        )
+        if not couvert:
+            manquants.append(idx + 1)
+    return (blocs, manquants)
+
 
 def evaluate(integ, ctx):
     nom = integ["nom"]
@@ -966,6 +1021,38 @@ def main():
                f"{FILE_PONT_SANTE.name} : " + " ; ".join(ps_problems))
     for (_i, regle, cat, msg) in RESULTS:
         if _i == "Santé pont C18":
+            sym = {PASS: "✔", DETTE: "⚠", EXCEPTION: "✔", WARN: "⚠", FAIL: "✗"}[cat]
+            tag = "" if cat == PASS else f" {cat}"
+            print(f"  {sym} {regle}{tag} {msg}")
+    print()
+
+    # ---------- R17 : réveil au déploiement de la couche observation ----------
+    # Contrat §9.1 / R-OBS-1. Un capteur à déclencheurs ne rend RIEN tant
+    # qu'aucun n'a tiré, et un rechargement des modèles ne déclenche ni
+    # `homeassistant: start` ni un tick. Sur ces capteurs, dont les sources ne
+    # bougent qu'en incident, la fenêtre aveugle dure jusqu'au prochain incident.
+    print("[Réveil au déploiement — couche observation (R17)]  global")
+    for path in FILES_OBSERVATION_RESILIENCE:
+        if not path.exists():
+            record("Réveil observation", "R17", FAIL,
+                   f"{path.name} : fichier introuvable (périmètre R-OBS-1)")
+            continue
+        blocs, manquants = reveil_au_deploiement(path)
+        if blocs == 0:
+            record("Réveil observation", "R17", FAIL,
+                   f"{path.name} : aucun bloc à déclencheurs — capteur non "
+                   f"réévalué (R-AXE3-4)")
+        elif manquants:
+            record("Réveil observation", "R17", FAIL,
+                   f"{path.name} : {len(manquants)}/{blocs} bloc(s) sans "
+                   f"{EVENT_RELOAD} (bloc(s) n°{', '.join(map(str, manquants))}) "
+                   f"— reste unknown après rechargement des modèles")
+        else:
+            record("Réveil observation", "R17", PASS,
+                   f"{path.name} : {blocs} bloc(s), tous réveillés au "
+                   f"rechargement des modèles")
+    for (_i, regle, cat, msg) in RESULTS:
+        if _i == "Réveil observation":
             sym = {PASS: "✔", DETTE: "⚠", EXCEPTION: "✔", WARN: "⚠", FAIL: "✗"}[cat]
             tag = "" if cat == PASS else f" {cat}"
             print(f"  {sym} {regle}{tag} {msg}")

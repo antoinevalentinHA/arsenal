@@ -1,7 +1,7 @@
 # ARSENAL — Contrat de résilience des intégrations
 
 **Composant :** `arsenal-ha`
-**Version :** v3.1
+**Version :** v3.2
 **Scope :** Détection et relance automatique des intégrations critiques (gel des données, indisponibilité des entités, échec de configuration d'une entrée).
 **Maille de couverture :** l'**entrée de configuration** (*config entry*) — voir §12.
 **Mode d'application :** report-only — voir §10 et le registre.
@@ -208,6 +208,48 @@ Une intégration peut déroger au canon d'âge si elle dispose d'un signal de di
 | Décision | `11_automations/system/reload_integrations/` |
 | Action | `10_scripts/system/resilience_integration_recover.yaml` |
 | UI | `18_lovelace/` |
+
+### 9.1 Réveil au déploiement — la couche observation doit parler quand on déploie
+
+Un capteur à déclencheurs **ne rend rien** tant qu'aucun de ses déclencheurs n'a
+tiré : il reste `unknown`. Or un **rechargement des modèles** — le geste de
+déploiement standard d'Arsenal — ne déclenche **ni** `homeassistant: start`,
+**ni** un tick périodique, **ni** un changement d'état sur des sources stables.
+
+Le capteur est donc muet exactement au moment où on le regarde pour savoir si le
+déploiement a produit ce qu'on attendait.
+
+> **R-OBS-1 (opposable).** Tout capteur de la **couche observation de la
+> résilience** implémenté en template à déclencheurs **DOIT** inclure
+> `event_template_reloaded` parmi ses déclencheurs. Les autres réveils —
+> `homeassistant: start`, tick périodique, changements d'état des sources —
+> restent des **filets de sécurité** ; aucun ne le remplace.
+
+**Pourquoi cette règle est nécessaire alors que la plupart des capteurs s'en
+passent.** Un capteur dont les sources tiquent souvent se répare tout seul en
+quelques secondes après un rechargement. Ce n'est pas une propriété, c'est un
+**accident de câblage** : il ne tient que tant que les sources bougent. Les
+capteurs de résilience sont précisément ceux dont les sources **ne bougent pas
+en fonctionnement normal** — un contrôle d'ancrage ne change qu'au déploiement,
+une indisponibilité franche ne change que pendant un incident. Chez eux, la
+fenêtre aveugle n'est pas de quelques secondes : elle dure **jusqu'au prochain
+incident**.
+
+**Le mode de défaillance est un faux gris, pas une erreur.** Rien ne casse,
+aucun log ne se plaint : la carte affiche un indicateur indisponible,
+indiscernable d'une panne réelle — et une couleur de santé peut passer de gris à
+rouge **sans jamais être passée par vert**. C'est la même famille de mensonge que
+R-UI-1/2 interdit à l'affichage.
+
+**Portée.** La règle est bornée à la couche observation de la résilience, pas
+étendue à l'ensemble des templates du dépôt : y ajouter un réveil de masse serait
+un changement sans rapport avec un besoin constaté. Le contrôle CI (**R17**)
+porte sur les fichiers énumérés de cette couche.
+
+**Constaté deux fois avant d'être écrit** — 2026-08-24, `ancrage.yaml` d'abord
+(corrigé au coup par coup), puis `couleur_sante_switchbot_ble`, dont les deux
+sources ne bougent QUE pendant un incident. La leçon n'avait pas été généralisée
+la première fois ; c'est l'objet de cette section.
 
 ---
 
@@ -553,7 +595,9 @@ La preuve est l'état de l'entrée, lu par `config_entry_attr(entry_id, 'state')
 
 **Productibilité vérifiée** sur l'installation le 2026-08-24 (§15) : la fonction restitue l'état et les attributs `title`, `domain`, `disabled_by`, `source`. Niveau **L1** au sens de [`solvabilite_probatoire.md`](../architecture/03_doctrines/solvabilite_probatoire.md) §1 — la preuve est produite par le runtime.
 
-> **R-AXE3-4 (contrainte d'implémentation, opposable).** Cette fonction **n'est pas réactive** : elle n'émet aucun événement de changement d'état et ne provoque aucune réévaluation. Un capteur d'état d'entrée **DOIT** donc être un capteur à **déclencheurs explicites** — réveil périodique grossier **plus** `homeassistant: start`. Un template sans trigger est **interdit** ici : il n'aurait aucune garantie de réévaluation et figerait la valeur lue au démarrage, produisant exactement le faux vert que cet axe existe pour supprimer.
+> **R-AXE3-4 (contrainte d'implémentation, opposable).** Cette fonction **n'est pas réactive** : elle n'émet aucun événement de changement d'état et ne provoque aucune réévaluation. Un capteur d'état d'entrée **DOIT** donc être un capteur à **déclencheurs explicites** — `event_template_reloaded` (R-OBS-1, §9.1) **plus** réveil périodique grossier **plus** `homeassistant: start`. Un template sans trigger est **interdit** ici : il n'aurait aucune garantie de réévaluation et figerait la valeur lue au démarrage, produisant exactement le faux vert que cet axe existe pour supprimer.
+>
+> La formulation initiale de cette règle n'exigeait que les deux derniers réveils. Elle était **incomplète** : aucun des deux ne tire au rechargement des modèles, si bien qu'un capteur conforme à la lettre restait `unknown` après chaque déploiement. C'est ce trou que R-OBS-1 ferme, pour l'axe 3 comme pour le reste de la couche observation.
 
 > **R-AXE3-5.** Ce réveil périodique appartient à la **couche observation**. Il ne déclenche aucune action : la couche décision continue de se déclencher sur la **transition d'état du binaire**, jamais sur le tick. L'invariant 10 (« pas de `time_pattern` en couche décision ») demeure donc **intact**.
 > Cet usage est celui explicitement autorisé par [`gestion_du_temps.md`](../architecture/03_doctrines/gestion_du_temps.md) — rubrique « surveillance et résilience système », et règle « tick pour déclencher l'évaluation quand le seuil est atteint sans événement ». La fréquence doit rester **grossière** ; une cadence fine serait du polling déguisé.
@@ -722,6 +766,7 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 
 ## 16. Historique de version
 
+- **v3.2** — Ajout du **§9.1** et de **R-OBS-1** : tout capteur de la couche observation de la résilience doit inclure `event_template_reloaded`. Un rechargement des modèles ne déclenche ni `homeassistant: start` ni un tick, et les sources d'un capteur de résilience ne bougent pas en fonctionnement normal — le capteur restait donc `unknown` jusqu'au prochain incident, affichant un gris indiscernable d'une panne. **R-AXE3-4 est amendée** : sa formulation d'origine, qui n'exigeait que le tick et le démarrage, était incomplète et a produit le défaut deux fois. Ajout de **R17** au checker, borné aux fichiers énumérés de cette couche — la règle n'est **pas** étendue aux ~700 blocs à déclencheurs du dépôt, dont les sources tiquent assez pour que la fenêtre aveugle se referme seule.
 - **v1.0** — Contrat initial. Deux axes orthogonaux (fraîcheur / disponibilité), script canon de recovery, registre CI, mode report-only.
 - **v1.1** — Ajout de l'invariant 11 et du §11 : garde réseau WAN pour les intégrations `cloud_wan`, garde paramétrée (`wan_entity`) et jamais codée en dur, classification `cloud_wan` / `local_lan`. Conformité déclarée à `pannes/internet/30`.
 - **v1.1 (révision)** — Définition de la fraîcheur fondée sur `last_reported` (liveness) ; invariant 1 reformulé ; usage de `last_updated`/`last_changed` proscrit sur cet axe.
@@ -740,4 +785,4 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 
 ---
 
-*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v3.1*
+*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v3.2*

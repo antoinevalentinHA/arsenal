@@ -17,9 +17,25 @@
 #   - orange : au-dessus de centre+band (ralentit)
 #   - red    : >= seuil_minutes (incident)
 #   - grey   : unknown/unavailable/non numérique
+#
+# 🕒 RÉVEIL AU DÉPLOIEMENT — `event_template_reloaded` obligatoire
+#   Contrat resilience_integrations.md §9.1, R-OBS-1.
+#   Un capteur à déclencheurs ne rend RIEN tant qu'aucun de ses
+#   déclencheurs n'a tiré. Un rechargement des modèles ne
+#   déclenche NI `homeassistant: start` NI un changement d'état
+#   de sources stables : le capteur reste `unknown` — sur la
+#   carte, un gris indiscernable d'une panne.
+#   Constaté le 2026-08-24 sur `couleur_sante_switchbot_ble`,
+#   dont les deux sources (indisponibilité franche, groupe) ne
+#   bougent QUE pendant un incident : la couleur serait passée
+#   de gris à rouge sans jamais avoir affiché vert.
+#   Les couleurs d'âge s'en sortaient par accident — leurs
+#   sources tiquent souvent. L'accident n'est pas une garantie.
 # ==========================================================
 
 - trigger:
+    - platform: event
+      event_type: event_template_reloaded
     - platform: state
       entity_id:
         - sensor.homekit_station_enfants_age_donnees
@@ -193,6 +209,8 @@
 # ==========================================================
 
 - trigger:
+    - platform: event
+      event_type: event_template_reloaded
     - platform: state
       entity_id:
         - sensor.homekit_prise_control_age_donnees
@@ -241,6 +259,8 @@
 # ==========================================================
 
 - trigger:
+    - platform: event
+      event_type: event_template_reloaded
     - platform: state
       entity_id:
         - binary_sensor.indisponibilite_franche_switchbot_ble
