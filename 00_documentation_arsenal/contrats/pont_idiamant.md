@@ -1,6 +1,6 @@
 # Contrat — Pont iDiamant (volets) : supervision et remédiation
 
-**Arsenal** · Couche domaine · v1.1 — 2026-08-24
+**Arsenal** · Couche domaine · v1.2 — 2026-08-24
 
 ---
 
@@ -250,12 +250,23 @@ le débounce de 2 minutes a été coupé à environ 90 secondes. Le compteur est
 > **Réserve différée solvable, non bloquante.** Propriétaire : le patron canon.
 > Critère de levée : correction du retour OK au niveau du script canon, de façon
 > à ce qu'une reprise survenue pendant le backoff soit constatée même si le timer
-> expire pendant la temporisation. Réévaluation : à la prochaine passe touchant
-> le script canon.
+> expire pendant la temporisation.
+>
+> ✅ **LEVÉE le 2026-08-24** par
+> [`resilience_integrations.md`](resilience_integrations.md) **v2.3** : le binaire
+> « recovery en cours » décrit désormais un **épisode ouvert** (R-RECOV-1) et non
+> l'état du backoff, ce qui supprime la course. La correction porte sur les sept
+> chaînes, pas seulement celle-ci.
 
 > **R-PONT-9 (opérationnel).** Tant que R-PONT-8 n'est pas levée, un compteur
 > laissé à une valeur non nulle après un épisode clos **doit être remis à zéro**
 > — c'est une opération de maintenance, explicitement prévue par le helper.
+>
+> ✅ **SANS OBJET depuis le 2026-08-24** (R-PONT-8 levée). Conservée comme trace :
+> la remise à zéro manuelle du 2026-08-24 relevait de cette règle. Avec la
+> définition par épisode, un compteur non nul sur un périmètre sain est
+> désormais **résorbé automatiquement** — il maintient l'épisode ouvert, donc le
+> retour OK se prononce et remet le compteur à zéro de lui-même.
 
 ### 8.3 Axe fraîcheur inapplicable à ce pont
 
@@ -283,9 +294,11 @@ age = 21 min, et croissant
 > absence de grandeur mesurable. Voir R-AXE1-1 de
 > [`resilience_integrations.md`](resilience_integrations.md) §3.1.
 
-L'âge reste **exposé en observabilité** et sert au constat de **retour** après
-reload (un rechargement force les entités à re-rapporter, l'âge retombe à 0).
-Il n'est **jamais** un déclencheur.
+L'âge reste **exposé en observabilité**, mais il n'entre **ni** dans la condition
+d'incident **ni** dans la condition de succès : l'automation transmet
+`axe_fraicheur: false` au script canon (R-AXE1-3), qui conclut au retour sur les
+seuls axes disponibilité et échec de configuration. Il n'est **jamais** un
+déclencheur.
 
 Cette entrée est donc couverte par **deux axes** — disponibilité et échec de
 configuration — qui sont exactement les deux qui ont détecté l'incident du
@@ -320,7 +333,11 @@ configuration — qui sont exactement les deux qui ont détecté l'incident du
   **inapplicable** à ce pont (entités en push pur, âge non borné), retiré du
   câblage et déclaré `non_applicable` au registre. Mesure terrain à l'appui.
   Aucune modification de la politique d'escalade.
+- **v1.2** — 2026-08-24. **R-PONT-8 levée** par `resilience_integrations.md` v2.3
+  (épisode de recovery, R-RECOV-1) ; R-PONT-9 devient sans objet. La sentinelle
+  de seuil est remplacée par le paramètre explicite `axe_fraicheur: false`
+  (R-AXE1-3). Aucune modification de la politique d'escalade.
 
 ---
 
-*Arsenal — document contractuel · couche domaine · pont iDiamant · v1.1*
+*Arsenal — document contractuel · couche domaine · pont iDiamant · v1.2*
