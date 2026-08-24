@@ -29,6 +29,8 @@ resilience_integration_recover:
       description: "Ex: sensor.vicare_age_donnees"
     unavail_entity:
       description: "Optionnel. Binaire d'indisponibilité franche (ex: binary_sensor.indisponibilite_franche_netatmo). Si 'on', l'incident est confirmé même si l'âge est figé bas."
+    axe_fraicheur:
+      description: "Optionnel, defaut true. Passer a false quand l'axe fraicheur est INAPPLICABLE au perimetre : entites en push, sans ecriture periodique du coordinateur (contrat §3.1, R-AXE1-1). Le terme d'age est alors retire de la condition d'incident ET de la condition de succes. Au moins un axe de substitution (unavail_entity ou fail_entity) devient OBLIGATOIRE — sans quoi le succes serait vide de sens."
     fail_entity:
       description: "Optionnel. Binaire d'echec de configuration de l'entree (axe 3, contrat v2.0 §13). Si 'on', l'incident est confirme meme si l'age est frais ET les entites presentes : une entree d'un domaine multi-entrees peut echouer pendant qu'une entree voisine maintient le perimetre agrege au vert. Ne jamais substituer unavail_entity a ce parametre (invariant 3)."
     wan_entity:
@@ -111,6 +113,7 @@ resilience_integration_recover:
         unavail: >
           {{ unavail_entity_safe | length > 0
              and is_state(unavail_entity_safe, 'on') }}
+        fraicheur: "{{ (axe_fraicheur | default(true)) | bool }}"
         fail_entity_safe: "{{ fail_entity | default('') }}"
         fail: >
           {{ fail_entity_safe | length > 0
@@ -127,6 +130,22 @@ resilience_integration_recover:
           {% set d = (tentative + 1) * 10 %}
           {{ [d, cap] | min }}
 
+    # =========================
+    # 🧱 GARDE COHERENCE AXES
+    # =========================
+    # Desactiver l'axe fraicheur sans axe de substitution rendrait la condition
+    # de succes vide : le script conclurait au retour immediatement apres chaque
+    # reload, sans rien avoir constate.
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ not fraicheur
+                   and unavail_entity_safe | length == 0
+                   and fail_entity_safe | length == 0 }}
+          sequence:
+            - stop: "axe_fraicheur=false sans axe de substitution (unavail_entity ou fail_entity)"
+
     - choose:
 
         # =========================
@@ -134,6 +153,43 @@ resilience_integration_recover:
         # =========================
         - conditions: "{{ op == 'reset' }}"
           sequence:
+            # Notification AVANT remise a zero : `tentative` porte encore la
+            # valeur d'avant le reset. L'invariant 9 exige une notification sur
+            # "retour OK" ; elle manquait, si bien qu'un episode ouvert par un
+            # "relance en echec" notifie se refermait dans le silence.
+            # Deux branches distinctes plutot qu'un titre calcule : le contrat
+            # Notifications (T6) exige un emoji normatif EN TETE du titre, donc
+            # un litteral, pas une expression Jinja.
+            - choose:
+                # Sortie d'un blocage au plafond : evenement notable en soi.
+                - conditions:
+                    - condition: template
+                      value_template: "{{ tentative > 0 and plafond }}"
+                  sequence:
+                    - service: script.notification_envoyer
+                      data:
+                        cible: input_text.telephone_parent_1_notify
+                        titre: "✅ {{ prefix }} — chaîne débloquée"
+                        message: >
+                          {{ now().strftime('%d/%m %H:%M') }}
+                          Retour constaté après blocage au plafond
+                          ({{ tentative }} tentatives). Les relances
+                          automatiques sont de nouveau armées.
+
+                # Cloture ordinaire : l'episode avait deja notifie au moins un
+                # echec, il ne doit pas se refermer en silence.
+                - conditions:
+                    - condition: template
+                      value_template: "{{ tentative > 0 }}"
+                  sequence:
+                    - service: script.notification_envoyer
+                      data:
+                        cible: input_text.telephone_parent_1_notify
+                        titre: "✅ {{ prefix }} — épisode clos"
+                        message: >
+                          {{ now().strftime('%d/%m %H:%M') }}
+                          Retour constaté après {{ tentative }} tentative(s)
+                          infructueuse(s). Compteur remis à zéro.
             - service: timer.cancel
               target:
                 entity_id: "{{ backoff_timer }}"
@@ -185,7 +241,7 @@ resilience_integration_recover:
     # aucun ne se déduit d'un autre (contrat v2.0 §3, invariant 3).
     - condition: template
       value_template: >
-        {{ (age is not none and age >= seuil) or unavail or fail }}
+        {{ (fraicheur and age is not none and age >= seuil) or unavail or fail }}
 
     # Annule un backoff pendu (si on relance à cause d’un nouveau gel)
     - service: timer.cancel
@@ -223,7 +279,8 @@ resilience_integration_recover:
            and is_state(unavail_entity_safe, 'on') %}
         {% set still_fail = fail_entity_safe | length > 0
            and is_state(fail_entity_safe, 'on') %}
-        {{ v is not none and v < ok and not still_unavail and not still_fail }}
+        {% set frais = (not fraicheur) or (v is not none and v < ok) %}
+        {{ frais and not still_unavail and not still_fail }}
       timeout: "{{ timeout }}"
       continue_on_timeout: true
 
@@ -235,7 +292,8 @@ resilience_integration_recover:
                and is_state(unavail_entity_safe, 'on') %}
             {% set still_fail = fail_entity_safe | length > 0
                and is_state(fail_entity_safe, 'on') %}
-            {{ v is not none and v < ok and not still_unavail and not still_fail }}
+            {% set frais = (not fraicheur) or (v is not none and v < ok) %}
+            {{ frais and not still_unavail and not still_fail }}
           sequence:
             - service: timer.cancel
               target:
@@ -251,7 +309,11 @@ resilience_integration_recover:
                 titre: "✅ {{ prefix }} — relance OK"
                 message: >
                   {{ now().strftime('%d/%m %H:%M') }}
+                  {% if fraicheur %}
                   Données à nouveau fraîches ({{ states(age_entity_safe) }} min).
+                  {% else %}
+                  Entrée rechargée, axes de disponibilité revenus au vert.
+                  {% endif %}
 
       default:
         - service: timer.start

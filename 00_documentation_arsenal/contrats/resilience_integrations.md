@@ -1,7 +1,7 @@
 # ARSENAL — Contrat de résilience des intégrations
 
 **Composant :** `arsenal-ha`
-**Version :** v2.2
+**Version :** v2.3
 **Scope :** Détection et relance automatique des intégrations critiques (gel des données, indisponibilité des entités, échec de configuration d'une entrée).
 **Maille de couverture :** l'**entrée de configuration** (*config entry*) — voir §12.
 **Mode d'application :** report-only — voir §10 et le registre.
@@ -40,6 +40,7 @@ Les trois axes doivent exister **séparément**. Aucun ne peut servir de substit
 | **Disponibilité** | Présence d'au moins un membre exploitable du groupe source. L'**indisponibilité franche** = « 0 membre exploitable » maintenu sur une temporisation. Mesure la disparition. |
 | **Échec de configuration** | État de l'**entrée** elle-même : elle n'est pas chargée et ne se charge pas. Porte sur l'entrée, jamais sur ses entités (§13). |
 | **Recovery** | Procédure de relance déléguée au script canon `resilience_integration_recover` (attempt / reset / block), bornée par backoff et plafond, inhibée en panne secteur. |
+| **Épisode de recovery** | Séquence ouverte à la première tentative et fermée par un **retour constaté**. Un épisode reste ouvert tant que le backoff tourne **ou** que le compteur de tentatives est non nul. **N'est pas** synonyme de « backoff actif » : l'expiration du backoff est un événement *interne* à l'épisode (§4.1). |
 | **Chaîne complète** | Entrée possédant tous les maillons des couches diagnostic, décision, action, UI (§4), câblant **les trois** axes applicables à son mode. |
 | **Chaîne orpheline** | Infrastructure de diagnostic et/ou d'action présente, mais **aucune automation de décision** ne la consomme. L'incident est diagnostiqué, jamais traité. **Non conforme.** |
 | **Chaîne aveugle** | Automation de décision présente mais ne déclenchant que sur **un seul** axe (typiquement la fraîcheur), ignorant les autres axes applicables. **Non conforme.** |
@@ -82,6 +83,14 @@ périmètre parfaitement sain**.
 > suffisent à constituer une chaîne complète. Le mode déclaré au registre doit
 > alors énoncer exactement les axes câblés.
 
+> **R-AXE1-3 (câblage).** L'inapplicabilité se déclare au script canon par le
+> paramètre **`axe_fraicheur: false`**, qui retire le terme d'âge de la condition
+> d'incident **et** de la condition de succès. Le script exige alors au moins un
+> axe de substitution (`unavail_entity` ou `fail_entity`) : sans lui, la condition
+> de succès serait vide et le script conclurait au retour sans rien constater.
+> Neutraliser l'axe par un seuil sentinelle est **interdit** — c'est un
+> contournement, pas une déclaration.
+
 ---
 
 ## 4. Anatomie d'une chaîne complète
@@ -91,6 +100,38 @@ périmètre parfaitement sain**.
 **Action** — délégation à `script.resilience_integration_recover` ; timer de backoff dédié ; compteur de tentatives dédié ; `entry_id` désignant l'entrée effectivement observée.
 **UI** — exposition non trompeuse de l'état des axes et du recovery, à la maille de l'entrée (§12.5).
 
+### 4.1 Cycle de vie d'un épisode de recovery
+
+Un épisode s'ouvre à la première tentative et ne se ferme que d'une seule
+façon : un **retour constaté**. Entre les deux, le backoff démarre et expire
+autant de fois qu'il y a de tentatives — ces expirations sont **internes** à
+l'épisode, elles ne le referment pas.
+
+> **R-RECOV-1 (opposable).** Le binaire « recovery en cours » décrit
+> l'**ouverture d'un épisode**, jamais l'état d'un timer. Le définir sur le seul
+> backoff actif en fait une **dent de scie** : le binaire retombe à chaque
+> expiration, alors que l'épisode, lui, continue.
+>
+> Conséquence observée (§15) : le retour OK, débouncé, peut voir sa
+> temporisation **coupée par une expiration de backoff**. Le retour n'est alors
+> jamais prononcé, le compteur jamais remis à zéro, et l'épisode reste
+> ouvert indéfiniment.
+
+> **R-RECOV-2 (opposable).** Un **retour constaté referme l'épisode et réarme la
+> chaîne**, y compris après un blocage au plafond. Un blocage n'est pas un état
+> terminal : il borne les *relances*, il ne condamne pas l'intégration. Une
+> intégration qui revient d'elle-même doit pouvoir bénéficier d'un budget de
+> tentatives neuf au prochain incident.
+>
+> Le réarmement **DOIT** être notifié : le blocage l'ayant été (invariant 9), sa
+> levée est une information de même nature.
+
+> **R-RECOV-3.** La fermeture d'un épisode ayant comporté au moins une tentative
+> infructueuse **DOIT** être notifiée. Un épisode ouvert par une notification
+> d'échec ne peut pas se refermer en silence — c'est l'exigence de l'invariant 9
+> sur le « retour OK », qui doit être effectivement câblée et non seulement
+> déclarée.
+
 ---
 
 ## 5. Invariants obligatoires
@@ -99,9 +140,9 @@ périmètre parfaitement sain**.
 2. **Disponibilité** — binaire d'indisponibilité distinct de l'âge, fondé sur comptage de membres exploitables (« 0 membre exploitable » maintenu = indisponibilité confirmée).
 3. **Non-substitution** — l'âge ne prouve pas la disponibilité ; ni l'un ni l'autre ne prouve le chargement de l'entrée (§3).
 4. **Recovery** — convergence vers le script canon unique, jamais une seconde chaîne d'action.
-5. **Retour OK** — détecté explicitement, conditionné à un recovery en cours, débouncé.
+5. **Retour OK** — détecté explicitement, conditionné à un **épisode de recovery ouvert** (§4.1, R-RECOV-1) — et non au seul backoff actif —, débouncé, et **notifié** (R-RECOV-3).
 6. **Backoff** — borné par un cap.
-7. **Plafond tentatives** — au-delà du plafond, passage en `block` et arrêt des relances.
+7. **Plafond tentatives** — au-delà du plafond, passage en `block` et arrêt des relances. Le blocage borne les relances **sans être terminal** : un retour constaté referme l'épisode, réarme la chaîne et le notifie (R-RECOV-2).
 8. **Inhibition panne secteur** — aucune tentative pendant `panne_secteur_en_cours = on` ; le reset reste autorisé.
 9. **Observabilité** — état des axes, compteur, backoff exposables ; notifications sur attempt/échec/block/retour OK.
 10. **Absence de boucle agressive** — `mode: single`, `max_exceeded: silent`, déclenchement sur transition, garde `systeme_stable`. **En couche décision uniquement** : le réveil périodique de la couche observation autorisé par R-AXE3-5 ne déroge pas à cet invariant (§13.3).
@@ -423,6 +464,29 @@ D'où R-AXE1-1 (§3.1) : l'applicabilité de l'axe fraîcheur est une **conditio
 d'existence**, à constater avant câblage, et non un paramètre à ajuster après
 coup.
 
+### Troisième enseignement — la course entre retour OK et backoff
+
+Le 2026-08-24, la reprise du pont est survenue à **11:26:30** ; le backoff
+expirait à **11:27:57**. Le retour OK, débouncé sur 2 minutes, a vu sa
+temporisation **coupée à environ 90 secondes** par la retombée du binaire
+« recovery en cours », alors défini sur le seul timer.
+
+Résultat : retour jamais prononcé, compteur resté à 1 sur un épisode pourtant
+clos. Défaut **partagé par les sept chaînes**, invisible jusqu'à ce qu'une
+escalade vienne consommer ce compteur.
+
+Deux conséquences, corrigées en v2.3 :
+
+1. « recovery en cours » décrit désormais un **épisode ouvert** (R-RECOV-1) ;
+2. la fermeture d'un épisode est **notifiée** (R-RECOV-3), et un blocage au
+   plafond cesse d'être terminal (R-RECOV-2) — auparavant, une chaîne bloquée le
+   restait indéfiniment même si l'intégration revenait d'elle-même, puisque le
+   retour OK ne pouvait plus jamais se déclencher.
+
+Le second point n'avait été demandé par personne : il est apparu en corrigeant
+le premier. Une chaîne bloquée à vie est un mode de défaillance silencieux que
+le contrat n'avait jamais nommé.
+
 ### Ce que ce cas n'établit pas
 
 Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle établit un défaut de **détection** et de **maille**, pas l'efficacité d'une action. Le choix entre reload d'entrée seul et escalade vers un power-cycle relève de la réserve du §14.1, et exige sa propre preuve.
@@ -434,10 +498,11 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 - **v1.0** — Contrat initial. Deux axes orthogonaux (fraîcheur / disponibilité), script canon de recovery, registre CI, mode report-only.
 - **v1.1** — Ajout de l'invariant 11 et du §11 : garde réseau WAN pour les intégrations `cloud_wan`, garde paramétrée (`wan_entity`) et jamais codée en dur, classification `cloud_wan` / `local_lan`. Conformité déclarée à `pannes/internet/30`.
 - **v1.1 (révision)** — Définition de la fraîcheur fondée sur `last_reported` (liveness) ; invariant 1 reformulé ; usage de `last_updated`/`last_changed` proscrit sur cet axe.
+- **v2.3** — **Cycle de vie de l'épisode de recovery** (§4.1, R-RECOV-1/2/3). « Recovery en cours » décrit l'ouverture d'un épisode et non l'état du backoff : la définition précédente, en dent de scie, pouvait couper la temporisation du retour OK et laisser un épisode ouvert indéfiniment. Un blocage au plafond cesse d'être terminal — un retour constaté referme l'épisode, réarme la chaîne et le notifie. La notification de « retour OK », exigée par l'invariant 9 mais jamais câblée, est ajoutée au script canon. Invariants 5 et 7 amendés. Ajout de R-AXE1-3 : l'inapplicabilité de l'axe fraîcheur se déclare par `axe_fraicheur: false`, jamais par un seuil sentinelle. Troisième enseignement terrain en §15.
 - **v2.2** — Ajout de la **condition d'applicabilité de l'axe fraîcheur** (§3.1, R-AXE1-1/2) : cet axe présuppose une écriture périodique du coordinateur ; sur des entités en push pur, il est **inapplicable** et doit être déclaré `non_applicable`, jamais re-seuillé. Invariant 1 amendé en conséquence. Résorption partielle de la dette §10.1 : le checker modélise désormais l'axe 3 (R7 généralisée au multi-axes) et traite `non_applicable` conformément au vocabulaire du registre. Second enseignement terrain du 2026-08-24 consigné en §15.
 - **v2.1** — Levée de la réserve §14.1 : le contrat de domaine attendu existe ([`pont_idiamant.md`](pont_idiamant.md) v1.0, 2026-08-24). R-FRONTIERE-2 est confirmée par l'usage — la remédiation physique vit dans le contrat de domaine. La frontière elle-même est inchangée et reste opposable pour tout autre équipement. Aucun invariant, aucun axe, aucune règle d'ancrage modifiés.
 - **v2.0** — **Changement de maille.** La couverture se déclare et se vérifie par **entrée de configuration** et non plus par intégration (§12, invariant 12, R-MAILLE-1/2). Ajout de la règle d'**ancrage détection ↔ action** et de la notion de **chaîne mal ancrée** (§12.3, invariant 13, R-ANCRAGE-1). Ajout d'un **troisième axe — échec de configuration** (§13, invariant 14), avec qualification des états d'entrée, débounce obligatoire sur `setup_retry`, exclusion des entrées désactivées, et contrainte de réactivité (R-AXE3-4/5/6) articulée avec `gestion_du_temps.md` sans déroger à l'invariant 10. Ajout de l'invariant 15 et du §12.5 sur l'**honnêteté de l'indicateur** (R-UI-1/2). Ajout du §14, **frontières de propriété** : la remédiation physique reste au contrat de domaine (R-FRONTIERE-2, réserve qualifiée), le ping n'est jamais preuve de santé d'entrée (R-FRONTIERE-3). Ajout du §10.1, **dette de migration** du registre et du checker, qualifiée non bloquante. Ajout du §15, leçon terrain 2026-08-23. Les §1 à §11 conservent leur numérotation ; aucun invariant existant n'est supprimé ni affaibli.
 
 ---
 
-*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.2*
+*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.3*

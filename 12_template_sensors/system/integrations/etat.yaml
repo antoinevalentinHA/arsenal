@@ -5,8 +5,23 @@
 #  🎯 ROLE
 #     Stabiliser les triggers des automations de resilience :
 #       - gel_avere       : incident confirme (debounce)
-#       - recovery_en_cours : contexte incident (timer backoff actif)
-#       - retour_ok       : retour donnees fraiches, uniquement si recovery_en_cours
+#       - recovery_en_cours : EPISODE DE RECOVERY OUVERT
+#       - retour_ok       : retour constate, uniquement si recovery_en_cours
+#
+#  ⚠️ recovery_en_cours = "EPISODE OUVERT", PAS "timer actif"
+#     L'expiration du backoff est un evenement NORMAL du cycle : elle
+#     declenche la tentative suivante. Definir ce binaire sur le seul
+#     timer en faisait une DENT DE SCIE, et le retour_ok (debounce 2 min)
+#     pouvait etre coupe net par une expiration -> compteur jamais remis
+#     a zero, chaine bloquee a vie apres un plafond.
+#     Observe le 2026-08-24 : reprise a 11:26:30, backoff expirant a
+#     11:27:57, debounce coupe a ~90 s.
+#     Un episode est ouvert tant que le backoff tourne OU que le compteur
+#     de tentatives est non nul. Cf. resilience_integrations.md R-RECOV-1.
+#
+#     audi / withings : chaines ORPHELINES (aucun compteur, aucune
+#     automation). Laissees sur la definition historique — un terme sur
+#     une entite inexistante n'apporterait rien.
 #
 #  ✅ PRINCIPE
 #     - Les automations ne doivent plus declencher sur numeric_state + for
@@ -69,7 +84,8 @@
       unique_id: recovery_en_cours_overkiz
       default_entity_id: binary_sensor.recovery_en_cours_overkiz
       state: >
-        {{ is_state('timer.overkiz_reload_backoff', 'active') }}
+        {{ is_state('timer.overkiz_reload_backoff', 'active')
+           or (states('input_number.overkiz_reload_tentatives') | int(0)) > 0 }}
 
     - name: "Gel avéré — Overkiz"
       unique_id: gel_avere_overkiz
@@ -105,7 +121,8 @@
       unique_id: recovery_en_cours_airstage
       default_entity_id: binary_sensor.recovery_en_cours_airstage
       state: >
-        {{ is_state('timer.airstage_reload_backoff', 'active') }}
+        {{ is_state('timer.airstage_reload_backoff', 'active')
+           or (states('input_number.airstage_reload_tentatives') | int(0)) > 0 }}
 
     - name: "Gel avéré — Airstage"
       unique_id: gel_avere_airstage
@@ -141,7 +158,8 @@
       unique_id: recovery_en_cours_homekit
       default_entity_id: binary_sensor.recovery_en_cours_homekit
       state: >
-        {{ is_state('timer.homekit_reload_backoff', 'active') }}
+        {{ is_state('timer.homekit_reload_backoff', 'active')
+           or (states('input_number.homekit_reload_tentatives') | int(0)) > 0 }}
 
     - name: "Gel avéré — HomeKit"
       unique_id: gel_avere_homekit
@@ -182,7 +200,8 @@
       unique_id: recovery_en_cours_homekit_prise_control
       default_entity_id: binary_sensor.recovery_en_cours_homekit_prise_control
       state: >
-        {{ is_state('timer.homekit_prise_control_reload_backoff', 'active') }}
+        {{ is_state('timer.homekit_prise_control_reload_backoff', 'active')
+           or (states('input_number.homekit_prise_control_reload_tentatives') | int(0)) > 0 }}
 
     # ⚠️ PAS DE BINAIRE DE GEL POUR CETTE ENTRÉE — axe fraîcheur INAPPLICABLE.
     # Les `cover.*` de ce pont sont en PUSH : ils ne rapportent qu'au changement
@@ -224,10 +243,15 @@
       unique_id: retour_ok_homekit_prise_control
       default_entity_id: binary_sensor.retour_ok_homekit_prise_control
       delay_on: *age_ok_delay
+      # ⚠️ AUCUN terme d'âge ici — l'axe fraîcheur est inapplicable à cette
+      # entrée (R-PONT-10 / R-AXE1-1). L'y laisser rouvrirait R-PONT-8 par une
+      # autre porte : l'âge d'un volet immobile repasse au-dessus de 10 min en
+      # quelques minutes, donc la fenêtre de constat du retour se refermerait
+      # d'elle-même et le compteur resterait figé. Le retour se constate sur
+      # les DEUX axes câblés, et sur eux seuls.
       state: >
         {{
           is_state('binary_sensor.recovery_en_cours_homekit_prise_control', 'on')
-          and (states('sensor.homekit_prise_control_age_donnees') | int(999)) < 10
           and is_state('binary_sensor.indisponibilite_franche_homekit_prise_control', 'off')
           and is_state('binary_sensor.echec_configuration_homekit_prise_control', 'off')
         }}
@@ -240,7 +264,8 @@
       unique_id: recovery_en_cours_netatmo
       default_entity_id: binary_sensor.recovery_en_cours_netatmo
       state: >
-        {{ is_state('timer.netatmo_reload_backoff', 'active') }}
+        {{ is_state('timer.netatmo_reload_backoff', 'active')
+           or (states('input_number.netatmo_reload_tentatives') | int(0)) > 0 }}
 
     - name: "Gel avéré — Netatmo"
       unique_id: gel_avere_netatmo
@@ -276,7 +301,8 @@
       unique_id: recovery_en_cours_switchbot
       default_entity_id: binary_sensor.recovery_en_cours_switchbot
       state: >
-        {{ is_state('timer.switchbot_reload_backoff', 'active') }}
+        {{ is_state('timer.switchbot_reload_backoff', 'active')
+           or (states('input_number.switchbot_reload_tentatives') | int(0)) > 0 }}
 
     - name: "Gel avéré — SwitchBot"
       unique_id: gel_avere_switchbot
@@ -312,7 +338,8 @@
       unique_id: recovery_en_cours_synology
       default_entity_id: binary_sensor.recovery_en_cours_synology
       state: >
-        {{ is_state('timer.synology_reload_backoff', 'active') }}
+        {{ is_state('timer.synology_reload_backoff', 'active')
+           or (states('input_number.synology_reload_tentatives') | int(0)) > 0 }}
 
     - name: "Gel avéré — Synology"
       unique_id: gel_avere_synology
