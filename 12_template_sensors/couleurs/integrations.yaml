@@ -177,7 +177,6 @@
       entity_id:
         - sensor.homekit_prise_control_age_donnees
         - sensor.etat_entree_homekit_prise_control
-        - binary_sensor.gel_avere_homekit_prise_control
         - binary_sensor.indisponibilite_franche_homekit_prise_control
         - binary_sensor.echec_configuration_homekit_prise_control
     - platform: homeassistant
@@ -192,17 +191,16 @@
         {% set etat = states('sensor.etat_entree_homekit_prise_control') %}
         {% set age = states('sensor.homekit_prise_control_age_donnees') | float(default=none) %}
 
+        {# Axe fraîcheur inapplicable ici (covers en push) : il n'entre NI dans
+           l'incident, NI dans la nuance orange. Cf. pont_idiamant.md §8.3. #}
         {% set incident = is_state('binary_sensor.echec_configuration_homekit_prise_control', 'on')
-                       or is_state('binary_sensor.indisponibilite_franche_homekit_prise_control', 'on')
-                       or is_state('binary_sensor.gel_avere_homekit_prise_control', 'on') %}
+                       or is_state('binary_sensor.indisponibilite_franche_homekit_prise_control', 'on') %}
 
         {% if etat in ['indetermine', 'introuvable', 'unknown', 'unavailable'] or age is none %}
           grey
         {% elif incident %}
           red
         {% elif etat != 'loaded' %}
-          orange
-        {% elif age > 15 %}
           orange
         {% else %}
           green

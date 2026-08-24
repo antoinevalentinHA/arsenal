@@ -1,7 +1,7 @@
 # ARSENAL — Contrat de résilience des intégrations
 
 **Composant :** `arsenal-ha`
-**Version :** v2.1
+**Version :** v2.2
 **Scope :** Détection et relance automatique des intégrations critiques (gel des données, indisponibilité des entités, échec de configuration d'une entrée).
 **Maille de couverture :** l'**entrée de configuration** (*config entry*) — voir §12.
 **Mode d'application :** report-only — voir §10 et le registre.
@@ -59,6 +59,29 @@ Les trois axes doivent exister **séparément**. Aucun ne peut servir de substit
 
 > Les deux règles ci-dessus ont la même forme : **un axe qui reste `off` n'est une preuve de santé que pour ce qu'il observe.**
 
+### 3.1 Condition d'applicabilité de l'axe fraîcheur
+
+L'axe fraîcheur repose sur une hypothèse qui n'est **pas universelle** : que le
+coordinateur de l'intégration **écrive périodiquement**, même à valeur inchangée.
+C'est le cas des intégrations en *polling*. Ce n'est **pas** le cas des entités
+en *push* pur, qui ne rapportent qu'au changement d'état : `last_reported` y
+reste figé tant que rien ne bouge, et l'âge croît linéairement **sur un
+périmètre parfaitement sain**.
+
+> **R-AXE1-1 (opposable).** Avant de câbler l'axe fraîcheur sur un périmètre,
+> il faut avoir **constaté** que ses entités rapportent périodiquement hors
+> changement d'état. À défaut, l'axe est **inapplicable** : il doit être déclaré
+> `non_applicable` au registre, **jamais** simplement doté d'un seuil plus élevé.
+>
+> Relever le seuil ne corrige rien : l'âge d'une entité en push n'est pas borné.
+> Un seuil, quel qu'il soit, finit par être franchi. Le défaut n'est pas un
+> mauvais réglage, c'est une **absence de grandeur mesurable**.
+
+> **R-AXE1-2.** Une entrée dont l'axe fraîcheur est inapplicable n'est pas pour
+> autant sous-couverte : les axes disponibilité et échec de configuration
+> suffisent à constituer une chaîne complète. Le mode déclaré au registre doit
+> alors énoncer exactement les axes câblés.
+
 ---
 
 ## 4. Anatomie d'une chaîne complète
@@ -72,7 +95,7 @@ Les trois axes doivent exister **séparément**. Aucun ne peut servir de substit
 
 ## 5. Invariants obligatoires
 
-1. **Fraîcheur** — capteur d'âge dérivé de `last_reported` (liveness), plafonné. Usage de `last_updated`/`last_changed` proscrit ici : ils mesurent la stabilité de valeur, pas la liveness, et génèrent de faux gels sur intégration saine mais calme.
+1. **Fraîcheur** — capteur d'âge dérivé de `last_reported` (liveness), plafonné. Usage de `last_updated`/`last_changed` proscrit ici : ils mesurent la stabilité de valeur, pas la liveness, et génèrent de faux gels sur intégration saine mais calme. **Cet axe présuppose une écriture périodique du coordinateur** — voir la condition d'applicabilité en §3.1, qui est une condition d'existence de l'axe, pas un réglage.
 2. **Disponibilité** — binaire d'indisponibilité distinct de l'âge, fondé sur comptage de membres exploitables (« 0 membre exploitable » maintenu = indisponibilité confirmée).
 3. **Non-substitution** — l'âge ne prouve pas la disponibilité ; ni l'un ni l'autre ne prouve le chargement de l'entrée (§3).
 4. **Recovery** — convergence vers le script canon unique, jamais une seconde chaîne d'action.
@@ -151,6 +174,8 @@ Le registre et le checker **implémentent encore la maille v1.1** : une ligne pa
 > 1. le registre énumère les **entrées** (couple domaine + `entry_id`), non les intégrations ;
 > 2. le checker vérifie l'**ancrage** — les membres du groupe source appartiennent-ils tous à l'entrée que l'action recharge (§12.4) ;
 > 3. le checker vérifie l'existence du **maillon axe 3** pour les entrées qui le requièrent.
+
+**Résorption partielle (v2.2).** Les points 2 et 3 ci-dessus sont **partiellement traités** : le checker modélise désormais l'axe 3 (règle R7 généralisée en « câblage multi-axes », qui exige le trigger et la transmission au canon de **chaque axe déclaré présent**), et il traite `non_applicable` comme ce que le registre dit qu'il est — hors périmètre, jamais un maillon manquant. Reste ouvert : l'énumération des entrées par `entry_id` et la vérification de l'**ancrage** (point 1).
 
 **Qualification** (au sens de [`solvabilite_probatoire.md`](../architecture/03_doctrines/solvabilite_probatoire.md) §3) : **réserve différée solvable**, **non bloquante**. La preuve nécessaire est productible — `config_entry_id()` et `config_entry_attr()` sont disponibles et vérifiés (§13.3).
 **Propriétaire :** chantier de mise en conformité du registre de résilience.
@@ -382,6 +407,22 @@ La chaîne HomeKit était **conforme au contrat v1.1** et **verte en CI**. Elle 
 
 La cinquième conclusion est la plus générale, et la raison d'être de la v2.0 : le contrat v1.1 était respecté à la lettre. Il ne demandait simplement jamais *combien d'entrées* portait une intégration.
 
+### Suite — 2026-08-24, second enseignement
+
+Après remise en service du pont, la cadence de report de ses `cover.*` a été
+mesurée : **`last_reported` identique et figé pour les quatre volets pendant
+22 minutes**, sur un périmètre pleinement sain. Ces entités sont en **push pur**.
+
+Le seuil de gel de 45 minutes, aligné par mimétisme sur les autres intégrations
+`local_lan`, aurait donc produit un **faux incident toutes les ~50 minutes**. Le
+registre portait pourtant déjà la mention `a_confirmer_runtime` sur ce point
+précis — la réserve était juste, elle n'a simplement pas été traitée comme
+bloquante avant câblage.
+
+D'où R-AXE1-1 (§3.1) : l'applicabilité de l'axe fraîcheur est une **condition
+d'existence**, à constater avant câblage, et non un paramètre à ajuster après
+coup.
+
 ### Ce que ce cas n'établit pas
 
 Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle établit un défaut de **détection** et de **maille**, pas l'efficacité d'une action. Le choix entre reload d'entrée seul et escalade vers un power-cycle relève de la réserve du §14.1, et exige sa propre preuve.
@@ -393,9 +434,10 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 - **v1.0** — Contrat initial. Deux axes orthogonaux (fraîcheur / disponibilité), script canon de recovery, registre CI, mode report-only.
 - **v1.1** — Ajout de l'invariant 11 et du §11 : garde réseau WAN pour les intégrations `cloud_wan`, garde paramétrée (`wan_entity`) et jamais codée en dur, classification `cloud_wan` / `local_lan`. Conformité déclarée à `pannes/internet/30`.
 - **v1.1 (révision)** — Définition de la fraîcheur fondée sur `last_reported` (liveness) ; invariant 1 reformulé ; usage de `last_updated`/`last_changed` proscrit sur cet axe.
+- **v2.2** — Ajout de la **condition d'applicabilité de l'axe fraîcheur** (§3.1, R-AXE1-1/2) : cet axe présuppose une écriture périodique du coordinateur ; sur des entités en push pur, il est **inapplicable** et doit être déclaré `non_applicable`, jamais re-seuillé. Invariant 1 amendé en conséquence. Résorption partielle de la dette §10.1 : le checker modélise désormais l'axe 3 (R7 généralisée au multi-axes) et traite `non_applicable` conformément au vocabulaire du registre. Second enseignement terrain du 2026-08-24 consigné en §15.
 - **v2.1** — Levée de la réserve §14.1 : le contrat de domaine attendu existe ([`pont_idiamant.md`](pont_idiamant.md) v1.0, 2026-08-24). R-FRONTIERE-2 est confirmée par l'usage — la remédiation physique vit dans le contrat de domaine. La frontière elle-même est inchangée et reste opposable pour tout autre équipement. Aucun invariant, aucun axe, aucune règle d'ancrage modifiés.
 - **v2.0** — **Changement de maille.** La couverture se déclare et se vérifie par **entrée de configuration** et non plus par intégration (§12, invariant 12, R-MAILLE-1/2). Ajout de la règle d'**ancrage détection ↔ action** et de la notion de **chaîne mal ancrée** (§12.3, invariant 13, R-ANCRAGE-1). Ajout d'un **troisième axe — échec de configuration** (§13, invariant 14), avec qualification des états d'entrée, débounce obligatoire sur `setup_retry`, exclusion des entrées désactivées, et contrainte de réactivité (R-AXE3-4/5/6) articulée avec `gestion_du_temps.md` sans déroger à l'invariant 10. Ajout de l'invariant 15 et du §12.5 sur l'**honnêteté de l'indicateur** (R-UI-1/2). Ajout du §14, **frontières de propriété** : la remédiation physique reste au contrat de domaine (R-FRONTIERE-2, réserve qualifiée), le ping n'est jamais preuve de santé d'entrée (R-FRONTIERE-3). Ajout du §10.1, **dette de migration** du registre et du checker, qualifiée non bloquante. Ajout du §15, leçon terrain 2026-08-23. Les §1 à §11 conservent leur numérotation ; aucun invariant existant n'est supprimé ni affaibli.
 
 ---
 
-*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.1*
+*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.2*

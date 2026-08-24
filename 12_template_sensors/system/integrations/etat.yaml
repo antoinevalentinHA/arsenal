@@ -184,12 +184,15 @@
       state: >
         {{ is_state('timer.homekit_prise_control_reload_backoff', 'active') }}
 
-    - name: "Gel avéré — HomeKit Prise Control"
-      unique_id: gel_avere_homekit_prise_control
-      default_entity_id: binary_sensor.gel_avere_homekit_prise_control
-      delay_on: *age_gel_delay_5
-      state: >
-        {{ (states('sensor.homekit_prise_control_age_donnees') | int(999)) >= 45 }}
+    # ⚠️ PAS DE BINAIRE DE GEL POUR CETTE ENTRÉE — axe fraîcheur INAPPLICABLE.
+    # Les `cover.*` de ce pont sont en PUSH : ils ne rapportent qu'au changement
+    # d'état, sans écriture périodique du coordinateur. `last_reported` reste
+    # donc figé tant qu'aucun volet ne bouge, et l'âge croît linéairement —
+    # un seuil de gel produirait un faux incident toutes les ~50 minutes.
+    # Mesuré le 2026-08-24 : 4 volets sains, last_reported identique et figé
+    # depuis 22 minutes. Cf. resilience_integrations.md invariant 1 (la
+    # fraîcheur suppose une écriture périodique) et pont_idiamant.md §8.3.
+    # Cette entrée est couverte par les axes disponibilité + échec de config.
 
     - name: "Indisponibilité franche — HomeKit Prise Control"
       unique_id: indisponibilite_franche_homekit_prise_control
