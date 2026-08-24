@@ -45,6 +45,8 @@ resilience_integration_recover:
       description: "Ex: timer.vicare_reload_backoff"
     entry_id:
       description: "Config entry_id (si kind=reload_entry)"
+    reload_target:
+      description: "Optionnel, exclusif avec entry_id. Entite (souvent le groupe source) dont TOUTES les entrees de configuration doivent etre rechargees. A utiliser quand le perimetre couvre legitimement plusieurs entrees (contrat §12.5, R-ANCRAGE-4) : recharger une entree sur N serait une remediation partielle silencieuse. Verifie le 2026-08-24 : un appel cible sur un groupe etend le groupe, remonte aux entrees de chaque entite et les recharge toutes."
     addon_slug:
       description: "Addon slug (si kind=restart_addon)"
     backoff_minutes_cap:
@@ -145,6 +147,37 @@ resilience_integration_recover:
                    and fail_entity_safe | length == 0 }}
           sequence:
             - stop: "axe_fraicheur=false sans axe de substitution (unavail_entity ou fail_entity)"
+
+    # =========================
+    # 🧱 GARDE CIBLE DE RELOAD
+    # =========================
+    # `entry_id` et `reload_target` sont EXCLUSIFS : l'un designe une entree
+    # unique, l'autre un perimetre d'entrees. Les transmettre ensemble rendrait
+    # la portee reelle du rechargement ambigue.
+    - variables:
+        reload_target_safe: "{{ reload_target | default('') }}"
+        entry_id_safe: "{{ entry_id | default('') }}"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ (op | default('attempt')) == 'attempt'
+                   and (kind | default('')) == 'reload_entry'
+                   and reload_target_safe | length > 0
+                   and entry_id_safe | length > 0 }}
+          sequence:
+            - stop: "entry_id et reload_target sont exclusifs"
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ (op | default('attempt')) == 'attempt'
+                   and (kind | default('')) == 'reload_entry'
+                   and reload_target_safe | length == 0
+                   and entry_id_safe | length == 0 }}
+          sequence:
+            - stop: "kind=reload_entry sans entry_id ni reload_target"
 
     - choose:
 
@@ -257,6 +290,16 @@ resilience_integration_recover:
 
     # Action : reload_entry ou restart_addon
     - choose:
+        # Perimetre multi-entrees : on recharge TOUTES les entrees des entites
+        # ciblees (R-ANCRAGE-4). L'action derive alors du perimetre observe,
+        # elle ne peut pas en diverger.
+        - conditions: >
+            {{ kind == 'reload_entry' and reload_target_safe | length > 0 }}
+          sequence:
+            - service: homeassistant.reload_config_entry
+              target:
+                entity_id: "{{ reload_target_safe }}"
+
         - conditions: "{{ kind == 'reload_entry' }}"
           sequence:
             - service: homeassistant.reload_config_entry

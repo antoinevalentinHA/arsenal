@@ -1,7 +1,7 @@
 # ARSENAL — Contrat de résilience des intégrations
 
 **Composant :** `arsenal-ha`
-**Version :** v2.5
+**Version :** v2.6
 **Scope :** Détection et relance automatique des intégrations critiques (gel des données, indisponibilité des entités, échec de configuration d'une entrée).
 **Maille de couverture :** l'**entrée de configuration** (*config entry*) — voir §12.
 **Mode d'application :** report-only — voir §10 et le registre.
@@ -374,6 +374,29 @@ Cette configuration ne rend pas la maille caduque : chaque entrée charge et
 > toutes est une **remédiation partielle silencieuse** — la chaîne se déclare
 > réparée alors qu'elle n'a traité qu'une fraction du périmètre.
 
+**Moyen canonique de la satisfaire.** Le script canon accepte, en alternative
+exclusive à `entry_id`, un paramètre **`reload_target`** : l'action **cible le
+périmètre lui-même**, Home Assistant remonte aux entrées de chaque entité ciblée
+et les recharge toutes.
+
+> **R-ANCRAGE-5.** Quand l'action cible le périmètre, elle en **dérive** — elle ne
+> peut donc plus en diverger. R-ANCRAGE-1 cesse d'être une règle qu'on vérifie
+> pour devenir une propriété structurelle, **pour cette chaîne**.
+>
+> Corollaire de contrôle : un périmètre multi-entrées n'est pas fautif en soi. Il
+> l'est lorsque l'action ne couvre qu'une entrée. Le contrôle runtime doit donc
+> distinguer les deux familles — périmètres à action mono-entrée (multi-entrées
+> interdit) et périmètres à action ciblée (multi-entrées légitime) — et non
+> signaler indistinctement toute cardinalité supérieure à 1.
+>
+> **Déclarer un périmètre comme « à action ciblée » sans que son automation
+> transmette réellement `reload_target` revient à faire taire un écart réel.**
+> La déclaration de contrôle et le câblage de l'action doivent bouger ensemble.
+
+*Comportement vérifié en terrain le 2026-08-24 : un appel ciblé sur un groupe de
+24 entités réparties sur 6 entrées a rechargé les 6, constaté par le saut
+simultané de leurs horodatages.*
+
 ### 12.6 Honnêteté de l'indicateur
 
 > **R-UI-1 (opposable).** Un indicateur de santé **ne doit jamais** afficher sain un domaine dont une entrée est en échec ou non couverte.
@@ -591,6 +614,7 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 - **v1.0** — Contrat initial. Deux axes orthogonaux (fraîcheur / disponibilité), script canon de recovery, registre CI, mode report-only.
 - **v1.1** — Ajout de l'invariant 11 et du §11 : garde réseau WAN pour les intégrations `cloud_wan`, garde paramétrée (`wan_entity`) et jamais codée en dur, classification `cloud_wan` / `local_lan`. Conformité déclarée à `pannes/internet/30`.
 - **v1.1 (révision)** — Définition de la fraîcheur fondée sur `last_reported` (liveness) ; invariant 1 reformulé ; usage de `last_updated`/`last_changed` proscrit sur cet axe.
+- **v2.6** — Ajout de **R-ANCRAGE-5** (§12.5) : moyen canonique de satisfaire R-ANCRAGE-4 — le paramètre `reload_target` du script canon fait **cibler le périmètre** par l'action, qui en dérive et ne peut donc plus en diverger. Corollaire : un périmètre multi-entrées n'est fautif que si l'action ne couvre qu'une entrée ; le contrôle runtime distingue désormais les deux familles. Comportement vérifié en terrain. Première application : SwitchBot, dont l'arbitrage ouvert de la v2.5 est **résolu**.
 - **v2.5** — **Contrôle d'ancrage effectif.** Ajout de **R-ANCRAGE-3** (§12.4) : le contrôle se décompose en un volet **statique** (CI, règle R15 — aucune entité dérivée dans un périmètre) et un volet **runtime** (capteur dédié — appartenance réelle à une entrée unique) ; aucun ne remplace l'autre, et la CI **ne peut pas** porter le second, `config_entry_id()` étant une fonction de template. Ajout de **R-ANCRAGE-4** (§12.5) : un périmètre couvrant légitimement plusieurs entrées exige une action couvrant **toutes** ces entrées, ou l'inscription de l'écart au registre — recharger une entrée sur N est une remédiation partielle silencieuse. Ajout de **R16** au checker (champs de maille obligatoires, mutualisation interdite). Registre migré à la maille entrée. Dette §10.1 résorbée, avec énoncé explicite de ce qui reste hors de portée d'un contrôle. Ancien §12.5 renuméroté §12.6.
 - **v2.4** — Ajout de **R-ANCRAGE-2** (§12.3) : le périmètre de détection ne contient que des entités **produites directement par l'entrée** ; toute entité dérivée (template, consolidation, façade, valeur stabilisée) est interdite, car elle porte sa propre cadence et sa propre disponibilité et peut neutraliser les deux axes simultanément. Test de recevabilité par `config_entry_id()`. Quatrième enseignement terrain en §15 : deux façades inter-intégrations rendaient la chaîne HomeKit aveugle sur ses deux axes, sans qu'aucun maillon soit manquant.
 - **v2.3** — **Cycle de vie de l'épisode de recovery** (§4.1, R-RECOV-1/2/3). « Recovery en cours » décrit l'ouverture d'un épisode et non l'état du backoff : la définition précédente, en dent de scie, pouvait couper la temporisation du retour OK et laisser un épisode ouvert indéfiniment. Un blocage au plafond cesse d'être terminal — un retour constaté referme l'épisode, réarme la chaîne et le notifie. La notification de « retour OK », exigée par l'invariant 9 mais jamais câblée, est ajoutée au script canon. Invariants 5 et 7 amendés. Ajout de R-AXE1-3 : l'inapplicabilité de l'axe fraîcheur se déclare par `axe_fraicheur: false`, jamais par un seuil sentinelle. Troisième enseignement terrain en §15.
@@ -600,4 +624,4 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 
 ---
 
-*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.5*
+*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.6*

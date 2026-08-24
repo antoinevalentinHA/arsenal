@@ -90,6 +90,13 @@
             ok_minutes: 10
             attempts_entity: input_number.switchbot_reload_tentatives
             backoff_timer: timer.switchbot_reload_backoff
-            entry_id: !secret switchbot_entry_id
+            # Perimetre multi-entrees LEGITIME : chaque appareil SwitchBot est
+            # sa propre entree de configuration (6 au 2026-08-24). Recharger une
+            # seule entree serait une remediation partielle silencieuse
+            # (R-ANCRAGE-4). On cible le groupe source : HA remonte aux entrees
+            # de chaque entite et les recharge TOUTES.
+            # Verifie le 2026-08-24 : les 6 entrees rechargees en une fois.
+            # `switchbot_entry_id` n'est plus utilise par cette chaine.
+            reload_target: group.switchbot_capteurs
             backoff_minutes_cap: 60
             wait_timeout: "00:03:00"
