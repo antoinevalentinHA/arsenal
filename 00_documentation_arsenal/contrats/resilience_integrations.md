@@ -1,7 +1,7 @@
 # ARSENAL — Contrat de résilience des intégrations
 
 **Composant :** `arsenal-ha`
-**Version :** v2.9
+**Version :** v3.0
 **Scope :** Détection et relance automatique des intégrations critiques (gel des données, indisponibilité des entités, échec de configuration d'une entrée).
 **Maille de couverture :** l'**entrée de configuration** (*config entry*) — voir §12.
 **Mode d'application :** report-only — voir §10 et le registre.
@@ -225,46 +225,65 @@ S'ajoute **R16** : champs de maille obligatoires, et interdiction de mutualiser 
 
 **Ce qui reste hors de portée d'un contrôle**, et doit être dit : ni la CI ni le capteur runtime ne détectent une entrée **qui n'est déclarée nulle part**. Énumérer les entrées réellement présentes suppose de parcourir le registre de configuration de Home Assistant ; le contrôle actuel vérifie la cohérence de ce qui est déclaré, pas l'exhaustivité de la déclaration.
 
-### 10.2 Ce que « couverture » signifie — arbitrage non tranché
+### 10.2 Ce que « couverture » signifie — arbitré
 
-Une cartographie runtime du 2026-08-24 (consignée au registre) a comparé, pour
-chaque domaine, les entrées **présentes** aux entrées **couvertes** par les
-périmètres déclarés. Elle a mis au jour un écart — quatre entrées `switchbot`
-couvertes sur sept — et, ce faisant, une question que le contrat ne tranche pas.
+Une cartographie runtime du 2026-08-24 a comparé, pour chaque domaine, les entrées
+**présentes** aux entrées **couvertes** par les périmètres déclarés. Elle a mis au
+jour un écart — quatre entrées `switchbot` couvertes sur sept — et, ce faisant, une
+question que le contrat ne tranchait pas : **une chaîne doit-elle couvrir tout son
+domaine, ou seulement ce qu'elle déclare ?**
 
-> **R-COUVERTURE-1 (question ouverte, opposable en tant que telle).** Le présent
-> contrat ne définit pas ce qu'une chaîne **doit** couvrir. Deux modèles
-> s'excluent :
+La question n'est pas « faut-il tout remédier ». Elle est : **un trou de couverture
+peut-il être silencieux ?**
+
+L'incident fondateur du 2026-08-23 y répond de lui-même. Une entrée non couverte y
+était, au regard du contrat d'alors, parfaitement conforme : Arsenal était **correct
+pendant les vingt-cinq heures où il était aveugle**. Un modèle dans lequel « non
+couvert » est un silence légitime reproduit la panne d'origine.
+
+> **R-COUVERTURE-1 (opposable — modèle de couverture).** Arsenal retient la
+> **couverture exhaustive bornée, avec dérogations déclarées**.
 >
-> - **Couverture volontaire** — une chaîne couvre exactement ce que son périmètre
->   déclare. Cohérent et vérifiable, mais l'apparition d'une nouvelle entrée ne
->   l'intègre jamais à la résilience, et **rien ne le signale**.
-> - **Couverture exhaustive** — une chaîne doit couvrir toutes les entrées actives
->   de son domaine ; tout écart est une dérogation inscrite au registre.
+> **Périmètre d'application.** La règle s'applique à tout **domaine d'intégration
+> portant au moins une chaîne**. Arsenal ne prétend pas couvrir l'intégralité de
+> Home Assistant : un domaine sans chaîne est hors sujet, pas en écart.
 >
-> Tant que ce choix n'est pas fait, un constat du type « 4 entrées couvertes sur
-> 7 » n'est **ni conforme ni non conforme** : il est **indécidable** au regard du
-> contrat. C'est un défaut du contrat, pas du runtime.
+> **Règle.** Dans un domaine sous couverture, toute entrée active est **soit
+> couverte** par le périmètre d'une chaîne, **soit inscrite au registre comme
+> dérogation motivée**. Une entrée **ni couverte ni dérogée** est un **écart**.
+>
+> **Ce que la règle n'exige pas.** Elle n'impose pas de remédier à tout. Une entrée
+> peut légitimement n'appeler aucune remédiation automatique — un actionneur, un
+> appareil non critique, un équipement dont la panne se traite à la main. Elle
+> impose seulement que **ce choix soit écrit**.
 
-**Réserve qualifiée** (au sens de [`solvabilite_probatoire.md`](../architecture/03_doctrines/solvabilite_probatoire.md) §3) :
-*réserve différée solvable*, **non bloquante**. Propriétaire : le présent contrat.
-Critère de levée : choix explicite d'un des deux modèles, et — si le modèle
-exhaustif est retenu — définition du contrôle qui compare déclaré et présent.
+> **R-COUVERTURE-2 (contenu d'une dérogation).** Une dérogation de couverture porte
+> au minimum : l'**entrée** concernée (libellé lisible), le **motif**, et le
+> **critère qui la ferait tomber**. Une dérogation sans critère de levée est
+> interdite — c'est la transposition de R-QUALIF-3 de
+> [`solvabilite_probatoire.md`](../architecture/03_doctrines/solvabilite_probatoire.md)
+> au domaine de la couverture : sans critère, elle est perpétuelle par construction.
 
-**Limite de la mesure, à ne pas oublier en la relisant.** Le balayage ne voit que
-les entrées ayant au moins une entité dans le state machine. Il peut **trouver des
-trous**, il ne peut pas **prouver l'exhaustivité**. Retenir le modèle exhaustif
-n'effacerait donc pas la limite énoncée juste au-dessus : il la rendrait seulement
-opposable là où elle est mesurable.
+> **R-COUVERTURE-3 (contrôle).** Le contrôle de couverture est **runtime** — les
+> entrées présentes n'existent que dans Home Assistant. Il s'alimente à
+> `integration_entities(domaine)`, **jamais** à un balayage de `states` : le second
+> établirait une souscription à tous les changements d'état du système (R-AXE3-6),
+> le premier n'établit **aucune souscription** — vérifié le 2026-08-24.
+>
+> Comme toute lecture non réactive, il exige des **déclencheurs explicites**
+> (R-AXE3-4).
 
-**Qualification historique** (au sens de [`solvabilite_probatoire.md`](../architecture/03_doctrines/solvabilite_probatoire.md) §3) : **réserve différée solvable**, **non bloquante**. Les points 2 et 3 ci-dessus sont **partiellement traités** : le checker modélise désormais l'axe 3 (règle R7 généralisée en « câblage multi-axes », qui exige le trigger et la transmission au canon de **chaque axe déclaré présent**), et il traite `non_applicable` comme ce que le registre dit qu'il est — hors périmètre, jamais un maillon manquant. Reste ouvert : l'énumération des entrées par `entry_id` et la vérification de l'**ancrage** (point 1).
+**Deux limites, à ne pas perdre de vue en relisant un résultat vert.**
 
-**Qualification** (au sens de [`solvabilite_probatoire.md`](../architecture/03_doctrines/solvabilite_probatoire.md) §3) : **réserve différée solvable**, **non bloquante**. La preuve nécessaire est productible — `config_entry_id()` et `config_entry_attr()` sont disponibles et vérifiés (§13.3).
-**Propriétaire :** chantier de mise en conformité du registre de résilience.
-**Critère de levée :** registre migré à la maille entrée et checker portant les règles 1 à 3 ci-dessus.
-**Réévaluation :** à la première mise en conformité runtime d'une chaîne consommant le présent contrat.
-
-Tant que cette dette n'est pas résorbée, **la CI ne peut pas constater une entrée non couverte**. L'absence d'écart signalé par le checker ne vaut donc pas preuve de couverture — c'est précisément le défaut que la leçon terrain du §15 a rendu visible.
+1. **Entrées sans entité.** Le contrôle ne voit que les entrées ayant au moins une
+   entité. Une entrée n'en ayant aucune y est invisible. Le contrôle **trouve des
+   trous** ; il ne **prouve pas** l'exhaustivité. Retenir le modèle exhaustif
+   n'efface pas cette limite — il la rend opposable là où elle est mesurable.
+2. **Chaînes sans périmètre.** Une chaîne en `disponibilite_native` (Zigbee2MQTT)
+   ne possède pas de groupe source : son domaine est couvert par un mécanisme que
+   le contrôle, fondé sur les périmètres, ne sait pas constater. Ces domaines sont
+   déclarés comme tels, et leur absence du décompte est un **fait documenté**, pas
+   un trou.
 
 ---
 
@@ -694,6 +713,7 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 - **v1.0** — Contrat initial. Deux axes orthogonaux (fraîcheur / disponibilité), script canon de recovery, registre CI, mode report-only.
 - **v1.1** — Ajout de l'invariant 11 et du §11 : garde réseau WAN pour les intégrations `cloud_wan`, garde paramétrée (`wan_entity`) et jamais codée en dur, classification `cloud_wan` / `local_lan`. Conformité déclarée à `pannes/internet/30`.
 - **v1.1 (révision)** — Définition de la fraîcheur fondée sur `last_reported` (liveness) ; invariant 1 reformulé ; usage de `last_updated`/`last_changed` proscrit sur cet axe.
+- **v3.0** — **Modèle de couverture arbitré.** §10.2 réécrit : Arsenal retient la **couverture exhaustive bornée avec dérogations déclarées** (R-COUVERTURE-1). Dans un domaine portant au moins une chaîne, toute entrée active est couverte ou dérogée ; ni l'un ni l'autre est un écart. La règle n'impose pas de tout remédier — elle impose que le choix soit **écrit**. Ajout de R-COUVERTURE-2 (contenu d'une dérogation, critère de levée obligatoire, transposition de R-QUALIF-3) et R-COUVERTURE-3 (contrôle runtime alimenté par `integration_entities()`, qui n'établit aucune souscription, et non par un balayage de `states`). Les deux limites — entrées sans entité, chaînes sans périmètre — sont énoncées à l'endroit où un résultat vert se relit.
 - **v2.9** — Ajout du **§10.2** et de **R-COUVERTURE-1** : le contrat ne définissait pas ce qu'une chaîne **doit** couvrir. Deux modèles s'excluent — couverture volontaire ou exhaustive — et tant que le choix n'est pas fait, un écart de couverture est **indécidable** plutôt que conforme ou non conforme. Réserve qualifiée non bloquante, avec critère de levée. Cartographie runtime du 2026-08-24 consignée au registre, avec sa limite : elle trouve des trous, elle ne prouve pas l'exhaustivité.
 - **v2.8** — Ajout de **R-ANCRAGE-7** (§12.5.1) : l'appartenance d'un périmètre à son domaine est une propriété du **runtime**, pas du dépôt. Un remplacement de matériel réutilisant un `entity_id` la modifie sans qu'aucun fichier ne change — origine constatée de l'écart SwitchBot. Justification première du contrôle runtime de fermeture de domaine : détecter une **dérive du réel sous un code correct**.
 - **v2.7** — Ajout de **R-ANCRAGE-6** (§12.5) : la **fermeture du périmètre sur son domaine** est une **condition d'éligibilité au ciblage**. Sous ciblage, le groupe devient une ACL d'action — une entité étrangère étend la réparation à une intégration tierce, et le retrait de la dernière entité d'une entrée l'en exclut silencieusement. Leçon terrain : la première application de R-ANCRAGE-5 (SwitchBot) a été **annulée le jour même**, le périmètre résolvant des entrées `switchbot`, `switchbot_cloud` et `mqtt`. Le contrôle runtime détecte désormais la non-fermeture de domaine.
@@ -707,4 +727,4 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 
 ---
 
-*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v2.9*
+*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v3.0*

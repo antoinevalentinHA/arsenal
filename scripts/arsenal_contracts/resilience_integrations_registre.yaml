@@ -74,6 +74,28 @@ meta:
   #   conforme : il est INDECIDABLE au regard du contrat.
   # ==========================================================
   cartographie_couverture_date: "2026-08-24"
+
+  # ==========================================================
+  # MODELE DE COUVERTURE — arbitre le 2026-08-24 (contrat v3.0 §10.2)
+  # ----------------------------------------------------------
+  # EXHAUSTIVE BORNEE AVEC DEROGATIONS DECLAREES (R-COUVERTURE-1).
+  #
+  # Dans tout domaine portant AU MOINS UNE chaine, chaque entree active
+  # est soit COUVERTE par un perimetre, soit DEROGEE ici avec motif et
+  # critere de levee (R-COUVERTURE-2). Ni l'un ni l'autre = ECART.
+  #
+  # La regle n'impose PAS de tout remedier : une entree peut legitimement
+  # n'appeler aucune remediation automatique. Elle impose que ce choix
+  # soit ECRIT.
+  #
+  # Controle : binary_sensor.couverture_entrees_resilience_incomplete
+  # (runtime, alimente par integration_entities — R-COUVERTURE-3).
+  #
+  # Domaines sous couverture SANS perimetre, exclus du decompte et
+  # documentes comme tels : mqtt (Zigbee2MQTT, disponibilite native).
+  # ==========================================================
+  couverture_modele: exhaustive_bornee_avec_derogations
+  couverture_controle_runtime: binary_sensor.couverture_entrees_resilience_incomplete
   mode: report-only
   vocabulaire_statut: [present, absent_non_conforme_temporaire, non_applicable]
   delay_on_gel_reference: "00:05:00"   # ancre *age_gel_delay_5
@@ -291,6 +313,23 @@ integrations:
     # tranche (voir meta.cartographie_couverture). Ni conforme ni non
     # conforme — le contrat ne dit pas ce qu'une chaine DOIT couvrir.
     couverture_domaine_mesuree: "4/7"
+    # ⚠️ ECART DE COUVERTURE — depuis l'arbitrage du 2026-08-24, ces trois
+    # entrees ne sont plus « indecidables » : elles sont EN ECART, faute
+    # d'etre couvertes ou derogees (R-COUVERTURE-1).
+    #
+    # Aucune derogation n'est ecrite ici, et c'est delibere : je ne peux
+    # pas motiver a la place du proprietaire. Trois decisions a prendre :
+    #   - Bot Chambre parents     (actionneur) : couvrir ou deroger ?
+    #   - Bot Deshumidificateur   (actionneur) : couvrir ou deroger ?
+    #   - Meter Petite Maison     (CAPTEUR)    : ressemble a un oubli ;
+    #     il fournit sensor.temperature_petite_maison_2, source SwitchBot
+    #     de la consolidation petite maison.
+    #
+    # Format attendu pour chaque derogation (R-COUVERTURE-2) :
+    #   - entree: "<libelle>"
+    #     motif: "<pourquoi aucune remediation automatique>"
+    #     critere_levee: "<ce qui rendrait la couverture necessaire>"
+    derogations_couverture: []
 
   - nom: Synology
     mode: fraicheur+disponibilite
