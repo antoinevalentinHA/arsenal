@@ -35,6 +35,45 @@ meta:
   #    — appartenance reelle a une entree unique, via config_entry_id(),
   #    fonction de template donc inaccessible a l'analyse statique.
   controle_ancrage_runtime: binary_sensor.ancrage_chaines_resilience_non_conforme
+
+  # ==========================================================
+  # CARTOGRAPHIE DE COUVERTURE — mesure runtime du 2026-08-24
+  # ----------------------------------------------------------
+  # METHODE : balayage des entites -> config_entry_id -> domaine, compare
+  # aux entrees effectivement couvertes par les groupes sources declares.
+  #
+  # ⚠️ LIMITE OPPOSABLE : ce balayage ne voit que les entrees ayant AU MOINS
+  # UNE entite dans le state machine. Une entree sans aucune entite y est
+  # invisible. Cette mesure peut donc TROUVER DES TROUS ; elle ne peut pas
+  # PROUVER l'exhaustivite (cf. contrat §10.1).
+  #
+  # Etat mesure, format couvertes/presentes :
+  #   netatmo             1/1
+  #   fujitsu_airstage    1/1
+  #   homekit_controller  3/3   <- scission du 2026-08-24 complete
+  #   overkiz             1/1
+  #   switchbot           4/7   <- ECART, voir la note de l'integration
+  #   switchbot_cloud     1/1
+  #   synology_dsm        1/1
+  #   audiconnect         1/1
+  #   withings            1/1
+  #   mqtt                0/1   <- FAUX POSITIF de la methode : la chaine
+  #                                Zigbee2MQTT est en disponibilite_native
+  #                                (binaire de bridge), sans groupe source.
+  #                                Le broker EST couvert, par un mecanisme
+  #                                que cette mesure ne sait pas voir.
+  #
+  # ARBITRAGE OUVERT — que signifie « couverture » ?
+  #   Le contrat ne le dit pas. Deux modeles possibles :
+  #     - VOLONTAIRE : une chaine couvre exactement ce que son groupe
+  #       declare. Creer un appareil ne l'integre jamais a la resilience,
+  #       et rien ne le signale.
+  #     - EXHAUSTIVE : une chaine doit couvrir toutes les entrees actives
+  #       de son domaine ; les ecarts sont des derogations inscrites ici.
+  #   Tant que ce n'est pas tranche, un « 4/7 » n'est ni conforme ni non
+  #   conforme : il est INDECIDABLE au regard du contrat.
+  # ==========================================================
+  cartographie_couverture_date: "2026-08-24"
   mode: report-only
   vocabulaire_statut: [present, absent_non_conforme_temporaire, non_applicable]
   delay_on_gel_reference: "00:05:00"   # ancre *age_gel_delay_5
@@ -232,6 +271,26 @@ integrations:
     # solvable, NON BLOQUANTE. Critere de levee : scission en deux chaines,
     # ou requalification explicite en exception documentee.
     arbitrage_ouvert: perimetre_non_ferme_deux_integrations
+    # ECART 4 — COUVERTURE INCOMPLETE DU DOMAINE, mesure du 2026-08-24.
+    # 4 entrees `switchbot` couvertes sur 7 presentes. NON COUVERTES :
+    #   - Bot Chambre parents        (actionneur)
+    #   - Bot Deshumidificateur      (actionneur)
+    #   - Meter Petite Maison        (CAPTEUR)
+    #
+    # Les deux « Bot » sont des actionneurs : leur absence d'un groupe
+    # nomme `switchbot_capteurs` est peut-etre deliberee — mais ils ne sont
+    # alors couverts par AUCUNE chaine. Un Bot mort est un interrupteur qui
+    # ne repond plus.
+    #
+    # « Meter Petite Maison » est en revanche un CAPTEUR, et son exclusion
+    # ressemble a un oubli. C'est lui qui fournit
+    # `sensor.temperature_petite_maison_2`, source SwitchBot de la
+    # consolidation petite maison. S'il meurt, aucune chaine ne le remarque.
+    #
+    # Qualification : INDECIDABLE tant que le modele de couverture n'est pas
+    # tranche (voir meta.cartographie_couverture). Ni conforme ni non
+    # conforme — le contrat ne dit pas ce qu'une chaine DOIT couvrir.
+    couverture_domaine_mesuree: "4/7"
 
   - nom: Synology
     mode: fraicheur+disponibilite
