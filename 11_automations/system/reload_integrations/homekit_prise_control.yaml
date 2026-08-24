@@ -16,13 +16,21 @@
 #     `homekit_controller`. Les deux stations météo ont leurs
 #     propres entrées et ne sont PAS couvertes ici.
 #
-#  ✅ LES TROIS AXES (v2.0 §3 — non-substitution)
-#     - Fraîcheur    : age_donnees >= 45 min pendant 5 min
+#  ✅ AXES CÂBLÉS
 #     - Disponibilité: 0 membre exploitable pendant 5 min
 #     - Échec config : entrée non chargée pendant 15 min
 #     - Succès       : âge < 10 min pendant 2 min, ET les deux
-#                      autres axes revenus au vert
+#                      axes revenus au vert
 #     - Backoff      : timer dédié (durée gérée par le script)
+#
+#  ⛔ AXE FRAÎCHEUR — INAPPLICABLE, VOLONTAIREMENT NON CÂBLÉ
+#     Les `cover.*` de ce pont sont en PUSH : pas d'écriture
+#     périodique du coordinateur, donc `last_reported` fige dès
+#     qu'aucun volet ne bouge et l'âge croît sans borne. Un seuil
+#     de gel produirait un faux incident toutes les ~50 min.
+#     Mesuré le 2026-08-24 (cf. pont_idiamant.md §8.3).
+#     L'âge reste exposé en observabilité et sert au constat de
+#     RETOUR après reload (ok_minutes), jamais au déclenchement.
 #
 #  🧱 GARDE-FOUS
 #     - Pas de time_pattern ici (invariant 10). Le réveil
@@ -48,11 +56,6 @@
   max_exceeded: silent
 
   trigger:
-    - platform: state
-      entity_id: binary_sensor.gel_avere_homekit_prise_control
-      to: "on"
-      id: gel
-
     - platform: state
       entity_id: binary_sensor.indisponibilite_franche_homekit_prise_control
       to: "on"
@@ -92,7 +95,7 @@
                 notify_title_prefix: "HomeKit Prise Control"
                 age_entity: sensor.homekit_prise_control_age_donnees
                 ok_minutes: 10
-                seuil_minutes: 45
+                seuil_minutes: 100000
                 attempts_entity: input_number.homekit_prise_control_reload_tentatives
                 backoff_timer: timer.homekit_prise_control_reload_backoff
                 backoff_minutes_cap: 60
@@ -106,7 +109,14 @@
             age_entity: sensor.homekit_prise_control_age_donnees
             unavail_entity: binary_sensor.indisponibilite_franche_homekit_prise_control
             fail_entity: binary_sensor.echec_configuration_homekit_prise_control
-            seuil_minutes: 45
+            # Sentinelle : neutralise le terme de fraîcheur dans la condition
+            # d'incident du script canon `(age >= seuil) or unavail or fail`.
+            # L'axe fraîcheur est inapplicable ici (voir en-tête) ; sans cette
+            # neutralisation, un âge naturellement élevé confirmerait un
+            # incident sur le chemin de reprise après backoff.
+            # DETTE : à remplacer par un paramètre explicite du script canon
+            # lors de la passe de correction R-PONT-8.
+            seuil_minutes: 100000
             ok_minutes: 10
             attempts_entity: input_number.homekit_prise_control_reload_tentatives
             backoff_timer: timer.homekit_prise_control_reload_backoff

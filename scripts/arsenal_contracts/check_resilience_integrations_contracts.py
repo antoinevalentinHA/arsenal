@@ -50,6 +50,8 @@ GATE_NEUTRALISATION = "maitre_on and dispo_ok and frais_ok"
 # légitimes en attributs diagnostiques, non contrôlés ici).
 FILE_PONT_SANTE = ROOT / "12_template_sensors" / "arrosage" / "pont_sante.yaml"
 FILE_ETAT = ROOT / "12_template_sensors" / "system" / "integrations" / "etat.yaml"
+# Axe 3 — capteurs d'etat des entrees de configuration (templates a triggers).
+FILE_ETAT_ENTREES = ROOT / "12_template_sensors" / "system" / "integrations" / "etat_entrees.yaml"
 FILE_WAN = ROOT / "12_template_sensors" / "system" / "connectivite" / "internet" / "contexte_wan_indisponible.yaml"
 FILE_SCRIPT_CANON = ROOT / "10_scripts" / "system" / "resilience_integration_recover.yaml"
 DIR_TIMERS = ROOT / "08_timers" / "reload_integrations"
@@ -463,8 +465,13 @@ def evaluate(integ, ctx):
 
     # ---------- R2 : chaîne orpheline ----------
     if mode != "disponibilite_native":
+        # `non_applicable` = hors perimetre pour ce mode, JAMAIS une dette
+        # (vocabulaire declare en tete du registre). Exiger `present` ici
+        # contredisait cette semantique et forcait a etiqueter en dette une
+        # inapplicabilite legitime (ex. axe fraicheur sur des entites push,
+        # sans ecriture periodique du coordinateur).
         diag_ok = all(
-            maillon(f).get("statut") == "present"
+            maillon(f).get("statut") in ("present", "non_applicable")
             for f in ("groupe_source", "capteur_age", "binaire_gel",
                       "binaire_retour_ok", "binaire_recovery")
         )
@@ -549,32 +556,46 @@ def evaluate(integ, ctx):
                 record(nom, "R6", FAIL,
                        f"seuil désaligné non documenté (attendu {attendu} / gel {runtime_seuil} / automation {autom_seuil})")
 
-    # ---------- R7 : câblage bi-axes (triggers + transmission unavail_entity) ----------
-    if mode == "fraicheur+disponibilite" and autom_obj is not None:
+    # ---------- R7 : câblage multi-axes (triggers + transmission au canon) ----------
+    # Généralisé : chaque axe DÉCLARÉ PRÉSENT au registre doit être câblé en
+    # trigger, et son entité doit être transmise au script canon quand le canon
+    # l'attend. Un axe `non_applicable` n'est pas exigé — il est hors périmètre.
+    # Modélise désormais l'axe 3 (échec de configuration) : résorption partielle
+    # de la dette §10.1 du contrat.
+    if mode in ("fraicheur+disponibilite", "disponibilite+echec_configuration") and autom_obj is not None:
         ents = automation_entities(autom_obj)
-        gel_eid = maillon("binaire_gel").get("entity_id")
-        ind_eid = maillon("binaire_indisponibilite").get("entity_id")
-        gel_present = gel_eid in ents
-        ind_present = bool(ind_eid) and ind_eid in ents
-
-        # Transmission de l'indisponibilité au script canon (op=attempt)
         data = attempt_call(autom_obj)
-        unavail_passe = bool(ind_eid) and data is not None and data.get("unavail_entity") == ind_eid
 
-        if gel_present and ind_present and unavail_passe:
-            record(nom, "R7", PASS, "câblage bi-axes (triggers gel+indispo, unavail_entity transmis)")
+        axes = (
+            # (libellé, champ registre, clé transmise au canon)
+            ("gel",                 "binaire_gel",                  None),
+            ("indisponibilité",     "binaire_indisponibilite",      "unavail_entity"),
+            ("échec de configuration", "binaire_echec_configuration", "fail_entity"),
+        )
+
+        manques = []
+        cables = []
+        for libelle, champ, cle_canon in axes:
+            m = maillon(champ)
+            if m.get("statut") != "present":
+                continue  # non_applicable ou absent : hors exigence ici
+            eid = m.get("entity_id")
+            if not eid or eid not in ents:
+                manques.append(f"trigger {libelle} absent")
+                continue
+            if cle_canon is not None:
+                if data is None or data.get(cle_canon) != eid:
+                    manques.append(f"{cle_canon} non transmis au script canon")
+                    continue
+            cables.append(libelle)
+
+        if not manques:
+            record(nom, "R7", PASS, "câblage multi-axes complet (" + ", ".join(cables) + ")")
         else:
             if "axe_disponibilite_absent" in exceptions:
                 record(nom, "R7", DETTE, "mono-axe (fraîcheur seule)")
             else:
-                manques = []
-                if not gel_present:
-                    manques.append("trigger gel absent")
-                if not ind_present:
-                    manques.append("trigger indisponibilité absent")
-                if not unavail_passe:
-                    manques.append("unavail_entity non transmis au script canon")
-                record(nom, "R7", FAIL, "câblage bi-axes incomplet : " + ", ".join(manques))
+                record(nom, "R7", FAIL, "câblage multi-axes incomplet : " + ", ".join(manques))
 
     # ---------- R8 : garde systeme_stable ----------
     if autom_obj is not None:
@@ -602,6 +623,7 @@ def evaluate(integ, ctx):
     # ---------- R10 : références mortes ----------
     morts = []
     for f in ("groupe_source", "capteur_age", "binaire_gel", "binaire_indisponibilite",
+              "binaire_echec_configuration", "capteur_etat_entree",
               "binaire_retour_ok", "binaire_recovery", "timer_backoff", "compteur_tentatives"):
         m = maillon(f)
         if m.get("statut") == "present":
@@ -615,6 +637,7 @@ def evaluate(integ, ctx):
             resolved = (
                 (dom == "group" and key in ctx["group_keys"]) or
                 (dom == "sensor" and key in ctx["age_uids"]) or
+                (dom == "sensor" and key in ctx["entree_uids"]) or
                 (dom == "binary_sensor" and key in ctx["etat_uids"]) or
                 (dom == "timer" and key in ctx["timer_keys"]) or
                 (dom == "input_number" and key in ctx["compteur_keys"])
@@ -731,6 +754,7 @@ def main():
         ctx = {
             "group_keys": group_keys(),
             "age_uids": template_unique_ids(FILE_AGE),
+            "entree_uids": template_unique_ids(FILE_ETAT_ENTREES),
             "etat_uids": template_unique_ids(FILE_ETAT),
             "etat_uids_full": {f"binary_sensor.{u}" for u in template_unique_ids(FILE_ETAT)},
             "gel_thresholds": gel_thresholds(),

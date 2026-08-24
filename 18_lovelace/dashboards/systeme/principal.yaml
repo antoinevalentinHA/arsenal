@@ -264,8 +264,12 @@ views:
             template: section_header
             name: 🌐 Intégrations
 
+          # Deux entrées d'un même domaine (`homekit_controller`) : grille
+          # dédiée à 2 colonnes. Cartes deux fois plus larges — les libellés
+          # tiennent sans être tronqués ni abrégés, et le regroupement visuel
+          # porte l'information « ce sont deux entrées de la même intégration ».
           - type: grid
-            columns: 4
+            columns: 2
             square: false
             cards:
               # ⚠️ Contrat resilience_integrations.md v2.0 §12.5 (R-UI-1).
@@ -299,6 +303,11 @@ views:
                 triggers_update:
                   - sensor.couleur_sante_homekit_prise_control
 
+          # Les six autres intégrations : libellés courts, 3 colonnes.
+          - type: grid
+            columns: 3
+            square: false
+            cards:
               - type: custom:button-card
                 template: kpi_no_action
                 entity: sensor.netatmo_age_donnees

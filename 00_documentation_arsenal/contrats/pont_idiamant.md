@@ -1,6 +1,6 @@
 # Contrat — Pont iDiamant (volets) : supervision et remédiation
 
-**Arsenal** · Couche domaine · v1.0 — 2026-08-24
+**Arsenal** · Couche domaine · v1.1 — 2026-08-24
 
 ---
 
@@ -257,6 +257,40 @@ le débounce de 2 minutes a été coupé à environ 90 secondes. Le compteur est
 > laissé à une valeur non nulle après un épisode clos **doit être remis à zéro**
 > — c'est une opération de maintenance, explicitement prévue par le helper.
 
+### 8.3 Axe fraîcheur inapplicable à ce pont
+
+Les `cover.*` de cette entrée sont en **push pur** : ils ne rapportent qu'au
+changement d'état, sans écriture périodique du coordinateur.
+
+**Mesuré le 2026-08-24 à 11:48**, pont pleinement sain :
+
+```
+salle_de_jeux=closed    last_reported=11:26:44
+chambre_enfants=closed  last_reported=11:26:44
+sejour_droit=closed     last_reported=11:26:44
+sejour_gauche=closed    last_reported=11:26:44
+age = 21 min, et croissant
+```
+
+> **R-PONT-10 (opposable).** L'axe fraîcheur est **inapplicable** à cette entrée
+> et **ne doit pas être câblé**. L'âge d'un volet immobile croît sans borne :
+> tout seuil finit par être franchi sur un périmètre sain. Le seuil de 45 min
+> initialement retenu aurait produit un faux incident toutes les ~50 minutes —
+> et, l'escalade consommant le compteur de tentatives, aurait fini par exposer
+> le pont à des coupures d'alimentation injustifiées.
+>
+> Relever le seuil est **interdit** : ce n'est pas un défaut de réglage mais une
+> absence de grandeur mesurable. Voir R-AXE1-1 de
+> [`resilience_integrations.md`](resilience_integrations.md) §3.1.
+
+L'âge reste **exposé en observabilité** et sert au constat de **retour** après
+reload (un rechargement force les entités à re-rapporter, l'âge retombe à 0).
+Il n'est **jamais** un déclencheur.
+
+Cette entrée est donc couverte par **deux axes** — disponibilité et échec de
+configuration — qui sont exactement les deux qui ont détecté l'incident du
+2026-08-23.
+
 ---
 
 ## 9. Frontières
@@ -282,7 +316,11 @@ le débounce de 2 minutes a été coupé à environ 90 secondes. Le compteur est
   Consigne également R-PONT-8 (compteur non remis à zéro : course entre la
   temporisation du retour OK et l'expiration du backoff, défaut du patron canon
   observé le jour même) et R-PONT-9 (remise à zéro de maintenance).
+- **v1.1** — 2026-08-24. Ajout de R-PONT-10 (§8.3) : l'axe fraîcheur est
+  **inapplicable** à ce pont (entités en push pur, âge non borné), retiré du
+  câblage et déclaré `non_applicable` au registre. Mesure terrain à l'appui.
+  Aucune modification de la politique d'escalade.
 
 ---
 
-*Arsenal — document contractuel · couche domaine · pont iDiamant · v1.0*
+*Arsenal — document contractuel · couche domaine · pont iDiamant · v1.1*

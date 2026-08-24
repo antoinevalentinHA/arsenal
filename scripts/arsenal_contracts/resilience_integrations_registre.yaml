@@ -174,7 +174,9 @@ integrations:
   # ========================================================
 
   - nom: HomeKit Prise Control
-    mode: fraicheur+disponibilite
+    # Axe fraicheur INAPPLICABLE : cover.* en push, sans ecriture periodique du
+    # coordinateur (mesure du 2026-08-24, cf. pont_idiamant.md §8.3).
+    mode: disponibilite+echec_configuration
     classe_reseau: local_lan
     statut_attendu: active
     maille: entree_de_configuration
@@ -186,7 +188,7 @@ integrations:
     # d'identifiant n'est publiee dans ce depot.
     groupe_source:           { statut: present, entity_id: group.homekit_prise_control }
     capteur_age:             { statut: present, entity_id: sensor.homekit_prise_control_age_donnees }
-    binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_homekit_prise_control }
+    binaire_gel:             { statut: non_applicable, entity_id: null, note: "Axe fraicheur inapplicable : entites en push, last_reported fige hors mouvement. Un seuil produirait un faux incident toutes les ~50 min." }
     binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_homekit_prise_control }
     binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_homekit_prise_control }
     binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_homekit_prise_control }
@@ -194,10 +196,10 @@ integrations:
     timer_backoff:           { statut: present, entity_id: timer.homekit_prise_control_reload_backoff }
     compteur_tentatives:     { statut: present, entity_id: input_number.homekit_prise_control_reload_tentatives }
     action_recovery:         { statut: present, type: reload_entry, via: canon }
-    seuil_gel_attendu: 45
-    seuil_automation_constate: 45
-    delay_on_gel: "00:05:00"
-    # Axe 3 — non encore verifie par le checker (dette §10.1).
+    seuil_gel_attendu: null
+    seuil_automation_constate: null
+    delay_on_gel: null
+    # Axe 3 — desormais VERIFIE par le checker (R7 generalise au multi-axes).
     capteur_etat_entree:     { statut: present, entity_id: sensor.etat_entree_homekit_prise_control }
     binaire_echec_configuration: { statut: present, entity_id: binary_sensor.echec_configuration_homekit_prise_control }
     debounce_echec_configuration: "00:15:00"
@@ -205,7 +207,9 @@ integrations:
     # Automation 10120000000030 : power-cycle unique de switch.prise_palier
     # apres 2 tentatives de reload infructueuses. Hors modele du checker
     # (dette §10.1) : la remediation physique n'est pas modelisee ici.
-    a_confirmer_runtime: "Cadence de report des cover.* de cette entree non mesurable pendant l'incident (entites unavailable depuis le 2026-08-23). Le seuil de gel 45 est aligne sur les autres integrations local_lan ; a confirmer sur donnees reelles une fois l'entree rechargee."
+    # Reserve levee le 2026-08-24 : la cadence a ete mesuree des le retour de
+    # l'entree. Resultat : AUCUNE cadence periodique (push pur). L'axe fraicheur
+    # est donc retire, pas ajuste. Voir pont_idiamant.md §8.3.
     exceptions_temporaires: []
 
   # ========================================================
