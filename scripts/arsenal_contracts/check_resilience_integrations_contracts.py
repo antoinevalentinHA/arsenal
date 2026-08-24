@@ -49,6 +49,7 @@ GATE_NEUTRALISATION = "maitre_on and dispo_ok and frais_ok"
 # Verrou anti-régression ciblé sur le bloc `state:` seul (les RSSI restent
 # légitimes en attributs diagnostiques, non contrôlés ici).
 FILE_PONT_SANTE = ROOT / "12_template_sensors" / "arrosage" / "pont_sante.yaml"
+DIR_TEMPLATES = ROOT / "12_template_sensors"
 FILE_ETAT = ROOT / "12_template_sensors" / "system" / "integrations" / "etat.yaml"
 # Axe 3 — capteurs d'etat des entrees de configuration (templates a triggers).
 FILE_ETAT_ENTREES = ROOT / "12_template_sensors" / "system" / "integrations" / "etat_entrees.yaml"
@@ -122,6 +123,45 @@ def template_unique_ids(path: Path):
                     if isinstance(e, dict) and "unique_id" in e:
                         uids.add(str(e["unique_id"]))
     return uids
+
+
+def entites_derivees():
+    """Toutes les entites PRODUITES par les templates du depot.
+
+    Sert a R15 : une entite definie ici est, par construction, DERIVEE
+    (template, consolidation, facade, valeur stabilisee). Elle ne peut pas
+    appartenir a un perimetre de detection (R-ANCRAGE-2), car elle porte sa
+    propre cadence de rafraichissement et sa propre logique de disponibilite,
+    toutes deux decouplees de l'integration observee.
+    """
+    derivees = set()
+    for f in sorted(DIR_TEMPLATES.rglob("*.yaml")):
+        data = load_yaml(f)
+        if not isinstance(data, list):
+            continue
+        for block in data:
+            if not isinstance(block, dict):
+                continue
+            for domaine, entries in block.items():
+                if domaine not in ("sensor", "binary_sensor"):
+                    continue
+                if not isinstance(entries, list):
+                    continue
+                for e in entries:
+                    if isinstance(e, dict) and "unique_id" in e:
+                        derivees.add(f"{domaine}.{e['unique_id']}")
+    return derivees
+
+
+def membres_groupe(nom_groupe):
+    """Membres declares d'un group.* du depot (liste d'entity_id)."""
+    for f in sorted(DIR_GROUPS.glob("*.yaml")):
+        data = load_yaml(f)
+        if isinstance(data, dict) and nom_groupe in data:
+            bloc = data[nom_groupe] or {}
+            ents = bloc.get("entities") or []
+            return [str(e) for e in ents if isinstance(e, str)]
+    return []
 
 
 def gel_thresholds():
@@ -649,6 +689,49 @@ def evaluate(integ, ctx):
     else:
         record(nom, "R10", PASS, "aucune référence morte")
 
+    # ---------- R15 : aucune entite derivee dans le perimetre ----------
+    # R-ANCRAGE-2 (contrat §12.3). Volet STATIQUEMENT decidable : une entite
+    # produite par les templates du depot est derivee par construction.
+    # C'est ce controle qui aurait detecte les deux facades petite maison,
+    # lesquelles neutralisaient les DEUX axes de la chaine HomeKit sans
+    # qu'aucun maillon soit manquant.
+    grp = maillon("groupe_source")
+    if grp.get("statut") == "present" and grp.get("entity_id"):
+        membres = membres_groupe(short_id(grp["entity_id"]))
+        fautifs = [m for m in membres if m in ctx["derivees"]]
+        if not membres:
+            record(nom, "R15", WARN, f"groupe source vide ou illisible ({grp['entity_id']})")
+        elif fautifs:
+            record(nom, "R15", FAIL,
+                   "entité(s) dérivée(s) dans le périmètre (R-ANCRAGE-2) : " + ", ".join(fautifs))
+        else:
+            record(nom, "R15", PASS, f"périmètre sans entité dérivée ({len(membres)} membres)")
+
+    # ---------- R16 : maille declaree et perimetres non mutualises ----------
+    manques = [c for c in ("maille", "domaine_integration", "entree_libelle", "entry_ref")
+               if not integ.get(c)]
+    if manques:
+        record(nom, "R16", FAIL, "champs de maille absents : " + ", ".join(manques))
+    elif integ.get("maille") != "entree_de_configuration":
+        record(nom, "R16", FAIL, f"maille inattendue : {integ.get('maille')}")
+    else:
+        doublons = []
+        for champ in ("groupe_source", "timer_backoff", "compteur_tentatives"):
+            eid = maillon(champ).get("entity_id")
+            if not eid:
+                continue
+            partages = [a["nom"] for a in ctx["integrations"]
+                        if a["nom"] != nom
+                        and (a.get(champ) or {}).get("entity_id") == eid]
+            if partages:
+                doublons.append(f"{champ} partagé avec {', '.join(partages)}")
+        if doublons:
+            record(nom, "R16", FAIL,
+                   "mutualisation interdite à la maille entrée : " + " ; ".join(doublons))
+        else:
+            record(nom, "R16", PASS,
+                   f"maille entrée déclarée ({integ['domaine_integration']}), périmètres non mutualisés")
+
     # ---------- R11 : anti-boucle ----------
     if autom_obj is not None:
         mode_single = autom_obj.get("mode") == "single"
@@ -755,6 +838,8 @@ def main():
             "group_keys": group_keys(),
             "age_uids": template_unique_ids(FILE_AGE),
             "entree_uids": template_unique_ids(FILE_ETAT_ENTREES),
+            "derivees": entites_derivees(),
+            "integrations": registre.get("integrations", []) or [],
             "etat_uids": template_unique_ids(FILE_ETAT),
             "etat_uids_full": {f"binary_sensor.{u}" for u in template_unique_ids(FILE_ETAT)},
             "gel_thresholds": gel_thresholds(),
