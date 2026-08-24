@@ -16,7 +16,14 @@
 
 meta:
   contrat: resilience_integrations.md
-  version: "1.1"
+  version: "2.0"
+  # v2.0 : la maille de couverture est l'ENTREE DE CONFIGURATION (§12).
+  # Le registre n'a PAS encore ete migre a cette maille : il enumere
+  # encore des integrations designees par un nom commercial. Dette
+  # declaree et qualifiee NON BLOQUANTE au contrat (§10.1) ; le checker
+  # ne sait donc pas constater une entree non couverte.
+  maille_cible: entree_de_configuration
+  maille_effective: integration
   mode: report-only
   vocabulaire_statut: [present, absent_non_conforme_temporaire, non_applicable]
   delay_on_gel_reference: "00:05:00"   # ancre *age_gel_delay_5
@@ -88,6 +95,20 @@ integrations:
     seuil_automation_constate: 45
     delay_on_gel: "00:05:00"
     exceptions_temporaires: []
+    # ⚠️ DETTE v2.0 — CHAINE MAL ANCREE (§12.3, R-ANCRAGE-1).
+    # Le domaine `homekit_controller` porte TROIS entrees de
+    # configuration : deux stations meteo (« Weather Station ») et le
+    # pont de volets (« Prise Control », desormais couvert par sa
+    # propre chaine ci-dessous).
+    # `group.homekit_capteurs` melange les capteurs des DEUX stations,
+    # alors que l'action ne recharge qu'UNE entree (`homekit_entry_id`).
+    # Il contient en outre deux entites sans entree de configuration
+    # (`sensor.temperature_petite_maison`,
+    #  `sensor.humidite_relative_petite_maison`), a arbitrer.
+    # Resorption = scission en une chaine par station. Non traite dans
+    # cette passe : le generateur d'ID est idempotent et ne delivre un
+    # nouvel identifiant qu'une fois le precedent deploye.
+    dette_v2_ancrage: chaine_mal_ancree_multi_entrees
 
   - nom: Overkiz
     mode: fraicheur+disponibilite
@@ -145,6 +166,39 @@ integrations:
     seuil_gel_attendu: 45
     seuil_automation_constate: 45
     delay_on_gel: "00:05:00"
+    exceptions_temporaires: []
+
+  # ========================================================
+  # PREMIERE CHAINE A LA MAILLE « ENTREE DE CONFIGURATION » (v2.0)
+  # Les trois axes sont cables, dont l'axe 3 (echec de configuration).
+  # ========================================================
+
+  - nom: HomeKit Prise Control
+    mode: fraicheur+disponibilite
+    classe_reseau: local_lan
+    statut_attendu: active
+    maille: entree_de_configuration
+    domaine_integration: homekit_controller
+    entree_libelle: "Prise Control"
+    entree_entry_id_secret: homekit_prise_control_entry_id
+    groupe_source:           { statut: present, entity_id: group.homekit_prise_control }
+    capteur_age:             { statut: present, entity_id: sensor.homekit_prise_control_age_donnees }
+    binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_homekit_prise_control }
+    binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_homekit_prise_control }
+    binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_homekit_prise_control }
+    binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_homekit_prise_control }
+    automation:              { statut: present, id: "10120000000029", alias: "Système - Relance HomeKit Prise Control", fichier: 11_automations/system/reload_integrations/homekit_prise_control.yaml }
+    timer_backoff:           { statut: present, entity_id: timer.homekit_prise_control_reload_backoff }
+    compteur_tentatives:     { statut: present, entity_id: input_number.homekit_prise_control_reload_tentatives }
+    action_recovery:         { statut: present, type: reload_entry, via: canon }
+    seuil_gel_attendu: 45
+    seuil_automation_constate: 45
+    delay_on_gel: "00:05:00"
+    # Axe 3 — non encore verifie par le checker (dette §10.1).
+    capteur_etat_entree:     { statut: present, entity_id: sensor.etat_entree_homekit_prise_control }
+    binaire_echec_configuration: { statut: present, entity_id: binary_sensor.echec_configuration_homekit_prise_control }
+    debounce_echec_configuration: "00:15:00"
+    a_confirmer_runtime: "Cadence de report des cover.* de cette entree non mesurable pendant l'incident (entites unavailable depuis le 2026-08-23). Le seuil de gel 45 est aligne sur les autres integrations local_lan ; a confirmer sur donnees reelles une fois l'entree rechargee."
     exceptions_temporaires: []
 
   # ========================================================

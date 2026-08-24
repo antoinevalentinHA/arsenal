@@ -1,0 +1,115 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     HomeKit Prise Control – Relance entrée (auto)
+#
+#  ID : 10120000000029
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Détection + orchestration minimale pour UNE entrée de
+#     configuration `homekit_controller` : le pont de volets
+#     (passerelle Bubendorff, accessoire « Prise Control »).
+#     Délègue la procédure au script canon
+#     `script.resilience_integration_recover`.
+#
+#  🧱 MAILLE — contrat resilience_integrations.md v2.0 §12
+#     Cette automation couvre UNE entrée, pas le domaine
+#     `homekit_controller`. Les deux stations météo ont leurs
+#     propres entrées et ne sont PAS couvertes ici.
+#
+#  ✅ LES TROIS AXES (v2.0 §3 — non-substitution)
+#     - Fraîcheur    : age_donnees >= 45 min pendant 5 min
+#     - Disponibilité: 0 membre exploitable pendant 5 min
+#     - Échec config : entrée non chargée pendant 15 min
+#     - Succès       : âge < 10 min pendant 2 min, ET les deux
+#                      autres axes revenus au vert
+#     - Backoff      : timer dédié (durée gérée par le script)
+#
+#  🧱 GARDE-FOUS
+#     - Pas de time_pattern ici (invariant 10). Le réveil
+#       périodique de l'axe 3 vit en couche observation
+#       (`12_template_sensors/system/integrations/etat_entrees.yaml`),
+#       et cette automation se déclenche sur la TRANSITION du
+#       binaire, jamais sur le tick (R-AXE3-5).
+#     - Exécution uniquement si systeme_stable = on
+#     - Classe réseau `local_lan` : aucun `wan_entity` transmis
+#       (interdiction v2.0 §6 — jamais inhiber une intégration
+#       locale sur un signal WAN)
+# ==========================================================
+
+- id: "10120000000029"
+  alias: "Système - Relance HomeKit Prise Control"
+  description: >
+    Orchestration légère : déclenche la procédure de résilience de
+    l'entrée HomeKit du pont de volets (reload config_entry) sur gel
+    données, indisponibilité franche ou échec de configuration, avec
+    backoff et plafond gérés par le script canon.
+
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.gel_avere_homekit_prise_control
+      to: "on"
+      id: gel
+
+    - platform: state
+      entity_id: binary_sensor.indisponibilite_franche_homekit_prise_control
+      to: "on"
+      id: indispo
+
+    - platform: state
+      entity_id: binary_sensor.echec_configuration_homekit_prise_control
+      to: "on"
+      id: echec_config
+
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.homekit_prise_control_reload_backoff
+      id: backoff
+
+    - platform: state
+      entity_id: binary_sensor.retour_ok_homekit_prise_control
+      to: "on"
+      id: retour_ok
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+  action:
+    - choose:
+        # ✅ Reset auto si retour constaté sur les trois axes
+        - conditions:
+            - condition: trigger
+              id: retour_ok
+          sequence:
+            - service: script.resilience_integration_recover
+              data:
+                op: reset
+                notify_title_prefix: "HomeKit Prise Control"
+                age_entity: sensor.homekit_prise_control_age_donnees
+                ok_minutes: 10
+                seuil_minutes: 45
+                attempts_entity: input_number.homekit_prise_control_reload_tentatives
+                backoff_timer: timer.homekit_prise_control_reload_backoff
+                backoff_minutes_cap: 60
+
+      default:
+        - service: script.resilience_integration_recover
+          data:
+            op: attempt
+            kind: reload_entry
+            notify_title_prefix: "HomeKit Prise Control"
+            age_entity: sensor.homekit_prise_control_age_donnees
+            unavail_entity: binary_sensor.indisponibilite_franche_homekit_prise_control
+            fail_entity: binary_sensor.echec_configuration_homekit_prise_control
+            seuil_minutes: 45
+            ok_minutes: 10
+            attempts_entity: input_number.homekit_prise_control_reload_tentatives
+            backoff_timer: timer.homekit_prise_control_reload_backoff
+            entry_id: !secret homekit_prise_control_entry_id
+            backoff_minutes_cap: 60
+            wait_timeout: "00:03:00"

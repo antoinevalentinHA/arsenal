@@ -141,3 +141,69 @@
       unique_id: couleur_age_audi
       availability: *couleur_age_availability
       state: *couleur_age_logic
+# ==========================================================
+# SANTÉ D'UNE ENTRÉE DE CONFIGURATION — couleur TROIS AXES
+# ----------------------------------------------------------
+# 📐 CONTRAT — resilience_integrations.md v2.0 §12.5
+#   R-UI-1 : un indicateur ne doit JAMAIS afficher sain un
+#            périmètre dont un axe est en incident.
+#   R-UI-2 : un vert calculé sur un périmètre incomplet est
+#            pire qu'une absence d'indicateur.
+#
+# ⚠️ POURQUOI UN CAPTEUR DISTINCT DES `couleur_age_*`
+#   Les capteurs `couleur_age_*` ci-dessus sont, par
+#   construction, des couleurs de FRAÎCHEUR. Réutiliser cette
+#   machinerie ici afficherait VERT pendant qu'une entrée est
+#   en échec de configuration avec un âge figé bas — très
+#   exactement le faux vert constaté le 2026-08-23 (contrat
+#   §15). La santé d'une entrée exige les trois axes.
+#
+# 🎨 SORTIES
+#   grey   : état d'entrée indéterminé / âge non numérique
+#   red    : un axe au moins en incident avéré (débouncé)
+#   orange : entrée non `loaded` (anomalie pas encore débouncée)
+#            ou fraîcheur dégradée
+#   green  : entrée chargée, aucun axe en incident, âge frais
+#
+# 📎 PAS DE `blue`
+#   Le niveau « très vivant » suppose une cadence nominale
+#   mesurée. Celle des `cover.*` de cette entrée ne l'est pas
+#   encore (cf. `a_confirmer_runtime` au registre). Aucun seuil
+#   n'est inventé ici.
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.homekit_prise_control_age_donnees
+        - sensor.etat_entree_homekit_prise_control
+        - binary_sensor.gel_avere_homekit_prise_control
+        - binary_sensor.indisponibilite_franche_homekit_prise_control
+        - binary_sensor.echec_configuration_homekit_prise_control
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Couleur sante HomeKit Prise Control"
+      unique_id: couleur_sante_homekit_prise_control
+      default_entity_id: sensor.couleur_sante_homekit_prise_control
+
+      state: >
+        {% set etat = states('sensor.etat_entree_homekit_prise_control') %}
+        {% set age = states('sensor.homekit_prise_control_age_donnees') | float(default=none) %}
+
+        {% set incident = is_state('binary_sensor.echec_configuration_homekit_prise_control', 'on')
+                       or is_state('binary_sensor.indisponibilite_franche_homekit_prise_control', 'on')
+                       or is_state('binary_sensor.gel_avere_homekit_prise_control', 'on') %}
+
+        {% if etat in ['indetermine', 'introuvable', 'unknown', 'unavailable'] or age is none %}
+          grey
+        {% elif incident %}
+          red
+        {% elif etat != 'loaded' %}
+          orange
+        {% elif age > 15 %}
+          orange
+        {% else %}
+          green
+        {% endif %}

@@ -1,0 +1,27 @@
+# ==========================================================
+#  🧠 ARSENAL — TIMER TECHNIQUE
+#     homekit_prise_control_reload_backoff
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Timer de backoff pour l’automatisation :
+#     "Système - Relance HomeKit Prise Control"
+#
+#     - Espace les tentatives de reload en cas d’échec
+#     - Déclenche via event timer.finished
+#     - Annulé automatiquement en cas de succès
+#
+#  🧱 MAILLE
+#     Ce timer est propre à UNE entrée de configuration
+#     (contrat resilience_integrations.md v2.0 §12).
+#     Il ne doit jamais être partagé avec une autre entrée
+#     `homekit_controller`.
+#
+#  📎 NOTE
+#     La durée est redéfinie dynamiquement par le script canon.
+# ==========================================================
+
+homekit_prise_control_reload_backoff:
+  name: "HomeKit Prise Control Reload Backoff"
+  icon: mdi:timer-sand
+  duration: "01:00:00"
+  restore: true
