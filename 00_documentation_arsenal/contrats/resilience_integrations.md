@@ -1,7 +1,7 @@
 # ARSENAL — Contrat de résilience des intégrations
 
 **Composant :** `arsenal-ha`
-**Version :** v3.0
+**Version :** v3.1
 **Scope :** Détection et relance automatique des intégrations critiques (gel des données, indisponibilité des entités, échec de configuration d'une entrée).
 **Maille de couverture :** l'**entrée de configuration** (*config entry*) — voir §12.
 **Mode d'application :** report-only — voir §10 et le registre.
@@ -82,6 +82,18 @@ périmètre parfaitement sain**.
 > autant sous-couverte : les axes disponibilité et échec de configuration
 > suffisent à constituer une chaîne complète. Le mode déclaré au registre doit
 > alors énoncer exactement les axes câblés.
+
+> **R-AXE1-4 (constat récurrent).** À la date du 2026-08-24, l'axe fraîcheur
+> s'est révélé **inapplicable trois fois sur quatre périmètres examinés** :
+> `cover.*` d'un pont HomeKit, Meters SwitchBot BLE — tous en **push sur
+> changement** — et il était **artificiellement maintenu applicable** sur le
+> périmètre HomeKit historique par deux façades à tick périodique.
+>
+> Le cas nominal du canon d'âge — un coordinateur qui écrit périodiquement —
+> décrit donc une **minorité** des périmètres d'Arsenal. En conséquence :
+> l'applicabilité se **constate à chaque câblage**, jamais par analogie avec
+> une autre chaîne. Un seuil repris d'un périmètre voisin n'est pas un
+> réglage : c'est une hypothèse non vérifiée.
 
 > **R-AXE1-3 (câblage).** L'inapplicabilité se déclare au script canon par le
 > paramètre **`axe_fraicheur: false`**, qui retire le terme d'âge de la condition
@@ -713,6 +725,7 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 - **v1.0** — Contrat initial. Deux axes orthogonaux (fraîcheur / disponibilité), script canon de recovery, registre CI, mode report-only.
 - **v1.1** — Ajout de l'invariant 11 et du §11 : garde réseau WAN pour les intégrations `cloud_wan`, garde paramétrée (`wan_entity`) et jamais codée en dur, classification `cloud_wan` / `local_lan`. Conformité déclarée à `pannes/internet/30`.
 - **v1.1 (révision)** — Définition de la fraîcheur fondée sur `last_reported` (liveness) ; invariant 1 reformulé ; usage de `last_updated`/`last_changed` proscrit sur cet axe.
+- **v3.1** — Ajout de **R-AXE1-4** (§3.1) : constat récurrent, l'axe fraîcheur s'est révélé inapplicable sur la majorité des périmètres examinés le 2026-08-24 — entités en **push sur changement**, ou applicabilité artificiellement maintenue par des entités dérivées à tick périodique. Le cas nominal du canon d'âge décrit une **minorité** des périmètres d'Arsenal ; l'applicabilité se constate à chaque câblage, jamais par analogie. Première application : la scission SwitchBot BLE / Cloud, où les deux moitiés n'appellent pas les mêmes axes — ce qui rendait tout réglage commun faux.
 - **v3.0** — **Modèle de couverture arbitré.** §10.2 réécrit : Arsenal retient la **couverture exhaustive bornée avec dérogations déclarées** (R-COUVERTURE-1). Dans un domaine portant au moins une chaîne, toute entrée active est couverte ou dérogée ; ni l'un ni l'autre est un écart. La règle n'impose pas de tout remédier — elle impose que le choix soit **écrit**. Ajout de R-COUVERTURE-2 (contenu d'une dérogation, critère de levée obligatoire, transposition de R-QUALIF-3) et R-COUVERTURE-3 (contrôle runtime alimenté par `integration_entities()`, qui n'établit aucune souscription, et non par un balayage de `states`). Les deux limites — entrées sans entité, chaînes sans périmètre — sont énoncées à l'endroit où un résultat vert se relit.
 - **v2.9** — Ajout du **§10.2** et de **R-COUVERTURE-1** : le contrat ne définissait pas ce qu'une chaîne **doit** couvrir. Deux modèles s'excluent — couverture volontaire ou exhaustive — et tant que le choix n'est pas fait, un écart de couverture est **indécidable** plutôt que conforme ou non conforme. Réserve qualifiée non bloquante, avec critère de levée. Cartographie runtime du 2026-08-24 consignée au registre, avec sa limite : elle trouve des trous, elle ne prouve pas l'exhaustivité.
 - **v2.8** — Ajout de **R-ANCRAGE-7** (§12.5.1) : l'appartenance d'un périmètre à son domaine est une propriété du **runtime**, pas du dépôt. Un remplacement de matériel réutilisant un `entity_id` la modifie sans qu'aucun fichier ne change — origine constatée de l'écart SwitchBot. Justification première du contrôle runtime de fermeture de domaine : détecter une **dérive du réel sous un code correct**.
@@ -727,4 +740,4 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 
 ---
 
-*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v3.0*
+*Arsenal — document contractuel · résilience des intégrations · maille entrée de configuration · v3.1*

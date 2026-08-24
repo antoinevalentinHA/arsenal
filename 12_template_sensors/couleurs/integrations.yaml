@@ -25,7 +25,7 @@
         - sensor.homekit_station_enfants_age_donnees
         - sensor.homekit_station_salle_de_jeux_age_donnees
         - sensor.netatmo_age_donnees
-        - sensor.switchbot_age_donnees
+        - sensor.switchbot_cloud_age_donnees
         - sensor.fujitsu_age_donnees
         - sensor.petite_maison_cumulus_age_donnees
         - sensor.synology_age_donnees
@@ -47,7 +47,7 @@
           'homekit_station_enfants': 'sensor.homekit_station_enfants_age_donnees',
           'homekit_station_salle_de_jeux': 'sensor.homekit_station_salle_de_jeux_age_donnees',
           'netatmo': 'sensor.netatmo_age_donnees',
-          'switchbot': 'sensor.switchbot_age_donnees',
+          'switchbot_cloud': 'sensor.switchbot_cloud_age_donnees',
           'fujitsu': 'sensor.fujitsu_age_donnees',
           'cumulus': 'sensor.petite_maison_cumulus_age_donnees',
           'synology': 'sensor.synology_age_donnees',
@@ -63,7 +63,7 @@
           'homekit_station_enfants': 'sensor.homekit_station_enfants_age_donnees',
           'homekit_station_salle_de_jeux': 'sensor.homekit_station_salle_de_jeux_age_donnees',
           'netatmo': 'sensor.netatmo_age_donnees',
-          'switchbot': 'sensor.switchbot_age_donnees',
+          'switchbot_cloud': 'sensor.switchbot_cloud_age_donnees',
           'fujitsu': 'sensor.fujitsu_age_donnees',
           'cumulus': 'sensor.petite_maison_cumulus_age_donnees',
           'synology': 'sensor.synology_age_donnees',
@@ -74,7 +74,7 @@
           'homekit_station_enfants': 4.0,
           'homekit_station_salle_de_jeux': 4.0,
           'netatmo': 2.0,
-          'switchbot': 5.0,
+          'switchbot_cloud': 2.0,
           'fujitsu': 2.0,
           'cumulus': 2.0,
           'synology': 2.0,
@@ -85,7 +85,7 @@
           'homekit_station_enfants': 45,
           'homekit_station_salle_de_jeux': 45,
           'netatmo': 30,
-          'switchbot': 30,
+          'switchbot_cloud': 45,
           'fujitsu': 45,
           'cumulus': 60,
           'synology': 30,
@@ -96,7 +96,7 @@
           'homekit_station_enfants': 2.0,
           'homekit_station_salle_de_jeux': 2.0,
           'netatmo': 1.0,
-          'switchbot': 2.0,
+          'switchbot_cloud': 1.0,
           'fujitsu': 1.0,
           'cumulus': 1.0,
           'synology': 1.0,
@@ -133,8 +133,12 @@
       availability: *couleur_age_availability
       state: *couleur_age_logic
 
-    - name: "Couleur age SwitchBot"
-      unique_id: couleur_age_switchbot
+    # Centre 2,0 / bande 1,0 / seuil 45 : cadence cloud mesuree le
+    # 2026-08-24 a 0,7-3,7 min. Les anciennes valeurs (centre 5,0 /
+    # seuil 30) etaient calees sur un agregat melangeant BLE et cloud,
+    # donc sur aucune cadence reelle.
+    - name: "Couleur age SwitchBot Cloud"
+      unique_id: couleur_age_switchbot_cloud
       availability: *couleur_age_availability
       state: *couleur_age_logic
 
@@ -217,6 +221,45 @@
         {% elif incident %}
           red
         {% elif etat != 'loaded' %}
+          orange
+        {% else %}
+          green
+        {% endif %}
+
+# ==========================================================
+# SWITCHBOT BLE — couleur de DISPONIBILITE, pas de fraicheur
+# ----------------------------------------------------------
+# L'axe fraicheur est inapplicable a ces Meters (push sur
+# changement, R-AXE1-1). Reutiliser la machinerie `couleur_age_*`
+# afficherait orange puis rouge sur un perimetre parfaitement
+# sain, des qu'aucune piece ne bouge.
+#
+# 🎨 SORTIES
+#   red    : indisponibilite franche averee (debouncee)
+#   orange : plus aucun membre exploitable, debounce en cours
+#   green  : au moins un membre exploitable
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.indisponibilite_franche_switchbot_ble
+        - group.switchbot_ble_capteurs
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Couleur sante SwitchBot BLE"
+      unique_id: couleur_sante_switchbot_ble
+      default_entity_id: sensor.couleur_sante_switchbot_ble
+
+      state: >
+        {% set exploitables = expand('group.switchbot_ble_capteurs')
+           | rejectattr('state', 'in', ['unknown', 'unavailable'])
+           | list | count %}
+        {% if is_state('binary_sensor.indisponibilite_franche_switchbot_ble', 'on') %}
+          red
+        {% elif exploitables == 0 %}
           orange
         {% else %}
           green

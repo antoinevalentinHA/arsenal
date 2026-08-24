@@ -112,12 +112,22 @@
       attributes:
         source_group: "group.netatmo_capteurs"
 
+    # Un capteur d'age par ENTREE-domaine (scission du 2026-08-24).
+    # Cote BLE l'age est OBSERVABILITE PURE : l'axe fraicheur y est
+    # inapplicable (push sur changement, R-AXE1-1) et n'est pas cable.
     - <<: *age_donnees_canon
-      name: "SwitchBot Age Donnees"
-      unique_id: switchbot_age_donnees
-      icon: mdi:remote
+      name: "SwitchBot BLE Age Donnees"
+      unique_id: switchbot_ble_age_donnees
+      icon: mdi:bluetooth
       attributes:
-        source_group: "group.switchbot_capteurs"
+        source_group: "group.switchbot_ble_capteurs"
+
+    - <<: *age_donnees_canon
+      name: "SwitchBot Cloud Age Donnees"
+      unique_id: switchbot_cloud_age_donnees
+      icon: mdi:cloud-outline
+      attributes:
+        source_group: "group.switchbot_cloud_capteurs"
 
     - <<: *age_donnees_canon
       name: "Synology Age Donnees"

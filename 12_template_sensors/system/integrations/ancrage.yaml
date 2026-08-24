@@ -111,10 +111,10 @@
           'group.synology_capteurs',
           'group.homekit_prise_control',
           'group.audi_capteurs',
-          'group.withings_capteurs',
-          'group.switchbot_capteurs'
+          'group.withings_capteurs'
         ] %}
-        {% set cibles = [] %}
+        {% set cibles = ['group.switchbot_ble_capteurs',
+                         'group.switchbot_cloud_capteurs'] %}
         {% set ns = namespace(fautifs=0) %}
         {% for g in mono + cibles %}
           {% set membres = expand(g) | map(attribute='entity_id') | list %}
@@ -140,10 +140,10 @@
             'group.synology_capteurs',
             'group.homekit_prise_control',
             'group.audi_capteurs',
-            'group.withings_capteurs',
-            'group.switchbot_capteurs'
+            'group.withings_capteurs'
           ] %}
-          {% set cibles = [] %}
+          {% set cibles = ['group.switchbot_ble_capteurs',
+                           'group.switchbot_cloud_capteurs'] %}
           {% set ns = namespace(lignes=[]) %}
           {% for g in mono + cibles %}
             {% set membres = expand(g) | map(attribute='entity_id') | list %}

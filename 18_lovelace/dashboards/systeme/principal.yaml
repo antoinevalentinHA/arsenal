@@ -314,9 +314,42 @@ views:
                 triggers_update:
                   - sensor.couleur_sante_homekit_prise_control
 
-          # Les six autres intégrations : libellés courts, 3 colonnes.
+          # Les deux périmètres SwitchBot, en grille de 2 colonnes : ce
+          # sont les libellés les plus longs de la section, et une demi-
+          # largeur garantit qu'ils tiennent. Scission du 2026-08-24 —
+          # deux intégrations, deux modes de défaillance, deux jeux d'axes.
           - type: grid
-            columns: 3
+            columns: 2
+            square: false
+            cards:
+              # Pas de couleur de fraîcheur ici : l'axe est inapplicable
+              # (Meters en push sur changement). La couleur porte la
+              # DISPONIBILITÉ, seul axe câblé de ce périmètre.
+              - type: custom:button-card
+                template: kpi_no_action
+                entity: sensor.switchbot_ble_age_donnees
+                name: SwitchBot BLE
+                icon: mdi:bluetooth-connect
+                variables:
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_sante_switchbot_ble
+                triggers_update:
+                  - sensor.couleur_sante_switchbot_ble
+
+              - type: custom:button-card
+                template: kpi_no_action
+                entity: sensor.switchbot_cloud_age_donnees
+                name: SwitchBot Cloud
+                icon: mdi:cloud-outline
+                variables:
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_switchbot_cloud
+                triggers_update:
+                  - sensor.couleur_age_switchbot_cloud
+
+          # Les cinq autres : libellés courts, 5 colonnes.
+          - type: grid
+            columns: 5
             square: false
             cards:
               - type: custom:button-card
@@ -329,17 +362,6 @@ views:
                   couleur: sensor.couleur_age_netatmo
                 triggers_update:
                   - sensor.couleur_age_netatmo
-
-              - type: custom:button-card
-                template: kpi_no_action
-                entity: sensor.switchbot_age_donnees
-                name: SwitchBot
-                icon: mdi:bluetooth-connect
-                variables:
-                  ui_profile: arsenal
-                  couleur: sensor.couleur_age_switchbot
-                triggers_update:
-                  - sensor.couleur_age_switchbot
 
               - type: custom:button-card
                 template: kpi_no_action
