@@ -37,6 +37,38 @@ meta:
   controle_ancrage_runtime: binary_sensor.ancrage_chaines_resilience_non_conforme
 
   # ==========================================================
+  # UN SEUL SECRET `*_entry_id` EST LEGITIME — ne pas en reprovisionner
+  # ----------------------------------------------------------
+  # Depuis la migration au ciblage du 2026-08-24 (R-ANCRAGE-8), une
+  # seule chaine designe encore son entree par un `entry_id` :
+  # HomeKit Prise Control. Et ce n'est PAS pour son action, c'est parce
+  # que sa DETECTION en a besoin — le capteur d'axe 3
+  # (12_template_sensors/system/integrations/etat_entrees.yaml) lit
+  # l'etat de l'entree, ce qui exige de la nommer. Toute autre chaine
+  # tire son entree du perimetre qu'elle observe.
+  #
+  # Cinq cles sont devenues mortes et ont ete retirees de secrets.yaml
+  # le 2026-08-24 : mqtt, audi, switchbot, homekit, withings.
+  #
+  # ⛔ DEUX D'ENTRE ELLES NE DOIVENT JAMAIS ETRE RECREEES
+  # `homekit_entry_id` et `switchbot_entry_id` datent d'avant les
+  # scissions. Chacune nommait UNE entree d'un domaine qui en porte
+  # PLUSIEURS — `homekit_controller` en a trois, `switchbot` six. Les
+  # recabler produirait exactement la remediation partielle silencieuse
+  # que R-ANCRAGE-4 interdit : la chaine se declarerait reparee apres
+  # avoir traite une fraction de son perimetre, et aucun axe ne le
+  # verrait. Elles ne sont pas conservables « au cas ou ».
+  #
+  # Les trois autres n'ont jamais servi : Audi et Withings sont des
+  # chaines orphelines jamais construites, et Zigbee2MQTT ne recharge
+  # pas d'entree — elle redemarre l'add-on.
+  #
+  # REGLE : un nouveau `*_entry_id` ne se justifie que si une chaine a
+  # besoin d'observer l'ETAT d'une entree (axe 3). Pour agir, on cible
+  # le perimetre.
+  # ==========================================================
+
+  # ==========================================================
   # `entree_libelle` EST UNE ETIQUETTE HUMAINE, PAS UN TITRE D'ENTREE
   # ----------------------------------------------------------
   # Mesure du 2026-08-24 (Passe 0, editeur de modeles) : les titres
