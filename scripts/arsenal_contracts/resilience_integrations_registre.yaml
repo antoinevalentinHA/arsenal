@@ -196,22 +196,36 @@ integrations:
     seuil_automation_constate: 45
     delay_on_gel: "00:05:00"
     exceptions_temporaires: []
-    # PERIMETRE MULTI-ENTREES LEGITIME — resolu le 2026-08-24.
-    # `group.switchbot_capteurs` couvre SIX entrees : chaque appareil
-    # SwitchBot est sa propre entree. Le perimetre metier utile est bien
-    # l'ensemble des capteurs, la scission en six chaines est ecartee
-    # (aucune remediation utile par appareil BLE : ce seraient six
-    # chaines orphelines, interdites par le contrat).
+    # ⚠️ ARBITRAGE ROUVERT — le 2026-08-24, apres constat terrain.
     #
-    # L'ecart etait d'ACTION, pas de detection : un seul entry_id etait
-    # transmis, donc une panne globale n'etait rechargee qu'au sixieme.
-    # Corrige par `reload_target: group.switchbot_capteurs` — l'action
-    # derive du perimetre observe et recharge TOUTES ses entrees
-    # (R-ANCRAGE-4). Verifie en terrain le 2026-08-24 : les six entrees
-    # rechargees en une seule fois.
+    # `group.switchbot_capteurs` n'est PAS ferme sur son domaine. Il couvre
+    # 6 entrees reparties sur TROIS integrations :
+    #   - switchbot        (BLE, appareils)
+    #   - switchbot_cloud  (capteurs Imprimerie)
+    #   - mqtt             (« Mosquitto broker ») :
+    #       sensor.temperature_sdb_parents
+    #       sensor.humidite_relative_sdb_parents
     #
-    # `switchbot_entry_id` n'est plus utilise par cette chaine.
-    action_cible: group.switchbot_capteurs
+    # Le ciblage par perimetre (`reload_target`) a donc ete RETIRE : il
+    # aurait recharge l'entree MQTT a chaque declenchement de cette chaine,
+    # avec cascade vers Zigbee2MQTT (perte des entites MQTT -> bascule du
+    # bridge -> redemarrage de l'add-on).
+    #
+    # Retour a `entry_id` : portee EXPLICITE et bornee. Elle reste partielle
+    # (une entree sur six, R-ANCRAGE-4) — mais partielle vaut mieux que
+    # debordante.
+    #
+    # DEUX ECARTS DISTINCTS, a traiter dans cet ordre :
+    #  1. COMPOSITION — le perimetre n'est pas ferme sur son domaine. Les
+    #     deux capteurs MQTT n'ont rien a faire dans un groupe SwitchBot ;
+    #     ou doivent-ils aller ? Arbitrage proprietaire requis.
+    #  2. ACTION — une fois (1) resolu, le ciblage par perimetre redevient
+    #     envisageable et resorbera l'ecart R-ANCRAGE-4.
+    #
+    # Qualification (solvabilite_probatoire.md §3) : reserve differee
+    # solvable, NON BLOQUANTE pour (2), mais (1) est un defaut de
+    # composition a corriger independamment.
+    arbitrage_ouvert: perimetre_non_ferme_sur_domaine
 
   - nom: Synology
     mode: fraicheur+disponibilite
