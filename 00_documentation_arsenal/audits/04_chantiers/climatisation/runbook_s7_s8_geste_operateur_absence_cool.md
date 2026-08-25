@@ -11,19 +11,23 @@
 
 Le geste n'a de sens que pendant une **absence longue en cours** — c'est-à-dire quand :
 - `input_datetime.clim_debut_absence` porte un **horodatage réel** (≠ sentinelle `1970-01-01 01:00:00`) ;
-- l'attribut `duree_ecoulee_h` de `binary_sensor.clim_extinction_absence_prolongee_autorisee` affiche des **heures écoulées** (noter cette valeur, ex. `E = 5 h`).
+- l'attribut `duree_ecoulee_h` de `binary_sensor.clim_extinction_absence_prolongee_autorisee` affiche des **heures écoulées** (noter cette valeur, `E`) ;
+- **pour S7 uniquement : `E > 8 h`.** Le helper est borné à **`min: 8`** (contrat [`15_absence_vacances_veto_cool.md`](../../../contrats/climatisation/15_absence_vacances_veto_cool.md) §3 ; runtime `03_input_numbers/climatisation/absence/duree.yaml`). Descendre **sous `E`** est donc impossible tant que `E ≤ 8 h` : un `set_value` hors bornes est refusé. **S8 n'est pas soumis à cette contrainte.**
 
-Se fait très bien **à distance** (app HA) lors d'une sortie de quelques heures. Si tout le monde est présent (`clim_debut_absence` = sentinelle), **attendre une absence** : le geste ne qualifie rien hors absence.
+Le geste se fait très bien **à distance** (app HA), mais **S7 exige une absence de type journée entière** — une sortie de quelques heures ne suffit pas. Si tout le monde est présent (`clim_debut_absence` = sentinelle), **attendre une absence** : le geste ne qualifie rien hors absence.
 
 ## S7 — réduction sous la durée écoulée ⇒ qualification immédiate
 
-1. Relever `E` = `duree_ecoulee_h` (ex. 5 h) et l'état courant de `binary_sensor.clim_extinction_absence_prolongee_autorisee` (attendu `off` si `E < 14`).
-2. Régler `input_number.clim_duree_absence_longue` **sous `E`** (ex. `E = 5 h` ⇒ mettre **3 h**).
+1. Relever `E` = `duree_ecoulee_h` et l'état courant de `binary_sensor.clim_extinction_absence_prolongee_autorisee` (attendu `off` si `E < 14`).
+2. Choisir une valeur `V` respectant **`8 ≤ V < E`** — bornes réelles du helper : `min: 8`, `max: 48`, `step: 1` — puis régler `input_number.clim_duree_absence_longue` à `V`.
+   **Exemple exécutable** : `E = 11 h` ⇒ `V = 8`, `9` ou `10`.
 3. **Attendu (immédiat)** :
    - `binary_sensor.clim_extinction_absence_prolongee_autorisee` → **`on`** ;
    - attribut `echeance` **recalculé** (≈ `debut_absence + nouvelle durée`, donc déjà dépassé) ;
    - `binary_sensor.autorisation_clim_cool` → **`off`** ; `sensor.clim_raison_decision` cohérent.
 4. **Capturer l'Historique** de ces 3 entités autour de l'instant du réglage (preuve S7).
+
+> **Fenêtre praticable : `8 h < E < 14 h`.** La borne basse est celle du helper (`min: 8`, ci-dessus) ; la borne haute est celle qu'énonce déjà l'étape 1 — au-delà de la durée nominale, l'extinction est **déjà** `on` avant le geste, et la transition `off → on` attendue à l'étape 3 n'est plus observable (seul le recalcul d'`echeance` le reste). Ni l'une ni l'autre n'est une règle nouvelle : elles découlent des bornes déployées et de l'attendu déjà écrit.
 
 ## S8 — augmentation ⇒ extinction différée
 
