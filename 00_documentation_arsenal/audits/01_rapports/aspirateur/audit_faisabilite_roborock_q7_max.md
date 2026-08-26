@@ -1,7 +1,7 @@
 # 🤖 ARSENAL — AUDIT — Faisabilité d'un pilotage **Roborock Q7 Max**
 
 > **Trace d'audit runtime, strictement lecture seule.** Aucune action Home Assistant appelée, aucun paramètre modifié, aucune commande envoyée au robot. Aucun contrat, script, helper, automation, dashboard ni checker créé.
-> Convention : **[FAIT]** observé dans le runtime · **[HYP]** inférence non prouvée · **[RECO]** à arbitrer par l'opérateur.
+> Convention : **[FAIT]** observé dans le runtime · **[HYP]** inférence non prouvée · **[RECO]** à arbitrer par l'opérateur · **[DOC]** connaissance documentaire externe au runtime — jamais une preuve terrain propre à cet appareil.
 > Ce document est un **relevé d'observation**, pas un contrat. Il n'est ni normatif ni opposable.
 
 ---
@@ -184,8 +184,8 @@ Valeurs réellement exposées, sans traduction métier inventée.
 |---|---|---|---|---|
 | **1 — forte / pas d'eau** | `turbo` ou `max` | `mode = vacuum` et/ou `intensité = off` | Valeurs disponibles | Correspondance « forte » → `turbo` **ou** `max` à arbitrer ; sémantique de « pas d'eau » à qualifier |
 | **2 — normale / pas d'eau** | **`balanced` [FAIT]** — correspondance établie §6.3 | idem profil 1 | Valeurs disponibles, **correspondance établie** | Profil **observé en conditions réelles** le 2026-08-26 ; reste à qualifier la façon de le commander depuis HA |
-| **3 — faible / eau moyenne** | `quiet` ou `gentle` | `mode = vac_and_mop` + `intensité = medium` | Valeurs disponibles | **Non commandable tant que la serpillière est absente** |
-| **4 — faible / eau importante** | `quiet` ou `gentle` | `mode = vac_and_mop` + `intensité = high` | Valeurs disponibles | Idem profil 3 ; `high` plutôt que `custom_water_flow` à arbitrer |
+| **3 — faible / eau moyenne** | `quiet` [HYP] — `gentle` écarté provisoirement (§6.3) | `mode = vac_and_mop` + `intensité = medium` | Valeurs disponibles | **Non commandable tant que la serpillière est absente** |
+| **4 — faible / eau importante** | `quiet` [HYP] — idem | `mode = vac_and_mop` + `intensité = high` | Valeurs disponibles | Idem profil 3 ; `high` plutôt que `custom_water_flow` à arbitrer |
 
 ### 6.1 Le point « pas d'eau »
 
@@ -217,15 +217,42 @@ Le dashboard reste donc réalisable ; il doit simplement dire la vérité sur ce
 | Puissance d'aspiration : **Normal** | `fan_speed = balanced` |
 | Niveau de l'eau : **Arrêt** | `intensité de frottement = off` **et** `mode = vacuum` |
 | 7 pièces : Chambre Enfants, Salle de Jeux, Palier, SDB Enfants, Chambre Parents, Dressing, SDB Parents | `sensor.…_etat = segment_cleaning`, `sensor.…_piece_actuelle` progressant de pièce en pièce |
-| **× 2** (deux passages) | **aucune entité HA ne l'expose** |
+| **× 2** (deux passages) | aucune entité HA ne l'expose — **§6.3.1** |
 
-**[FAIT] Correspondance établie pour un seul niveau d'aspiration.** « Normal » côté application ↔ **`balanced`** côté HA, par recoupement d'une déclaration opérateur et d'une observation runtime concordantes. Les correspondances de « forte » (`turbo` ou `max`) et de « faible » (`quiet` ou `gentle`) **restent ouvertes** — V4 n'est donc que partiellement levé.
+**[FAIT] Correspondance établie pour un seul niveau d'aspiration.** « Normal » côté application ↔ **`balanced`** côté HA, par recoupement d'une déclaration opérateur et d'une observation runtime concordantes. Les correspondances de « forte » (`turbo` ou `max`) et de « faible » **restent ouvertes** — V4 n'est donc que partiellement levé.
+
+**[DOC] Gamme standard Roborock.** La documentation de la gamme distingue quatre niveaux d'aspiration — `quiet`, `balanced`, `turbo`, `max` — dont `balanced` est le niveau courant, ce que le recoupement ci-dessus confirme pour cet appareil. `gentle` n'appartient pas à cette échelle : il relève d'un régime de déplacement distinct, hors gradation de puissance. Cette connaissance est **documentaire** ; elle n'a pas été vérifiée sur le Q7 Max et ne vaut pas preuve terrain.
+
+**[HYP]** Sur cette base, « faible » correspondrait à **`quiet`**, et `gentle` peut être **écarté provisoirement** des quatre profils métier. L'arbitrage V4 reste requis : seule une observation terrain ferait de cette hypothèse un fait.
 
 **[FAIT] Composition de périmètre confirmée sur l'appareil.** Sept segments d'une même carte ont été nettoyés en une seule demande — soit tous les segments de la carte Étage **sauf `WC Étage`**. La capacité du robot à traiter un périmètre composé est donc établie. Cela ne préjuge pas de la façon dont `vacuum.clean_area` résout les areas HA, qui reste à qualifier.
 
-**[FAIT] Le nombre de passages n'est pas exposé.** L'application permet un réglage « × 2 » ; **aucune des 19 entités actives** n'en porte l'équivalent, et aucune entité de type répétition n'existe au registre. Une UI Arsenal ne pourrait donc ni lire ni commander ce paramètre par les primitives natives.
+### 6.3.1 Nombre de passages — le point dur du besoin
 
-> **[FAIT] Aucune historisation.** `recorder.yaml` fonctionne en liste d'inclusion et ne contient **aucune** entité Roborock. L'API d'historique le confirme : zéro série retournée pour `sensor.roborock_q7_max_etat`. **Conséquence** : aucun cycle n'est reconstituable a posteriori. Un futur diagnostic répondant à « que s'est-il passé au dernier nettoyage ? » exigerait au préalable d'inscrire les entités utiles au `recorder`. À arbitrer.
+Le nombre de passages (**×1 / ×2 / ×3**) **fait partie du besoin à exposer**. Son traitement par l'intégration a donc été instruit précisément.
+
+**[FAIT] Aucune entité ne le porte.** Sur les **45 entrées** du registre — 19 actives et 26 désactivées — aucune ne représente un nombre de passages. La seule entité de comptage, `sensor.roborock_q7_max_nombre_total_de_nettoyages` (désactivée), est un cumul de vie, sans rapport avec le réglage d'un cycle.
+
+**[FAIT] Un seul service natif l'expose — et ce n'est pas celui du besoin.**
+
+| Service | Désignation du périmètre | Nombre de passages |
+|---|---|---|
+| `vacuum.clean_area` | **pièces** (areas HA, sélection multiple) | **absent** — le service n'a qu'un champ, `cleaning_area_id` |
+| `roborock.set_vacuum_zoned_cleaning` | **coordonnées** d'un rectangle (`x1`, `y1`, `x2`, `y2`) | **`repeats`**, requis, entier `0..2` — libellé officiel : « le nombre de fois où le nettoyage de la zone est répété ; `0` correspond à un seul nettoyage » |
+
+**[FAIT] `repeats` couvre exactement l'amplitude du besoin** : `0` = ×1, `1` = ×2, `2` = ×3.
+
+**[FAIT] Tension structurelle.** Les deux moitiés du besoin sont portées par **deux services disjoints** : celui qui sait désigner des pièces ne sait pas répéter, celui qui sait répéter ne sait pas désigner de pièces — il exige des coordonnées de rectangle, incompatibles avec une sélection de périmètre par pièces.
+
+> **[RECO]** C'est la limite la plus contraignante relevée pour l'expérience cible. Elle ne remet pas en cause la faisabilité d'un lancement par pièces et par profil, mais **le réglage du nombre de passages ne se compose pas avec lui** par les primitives natives en l'état. La façon de lever cette tension — ou d'assumer une UI sans ce réglage — relève d'un arbitrage préalable (**V10**), pas d'une trouvaille d'implémentation.
+
+### 6.3.2 Historisation — extension optionnelle
+
+**[FAIT]** `recorder.yaml` fonctionne en liste d'inclusion et ne contient **aucune** entité Roborock. L'API d'historique le confirme : zéro série retournée pour `sensor.roborock_q7_max_etat`. Aucun cycle n'est donc reconstituable a posteriori.
+
+**Portée du constat.** Le besoin exprimé porte sur la **commande** et le **diagnostic courant** — ce que le système peut faire maintenant, et pourquoi. Ni l'un ni l'autre ne dépend de l'historique : l'état courant, la disponibilité, le cycle en cours et les prérequis matériels sont tous lisibles en direct.
+
+> **[RECO]** À traiter comme une **extension optionnelle d'observabilité**, **hors chemin critique** du dashboard demandé. Inscrire des entités au `recorder` n'a d'intérêt que si un besoin de reconstitution a posteriori est un jour exprimé (**V9**).
 
 ### 6.4 Régime `unknown`
 
@@ -292,8 +319,8 @@ Contenu minimal :
 | V6 | Autoriser une exécution de test encadrée sur un périmètre restreint | Autorisation explicite |
 | V7 | Confirmer la non-régression de l'exclusion alarme portée par `binary_sensor.roborock_q7_max_nettoyage` | Validation |
 | V8 | Statuer sur la saturation multi-cartes (4/4) : toute re-cartographie invaliderait les correspondances établies | Arbitrage |
-| V9 | Décider si les entités Roborock utiles doivent entrer au `recorder` : sans historisation, aucun cycle n'est reconstituable a posteriori (§6.3) | Arbitrage |
-| V10 | Statuer sur le **nombre de passages** (« × 2 ») : réglable dans l'application, **non exposé** par l'intégration, donc hors de portée d'une UI Arsenal en l'état (§6.3) | Arbitrage |
+| V10 | Trancher le **nombre de passages** (×1 / ×2 / ×3), qui **fait partie du besoin** : seul `roborock.set_vacuum_zoned_cleaning` porte un `repeats` (`0..2`), mais il désigne un rectangle de coordonnées, quand `vacuum.clean_area` désigne des pièces sans savoir répéter (§6.3.1). Lever cette tension, ou assumer une UI sans ce réglage | Arbitrage — **structurant** |
+| V9 | *(hors chemin critique)* Décider si des entités Roborock doivent entrer au `recorder`. **Extension optionnelle d'observabilité** : ni la commande ni le diagnostic courant n'en dépendent (§6.3.2) | Arbitrage — **optionnel** |
 
 ---
 
