@@ -183,7 +183,7 @@ Valeurs réellement exposées, sans traduction métier inventée.
 | Profil | Aspiration | Eau / lavage | Faisabilité | Réserve |
 |---|---|---|---|---|
 | **1 — forte / pas d'eau** | `turbo` ou `max` | `mode = vacuum` et/ou `intensité = off` | Valeurs disponibles | Correspondance « forte » → `turbo` **ou** `max` à arbitrer ; sémantique de « pas d'eau » à qualifier |
-| **2 — normale / pas d'eau** | `balanced` [HYP] | idem profil 1 | Valeurs disponibles | « normale » → `balanced` est une inférence lexicale, non une preuve |
+| **2 — normale / pas d'eau** | **`balanced` [FAIT]** — correspondance établie §6.3 | idem profil 1 | Valeurs disponibles, **correspondance établie** | Profil **observé en conditions réelles** le 2026-08-26 ; reste à qualifier la façon de le commander depuis HA |
 | **3 — faible / eau moyenne** | `quiet` ou `gentle` | `mode = vac_and_mop` + `intensité = medium` | Valeurs disponibles | **Non commandable tant que la serpillière est absente** |
 | **4 — faible / eau importante** | `quiet` ou `gentle` | `mode = vac_and_mop` + `intensité = high` | Valeurs disponibles | Idem profil 3 ; `high` plutôt que `custom_water_flow` à arbitrer |
 
@@ -193,7 +193,9 @@ Valeurs réellement exposées, sans traduction métier inventée.
 
 **[RECO]** Un seul levier devra être retenu comme writer de l'intention « pas d'eau ». Deux writers concurrents sur une même intention seraient un anti-patron.
 
-**[FAIT] Observation d'un cycle réel, 2026-08-26.** Un nettoyage lancé par l'opérateur (`segment_cleaning`, serpillière absente) présentait simultanément `mode = vacuum`, `intensité de frottement = off` et `fan_speed = balanced`. Les **deux** leviers étaient donc positionnés de façon cohérente. Cette observation unique ne désigne pas lequel fait autorité — elle montre seulement qu'un état « pas d'eau » cohérent est atteignable et lisible.
+**[FAIT] Cycle réel recoupé, 2026-08-26 — voir §6.3.** Un nettoyage lancé par l'opérateur depuis l'application, déclaré « Niveau de l'eau : **Arrêt** », présentait simultanément dans Home Assistant `mode = vacuum` **et** `intensité de frottement = off`. Les **deux** leviers portaient donc l'intention de façon cohérente.
+
+**[HYP]** Un réglage unique côté application semble se projeter sur les deux entités HA. Si cela se confirme, « pas d'eau » n'aurait pas deux writers concurrents mais **une intention à deux projections** — ce qui changerait la nature de l'arbitrage V4. Une seule observation ne suffit pas à l'établir.
 
 ### 6.2 Serpillière absente — condition matérielle, pas blocage
 
@@ -206,7 +208,26 @@ C'est une **condition matérielle normale à représenter explicitement**, relev
 
 Le dashboard reste donc réalisable ; il doit simplement dire la vérité sur ce qu'il ne peut pas lancer.
 
-### 6.3 Régime `unknown`
+### 6.3 Cycle de référence recoupé — 2026-08-26
+
+**[FAIT]** L'opérateur a lancé depuis l'application un cycle sur la carte Étage, et en a **déclaré les réglages**. Ils ont été recoupés avec le runtime pendant l'exécution.
+
+| Réglage déclaré (application) | Observé dans Home Assistant |
+|---|---|
+| Puissance d'aspiration : **Normal** | `fan_speed = balanced` |
+| Niveau de l'eau : **Arrêt** | `intensité de frottement = off` **et** `mode = vacuum` |
+| 7 pièces : Chambre Enfants, Salle de Jeux, Palier, SDB Enfants, Chambre Parents, Dressing, SDB Parents | `sensor.…_etat = segment_cleaning`, `sensor.…_piece_actuelle` progressant de pièce en pièce |
+| **× 2** (deux passages) | **aucune entité HA ne l'expose** |
+
+**[FAIT] Correspondance établie pour un seul niveau d'aspiration.** « Normal » côté application ↔ **`balanced`** côté HA, par recoupement d'une déclaration opérateur et d'une observation runtime concordantes. Les correspondances de « forte » (`turbo` ou `max`) et de « faible » (`quiet` ou `gentle`) **restent ouvertes** — V4 n'est donc que partiellement levé.
+
+**[FAIT] Composition de périmètre confirmée sur l'appareil.** Sept segments d'une même carte ont été nettoyés en une seule demande — soit tous les segments de la carte Étage **sauf `WC Étage`**. La capacité du robot à traiter un périmètre composé est donc établie. Cela ne préjuge pas de la façon dont `vacuum.clean_area` résout les areas HA, qui reste à qualifier.
+
+**[FAIT] Le nombre de passages n'est pas exposé.** L'application permet un réglage « × 2 » ; **aucune des 19 entités actives** n'en porte l'équivalent, et aucune entité de type répétition n'existe au registre. Une UI Arsenal ne pourrait donc ni lire ni commander ce paramètre par les primitives natives.
+
+> **[FAIT] Aucune historisation.** `recorder.yaml` fonctionne en liste d'inclusion et ne contient **aucune** entité Roborock. L'API d'historique le confirme : zéro série retournée pour `sensor.roborock_q7_max_etat`. **Conséquence** : aucun cycle n'est reconstituable a posteriori. Un futur diagnostic répondant à « que s'est-il passé au dernier nettoyage ? » exigerait au préalable d'inscrire les entités utiles au `recorder`. À arbitrer.
+
+### 6.4 Régime `unknown`
 
 **[FAIT]** `select.roborock_q7_max_parcours_de_lavage_de_sol` est à **`unknown`**. Conformément à [`principes_generaux.md`](../../../architecture/03_doctrines/principes_generaux.md) §6 (trois régimes) et §8 (disponibilité explicite), `unknown` ne vaut ni `standard`, ni une valeur par défaut. Ce régime devra être traité explicitement par tout futur consommateur.
 
@@ -266,11 +287,13 @@ Contenu minimal :
 | V1 | ~~Renommer les segments périmés dans l'application Roborock : `Chambre Arnaud` → `Chambre Enfants`, `Chambre Matthieu` → `Salle de Jeux`, `Pallier` → `Palier`~~ — **RÉALISÉ le 2026-08-26**, correction constatée dans le runtime (§5.4) | Geste terrain — **clos** |
 | V2 | Décider des areas HA à créer ou ajuster (`WC` RDC, découpe de `Petite Maison`, `Dressing`) — préparation runtime limitée | Arbitrage |
 | V3 | Trancher le sort de `WC Étage` : intégrer ou exclure explicitement | Arbitrage |
-| V4 | Trancher la sémantique des quatre profils : correspondances « forte / normale / faible », et levier unique retenu pour « pas d'eau » | Arbitrage |
+| V4 | Trancher la sémantique des profils. **Partiellement levé** (§6.3) : « normale » ↔ `balanced` est établi, et « pas d'eau » se projette sur les deux leviers à la fois. Restent à trancher « forte » (`turbo` ou `max`), « faible » (`quiet` ou `gentle`), et le levier retenu comme writer unique | Arbitrage — **partiel** |
 | V5 | Autoriser la réactivation des entités désactivées utiles (sélecteur de carte, capteurs d'erreur) | Décision opérateur |
 | V6 | Autoriser une exécution de test encadrée sur un périmètre restreint | Autorisation explicite |
 | V7 | Confirmer la non-régression de l'exclusion alarme portée par `binary_sensor.roborock_q7_max_nettoyage` | Validation |
 | V8 | Statuer sur la saturation multi-cartes (4/4) : toute re-cartographie invaliderait les correspondances établies | Arbitrage |
+| V9 | Décider si les entités Roborock utiles doivent entrer au `recorder` : sans historisation, aucun cycle n'est reconstituable a posteriori (§6.3) | Arbitrage |
+| V10 | Statuer sur le **nombre de passages** (« × 2 ») : réglable dans l'application, **non exposé** par l'intégration, donc hors de portée d'une UI Arsenal en l'état (§6.3) | Arbitrage |
 
 ---
 
@@ -292,7 +315,7 @@ Pendant toute la durée de l'audit :
 
 Nature exclusive des accès : lecture des états, des registres (entités, appareils, areas, étages), du registre de services et des libellés de services. Aucun appel de service, aucune écriture.
 
-**Précision sur le relevé de contrôle du 2026-08-26.** Un cycle de nettoyage était **en cours** au moment de cette relecture. Il a été **lancé par l'opérateur**, hors de cet audit : aucune commande n'a été émise ici, ni ce jour-là ni la veille. Ce cycle a été observé, jamais provoqué ni interrompu.
+**Précision sur le relevé de contrôle du 2026-08-26.** Un cycle de nettoyage était **en cours** au moment de cette relecture. Il a été **lancé par l'opérateur depuis l'application Roborock**, hors de cet audit, et ses réglages ont été **déclarés par lui** (§6.3) : aucune commande n'a été émise ici, ni ce jour-là ni la veille. Ce cycle a été observé, jamais provoqué, modifié ni interrompu.
 
 ---
 
