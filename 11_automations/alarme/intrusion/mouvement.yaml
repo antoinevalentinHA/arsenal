@@ -14,7 +14,8 @@
 #
 #     - Réagit à une détection de mouvement agrégée par zone
 #     - Ignore tout déclenchement pendant le délai d’entrée
-#     - Ignore les nettoyages du robot
+#     - Ignore le mouvement normal du robot aspirateur
+#       (nettoyage et retour à la base), jamais les autres régimes
 #     - Déclenche réellement l’alarme ou envoie une notification
 #       selon le mode test
 #
@@ -72,9 +73,35 @@
           entity_id: timer.delai_entree
           state: active
 
-    - condition: state
-      entity_id: binary_sensor.roborock_q7_max_nettoyage
-      state: 'off'
+    # Exclusion « mouvement normal du robot » (contrat 50_intrusion, I7).
+    #
+    # Régimes suppressifs EXHAUSTIFS : cleaning, returning. Tout autre régime —
+    # idle, paused, error, docked — et toute lecture dégradée — unknown,
+    # unavailable — laissent la détection ACTIVE (fail-open explicite : une
+    # lecture absente ou dégradée n'inhibe jamais l'alarme).
+    #
+    # L'ancien témoin `binary_sensor.roborock_q7_max_nettoyage` lisait le champ
+    # `in_cleaning` du statut — « une session n'est pas terminée », pas « le
+    # robot se déplace ». Il était faux DANS LES DEUX SENS :
+    #   - sur-exclusion : robot immobile, en pause ou en erreur, session ouverte
+    #     -> il restait `on` des heures, la détection restait inhibée ;
+    #   - sous-exclusion : il repassait `off` dès la session déclarée terminée,
+    #     alors que le robot roulait encore vers sa base -> détection réactivée
+    #     trop tôt. Déclenchement réel le 2026-08-24 à 13:25:21 UTC, pendant le
+    #     retour du robot (preuve terrain opérateur, cf. contrat ALM-ROBO-1).
+    # L'entité standard `vacuum.*` lit, elle, la machine d'état vive de
+    # l'appareil et couvre les deux côtés : cleaning vaut pour les nettoyages
+    # global / zoné / segmenté ; returning vaut pour le retour à la base ET
+    # l'accostage (`returning_home` et `docking` y sont mappés tous deux),
+    # l'état ne devenant docked qu'une fois le robot posé sur sa base.
+    - condition: not
+      alias: "Robot aspirateur en mouvement normal (cleaning / returning)"
+      conditions:
+        - condition: state
+          entity_id: vacuum.roborock_q7_max
+          state:
+            - cleaning
+            - returning
 
   action:
     - choose:
