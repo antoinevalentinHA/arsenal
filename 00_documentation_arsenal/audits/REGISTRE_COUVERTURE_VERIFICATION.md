@@ -29,7 +29,7 @@ Les deux sont complémentaires : un domaine peut être **contractualisé** (couv
 
 | Couche | Définition | Source canonique | Volume (cf. §3) |
 |---|---|---|---|
-| **Vérité normative** | Ce que le système DOIT faire : contrats opposables + doctrines transversales. | [`../contrats/`](../contrats/), [`../architecture/03_doctrines/`](../architecture/03_doctrines/) | 304 `.md` de contrats · 14 doctrines |
+| **Vérité normative** | Ce que le système DOIT faire : contrats opposables + doctrines transversales. | [`../contrats/`](../contrats/), [`../architecture/03_doctrines/`](../architecture/03_doctrines/) | 318 `.md` de contrats · 14 doctrines |
 | **Couverture mécanique** | Les contrôles qui vérifient une partie de la vérité normative. | `../../scripts/arsenal_contracts/` | 87 checkers |
 | **CI exécutée** | Le sous-ensemble des contrôles effectivement lancés en intégration continue. | `../../.github/workflows/` | 7 workflows — **ventilation détaillée au §3**, non recopiée ici |
 
@@ -45,7 +45,7 @@ Relation de couverture attendue : **surface normative à vérifier ≥ surface v
 
 | Indicateur | Valeur | Commande de re-vérification |
 |---|---|---|
-| Contrats `.md` (récursif) | **304** | `find 00_documentation_arsenal/contrats -name '*.md' \| wc -l` |
+| Contrats `.md` (récursif) | **318** | `find 00_documentation_arsenal/contrats -name '*.md' \| wc -l` |
 | Doctrines transversales | **14** | `ls 00_documentation_arsenal/architecture/03_doctrines/*.md \| grep -v README \| wc -l` |
 | Checkers | **87** | `ls scripts/arsenal_contracts/check_*.py \| wc -l` |
 | Workflows (total) | **7** | `ls .github/workflows/*.yml \| wc -l` |
@@ -97,7 +97,7 @@ Relation de couverture attendue : **surface normative à vérifier ≥ surface v
 
 Écarts **constatés** entre couches, sans jugement de conformité globale :
 
-1. **Densité normative ≫ densité mécanique.** 304 fichiers de contrats Markdown (+ 14 doctrines) pour 87 checkers : plusieurs pages normatives (p. ex. sous-modules d'un même domaine) se projettent sur un nombre réduit de contrôles. La couverture mécanique est **partielle par construction**.
+1. **Densité normative ≫ densité mécanique.** 318 fichiers de contrats Markdown (+ 14 doctrines) pour 87 checkers : plusieurs pages normatives (p. ex. sous-modules d'un même domaine) se projettent sur un nombre réduit de contrôles. La couverture mécanique est **partielle par construction**.
 2. **Doctrines partiellement instrumentées.** Sur les 14 doctrines de `../architecture/03_doctrines/`, plusieurs règles transversales font désormais l'objet d'un contrôle CI : `doctrine.yml` (interdiction `platform: template` ancrée sur `12_template_sensors.md`, présence de `mode:` **par automation** ancrée sur `11_automations.md`, cf. C14 Lot 1B) ; **les IDs d'automatisations sont instrumentés transversalement** par `check_automation_ids_contracts.py` (doctrine `id_automatisations.md`) et la cohérence préfixe↔domaine par `check_automation_prefix_domain_contracts.py` (doctrine `prefixe_domaine_automatisations.md`) — l'ancienne affirmation « il n'existe pas de checker transversal pour les IDs d'automatisations » est **caduque** (corrigée au C14 Lot 1D). La **source de vérité** de ces préfixes (`06_input_selects/system/prefix_id.yaml`), jusque-là consommée par AID/APD mais **jamais contrôlée pour elle-même** (une option malformée était abandonnée en silence), est désormais gardée par `check_prefix_id_contracts.py` (PID : format canonique « NNNN - domaine », unicité préfixe et domaine ; C14). La doctrine `restauration_etat_helpers.md` (clé `initial`) est instrumentée par `check_initial_key_contracts.py` (bloquant). En revanche, **le nommage des entités** (`nommage_entites.md`) n'a toujours pas de checker transversal, et plusieurs doctrines (causalité métier, gestion du temps, commandabilité, séparation décision/action hors chauffage) restent non instrumentées.
 3. **Moteur de raisonnement limité à un domaine.** Le moteur 3 étages (`lint` / `decision` / `execution`) de [`../../tools/arsenal_ci/`](../../tools/arsenal_ci/) n'est câblé en CI **que pour le chauffage** (`arsenal-ci-chauffage.yml`, filtré par `paths:`). Les autres domaines n'ont en CI que leur checker contractuel, pas les étages décision/exécution.
 4. **Contrôles non bloquants / assumés.** `validation.yml` exécute désormais (C14 Lot 1C) un **step bloquant** de résolution des includes (`check_configuration_includes.py`) **et** un lint de style yamllint **explicitement informatif** (`continue-on-error: true`, non bloquant — l'ancien `|| true` trompeur a été retiré). `doctrine.yml` (C14 Lot 1B) est ancré et durci : le placeholder mort `default_entity_id` a été supprimé ; les deux règles actives (`platform: template`, `mode:` par automation) bloquent. `arsenal-ci-chauffage.yml` reste en **warn-only** (`ARSENAL_CI_ENFORCE=false`). `contracts_resilience_integrations` est en mode `report` + `STRICT_ON_NEW=1` (dette gelée, nouvel écart bloquant).

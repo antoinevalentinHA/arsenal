@@ -34,6 +34,7 @@ Folderised domains, each with its own `README.md` navigation entry:
 | [`aeration_blocage_chauffage/`](./aeration_blocage_chauffage/) | 37 | Ventilation → heating-block state machine (m0→m6). |
 | [`alarme/`](./alarme/) | 16 | Alarm pipeline, numbered 00→99. |
 | [`arrosage/`](./arrosage/) | 19 | Garden irrigation — governed Arsenal ↔ Rain Bird coexistence, hydric observation. |
+| [`aspirateur/`](./aspirateur/) | 14 | Robot vacuum — Roborock piloting. Normative contract, ahead of runtime: single-map segmented missions, canonical map/segment/room reference, five fixed profiles, ×1/×2/×3 pass counts, atomic mission intent, single writer, closed launch-state partition, opposable refusal catalogue. |
 | [`boiler/`](./boiler/) | 7 | Boiler / boiler bridge. |
 | [`chauffage/`](./chauffage/) | 52 | Heating pipeline + sensors + amendments. |
 | [`climatisation/`](./climatisation/) | 42 | Air conditioning (15 root + 27 sensors). |

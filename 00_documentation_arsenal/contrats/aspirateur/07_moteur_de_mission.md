@@ -1,0 +1,389 @@
+# CONTRAT ARSENAL — ASPIRATEUR
+## 07 — Moteur de mission
+
+**Version contrat :** v1.0
+**Statut :** Normatif — antérieur au runtime
+**Objet :** Fixer l'écrivain unique du domaine, la séquence normative de
+lancement, la qualification des issues et les interdits d'exécution.
+
+> **Ce chapitre ne crée rien.** Il **borne** la future exécution sans la
+> déclencher : aucun script, aucune automation, aucun helper, aucune commande.
+> Le modèle d'encapsulation est celui du mode manuel supervisé du domaine
+> arrosage ([`../arrosage/11_mode_manuel_supervise.md`](../arrosage/11_mode_manuel_supervise.md)).
+
+---
+
+## 1. Écrivain unique
+
+> **`ASP-INV-31` — un seul écrivain.** Le domaine possède **un** moteur de
+> mission (`‹moteur_de_mission›`, conceptuel). Il est la **seule** frontière
+> entre l'intention de l'opérateur et l'appareil. Toute écriture vers le robot —
+> sélection de carte, intensité d'eau, aspiration, commande de mission,
+> interruption, retour à la base — passe **exclusivement** par lui.
+
+**Règles opposables.**
+
+1. **Aucune entité native d'action** du robot n'est placée dans Lovelace ni
+   appelée directement : ni le sélecteur de carte, ni les sélecteurs de réglage,
+   ni un bouton de routine, ni l'entité `vacuum` elle-même.
+2. **L'UI n'appelle que le moteur** ([`11`](11_frontiere_ui.md)).
+3. **Les raccourcis n'appellent que le moteur** ([`10`](10_raccourcis.md)) — ils
+   ne possèdent pas d'écrivain propre.
+4. Aucun autre domaine Arsenal n'écrit vers cet appareil.
+
+> **`ASP-INV-32` — une mission à la fois.** Le moteur n'ouvre jamais une mission
+> alors qu'une mission est en cours. La concurrence n'est pas gérée par une file
+> d'attente : elle est **refusée** ([`09`](09_refus_et_diagnostics.md),
+> `MISSION_DEJA_OUVERTE`).
+
+---
+
+## 2. Voie technique retenue
+
+| Élément | Valeur retenue |
+|---|---|
+| Action Home Assistant | `vacuum.send_command` |
+| Commande protocolaire | `app_segment_clean` |
+| Charge utile | Structure **enveloppée** portant `segments` et, **si nécessaire**, `repeat` |
+
+C'est la **seule** voie qui satisfait **simultanément** les trois exigences du
+besoin : sélection libre d'une ou plusieurs pièces, nombre de passages, et
+fonctionnement mono-carte contrôlé.
+
+> **`ASP-INV-33` — forme enveloppée exclusivement.** La charge utile est
+> **enveloppée** — la forme que la couche d'exposition émet elle-même, validée
+> deux fois sur le terrain. La forme **nue** est documentée comme **échouant en
+> silence** : elle n'est **jamais** employée.
+
+> **Ce que cette voie retire.** `vacuum.send_command` est une **action publique**
+> de Home Assistant — l'employer n'est pas un contournement d'API. Mais elle
+> expose une commande protocolaire privée **sans** résolution d'areas, **sans**
+> contrôle de la carte active, **sans** bornes vérifiées et **sans** message
+> d'erreur intelligible. **Ce que la voie retire en garanties, ce contrat le
+> réimplémente** — c'est l'objet des chapitres [`06`](06_integrite_mono_carte.md),
+> [`09`](09_refus_et_diagnostics.md) et de la séquence ci-dessous. La dépendance
+> est **assumée**, pas subie.
+
+---
+
+## 3. Séquence normative de lancement
+
+Le moteur exécute **exactement** cette séquence. Chaque étape est **bloquante** :
+son échec **refuse la mission** et **arrête la séquence**.
+
+| # | Étape | Sortie en défaut |
+|---|---|---|
+| **1** | **Recevoir une intention complète** — carte, segments, profil, passages ([`05`](05_intention_de_mission.md)) | `SELECTION_VIDE`, `PROFIL_INCONNU`, `PASSAGES_HORS_CONTRAT` |
+| **2** | **Valider la cohérence de l'intention** contre le référentiel ([`02`](02_referentiel_cartes_et_pieces.md)) | `SEGMENT_INCONNU` |
+| **3** | **Refuser** une sélection vide, inconnue ou multi-carte | `SELECTION_VIDE`, `SEGMENT_INCONNU`, `SELECTION_MULTI_CARTE` |
+| **4** | **Vérifier l'état de lancement** — état machine dans la classe de repos admissible, erreurs nominales, aucune session ouverte (§5) | `ETAT_NON_QUALIFIE`, `ROBOT_INDISPONIBLE`, `ERREUR_EQUIPEMENT`, `MISSION_DEJA_OUVERTE`, `SESSION_INACHEVEE` |
+| **5** | **Sélectionner la carte** de l'intention | `CARTE_NON_CONFIRMEE` |
+| **6** | **Attendre et confirmer le contexte cartographique** — sélecteur relu **et** pièces exposées concordantes ([`06`](06_integrite_mono_carte.md) §3, conditions 2 à 4) | `CARTE_NON_CONFIRMEE` |
+| **7** | **Écrire l'intensité d'eau** du profil | `REGLAGE_NON_CONFIRME` |
+| **8** | **Confirmer l'intensité** et la **cohérence du mode dérivé** — jamais l'écrire ([`03`](03_profils_metier.md) §3) | `REGLAGE_NON_CONFIRME` |
+| **9** | **Écrire la puissance d'aspiration** du profil | `REGLAGE_NON_CONFIRME` |
+| **10** | **Confirmer l'aspiration** | `REGLAGE_NON_CONFIRME` |
+| **11** | **Revérifier intégralement l'état de lancement** (§5) — classe de repos, erreurs nominales, absence de mission concurrente **et absence de session ouverte** | `ETAT_NON_QUALIFIE`, `ROBOT_INDISPONIBLE`, `ERREUR_EQUIPEMENT`, `MISSION_DEJA_OUVERTE`, `SESSION_INACHEVEE` |
+| **12** | **Émettre une seule commande segmentée** | qualification de l'issue, §4 |
+| **13** | **Exposer** acceptation, progression, retour, fin ou échec ([`08`](08_etats_et_observation.md)) | — |
+
+**Trois propriétés opposables de cette séquence.**
+
+> **`ASP-INV-34` — l'ordre est contractuel.** L'eau est écrite **avant**
+> l'aspiration, et le mode n'est jamais écrit. Cet ordre n'est pas une préférence
+> de style : il protège le profil d'aspiration d'un écrasement silencieux
+> ([`03`](03_profils_metier.md) §3).
+
+> **`ASP-INV-35` — une seule commande de mission.** L'étape 12 émet **une** et
+> une seule commande de mission. **Aucune commande de démarrage complémentaire,
+> aucune ré-émission, aucune commande de confirmation ne la suit** (§6).
+>
+> **Portée exacte de cet invariant : la séquence de lancement.** Il interdit
+> d'ajouter une seconde commande de démarrage *pour confirmer, compléter ou
+> corriger* le lancement segmenté. Il **ne régit pas** les gestes de conduite
+> d'une mission déjà ouverte, qui relèvent du §7 — la **reprise depuis la pause**
+> y est explicitement autorisée, sous garde.
+
+> **`ASP-INV-36` — revérification tardive, et intégrale.** L'étape 11 n'est pas
+> une redite de l'étape 4 : entre les deux, du temps s'est écoulé et des écritures
+> ont eu lieu. L'état vérifié au début d'une séquence n'autorise pas une émission
+> à sa fin.
+>
+> **Elle porte donc sur la totalité des conditions du §5 — `SESSION_INACHEVEE`
+> comprise.** Un cycle lancé puis arrêté depuis l'application entre les deux
+> étapes laisse une session ouverte : l'omettre de la revérification viderait de
+> son sens la raison même pour laquelle cette étape existe.
+
+**Ce que le contrat ne fixe pas.** Les **délais** d'attente et de confirmation
+(étapes 6, 8, 10) ne sont **pas chiffrés** ici : aucun précédent ni arbitrage ne
+les fonde ([`13`](13_hors_perimetre_arbitrages_et_questions_ouvertes.md),
+`ARB-3`). Le contrat exige une **confirmation effective**, pas une temporisation
+d'une durée donnée.
+
+> **Ce que le terrain rend praticable.** La séquence « régler, confirmer, puis
+> lancer » a été exécutée deux fois : le réglage a été **appliqué et tenu pendant
+> toute la mission** dans les deux cas, et **aucune course** n'a été observée
+> entre le réglage et le lancement, une confirmation étant intercalée. La
+> relecture qui suit une écriture n'est par ailleurs **pas laissée au polling de
+> fond** : chaque commande émise est suivie d'un rafraîchissement dans le même
+> appel. La crainte de course est **fortement réduite** — elle n'est pas levée,
+> et c'est la confirmation, non le délai, qui la traite.
+
+---
+
+## 4. Qualification de l'issue — trois issues, jamais deux
+
+**Fait établi terrain.** Une première émission a **échoué en transport** côté
+client — exception opaque, aucune requête parvenue à Home Assistant, robot
+immobile, journal serveur vide. La même émission, rejouée à l'identique, a abouti
+normalement.
+
+> **`ASP-INV-37` — trois issues distinctes.** Le moteur distingue **toujours** :
+>
+> | Issue | Ce qu'elle signifie | Ce qu'elle ne signifie pas |
+> |---|---|---|
+> | **Canal indisponible** | La demande n'est **pas parvenue** à Home Assistant | Ni que la commande est invalide, ni qu'elle a été refusée par l'appareil |
+> | **Commande rejetée** | Home Assistant ou l'appareil a **refusé** la commande | Ni un problème de canal, ni une mission partielle |
+> | **Commande acceptée** | La commande a été **prise en charge** | **Ni que la mission a démarré**, ni qu'elle porte le bon périmètre |
+>
+> **Une erreur de transport ne qualifie jamais la commande Roborock.** Conclure à
+> l'invalidité d'une commande sur la seule foi d'une erreur côté client est
+> **non conforme**.
+
+> **`ASP-INV-38` — acceptation ≠ démarrage.** L'acceptation d'une commande n'est
+> **jamais** présentée comme un lancement. Le domaine attend une **transition
+> observable** de l'état du robot ([`08`](08_etats_et_observation.md)) ; son
+> absence est un **échec qualifié** (`TRANSITION_NON_OBSERVEE`), jamais un
+> succès par défaut.
+>
+> **La fenêtre d'observation n'est pas chiffrée par ce contrat**
+> ([`13`](13_hors_perimetre_arbitrages_et_questions_ouvertes.md), `ARB-3`).
+
+> **`ASP-INV-39` — aucune reprise implicite.** Une issue non concluante ne
+> provoque **jamais** de ré-émission automatique, de seconde tentative ni de
+> correction. Elle produit un **diagnostic** ; la relance est un **geste
+> opérateur**.
+
+---
+
+## 5. État de lancement — partition fermée des états
+
+**Le besoin métier inclut le lancement d'un robot physiquement déposé sur un
+étage sans base.**
+
+> **`ASP-INV-40` — ni `docked` ni `charging` ne sont exigés.** Le contrat
+> **n'impose pas** que le robot soit amarré ou en charge pour lancer une mission.
+> Une telle exigence contredirait le besoin exprimé.
+
+### 5.0 Partition des états de l'état machine
+
+L'état machine (`sensor.roborock_q7_max_etat`) est le témoin d'autorité de
+l'activité ([`08`](08_etats_et_observation.md) §2). Ses valeurs sont réparties en
+**quatre classes exclusives et exhaustives**. La quatrième est un **fourre-tout
+fermé** : elle absorbe, par construction, toute valeur que ce contrat ne nomme
+pas — y compris une valeur future.
+
+| Classe | Valeurs | Effet sur le lancement |
+|---|---|---|
+| **R — Repos admissible** | `charger_disconnected` · `charging` | **Admissible**, sous réserve des autres conditions du §5.4 |
+| **A — Activité ou mission en cours** | `cleaning` · `segment_cleaning` · `zoned_cleaning` · `paused` · `returning_home` · `docking` | **Refus** `MISSION_DEJA_OUVERTE` |
+| **E — Erreur ou indisponibilité** | `error` · `device_offline` · `unknown` · `unavailable` | **Refus** `ERREUR_EQUIPEMENT` (`error`) ou `ROBOT_INDISPONIBLE` (`device_offline`, `unknown`, `unavailable`) |
+| **N — Non qualifiée** | **toute autre valeur**, connue ou non, présente ou future | **Refus** `ETAT_NON_QUALIFIE` |
+
+**Origine des valeurs.** Les classes R, A et E ne contiennent **que** des valeurs
+attestées par le relevé d'audit. **Aucune valeur n'est inventée.** L'audit
+qualifie lui-même cette énumération de « riche **incluant** » — elle n'est donc
+**pas exhaustive**, et c'est précisément ce qui rend la classe N nécessaire.
+
+> **`ASP-INV-60` — refus par défaut sur état non qualifié.** Toute valeur de
+> l'état machine que ce contrat ne classe pas explicitement en R, A ou E vaut
+> **état non qualifié** et **refuse** la mission au motif `ETAT_NON_QUALIFIE`.
+> Elle n'est jamais assimilée à un repos, jamais rapprochée de la valeur connue
+> « la plus proche », jamais ignorée.
+>
+> **Pourquoi un motif distinct de `ROBOT_INDISPONIBLE`.** Un état non reconnu
+> n'est **pas** une indisponibilité : le robot est joignable et rapporte
+> fidèlement un état — c'est le contrat qui ne sait pas le lire. Réutiliser
+> `ROBOT_INDISPONIBLE` produirait un diagnostic **faux**, contraire à
+> `ASP-INV-50`. Le motif nomme le manque réel : *cet état n'est pas qualifié par
+> le contrat*.
+>
+> Cette règle prolonge `ASP-INV-25` et `ASP-INV-45` — **l'absence refuse** — au
+> cas de l'état **présent mais non interprétable**.
+
+**Pourquoi `returning_home` et `docking` sont en classe A.** Ce sont des états de
+**mouvement**, pas de repos. Le contrat alarme l'établit pour la même
+machine : côté entité `vacuum`, `returning_home` **et** `docking` sont tous deux
+mappés sur `returning`, l'état ne devenant `docked` qu'une fois le robot posé sur
+sa base. Les laisser hors de la classe A ouvrirait un lancement **en plein retour
+au dock** — un état dont le comportement n'est pas plus établi que celui de
+`ARB-2`, et que la même doctrine doit donc traiter de la même manière : refuser.
+
+> **Ce que cette partition ne fait pas.** Elle **n'exige aucun état de repos
+> particulier**. `charger_disconnected` — l'état observé d'un robot hors de son
+> dock — est **admissible**. Le lancement après transport physique du robot vers
+> un étage sans base reste donc **possible**, conformément au besoin.
+
+### 5.1 Conditions de lancement
+
+| Condition | Nature | Refus en défaut |
+|---|---|---|
+| L'état machine appartient à la **classe R** (§5.0) | Obligatoire | `MISSION_DEJA_OUVERTE`, `ERREUR_EQUIPEMENT`, `ROBOT_INDISPONIBLE` ou `ETAT_NON_QUALIFIE` selon la classe |
+| Les **états d'erreur** sont **nominaux** (§5.2) | Obligatoire | `ERREUR_EQUIPEMENT` ou `ROBOT_INDISPONIBLE` |
+| **Aucune session ouverte** ne subsiste (§5.4) | Obligatoire — arbitrage `ARB-2` | `SESSION_INACHEVEE` |
+| Le **contexte cartographique** est confirmé ([`06`](06_integrite_mono_carte.md)) | Obligatoire | `CARTE_NON_CONFIRMEE` |
+| Le robot est amarré / en charge | **Non exigé** | — |
+| Un **niveau de batterie minimal** | **Non exigé** — §5.3 | — |
+
+### 5.2 Erreurs bloquantes — règle observable
+
+Le qualificatif « pertinente » est **supprimé** du contrat : il ouvrait une
+échappatoire discrétionnaire dans un domaine dont `ASP-INV-51` proscrit tout
+contournement de refus. Il est remplacé par une règle **testable**.
+
+> **`ASP-INV-61` — toute erreur non nominale refuse.** Le lancement exige que les
+> deux témoins d'erreur soient à leur **valeur nominale** :
+>
+> | Témoin | Valeur nominale | Toute autre valeur |
+> |---|---|---|
+> | `sensor.roborock_q7_max_erreur_de_l_aspirateur` | `none` | **Refus** `ERREUR_EQUIPEMENT` |
+> | `sensor.roborock_q7_max_dock_erreur_de_dock` | `ok` | **Refus** `ERREUR_EQUIPEMENT` |
+>
+> `unknown` et `unavailable` sur l'un de ces témoins ne valent **ni nominal, ni
+> `false`** : ils valent **indisponibilité** et **refusent** au motif
+> `ROBOT_INDISPONIBLE` (`ASP-INV-45`).
+>
+> **Aucune liste d'exceptions.** Le contrat **ne distingue pas** les erreurs
+> selon le profil demandé et n'admet aucune erreur « tolérable ». Une telle
+> distinction serait un arbitrage, et aucune preuve ne la fonde aujourd'hui.
+>
+> **Origine des valeurs nominales.** `none` et `ok` sont les valeurs nominales
+> **déclarées par l'opérateur**. Le relevé d'audit atteste l'existence de ces deux
+> témoins et une valeur d'erreur observée (`wheels_suspended`), sans énumérer leur
+> valeur de repos. La règle ci-dessus est donc opposable **par sa forme** — toute
+> valeur non nominale refuse — et sa **littéralité** est adossée à la déclaration
+> opérateur, non à une preuve terrain.
+
+### 5.3 Aucun seuil de batterie
+
+> **`ASP-INV-41`** — Aucun seuil de batterie ne conditionne le lancement en V1.
+> Le seuil supérieur à 50 % appliqué pendant le lot terrain appartenait au
+> **protocole d'essai**, pas à une règle métier : le transposer en clause
+> reviendrait à inventer un seuil.
+>
+> La batterie reste une **observation** exposée à l'opérateur
+> ([`08`](08_etats_et_observation.md)), qui décide.
+
+### 5.4 Session inachevée — arbitrage `ARB-2`
+
+**Fait établi.** Une session par segments peut rester **ouverte** alors que le
+robot **ne nettoie pas** et se trouve hors de son dock. Le comportement d'une
+commande segmentée émise dans cet état **n'est pas établi**.
+
+> **Arbitrage retenu.** Dans cet état, le moteur **refuse** la mission au motif
+> `SESSION_INACHEVEE`, avec un motif lisible nommant le geste attendu — arrêter
+> la session ouverte ou demander le retour à la base — avant de relancer.
+>
+> **Pourquoi refuser plutôt que tenter.** Le contrat ne dispose d'aucune preuve
+> du comportement de l'appareil dans cet état. Émettre reviendrait à **présumer**
+> une issue ; refuser **dit la vérité** et laisse la main à l'opérateur, geste
+> qui reste disponible. L'alternative — émettre et qualifier l'issue — reste
+> ouverte à révision **sur preuve terrain**, et est inscrite comme telle
+> ([`13`](13_hors_perimetre_arbitrages_et_questions_ouvertes.md), `ARB-2`).
+
+### 5.5 Acceptation d'un lancement hors base — non prouvée
+
+> **Arbitrage `ARB-1`, explicite.** Les états de repos admissibles au lancement
+> sont **énumérés dans une liste positive fermée** — la classe R du §5.0,
+> restreinte à `charger_disconnected` et `charging` — et **toute valeur non
+> classée est refusée par défaut** (`ASP-INV-60`).
+>
+> **Ce que cette liste engage.** L'acceptation d'une mission depuis
+> `charger_disconnected`, robot **hors base**, est une **règle contractuelle**
+> fondée sur le **besoin de fonctionnement après transport** du robot vers un
+> étage sans base — et non sur une preuve terrain : les deux essais validés
+> partaient d'un robot **présent sur la carte demandée**. Le contrat n'affirme
+> donc **pas** qu'un tel lancement aboutira ; il l'**autorise**, en **qualifie
+> l'issue** comme toute autre (§4), et **exige sa qualification au runtime**
+> ([`13`](13_hors_perimetre_arbitrages_et_questions_ouvertes.md), `ARB-1`).
+
+---
+
+## 6. Interdits d'exécution
+
+| Interdit | Motif |
+|---|---|
+| **Émettre `vacuum.start` comme confirmation ou complément du lancement segmenté** | `vacuum.start` **n'est pas un démarreur neutre** : il choisit ce qu'il émet selon l'état de session. Enchaîné après `app_segment_clean`, il ne « confirmerait » rien — la session par segments venant d'être ouverte, il provoquerait une **reprise** ; la session close, il déclencherait un **nettoyage global**, soit toute la carte au lieu du périmètre demandé. **Interdiction motivée, non précautionneuse.** *(Son usage comme **geste de reprise** est, lui, autorisé sous garde — §7.1.)* |
+| **Émettre une seconde commande de démarrage de mission après `app_segment_clean`** | `ASP-INV-35` — une mission, une commande |
+| **Toute reprise implicite ou corrective** non demandée par l'opérateur | `ASP-INV-39` — la relance est un geste opérateur, jamais une initiative du moteur |
+| **Écrire le mode de nettoyage** | Écrase silencieusement la puissance d'aspiration ([`03`](03_profils_metier.md) §3) |
+| **Employer une charge utile nue** | Documentée comme échouant en silence (§2) |
+| **Employer la voie zonée** (coordonnées) | Ne désigne pas de pièces, et porte une convention de répétition incompatible ([`04`](04_nombre_de_passages.md)) |
+| **Déclencher une routine Roborock** | Non paramétrable depuis Home Assistant ; définition hors dépôt, hors CI et hors contrat ; déclenchement obligatoirement par le cloud. Une routine porteuse d'un index de carte est **liée** à cette carte — elle ne compose rien et ne permet pas davantage de couvrir plusieurs cartes. |
+| **Émettre une commande sans confirmation de carte** | Violation de `ASP-IMC-1` ([`06`](06_integrite_mono_carte.md)) |
+| **Ré-émettre après une issue non concluante** | `ASP-INV-39` |
+| **Tronquer une demande au sous-ensemble valide** | `ASP-INV-27` |
+
+---
+
+## 7. Conduite d'une mission ouverte
+
+Une fois la mission ouverte, l'opérateur dispose des gestes de conduite —
+**pause, reprise, arrêt, retour à la base** — **selon les capacités réellement
+exposées** par l'appareil.
+
+> **`ASP-INV-42`** — Ces gestes passent, eux aussi, **exclusivement par le
+> moteur** (`ASP-INV-31`). Ils sont **proposés seulement lorsqu'ils ont un sens
+> physique** dans l'état courant ([`08`](08_etats_et_observation.md) §4) : un
+> geste sans effet possible n'est **jamais** présenté comme disponible
+> ([`commandabilite.md`](../../architecture/03_doctrines/commandabilite.md) §6.1).
+
+> **`ASP-INV-43` — asymétrie arrêt / lancement.** L'arrêt et le retour à la base
+> sont des **gestes de sécurité** : ils restent encapsulés et qualifiés, mais ne
+> sont **jamais plus contraints** que le lancement. En cas de doute, on
+> **n'empêche pas** l'arrêt.
+
+### 7.1 Reprise — `vacuum.start` autorisé sous garde
+
+Le geste de **reprise** est une obligation de ce contrat ([`01`](01_finalite_et_perimetre.md)
+§2, geste 7). Or `vacuum.start` est la **seule primitive** qui le réalise : sur
+session par segments inachevée, il émet précisément une **reprise du nettoyage
+par segments**. Le contrat l'autorise donc **nommément**, et **seulement** pour
+cet usage.
+
+> **`ASP-INV-62` — reprise autorisée, sous garde fermée.** `vacuum.start` peut
+> être émis **comme geste de reprise** si, et seulement si, **toutes** les
+> conditions suivantes sont réunies au moment de l'émission :
+>
+> 1. l'**état machine vaut `paused`** ;
+> 2. une **session est réellement ouverte** — le témoin de session inachevée
+>    l'atteste ([`08`](08_etats_et_observation.md) §3) ;
+> 3. **aucune erreur ni indisponibilité** ne s'y oppose (§5.2) ;
+> 4. la reprise est un **geste opérateur explicite**, jamais une initiative du
+>    moteur (`ASP-INV-39`).
+>
+> **Si la session est close, `vacuum.start` reste interdit** — il déclencherait
+> alors un **nettoyage global**, c'est-à-dire toute la carte au lieu du périmètre
+> demandé. Cette interdiction est la même que celle du §6 ; seule sa portée est
+> discriminante.
+>
+> **La reprise ne relance jamais une intention.** Elle poursuit la mission déjà
+> ouverte, avec le périmètre et les réglages qui étaient les siens. Elle n'écrit
+> aucun profil, ne resélectionne aucune carte, et n'émet aucune commande
+> segmentée : la séquence du §3 ne s'applique pas à elle.
+
+> **Ce que le contrat n'affirme pas.** Le comportement de la reprise a été établi
+> **par lecture du code** des versions en service, non par un essai terrain de ce
+> geste. Son issue est **qualifiée** comme toute autre émission (§4).
+
+---
+
+## Renvois
+
+- Intention : [`05_intention_de_mission.md`](05_intention_de_mission.md)
+- Intégrité mono-carte : [`06_integrite_mono_carte.md`](06_integrite_mono_carte.md)
+- États et observation : [`08_etats_et_observation.md`](08_etats_et_observation.md)
+- Catalogue des refus et des échecs : [`09_refus_et_diagnostics.md`](09_refus_et_diagnostics.md)
+- Arbitrages `ARB-1`, `ARB-2`, `ARB-3` : [`13_hors_perimetre_arbitrages_et_questions_ouvertes.md`](13_hors_perimetre_arbitrages_et_questions_ouvertes.md)
+- Modèle d'encapsulation (arrosage) : [`../arrosage/11_mode_manuel_supervise.md`](../arrosage/11_mode_manuel_supervise.md)
+- Index du domaine : [`README.md`](README.md)
