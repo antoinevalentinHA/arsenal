@@ -105,6 +105,8 @@ jobs:
             check_ui_runtime_colors_contracts.py
             check_ui_semantic_colors_contracts.py
             check_ui_semantic_colors_hierarchy_contracts.py
+            # --- aspirateur (1) ---
+            check_aspirateur_contracts.py
             # --- presence_maison (15) ---
             check_alarme_contracts.py
             check_babysitting_contracts.py
