@@ -20,7 +20,7 @@ Les inconnues restantes portent sur le **comportement multi-cartes**, la **corre
 
 | | |
 |---|---|
-| **Date d'observation** | 2026-08-25 |
+| **Date d'observation** | 2026-08-25 — **relevé de contrôle le 2026-08-26** (cf. §5.4) |
 | **Contexte** | Étude d'opportunité préalable à tout chantier. Aucun besoin runtime ouvert à ce jour. |
 | **Nature** | Audit **strictement read-only** du runtime Home Assistant + recherche d'antériorité dans le dépôt. |
 | **Méthode** | Lecture des états, du registre d'entités, du registre d'appareils, du registre d'areas et du registre de services depuis le frontend HA. Aucune action appelée, aucun formulaire enregistré, aucun flux d'options ouvert. |
@@ -138,7 +138,9 @@ Trois référentiels distincts coexistent et **ne doivent pas être confondus** 
 
 ### 5.1 Segments observés sur la carte active (Étage)
 
-**[FAIT]** `Pallier` · `Chambre Parents` · `Chambre Arnaud` · `Chambre Matthieu` · `Dressing` · `SDB Parents` · `WC Étage` · `SDB Enfants`.
+**[FAIT] au 2026-08-25** — `Pallier` · `Chambre Parents` · `Chambre Arnaud` · `Chambre Matthieu` · `Dressing` · `SDB Parents` · `WC Étage` · `SDB Enfants`.
+
+**[FAIT] au 2026-08-26, après renommage opérateur** — `Palier` · `Chambre Parents` · `Chambre Enfants` · `Salle de Jeux` · `Dressing` · `SDB Parents` · `WC Étage` · `SDB Enfants`.
 
 Les segments des cartes RDC, Annexe et Garage **n'ont pas pu être relevés** : seule la carte active énumère ses pièces.
 
@@ -152,17 +154,25 @@ Les segments des cartes RDC, Annexe et Garage **n'ont pas pu être relevés** : 
 
 ### 5.3 Divergences relevées
 
-| Nature | Détail | Gravité |
+| Nature | Détail | Statut |
 |---|---|---|
-| **Noms périmés côté Roborock** | La carte Étage porte encore **`Chambre Arnaud`** et **`Chambre Matthieu`** — noms proscrits. Les noms attendus sont `Chambre Enfants` et `Salle de Jeux`. | **À corriger dans l'application Roborock avant conception de l'UI.** Anomalie de référentiel, pas impossibilité architecturale. |
-| **Faute d'orthographe** | `Pallier` côté Roborock (double L) vs `Palier` côté HA. | À corriger dans l'application Roborock. |
-| **Casse** | `Chambre parents`, `SDB enfants`, `SDB parents`, `Salle de jeux` côté HA vs noms canoniques Arsenal. | Mineur, à arbitrer. |
-| **Pluriel** | `Cage d'escaliers` côté HA vs `Cage d'escalier` attendu. | Mineur, à arbitrer. |
-| **Pièces sans area HA** | `Dressing` **existe réellement** dans la carte Étage ; `WC Étage` également ; aucune area HA ne leur correspond. Le `WC` du RDC n'a pas d'area HA. `Petite Maison` est une area unique, non découpée en `Chambre` et `Salle de bain`. | Préparation runtime limitée : création ou ajustement de quelques areas. |
+| **Noms périmés côté Roborock** | La carte Étage portait **`Chambre Arnaud`** et **`Chambre Matthieu`** — noms proscrits. | **RÉSOLU le 2026-08-26** — renommés en `Chambre Enfants` et `Salle de Jeux` dans l'application Roborock ; correction constatée dans le runtime. |
+| **Faute d'orthographe** | `Pallier` côté Roborock (double L). | **RÉSOLU le 2026-08-26** — corrigé en `Palier` ; correction constatée dans le runtime. |
+| **Casse** | Côté Roborock `Chambre Parents`, `Salle de Jeux`, `SDB Parents`, `SDB Enfants` vs côté HA `Chambre parents`, `Salle de jeux`, `SDB parents`, `SDB enfants`. | Ouvert — mineur, à arbitrer. `Palier` et `Chambre Enfants` concordent désormais exactement. |
+| **Pluriel** | `Cage d'escaliers` côté HA vs `Cage d'escalier` attendu. | Ouvert — mineur, à arbitrer. |
+| **Pièces sans area HA** | `Dressing` **existe réellement** dans la carte Étage ; `WC Étage` également ; aucune area HA ne leur correspond. Le `WC` du RDC n'a pas d'area HA. `Petite Maison` est une area unique, non découpée en `Chambre` et `Salle de bain`. | Ouvert — préparation runtime limitée : création ou ajustement de quelques areas. |
 
-> **[RECO] Règle de restitution.** L'UI Arsenal ne devra **jamais** restituer silencieusement les anciens noms (`Chambre Arnaud`, `Chambre Matthieu`, `Pallier`). Toute pièce affichée doit l'être sous son nom canonique Arsenal, ou pas du tout.
+> **[RECO] Règle de restitution — durable.** L'UI Arsenal ne devra **jamais** restituer un nom de pièce provenant directement du robot sans contrôle. Toute pièce affichée doit l'être sous son nom canonique Arsenal, ou pas du tout. Les anciens noms ont été corrigés à la source le 2026-08-26 ; la règle reste nécessaire, car rien n'empêche qu'un futur renommage réintroduise un écart.
 
 > **[FAIT] Divergence interne au runtime, à consigner.** Deux listes de pièces coexistent dans l'intégration et ne se recouvrent pas : celle des segments de la carte active (8 entrées, noms d'étage) et une liste courte issue du compte (4 entrées : `Salle de bain`, `Ext`, `Chambre1`, `Chambre`). Laquelle alimente la résolution de `clean_area` n'est pas observable sans exécution.
+
+### 5.4 Relevé de contrôle du 2026-08-26
+
+**[FAIT]** Après renommage des segments par l'opérateur dans l'application Roborock, la correction est **remontée jusqu'à Home Assistant sans intervention** : les segments de la carte active sont désormais `Palier`, `Chambre Parents`, `Chambre Enfants`, `Salle de Jeux`, `Dressing`, `SDB Parents`, `WC Étage`, `SDB Enfants`.
+
+**[FAIT]** Le référentiel d'areas Home Assistant est **inchangé** (14 areas, mêmes noms). `Palier` et `Chambre Enfants` concordent désormais exactement entre les deux référentiels ; les écarts de casse subsistent sur les quatre autres.
+
+**[FAIT] Enseignement complémentaire.** Le renommage d'un segment côté application est répercuté par l'intégration. Un futur affichage ne peut donc pas traiter ces libellés comme stables : ils sont **modifiables hors du dépôt et hors de Home Assistant**.
 
 ---
 
@@ -182,6 +192,8 @@ Valeurs réellement exposées, sans traduction métier inventée.
 **[FAIT] Deux leviers exposés peuvent porter l'intention, sans qu'aucun ne soit établi comme faisant autorité** : le mode de nettoyage (`vacuum`) et l'intensité de frottement (`off`). Le parcours de lavage n'offre **aucune valeur « aucun »** — il n'exprime pas l'absence de lavage. L'absence physique de serpillière est un **état matériel non commandable**, donc jamais un moyen de réaliser un profil.
 
 **[RECO]** Un seul levier devra être retenu comme writer de l'intention « pas d'eau ». Deux writers concurrents sur une même intention seraient un anti-patron.
+
+**[FAIT] Observation d'un cycle réel, 2026-08-26.** Un nettoyage lancé par l'opérateur (`segment_cleaning`, serpillière absente) présentait simultanément `mode = vacuum`, `intensité de frottement = off` et `fan_speed = balanced`. Les **deux** leviers étaient donc positionnés de façon cohérente. Cette observation unique ne désigne pas lequel fait autorité — elle montre seulement qu'un état « pas d'eau » cohérent est atteignable et lisible.
 
 ### 6.2 Serpillière absente — condition matérielle, pas blocage
 
@@ -251,7 +263,7 @@ Contenu minimal :
 
 | # | Attendu | Nature |
 |---|---|---|
-| V1 | Renommer les segments périmés dans l'application Roborock : `Chambre Arnaud` → `Chambre Enfants`, `Chambre Matthieu` → `Salle de Jeux`, `Pallier` → `Palier` | Geste terrain — préalable |
+| V1 | ~~Renommer les segments périmés dans l'application Roborock : `Chambre Arnaud` → `Chambre Enfants`, `Chambre Matthieu` → `Salle de Jeux`, `Pallier` → `Palier`~~ — **RÉALISÉ le 2026-08-26**, correction constatée dans le runtime (§5.4) | Geste terrain — **clos** |
 | V2 | Décider des areas HA à créer ou ajuster (`WC` RDC, découpe de `Petite Maison`, `Dressing`) — préparation runtime limitée | Arbitrage |
 | V3 | Trancher le sort de `WC Étage` : intégrer ou exclure explicitement | Arbitrage |
 | V4 | Trancher la sémantique des quatre profils : correspondances « forte / normale / faible », et levier unique retenu pour « pas d'eau » | Arbitrage |
@@ -279,6 +291,8 @@ Pendant toute la durée de l'audit :
 | Flux d'options de config entry ouvert | **aucun** — volontairement écarté, un tel flux crée un état côté serveur |
 
 Nature exclusive des accès : lecture des états, des registres (entités, appareils, areas, étages), du registre de services et des libellés de services. Aucun appel de service, aucune écriture.
+
+**Précision sur le relevé de contrôle du 2026-08-26.** Un cycle de nettoyage était **en cours** au moment de cette relecture. Il a été **lancé par l'opérateur**, hors de cet audit : aucune commande n'a été émise ici, ni ce jour-là ni la veille. Ce cycle a été observé, jamais provoqué ni interrompu.
 
 ---
 
