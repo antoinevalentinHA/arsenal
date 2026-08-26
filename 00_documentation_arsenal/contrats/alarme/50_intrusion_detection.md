@@ -63,8 +63,9 @@ Les automations de détection :
   - `input_boolean.systeme_stable == on` (garde post-reboot, cf. I8)
   - `alarm_control_panel.alarme_maison == armed_away`
   - `timer.delai_entree != active` (délai d'entrée non en cours)
-  - `vacuum.roborock_q7_max not in ['cleaning', 'returning']` — **exclusion pendant
-    le mouvement normal du robot**, cf. I7
+  - `not is_state('vacuum.roborock_q7_max', ['cleaning', 'returning'])` —
+    **exclusion pendant le mouvement normal du robot**, fail-open jusqu'à l'absence
+    de l'entité, cf. I7
 - **Action** : `alarm_control_panel.alarm_trigger` + notification (réel) ou notification test uniquement (mode test)
 - **Mode** : `single`
 
@@ -159,13 +160,42 @@ robot**. La liste des régimes suppressifs est **exhaustive et fermée** :
 | `docked` | active |
 | `unknown` | active |
 | `unavailable` | active |
+| **entité absente du state machine** | active |
 
-**Fail-open explicite.** `unknown` et `unavailable` ne sont jamais assimilés à un
-nettoyage. Une lecture absente ou dégradée du robot **n'inhibe jamais** l'alarme :
+**Fail-open explicite, jusqu'à l'absence de l'entité.** `unknown` et `unavailable`
+ne sont jamais assimilés à un nettoyage, et une entité **totalement absente** du
+state machine — intégration Roborock retirée, entité supprimée — ne l'est pas
+davantage. Une lecture absente ou dégradée du robot **n'inhibe jamais** l'alarme :
 l'indisponibilité d'un équipement de confort ne doit pas désarmer silencieusement
-un garde de sécurité. La condition est donc écrite en primitives natives, comme la
-**négation** de la liste fermée `[cleaning, returning]` — tout état hors de cette
-liste, connu ou non, laisse la détection active.
+un garde de sécurité. La condition est la **négation** de la liste fermée
+`[cleaning, returning]` — tout état hors de cette liste, connu ou non, et l'absence
+d'état, laissent la détection active.
+
+**Forme imposée.** L'expression est un `condition: template` minimal :
+
+```yaml
+- condition: template
+  value_template: >-
+    {{ not is_state('vacuum.roborock_q7_max', ['cleaning', 'returning']) }}
+```
+
+`is_state()` accepte nativement une **liste** d'états (signature
+`is_state(entity_id: str, state: str | list[str])`, appartenance testée par
+`state_obj.state in state`) : un seul appel suffit, et **aucune comparaison
+textuelle à `unknown` ou `unavailable`** n'a à figurer dans la condition — ces
+états sortent de la liste fermée par construction.
+
+> **Pourquoi la forme `not` + `condition: state` est proscrite ici.** Elle
+> satisfait les huit premiers régimes mais **pas le neuvième**. Sur une entité
+> absente du state machine, `condition: state` lève une `ConditionError` ; le
+> compound `not` ne convertit **pas** cette erreur en vrai — il la collecte et la
+> propage (`NotConditionChecker`), et l'automation est abandonnée. Le garde
+> deviendrait alors **fail-closed** : l'alarme silencieusement inhibée par la
+> disparition d'une entité de confort, c'est-à-dire l'inverse de I7. `is_state()`,
+> lui, rend `False` sans lever lorsque le state object vaut `None` — la négation
+> vaut `true`, la détection reste active. C'est la seule raison du recours au
+> template, et elle est **normative** : toute réécriture en primitives `state`
+> réintroduirait le défaut.
 
 > **ALM-ROBO-1 (correctif 2026-08) — le témoin précédent était faux dans les deux
 > sens.** L'exclusion reposait sur `binary_sensor.roborock_q7_max_nettoyage == off`.
@@ -238,8 +268,9 @@ aucune détection admissible.
 - Armer ou désarmer l'alarme depuis une automation d'intrusion.
 - Introduire un délai (`delay`) dans une automation de détection.
 - Contourner le mode test sur une action de déclenchement réel.
-- Élargir l'exclusion robot au-delà de `[cleaning, returning]`, ou faire de
-  `unknown` / `unavailable` des états suppressifs (I7).
+- Élargir l'exclusion robot au-delà de `[cleaning, returning]`, faire de
+  `unknown` / `unavailable` des états suppressifs, ou réécrire la condition sous
+  une forme qui échoue lorsque l'entité est absente du state machine (I7).
 
 ---
 

@@ -76,9 +76,20 @@
     # Exclusion « mouvement normal du robot » (contrat 50_intrusion, I7).
     #
     # Régimes suppressifs EXHAUSTIFS : cleaning, returning. Tout autre régime —
-    # idle, paused, error, docked — et toute lecture dégradée — unknown,
-    # unavailable — laissent la détection ACTIVE (fail-open explicite : une
-    # lecture absente ou dégradée n'inhibe jamais l'alarme).
+    # idle, paused, error, docked —, toute lecture dégradée — unknown,
+    # unavailable — ET l'absence totale de l'entité du state machine laissent la
+    # détection ACTIVE (fail-open explicite : une lecture absente ou dégradée
+    # n'inhibe jamais l'alarme).
+    #
+    # Pourquoi un template et non `not` + `condition: state` : sur une entité
+    # ABSENTE du state machine (intégration retirée, entité supprimée),
+    # `condition: state` lève une ConditionError ; enveloppée dans `not`, cette
+    # erreur n'est PAS convertie en vrai — elle est propagée et l'automation est
+    # abandonnée. Le garde serait alors fail-CLOSED, contredisant I7.
+    # `is_state()` rend `False` sans lever lorsque l'entité est absente (le state
+    # object vaut None), donc la négation vaut `true` : détection active. La
+    # fonction accepte nativement une liste d'états — aucune comparaison
+    # textuelle à unknown / unavailable n'est nécessaire ni souhaitable.
     #
     # L'ancien témoin `binary_sensor.roborock_q7_max_nettoyage` lisait le champ
     # `in_cleaning` du statut — « une session n'est pas terminée », pas « le
@@ -94,14 +105,10 @@
     # global / zoné / segmenté ; returning vaut pour le retour à la base ET
     # l'accostage (`returning_home` et `docking` y sont mappés tous deux),
     # l'état ne devenant docked qu'une fois le robot posé sur sa base.
-    - condition: not
+    - condition: template
       alias: "Robot aspirateur en mouvement normal (cleaning / returning)"
-      conditions:
-        - condition: state
-          entity_id: vacuum.roborock_q7_max
-          state:
-            - cleaning
-            - returning
+      value_template: >-
+        {{ not is_state('vacuum.roborock_q7_max', ['cleaning', 'returning']) }}
 
   action:
     - choose:
