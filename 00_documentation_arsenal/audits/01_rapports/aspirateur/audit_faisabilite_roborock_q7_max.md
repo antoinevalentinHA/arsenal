@@ -1,24 +1,37 @@
 # 🤖 ARSENAL — AUDIT — Faisabilité d'un pilotage **Roborock Q7 Max**
 
-> **Trace d'audit runtime, strictement lecture seule.** Aucune action Home Assistant appelée, aucun paramètre modifié, aucune commande envoyée au robot. Aucun contrat, script, helper, automation, dashboard ni checker créé.
-> Convention : **[FAIT]** observé dans le runtime · **[CODE]** établi par lecture du code source exact — Home Assistant Core au tag `2026.8.3` et `python-roborock` au tag `v5.31.1`, les versions effectivement en service · **[HYP]** inférence non prouvée · **[RECO]** à arbitrer par l'opérateur · **[DOC]** connaissance documentaire externe au runtime — jamais une preuve terrain propre à cet appareil.
+> **Trace d'audit runtime.** Les passes des 2026-08-25 et 2026-08-26 ont été **strictement en lecture**. Le **lot terrain du 2026-08-26** (§9) a émis, sous autorisation opérateur explicite et essai par essai, des **réglages préparatoires** et des **commandes de nettoyage** — inventaire exhaustif et niveaux de certitude au **§10.2**. Aucun contrat, script, helper, automation, dashboard ni checker créé.
+> Convention : **[FAIT]** observé dans le runtime · **[TERRAIN]** établi par le lot terrain T1/T2 · **[CODE]** établi par lecture du code source exact — Home Assistant Core au tag `2026.8.3` et `python-roborock` au tag `v5.31.1`, les versions effectivement en service · **[HYP]** inférence non prouvée · **[RECO]** à arbitrer par l'opérateur · **[DOC]** connaissance documentaire externe au runtime — jamais une preuve terrain propre à cet appareil.
 > Ce document est un **relevé d'observation**, pas un contrat. Il n'est ni normatif ni opposable.
 
 ---
 
 ## Verdict
 
-**`GO AVEC RÉSERVES` — faisabilité native confirmée pour *périmètre + profil + **Lancer***, mais **mono-carte par construction** et **sans nombre de passages**.**
+**`GO` — la voie technique est qualifiée sur le terrain. Elle est **mono-carte par construction**, et le nombre de passages y est **acquis**.**
 
-L'expérience cible réduite à *choisir un périmètre, choisir un profil, appuyer sur **Lancer*** est **structurellement réalisable** : `vacuum.clean_area` accepte une sélection **multiple** de pièces, la puissance d'aspiration est réglable, le mode `vacuum` / `vac_and_mop` et l'intensité d'eau (`off` … `high`) sont exposés, `pause` / `stop` / `return_to_base` sont supportés.
+Le lot terrain du 2026-08-26 (§9) a qualifié la **voie segmentée directe** de bout en bout sur cet appareil : désignation exacte d'un segment dans la carte active, exclusivité du périmètre, nombre de passages honoré, déroulement complet et retour au dock nominal. L'expérience cible — *choisir une carte, choisir des pièces, choisir un profil, choisir le nombre de passages, **Lancer*** — n'a plus d'inconnue technique structurante.
 
-Trois réserves ont changé de nature après lecture du code source exact (§2.1) :
+**Ce qui est établi par le terrain (§9) :**
 
-1. **`clean_area` est inopérant en l'état** — le mappage area ↔ segment n'est pas configuré sur l'entité ; le service échoue en erreur de validation tant qu'un geste opérateur ne l'a pas créé (§3.1, **V11**).
-2. **Une commande segmentée est mono-carte, et elle échoue en silence.** La commande protocolaire ne transporte **aucun identifiant de carte** ; Home Assistant écarte sans erreur les segments hors carte active, et n'émet **rien du tout** si aucun segment ne subsiste (§8). D'où la **contrainte de sécurité candidate IMC-1** posée au §8.
-3. **Le nombre de passages existe dans le protocole mais n'est pas exposé.** `app_segment_clean` accepte un champ `repeat` dans le même appel que la liste de segments ; `vacuum.clean_area` ne le remplit pas (§6.3.1). L'arbitrage **V10** porte désormais sur l'opportunité d'une commande brute, non sur un choix entre pièces et coordonnées.
+1. `vacuum.send_command` avec `app_segment_clean` et la charge utile enveloppée `[{"segments": [N]}]` **désigne correctement** un segment de la carte active, l'exécute **exclusivement**, et rend la main proprement — **T1 validé**.
+2. Le champ `repeat` est **accepté par le Q7 Max**, et sa convention est celle du **comptage** : `repeat: 2` produit **deux passages** — **T2 validé**. Cette convention est **distincte** de celle du nettoyage zoné, où `0` vaut un passage.
+3. Le profil `intensité = off` → `mode = vacuum` **tient pendant toute la mission** ; l'appareil le rétablit à `medium` / `vac_and_mop` **au passage en `returning_home`**, jamais au lancement (§6.1).
 
-Les inconnues terrain restantes portent sur l'acceptation de `repeat` par cet appareil et sur le comportement de la carte active après déplacement physique du robot. Elles appellent une qualification terrain ciblée ; elles ne rendent pas la faisabilité indéterminée.
+**Ce que les arbitrages opérateur ont fixé :**
+
+- **La voie technique retenue est la commande segmentée directe** (§9.2) — seule à satisfaire simultanément la sélection libre de pièces, le nombre de passages et le mono-carte contrôlé.
+- **Cinq profils métier sont arrêtés** (§6) : aspiration normale, turbo, maximale — toutes trois sans eau — puis serpillière moyenne et intensive. `gentle` exclu. **V4 clos.**
+- **Le périmètre de l'Étage compte huit pièces**, `WC Étage` incluse. **V3 clos.**
+- **`vacuum.clean_area`, les areas HA et le mappage `area_mapping` sont sans objet** pour la voie retenue — leur analyse est conservée à titre historique (§3.1, §5.3). **V2 et V11 ne sont pas des arbitrages ouverts.**
+
+**Ce qui reste ouvert, et de quelle nature :**
+
+- **La contrainte de sécurité candidate IMC-1** (§8) reste entière et s'est **vérifiée sur le terrain** : la carte doit être sélectionnée et confirmée avant toute commande segmentée. Les index de segments sont homonymes entre cartes.
+- **V8** — saturation multi-cartes (4/4) — et **V9** — historisation, hors chemin critique.
+- Les questions **multi-cartes** du §8.3 — comportement de la carte active après déplacement physique du robot — restent à qualifier dans un lot ultérieur.
+
+La conception du dashboard et du moteur de commande n'est pas engagée par ce document.
 
 ---
 
@@ -26,16 +39,16 @@ Les inconnues terrain restantes portent sur l'acceptation de `repeat` par cet ap
 
 | | |
 |---|---|
-| **Date d'observation** | 2026-08-25 — **relevé de contrôle le 2026-08-26** (§5.4) — **audit du code exact le 2026-08-26** (§2.1) |
+| **Date d'observation** | 2026-08-25 — **relevé de contrôle le 2026-08-26** (§5.4) — **audit du code exact le 2026-08-26** (§2.1) — **lot terrain T1/T2 le 2026-08-26** (§9) |
 | **Contexte** | Étude d'opportunité préalable à tout chantier. Aucun besoin runtime ouvert à ce jour. |
-| **Nature** | Audit **strictement read-only** du runtime Home Assistant + lecture du code source des versions en service + recherche d'antériorité dans le dépôt. |
+| **Nature** | Audit read-only du runtime Home Assistant + lecture du code source des versions en service + recherche d'antériorité dans le dépôt, **puis** lot terrain de qualification (§9) sous autorisation opérateur essai par essai. |
 | **Méthode** | Lecture des états, du registre d'entités, du registre d'appareils, du registre d'areas et du registre de services depuis le frontend HA. Aucune action appelée, aucun formulaire enregistré, aucun flux d'options ouvert. Pour la passe du 2026-08-26 : lecture des sources de Home Assistant Core au tag `2026.8.3` (`components/vacuum/`, `components/roborock/`, tests d'intégration associés) et de `python-roborock` au tag `v5.31.1`, hors dépôt Arsenal. |
 | **Preuve de non-commande** | Cf. §10. |
 
 **Antériorité dans le dépôt [FAIT]** — le domaine n'existe pas :
 
 - aucun contrat, aucun dashboard, aucune entrée de navigation, aucun script, aucun helper ;
-- **un seul consommateur en production** : `binary_sensor.roborock_q7_max_nettoyage` sert de condition d'exclusion à la détection d'intrusion — [`contrats/alarme/50_intrusion_detection.md`](../../../contrats/alarme/50_intrusion_detection.md) et `11_automations/alarme/intrusion/mouvement.yaml`. **Cet invariant est à préserver** par tout chantier futur ;
+- **un seul consommateur en production**, dans le domaine alarme — l'exclusion de la détection d'intrusion par mouvement ([`contrats/alarme/50_intrusion_detection.md`](../../../contrats/alarme/50_intrusion_detection.md), `11_automations/alarme/intrusion/mouvement.yaml`). Ce consommateur reposait sur `binary_sensor.roborock_q7_max_nettoyage` ; **il a été corrigé et mergé en production** (PR #724) et s'appuie désormais sur l'état du `vacuum` — `cleaning` et `returning` — c'est-à-dire sur le mouvement réel du robot. **Cet invariant reste à préserver** par tout chantier futur ;
 - `logger.yaml` porte déjà un bloc de journalisation Roborock.
 
 ---
@@ -51,7 +64,7 @@ Les inconnues terrain restantes portent sur l'acceptation de `repeat` par cet ap
 | Classe d'E/S | **`local_polling`** — l'appareil est joignable localement et interrogé en polling | [FAIT] |
 | Appairage | Config entry créé à partir d'un **compte cloud Roborock** ; l'entrée est chargée et saine | [FAIT] |
 | Disponibilité | Robot **en ligne** au moment de l'audit ; aucun *repair* ni *issue* ouvert | [FAIT] |
-| Entités du device | **45** au registre — **19 actives**, **26 désactivées** | [FAIT] |
+| Entités du device | **45** au registre — **19 actives** et **26 désactivées** au relevé initial ; **22 / 23** après les trois réactivations opérateur du 2026-08-26 (§3.4) | [FAIT] |
 
 > **[FAIT] Nuance cloud / local.** L'intégration est déclarée `local_polling` et le robot dispose d'une adresse locale connue de HA : le pilotage courant ne transite pas systématiquement par le cloud. Le compte cloud reste nécessaire à l'appairage. La répartition exacte local/cloud **selon l'opération** n'a pas été établie.
 
@@ -99,7 +112,7 @@ Ce comportement est **couvert par les tests d'intégration officiels** : l'un d'
 
 > **[FAIT] Correction — `vacuum.clean_area` n'est pas utilisable en l'état.** Les options de `vacuum.roborock_q7_max` au registre d'entités ne contiennent **aucun mappage area ↔ segment** : la seule clé présente relève de l'assistant conversationnel. Or ce mappage est **le seul chemin** par lequel le service traduit une area HA en segment Roborock (§2.1). Tant qu'il n'existe pas, tout appel échoue en erreur de validation, avec le message *« le mappage des areas n'est pas configuré pour cette entité »*.
 >
-> **Ce n'est ni un blocage technique ni un défaut de l'intégration** : le mappage se crée par un **geste opérateur** dans les paramètres de l'entité, qui écrit dans le registre. Il n'a pas été fait, et l'audit s'est interdit de le faire. Ce geste devient un **prérequis dur** de toute voie fondée sur `clean_area` — inscrit en **V11** au §9.
+> **Ce n'est ni un blocage technique ni un défaut de l'intégration** : le mappage se crée par un **geste opérateur** dans les paramètres de l'entité, qui écrit dans le registre. Il n'a pas été fait, et l'audit s'est interdit de le faire. Ce geste serait un **prérequis dur** de toute voie fondée sur `clean_area`. La voie retenue étant la commande segmentée directe (§9.2), **il est sans objet** — l'analyse est conservée à titre historique.
 >
 > Conséquence sur la lecture des passes précédentes : la disponibilité du **schéma** du service avait été constatée à juste titre ; elle avait été lue comme une disponibilité **opérationnelle**, ce qu'elle n'est pas.
 
@@ -122,7 +135,9 @@ Ce comportement est **couvert par les tests d'intégration officiels** : l'un d'
 >
 > **Ce qui reste vrai** : `sensor.…_etat` est un témoin d'activité honnête (`segment_cleaning`, `zoned_cleaning`, `cleaning`, `paused`…). Une garde anti-double-lancement doit s'appuyer **sur lui**, et traiter `binary_sensor.…_nettoyage` comme ce qu'il est — un indicateur de **session inachevée**, utile mais distinct.
 >
-> **Portée sur l'existant — constat, pas chantier.** L'exclusion d'intrusion en production (§1) est câblée sur ce binaire. Elle reste donc active tant qu'une session segmentée n'est pas achevée, **robot à l'arrêt compris**. Ce constat alimente **V7** ; il n'ouvre aucun travail ici.
+> **[TERRAIN] Le désalignement est confirmé dans les deux sens.** T1 et T2 (§9) l'ont observé à l'identique : le témoin repasse à **`off` pendant `returning_home`**, alors que le robot roule encore vers son dock — 53 secondes de déplacement à `off` en T1, 25 en T2. Il est donc **sous-exclusif** en fin de mission, autant qu'il était **sur-exclusif** sur une session ouverte robot immobile.
+>
+> **Portée sur l'existant — résolu en production.** L'exclusion d'intrusion était câblée sur ce binaire. **La PR #724 l'a corrigée et mergée** : l'inhibition repose désormais sur l'état du `vacuum` (`cleaning`, `returning`), c'est-à-dire sur le mouvement réel. **V7 est clos.** Aucun travail alarme n'est ouvert ni requis par ce document.
 
 ### 3.3 Prérequis matériels observables
 
@@ -135,19 +150,24 @@ Ce comportement est **couvert par les tests d'intégration officiels** : l'un d'
 
 **[FAIT] Les prérequis matériels des profils avec eau sont observables.** Ils ne sont pas commandables : poser ou retirer la serpillière est un **geste opérateur**.
 
-### 3.4 Prérequis runtime réversibles
+### 3.4 Prérequis runtime — réactivations réalisées
 
-**[FAIT] Plusieurs entités utiles au chantier sont désactivées par l'utilisateur — supportées par l'intégration, donc réactivables.** Ce ne sont pas des blocages techniques.
+**[TERRAIN] Trois entités décisives ont été réactivées par l'opérateur le 2026-08-26**, avant le lot terrain. Elles sont désormais **actives et exploitées** :
+
+| Entité | Statut | Rôle établi |
+|---|---|---|
+| `select.roborock_q7_max_carte_selectionnee` | **active** | Sélection **et lecture** de la carte active — prérequis d'IMC-1 (§8), utilisé et validé par T1/T2 |
+| `sensor.roborock_q7_max_erreur_de_l_aspirateur` | **active** | Motif d'erreur détaillé — a rendu lisible l'immobilisation `wheels_suspended` du 2026-08-26 |
+| `sensor.roborock_q7_max_dock_erreur_de_dock` | **active** | Motif d'erreur du dock |
+
+**V5 est donc clos.** Restent désactivées, sans conséquence sur le chemin critique :
 
 | Entité désactivée | Ce qu'elle apporterait |
 |---|---|
-| `select.roborock_q7_max_carte_selectionnee` | Sélection explicite de la carte active — **passe de confort à prérequis**, cf. §8 |
-| `sensor.roborock_q7_max_erreur_de_l_aspirateur` | Motif d'erreur détaillé du robot |
-| `sensor.roborock_q7_max_dock_erreur_de_dock` | Motif d'erreur du dock |
 | `sensor.roborock_q7_max_debut_du_dernier_nettoyage` / `…_fin_du_dernier_nettoyage` | Bornes natives d'une session |
 | `button.roborock_q7_max_nettoyage_complet` | **Déclenchement d'une routine Roborock existante**, cf. encadré ci-dessous |
 
-**[FAIT] Un diagnostic minimal honnête est déjà possible sans elles**, à partir de l'état général du robot, du caractère `unknown` / `unavailable` des entités, de l'état machine et des prérequis matériels. Les capteurs détaillés **amélioreront** ce diagnostic après réactivation ; ils ne le conditionnent pas.
+**[FAIT] Un diagnostic minimal honnête était déjà possible sans elles**, à partir de l'état général du robot, du caractère `unknown` / `unavailable` des entités, de l'état machine et des prérequis matériels. Les capteurs d'erreur **améliorent** ce diagnostic ; ils ne le conditionnaient pas.
 
 > **[FAIT] Une routine Roborock est déjà exposée dans le runtime — et elle n'avait pas été identifiée.** `button.roborock_q7_max_nettoyage_complet` porte l'identifiant unique `8303163_<identifiant appareil>` et **aucune clé de traduction**. Cette forme — identifiant numérique préfixé, libellé provenant du compte — est celle des **boutons de routine** créés dynamiquement par l'intégration à partir des scènes du compte Roborock. Il s'agit donc d'une routine réelle nommée « Nettoyage complet », d'identifiant `8303163`, **désactivée par l'utilisateur**. C'est la 45ᵉ entrée du registre, jusqu'ici comptée mais non caractérisée.
 >
@@ -179,7 +199,24 @@ Ce comportement est **couvert par les tests d'intégration officiels** : l'un d'
 | **2** | `Annexe` | 4 |
 | *(non énuméré)* | `Garage` | **0** — l'entité `image` existe, la carte ne porte aucune pièce nommée |
 
-**[FAIT] La carte active au moment du relevé est l'Étage, index `1`** — `sensor.roborock_q7_max_piece_actuelle` énumère exactement ses huit segments. L'ancienne mention `[HYP]` est convertie en fait.
+**[FAIT] La carte active au moment du relevé initial était l'Étage, index `1`** — `sensor.roborock_q7_max_piece_actuelle` énumérait exactement ses huit segments. L'ancienne mention `[HYP]` est convertie en fait.
+
+> ### [TERRAIN] Le sélecteur de carte exprime une **sélection**, pas une **localisation**
+>
+> Le 2026-08-26, après un cycle à l'Étage, le robot a été **transporté manuellement** jusqu'à sa base, située au RDC. **Le sélecteur est resté sur `Étage`.** Le robot se trouvait donc physiquement au RDC pendant que le contexte cartographique désignait l'Étage.
+>
+> `select.roborock_q7_max_carte_selectionnee` **ne prouve donc jamais où se trouve le robot**, et il ne se recale pas de lui-même après un déplacement physique. Il ne peut être lu que comme ce qu'il est : le dernier contexte cartographique sélectionné.
+>
+> **[TERRAIN] La sélection explicite fonctionne, et se vérifie par deux voies indépendantes.** Après écriture de `RDC` sur le sélecteur :
+>
+> - `sensor.…_piece_actuelle` a exposé les **quatre segments RDC** (`Salon`, `Entrée`, `WC RDC`, `Cage d'escaliers`) — confirmation par la couche entités ;
+> - le statut brut a donné **`mapStatus = 3`**, soit `map_flag = 0` — **confirmation protocolaire**, indépendante de la couche entités.
+>
+> Cette bascule n'a produit **aucun mouvement** du robot, resté amarré et en charge.
+>
+> **[TERRAIN] Corroboration de position.** Après la bascule, `piece_actuelle` est passé à `Entrée` — la pièce où se trouve la base. Le runtime localise donc le robot sur la carte sélectionnée ; c'est la **conjonction** du sélecteur et de la pièce courante qui devient informative, jamais le sélecteur seul.
+>
+> **Conséquence pour le futur contrat.** Les index de segments étant homonymes entre cartes (§5.1), **la sélection de la carte et sa confirmation restent un prérequis de sécurité** de toute commande segmentée — c'est le premier point d'IMC-1 (§8.2).
 
 **[FAIT] Le nom de carte `Étage ` porte une espace finale**, propagée jusque dans l'identifiant unique de l'entité image. La règle de restitution du §5.3 s'applique donc **aussi aux noms de cartes**, et pas seulement aux noms de pièces.
 
@@ -250,8 +287,8 @@ L'affirmation antérieure — *« les segments des cartes RDC, Annexe et Garage 
 | **Faute d'orthographe** | `Pallier` côté Roborock (double L). | **RÉSOLU le 2026-08-26** — corrigé en `Palier` ; correction constatée dans le runtime. |
 | **Casse** | Côté Roborock `Chambre Parents`, `Salle de Jeux`, `SDB Parents`, `SDB Enfants` vs côté HA `Chambre parents`, `Salle de jeux`, `SDB parents`, `SDB enfants`. | Ouvert — mineur, à arbitrer. `Palier` et `Chambre Enfants` concordent désormais exactement. |
 | **Pluriel** | `Cage d'escaliers` côté HA vs `Cage d'escalier` attendu. | Ouvert — mineur, à arbitrer. |
-| **Pièces sans area HA** | Liste désormais **exhaustive** grâce à la table du §5.1 : `Dressing` et `WC Étage` (Étage) ; `WC RDC` (RDC) ; `Salle de bain`, `Ext`, `Chambre1`, `Chambre` (Annexe — l'area `Petite Maison` n'est pas découpée). | Ouvert — préparation runtime limitée : création ou ajustement de quelques areas. **V2 est déblocable** : les noms exacts sont connus. |
-| **Nom divergent, séjour** | Segment Roborock `Salon` (`0_16`) vs area HA `Séjour`. | Ouvert — à arbitrer avec V2. |
+| **Pièces sans area HA** | Liste désormais **exhaustive** grâce à la table du §5.1 : `Dressing` et `WC Étage` (Étage) ; `WC RDC` (RDC) ; `Salle de bain`, `Ext`, `Chambre1`, `Chambre` (Annexe — l'area `Petite Maison` n'est pas découpée). | **Sans objet pour la voie retenue** (§9.2) — la commande segmentée désigne des segments, pas des areas. Liste conservée à titre historique. |
+| **Nom divergent, séjour** | Segment Roborock `Salon` (`0_16`) vs area HA `Séjour`. | Sans effet sur la voie retenue ; le libellé UI canonique Arsenal reste « Séjour ». |
 
 > **[RECO] Règle de restitution — durable.** L'UI Arsenal ne devra **jamais** restituer un nom de pièce provenant directement du robot sans contrôle. Toute pièce affichée doit l'être sous son nom canonique Arsenal, ou pas du tout. Les anciens noms ont été corrigés à la source le 2026-08-26 ; la règle reste nécessaire, car rien n'empêche qu'un futur renommage réintroduise un écart.
 
@@ -261,7 +298,7 @@ L'affirmation antérieure — *« les segments des cartes RDC, Annexe et Garage 
 >
 > La table complète du §5.1 lève l'ambiguïté : **ces quatre entrées sont exactement les quatre segments de la carte Annexe** (`2_16` à `2_19`). Ce n'était pas un référentiel concurrent, mais **une autre carte du même référentiel**. Il n'existe qu'une seule liste de pièces, indexée par carte, et c'est elle qui alimente la résolution.
 >
-> Cette question — *« déterminer laquelle des deux listes fait autorité »* — devient **sans objet** et disparaît du lot terrain (§9).
+> Cette question — *« déterminer laquelle des deux listes fait autorité »* — est **sans objet**. Elle avait été inscrite au lot terrain ; elle en a été retirée avant exécution.
 
 ### 5.4 Relevé de contrôle du 2026-08-26
 
@@ -273,16 +310,26 @@ L'affirmation antérieure — *« les segments des cartes RDC, Annexe et Garage 
 
 ---
 
-## 6. Les quatre profils métier envisagés
+## 6. Les profils métier — **arrêtés**
 
-Valeurs réellement exposées, sans traduction métier inventée.
+**[RECO → arbitré] Les profils sont fixés par décision opérateur du 2026-08-26.** Ils sont au nombre de **cinq**, et non plus quatre : la correspondance de « forte » — `turbo` ou `max` — n'a pas été tranchée en faveur de l'une, mais **résolue en exposant les deux**.
 
-| Profil | Aspiration | Eau / lavage | Faisabilité | Réserve |
+| Profil métier | Aspiration | Intensité d'eau | Mode *(dérivé, jamais écrit)* | Prérequis matériel |
 |---|---|---|---|---|
-| **1 — forte / pas d'eau** | `turbo` ou `max` | `intensité = off` — le `mode = vacuum` en **découle** (§6.1) | Valeurs disponibles | Correspondance « forte » → `turbo` **ou** `max` à arbitrer. **Sémantique de « pas d'eau » désormais établie** (§6.1) |
-| **2 — normale / pas d'eau** | **`balanced` [FAIT]** — correspondance établie §6.3 | idem profil 1 | Valeurs disponibles, **correspondance établie** | Profil **observé en conditions réelles** le 2026-08-26 ; commande depuis HA : écrire l'intensité d'eau et l'aspiration, **jamais le mode** (§6.1) |
-| **3 — faible / eau moyenne** | `quiet` [HYP] — `gentle` écarté provisoirement (§6.3) | `mode = vac_and_mop` + `intensité = medium` | Valeurs disponibles | **Non commandable tant que la serpillière est absente** |
-| **4 — faible / eau importante** | `quiet` [HYP] — idem | `mode = vac_and_mop` + `intensité = high` | Valeurs disponibles | Idem profil 3 ; `high` plutôt que `custom_water_flow` à arbitrer |
+| **Aspiration normale** | `balanced` | `off` | `vacuum` | — |
+| **Aspiration turbo** | `turbo` | `off` | `vacuum` | — |
+| **Aspiration maximale** | `max` | `off` | `vacuum` | — |
+| **Serpillière moyenne** | `quiet` | `medium` | `vac_and_mop` | serpillière posée |
+| **Serpillière intensive** | `quiet` | `high` | `vac_and_mop` | serpillière posée |
+
+**Règles attachées à cette table :**
+
+- **`gentle` est exclu** des profils métier. Il ne relève pas de la gradation de puissance (§6.3).
+- **`mode_de_nettoyage` reste un état dérivé** et **ne doit jamais être écrit** : l'écrire écrase l'aspiration à `balanced` (§6.1). Seules l'intensité d'eau et l'aspiration se pilotent.
+- **Le nombre de passages `×1` / `×2` / `×3` est indépendant du profil.** Il se règle dans la charge utile de la commande, pas dans le profil (§6.3.1).
+- Les deux profils avec eau restent **non commandables tant que la serpillière est absente** — condition matérielle à représenter explicitement, jamais à contourner (§6.2).
+
+**V4 est clos.** Ce qui suit conserve la trace de la manière dont ces valeurs ont été établies.
 
 ### 6.1 Le point « pas d'eau »
 
@@ -305,7 +352,34 @@ Valeurs réellement exposées, sans traduction métier inventée.
 > 1. **Ne pas écrire le mode de nettoyage.** Piloter l'intensité d'eau et la puissance d'aspiration séparément suffit ; ce sont deux writers **disjoints** — régler l'eau ne touche pas l'aspiration. Le mode se déduit.
 > 2. **Si le mode devait malgré tout être écrit**, il devrait l'être **avant** l'aspiration, jamais après.
 >
-> Cela **réduit V4** : le levier d'écriture de « pas d'eau » n'est plus à trancher, il est établi. Restent ouvertes les seules correspondances de « forte » et « faible ».
+> Cela a **réduit V4** : le levier d'écriture de « pas d'eau » n'était plus à trancher. Les correspondances restantes ont depuis été arbitrées (§6) — **V4 est clos**.
+
+> ### [TERRAIN] Le profil est rétabli **en fin de mission**, pas au lancement
+>
+> Reproduit à l'identique sur **T1 et T2** (§9), aux horodatages près :
+>
+> | Instant | `intensité` / `mode` |
+> |---|---|
+> | Après écriture préparatoire | `off` / `vacuum` |
+> | **Au lancement** | **inchangé** |
+> | Pendant toute la mission | **inchangé** |
+> | **Au passage en `returning_home`** | **→ `medium` / `vac_and_mop`** |
+>
+> La bascule coïncide **à la seconde** avec l'entrée en retour au dock. `fan_speed` n'est jamais touché et reste à la valeur posée.
+>
+> **Trois conséquences pour tout futur chantier :**
+>
+> 1. **Le profil doit être écrit explicitement avant chaque lancement.** Il ne se conserve pas d'un cycle au suivant.
+> 2. **L'état du profil lu après un cycle ne prouve pas le profil utilisé pendant ce cycle.** Un diagnostic a posteriori fondé sur cette lecture serait faux.
+> 3. Le réglage posé avant lancement, lui, **tient pendant toute la mission** — c'est ce qui rend la séquence « régler puis lancer » praticable.
+>
+> **Ce qui est établi, et ce qui ne l'est pas.**
+>
+> **[TERRAIN] Établi — le moment.** Le rétablissement coïncide avec le **passage en `returning_home`**, reproduit deux fois à la seconde près.
+>
+> **[FAIT — opérateur] Établi — l'expérience opérateur.** Dans l'application officielle, la carte, les pièces, l'aspiration, l'eau et le nombre de passages sont **redéfinis à chaque nouvelle préparation** de nettoyage. **Aucun profil persistant par pièce n'est exposé dans cette expérience opérateur.**
+>
+> **Non établi — la cause interne.** Le mécanisme qui produit le retour à `medium` / `vac_and_mop` n'est **pas attribué**. Rien ici ne permet d'affirmer qu'aucun profil persistant par pièce n'existe **techniquement** dans l'appareil : seule son absence d'exposition côté application est constatée. Le document ne se prononce pas au-delà.
 
 ### 6.2 Serpillière absente — condition matérielle, pas blocage
 
@@ -329,32 +403,32 @@ Le dashboard reste donc réalisable ; il doit simplement dire la vérité sur ce
 | 7 pièces : Chambre Enfants, Salle de Jeux, Palier, SDB Enfants, Chambre Parents, Dressing, SDB Parents | `sensor.…_etat = segment_cleaning`, `sensor.…_piece_actuelle` progressant de pièce en pièce |
 | **× 2** (deux passages) | aucune entité HA ne l'expose — **§6.3.1** |
 
-**[FAIT] Correspondance établie pour un seul niveau d'aspiration.** « Normal » côté application ↔ **`balanced`** côté HA, par recoupement d'une déclaration opérateur et d'une observation runtime concordantes. Les correspondances de « forte » (`turbo` ou `max`) et de « faible » **restent ouvertes** — V4 n'est donc que partiellement levé.
+**[FAIT] Correspondance établie par recoupement.** « Normal » côté application ↔ **`balanced`** côté HA, par une déclaration opérateur et une observation runtime concordantes. C'est le premier maillon de la table de profils du §6, depuis **arrêtée**.
 
 **[DOC] Gamme standard Roborock.** La documentation de la gamme distingue quatre niveaux d'aspiration — `quiet`, `balanced`, `turbo`, `max` — dont `balanced` est le niveau courant, ce que le recoupement ci-dessus confirme pour cet appareil. `gentle` n'appartient pas à cette échelle : il relève d'un régime de déplacement distinct, hors gradation de puissance. Cette connaissance est **documentaire** ; elle n'a pas été vérifiée sur le Q7 Max et ne vaut pas preuve terrain.
 
 **[CODE] Corroboration structurelle.** La liste d'aspiration n'est pas figée par modèle : elle est **composée** à partir des bits de capacité de l'appareil. Le socle est `quiet` · `balanced` · `turbo` · `max` ; `gentle` y est **ajouté ensuite**, précisément parce que cet appareil ne sait pas laver sans aspirer. L'ordre relevé dans le runtime correspond exactement à cette composition. `gentle` porte par ailleurs un code protocolaire **supérieur** à celui de `max` : le code ne le classe donc **pas** comme un niveau faible.
 
-**[HYP]** Sur cette base, « faible » correspondrait à **`quiet`**, et `gentle` peut être **écarté provisoirement** des quatre profils métier. L'arbitrage V4 reste requis : seule une observation terrain ferait de cette hypothèse un fait.
+**[HYP → arbitré]** Sur cette base, « faible » a été retenu comme **`quiet`** et `gentle` **exclu** des profils métier (§6). L'hypothèse reposait sur la convergence documentaire et structurelle ci-dessus, non sur une observation terrain — l'arbitrage opérateur l'a assumée comme telle.
 
 **[FAIT] Composition de périmètre confirmée sur l'appareil.** Sept segments d'une même carte ont été nettoyés en une seule demande — soit tous les segments de la carte Étage **sauf `WC Étage`**. La capacité du robot à traiter un périmètre composé est donc établie. Cela ne préjuge pas de la façon dont `vacuum.clean_area` résout les areas HA, qui reste à qualifier.
 
-### 6.3.1 Nombre de passages — le point dur du besoin
+### 6.3.1 Nombre de passages — **résolu par le terrain**
 
-Le nombre de passages (**×1 / ×2 / ×3**) **fait partie du besoin à exposer**. Son traitement par l'intégration a donc été instruit précisément.
+Le nombre de passages (**×1 / ×2 / ×3**) **fait partie du besoin à exposer**. Il a été qualifié par le lot terrain du §9 : **il est atteignable, et son encodage est connu.**
 
-**[FAIT] Aucune entité ne le porte.** Sur les **45 entrées** du registre — 19 actives et 26 désactivées — aucune ne représente un nombre de passages. La seule entité de comptage, `sensor.roborock_q7_max_nombre_total_de_nettoyages` (désactivée), est un cumul de vie, sans rapport avec le réglage d'un cycle.
+**[FAIT] Aucune entité ne le porte.** Sur les **45 entrées** du registre — actives comme désactivées — aucune ne représente un nombre de passages. La seule entité de comptage, `sensor.roborock_q7_max_nombre_total_de_nettoyages` (désactivée), est un cumul de vie, sans rapport avec le réglage d'un cycle. Il n'est donc **pas** réglable par une entité, mais par la charge utile de la commande.
 
-**[FAIT] Un seul service natif l'expose — et ce n'est pas celui du besoin.**
+**[FAIT] Deux commandes protocolaires le portent, avec deux conventions distinctes.**
 
-| Service | Désignation du périmètre | Nombre de passages |
-|---|---|---|
-| `vacuum.clean_area` | **pièces** (areas HA, sélection multiple) | **absent** — le service n'a qu'un champ, `cleaning_area_id` |
-| `roborock.set_vacuum_zoned_cleaning` | **coordonnées** d'un rectangle (`x1`, `y1`, `x2`, `y2`) | **`repeats`**, requis, entier `0..2` — libellé officiel : « le nombre de fois où le nettoyage de la zone est répété ; `0` correspond à un seul nettoyage » |
+| Commande | Désignation du périmètre | Champ | Convention |
+|---|---|---|---|
+| `app_segment_clean` | **segments** de la carte active | `repeat` | **comptage** — `repeat: 2` = **deux** passages · **[TERRAIN] établi** |
+| `app_zoned_clean` *(via `roborock.set_vacuum_zoned_cleaning`)* | **coordonnées** d'un rectangle | `repeats`, borné `0..2` | **décalage** — `0` = un seul nettoyage · **[FAIT]** libellé officiel du service |
 
-**[FAIT] `repeats` couvre exactement l'amplitude du besoin** : `0` = ×1, `1` = ×2, `2` = ×3.
+> **[TERRAIN] Ne jamais transposer l'une à l'autre.** Ces deux conventions sont **incompatibles**, et une passe antérieure de cet audit avait commis l'erreur d'appliquer la convention zonée à la commande segmentée. Le terrain a tranché : sur `app_segment_clean`, `repeat` **compte les passages**.
 
-**[FAIT] Tension au niveau des *services* Home Assistant.** Les deux moitiés du besoin sont portées par **deux services disjoints** : celui qui sait désigner des pièces ne sait pas répéter, celui qui sait répéter ne sait pas désigner de pièces — il exige des coordonnées de rectangle, incompatibles avec une sélection de périmètre par pièces.
+**[TERRAIN] La tension supposée entre « désigner des pièces » et « répéter » n'existe pas.** Elle avait été énoncée au niveau des *services* Home Assistant, où elle est réelle : `vacuum.clean_area` ne porte qu'un champ, `cleaning_area_id`. Mais la commande protocolaire sous-jacente, elle, porte les deux. **`app_segment_clean` désigne des segments et les répète dans le même appel** — c'est désormais un fait terrain, pas une lecture de documentation.
 
 > **[CODE] Correction majeure — la tension n'existe pas au niveau du protocole, seulement au niveau de l'exposition.**
 >
@@ -364,14 +438,15 @@ Le nombre de passages (**×1 / ×2 / ×3**) **fait partie du besoin à exposer**
 >
 > Trois indices convergents dans la bibliothèque, tous **non exposés** par l'intégration : le statut du robot décode un champ `repeat` (aucune entité ne le porte) ; l'énumération des commandes comporte un `set_clean_repeat_times` (jamais appelé, non documenté) ; un bit de capacité relatif à la répétition existe (jamais lu).
 >
-> **Portée de la preuve, et sa limite.** Cette description est **documentaire côté bibliothèque**, et l'appareil explicitement coché dans cette documentation **n'est pas le Q7 Max**. L'acceptation de `repeat` par `roborock.vacuum.a38` est donc **non prouvée** : c'est le premier objet du lot terrain (§9).
+> **[TERRAIN] L'acceptation par `roborock.vacuum.a38` est désormais prouvée** (§9). La réserve antérieure — *« l'appareil coché dans cette documentation n'est pas le Q7 Max »* — est **levée**. Le bit de capacité `isCtmWithRepeatSupported`, relevé à `false` sur cet appareil, **ne gouverne pas** la répétition segmentée : il ne doit pas être lu comme un signal de non-support.
 
-**[CODE] Ce que change cette découverte pour V10.** L'arbitrage ne porte plus sur *« pièces sans répétition, ou coordonnées avec répétition »*. Il porte sur : **accepter ou refuser d'émettre la commande segmentée avec `repeat` par `vacuum.send_command`**.
+**[TERRAIN] Ce que le terrain change pour V10.** L'arbitrage ne porte plus sur *« pièces sans répétition, ou coordonnées avec répétition »*, ni sur l'acceptation du champ. Il porte uniquement sur : **assumer ou non la dépendance à `vacuum.send_command`** pour émettre la commande segmentée avec `repeat`.
 
 Ce que cela coûterait, énoncé sans complaisance :
 
 - `vacuum.send_command` **reste une action publique de Home Assistant** — l'utiliser n'est pas un contournement de l'API. **Mais elle expose une commande protocolaire privée sans la validation ni l'abstraction de `clean_area`** : ni résolution des areas, ni contrôle de la carte active, ni bornes vérifiées, ni erreur intelligible. Tout ce que `clean_area` garantit devrait être **réimplémenté et maintenu côté Arsenal**.
-- Le contrat de cette commande n'est garanti ni par Home Assistant ni par l'appareil : il peut changer sans préavis, et un `repeat` **ignoré en silence** est une issue plausible — c'est-à-dire un lancement qui réussit en apparence et ne répète rien.
+- Le contrat de cette commande n'est garanti ni par Home Assistant ni par l'appareil : **il peut changer sans préavis**. Le risque d'un `repeat` ignoré en silence, lui, est **écarté sur cet appareil et à cette version** par T2 — il n'est pas écarté pour l'avenir.
+- **La structure de la charge utile est déterminante.** T1 et T2 ont validé la forme **enveloppée** `[{"segments": [...], "repeat": N}]` — celle que l'intégration émet elle-même. Un objet **nu** `{"segments": …}` est documenté comme **échouant en silence** ; il ne doit jamais être employé.
 - La contrainte de sécurité candidate **IMC-1** (§8) s'applique intégralement : cette voie reste **mono-carte**.
 
 **[FAIT] Une quatrième voie existe et elle est déjà présente : les routines Roborock (§3.4).** La structure d'une routine associe, dans une même définition, une liste de segments, **un index de carte**, un profil complet et **un nombre de passages**. C'est la seule structure connue qui exprime tout cela d'un coup.
@@ -383,7 +458,21 @@ Ses limites sont toutefois dirimantes pour une architecture pilotée par contrat
 - son déclenchement passe **obligatoirement par le cloud** ;
 - **le fait qu'une routine porte un index de carte ne démontre pas qu'une mission unique puisse couvrir plusieurs cartes.** Une routine porteuse d'un index de carte est **liée à cette carte** : l'index y désigne le contexte d'exécution, il ne compose rien. Rien dans ce qui a été lu n'établit qu'une mission puisse traverser plusieurs cartes.
 
-> **[RECO]** Le nombre de passages reste la contrainte la plus structurante de l'expérience cible, mais elle a **changé de nature** : ce n'est plus une impossibilité protocolaire, c'est un **choix de dépendance**. Quatre options s'offrent — commande brute assumée, UI sans ce réglage, répétition supervisée par missions successives, ou délégation aux routines Roborock. Trancher relève de **V10**, et **aucune ne doit être engagée avant l'essai `×2` du §9**.
+> **[RECO] V10 est clos pour la conception.** Le nombre de passages n'est plus une contrainte : il est **atteignable, encodé et prouvé** sur cet appareil, par la voie segmentée directe. Les options « UI sans ce réglage », « répétition supervisée par missions successives » et « délégation aux routines Roborock » **deviennent sans objet** — elles n'existaient que pour contourner une impossibilité qui n'en était pas une.
+>
+> Ce qui subsiste est un **choix de dépendance assumé** : utiliser `vacuum.send_command` implique de réimplémenter côté Arsenal les garanties que `clean_area` apportait. C'est une décision d'architecture, à porter dans le futur contrat — pas une inconnue technique.
+
+#### Niveaux de preuve du nombre de passages
+
+| Élément | Niveau de preuve |
+|---|---|
+| `×1` — commande segmentée sans `repeat` | **Preuve terrain** — T1 (§9) |
+| `repeat: 2` = **deux passages** | **Preuve terrain** — T2 (§9) |
+| Convention de **comptage** sur `app_segment_clean` | **Établie** — par comparaison T1 / T2 |
+| `repeat: 3` = **trois passages** | **Déduction protocolaire**, cohérente avec la sémantique de comptage établie et avec la capacité `×3` offerte par l'application officielle sur cet appareil — **non testé par Arsenal** |
+| Suffisance de ces preuves | **Acceptation opérateur explicite**, sans essai supplémentaire |
+
+**Aucun essai `repeat: 3` n'est requis ni demandé.** L'application officielle propose déjà `×1`, `×2` et `×3` sur cet appareil, et l'opérateur a jugé un troisième essai inutile. Le document ne prétend pas que `×3` a été vérifié sur le terrain — il consigne une déduction assumée.
 
 ### 6.3.2 Historisation — extension optionnelle
 
@@ -425,15 +514,20 @@ Ses limites sont toutefois dirimantes pour une architecture pilotée par contrat
 
 Points à mesurer, non à supposer :
 
-- délai d'application effectif de `fan_speed` ;
-- délai d'application effectif des `select` ;
-- persistance des réglages lors d'un changement de carte.
+**[TERRAIN] La séquence « régler puis lancer » est praticable.** T1 et T2 l'ont exécutée deux fois : écriture de l'intensité d'eau, confirmation par relecture, puis émission de la commande. Le réglage a été **appliqué et tenu pendant toute la mission** dans les deux cas. Aucune course n'a été observée entre le réglage et le lancement, avec une confirmation intercalée.
+
+Restent à mesurer, sans caractère bloquant :
+
+- le délai d'application **minimal** de `fan_speed` et des `select` — les essais ont laissé s'écouler une confirmation, sans chercher la borne basse ;
+- la persistance des réglages **lors d'un changement de carte**.
 
 ---
 
-## 8. Réserve structurante — le comportement multi-cartes
+## 8. Contrainte structurante — le mono-carte
 
-**C'est le point central du prochain lot terrain.** Le Q7 Max porte quatre cartes pour un seul robot ; l'expérience cible traverse trois d'entre elles.
+Le Q7 Max porte quatre cartes pour un seul robot ; l'expérience cible traverse trois d'entre elles. **Un lancement ne peut en couvrir qu'une.**
+
+Ce n'est plus une inconnue mais une **contrainte de conception établie**, dont le fait technique est démontré par le code et vérifié sur le terrain. Ce qui reste à qualifier — comportement de la carte active après déplacement physique — relève d'un lot ultérieur (§8.3) et ne bloque pas un pilotage mono-carte.
 
 ### 8.1 Ce que le code établit
 
@@ -451,7 +545,11 @@ Points à mesurer, non à supposer :
 
 Ce comportement est **couvert par les tests officiels de l'intégration** ; il n'est ni un défaut de configuration ni un accident.
 
-**[CODE] La carte active est un état du robot, pas une intention de Home Assistant.** Elle se déduit du statut de l'appareil. Le sélecteur `select.roborock_q7_max_carte_selectionnee` — **désactivé** dans ce runtime — est le **seul** moyen de la commander depuis HA ; il émet une commande de chargement de carte, attend, puis relit. Son acceptation lorsque le robot se trouve physiquement ailleurs **n'est pas établie** : l'appareil sait refuser ce type de commande dans certains états.
+**[CODE] La carte active est un état du robot, pas une intention de Home Assistant.** Elle se déduit du statut de l'appareil. Le sélecteur `select.roborock_q7_max_carte_selectionnee` — **désormais actif** (§3.4) — est le **seul** moyen de la commander depuis HA ; il émet une commande de chargement de carte, attend, puis relit.
+
+**[TERRAIN] La bascule de carte fonctionne, robot amarré, et se confirme par deux voies.** Sélection de `RDC` acceptée, quatre segments RDC exposés par `piece_actuelle`, et `mapStatus = 3` (`map_flag = 0`) au statut brut. Aucun mouvement provoqué. La bascule s'est ensuite **maintenue plus de quatre heures** et à travers deux missions.
+
+**[TERRAIN] Le sélecteur ne se recale pas après un déplacement physique** : transporté de l'Étage au RDC, le robot a laissé le sélecteur sur `Étage` (§4). L'acceptation d'un changement de carte **lorsque le robot se trouve physiquement sur une autre carte** reste **non établie** — le cas testé était celui d'un robot déjà présent sur la carte demandée.
 
 ### 8.2 Contrainte de sécurité candidate
 
@@ -463,7 +561,7 @@ Ce comportement est **couvert par les tests officiels de l'intégration** ; il n
 >
 > **Ce que la contrainte de sécurité candidate exige, dans cet ordre :**
 >
-> 1. la carte active est **lue et connue** au moment de la commande — ce qui rend la réactivation du sélecteur de carte **obligatoire**, et non plus optionnelle (**V5** est requalifié en prérequis) ;
+> 1. la carte active est **lue et connue** au moment de la commande — ce qui rend le sélecteur de carte **obligatoire** ; il a été réactivé, et T1/T2 ont validé la pratique consistant à **sélectionner puis confirmer** avant toute émission (**V5** clos) ;
 > 2. **tous** les segments demandés appartiennent à cette carte ; à défaut, la demande est **refusée explicitement**, avec un motif lisible — jamais tronquée, jamais silencieuse ;
 > 3. un lancement porte sur **une seule carte** — donc sur **un seul** des trois périmètres métier visés (§4) ;
 > 4. si la carte active ne peut pas être lue, **aucune commande n'est émise**.
@@ -476,113 +574,210 @@ Ce comportement est **couvert par les tests officiels de l'intégration** ; il n
 
 ### 8.3 Ce qui reste à qualifier sur le terrain
 
-1. le comportement de la carte active lorsque le robot est **déplacé physiquement** entre RDC, Étage et Annexe — bascule automatique, ou carte figée ;
-2. l'acceptation d'une commande de changement de carte quand le robot se trouve **sur une autre carte** ;
+1. le comportement de la carte active lorsque le robot est **déplacé physiquement** entre RDC, Étage et Annexe — **[TERRAIN] partiellement tranché** : la carte **ne se recale pas** d'elle-même après transport (§4). Reste à savoir si un déplacement peut, dans d'autres conditions, provoquer une bascule automatique ;
+2. l'acceptation d'une commande de changement de carte quand le robot se trouve **physiquement sur une autre carte** — **non établie** ; le cas validé par T1/T2 est celui d'un robot déjà présent sur la carte demandée ;
 3. la **stabilité dans le temps** des index de segments, notamment après toute re-cartographie (**V8**) ;
 4. l'index de la carte Garage et la raison de son absence de segments (§5.1).
 
 Les points antérieurs *« relever la correspondance area ↔ segment ↔ carte »*, *« établir la table index de carte ↔ nom »* et *« traiter les pièces homonymes »* sont **clos** par les §4 et §5.1.
 
+**Ces questions relèvent d'un lot ultérieur.** Elles ne bloquent pas la conception d'un pilotage mono-carte, qui est le cadre imposé par IMC-1.
+
 ---
 
-## 9. Prochain lot terrain minimal
+## 9. Lot terrain — **consommé le 2026-08-26**
 
-**Un seul lot, non ouvert à ce jour : « Qualification du nombre de passages sur une pièce unique, carte active prouvée ».**
+Le lot terrain prévu par les passes précédentes a été **exécuté et clos**. Il portait sur une pièce unique, carte active prouvée, en mono-carte strict. Son objet était de produire des preuves, non des livrables : aucun contrat, aucun YAML runtime, aucune UI n'en est issu.
 
-Objet : produire des **preuves**, pas des livrables. Aucune conception, aucun contrat, aucun YAML runtime, aucune UI.
+**Cadre d'exécution.** Chaque écriture a été autorisée par l'opérateur, essai par essai, après relecture de douze contrôles de garde. Aucune seconde tentative, aucune action corrective. Le risque matériel au RDC avait été explicitement levé par l'opérateur.
 
-Le périmètre de ce lot a été **fortement réduit** par la passe du 2026-08-26 : la correspondance area ↔ segment ↔ carte, la table index ↔ nom de carte et la prétendue « seconde liste de pièces » sont **closes par lecture seule** (§4, §5.1, §5.3). Le lot ne conserve que ce qui exige réellement une exécution.
+### 9.1 Résultats
 
-> **Ce lot est explicitement mono-carte.** Aucun essai multi-cartes n'y figure et aucun ne doit y être ajouté. Envoyer un index de segment appartenant à une autre carte que la carte active **ne qualifie pas le multi-cartes** : cela provoque exactement l'ambiguïté déjà démontrée par le code (§8.1) — le robot nettoierait potentiellement `Palier` (`1_16`) là où l'intention était `Salon` (`0_16`). Un tel essai n'apporterait aucune information que le code ne donne déjà, et ferait courir un risque réel. Les questions multi-cartes du §8.3 relèvent d'un **lot ultérieur**, à définir après celui-ci.
+**Cible commune aux deux essais** : carte `RDC`, segment `0_21` — `Cage d'escaliers`. Petite pièce, peu encombrée, sur la carte rendue active et confirmée au préalable.
 
-### 9.1 Protocole terrain minimal — `×1` puis `×2` sur une pièce unique
+> **Rappel de l'enjeu d'homonymie.** L'index nu `21` désigne `Cage d'escaliers` sur la carte RDC, mais `SDB Parents` sur la carte Étage (§5.1). La sélection **et la confirmation** de la carte étaient donc un prérequis absolu, conformément à IMC-1.
 
-**Pièce d'essai : `1_22` — `WC Étage`.** Petite, située sur la carte déjà active, et **explicitement exclue** du cycle de référence du 2026-08-26 (§6.3) — donc sans interférence avec le périmètre métier visé.
+#### T1 — `×1`, sans champ `repeat` · **VALIDÉ**
 
-**Prérequis, tous obligatoires et vérifiés avant le premier essai :**
+Commande : `vacuum.send_command`, `command: app_segment_clean`, `params: [{"segments": [21]}]`.
 
-| # | Prérequis | Contrôle |
+| Observation | Résultat |
+|---|---|
+| Acceptation | commande acceptée, contexte Home Assistant retourné |
+| État machine | `segment_cleaning` dès la seconde de l'émission |
+| Cible | `sensor.…_piece_actuelle` → **`Cage d'escaliers`** |
+| Surface finale | **4,7 m²** |
+| Durée | **3,8 min** |
+| Exclusivité | périmètre restreint à une seule petite pièce |
+| Fin de cycle | `returning_home` → `docked` → `charging`, automatique |
+| Erreurs | **aucune**, ni robot ni dock |
+
+**[TERRAIN] La structure enveloppée est opérante.** `[{"segments": [N]}]` — la forme que l'intégration émet elle-même — désigne correctement le segment et l'exécute.
+
+#### T2 — `repeat: 2` · **VALIDÉ**
+
+Commande identique, augmentée du champ : `params: [{"segments": [21], "repeat": 2}]`.
+
+| | T1 — sans `repeat` | T2 — `repeat: 2` | Rapport |
+|---|---|---|---|
+| **Durée de nettoyage** | **3,8 min** | **7,2 min** | **× 1,89** |
+| Surface finale | 4,7 m² | 4,4 m² | × 0,94 |
+| Cible | `Cage d'escaliers` | `Cage d'escaliers` | identique |
+| Erreurs | aucune | aucune | — |
+
+**[TERRAIN] Deux passages établis.** Le rapport de durée est indiscernable de 2 aux imprécisions de trajectoire près. Un `×3` aurait donné environ 11,4 min ; un `×1`, environ 3,8. L'écart ne prête pas à interprétation.
+
+**[TERRAIN] La convention est celle du comptage** : `repeat: 2` signifie **deux passages**. Elle est **distincte** de la convention décalée du nettoyage zoné, où `0` vaut un seul nettoyage (§6.3.1).
+
+> **[TERRAIN] Comment lire les deux compteurs — leçon de méthode.**
+>
+> La surface a **plafonné à 4,4 m²** à mi-parcours, pendant que la durée continuait de croître près de quatre minutes de plus. Ce n'est pas une anomalie : `cleanArea` mesure l'**aire couverte**, et repasser sur une zone déjà comptabilisée n'y ajoute rien.
+>
+> - **La durée est le discriminant du nombre de passages.**
+> - **La surface est le discriminant du périmètre.**
+>
+> L'attente initiale d'un doublement de surface était erronée ; le plafonnement, suivi de plusieurs minutes de nettoyage supplémentaire, est en soi la preuve du repassage.
+
+#### Acquis transverses des deux essais
+
+| Élément | Statut |
+|---|---|
+| `vacuum.send_command` + `app_segment_clean` | ✅ accepté par l'appareil |
+| Structure enveloppée `[{…}]` | ✅ opérante, avec et sans `repeat` |
+| Désignation d'un segment dans la carte active | ✅ exacte |
+| Exclusivité du segment | ✅ vérifiée deux fois |
+| Champ `repeat` accepté par le Q7 Max | ✅ oui |
+| Encodage de `repeat` | ✅ comptage — `2` = deux passages |
+| Déroulement complet et retour au dock | ✅ nominal, deux fois |
+| Profil tenu pendant la mission, rétabli au retour | ✅ reproduit deux fois (§6.1) |
+| Témoin de session `off` pendant `returning_home` | ✅ reproduit deux fois (§3.2) |
+
+### 9.1.1 Un incident d'outillage, sans effet sur l'appareil
+
+Une première émission de T1 a **échoué en transport** côté client : exception opaque, sans requête parvenue à Home Assistant. Le robot n'a pas bougé, aucun état n'a changé, et le journal système est resté vide. La même émission, rejouée à l'identique après rechargement, a abouti normalement.
+
+**[TERRAIN] Enseignement.** Une exception côté client **ne qualifie pas** la commande Roborock. Un futur moteur devra distinguer trois issues — canal indisponible, commande rejetée, commande acceptée — et ne jamais conclure à l'invalidité d'une commande sur la seule foi d'une erreur de transport.
+
+*(Un cycle antérieur a par ailleurs été **arrêté manuellement** par une personne présente sur place. Il n'avait accumulé que `cleanTime = 5 s` de nettoyage — grandeur à ne pas confondre avec le délai écoulé entre la commande et l'arrêt, de l'ordre de la minute. Cet essai a été écarté comme non concluant, et rejoué intégralement.)*
+
+### 9.2 Arbitrages — état au 2026-08-26
+
+#### Voie technique retenue
+
+**[RECO → arbitré] Le futur moteur reposera sur la commande segmentée directe.** C'est la seule voie qui satisfait **simultanément** les trois exigences du besoin :
+
+| Exigence | Commande segmentée directe | `vacuum.clean_area` |
 |---|---|---|
-| P0 | Robot **sur son dock**, batterie > 50 % | `binary_sensor.…_en_charge = on` |
-| P1 | **Aucune session inachevée** — sinon toute lecture est faussée et un démarrage deviendrait une reprise (§7) | `binary_sensor.…_nettoyage = off` |
-| P2 | **Carte active prouvée = Étage**, conformément à **IMC-1** | sélecteur de carte réactivé (**V5**) et lu, **ou** énumération de `sensor.…_piece_actuelle` concordant avec les huit segments de l'Étage (§5.1) |
-| P3 | Aucune serpillière posée ; profil **sans eau** imposé pour tout le protocole | `binary_sensor.…_serpilliere_fixee = off`, intensité de frottement `off` |
-| P4 | Capteur d'erreur du robot réactivé, pour disposer d'un motif en cas d'échec | **V5** |
+| Sélection libre d'une ou plusieurs pièces | ✅ liste de segments | ✅ areas HA |
+| `×1` / `×2` / `×3` | ✅ champ `repeat` | ❌ **absent du service** |
+| Fonctionnement mono-carte contrôlé | ✅ sous IMC-1 | ✅ sous IMC-1 |
 
-**Étape 1 — référence `×1`. Obligatoire, et bloquante.**
+Ce choix a une conséquence directe sur les arbitrages : **`vacuum.clean_area`, les areas Home Assistant et le mappage `area_mapping` ne sont plus des prérequis du moteur retenu.**
 
-- Émettre une commande segmentée portant **le seul segment `22`**, **sans** champ de répétition.
-- États à observer : `sensor.…_etat` doit passer à `segment_cleaning` ; `sensor.…_piece_actuelle` doit afficher `WC Étage` ; `sensor.…_surface_de_nettoyage` doit croître.
-- **Réussite** : les trois témoins basculent et le robot traite la pièce, puis s'arrête.
-- **Échec** : aucun mouvement, ou une pièce autre que `WC Étage`.
-- **Clôture** : `vacuum.return_to_base` ; attendre `en_charge = on` **et** `nettoyage = off`. **Relever la surface et la durée** — ce sont les grandeurs de référence de l'étape 2.
-- Si l'étape 1 est rouge, **le protocole s'arrête là**.
+#### Clos
 
-**Étape 2 — `×2`. Seulement si l'étape 1 est verte.**
-
-- Rejouer **strictement la même commande**, avec en plus le champ de répétition correspondant à deux passages.
-- Trois issues à distinguer sans ambiguïté :
-
-| Issue | Observation | Lecture |
+| # | Objet | Clôture |
 |---|---|---|
-| **Réussite** | Surface ≈ **2 ×** la référence, durée ≈ 2 ×, **sans** retour au dock intercalé | Le champ de répétition est **honoré** par cet appareil |
-| **Ignoré en silence** | Commande acceptée, surface ≈ **1 ×** la référence | Le champ est **accepté puis ignoré** — l'issue la plus dangereuse, car aucune erreur n'est levée |
-| **Refus** | Erreur protocolaire | Le champ est **rejeté** par cet appareil ; la voie « commande brute » est close |
+| **V1** | Renommer les segments périmés dans l'application Roborock | **Réalisé** — `Chambre Enfants`, `Salle de Jeux`, `Palier` ; correction constatée dans le runtime (§5.4) |
+| **V3** | Sort de `WC Étage` dans le périmètre métier | **Tranché — `WC Étage` fait partie du besoin.** L'Étage métier compte **huit pièces** : `Palier`, `Chambre Enfants`, `Chambre Parents`, `Salle de Jeux`, `SDB Enfants`, `SDB Parents`, `Dressing`, `WC Étage` |
+| **V4** | Sémantique des profils métier | **Tranché** — cinq profils arrêtés (§6). « forte » n'est pas départagé entre `turbo` et `max` : **les deux sont exposés** comme profils distincts. `gentle` exclu. Le mode reste dérivé et non écrit |
+| **V5** | Réactiver les entités désactivées utiles | **Réalisé** — sélecteur de carte et deux capteurs d'erreur actifs ; utilisés et validés par T1/T2 (§3.4) |
+| **V6** | Autoriser une exécution de test encadrée | **Consommé** — lot terrain §9, deux essais, deux validations |
+| **V7** | Exclusion alarme fondée sur le témoin de session | **Résolu en production** — PR #724 mergée ; l'inhibition repose désormais sur l'état du `vacuum` (`cleaning`, `returning`), donc sur le mouvement réel. Aucun chantier alarme ouvert par ce document |
+| **V10** | Nombre de passages ×1 / ×2 / ×3 | **Clos pour la conception** — atteignable, encodé, prouvé (§6.3.1). `×3` reste une déduction protocolaire assumée, non testée, explicitement acceptée par l'opérateur |
 
-- **Clôture** : `vacuum.return_to_base`, retour à l'état initial, `nettoyage = off`.
+#### Sans objet pour la voie retenue
 
-**Règles transverses :** un seul essai par étape ; robot ramené au dock entre les deux ; aucune écriture du mode de nettoyage (§6.1) ; toute étape rouge arrête le protocole ; **aucun essai portant sur une carte autre que l'Étage**.
+Ces deux points **ne sont pas des arbitrages ouverts** : ils ne concernent que la voie `clean_area`, qui n'est pas retenue. Leur analyse est conservée au §3.1 et au §5.3 à titre historique, et redeviendrait pertinente si la voie technique était un jour reconsidérée.
 
-**Ce que ce protocole ne fait pas** : il ne mesure pas les délais d'application des réglages, ne teste pas la composition de plusieurs pièces, et n'aborde aucune question multi-cartes. Ces objets relèvent de lots ultérieurs.
+| # | Objet | Statut |
+|---|---|---|
+| **V2** | Créer ou ajuster des areas HA pour les segments qui n'en ont pas | **Sans objet** — la commande segmentée désigne des segments, pas des areas |
+| **V11** | Créer le mappage area ↔ segment sur l'entité | **Sans objet** — prérequis de `clean_area` seul |
 
-### 9.2 Arbitrages et gestes opérateur préalables
+#### Ouverts
 
 | # | Attendu | Nature |
 |---|---|---|
-| V1 | ~~Renommer les segments périmés dans l'application Roborock : `Chambre Arnaud` → `Chambre Enfants`, `Chambre Matthieu` → `Salle de Jeux`, `Pallier` → `Palier`~~ — **RÉALISÉ le 2026-08-26**, correction constatée dans le runtime (§5.4) | Geste terrain — **clos** |
-| V2 | Décider des areas HA à créer ou ajuster. **Déblocable** : la liste exhaustive des segments sans area est désormais connue (§5.1, §5.3) — `Dressing`, `WC Étage`, `WC RDC`, et les quatre segments de l'Annexe ; s'y ajoute l'écart `Salon` / `Séjour` | Arbitrage |
-| V3 | Trancher le sort de `WC Étage` : intégrer ou exclure explicitement. **Note** : cette pièce sert de pièce d'essai au protocole §9.1, ce qui ne préjuge pas de son sort dans le périmètre métier | Arbitrage |
-| V4 | Trancher la sémantique des profils. **Réduit** (§6.1, §6.3) : « normale » ↔ `balanced` est **établi** ; le writer unique de « pas d'eau » est **établi** — c'est l'intensité de frottement, le mode de nettoyage n'étant qu'un état dérivé. Restent à trancher « forte » (`turbo` ou `max`) et « faible » (`quiet` ou `gentle`) | Arbitrage — **résiduel** |
-| V5 | Autoriser la réactivation des entités désactivées utiles. **Requalifié en prérequis dur** : sans le sélecteur de carte, la contrainte de sécurité candidate **IMC-1** (§8.2) ne peut pas être satisfaite, et le prérequis `P2` du protocole §9.1 non plus | Décision opérateur — **prérequis** |
-| V6 | Autoriser une exécution de test encadrée sur un périmètre restreint — **c'est le protocole §9.1**, une pièce, deux essais | Autorisation explicite |
-| V7 | Confirmer la non-régression de l'exclusion alarme portée par `binary_sensor.roborock_q7_max_nettoyage`. **Élément nouveau** : ce binaire signifie « session inachevée », pas « nettoyage en cours » (§3.2) — l'exclusion reste donc active robot à l'arrêt | Validation |
-| V8 | Statuer sur la saturation multi-cartes (4/4) : toute re-cartographie invaliderait les index de segments désormais consignés (§5.1) | Arbitrage |
-| V10 | Trancher le **nombre de passages** (×1 / ×2 / ×3), qui **fait partie du besoin**. **Recadré** (§6.3.1) : le protocole sait l'exprimer — `app_segment_clean` accepte un champ `repeat` aux côtés des segments — mais aucune action publique de Home Assistant ne l'expose. L'arbitrage porte désormais sur un **choix de dépendance** : commande brute assumée, UI sans ce réglage, répétition supervisée, ou routines Roborock. **À ne trancher qu'après l'essai `×2` du §9.1** | Arbitrage — **structurant** |
-| V11 | **Créer le mappage area ↔ segment** sur `vacuum.roborock_q7_max`, absent à ce jour (§3.1). Sans lui, `vacuum.clean_area` échoue en erreur de validation et **aucune voie fondée sur ce service n'est utilisable** | Geste terrain — **prérequis dur** |
-| V9 | *(hors chemin critique)* Décider si des entités Roborock doivent entrer au `recorder`. **Extension optionnelle d'observabilité** : ni la commande ni le diagnostic courant n'en dépendent (§6.3.2) | Arbitrage — **optionnel** |
+| **V8** | Statuer sur la saturation multi-cartes (4/4) : toute re-cartographie invaliderait les index de segments consignés (§5.1) | Arbitrage |
+| **V9** | *(hors chemin critique)* Inscrire ou non des entités Roborock au `recorder`. Extension optionnelle d'observabilité (§6.3.2) | Arbitrage — **optionnel** |
 
----
+#### Questions techniques restantes
 
-## 10. Preuve de non-commande
+Elles relèvent d'un **lot ultérieur** et ne bloquent pas un pilotage mono-carte : comportement de la carte active après déplacement physique du robot, acceptation d'un changement de carte robot situé ailleurs, stabilité des index dans le temps, cas de la carte Garage (§8.3).
 
-Pendant toute la durée de l'audit :
+## 10. Écritures et commandes — inventaire exhaustif
+
+Ce document couvre deux régimes distincts, qu'il ne faut pas confondre.
+
+### 10.1 Passes d'audit des 2026-08-25 et 2026-08-26 — lecture seule
 
 | Contrôle | Résultat |
 |---|---|
 | Actions Home Assistant exécutées | **aucune** |
 | Commandes envoyées au Roborock | **aucune** |
-| Démarrage, arrêt, pause, déplacement du robot | **aucun** |
-| Modification de puissance, mode de lavage, débit d'eau, carte | **aucune** |
 | Paramètres Home Assistant modifiés | **aucun** |
 | Mapping pièce / area / étage / appareil modifié | **aucun** |
 | Helper, script, automation, scène, dashboard créé ou modifié | **aucun** |
-| Formulaire Home Assistant enregistré | **aucun** |
 | Flux d'options de config entry ouvert | **aucun** — volontairement écarté, un tel flux crée un état côté serveur |
-| Entité réactivée ou désactivée | **aucune** |
-| Mappage area ↔ segment créé ou modifié | **aucun** — c'est précisément le geste `V11` qui reste à faire |
+| Mappage area ↔ segment créé ou modifié | **aucun** — geste `V11`, désormais sans objet (§9.2) |
 
-Nature exclusive des accès : lecture des états, des registres (entités, appareils, areas, étages), du registre de services et des libellés de services. Aucun appel de service, aucune écriture.
+Nature exclusive des accès : lecture des états, des registres (entités, appareils, areas, étages), du registre de services et des libellés de services.
 
-**Précision sur le relevé de contrôle du 2026-08-26.** Un cycle de nettoyage était **en cours** au moment de cette relecture. Il a été **lancé par l'opérateur depuis l'application Roborock**, hors de cet audit, et ses réglages ont été **déclarés par lui** (§6.3) : aucune commande n'a été émise ici, ni ce jour-là ni la veille. Ce cycle a été observé, jamais provoqué, modifié ni interrompu.
+**Précision sur la passe d'audit du code exact (§2.1).** Elle a porté sur deux natures de sources, toutes deux en lecture : **hors runtime**, les sources publiques de Home Assistant Core au tag `2026.8.3` et de `python-roborock` au tag `v5.31.1`, lues hors du dépôt Arsenal, rien n'en ayant été copié ; **dans le runtime**, uniquement des commandes de lecture de l'API websocket.
 
-**Précision sur la passe d'audit du code exact (2026-08-26, §2.1).** Elle a porté sur deux natures de sources, toutes deux en lecture :
+L'énumération des segments est signalée explicitement pour lever toute ambiguïté : **c'est une commande de lecture, pas une action**. Son implémentation retourne le contenu déjà présent en mémoire dans l'intégration, **sans aucune entrée-sortie vers l'appareil** — ce qui a été vérifié dans le code source **avant** de l'appeler. Le service `roborock.get_maps`, qui est une **action**, n'a **pas** été appelé.
 
-- **hors runtime** — les sources publiques de Home Assistant Core au tag `2026.8.3` et de `python-roborock` au tag `v5.31.1`, lues hors du dépôt Arsenal ; rien n'en a été copié dans le dépôt ;
-- **dans le runtime** — uniquement des commandes de **lecture** de l'API websocket : configuration générale, états, registre de services, registres d'entités, d'appareils et d'areas, entrées de configuration, liste des *repairs*, et l'énumération des segments de l'aspirateur.
+**Cycle observé mais non provoqué.** Le cycle du 2026-08-26 lancé par l'opérateur depuis l'application Roborock, dont les réglages ont été déclarés par lui (§6.3), a été observé pendant ces passes. Il n'a été ni provoqué, ni modifié, ni interrompu par l'audit. *(Le cycle arrêté manuellement, lui, relève du lot terrain et figure au §10.2 — il avait été commandé par l'audit.)*
 
-Cette dernière est signalée explicitement pour lever toute ambiguïté : **l'énumération des segments est une commande de lecture, pas une action**. Son implémentation retourne le contenu déjà présent en mémoire dans l'intégration, **sans aucune entrée-sortie vers l'appareil** — ce qui a été vérifié dans le code source **avant** de l'appeler. Elle ne peut pas commander le robot et ne provoque aucun trafic vers lui. Le service `roborock.get_maps`, qui est une **action**, n'a **pas** été appelé.
+### 10.2 Lot terrain du 2026-08-26 (§9) — inventaire des appels
 
-**Aucun flux d'options de config entry n'a été ouvert**, et **aucune boîte de dialogue de mappage segment ↔ area n'a été ouverte ni enregistrée** — l'une comme l'autre créent un état côté serveur.
+Chaque appel est listé, avec son **niveau de certitude de réception** par Home Assistant. Aucun total agrégé n'est avancé au-delà de ce que la trace établit.
+
+| Horodatage UTC | Appel | Nature | Réception par Home Assistant |
+|---|---|---|---|
+| 13:09:29 | `select.select_option` · `carte_selectionnee` → `RDC` | réglage | **certaine** — bascule d'état constatée, puis confirmée au niveau protocolaire |
+| 13:11:39 | `select.select_option` · `intensite_de_frottement` → `off` | réglage | **certaine** — bascule d'état constatée |
+| 13:15:40 | `vacuum.send_command` · `app_segment_clean` · `[{"segments":[21]}]` | **commande de nettoyage** | **INDÉTERMINÉE** — exception opaque côté client ; aucun effet observé sur le robot, journal serveur vide. Voir §9.1.1 |
+| 13:22:47 | `vacuum.send_command` · `app_segment_clean` · `[{"segments":[21]}]` | **commande de nettoyage** | **certaine** — mission démarrée, puis arrêtée manuellement vers 13:24 ; `cleanTime = 5 s` |
+| *(≈ 14:08)* | `select.select_option` · `intensite_de_frottement` → `off` | réglage | **non émis — certain** : l'onglet du client a été détruit avant l'exécution, et l'état est resté inchangé depuis 13:22:55 |
+| 14:09:17 | `select.select_option` · `intensite_de_frottement` → `off` | réglage | **certaine** |
+| 14:10:08 | `vacuum.send_command` · `app_segment_clean` · `[{"segments":[21]}]` | **commande de nettoyage** | **certaine** — **T1 complet, validé** |
+| 14:21:26 | `select.select_option` · `intensite_de_frottement` → `off` | réglage | **certaine** |
+| 14:22:14 | `vacuum.send_command` · `app_segment_clean` · `[{"segments":[21],"repeat":2}]` | **commande de nettoyage** | **certaine** — **T2 complet, validé** |
+
+**Décompte, tel que la trace le permet :**
+
+| Catégorie | Nombre |
+|---|---|
+| Écritures de réglage parvenues à Home Assistant | **4** — chacune confirmée par bascule d'état |
+| Commandes de nettoyage parvenues à Home Assistant | **3** — chacune confirmée par contexte retourné |
+| Tentative de commande de nettoyage à **réception indéterminée** | **1** — celle de 13:15:40 |
+| Tentative de réglage **certainement non émise** | **1** — onglet client détruit avant l'appel |
+
+**Aucun total unique n'est donné.** Le nombre d'appels ayant atteint Home Assistant est de **sept** ; y ajouter la tentative de 13:15:40 supposerait de trancher une réception qui n'est pas établie. Une passe antérieure de ce document avançait « quatre écritures » : ce chiffre était **faux** et est corrigé ici.
+
+**Ce qui n'est pas une action de cette session :**
+
+- l'**arrêt manuel** du cycle de 13:22:47, effectué par un tiers présent sur place ;
+- les **cycles lancés par l'opérateur** depuis l'application Roborock (§10.1) ;
+- les **trois réactivations d'entités**, réalisées par l'opérateur (§3.4) ;
+- le **renommage des segments** dans l'application Roborock (§5.4).
+
+**Autorisations.** Chaque écriture a été précédée d'un `GO` opérateur explicite, et les commandes de nettoyage d'un `GO` distinct de celui des réglages.
+
+| Contrôle | Résultat |
+|---|---|
+| Secondes tentatives d'un essai déjà abouti | **aucune** |
+| Actions correctives après anomalie | **aucune** |
+| `vacuum.start`, `clean_area`, voie zonée employés | **aucun** — interdits maintenus |
+| Segments autres que `21` commandés | **aucun** |
+| Essais multi-cartes | **aucun** |
+| Contrat, chantier, YAML runtime, helper, script, automation, dashboard créé | **aucun** |
+| Mappage area ↔ segment créé ou modifié | **aucun** |
+| Entité activée ou désactivée par l'audit | **aucune** |
+
+**État du robot à la clôture** : amarré, en charge, sans session ouverte, sans erreur. Carte `RDC` active. Profil rétabli par l'appareil à `medium` / `vac_and_mop` en fin de mission (§6.1).
 
 ---
 
