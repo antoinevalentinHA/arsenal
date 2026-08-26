@@ -15,7 +15,7 @@ L'expérience cible réduite à *choisir un périmètre, choisir un profil, appu
 Trois réserves ont changé de nature après lecture du code source exact (§2.1) :
 
 1. **`clean_area` est inopérant en l'état** — le mappage area ↔ segment n'est pas configuré sur l'entité ; le service échoue en erreur de validation tant qu'un geste opérateur ne l'a pas créé (§3.1, **V11**).
-2. **Une commande segmentée est mono-carte, et elle échoue en silence.** La commande protocolaire ne transporte **aucun identifiant de carte** ; Home Assistant écarte sans erreur les segments hors carte active, et n'émet **rien du tout** si aucun segment ne subsiste (§8). D'où l'**invariant IMC-1** posé au §8.
+2. **Une commande segmentée est mono-carte, et elle échoue en silence.** La commande protocolaire ne transporte **aucun identifiant de carte** ; Home Assistant écarte sans erreur les segments hors carte active, et n'émet **rien du tout** si aucun segment ne subsiste (§8). D'où la **contrainte de sécurité candidate IMC-1** posée au §8.
 3. **Le nombre de passages existe dans le protocole mais n'est pas exposé.** `app_segment_clean` accepte un champ `repeat` dans le même appel que la liste de segments ; `vacuum.clean_area` ne le remplit pas (§6.3.1). L'arbitrage **V10** porte désormais sur l'opportunité d'une commande brute, non sur un choix entre pièces et coordonnées.
 
 Les inconnues terrain restantes portent sur l'acceptation de `repeat` par cet appareil et sur le comportement de la carte active après déplacement physique du robot. Elles appellent une qualification terrain ciblée ; elles ne rendent pas la faisabilité indéterminée.
@@ -183,7 +183,7 @@ Ce comportement est **couvert par les tests d'intégration officiels** : l'un d'
 
 **[FAIT] Le nom de carte `Étage ` porte une espace finale**, propagée jusque dans l'identifiant unique de l'entité image. La règle de restitution du §5.3 s'applique donc **aussi aux noms de cartes**, et pas seulement aux noms de pièces.
 
-**[FAIT] Les trois périmètres métier visés sont portés par trois cartes distinctes** — Petite maison / Annexe, RDC, Étage. Conjugué à l'invariant **IMC-1** (§8), cela signifie qu'**un lancement ne peut jamais couvrir plus d'un de ces trois périmètres**.
+**[FAIT] Les trois périmètres métier visés sont portés par trois cartes distinctes** — Petite maison / Annexe, RDC, Étage. Conjugué à la contrainte de sécurité candidate **IMC-1** (§8), cela signifie qu'**un lancement ne peut jamais couvrir plus d'un de ces trois périmètres**.
 
 ---
 
@@ -226,7 +226,7 @@ L'affirmation antérieure — *« les segments des cartes RDC, Annexe et Garage 
 | `2_18` | `Chambre1` | Annexe |
 | `2_19` | `Chambre` | Annexe |
 
-**[FAIT] Homonymie d'identifiants, démontrée et non théorique.** L'index `16` existe sur les **trois** cartes peuplées, sous trois noms différents — `Salon`, `Palier`, `Salle de bain`. L'unicité n'est portée que par la paire `<carte>_<segment>`. Un index de segment **seul** est intrinsèquement ambigu : c'est la raison technique de l'invariant **IMC-1** (§8).
+**[FAIT] Homonymie d'identifiants, démontrée et non théorique.** L'index `16` existe sur les **trois** cartes peuplées, sous trois noms différents — `Salon`, `Palier`, `Salle de bain`. L'unicité n'est portée que par la paire `<carte>_<segment>`. Un index de segment **seul** est intrinsèquement ambigu : c'est la raison technique de la contrainte de sécurité candidate **IMC-1** (§8).
 
 **[FAIT] Homonymie de noms, également présente.** `Chambre` (`2_19`, Annexe) face à `Chambre Parents` et `Chambre Enfants` (Étage) ; `Salle de bain` (Annexe) face à `SDB Parents` et `SDB Enfants` (Étage).
 
@@ -372,7 +372,7 @@ Ce que cela coûterait, énoncé sans complaisance :
 
 - `vacuum.send_command` **reste une action publique de Home Assistant** — l'utiliser n'est pas un contournement de l'API. **Mais elle expose une commande protocolaire privée sans la validation ni l'abstraction de `clean_area`** : ni résolution des areas, ni contrôle de la carte active, ni bornes vérifiées, ni erreur intelligible. Tout ce que `clean_area` garantit devrait être **réimplémenté et maintenu côté Arsenal**.
 - Le contrat de cette commande n'est garanti ni par Home Assistant ni par l'appareil : il peut changer sans préavis, et un `repeat` **ignoré en silence** est une issue plausible — c'est-à-dire un lancement qui réussit en apparence et ne répète rien.
-- L'invariant **IMC-1** (§8) s'applique intégralement : cette voie reste **mono-carte**.
+- La contrainte de sécurité candidate **IMC-1** (§8) s'applique intégralement : cette voie reste **mono-carte**.
 
 **[FAIT] Une quatrième voie existe et elle est déjà présente : les routines Roborock (§3.4).** La structure d'une routine associe, dans une même définition, une liste de segments, **un index de carte**, un profil complet et **un nombre de passages**. C'est la seule structure connue qui exprime tout cela d'un coup.
 
@@ -453,7 +453,7 @@ Ce comportement est **couvert par les tests officiels de l'intégration** ; il n
 
 **[CODE] La carte active est un état du robot, pas une intention de Home Assistant.** Elle se déduit du statut de l'appareil. Le sélecteur `select.roborock_q7_max_carte_selectionnee` — **désactivé** dans ce runtime — est le **seul** moyen de la commander depuis HA ; il émet une commande de chargement de carte, attend, puis relit. Son acceptation lorsque le robot se trouve physiquement ailleurs **n'est pas établie** : l'appareil sait refuser ce type de commande dans certains états.
 
-### 8.2 Invariant posé
+### 8.2 Contrainte de sécurité candidate
 
 > ### IMC-1 — Intégrité multi-cartes d'une commande segmentée
 >
@@ -461,16 +461,18 @@ Ce comportement est **couvert par les tests officiels de l'intégration** ; il n
 >
 > **Pourquoi.** L'index de segment est ambigu entre cartes et la commande ne porte pas la carte (§8.1). Une émission « à l'aveugle » n'a que deux issues, toutes deux inacceptables : **ne rien faire en prétendant avoir lancé**, ou **nettoyer la mauvaise pièce**. Aucune n'est signalée par une erreur.
 >
-> **Ce que l'invariant exige, dans cet ordre :**
+> **Ce que la contrainte de sécurité candidate exige, dans cet ordre :**
 >
 > 1. la carte active est **lue et connue** au moment de la commande — ce qui rend la réactivation du sélecteur de carte **obligatoire**, et non plus optionnelle (**V5** est requalifié en prérequis) ;
 > 2. **tous** les segments demandés appartiennent à cette carte ; à défaut, la demande est **refusée explicitement**, avec un motif lisible — jamais tronquée, jamais silencieuse ;
 > 3. un lancement porte sur **une seule carte** — donc sur **un seul** des trois périmètres métier visés (§4) ;
 > 4. si la carte active ne peut pas être lue, **aucune commande n'est émise**.
 >
-> **Portée.** L'invariant s'applique à **toute** voie segmentée — `vacuum.clean_area`, commande brute avec `repeat`, ou répétition supervisée. Il vaut aussi, pour les mêmes raisons, pour la commande zonée. Il ne s'applique pas aux routines Roborock, qui embarquent leur propre index de carte — **ce qui les lie à une carte, et ne leur permet pas davantage d'en couvrir plusieurs** (§6.3.1).
+> **Portée.** La contrainte de sécurité candidate s'applique à **toute** voie segmentée — `vacuum.clean_area`, commande brute avec `repeat`, ou répétition supervisée. Elle vaut aussi, pour les mêmes raisons, pour la commande zonée. Elle ne s'applique pas aux routines Roborock, qui embarquent leur propre index de carte — **ce qui les lie à une carte, et ne leur permet pas davantage d'en couvrir plusieurs** (§6.3.1).
 >
-> **Statut.** Invariant **d'audit**, opposable à la conception future du domaine. Il n'est ni un contrat ni un checker : il n'existe aujourd'hui aucun code à contraindre.
+> **Statut.** **Contrainte de sécurité candidate**, issue de l'audit — **à reprendre et arbitrer dans le futur contrat** du domaine. Ce n'est ni un contrat, ni une clause opposable, ni un checker : elle n'a aujourd'hui aucune force normative, et il n'existe d'ailleurs aucun code à contraindre. Un audit relève ; il ne norme pas.
+>
+> **Le fait technique qui la motive, lui, est établi et ne dépend d'aucun arbitrage** : une commande segmentée émise sans concordance préalable entre la carte active et les segments demandés peut **nettoyer une mauvaise pièce**, ou **réussir silencieusement sans provoquer aucune action** (§8.1).
 
 ### 8.3 Ce qui reste à qualifier sur le terrain
 
@@ -541,7 +543,7 @@ Le périmètre de ce lot a été **fortement réduit** par la passe du 2026-08-2
 | V2 | Décider des areas HA à créer ou ajuster. **Déblocable** : la liste exhaustive des segments sans area est désormais connue (§5.1, §5.3) — `Dressing`, `WC Étage`, `WC RDC`, et les quatre segments de l'Annexe ; s'y ajoute l'écart `Salon` / `Séjour` | Arbitrage |
 | V3 | Trancher le sort de `WC Étage` : intégrer ou exclure explicitement. **Note** : cette pièce sert de pièce d'essai au protocole §9.1, ce qui ne préjuge pas de son sort dans le périmètre métier | Arbitrage |
 | V4 | Trancher la sémantique des profils. **Réduit** (§6.1, §6.3) : « normale » ↔ `balanced` est **établi** ; le writer unique de « pas d'eau » est **établi** — c'est l'intensité de frottement, le mode de nettoyage n'étant qu'un état dérivé. Restent à trancher « forte » (`turbo` ou `max`) et « faible » (`quiet` ou `gentle`) | Arbitrage — **résiduel** |
-| V5 | Autoriser la réactivation des entités désactivées utiles. **Requalifié en prérequis dur** : sans le sélecteur de carte, l'invariant **IMC-1** (§8.2) ne peut pas être satisfait, et le prérequis `P2` du protocole §9.1 non plus | Décision opérateur — **prérequis** |
+| V5 | Autoriser la réactivation des entités désactivées utiles. **Requalifié en prérequis dur** : sans le sélecteur de carte, la contrainte de sécurité candidate **IMC-1** (§8.2) ne peut pas être satisfaite, et le prérequis `P2` du protocole §9.1 non plus | Décision opérateur — **prérequis** |
 | V6 | Autoriser une exécution de test encadrée sur un périmètre restreint — **c'est le protocole §9.1**, une pièce, deux essais | Autorisation explicite |
 | V7 | Confirmer la non-régression de l'exclusion alarme portée par `binary_sensor.roborock_q7_max_nettoyage`. **Élément nouveau** : ce binaire signifie « session inachevée », pas « nettoyage en cours » (§3.2) — l'exclusion reste donc active robot à l'arrêt | Validation |
 | V8 | Statuer sur la saturation multi-cartes (4/4) : toute re-cartographie invaliderait les index de segments désormais consignés (§5.1) | Arbitrage |
@@ -586,7 +588,7 @@ Cette dernière est signalée explicitement pour lever toute ambiguïté : **l'�
 
 ## 11. Ce que ce document n'est pas
 
-- Ce n'est **pas un contrat** : rien ici n'est normatif ni opposable. L'invariant **IMC-1** (§8.2) n'échappe pas à cette règle : c'est un **invariant d'audit**, destiné à contraindre une conception future, pas une clause opposable ni un checker.
+- Ce n'est **pas un contrat** : rien ici n'est normatif ni opposable. **IMC-1** (§8.2) n'échappe pas à cette règle : c'est une **contrainte de sécurité candidate** issue de l'audit, **à reprendre et arbitrer dans le futur contrat** du domaine — ni clause opposable, ni checker. Seul le **fait technique** qu'elle consigne est établi.
 - Aucun chantier n'est ouvert.
 - Aucune architecture n'est décidée : autorité de décision, writer unique, couche de diagnostic et rôle de l'UI restent **à concevoir et à valider** avant toute proposition de code.
 - Aucun code, aucun YAML runtime n'est proposé.
