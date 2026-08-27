@@ -77,12 +77,12 @@ son échec **refuse la mission** et **arrête la séquence**.
 | **2** | **Valider la cohérence de l'intention** contre le référentiel ([`02`](02_referentiel_cartes_et_pieces.md)) | `SEGMENT_INCONNU` |
 | **3** | **Refuser** une sélection vide, inconnue ou multi-carte | `SELECTION_VIDE`, `SEGMENT_INCONNU`, `SELECTION_MULTI_CARTE` |
 | **4** | **Vérifier l'état de lancement** — état machine dans la classe de repos admissible, erreurs nominales, aucune session ouverte (§5) | `ETAT_NON_QUALIFIE`, `ROBOT_INDISPONIBLE`, `ERREUR_EQUIPEMENT`, `MISSION_DEJA_OUVERTE`, `SESSION_INACHEVEE` |
-| **5** | **Sélectionner la carte** de l'intention | `CARTE_NON_CONFIRMEE` |
-| **6** | **Attendre et confirmer le contexte cartographique** — sélecteur relu **et** pièces exposées concordantes ([`06`](06_integrite_mono_carte.md) §3, conditions 2 à 4), sous **30 s** (§3.1) | `CARTE_NON_CONFIRMEE` |
-| **7** | **Écrire l'intensité d'eau** du profil | `REGLAGE_NON_CONFIRME` |
-| **8** | **Confirmer l'intensité** et la **cohérence du mode dérivé** — jamais l'écrire ([`03`](03_profils_metier.md) §3), sous **30 s** (§3.1) | `REGLAGE_NON_CONFIRME` |
-| **9** | **Écrire la puissance d'aspiration** du profil | `REGLAGE_NON_CONFIRME` |
-| **10** | **Confirmer l'aspiration**, sous **30 s** (§3.1) | `REGLAGE_NON_CONFIRME` |
+| **5** | **Demander la sélection de la carte** de l'intention | *(aucune — §3.2)* |
+| **6** | **Écrire l'intensité d'eau** du profil | *(aucune — §3.2)* |
+| **7** | **Attendre et confirmer le contexte cartographique** — sélecteur relu **et** pièces exposées concordantes ([`06`](06_integrite_mono_carte.md) §3, conditions 2 à 4), **publiées à neuf** (§3.3), sous **30 s** (§3.1) | `CARTE_NON_CONFIRMEE` |
+| **8** | **Confirmer l'intensité** et la **cohérence du mode dérivé** — jamais l'écrire ([`03`](03_profils_metier.md) §3), **publiées à neuf** (§3.3), sous **30 s** (§3.1) | `REGLAGE_NON_CONFIRME` |
+| **9** | **Écrire la puissance d'aspiration** du profil | *(aucune — §3.2)* |
+| **10** | **Confirmer l'aspiration**, **publiée à neuf** (§3.3), sous **30 s** (§3.1) | `REGLAGE_NON_CONFIRME` |
 | **11** | **Revérifier intégralement l'état de lancement** (§5) — classe de repos, erreurs nominales, absence de mission concurrente **et absence de session ouverte** | `ETAT_NON_QUALIFIE`, `ROBOT_INDISPONIBLE`, `ERREUR_EQUIPEMENT`, `MISSION_DEJA_OUVERTE`, `SESSION_INACHEVEE` |
 | **12** | **Émettre une seule commande segmentée** | qualification de l'issue, §4 |
 | **13** | **Exposer** acceptation, progression, retour, fin ou échec ([`08`](08_etats_et_observation.md)) | — |
@@ -121,7 +121,7 @@ son échec **refuse la mission** et **arrête la séquence**.
 >
 > | Constante | Valeur | Portée |
 > |---|---|---|
-> | **Fenêtre de confirmation** | **30 s** | Chaque confirmation de **carte** ou de **réglage** — étapes 6, 8 et 10 |
+> | **Fenêtre de confirmation** | **30 s** | Chaque confirmation de **carte** ou de **réglage** — étapes 7, 8 et 10 |
 > | **Fenêtre d'observation de transition** | **60 s** | L'observation de la transition de démarrage — étape 13 (§4, `ASP-INV-38`) |
 >
 > **Elles sont des constantes du contrat, écrites littéralement dans le moteur.**
@@ -148,6 +148,15 @@ son échec **refuse la mission** et **arrête la séquence**.
 > Une confirmation obtenue **avant** l'échéance poursuit immédiatement la
 > séquence : le contrat exige une **confirmation effective**, la durée n'en est
 > que la borne.
+>
+> **Ce que ces deux constantes ne bornent pas — dit franchement.** Elles bornent
+> les **attentes du domaine**, jamais la durée d'un **appel de service**, qu'
+> Arsenal ne maîtrise ni ne borne. Une écriture préparatoire peut rendre la main
+> tardivement : le 2026-08-27, la sélection de carte a rendu une
+> `HomeAssistantError` après **10,0075 s**. C'est une **observation**, pas une
+> borne — la plateforme n'en garantit aucune. La durée totale d'une séquence peut
+> donc excéder le cumul des fenêtres, **sans maximum opposable**. Aucune valeur
+> de durée totale n'est arrêtée par ce contrat.
 
 > **Ce que le terrain rend praticable.** La séquence « régler, confirmer, puis
 > lancer » a été exécutée deux fois : le réglage a été **appliqué et tenu pendant
@@ -157,6 +166,70 @@ son échec **refuse la mission** et **arrête la séquence**.
 > fond** : chaque commande émise est suivie d'un rafraîchissement dans le même
 > appel. La crainte de course est **fortement réduite** — elle n'est pas levée,
 > et c'est la confirmation, non le délai, qui la traite.
+
+### 3.2 Une écriture préparatoire n'a pas d'échec propre
+
+> **`ASP-INV-71` — l'issue d'une écriture préparatoire est portée par sa
+> confirmation, et par elle seule.** Les étapes **5**, **6** et **9** —
+> sélection de carte, intensité d'eau, puissance d'aspiration — n'ont **aucune
+> sortie en défaut propre**. Une exception de transport levée par l'une d'elles
+> n'est **ni une réussite ni un refus** : elle est **journalisée**, et la
+> confirmation qui lui correspond (**7**, **8**, **10**) **tranche seule**.
+>
+> **Ce n'est pas un assouplissement, c'est la lecture littérale du contrat.**
+> `ASP-IMC-1` (conditions 2 et 3) exige que la carte **soit** sélectionnée et
+> confirmée — un **état atteint**, jamais un appel réussi. `ASP-INV-17` pose la
+> même règle pour les réglages : « aucun réglage n'est réputé appliqué **du seul
+> fait d'avoir été demandé** ». Le contrat refuse déjà de faire confiance au
+> retour de l'appel ; il en tire ici la conséquence **dans les deux sens**.
+>
+> **Ce que cette clause n'autorise pas.** Elle ne relâche **aucune** condition
+> de confirmation : le refus reste attaché à la confirmation, avec la même
+> fenêtre, le même motif et le même arrêt de séquence. Elle n'ouvre **aucune**
+> seconde tentative, **aucun** repli, **aucune** troncature (`ASP-INV-51`). Et
+> elle ne s'étend **jamais** à l'émission de la commande de mission (§4) : celle-ci
+> n'a **pas de postcondition suffisante** — acceptation ≠ démarrage
+> (`ASP-INV-38`) —, son exception **reste levée**, et son issue demeure **non
+> établie**.
+>
+> **Fait qui la motive.** Le 2026-08-27 à 15:19:29 UTC, la sélection de carte a
+> rendu une erreur de transport **alors que la carte demandée était déjà la carte
+> active**. La séquence s'est arrêtée **sans poser aucun verdict** : le domaine
+> s'est tu, contre `ASP-INV-49` et `ASP-INV-50`. Poser `CARTE_NON_CONFIRMEE`
+> aurait été tout aussi faux — le postétat exigé était satisfait.
+
+### 3.3 Publication fraîche — ce qu'une confirmation doit prouver
+
+> **`ASP-INV-72` — une confirmation exige une publication postérieure à
+> l'écriture.** Chaque confirmation (**7**, **8**, **10**) porte sur **deux**
+> exigences cumulatives, et non sur une seule :
+>
+> 1. la **valeur exacte** attendue, comparée littéralement ;
+> 2. une **publication de l'entité postérieure** à l'instant capturé
+>    **immédiatement avant** l'écriture correspondante.
+>
+> Chaque écriture possède son **instant de référence propre**. Un instant
+> commun aux trois rendrait recevable, pour une écriture, une publication
+> antérieure à elle.
+>
+> **Toutes les entités probantes** doivent satisfaire les deux exigences : pour
+> la carte, les **deux** lectures d'`ASP-INV-29` ; pour l'eau, l'intensité **et**
+> le mode dérivé ; pour l'aspiration, l'entité qui porte l'attribut.
+>
+> **Pourquoi la valeur ne suffit pas.** Une valeur correcte peut n'être que la
+> **dernière valeur connue**, arbitrairement ancienne. Sans preuve de
+> publication postérieure, la confirmation attesterait le passé et non le
+> présent — et `ASP-IMC-1` deviendrait déclaratif.
+>
+> **Absence de preuve ⇒ refus fermé.** Une entité absente, illisible ou non
+> republiée dans la fenêtre **refuse**. Il n'existe **aucun repli** sur une
+> valeur ancienne.
+>
+> **Faux négatif possible, faux positif jamais.** Lorsqu'aucune publication ne
+> survient dans la fenêtre, une situation par ailleurs valide est **refusée**.
+> C'est un coût **assumé** : le domaine préfère refuser une mission licite
+> plutôt qu'émettre sur une lecture périmée. La réciproque — émettre faute de
+> preuve — est **exclue**.
 
 ---
 

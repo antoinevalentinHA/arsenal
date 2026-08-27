@@ -29,6 +29,14 @@ canonique, et l'exigence d'intelligibilité.
 
 Les présenter identiquement serait mentir sur ce que l'appareil a fait.
 
+> **Une exception de transport sur une écriture préparatoire n'est ni l'une ni
+> l'autre.** Elle ne dit **pas** que la mission est refusée — le postétat exigé
+> peut être satisfait —, et elle ne dit **pas** qu'elle est lancée. Elle est
+> **journalisée**, et la confirmation qui suit tranche seule
+> ([`07`](07_moteur_de_mission.md) §3.2, `ASP-INV-71`). Lui attribuer d'office un
+> motif du catalogue produirait un **diagnostic faux**, ce que `ASP-INV-50`
+> proscrit au même titre qu'un refus muet.
+
 ---
 
 ## 2. Catalogue des refus (avant émission)

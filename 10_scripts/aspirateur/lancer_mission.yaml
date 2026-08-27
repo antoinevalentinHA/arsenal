@@ -82,7 +82,7 @@
 #              binary_sensor.roborock_q7_max_serpilliere_fixee (§3.3)
 #
 # ⏱️ CONSTANTES TEMPORELLES — deux, et deux seulement (ASP-INV-69, ARB-3)
-#   00:00:30  confirmation de carte (étape 6), d'eau (8), d'aspiration (10)
+#   00:00:30  confirmation de carte (étape 7), d'eau (8), d'aspiration (10)
 #   00:01:00  observation de la transition de démarrage (étape 13)
 #   Écrites LITTÉRALEMENT ici. Le domaine n'expose AUCUN réglage temporel :
 #   ni helper, ni entité, ni paramètre d'appel. Leur révision est un
@@ -131,17 +131,28 @@
 #   témoin. Le témoin ne sert ici qu'aux gardes des étapes 4 et 11.
 #
 # ⛔ ISSUES POST-ÉMISSION — ce que ce lot peut qualifier, et ce qu'il ne
-#   peut pas. `COMMANDE_REJETEE` n'est PAS atteignable en L1 : Home
-#   Assistant n'expose aucune construction YAML d'attrapage d'erreur
-#   (`_handle_exception` de helpers/script.py ne propose que
-#   `continue_on_error`, qui absorbe l'exception SANS la rendre lisible).
-#   Distinguer un rejet d'une interruption d'exécution exigerait un
-#   observateur survivant à l'appel, donc un second script — hors
-#   périmètre L1. Ce script n'emploie donc AUCUN `continue_on_error` :
-#   l'exception du service remonte INTACTE à l'appelant et reste visible
-#   dans la trace Home Assistant. `CANAL_INDISPONIBLE` appartient à
-#   l'appelant, qui seul observe une erreur de transport ; ce moteur ne le
-#   déduit jamais de l'absence de mutation des helpers.
+#   peut pas. `COMMANDE_REJETEE` n'est PAS atteignable en L1 : distinguer un
+#   rejet d'une interruption d'exécution exigerait un observateur survivant à
+#   l'appel, donc un second script — hors périmètre L1.
+#
+#   ⚠️ RECTIFICATION D'UNE AFFIRMATION FAUSSE PORTÉE PAR CE FICHIER.
+#   Les versions précédentes affirmaient que `continue_on_error` « absorbe
+#   l'exception SANS la rendre lisible ». C'est INEXACT, et la source le dit :
+#   `_handle_exception` (helpers/script.py, 2026.8.3) appelle `_log_exception`
+#   AVANT de tester `continue_on_error`. L'exception reste donc JOURNALISÉE,
+#   qu'elle soit absorbée ou non.
+#   Ce n'est pas la lisibilité qui interdit `continue_on_error` sur
+#   l'ÉMISSION, c'est l'absence de POSTCONDITION SUFFISANTE : acceptation ≠
+#   démarrage (ASP-INV-38). L'absorber ferait passer une issue non établie
+#   pour une acceptation. L'émission n'en porte donc pas, et son exception
+#   remonte INTACTE à l'appelant.
+#   Les TROIS écritures préparatoires, elles, en portent — elles ont une
+#   postcondition relisible, et c'est leur confirmation qui tranche
+#   (07 §3.2, ASP-INV-71). Allowlist fermée par ASP-CI-27.
+#
+#   `CANAL_INDISPONIBLE` appartient à l'appelant, qui seul observe une erreur
+#   de transport ; ce moteur ne le déduit jamais de l'absence de mutation des
+#   helpers.
 #   Le verdict porté dans ce cas est `COMMANDE/ISSUE_NON_ETABLIE` — l'« issue
 #   non établie » ratifiée par le contrat 07 §4 : un constat d'absence de
 #   connaissance, sans attribution de cause.
@@ -585,11 +596,14 @@ aspirateur_lancer_mission:
             - stop: "Refus : session ouverte alors que le robot est au repos"
 
     # ======================================================
-    # 🗺️ ÉTAPE 5 — Sélectionner la carte (ASP-IMC-1, conditions 2 et 6)
+    # 🛃 CONTRÔLES PRÉALABLES AUX DEUX ÉCRITURES APPARIÉES
     # ------------------------------------------------------
-    # Contrôles PRÉALABLES à l'écriture : sélecteur lisible, et option
-    # exacte réellement offerte. Une dérive de libellé remontée depuis
-    # l'application Roborock REFUSE, elle ne recale rien (ASP-INV-67).
+    # Sélecteur de carte lisible et option exacte offerte ; sélecteur d'eau
+    # offrant l'intensité du profil. Ces deux contrôles sont PUREMENT LOCAUX
+    # — ils ne commandent rien — et doivent précéder les DEUX écritures, que
+    # la séquence V-A apparie (voir le bloc suivant). Une dérive de libellé
+    # remontée depuis l'application Roborock REFUSE, elle ne recale rien
+    # (ASP-INV-67).
     # ======================================================
     - variables:
         options_selecteur: >-
@@ -613,67 +627,6 @@ aspirateur_lancer_mission:
                 value: "REFUS/CARTE_NON_CONFIRMEE"
             - stop: "Refus : selecteur de carte illisible ou option exacte absente"
 
-    # ⚠️ `data` EST RENDU EN BLOC, ET C'EST OBLIGATOIRE.
-    # `Template.async_render` (helpers/template.py, 2026.8.3) fait
-    # `render_result.strip()` : écrit sous la forme habituelle
-    # `option: "{{ ctx_carte.option }}"`, la valeur envoyée au sélecteur
-    # serait « Étage » SANS son espace finale — donc AUCUNE option
-    # existante, et la carte Étage serait définitivement inlançable.
-    # Rendre le mapping entier place l'espace À L'INTÉRIEUR du `repr` :
-    # la troncature ne mord que sur les accolades, et
-    # `async_prepare_call_from_config` accepte explicitement un `data`
-    # qui se rend en dictionnaire (helpers/service.py).
-    - action: select.select_option
-      target:
-        entity_id: select.roborock_q7_max_carte_selectionnee
-      data: "{{ {'option': ctx_carte.option} }}"
-
-    # ======================================================
-    # ✅ ÉTAPE 6 — Confirmer le contexte cartographique — 30 s
-    # ------------------------------------------------------
-    # DOUBLE confirmation (ASP-INV-29) : le sélecteur relu dit ce qui a été
-    # DEMANDÉ ; les pièces exposées disent ce qui a été CHARGÉ.
-    # Comparaison LITTÉRALE, jamais approchée. Condition 4 = INCLUSION des
-    # segments V1, jamais égalité ni cardinalité (ASP-INV-63) : c'est ce
-    # qui rend l'Annexe commandable malgré `Ext` et `Chambre1`.
-    # `options` absente, non-liste ou vide vaut ABSENCE de confirmation.
-    # ======================================================
-    - wait_template: >-
-        {% set p = state_attr('sensor.roborock_q7_max_piece_actuelle', 'options') %}
-        {{ states('select.roborock_q7_max_carte_selectionnee') == ctx_carte.option
-           and p is not none and p is not string and p is sequence
-           and (p | count) > 0
-           and (ctx_carte.noms | reject('in', p) | list | count) == 0 }}
-      timeout: "00:00:30"
-      continue_on_timeout: true
-
-    - choose:
-        - conditions:
-            - condition: template
-              value_template: >-
-                {% set p = state_attr('sensor.roborock_q7_max_piece_actuelle',
-                                      'options') %}
-                {{ not (states('select.roborock_q7_max_carte_selectionnee')
-                          == ctx_carte.option
-                        and p is not none and p is not string and p is sequence
-                        and (p | count) > 0
-                        and (ctx_carte.noms | reject('in', p)
-                             | list | count) == 0) }}
-          sequence:
-            - action: input_text.set_value
-              target:
-                entity_id: input_text.aspirateur_mission_verdict
-              data:
-                value: "REFUS/CARTE_NON_CONFIRMEE"
-            - stop: "Refus : contexte cartographique non confirme sous 30 s"
-
-    # ======================================================
-    # 💧 ÉTAPE 7 — Écrire l'intensité d'eau (ASP-INV-14, ASP-INV-34)
-    # ------------------------------------------------------
-    # L'eau AVANT l'aspiration. Le mode suit tout seul et n'est JAMAIS
-    # écrit (ASP-INV-12). Le réglage est écrit MÊME s'il paraît déjà
-    # conforme : l'appareil le rétablit en fin de cycle (03 §5).
-    # ======================================================
     - choose:
         - conditions:
             - condition: template
@@ -691,22 +644,193 @@ aspirateur_lancer_mission:
                 value: "REFUS/REGLAGE_NON_CONFIRME"
             - stop: "Refus : intensite d'eau du profil non offerte par le selecteur"
 
+    # ======================================================
+    # 🗺️ ÉTAPE 5 — Demander la sélection de carte (ASP-IMC-1, cond. 2 et 6)
+    # ------------------------------------------------------
+    # ⏱️ INSTANT DE RÉFÉRENCE PROPRE, capturé JUSTE AVANT l'appel. Trois
+    #    instants distincts — jamais un instant global de début de script :
+    #    chacun borne la fraîcheur exigée de SA confirmation, et un instant
+    #    partagé rendrait une publication antérieure à une écriture recevable
+    #    pour elle. `now().timestamp()` se rend en FLOAT (`_parse_result`,
+    #    helpers/template/__init__.py) : la comparaison est NUMÉRIQUE, sans
+    #    conversion textuelle ni repli.
+    #
+    # 🧯 `continue_on_error: true` — POURQUOI, exactement.
+    #    Le 2026-08-27 à 15:19:29 UTC, cet appel a rendu une
+    #    `HomeAssistantError` (`command_failed` / `load_multi_map`) après
+    #    10,0075 s, ALORS QUE LA CARTE DEMANDÉE ÉTAIT DÉJÀ LA CARTE ACTIVE.
+    #    La séquence s'est arrêtée sans poser aucun verdict : le moteur s'est
+    #    tu, contre ASP-INV-49 et ASP-INV-50.
+    #    Le contrat n'a JAMAIS fait du succès de l'appel une condition : il
+    #    exige un POSTÉTAT (ASP-IMC-1 cond. 2-3, ASP-INV-17). Une exception de
+    #    transport n'est donc ni une réussite ni un refus — elle est
+    #    JOURNALISÉE, et la confirmation tranche seule.
+    #    `_handle_exception` (helpers/script.py, 2026.8.3) appelle
+    #    `_log_exception` AVANT de tester `continue_on_error` : l'exception
+    #    RESTE LISIBLE au journal et à la trace. Elle n'absorbe que les
+    #    `HomeAssistantError` — `vol.Invalid`, `TemplateError`,
+    #    `ServiceNotFound`, `InvalidEntityFormatError`,
+    #    `NoEntitySpecifiedError`, `ConditionError` et toute exception d'un
+    #    autre type restent levées, ainsi que `_StopScript`.
+    #
+    # ⚠️ `data` EST RENDU EN BLOC, ET C'EST OBLIGATOIRE.
+    # `Template.async_render` fait `render_result.strip()` : écrit sous la
+    # forme habituelle `option: "{{ ctx_carte.option }}"`, la valeur envoyée
+    # au sélecteur serait « Étage » SANS son espace finale — donc AUCUNE
+    # option existante, et la carte Étage serait définitivement inlançable.
+    # Rendre le mapping entier place l'espace À L'INTÉRIEUR du `repr` : la
+    # troncature ne mord que sur les accolades, et
+    # `async_prepare_call_from_config` accepte explicitement un `data` qui se
+    # rend en dictionnaire (helpers/service.py).
+    # ======================================================
+    - variables:
+        t_carte: "{{ now().timestamp() }}"
+
     - action: select.select_option
+      continue_on_error: true
+      target:
+        entity_id: select.roborock_q7_max_carte_selectionnee
+      data: "{{ {'option': ctx_carte.option} }}"
+
+    # ======================================================
+    # 💧 ÉTAPE 6 — Écrire l'intensité d'eau (ASP-INV-14, ASP-INV-34)
+    # ------------------------------------------------------
+    # 🧭 POURQUOI L'EAU EST ÉCRITE AVANT QUE LA CARTE SOIT CONFIRMÉE.
+    #    Ce n'est pas une commodité : c'est la SEULE façon d'obtenir une
+    #    publication fraîche du contexte cartographique sans attendre.
+    #
+    #    Fait de source (2026.8.3). `RoborockCurrentMapSelectEntity`
+    #    .async_select_option n'emprunte PAS `send()` : elle appelle
+    #    `set_current_map`, `asyncio.sleep(MAP_SLEEP)` puis
+    #    `_home_trait.refresh()` — un rafraîchissement de la BIBLIOTHÈQUE
+    #    python-roborock, qui ne notifie AUCUN listener Home Assistant. Et
+    #    `entity_service_call` ne republie que si `entity.should_poll`, or
+    #    une `CoordinatorEntity` vaut `False`. La sélection de carte ne
+    #    publie donc RIEN avant de rendre la main.
+    #
+    #    L'écriture d'eau, elle, passe par `RoborockSelectEntity
+    #    .async_select_option` -> `self.send()` -> la surcharge de
+    #    `RoborockCoordinatedEntityV1`, qui fait
+    #    `await self.coordinator.async_refresh()` — NON debouncé et ATTENDU.
+    #    Ce rafraîchissement publie SIMULTANÉMENT toutes les entités du
+    #    coordinateur : carte, pièces, intensité et mode dérivé. Mesuré le
+    #    2026-08-27 : les cinq entités probantes portent le même
+    #    `last_reported` à 0,34 ms près.
+    #
+    #    Sans cette inversion, la confirmation de carte devrait attendre le
+    #    polling de fond, dont la période RÉELLE mesurée est d'environ 35 s
+    #    (30 s nominales replanifiées APRÈS la fin du cycle) — soit AU-DELÀ
+    #    de la fenêtre de 30 s. Une bascule de carte parfaitement valide
+    #    serait refusée de façon intermittente.
+    #
+    # 🛡️ CE QUE CETTE INVERSION NE FAIT PAS. Écrire l'intensité d'eau ne
+    #    déplace pas le robot et ne lance aucune mission : c'est un réglage
+    #    préparatoire global. Si la carte n'est finalement pas confirmée, la
+    #    mission REFUSE à l'étape 7 — avant l'aspiration et avant
+    #    `app_segment_clean`. Le réglage d'eau peut rester modifié malgré le
+    #    refus ; ce risque existe déjà pour toute séquence préparatoire
+    #    interrompue après une écriture confirmée, et AUCUNE restauration
+    #    automatique n'est ajoutée (elle serait une seconde écriture non
+    #    demandée, contraire à ASP-INV-39).
+    #
+    #    L'ordre normatif indispensable est INTACT :
+    #      confirmation cartographique -> aspiration -> revérification ->
+    #      commande, et eau -> aspiration -> commande (ASP-INV-34).
+    #    Le mode suit tout seul et n'est JAMAIS écrit (ASP-INV-12).
+    # ======================================================
+    - variables:
+        t_eau: "{{ now().timestamp() }}"
+
+    - action: select.select_option
+      continue_on_error: true
       target:
         entity_id: select.roborock_q7_max_intensite_de_frottement
       data:
         option: "{{ eau_cible }}"
 
     # ======================================================
+    # ✅ ÉTAPE 7 — Confirmer le contexte cartographique — 30 s
+    # ------------------------------------------------------
+    # DOUBLE confirmation (ASP-INV-29) : le sélecteur relu dit ce qui a été
+    # DEMANDÉ ; les pièces exposées disent ce qui a été CHARGÉ. Comparaison
+    # LITTÉRALE, jamais approchée. Condition 4 = INCLUSION des segments V1,
+    # jamais égalité ni cardinalité (ASP-INV-63) : c'est ce qui rend l'Annexe
+    # commandable malgré `Ext` et `Chambre1`.
+    #
+    # 🆕 FRAÎCHEUR EXIGÉE SUR LES DEUX LECTURES.
+    #    `last_reported` — et non `last_updated`. Une republication à valeur
+    #    IDENTIQUE mute `last_reported` EN PLACE et n'émet que
+    #    `EVENT_STATE_REPORTED` : `last_changed` et `last_updated` ne bougent
+    #    pas (core.py, `async_set_internal`). Observé le 2026-08-27 sur cette
+    #    instance : `last_updated` du sélecteur datait de 26 h, son
+    #    `last_reported` de 12 s.
+    #    Une valeur correcte mais PÉRIMÉE refuse ; une publication fraîche
+    #    avec une valeur INCORRECTE refuse. `as_timestamp(..., 0)` rend 0 sur
+    #    une entité absente ou illisible — donc `0 > t_carte` est faux :
+    #    REFUS FERMÉ, jamais un repli sur une valeur ancienne.
+    #    La comparaison est STRICTE (`>`), jamais `>=` : une publication
+    #    exactement contemporaine de l'instant capturé ne prouve rien.
+    #
+    # ⚠️ LA DÉCISION N'EST PAS PRISE DEPUIS `wait.completed`.
+    #    `EVENT_STATE_REPORTED` NE RÉVEILLE PAS un `wait_template` :
+    #    `async_track_template` s'abonne à `async_track_state_change_filtered`,
+    #    qui filtre `EVENT_STATE_CHANGED` et lui seul. Sur une republication
+    #    identique, le wait va donc jusqu'à son terme SANS ÊTRE RÉVEILLÉ.
+    #    C'est pourquoi `continue_on_timeout: true` est conservé et pourquoi
+    #    le `choose` RÉÉVALUE la postcondition COMPLÈTE : la relecture finale
+    #    rend un template NEUF sur l'état courant, et
+    #    `TemplateStateFromEntityId._state` relit `hass.states.get()` à chaque
+    #    accès — la mutation en place est donc visible.
+    #    Le wait n'est ici qu'un TEMPORISATEUR OPPORTUNISTE ; la preuve, c'est
+    #    la relecture.
+    # ======================================================
+    - wait_template: >-
+        {% set p = state_attr('sensor.roborock_q7_max_piece_actuelle', 'options') %}
+        {{ states('select.roborock_q7_max_carte_selectionnee') == ctx_carte.option
+           and p is not none and p is not string and p is sequence
+           and (p | count) > 0
+           and (ctx_carte.noms | reject('in', p) | list | count) == 0
+           and as_timestamp(states.select.roborock_q7_max_carte_selectionnee.last_reported, 0) > t_carte
+           and as_timestamp(states.sensor.roborock_q7_max_piece_actuelle.last_reported, 0) > t_carte }}
+      timeout: "00:00:30"
+      continue_on_timeout: true
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {% set p = state_attr('sensor.roborock_q7_max_piece_actuelle',
+                                      'options') %}
+                {{ not (states('select.roborock_q7_max_carte_selectionnee') == ctx_carte.option
+                        and p is not none and p is not string and p is sequence
+                        and (p | count) > 0
+                        and (ctx_carte.noms | reject('in', p) | list | count) == 0
+                        and as_timestamp(states.select.roborock_q7_max_carte_selectionnee.last_reported, 0) > t_carte
+                        and as_timestamp(states.sensor.roborock_q7_max_piece_actuelle.last_reported, 0) > t_carte) }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/CARTE_NON_CONFIRMEE"
+            - stop: "Refus : contexte cartographique non confirme, ou non publie a neuf, sous 30 s"
+
+    # ======================================================
     # ✅ ÉTAPE 8 — Confirmer l'eau et la cohérence du mode — 30 s
     # ------------------------------------------------------
     # Le mode est RELU pour cohérence (off => vacuum, sinon vac_and_mop) —
-    # contrôle, JAMAIS écriture (03 §6).
+    # contrôle, JAMAIS écriture (03 §6). Les DEUX entités doivent avoir été
+    # publiées à neuf depuis `t_eau` : le mode dérive des mêmes données de
+    # coordinateur et sort du MÊME cycle que l'intensité.
+    # Si la carte est correcte mais l'eau incorrecte, c'est ICI que le refus
+    # tombe, et il porte `REGLAGE_NON_CONFIRME` — jamais l'inverse.
     # ======================================================
     - wait_template: >-
         {{ is_state('select.roborock_q7_max_intensite_de_frottement', eau_cible)
            and is_state('select.entree_roborock_q7_max_mode_de_nettoyage',
-                        mode_attendu) }}
+                        mode_attendu)
+           and as_timestamp(states.select.roborock_q7_max_intensite_de_frottement.last_reported, 0) > t_eau
+           and as_timestamp(states.select.entree_roborock_q7_max_mode_de_nettoyage.last_reported, 0) > t_eau }}
       timeout: "00:00:30"
       continue_on_timeout: true
 
@@ -719,17 +843,25 @@ aspirateur_lancer_mission:
                           eau_cible)
                         and is_state(
                           'select.entree_roborock_q7_max_mode_de_nettoyage',
-                          mode_attendu)) }}
+                          mode_attendu)
+                        and as_timestamp(states.select.roborock_q7_max_intensite_de_frottement.last_reported, 0) > t_eau
+                        and as_timestamp(states.select.entree_roborock_q7_max_mode_de_nettoyage.last_reported, 0) > t_eau) }}
           sequence:
             - action: input_text.set_value
               target:
                 entity_id: input_text.aspirateur_mission_verdict
               data:
                 value: "REFUS/REGLAGE_NON_CONFIRME"
-            - stop: "Refus : eau ou mode derive non confirmes sous 30 s"
+            - stop: "Refus : eau ou mode derive non confirmes, ou non publies a neuf, sous 30 s"
 
     # ======================================================
     # 🌀 ÉTAPE 9 — Écrire la puissance d'aspiration
+    # ------------------------------------------------------
+    # Contrôle préalable local, puis écriture. `vacuum.set_fan_speed` passe
+    # par `self.send()` — donc par `coordinator.async_refresh()`, non
+    # debouncé et attendu : sur le chemin nominal, la publication fraîche est
+    # acquise AVANT le retour du service, et l'étape 10 confirme sans
+    # attendre.
     # ======================================================
     - choose:
         - conditions:
@@ -747,7 +879,11 @@ aspirateur_lancer_mission:
                 value: "REFUS/REGLAGE_NON_CONFIRME"
             - stop: "Refus : puissance d'aspiration du profil non offerte"
 
+    - variables:
+        t_aspiration: "{{ now().timestamp() }}"
+
     - action: vacuum.set_fan_speed
+      continue_on_error: true
       target:
         entity_id: vacuum.roborock_q7_max
       data:
@@ -755,10 +891,14 @@ aspirateur_lancer_mission:
 
     # ======================================================
     # ✅ ÉTAPE 10 — Confirmer l'aspiration — 30 s
+    # ------------------------------------------------------
+    # `fan_speed` est un ATTRIBUT de l'entité `vacuum` : c'est donc cette
+    # entité, et elle seule, dont la publication doit être fraîche.
     # ======================================================
     - wait_template: >-
         {{ state_attr('vacuum.roborock_q7_max', 'fan_speed')
-           == aspiration_cible }}
+             == aspiration_cible
+           and as_timestamp(states.vacuum.roborock_q7_max.last_reported, 0) > t_aspiration }}
       timeout: "00:00:30"
       continue_on_timeout: true
 
@@ -766,15 +906,16 @@ aspirateur_lancer_mission:
         - conditions:
             - condition: template
               value_template: >-
-                {{ state_attr('vacuum.roborock_q7_max', 'fan_speed')
-                   != aspiration_cible }}
+                {{ not (state_attr('vacuum.roborock_q7_max', 'fan_speed')
+                          == aspiration_cible
+                        and as_timestamp(states.vacuum.roborock_q7_max.last_reported, 0) > t_aspiration) }}
           sequence:
             - action: input_text.set_value
               target:
                 entity_id: input_text.aspirateur_mission_verdict
               data:
                 value: "REFUS/REGLAGE_NON_CONFIRME"
-            - stop: "Refus : puissance d'aspiration non confirmee sous 30 s"
+            - stop: "Refus : puissance d'aspiration non confirmee, ou non publiee a neuf, sous 30 s"
 
     # ======================================================
     # 🛡️ ÉTAPE 11 — Revérifier INTÉGRALEMENT l'état (ASP-INV-36)
@@ -897,7 +1038,9 @@ aspirateur_lancer_mission:
     # C'est l'« issue non établie » du contrat 07 §4 : un constat d'absence
     # de connaissance, jamais l'attribution d'une cause.
     #
-    # AUCUN `continue_on_error` : l'exception éventuelle du service arrête
+    # AUCUN `continue_on_error` ICI : à la différence des trois écritures
+    # préparatoires, l'émission n'a pas de postcondition suffisante — une
+    # acceptation ne prouve pas un démarrage (ASP-INV-38). L'exception arrête
     # la séquence (07 §3) et remonte INTACTE à l'appelant, où elle reste
     # lisible — journal et trace Home Assistant.
     #

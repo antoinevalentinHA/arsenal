@@ -132,6 +132,20 @@ quatre heures et à travers deux missions.
 > sélecteur dit ce qui a été **demandé**, la liste des pièces exposées dit ce que
 > l'appareil a **effectivement chargé**. Une seule des deux ne suffit pas.
 >
+> **Les deux lectures doivent être FRAÎCHES, et pas seulement justes**
+> ([`07`](07_moteur_de_mission.md) §3.3, `ASP-INV-72`). Une valeur correcte peut
+> n'être que la dernière valeur connue : sans publication postérieure à la
+> demande de sélection, elle atteste le passé. La condition 3 exige donc, en plus
+> de l'égalité littérale, que **chacune** des deux entités ait été **publiée à
+> neuf**. Qu'une seule des deux le soit ne satisfait pas la condition.
+>
+> **Pourquoi cette exigence est apparue.** La sélection de carte **ne publie
+> rien** par elle-même : elle rafraîchit la bibliothèque sous-jacente sans
+> notifier la couche entités, et le framework ne republie pas une entité qui ne
+> se scrute pas. Sans preuve de publication postérieure, la confirmation aurait
+> pu porter sur un état arbitrairement ancien — la clause `ASP-IMC-1` serait
+> restée vraie sur le papier et vide en pratique.
+>
 > **Ces deux lectures ne sont pas des voies indépendantes.** Elles proviennent de
 > la **même couche entités** et du même rafraîchissement. Elles se recoupent
 > utilement — une demande sans chargement effectif est détectée — mais elles ne
