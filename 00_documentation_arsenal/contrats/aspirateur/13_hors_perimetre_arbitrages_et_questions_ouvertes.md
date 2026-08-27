@@ -101,7 +101,7 @@ deux seulement ([`07`](07_moteur_de_mission.md) §3.1, `ASP-INV-69`) :
 
 | Fenêtre | Valeur | Opérations couvertes | Issue en dépassement |
 |---|---|---|---|
-| **Confirmation** | **30 s** | Confirmation de **carte** (étape 6), d'**intensité d'eau** (étape 8), d'**aspiration** (étape 10) | Refus — `CARTE_NON_CONFIRMEE` ou `REGLAGE_NON_CONFIRME` |
+| **Confirmation** | **30 s** | Confirmation de **carte** (étape 7), d'**intensité d'eau** (étape 8), d'**aspiration** (étape 10) | Refus — `CARTE_NON_CONFIRMEE` ou `REGLAGE_NON_CONFIRME` |
 | **Observation de transition** | **60 s** | **Uniquement** la transition de démarrage après émission (étape 13) | Échec — `TRANSITION_NON_OBSERVEE` |
 
 **Niveau de preuve, dit franchement.** Ces deux valeurs sont **déclarées par

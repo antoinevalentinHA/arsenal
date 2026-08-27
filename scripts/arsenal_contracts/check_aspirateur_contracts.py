@@ -14,7 +14,7 @@ Deux couches, depuis le lot runtime L1.
    contrat dont le référentiel, le catalogue de refus ou la partition d'états
    se troue cesse d'être opposable, et le trou est silencieux.
 
-2. La **conduite runtime** (ASP-CI-11 … ASP-CI-21). Les obligations que le
+2. La **conduite runtime** (ASP-CI-11 … ASP-CI-27). Les obligations que le
    contrat énonçait sans pouvoir les confronter — écrivain unique, forme
    enveloppée de la charge utile, convention de passages, interdiction
    d'écrire le mode dérivé, ordre de la séquence, unicité de la commande,
@@ -115,7 +115,7 @@ Dix contrôles, tous adossés à une clause déjà normée par le contrat :
                           CONJOINTE contrat + checker + runtime
                           (ASP-INV-69, ARB-3).
 
-Quinze contrôles de CONDUITE, adossés au runtime L1 :
+Dix-sept contrôles de CONDUITE, adossés au runtime L1 :
 
   ASP-CI-11 Écrivain unique — un seul script, `mode: single`, quatre champs ;
                           AUCUN autre YAML de configuration n'écrit les deux
@@ -191,6 +191,28 @@ Quinze contrôles de CONDUITE, adossés au runtime L1 :
                           en erreur ne refusait plus rien. Le jeu de refus
                           tardifs égale par ailleurs celui de la garde
                           initiale (ASP-INV-36, ASP-INV-50).
+  ASP-CI-26 Silences   — propriete generale dont les trois chemins muets du
+                          lot L1 etaient un cas : toute etape pouvant lever une
+                          exception non absorbee doit etre PRECEDEE d'un verdict
+                          qui reste VRAI si l'execution s'arrete la.
+                          `VALIDATION_EN_COURS` ne survit pas ;
+                          `COMMANDE/ISSUE_NON_ETABLIE`, si. Le verdict courant
+                          se lit sur le CHEMIN NOMINAL — une ecriture logee dans
+                          une branche de refus est suivie d'un `stop:` et n'est
+                          jamais en vigueur ensuite (ASP-INV-49, ASP-INV-50).
+  ASP-CI-27 Preparatoires— `continue_on_error: true` sur les TROIS ecritures
+                          preparatoires et nulle part ailleurs ; instant de
+                          reference PROPRE a chacune, rendu par
+                          `now().timestamp()` et capture AVANT l'appel ;
+                          confirmation bornee a 30 s avec
+                          `continue_on_timeout: true` ; relecture finale qui
+                          reevalue valeur ET fraicheur sans jamais s'appuyer sur
+                          `wait.completed` ; `last_reported` et non
+                          `last_updated`, comparaison STRICTE ; refus attendu
+                          pose avec `stop:` ; et l'ordre de la sequence V-A —
+                          selection carte < ecriture eau < confirmation carte <
+                          confirmation eau < aspiration < commande
+                          (ASP-IMC-1, ASP-INV-17, ASP-INV-69).
 
 
 Les blocs de code clôturés sont neutralisés avant TOUS les contrôles, et aussi
@@ -232,6 +254,8 @@ Usage :
 from __future__ import annotations
 
 import argparse
+import ast
+import inspect
 import re
 import sys
 from pathlib import Path
@@ -304,7 +328,7 @@ CODES_PAR_CLASSE = {
 # Fenêtres temporelles contractuelles (07 §3.1). Deux valeurs, et deux seulement.
 FENETRE_CONFIRMATION_S = 30
 FENETRE_TRANSITION_S = 60
-ETAPES_CONFIRMATION = ("6", "8", "10")
+ETAPES_CONFIRMATION = ("7", "8", "10")
 # Cartes portant un référentiel commandable. Le Garage n'y figure pas et ne
 # doit pas y être promu (contrat 01 §5, ASP-INV-2).
 CARTES_COMMANDABLES = {"0", "1", "2"}
@@ -1249,6 +1273,18 @@ CLAUSE_TERRAIN_08 = ("témoin **sous-inclusif** (53 s puis 25 s de déplacement 
                      "à `off`, deux fois)")
 FICHIER_TERRAIN_08 = "08_etats_et_observation.md"
 
+# Seconde exemption, de même nature : l'OBSERVATION de la durée d'un appel de
+# service (07 §3.1). Elle n'est pas une durée du domaine — Arsenal ne la borne
+# pas — mais `10,0075 s` se lit « 75 s » au balayage. Comme la première, c'est
+# la CLAUSE LITTÉRALE qui est retirée, jamais un nombre : altérée, elle cesse
+# d'être reconnue et sa durée redevient concurrente ; supprimée, son absence
+# est signalée. Toutes deux sont vérifiées présentes EXACTEMENT UNE FOIS.
+CLAUSE_APPEL_07 = ("`HomeAssistantError` après **10,0075 s**. "
+                   "C'est une **observation**")
+FICHIER_APPEL_07 = "07_moteur_de_mission.md"
+EXEMPTIONS_DUREE = ((FICHIER_TERRAIN_08, CLAUSE_TERRAIN_08),
+                    (FICHIER_APPEL_07, CLAUSE_APPEL_07))
+
 # m-1 — l'association 60 s ↔ transition ↔ TRANSITION_NON_OBSERVEE est ancrée
 # sur la LIGNE du catalogue, pas sur une co-présence de chaînes dans le fichier.
 LIGNE_ECHEC = re.compile(r'^\| `([A-Z][A-Z_]{4,})` \|([^\n]*)$', re.M)
@@ -1313,19 +1349,22 @@ def check_fenetres(textes: dict[str, str]) -> list[str]:
 
     # ---- M-3 : aucune durée concurrente, sur les 14 chapitres ------------
     autorisees = {FENETRE_CONFIRMATION_S, FENETRE_TRANSITION_S}
-    terrain = textes.get(FICHIER_TERRAIN_08, "")
-    if terrain:
-        vues = terrain.count(CLAUSE_TERRAIN_08)
+    for fichier, clause in EXEMPTIONS_DUREE:
+        source = textes.get(fichier, "")
+        if not source:
+            continue
+        vues = source.count(clause)
         if vues != 1:
-            errs.append(f"ASP-CI-10 : la clause d'observation terrain de "
-                        f"{FICHIER_TERRAIN_08} est {'absente' if not vues else 'dupliquée'} "
+            errs.append(f"ASP-CI-10 : la clause d'observation de "
+                        f"{fichier} est {'absente' if not vues else 'dupliquée'} "
                         "— l'exemption au balayage des durées n'est plus ancrée "
                         "sur un texte connu, et ses durées ne peuvent plus être "
                         "distinguées d'une durée normative.")
     for nom in sorted(textes):
         corps = textes[nom]
-        if nom == FICHIER_TERRAIN_08:
-            corps = corps.replace(CLAUSE_TERRAIN_08, "")
+        for fichier, clause in EXEMPTIONS_DUREE:
+            if nom == fichier:
+                corps = corps.replace(clause, "")
         concurrentes = sorted({int(v) for v in DUREE.findall(corps)} - autorisees)
         if concurrentes:
             errs.append(f"ASP-CI-10 : durée(s) concurrente(s) dans {nom} : "
@@ -1404,7 +1443,16 @@ IS_NUMERIC_HA = re.compile(r"^[+-]?(?!0\d)\d*(?:\.\d*)?$")
 
 # Variables du moteur dont le retypage numérique est VOULU et sans danger.
 # Toute autre variable retypée est une régression.
-VARIABLES_NUMERIQUES_ADMISES = frozenset({"passages_int"})
+#
+# Les trois instants de référence en font partie DÉLIBÉRÉMENT : c'est leur
+# retypage en `float` par `_parse_result` qui rend la comparaison de fraîcheur
+# NUMÉRIQUE, donc exempte de toute conversion textuelle. Rendu sous forme de
+# datetime, `now()` serait ramené à une chaîne et la comparaison lèverait.
+# Littéraux : les constantes runtime sont déclarées plus bas dans ce module.
+# Leur concordance avec INSTANTS_PREPARATOIRES est confrontée par le selftest,
+# et non supposée.
+VARIABLES_NUMERIQUES_ADMISES = frozenset(
+    {"passages_int", "t_carte", "t_eau", "t_aspiration"})
 
 # Énumération NATIVE de `sensor.roborock_q7_max_etat`, relevée en lecture seule
 # le 2026-08-27 (attribut `options`). Ancre extérieure au contrat : c'est elle
@@ -1424,35 +1472,99 @@ ETATS_NATIFS_RELEVES = (
     "zoned_clean_mop_mopping", "back_to_dock_washing_duster")
 
 
-def _env_jinja(etats: dict[str, object] | None = None):
-    """Bac à sable Jinja muni des primitives Home Assistant, sur un état simulé."""
+def _env_jinja(etats: dict[str, object] | None = None, horloge: float = 0.0):
+    """Bac à sable Jinja muni des primitives Home Assistant, sur un état simulé.
+
+    `states` y est, comme dans Home Assistant, UN SEUL objet à la fois
+    APPELABLE — `states('x.y')` — et NAVIGABLE — `states.x.y.last_reported`.
+    Sans cette seconde forme, `now()` et `as_timestamp(...)` levaient dans le
+    bac à sable et l'exception était avalée par l'appelant : les gabarits de
+    fraîcheur passaient sans être rendus. Un contrôle qui ne rend rien ne
+    prouve rien.
+
+    `lr` porte le `last_reported` simulé. Il est DISTINCT de l'état : c'est
+    tout l'objet du contrôle, une republication identique ne mutant que lui.
+    """
     from jinja2.sandbox import ImmutableSandboxedEnvironment
 
     etats = etats or {}
+    _opaques = ("unsafe_callable", "alters_data")
 
-    def _st(eid):
-        v = etats.get(eid, "unknown")
+    def _brut(eid):
+        return etats.get(eid)
+
+    def _st(eid=None):
+        v = etats.get(eid, "unknown") if eid is not None else None
         return v["state"] if isinstance(v, dict) else v
 
     def _attr(eid, cle):
         v = etats.get(eid)
         return v.get("attrs", {}).get(cle) if isinstance(v, dict) else None
 
+    class _Etat:
+        def __init__(self, eid):
+            self._eid = eid
+
+        def __getattr__(self, nom):
+            if nom.startswith("_") or nom in _opaques:
+                raise AttributeError(nom)
+            v = _brut(self._eid)
+            if nom == "state":
+                return _st(self._eid)
+            if nom in ("last_reported", "last_updated", "last_changed"):
+                # Entité absente : aucune date. `as_timestamp(..., 0)` rendra
+                # 0, donc `0 > t` est faux — refus fermé, jamais un repli.
+                if not isinstance(v, dict):
+                    return None
+                return v.get(nom, v.get("lr") if nom == "last_reported" else None)
+            raise AttributeError(nom)
+
+    class _Dom:
+        def __init__(self, domaine):
+            self._domaine = domaine
+
+        def __getattr__(self, objet):
+            if objet.startswith("_") or objet in _opaques:
+                raise AttributeError(objet)
+            return _Etat(f"{self._domaine}.{objet}")
+
+    class _AllStates:
+        def __call__(self, eid=None):
+            return _st(eid)
+
+        def __getattr__(self, domaine):
+            if domaine.startswith("_") or domaine in _opaques:
+                raise AttributeError(domaine)
+            return _Dom(domaine)
+
+    def _as_timestamp(valeur, defaut=None):
+        if isinstance(valeur, (int, float)):
+            return float(valeur)
+        return defaut
+
+    class _Now:
+        """`now()` ne rend pas un datetime ici : seul `.timestamp()` est lu."""
+
+        def timestamp(self):
+            return horloge
+
     env = ImmutableSandboxedEnvironment()
-    env.globals["states"] = _st
+    env.globals["states"] = _AllStates()
     env.globals["state_attr"] = _attr
     env.globals["is_state"] = lambda eid, val: _st(eid) == val
+    env.globals["as_timestamp"] = _as_timestamp
+    env.globals["now"] = lambda: _Now()
     return env
 
 
-def rendu_ha(gabarit: str, etats=None, **variables):
+def rendu_ha(gabarit: str, etats=None, horloge: float = 0.0, **variables):
     """Reproduit `Template.async_render(parse_result=True)` : rendu, PUIS
     `.strip()`, PUIS `_parse_result`. Les trois étapes, dans cet ordre — c'est
     la deuxième qui mange l'espace finale de `Étage `, et la troisième qui
     retype `"0"`."""
     import ast
 
-    brut = _env_jinja(etats).from_string(gabarit).render(**variables)
+    brut = _env_jinja(etats, horloge).from_string(gabarit).render(**variables)
     rendu = brut.strip()
     if IS_NUMERIC_HA.match(rendu):
         try:
@@ -1519,31 +1631,57 @@ def check_rendus_moteur(corps, etapes, t02) -> list[str]:
     # (b) aucune variable retypée par le chemin rapide numérique.
     stub = {"carte": "0", "passages": "1", "profil": "aspiration_normale",
             "segments": ["0_18"], "segments_demandes": ["0_18"]}
+    # Le contexte CUMULE les blocs `variables` successifs, comme le fait Home
+    # Assistant : `ctx_carte` s'appuie sur `referentiel`, `indices` sur
+    # `ctx_carte`. Le réinitialiser à chaque bloc faisait LEVER tous les
+    # gabarits dépendants — silencieusement, tant que l'exception était avalée.
+    contexte = dict(stub)
     for bloc in _bloc_variables(corps):
-        contexte = dict(stub)
         for cle, val in bloc.items():
             if not isinstance(val, str) or "{" not in val:
                 contexte[cle] = val
                 continue
             try:
-                brut = _env_jinja().from_string(val).render(**contexte).strip()
-            except Exception:                      # noqa: BLE001
+                brut = _env_jinja(horloge=T0_SIM).from_string(val).render(
+                    **contexte).strip()
+            except Exception as exc:               # noqa: BLE001
+                # Une exception de rendu est un ÉCART, jamais un cas ignoré.
+                # L'avaler était un FAUX VERT : les gabarits qui levaient
+                # n'étaient tout simplement pas contrôlés.
+                errs.append(
+                    f"ASP-CI-22 : la variable `{cle}` LÈVE au rendu "
+                    f"({type(exc).__name__}: {exc}). Un gabarit qui lève "
+                    f"arrête la séquence sans verdict — et un contrôle qui "
+                    f"l'ignore ne prouve rien.")
                 contexte[cle] = ""
                 continue
-            contexte[cle] = rendu_ha(val, **contexte)
+            contexte[cle] = rendu_ha(val, horloge=T0_SIM, **contexte)
             if IS_NUMERIC_HA.match(brut) and cle not in VARIABLES_NUMERIQUES_ADMISES:
                 errs.append(
                     f"ASP-CI-22 : la variable `{cle}` se rend en {brut!r}, que "
-                    f"`_parse_result` retype en {type(rendu_ha(val, **contexte)).__name__}. "
+                    f"`_parse_result` retype en "
+                    f"{type(rendu_ha(val, horloge=T0_SIM, **contexte)).__name__}. "
                     f"Une clé de carte retypée rend `referentiel[…]` insoluble. "
                     f"Porter le contexte EN BLOC, ou déclarer la variable dans "
                     f"VARIABLES_NUMERIQUES_ADMISES.")
 
     # (c) la garde de type de `segments` doit refuser un mapping.
-    gardes = [c["value_template"]
-              for s in etapes if isinstance(s, dict) and "choose" in s
-              for o in s["choose"] for c in (o.get("conditions") or [])
-              if isinstance(c, dict) and "segments is" in str(c.get("value_template"))]
+    #     `choose` est normalisé : il accepte un choix unique en MAPPING NU,
+    #     et l'itérer directement parcourrait alors ses CLÉS.
+    _formes: list[str] = []
+    gardes = []
+    for i_s, s in enumerate(etapes):
+        if not (isinstance(s, dict) and "choose" in s):
+            continue
+        for o in _ensure_list(s["choose"], f"etape[{i_s}]/choose", _formes):
+            if not isinstance(o, dict):
+                continue
+            for c in _ensure_list(o.get("conditions"),
+                                  f"etape[{i_s}]/choose/conditions", _formes):
+                if isinstance(c, dict) and "segments is" in str(
+                        c.get("value_template")):
+                    gardes.append(c["value_template"])
+    errs += [f"ASP-CI-22 : {a}" for a in _formes]
     if not gardes:
         errs.append("ASP-CI-22 : aucune garde de type sur `segments`.")
     else:
@@ -1689,15 +1827,30 @@ def check_branches_tardives(etapes) -> list[str]:
         errs.append("ASP-CI-25 : la relecture tardive n'est suivie d'aucun "
                     "arbitrage — relire sans refuser ne garde rien.")
         return errs
-    bloc = suite[0]["choose"]
+    # `choose` normalisé AVANT toute indexation ou itération : un mapping nu
+    # est une forme valide, une liste vide ne doit pas lever `IndexError`, et
+    # un type invalide doit produire un diagnostic, pas un traceback.
+    _formes: list[str] = []
+    bloc = _ensure_list(suite[0]["choose"], "arbitrage tardif/choose", _formes)
+    errs += [f"ASP-CI-25 : {a}" for a in _formes]
+    if not bloc:
+        errs.append("ASP-CI-25 : l'arbitrage qui suit la relecture tardive ne "
+                    "porte AUCUNE branche — relire sans refuser ne garde rien.")
+        return errs
 
     # Chaque branche : sa condition normalisée, ses verdicts, son `stop:`.
     branches = []
     codes_tardifs = set()
     for opt in bloc:
+        if not isinstance(opt, dict):
+            errs.append(f"ASP-CI-25 : branche d'arbitrage tardif de type "
+                        f"{type(opt).__name__} ({opt!r}) — forme non admise.")
+            continue
         conditions = " ".join(
             str(c.get("value_template", "")) if isinstance(c, dict) else str(c)
-            for c in (opt.get("conditions") or [])).split()
+            for c in _ensure_list(opt.get("conditions"),
+                                  "arbitrage tardif/choose/conditions",
+                                  _formes)).split()
         conditions = " ".join(conditions)
         sequence = opt.get("sequence") or []
         verdicts = {v for _i, v in _ecritures_verdict(sequence)}
@@ -1748,10 +1901,17 @@ def check_branches_tardives(etapes) -> list[str]:
                         if isinstance(s, dict) and "choose" in s), None)
         if premier:
             codes_init = set()
-            for opt in premier["choose"]:
-                codes_init |= {v for _i, v
-                               in _ecritures_verdict(opt.get("sequence") or [])
-                               if v.startswith("REFUS/")}
+            _formes_init: list[str] = []
+            for opt in _ensure_list(premier["choose"],
+                                    "garde initiale/choose", _formes_init):
+                if not isinstance(opt, dict):
+                    continue
+                codes_init |= {v for _i, v in _ecritures_verdict(
+                    _ensure_list(opt.get("sequence"),
+                                 "garde initiale/choose/sequence",
+                                 _formes_init))
+                    if v.startswith("REFUS/")}
+            errs += [f"ASP-CI-25 : {a}" for a in _formes_init]
             if codes_init != codes_tardifs:
                 errs.append(
                     f"ASP-CI-25 : la revérification tardive ne produit pas les "
@@ -1759,6 +1919,451 @@ def check_branches_tardives(etapes) -> list[str]:
                     f"{sorted(codes_init - codes_tardifs)}, en trop "
                     f"{sorted(codes_tardifs - codes_init)} (ASP-INV-36).")
     return errs
+
+
+def _texte_conditions(step) -> str:
+    """Concatène les gabarits de condition d'un `choose`, branches comprises."""
+    morceaux = []
+    _rebut: list[str] = []
+    for opt in _ensure_list(step.get("choose"), "", _rebut):
+        if not isinstance(opt, dict):
+            continue
+        for cond in _ensure_list(opt.get("conditions"), "", _rebut):
+            if isinstance(cond, str):
+                morceaux.append(cond)
+            elif isinstance(cond, dict) and isinstance(cond.get("value_template"), str):
+                morceaux.append(cond["value_template"])
+    return "\n".join(morceaux)
+
+
+def _refus_du_choose(step) -> set[str]:
+    """Codes de refus posés par un `choose`, et qui portent bien un `stop:`."""
+    out = set()
+    _rebut: list[str] = []
+    for opt in _ensure_list(step.get("choose"), "", _rebut):
+        if not isinstance(opt, dict):
+            continue
+        seq = _ensure_list(opt.get("sequence"), "", _rebut)
+        if not any(isinstance(s, dict) and "stop" in s for s in seq):
+            continue
+        out |= {v for _i, v in _ecritures_verdict(seq)}
+    return out
+
+
+# Jeux d'états joués sur chaque postcondition. Chacun porte son verdict
+# attendu : c'est la table qui fait foi, pas le gabarit. Les cas reprennent
+# ceux du banc d'essai du patron — valeur juste mais périmée, publication
+# fraîche mais valeur fausse, une seule des deux lectures fraîche, entité
+# disparue. `lr` est le `last_reported` simulé ; l'instant de référence vaut
+# 100,0 dans tous les cas.
+T0_SIM = 100.0
+
+
+def contextes_postcondition(corps):
+    """DEUX contextes réellement distincts, dérivés du référentiel EMBARQUÉ.
+
+    Valider les postconditions sur le seul couple `RDC` / `off` / `vacuum`
+    laisserait passer une substitution par littéral : un gabarit où
+    `ctx_carte.option` serait remplacé par `"RDC"`, ou `eau_cible` par
+    `"off"`, rendrait exactement la même chose. En les rendant dans DEUX
+    contextes — une carte et un profil différents —, la substitution se
+    trahit d'elle-même : elle réussit ici et échoue là.
+
+    Les valeurs ne sont pas recopiées : elles sont LUES dans le référentiel et
+    la table de profils du moteur. Un référentiel modifié change donc les
+    contextes, et le contrôle suit.
+    """
+    blocs = _bloc_variables(corps)
+    ref = next((v["referentiel"] for v in blocs if "referentiel" in v), None)
+    profils = next((v["profils"] for v in blocs if "profils" in v), None)
+    if not isinstance(ref, dict) or not isinstance(profils, dict):
+        return []
+    # Une carte SÈCHE et une carte AVEC EAU, choisies pour différer sur les
+    # quatre substituables à la fois : option, noms, eau, mode, aspiration.
+    choix = (("0", "aspiration_normale"), ("1", "serpilliere_intensive"))
+    out = []
+    for carte, profil in choix:
+        if carte not in ref or profil not in profils:
+            continue
+        pr = profils[profil]
+        out.append({
+            "nom": f"carte {carte} · {profil}",
+            "ctx_carte": {"option": ref[carte]["option"],
+                          "noms": list(ref[carte]["noms"])},
+            "eau_cible": pr["eau"], "mode_attendu": pr["mode"],
+            "aspiration_cible": pr["aspiration"],
+            "t_carte": T0_SIM, "t_eau": T0_SIM, "t_aspiration": T0_SIM,
+        })
+    return out
+
+
+def cas_postcondition(ctx):
+    """Les cas de rendu, ENGENDRÉS pour un contexte donné.
+
+    Rien n'y est littéral : l'option de carte, les noms de pièces, l'intensité
+    d'eau, le mode dérivé et l'aspiration viennent tous du contexte, donc du
+    référentiel du moteur.
+    """
+    option, noms = ctx["ctx_carte"]["option"], ctx["ctx_carte"]["noms"]
+    eau, mode, asp = ctx["eau_cible"], ctx["mode_attendu"], ctx["aspiration_cible"]
+    autre_option = option + "-AUTRE"
+    autre_eau = "high" if eau != "high" else "off"
+    autre_mode = "vac_and_mop" if mode != "vac_and_mop" else "vacuum"
+    autre_asp = "turbo" if asp != "turbo" else "max"
+
+    carte_ok = {"state": option, "lr": 120.0}
+    piece_ok = {"state": noms[0], "attrs": {"options": list(noms)}, "lr": 120.0}
+    eau_ok = {"state": eau, "lr": 120.0}
+    mode_ok = {"state": mode, "lr": 120.0}
+    vac_ok = {"state": "docked", "lr": 120.0, "attrs": {"fan_speed": asp}}
+
+    return {
+        "t_carte": (
+            ("valeur juste, les deux lectures fraîches", True,
+             {NATIF_CARTE: carte_ok, NATIF_PIECE: piece_ok}),
+            ("valeur juste mais carte PÉRIMÉE", False,
+             {NATIF_CARTE: dict(carte_ok, lr=80.0), NATIF_PIECE: piece_ok}),
+            ("valeur juste mais pièces PÉRIMÉES", False,
+             {NATIF_CARTE: carte_ok, NATIF_PIECE: dict(piece_ok, lr=80.0)}),
+            ("publication fraîche mais CARTE FAUSSE", False,
+             {NATIF_CARTE: dict(carte_ok, state=autre_option),
+              NATIF_PIECE: piece_ok}),
+            ("publication fraîche mais un segment MANQUE", False,
+             {NATIF_CARTE: carte_ok,
+              NATIF_PIECE: {"state": noms[0], "lr": 120.0,
+                            "attrs": {"options": list(noms[:-1])}}}),
+            ("entité carte DISPARUE", False, {NATIF_PIECE: piece_ok}),
+            ("entité PIÈCES DISPARUE", False, {NATIF_CARTE: carte_ok}),
+            ("pièces exposées VIDES", False,
+             {NATIF_CARTE: carte_ok,
+              NATIF_PIECE: {"state": noms[0], "lr": 120.0,
+                            "attrs": {"options": []}}}),
+            ("attribut `options` ABSENT", False,
+             {NATIF_CARTE: carte_ok,
+              NATIF_PIECE: {"state": noms[0], "lr": 120.0, "attrs": {}}}),
+            ("aucune publication du tout", False, {}),
+        ),
+        "t_eau": (
+            ("valeur juste, intensité et mode frais", True,
+             {NATIF_EAU: eau_ok, NATIF_MODE: mode_ok}),
+            ("intensité fraîche mais INCORRECTE", False,
+             {NATIF_EAU: dict(eau_ok, state=autre_eau), NATIF_MODE: mode_ok}),
+            ("valeurs justes mais mode PÉRIMÉ", False,
+             {NATIF_EAU: eau_ok, NATIF_MODE: dict(mode_ok, lr=80.0)}),
+            ("valeurs justes mais intensité PÉRIMÉE", False,
+             {NATIF_EAU: dict(eau_ok, lr=80.0), NATIF_MODE: mode_ok}),
+            # Relevé par l'audit : les deux entités sont FRAÎCHES, l'intensité
+            # est CORRECTE, et le mode dérivé est pourtant incohérent. Écrire
+            # le mode est interdit (ASP-INV-12) : il ne peut être que
+            # CONFIRMÉ, et une incohérence signe un réglage non appliqué.
+            ("intensité juste et fraîche mais MODE DÉRIVÉ INCOHÉRENT", False,
+             {NATIF_EAU: eau_ok, NATIF_MODE: dict(mode_ok, state=autre_mode)}),
+            ("mode juste et frais mais ENTITÉ INTENSITÉ DISPARUE", False,
+             {NATIF_MODE: mode_ok}),
+            ("intensité juste et fraîche mais ENTITÉ MODE DISPARUE", False,
+             {NATIF_EAU: eau_ok}),
+            ("aucune publication du tout", False, {}),
+        ),
+        "t_aspiration": (
+            ("attribut juste et entité fraîche", True, {NATIF_VACUUM: vac_ok}),
+            ("attribut juste mais entité PÉRIMÉE", False,
+             {NATIF_VACUUM: dict(vac_ok, lr=80.0)}),
+            ("entité fraîche mais attribut INCORRECT", False,
+             {NATIF_VACUUM: dict(vac_ok, attrs={"fan_speed": autre_asp})}),
+            ("entité fraîche mais attribut `fan_speed` ABSENT", False,
+             {NATIF_VACUUM: dict(vac_ok, attrs={})}),
+            ("entité DISPARUE", False, {}),
+        ),
+    }
+
+
+def _postcondition_rendue(instant, gabarit, valeur_instant=None,
+                          ctx=None) -> list[str]:
+    """Rend la postcondition sur des états simulés et confronte le verdict.
+
+    `valeur_instant` est la valeur RÉELLEMENT rendue par le gabarit d'instant
+    du moteur, et non un flottant figé par le checker. Sans cela, le contrôle
+    testerait une comparaison que le moteur ne fait pas : un instant antidaté
+    ou retypé passerait, puisque la postcondition serait jouée avec la valeur
+    du checker et non avec la sienne.
+    """
+    errs = []
+    if ctx is None:                       # contexte de repli, sans référentiel
+        ctx = {"nom": "contexte nu",
+               "ctx_carte": {"option": "RDC", "noms": ["Salon", "Entrée",
+                                                       "WC RDC",
+                                                       "Cage d'escaliers"]},
+               "eau_cible": "off", "mode_attendu": "vacuum",
+               "aspiration_cible": "balanced",
+               "t_carte": T0_SIM, "t_eau": T0_SIM, "t_aspiration": T0_SIM}
+    cas = cas_postcondition(ctx)
+    contexte = {k: v for k, v in ctx.items() if k != "nom"}
+    if valeur_instant is not None:
+        contexte = dict(contexte, **{instant: valeur_instant})
+    for libelle, attendu, etats in cas[instant]:
+        try:
+            rendu = _env_jinja(etats, horloge=T0_SIM).from_string(
+                gabarit).render(**contexte).strip()
+        except Exception as exc:                    # noqa: BLE001
+            errs.append(f"ASP-CI-27 : la postcondition de `{instant}` lève sur "
+                        f"« {libelle} » ({exc}) — une garde qui lève ne refuse "
+                        f"pas, elle casse la séquence.")
+            continue
+        obtenu = rendu == "True"
+        if obtenu is not attendu:
+            errs.append(
+                f"ASP-CI-27 : postcondition de `{instant}` [{ctx['nom']}] — « {libelle} » "
+                f"rend {rendu!r}, attendu {attendu}. "
+                + ("Une confirmation doit tenir sur ce cas."
+                   if attendu else
+                   "Ce cas doit REFUSER : une valeur périmée, fausse ou "
+                   "illisible ne confirme rien (ASP-INV-72)."))
+    return errs
+
+
+def check_ecritures_preparatoires(top, corps=None) -> list[str]:
+    """ASP-CI-27 — allowlist fermée, instants propres, fraîcheur, refus, ordre.
+
+    Le patron opposable, pour chacune des TROIS écritures et pour elles seules :
+
+        variables: t_X = now().timestamp()      (instant PROPRE, avant l'appel)
+        action:    <écriture>  continue_on_error: true
+        …
+        wait_template: <valeur exacte> ET <fraîcheur > t_X>   timeout 30 s
+        choose:        NOT(<la même postcondition>) -> <refus> + stop:
+
+    L'appariement écriture ↔ confirmation se fait par le NOM DE L'INSTANT, et
+    non par l'adjacence : la séquence V-A apparie délibérément les deux
+    premières écritures avant de les confirmer, pour que le rafraîchissement
+    provoqué par l'eau publie aussi le contexte cartographique.
+    """
+    errs = []
+    corps = corps if corps is not None else {"sequence": top}
+    idx_svc, idx_var, idx_wait = {}, {}, {}
+
+    for i, step in enumerate(top):
+        if not isinstance(step, dict):
+            continue
+        if isinstance(step.get("variables"), dict):
+            for nom, gabarit in step["variables"].items():
+                if nom in INSTANTS_PREPARATOIRES:
+                    idx_var.setdefault(nom, (i, gabarit))
+        if isinstance(step.get("wait_template"), str):
+            for nom in INSTANTS_PREPARATOIRES:
+                if re.search(rf'\b{nom}\b', step["wait_template"]):
+                    idx_wait.setdefault(nom, i)
+        svc = _service(step)
+        if svc:
+            for cible in _cibles(step):
+                idx_svc.setdefault((svc, cible), i)
+
+    # (a) allowlist FERMÉE — nulle part ailleurs, à AUCUNE profondeur.
+    #     La visite est exhaustive : `repeat`, `if`, `parallel` et toute
+    #     séquence imbriquée sont inspectés, et le CHEMIN est cité.
+    autorisees = {(s, c) for s, c, _t, _r in ECRITURES_PREPARATOIRES}
+    au_premier_niveau = {id(s) for s in top}
+    for chemin, step in _actions(top):
+        if not (isinstance(step, dict) and step.get("continue_on_error")):
+            continue
+        svc = _service(step)
+        couple = (svc, (_cibles(step) or [None])[0])
+        if couple not in autorisees:
+            errs.append(
+                f"ASP-CI-27 : {chemin} — `continue_on_error` sur `{svc}` vers "
+                f"`{couple[1]}` — hors des trois écritures préparatoires "
+                f"autorisées. Interdit sur l'émission, sur les écritures de "
+                f"helper et partout ailleurs (07 §3, ASP-INV-49).")
+        elif id(step) not in au_premier_niveau:
+            # Une écriture préparatoire AUTORISÉE, mais logée dans une
+            # branche : elle n'est plus sur le chemin nominal, et l'ordre
+            # V-A cesserait d'être opposable.
+            errs.append(
+                f"ASP-CI-27 : {chemin} — l'écriture préparatoire `{couple[1]}` "
+                f"est imbriquée dans une structure conditionnelle ou répétée. "
+                f"Les trois écritures appartiennent au CHEMIN NOMINAL, au "
+                f"premier niveau de la séquence (07 §3).")
+
+    for svc, cible, instant, refus in ECRITURES_PREPARATOIRES:
+        i_svc = idx_svc.get((svc, cible))
+        if i_svc is None:
+            errs.append(f"ASP-CI-27 : écriture préparatoire `{svc}` vers "
+                        f"`{cible}` introuvable (07 §3).")
+            continue
+        # (b) l'écriture DOIT absorber l'exception, sinon le moteur se tait.
+        if not top[i_svc].get("continue_on_error"):
+            errs.append(
+                f"ASP-CI-27 : sequence/{i_svc} — `{cible}` doit porter "
+                f"`continue_on_error: true` : une exception de transport n'est "
+                f"ni une réussite ni un refus, et seule la confirmation "
+                f"tranche (07 §3, ASP-INV-50).")
+
+        # (c) instant PROPRE, capturé avant l'appel, rendu numérique.
+        pose = idx_var.get(instant)
+        if pose is None:
+            errs.append(f"ASP-CI-27 : instant de référence `{instant}` jamais "
+                        f"capturé — la fraîcheur n'a plus d'origine.")
+            continue
+        i_var, gabarit = pose
+        # (c1) FORME — canonique, strictement bornée.
+        if not (isinstance(gabarit, str)
+                and GABARIT_INSTANT_CANONIQUE.match(gabarit.strip())):
+            errs.append(
+                f"ASP-CI-27 : `{instant}` doit être EXACTEMENT "
+                f"`{GABARIT_INSTANT}` — trouvé {gabarit!r}. Aucune "
+                f"arithmétique (`- 3600` antidate la preuve, `+ 1` la "
+                f"postdate), aucun filtre (`| string` la retype et fait LEVER "
+                f"la comparaison, `| int` la tronque, `| default(0)` introduit "
+                f"un repli), aucune référence à un autre instant.")
+        # (c2) TYPAGE — le gabarit est RENDU, et son résultat doit être un
+        #      nombre fini. Une exception de rendu est un ÉCART, jamais un cas
+        #      ignoré : c'est précisément ce silence qui rouvrait un chemin
+        #      muet.
+        valeur = None
+        try:
+            valeur = rendu_ha(gabarit, horloge=T0_SIM) if isinstance(gabarit, str) \
+                else None
+        except Exception as exc:                     # noqa: BLE001
+            errs.append(f"ASP-CI-27 : le gabarit de `{instant}` LÈVE au rendu "
+                        f"({type(exc).__name__}: {exc}) — une capture qui lève "
+                        f"arrête la séquence sans verdict.")
+        else:
+            if isinstance(valeur, bool) or not isinstance(valeur, (int, float)):
+                errs.append(
+                    f"ASP-CI-27 : `{instant}` se rend en "
+                    f"{type(valeur).__name__} ({valeur!r}) — un instant doit "
+                    f"être un NOMBRE. Une chaîne ferait lever la comparaison "
+                    f"`>` dans la postcondition, et un booléen la rendrait "
+                    f"absurde.")
+                valeur = None
+            elif valeur != valeur or valeur in (float("inf"), float("-inf")):
+                errs.append(f"ASP-CI-27 : `{instant}` se rend en {valeur!r} — "
+                            f"valeur non finie, aucune comparaison n'a de sens.")
+                valeur = None
+        if not i_var < i_svc:
+            errs.append(f"ASP-CI-27 : `{instant}` est capturé APRÈS son "
+                        f"écriture (sequence/{i_var} ≥ sequence/{i_svc}) — une "
+                        f"publication antérieure à l'appel passerait pour "
+                        f"fraîche.")
+
+        # (d) la confirmation : un wait 30 s, puis un choose qui refuse.
+        i_wait = idx_wait.get(instant)
+        if i_wait is None:
+            errs.append(f"ASP-CI-27 : aucune confirmation ne borne `{instant}` "
+                        f"— la fraîcheur n'est jamais vérifiée.")
+            continue
+        if not i_svc < i_wait:
+            errs.append(f"ASP-CI-27 : la confirmation de `{instant}` précède "
+                        f"son écriture (sequence/{i_wait} ≤ sequence/{i_svc}).")
+        wait = top[i_wait]
+        if wait.get("timeout") != FENETRE_CONFIRMATION_YAML:
+            errs.append(f"ASP-CI-27 : la confirmation de `{instant}` porte "
+                        f"`timeout: {wait.get('timeout')!r}` — attendu "
+                        f"{FENETRE_CONFIRMATION_YAML} (ASP-INV-69).")
+        if wait.get("continue_on_timeout") is not True:
+            errs.append(f"ASP-CI-27 : la confirmation de `{instant}` doit "
+                        f"porter `continue_on_timeout: true` : une "
+                        f"republication IDENTIQUE n'émet que "
+                        f"`EVENT_STATE_REPORTED`, qui ne réveille PAS un "
+                        f"`wait_template` — la décision revient à la relecture.")
+
+        suivant = top[i_wait + 1] if i_wait + 1 < len(top) else None
+        if not (isinstance(suivant, dict) and "choose" in suivant):
+            errs.append(f"ASP-CI-27 : la confirmation de `{instant}` n'est pas "
+                        f"suivie d'un `choose` de relecture — le refus ne peut "
+                        f"plus être posé.")
+            continue
+        cond = _texte_conditions(suivant)
+        if "wait.completed" in cond or "wait[" in cond:
+            errs.append(f"ASP-CI-27 : la relecture de `{instant}` s'appuie sur "
+                        f"`wait.completed` — or le wait n'est PAS réveillé par "
+                        f"une republication identique. La décision doit "
+                        f"réévaluer la postcondition COMPLÈTE.")
+        if not re.search(rf'\b{instant}\b', cond):
+            errs.append(f"ASP-CI-27 : la relecture qui suit la confirmation de "
+                        f"`{instant}` ne réévalue pas la fraîcheur.")
+        if refus not in _refus_du_choose(suivant):
+            errs.append(f"ASP-CI-27 : la relecture de `{instant}` ne pose pas "
+                        f"`{refus}` avec un `stop:` — trouvé "
+                        f"{sorted(_refus_du_choose(suivant))}.")
+
+        # (e) valeur ET fraîcheur, sur TOUTES les entités probantes, dans les
+        #     DEUX gabarits. `last_updated` ne prouve rien : une republication
+        #     identique ne le fait pas bouger (core.py, async_set_internal).
+        for ou, gab in (("confirmation", wait.get("wait_template", "")),
+                        ("relecture", cond)):
+            for entite in ENTITES_PROBANTES[instant]:
+                attendu = (f"as_timestamp(states.{entite}.last_reported, 0) "
+                           f"> {instant}")
+                if _normalise(attendu) not in _normalise(gab):
+                    errs.append(
+                        f"ASP-CI-27 : la {ou} de `{instant}` n'exige pas la "
+                        f"publication fraîche de `{entite}` sous la forme "
+                        f"`{attendu}` — une valeur correcte mais PÉRIMÉE "
+                        f"passerait (ASP-IMC-1, ASP-INV-17).")
+            if re.search(rf'last_updated[^\n]*{instant}', _normalise(gab)):
+                errs.append(
+                    f"ASP-CI-27 : la {ou} de `{instant}` compare "
+                    f"`last_updated` : une republication à valeur identique "
+                    f"mute `last_reported` SEUL. Preuve inopérante.")
+            if re.search(rf'>=\s*{instant}', _normalise(gab)):
+                errs.append(
+                    f"ASP-CI-27 : la {ou} de `{instant}` compare `>=` — une "
+                    f"publication exactement contemporaine de l'instant "
+                    f"capturé ne prouve aucune postériorité.")
+
+        # (h) la postcondition est RENDUE, comme ASP-CI-12 rend la charge
+        #     utile : une expression qui ne calcule plus rien ne passe plus.
+        contextes = contextes_postcondition(corps) or [None]
+        if len(contextes) < 2:
+            errs.append(
+                "ASP-CI-27 : moins de DEUX contextes de rendu — une "
+                "postcondition validée sur un seul couple carte/profil ne "
+                "distingue pas une expression d'un littéral substitué.")
+        for ctx in contextes:
+            errs += _postcondition_rendue(instant, wait.get("wait_template", ""),
+                                          valeur, ctx)
+
+    # (f) les trois instants sont DISTINCTS et posés dans trois blocs séparés.
+    poses = {n: p[0] for n, p in idx_var.items()}
+    if len(set(poses.values())) != len(INSTANTS_PREPARATOIRES):
+        errs.append(
+            f"ASP-CI-27 : les trois instants doivent être capturés dans TROIS "
+            f"blocs distincts, chacun collé à son écriture — trouvé "
+            f"{poses}. Un instant global rendrait recevable, pour une "
+            f"écriture, une publication antérieure à elle.")
+
+    # (g) ordre structurel de la séquence V-A.
+    jalons = [
+        ("sélection carte", idx_svc.get((SVC_EAU, NATIF_CARTE))),
+        ("écriture eau", idx_svc.get((SVC_EAU, NATIF_EAU))),
+        ("confirmation carte", idx_wait.get("t_carte")),
+        ("confirmation eau", idx_wait.get("t_eau")),
+        ("écriture aspiration", idx_svc.get((SVC_ASPIRATION, NATIF_VACUUM))),
+        ("commande", idx_svc.get((SVC_COMMANDE, NATIF_VACUUM))),
+    ]
+    if all(i is not None for _n, i in jalons):
+        rangs = [i for _n, i in jalons]
+        if rangs != sorted(rangs):
+            errs.append(
+                "ASP-CI-27 : ordre non conforme. Attendu : sélection carte < "
+                "écriture eau < confirmation carte < confirmation eau < "
+                "aspiration < commande — trouvé "
+                + " < ".join(f"{n}({i})" for n, i in jalons) + ". L'eau doit "
+                "précéder la confirmation de carte : elle seule provoque le "
+                "`coordinator.async_refresh()` qui publie le contexte "
+                "cartographique (07 §3).")
+        i_conf_carte = idx_wait.get("t_carte")
+        i_cmd = idx_svc.get((SVC_COMMANDE, NATIF_VACUUM))
+        if i_cmd is not None and i_conf_carte is not None and i_cmd < i_conf_carte:
+            errs.append("ASP-CI-27 : une commande de mission précède la "
+                        "confirmation cartographique — violation directe "
+                        "d'ASP-IMC-1.")
+    return errs
+
+
+def _normalise(texte: str) -> str:
+    """Retire tout blanc : la mise en forme d'un gabarit n'est pas normative."""
+    return re.sub(r"\s+", "", texte or "")
 
 
 def sans_commentaires_yaml(texte: str) -> str:
@@ -1884,17 +2489,112 @@ NB_CONFIRMATIONS = 3          # carte (6), eau (8), aspiration (10)
 MAX_ETAT_CAPTEUR = 255
 
 
-def _aplatir(seq, out=None):
-    """Étapes d'un script en ordre de DOCUMENT, branches comprises."""
+def _ensure_list(valeur, chemin, anomalies):
+    """Normalise un conteneur d'actions, comme le fait `cv.ensure_list`.
+
+    Le schéma de scripts Home Assistant applique `ensure_list` **partout** où
+    une séquence est attendue : un **mapping nu** y est donc une forme
+    parfaitement valide, et `choose:` accepte un choix unique en mapping.
+
+    Sans cette normalisation, le parcours itérait les **clés** d'un
+    dictionnaire — quarante-deux mutations passaient au vert ou faisaient
+    planter le checker sur une forme que Home Assistant accepte.
+
+    | Entrée | Sortie |
+    |---|---|
+    | `None` | `[]` |
+    | `list` | elle-même |
+    | `dict` | `[dict]` |
+    | autre | `[]` **et une anomalie datée du chemin** — jamais une exception |
+    """
+    if valeur is None:
+        return []
+    if isinstance(valeur, list):
+        return valeur
+    if isinstance(valeur, dict):
+        return [valeur]
+    anomalies.append(
+        f"{chemin} — conteneur d'actions de type {type(valeur).__name__} "
+        f"({valeur!r}) : ni liste, ni mapping, ni absent. Forme non admise "
+        f"par le schéma de scripts.")
+    return []
+
+
+def _actions(seq, chemin="sequence", out=None, anomalies=None):
+    """Visite RÉCURSIVE EXHAUSTIVE des actions, avec leur CHEMIN YAML.
+
+    Rend des couples `(chemin, étape)` en ordre de document, en descendant
+    dans **toutes** les structures composites du schéma de scripts Home
+    Assistant 2026.8.3 :
+
+        choose[].sequence · choose.default · repeat.sequence
+        if.then · if.else · parallel[] (et parallel[].sequence)
+        sequence imbriquée
+
+    Une version antérieure ne descendait que dans `choose` : une seconde
+    `vacuum.send_command` logée dans un `repeat:` — ou un second écrivain du
+    verdict dans un `if.then` — restait INVISIBLE à tous les contrôles de
+    détection. Ce n'est pas une omission théorique : seize mutations sont
+    passées au vert avant cette correction.
+
+    Le chemin est rendu avec l'étape pour que chaque écart cite l'endroit
+    EXACT de l'action fautive, et non un simple index de premier niveau.
+    """
     if out is None:
         out = []
-    for step in seq or []:
-        out.append(step)
-        if isinstance(step, dict) and "choose" in step:
-            for opt in step["choose"] or []:
-                _aplatir((opt or {}).get("sequence"), out)
-            _aplatir(step.get("default"), out)
+    if anomalies is None:
+        anomalies = []
+    for i, step in enumerate(_ensure_list(seq, chemin, anomalies)):
+        p = f"{chemin}/{i}"
+        out.append((p, step))
+        if not isinstance(step, dict):
+            continue
+        if "choose" in step:
+            # `choose` accepte un CHOIX UNIQUE en mapping, pas seulement une
+            # liste d'options.
+            for j, opt in enumerate(_ensure_list(step["choose"],
+                                                 f"{p}/choose", anomalies)):
+                if isinstance(opt, dict):
+                    _actions(opt.get("sequence"), f"{p}/choose/{j}/sequence",
+                             out, anomalies)
+            _actions(step.get("default"), f"{p}/default", out, anomalies)
+        if "repeat" in step:
+            rep = step["repeat"]
+            _actions(rep.get("sequence") if isinstance(rep, dict) else None,
+                     f"{p}/repeat/sequence", out, anomalies)
+        if "if" in step:
+            _actions(step.get("then"), f"{p}/then", out, anomalies)
+            _actions(step.get("else"), f"{p}/else", out, anomalies)
+        if "parallel" in step:
+            for j, branche in enumerate(_ensure_list(step["parallel"],
+                                                     f"{p}/parallel",
+                                                     anomalies)):
+                if isinstance(branche, dict) and "sequence" in branche:
+                    _actions(branche["sequence"],
+                             f"{p}/parallel/{j}/sequence", out, anomalies)
+                else:
+                    _actions(branche, f"{p}/parallel/{j}", out, anomalies)
+        # `sequence` nue — mais pas celle d'un `repeat`, déjà visitée, ni
+        # celle d'une branche `parallel`, visitée ci-dessus.
+        if "sequence" in step and "repeat" not in step and "parallel" not in step:
+            _actions(step["sequence"], f"{p}/sequence", out, anomalies)
     return out
+
+
+def _anomalies_de_forme(seq):
+    """Les conteneurs d'actions dont la forme n'est pas admise par le schéma."""
+    anomalies: list[str] = []
+    _actions(seq, "sequence", [], anomalies)
+    return anomalies
+
+
+def _aplatir(seq):
+    """Les mêmes étapes que `_actions`, sans les chemins.
+
+    Conservé pour les contrôles qui n'ont pas besoin de citer un chemin ;
+    il est EXHAUSTIF comme `_actions`, dont il dérive.
+    """
+    return [step for _chemin, step in _actions(seq)]
 
 
 def _service(step):
@@ -1946,6 +2646,129 @@ def charge_utile(params_tpl: str, indices: list[int], passages: int):
         return ast.literal_eval(rendu)
     except (ValueError, SyntaxError):
         return rendu
+
+
+# ─────────────────────────────────────────────────────────────
+# ASP-CI-26 / ASP-CI-27 — chemins d'exception et écritures préparatoires
+#
+# ASP-CI-26 énonce une propriété générale, dont les trois chemins silencieux
+# du moteur L1 sont un cas particulier :
+#
+#   Toute étape susceptible de lever une exception non absorbée doit être
+#   PRÉCÉDÉE d'un verdict qui reste VRAI si l'exécution s'arrête là.
+#
+# `VALIDATION_EN_COURS` ne survit pas : il affirme qu'une validation est en
+# cours. `COMMANDE/ISSUE_NON_ETABLIE`, si : il constate une absence de
+# connaissance. C'est ce seul critère qui distingue le traitement des
+# écritures préparatoires de celui de l'émission, sans cas particulier.
+#
+# Portée : les appels qui commandent L'APPAREIL. Une écriture de helper est
+# exclue — absorber son échec produirait un verdict faux en silence, ce qui
+# serait pire que le subir ; sa capacité est gardée par ASP-CI-21.
+# ─────────────────────────────────────────────────────────────
+
+# Verdicts qui restent vrais si l'exécution s'arrête juste après.
+VERDICTS_SURVIVANTS = frozenset(
+    {v for v in VOCABULAIRE_VERDICT if v.startswith("REFUS/")}
+    | {"COMMANDE/ISSUE_NON_ETABLIE", "EMISSION/COMMANDE_ACCEPTEE",
+       "ECHEC/TRANSITION_NON_OBSERVEE", "LANCEE/DEMARRAGE_OBSERVE"})
+
+# Domaines dont un appel atteint l'appareil, donc expose à un aléa externe.
+DOMAINES_APPAREIL = ("select", "vacuum", "roborock")
+
+# Les TROIS écritures préparatoires, seules autorisées à porter
+# `continue_on_error: true`. Chaque ligne fige le quadruplet opposable :
+# service, cible, instant de reference propre, refus attendu a l'expiration.
+ECRITURES_PREPARATOIRES = (
+    (SVC_EAU, NATIF_CARTE, "t_carte", "REFUS/CARTE_NON_CONFIRMEE"),
+    (SVC_EAU, NATIF_EAU, "t_eau", "REFUS/REGLAGE_NON_CONFIRME"),
+    (SVC_ASPIRATION, NATIF_VACUUM, "t_aspiration", "REFUS/REGLAGE_NON_CONFIRME"),
+)
+INSTANTS_PREPARATOIRES = tuple(t for _s, _c, t, _r in ECRITURES_PREPARATOIRES)
+
+# FORME CANONIQUE STRICTEMENT BORNÉE du gabarit d'instant.
+#
+# Une simple sous-chaîne `now().timestamp()` est INSUFFISANTE, et six
+# mutations l'ont prouvé : `- 3600` antidate la preuve, `+ 1` la postdate,
+# `| string` la retype en chaîne — la comparaison lève alors un TypeError et
+# ROUVRE un chemin silencieux —, `| int` la tronque à la seconde, `| default(0)`
+# introduit un repli, `> 0` la rend booléenne.
+#
+# Le gabarit doit donc être EXACTEMENT l'heure courante, sans arithmétique,
+# sans filtre, sans conversion, sans repli. Seuls les blancs varient.
+GABARIT_INSTANT = "{{ now().timestamp() }}"
+GABARIT_INSTANT_CANONIQUE = re.compile(
+    r"^\{\{\s*now\(\)\s*\.\s*timestamp\(\)\s*\}\}$")
+
+# Entités dont la publication doit être FRAÎCHE pour chaque confirmation.
+# Carte : les DEUX lectures d'ASP-INV-29. Eau : intensité ET mode dérivé.
+ENTITES_PROBANTES = {
+    "t_carte": (NATIF_CARTE, NATIF_PIECE),
+    "t_eau": (NATIF_EAU, NATIF_MODE),
+    "t_aspiration": (NATIF_VACUUM,),
+}
+
+
+def _domaine(svc: str | None) -> str:
+    return svc.split(".", 1)[0] if svc else ""
+
+
+def _verdict_courant(top, i):
+    """Verdict en vigueur sur le CHEMIN NOMINAL à l'entrée de l'étape i.
+
+    Seules les écritures de PREMIER NIVEAU comptent. Une écriture logée dans
+    une branche de `choose` est un refus, immédiatement suivi d'un `stop:` :
+    elle n'est jamais en vigueur lorsqu'une étape ultérieure s'exécute. Les
+    compter reviendrait à croire le moteur protégé par des refus qu'il n'a pas
+    pris — c'est précisément le faux vert que ce contrôle doit éviter.
+    """
+    courant = None
+    for j, step in enumerate(top):
+        if j >= i:
+            break
+        if not isinstance(step, dict):
+            continue
+        if _service(step) != "input_text.set_value":
+            continue
+        if ID_VERDICT not in _cibles(step):
+            continue
+        data = step.get("data")
+        if isinstance(data, dict) and isinstance(data.get("value"), str):
+            courant = data["value"].strip()
+    return courant
+
+
+def check_chemins_silencieux(top) -> list[str]:
+    """ASP-CI-26 — aucun appel vers l'appareil sous un verdict qui ne survit pas.
+
+    Deux façons de se conformer, et deux seulement :
+      a) porter `continue_on_error: true` — l'exception est journalisée puis
+         absorbée, et la CONFIRMATION qui suit tranche (écritures
+         préparatoires) ;
+      b) être précédé d'un verdict survivant — l'arrêt laisse une trace
+         honnête (émission).
+    """
+    errs = [f"ASP-CI-26 : {a}" for a in _anomalies_de_forme(top)]
+    for i, step in enumerate(top):
+        if not isinstance(step, dict):
+            continue
+        svc = _service(step)
+        if _domaine(svc) not in DOMAINES_APPAREIL:
+            continue
+        if step.get("continue_on_error"):
+            continue
+        courant = _verdict_courant(top, i)
+        if courant in VERDICTS_SURVIVANTS:
+            continue
+        cible = (_cibles(step) or ["<sans cible>"])[0]
+        errs.append(
+            f"ASP-CI-26 : sequence/{i} — `{svc}` vers `{cible}` peut lever une "
+            f"exception non absorbée alors que le verdict courant vaut "
+            f"{courant!r}, qui ne survit pas à un arrêt. Aucun refus ne serait "
+            f"posé : le moteur se tairait (ASP-INV-49, ASP-INV-50). Attendu : "
+            f"`continue_on_error: true` suivi d'une confirmation qui refuse, "
+            f"ou un verdict survivant posé avant l'appel.")
+    return errs
 
 
 def check_ecrivain_unique(moteur_yaml, textes_runtime, yaml_depot) -> list[str]:
@@ -2084,37 +2907,84 @@ def check_mode_jamais_ecrit(etapes) -> list[str]:
     return errs
 
 
-def check_ordre_sequence(etapes) -> list[str]:
-    """ASP-CI-16 / ASP-CI-17 — eau -> aspiration -> revérification -> commande."""
+def check_ordre_sequence(corps_sequence) -> list[str]:
+    """ASP-CI-16 / ASP-CI-17 — carte -> eau -> aspiration -> revérif -> commande.
+
+    **Deux besoins, deux mécanismes — et la docstring dit lequel fait quoi.**
+
+    *Unicité* : comptée sur la visite RÉCURSIVE EXHAUSTIVE (`_actions`), donc
+    une écriture cachée dans un `repeat`, un `if` ou une branche `parallel`
+    est vue et refusée.
+
+    *Ordre* : établi **exclusivement sur la séquence de PREMIER NIVEAU**, où
+    les pas s'exécutent réellement l'un après l'autre. Aucune branche n'est
+    concaténée à une autre : deux branches d'un même `choose` sont
+    **mutuellement exclusives**, et leur ordre textuel n'a aucune signification
+    d'exécution. Une version antérieure comparait des index d'aplatissement —
+    elle fabriquait un ordre là où il n'en existe pas.
+
+    Corollaire opposable : les quatre actions ordonnées doivent se trouver au
+    premier niveau. Une seule d'entre elles logée dans une branche rend
+    l'ordre indécidable, et le contrôle le dit au lieu de l'inventer.
+    """
     errs = []
-    i_eau = [i for i, s in enumerate(etapes)
-             if _service(s) == SVC_EAU and NATIF_EAU in _cibles(s)]
-    i_carte = [i for i, s in enumerate(etapes)
-               if _service(s) == SVC_EAU and NATIF_CARTE in _cibles(s)]
-    i_asp = _index_service(etapes, SVC_ASPIRATION)
-    i_cmd = _index_service(etapes, SVC_COMMANDE)
-    if len(i_eau) != 1 or len(i_asp) != 1 or len(i_cmd) != 1 or len(i_carte) != 1:
-        errs.append(f"ASP-CI-16 : la séquence exige exactement une écriture de "
-                    f"carte ({len(i_carte)}), d'eau ({len(i_eau)}), "
-                    f"d'aspiration ({len(i_asp)}) et une commande "
-                    f"({len(i_cmd)}) — 07 §3.")
+    top = corps_sequence or []
+
+    def _partout(pred):
+        return [ch for ch, s in _actions(top) if pred(s)]
+
+    def _au_premier_niveau(pred):
+        return [i for i, s in enumerate(top) if pred(s)]
+
+    roles = (
+        ("carte", lambda s: _service(s) == SVC_EAU and NATIF_CARTE in _cibles(s)),
+        ("eau", lambda s: _service(s) == SVC_EAU and NATIF_EAU in _cibles(s)),
+        ("aspiration", lambda s: _service(s) == SVC_ASPIRATION),
+        ("commande", lambda s: _service(s) == SVC_COMMANDE),
+    )
+
+    # (1) UNICITÉ — sur la visite exhaustive.
+    comptes = {nom: _partout(pred) for nom, pred in roles}
+    if any(len(v) != 1 for v in comptes.values()):
+        errs.append(
+            "ASP-CI-16 : la séquence exige exactement une écriture de "
+            + ", ".join(f"{nom} ({len(ch)})" for nom, ch in comptes.items())
+            + " — 07 §3. Occurrences : "
+            + " · ".join(f"{nom}={ch}" for nom, ch in comptes.items() if ch))
         return errs
-    if not i_carte[0] < i_eau[0] < i_asp[0] < i_cmd[0]:
-        errs.append("ASP-CI-16 : ordre non conforme — carte, puis EAU, puis "
-                    "ASPIRATION, puis commande. L'inverser écraserait le "
-                    "profil d'aspiration (ASP-INV-34).")
-    # Revérification tardive et INTÉGRALE entre le dernier réglage et l'émission.
-    relectures = [i for i, s in enumerate(etapes)
-                  if isinstance(s, dict) and "variables" in s
+
+    # (2) ORDRE — sur le PREMIER NIVEAU seul.
+    rangs = {nom: _au_premier_niveau(pred) for nom, pred in roles}
+    hors = [nom for nom, r in rangs.items() if len(r) != 1]
+    if hors:
+        errs.append(
+            f"ASP-CI-16 : {', '.join(hors)} — action(s) absente(s) du chemin "
+            f"nominal. L'ordre ne se prouve QUE sur la séquence de premier "
+            f"niveau : une action logée dans une branche est mutuellement "
+            f"exclusive des autres, et son rang n'a aucun sens d'exécution "
+            f"(07 §3).")
+        return errs
+    ordre = [rangs[nom][0] for nom, _p in roles]
+    if ordre != sorted(ordre):
+        errs.append(
+            "ASP-CI-16 : ordre non conforme — carte, puis EAU, puis "
+            "ASPIRATION, puis commande. L'inverser écraserait le profil "
+            "d'aspiration (ASP-INV-34). Rangs observés : "
+            + ", ".join(f"{nom}={rangs[nom][0]}" for nom, _p in roles) + ".")
+    i_asp, i_cmd = rangs["aspiration"][0], rangs["commande"][0]
+
+    # (3) Revérification tardive, elle aussi sur le chemin nominal.
+    relectures = [i for i, s in enumerate(top)
+                  if isinstance(s, dict) and isinstance(s.get("variables"), dict)
                   and any(k.startswith("g2_") for k in s["variables"])]
     if not relectures:
         errs.append("ASP-CI-16 : aucune relecture des gardes entre le dernier "
                     "réglage et l'émission (ASP-INV-36).")
-    elif not (i_asp[0] < relectures[0] < i_cmd[0]):
+    elif not (i_asp < relectures[0] < i_cmd):
         errs.append("ASP-CI-16 : la relecture des gardes doit se situer APRÈS "
                     "les réglages et AVANT l'émission (ASP-INV-36).")
     else:
-        lues = set(etapes[relectures[0]]["variables"].values())
+        lues = set(top[relectures[0]]["variables"].values())
         for temoin in TEMOINS_GARDE:
             if not any(temoin in v for v in lues if isinstance(v, str)):
                 errs.append(f"ASP-CI-16 : la revérification tardive omet "
@@ -2172,9 +3042,140 @@ def check_decompte_vocabulaire(textes_runtime, t09) -> list[str]:
     return errs
 
 
-def check_vocabulaire_verdict(etapes, textes_runtime) -> list[str]:
-    """ASP-CI-18 — vocabulaire fermé, et ordonnancement des trois issues."""
+# Les cinq valeurs STRUCTURANTES du verdict, et la place que chacune doit
+# occuper. `nature` : `nominal` = premier niveau ; `branche_positive` = dans
+# une option de `choose` ; `branche_negative` = dans son `default`.
+# `vs_emission` : position exigée par rapport à l'unique `vacuum.send_command`.
+VERDICTS_STRUCTURANTS = (
+    ("VALIDATION_EN_COURS", "nominal", "avant"),
+    ("COMMANDE/ISSUE_NON_ETABLIE", "nominal", "avant"),
+    ("EMISSION/COMMANDE_ACCEPTEE", "nominal", "apres"),
+    ("LANCEE/DEMARRAGE_OBSERVE", "branche_positive", "apres"),
+    ("ECHEC/TRANSITION_NON_OBSERVEE", "branche_negative", "apres"),
+)
+
+
+def _ancre(chemin: str) -> int:
+    """Index de PREMIER NIVEAU dont dépend un chemin.
+
+    `sequence/12/choose/0/sequence/3` est ancré en 12 : la branche s'exécute
+    au douzième pas du chemin nominal. C'est cette ancre, et elle seule, qui
+    permet de comparer une écriture logée dans une branche à une action du
+    chemin nominal — sans jamais comparer deux branches EXCLUSIVES entre
+    elles, ce qui n'aurait aucun sens.
+    """
+    return int(chemin.split("/")[1])
+
+
+def _occurrences_verdict(top):
+    """Toutes les écritures du verdict, avec chemin, nature et ancre.
+
+    À la différence d'un dictionnaire `{valeur: index}` — qui écrase les
+    occurrences antérieures et ne retient que la dernière —, cette analyse
+    conserve CHAQUE occurrence. Une valeur posée deux fois, dont une
+    correctement placée, ne peut donc plus se cacher derrière la bonne.
+    """
+    out = []
+    for chemin, step in _actions(top):
+        if _service(step) != "input_text.set_value":
+            continue
+        if ID_VERDICT not in _cibles(step):
+            continue
+        data = step.get("data")
+        if not (isinstance(data, dict) and isinstance(data.get("value"), str)):
+            continue
+        segments = chemin.split("/")
+        if len(segments) == 2:
+            nature = "nominal"
+        elif "/default/" in chemin:
+            nature = "branche_negative"
+        elif "/choose/" in chemin:
+            nature = "branche_positive"
+        else:
+            nature = "imbrique"
+        out.append({"valeur": data["value"].strip(), "chemin": chemin,
+                    "nature": nature, "ancre": _ancre(chemin)})
+    return out
+
+
+def _verdicts_structurants(top) -> list[str]:
+    """ASP-CI-18 — multiplicité ET position des cinq verdicts structurants.
+
+    Chaque valeur doit apparaître **exactement une fois**, à la **nature**
+    d'emplacement prescrite, et du **bon côté** de l'unique émission. La
+    comparaison se fait sur l'ANCRE de premier niveau : jamais entre deux
+    branches exclusives.
+    """
     errs = []
+    occurrences = _occurrences_verdict(top)
+    emissions = [ch for ch, st in _actions(top) if _service(st) == SVC_COMMANDE]
+    if len(emissions) != 1:
+        return errs                     # ASP-CI-12 le dit déjà, et mieux.
+    ancre_cmd = _ancre(emissions[0])
+
+    for valeur, nature_attendue, cote in VERDICTS_STRUCTURANTS:
+        vues = [o for o in occurrences if o["valeur"] == valeur]
+        if len(vues) != 1:
+            errs.append(
+                f"ASP-CI-18 : `{valeur}` doit être écrit EXACTEMENT une fois — "
+                f"trouvé {len(vues)} occurrence(s)"
+                + (f" : {', '.join(o['chemin'] for o in vues)}" if vues else "")
+                + ". Une valeur structurante dupliquée rend son ordonnancement "
+                  "indécidable, et une valeur absente laisse une issue muette "
+                  "(ASP-INV-49).")
+            continue
+        o = vues[0]
+        if o["nature"] != nature_attendue:
+            errs.append(
+                f"ASP-CI-18 : {o['chemin']} — `{valeur}` est posé en "
+                f"« {o['nature']} », attendu « {nature_attendue} ». "
+                + {"nominal": "Cette valeur appartient au chemin nominal.",
+                   "branche_positive": "Cette valeur ne se pose que dans la "
+                                       "branche d'observation POSITIVE.",
+                   "branche_negative": "Cette valeur ne se pose que dans la "
+                                       "branche NÉGATIVE (`default`) de la "
+                                       "même observation."}[nature_attendue])
+        avant = o["ancre"] < ancre_cmd
+        if cote == "avant" and not avant:
+            errs.append(
+                f"ASP-CI-18 : {o['chemin']} — `{valeur}` doit être posé AVANT "
+                f"l'émission (ancre {o['ancre']} ≥ {ancre_cmd}). Après, "
+                f"l'issue d'un appel qui ne revient pas ne serait plus tracée "
+                f"(ASP-INV-49).")
+        if cote == "apres" and avant:
+            errs.append(
+                f"ASP-CI-18 : {o['chemin']} — `{valeur}` est posé AVANT "
+                f"l'émission (ancre {o['ancre']} < {ancre_cmd}) : il "
+                f"affirmerait une acceptation, ou un démarrage, que rien n'a "
+                f"encore établi (ASP-INV-37, ASP-INV-38).")
+
+    # Les deux issues de l'observation partagent le MÊME parent : ce sont les
+    # deux branches d'un seul `choose`. Les séparer les rendrait comparables à
+    # tort, et permuter leurs valeurs deviendrait indétectable.
+    positifs = [o for o in occurrences
+                if o["valeur"] == "LANCEE/DEMARRAGE_OBSERVE"]
+    negatifs = [o for o in occurrences
+                if o["valeur"] == "ECHEC/TRANSITION_NON_OBSERVEE"]
+    if len(positifs) == 1 and len(negatifs) == 1:
+        if positifs[0]["ancre"] != negatifs[0]["ancre"]:
+            errs.append(
+                f"ASP-CI-18 : les deux issues de l'observation de démarrage "
+                f"doivent être les DEUX BRANCHES D'UN MÊME `choose` — trouvées "
+                f"aux ancres {positifs[0]['ancre']} et {negatifs[0]['ancre']} "
+                f"({positifs[0]['chemin']} · {negatifs[0]['chemin']}).")
+    return errs
+
+
+def check_vocabulaire_verdict(corps_sequence, textes_runtime) -> list[str]:
+    """ASP-CI-18 — vocabulaire fermé, ordonnancement, et EMPLACEMENT des
+    écritures du verdict.
+
+    Reçoit la séquence de PREMIER NIVEAU : l'ordonnancement se raisonne sur le
+    chemin nominal, tandis que la détection descend, elle, dans toutes les
+    structures imbriquées via `_actions`.
+    """
+    errs = []
+    etapes = _aplatir(corps_sequence)
     ecrits = _ecritures_verdict(etapes)
     valeurs = {v for _, v in ecrits}
     if not valeurs:
@@ -2197,38 +3198,76 @@ def check_vocabulaire_verdict(etapes, textes_runtime) -> list[str]:
                         f"peut pas l'observer ({pourquoi}) — aucun verdict ne "
                         f"doit affirmer un rejet avant qu'un rejet soit "
                         f"observable (09 §5).")
-    # Ordonnancement : non concluant AVANT l'appel, acceptation APRÈS.
-    pos = {v: i for i, v in ecrits}
-    i_cmd = _index_service(etapes, SVC_COMMANDE)
-    if i_cmd and "COMMANDE/ISSUE_NON_ETABLIE" in pos \
-            and "EMISSION/COMMANDE_ACCEPTEE" in pos:
-        if not pos["COMMANDE/ISSUE_NON_ETABLIE"] < i_cmd[0]:
-            errs.append("ASP-CI-18 : `COMMANDE/ISSUE_NON_ETABLIE` doit être "
-                        "posé AVANT l'appel — après, l'issue d'un appel qui ne "
-                        "revient pas ne serait plus tracée (ASP-INV-49).")
-        if not pos["EMISSION/COMMANDE_ACCEPTEE"] > i_cmd[0]:
-            errs.append("ASP-CI-18 : `EMISSION/COMMANDE_ACCEPTEE` ne peut être "
-                        "posé qu'au RETOUR RÉUSSI du service (ASP-INV-37).")
-        if "ECHEC/TRANSITION_NON_OBSERVEE" in pos and \
-                not pos["ECHEC/TRANSITION_NON_OBSERVEE"] > pos["EMISSION/COMMANDE_ACCEPTEE"]:
-            errs.append("ASP-CI-18 : `ECHEC/TRANSITION_NON_OBSERVEE` suit "
-                        "l'acceptation, jamais l'inverse (ASP-INV-38).")
+    errs += _verdicts_structurants(corps_sequence)
     # La trace d'intention accompagne le verdict non concluant, pas l'inverse.
-    i_trace = [i for i, s in enumerate(etapes)
-               if _service(s) == "input_text.set_value" and ID_TRACE in _cibles(s)]
-    if len(i_trace) != 1:
+    # Comparaison par ANCRE de premier niveau, comme pour les verdicts.
+    traces = [ch for ch, s in _actions(corps_sequence)
+              if _service(s) == "input_text.set_value" and ID_TRACE in _cibles(s)]
+    emissions = [ch for ch, s in _actions(corps_sequence)
+                 if _service(s) == SVC_COMMANDE]
+    if len(traces) != 1:
         errs.append(f"ASP-CI-18 : `{ID_TRACE}` doit être écrit exactement une "
-                    f"fois par exécution — trouvé {len(i_trace)} (08 §5).")
-    elif i_cmd and not i_trace[0] < i_cmd[0]:
-        errs.append("ASP-CI-18 : la trace d'intention est posée AVANT l'appel, "
-                    "avec le verdict non concluant — sinon trace et verdict "
-                    "décriraient deux missions différentes (08 §5).")
-    # Aucun `continue_on_error` : l'exception doit rester accessible.
-    for step in etapes:
-        if isinstance(step, dict) and step.get("continue_on_error"):
-            errs.append("ASP-CI-18 : `continue_on_error` absorbe l'exception "
-                        "sans la rendre lisible — le moteur ne peut plus "
-                        "qualifier l'issue (07 §4).")
+                    f"fois par exécution — trouvé {len(traces)}"
+                    + (f" : {', '.join(traces)}" if traces else "") + " (08 §5).")
+    elif len(emissions) == 1 and not _ancre(traces[0]) < _ancre(emissions[0]):
+        errs.append(f"ASP-CI-18 : {traces[0]} — la trace d'intention est posée "
+                    f"AVANT l'appel, avec le verdict non concluant ; sinon "
+                    f"trace et verdict décriraient deux missions différentes "
+                    f"(08 §5).")
+    # `continue_on_error` n'est PAS interdit en bloc : il est réservé aux trois
+    # écritures préparatoires, et ASP-CI-27 en ferme l'allowlist. Ici, seule
+    # l'ÉMISSION est protégée — l'absorber ferait passer une issue non établie
+    # pour une acceptation, contre 07 §4 et ASP-INV-38.
+    #
+    # Correction d'une affirmation FAUSSE portée par la version précédente de
+    # ce contrôle : `continue_on_error` ne rend pas l'exception illisible.
+    # `_handle_exception` (helpers/script.py, 2026.8.3) appelle
+    # `_log_exception` AVANT de tester `continue_on_error`. Le motif de
+    # l'interdiction n'est pas la lisibilité — c'est l'absence de
+    # postcondition suffisante.
+    for chemin, step in _actions(corps_sequence):
+        if not (isinstance(step, dict) and step.get("continue_on_error")):
+            continue
+        if _service(step) == SVC_COMMANDE:
+            errs.append(
+                f"ASP-CI-18 : {chemin} — `continue_on_error` sur "
+                f"`{SVC_COMMANDE}` : l'émission n'a AUCUNE postcondition "
+                f"suffisante (acceptation ≠ démarrage, ASP-INV-38). Absorber "
+                f"son exception présenterait une issue non établie comme une "
+                f"acceptation (07 §4).")
+
+    # Le verdict est le LIVRABLE : il ne s'écrit que sur le chemin nominal ou
+    # dans une branche de refus de premier niveau. Une écriture logée dans un
+    # `repeat`, un `if` ou un `parallel` produirait un verdict hors séquence,
+    # invisible à l'analyse d'ordonnancement — et donc un verdict que rien ne
+    # garantit vrai (ASP-INV-49, ASP-INV-50).
+    # Les conteneurs sont normalisés par `_ensure_list` : `choose` accepte un
+    # choix unique en mapping, et chaque `sequence` un mapping nu.
+    _rebut: list[str] = []
+    legitimes = set()
+    for i, step in enumerate(_ensure_list(corps_sequence, "sequence", _rebut)):
+        legitimes.add(f"sequence/{i}")
+        if isinstance(step, dict) and "choose" in step:
+            for j, opt in enumerate(_ensure_list(step["choose"], "", _rebut)):
+                if not isinstance(opt, dict):
+                    continue
+                for k, _p in enumerate(_ensure_list(opt.get("sequence"), "",
+                                                    _rebut)):
+                    legitimes.add(f"sequence/{i}/choose/{j}/sequence/{k}")
+            for k, _p in enumerate(_ensure_list(step.get("default"), "",
+                                                _rebut)):
+                legitimes.add(f"sequence/{i}/default/{k}")
+    for chemin, step in _actions(corps_sequence):
+        if _service(step) != "input_text.set_value":
+            continue
+        if ID_VERDICT not in _cibles(step):
+            continue
+        if chemin not in legitimes:
+            errs.append(
+                f"ASP-CI-18 : {chemin} — écriture de `{ID_VERDICT}` hors du "
+                f"chemin nominal et hors branche de refus. Le verdict ne "
+                f"s'écrit qu'au premier niveau de la séquence ou dans une "
+                f"branche `choose` de premier niveau (ASP-INV-49).")
     return errs
 
 
@@ -2577,9 +3616,9 @@ def run() -> int:
         ("ASP-CI-14 voies interdites", check_voies_interdites(runtime)),
         ("ASP-CI-15 mode dérivé jamais écrit", check_mode_jamais_ecrit(etapes)),
         ("ASP-CI-16 ordre · ASP-CI-17 commande unique",
-         check_ordre_sequence(etapes)),
+         check_ordre_sequence(corps.get("sequence") or [])),
         ("ASP-CI-18 vocabulaire de verdict",
-         check_vocabulaire_verdict(etapes, runtime)
+         check_vocabulaire_verdict(corps.get("sequence") or [], runtime)
          + check_decompte_vocabulaire(runtime,
                                       textes.get(FICHIER_CATALOGUE, ""))),
         ("ASP-CI-19 motif lisible total",
@@ -2601,6 +3640,10 @@ def run() -> int:
             runtime[RUNTIME_GARDE])),
         ("ASP-CI-25 branches de refus tardives",
          check_branches_tardives(etapes)),
+        ("ASP-CI-26 chemins d'exception couverts",
+         check_chemins_silencieux(corps.get("sequence") or [])),
+        ("ASP-CI-27 écritures préparatoires (allowlist, fraîcheur, ordre)",
+         check_ecritures_preparatoires(corps.get("sequence") or [], corps)),
     )
 
     erreurs: list[str] = []
@@ -2620,7 +3663,7 @@ def run() -> int:
             print(f"- {e}")
         return 1
     print("\nOK - domaine Aspirateur : intégrité normative et conduite "
-          "runtime vérifiées (25 contrôles, 0 écart).")
+          "runtime vérifiées (27 contrôles, 0 écart).")
     return 0
 
 
@@ -3133,16 +4176,21 @@ def selftest() -> None:
             "HUIT", "CI-9 renvoi 12 non réaligné")
 
     # ---- ASP-CI-10 : fenêtres temporelles --------------------------------
-    def t07f(conf=30, trans=60, portee_conf="étapes 6, 8 et 10",
+    def t07f(conf=30, trans=60, portee_conf="étapes 7, 8 et 10",
              portee_trans="transition de démarrage — étape 13",
-             helper="ni helper", fallback="aucun fallback", seq=True):
+             helper="ni helper", fallback="aucun fallback", seq=True,
+             exemption=True):
         etapes = "".join(
             f"| **{e}** | Confirmer, sous **{conf} s** | refus |\n"
             for e in ETAPES_CONFIRMATION) if seq else ""
+        # La fixture porte la clause d'exemption comme le contrat réel : sans
+        # elle, ASP-CI-10 signale l'ancre manquante — et c'est précisément ce
+        # qu'une mutation ci-dessous vérifie.
+        note = f"> {CLAUSE_APPEL_07}, pas une borne.\n" if exemption else ""
         return (etapes + "### 3.1 Constantes\n"
                 f"> | **Fenêtre de confirmation** | **{conf} s** | {portee_conf} |\n"
                 f"> | **Fenêtre de transition** | **{trans} s** | {portee_trans} |\n"
-                f"> {helper} ; {fallback}\n\n## 4. Suite\n")
+                f"> {helper} ; {fallback}\n" + note + "\n## 4. Suite\n")
 
     def t09f(fenetre_sur=CODE_TRANSITION, note=True):
         lignes = {
@@ -3287,7 +4335,7 @@ def selftest() -> None:
     assert not DUREE.search("90\ns"), "DUREE franchit la ligne"
     assert DUREE.findall("90 s") == ["90"], "DUREE ne lit plus une durée"
     assert not ETAPES_CITEES.search("étape\n6"), "ETAPES_CITEES franchit la ligne"
-    assert etapes_citees("étapes 6, 8 et 10") == {"6", "8", "10"}
+    assert etapes_citees("étapes 7, 8 et 10") == {"7", "8", "10"}
     assert etapes_citees("étape 13 (§4, `ASP-INV-38`)") == {"13"}, \
         "un chiffre hors mention d'étape ne doit pas être lu comme une étape"
     c.conforme([], "R1 motifs bornés à la ligne (5 assertions)")
@@ -3414,31 +4462,33 @@ def selftest() -> None:
             "est la CIBLE", "CI-15 écriture du mode dérivé")
 
     # ---- ASP-CI-16 / ASP-CI-17 : ordre et revérification -----------------
-    c.conforme(check_ordre_sequence(etapes0), "CI-16/17 conforme")
+    c.conforme(check_ordre_sequence(mot0[ID_MOTEUR]["sequence"]),
+               "CI-16/17 conforme")
     inv = copy.deepcopy(mot0)
     seqi = inv[ID_MOTEUR]["sequence"]
     i_eau = next(i for i, s in enumerate(seqi)
                  if _service(s) == SVC_EAU and NATIF_EAU in _cibles(s))
     i_asp = next(i for i, s in enumerate(seqi) if _service(s) == SVC_ASPIRATION)
     seqi[i_eau], seqi[i_asp] = seqi[i_asp], seqi[i_eau]
-    c.viole(check_ordre_sequence(_aplatir(seqi)),
+    c.viole(check_ordre_sequence(seqi),
             "ordre non conforme", "CI-16 aspiration écrite avant l'eau")
     sans_g2 = copy.deepcopy(mot0)
     sans_g2[ID_MOTEUR]["sequence"] = [
         s for s in sans_g2[ID_MOTEUR]["sequence"]
         if not (isinstance(s, dict) and "variables" in s
                 and any(k.startswith("g2_") for k in s["variables"]))]
-    c.viole(check_ordre_sequence(_aplatir(sans_g2[ID_MOTEUR]["sequence"])),
+    c.viole(check_ordre_sequence(sans_g2[ID_MOTEUR]["sequence"]),
             "aucune relecture des gardes", "CI-16 revérification supprimée")
     partiel = copy.deepcopy(mot0)
     for s in partiel[ID_MOTEUR]["sequence"]:
         if isinstance(s, dict) and "variables" in s and "g2_session" in s["variables"]:
             s["variables"].pop("g2_session")
-    c.viole(check_ordre_sequence(_aplatir(partiel[ID_MOTEUR]["sequence"])),
+    c.viole(check_ordre_sequence(partiel[ID_MOTEUR]["sequence"]),
             "revérification tardive omet", "CI-16 revérification partielle")
 
     # ---- ASP-CI-18 : vocabulaire de verdict ------------------------------
-    c.conforme(check_vocabulaire_verdict(etapes0, rt0), "CI-18 conforme")
+    c.conforme(check_vocabulaire_verdict(mot0[ID_MOTEUR]["sequence"], rt0),
+               "CI-18 conforme")
     c.viole(check_vocabulaire_verdict(
         _aplatir(yaml.safe_load(mot_txt(
             'value: "REFUS/SESSION_INACHEVEE"',
@@ -3465,14 +4515,19 @@ def selftest() -> None:
                 == "COMMANDE/ISSUE_NON_ETABLIE")
     i_cmd = next(i for i, s in enumerate(sq) if _service(s) == SVC_COMMANDE)
     sq.insert(i_cmd + 1, sq.pop(i_nc))
-    c.viole(check_vocabulaire_verdict(_aplatir(sq), rt0),
-            "AVANT l'appel", "CI-18 verdict non concluant posé trop tard")
+    c.viole(check_vocabulaire_verdict(sq, rt0),
+            "AVANT l'émission", "CI-18 verdict non concluant posé trop tard")
     coe = copy.deepcopy(mot0)
     for s in coe[ID_MOTEUR]["sequence"]:
         if _service(s) == SVC_COMMANDE:
             s["continue_on_error"] = True
-    c.viole(check_vocabulaire_verdict(_aplatir(coe[ID_MOTEUR]["sequence"]), rt0),
-            "absorbe l'exception", "CI-18 continue_on_error réintroduit")
+    # Mutation conservée à l'identique — seul le MOTIF change : l'interdiction
+    # ne repose plus sur une lisibilité prétendument perdue (fausse :
+    # `_log_exception` est appelé AVANT le test de `continue_on_error`), mais
+    # sur l'absence de postcondition suffisante à l'émission.
+    c.viole(check_vocabulaire_verdict(coe[ID_MOTEUR]["sequence"], rt0),
+            "AUCUNE postcondition suffisante",
+            "CI-18 continue_on_error sur l'émission")
 
     # ---- ASP-CI-19 : motif lisible total ---------------------------------
     c.conforme(check_motif_total(t09r, t02r, rt0[RUNTIME_MOTIF]),
@@ -3748,7 +4803,680 @@ def selftest() -> None:
             "n'arrête pas la séquence",
             "CI-25/N4 branche `error` tardive sans `stop:`")
 
-    print(f"selftest OK — 25 contrôles, {c.total()} cas "
+    # ---- ASP-CI-26 : chemins d'exception couverts ------------------------
+    seq0 = mot0[ID_MOTEUR]["sequence"]
+    c.conforme(check_chemins_silencieux(seq0), "CI-26 conforme")
+
+    # La reproduction du DÉFAUT D'ORIGINE : sans `continue_on_error`, chacune
+    # des trois écritures préparatoires laisse le verdict sur
+    # `VALIDATION_EN_COURS`. C'est l'état observé en production le 2026-08-27.
+    for svc, cible, _t, _r in ECRITURES_PREPARATOIRES:
+        m = copy.deepcopy(mot0)
+        for st in m[ID_MOTEUR]["sequence"]:
+            if isinstance(st, dict) and _service(st) == svc and cible in _cibles(st):
+                st.pop("continue_on_error", None)
+        c.viole(check_chemins_silencieux(m[ID_MOTEUR]["sequence"]),
+                "ne survit pas à un arrêt",
+                f"CI-26 chemin silencieux réintroduit sur {cible}")
+
+    # L'émission reste conforme SANS `continue_on_error` : son verdict, lui,
+    # survit. C'est ce qui distingue les deux traitements sans cas particulier.
+    m_em = copy.deepcopy(mot0)
+    for st in m_em[ID_MOTEUR]["sequence"]:
+        if isinstance(st, dict) and _service(st) == SVC_COMMANDE:
+            st.pop("continue_on_error", None)
+    c.conforme(check_chemins_silencieux(m_em[ID_MOTEUR]["sequence"]),
+               "CI-26 émission conforme sans absorption")
+
+    # Le verdict non survivant posé juste avant l'émission la rend fautive.
+    m_vnc = copy.deepcopy(mot0)
+    for st in m_vnc[ID_MOTEUR]["sequence"]:
+        if (isinstance(st, dict) and _service(st) == "input_text.set_value"
+                and ID_VERDICT in _cibles(st)
+                and st["data"].get("value") == "COMMANDE/ISSUE_NON_ETABLIE"):
+            st["data"]["value"] = "VALIDATION_EN_COURS"
+    c.viole(check_chemins_silencieux(m_vnc[ID_MOTEUR]["sequence"]),
+            "ne survit pas à un arrêt",
+            "CI-26 émission sous un verdict qui n'affirme pas l'ignorance")
+
+    # Un refus posé DANS une branche ne protège pas la suite : il est suivi
+    # d'un `stop:`. Le lire comme verdict courant était le faux vert d'une
+    # première version de ce contrôle.
+    m_br = copy.deepcopy(mot0)
+    for st in m_br[ID_MOTEUR]["sequence"]:
+        if isinstance(st, dict) and _service(st) == SVC_EAU and NATIF_CARTE in _cibles(st):
+            st.pop("continue_on_error", None)
+    assert any("VALIDATION_EN_COURS" in e
+               for e in check_chemins_silencieux(m_br[ID_MOTEUR]["sequence"])), \
+        "CI-26 : le verdict courant doit se lire sur le CHEMIN NOMINAL"
+    c.violations += 1
+
+    # ---- ASP-CI-27 : écritures préparatoires -----------------------------
+    c.conforme(check_ecritures_preparatoires(seq0), "CI-27 conforme")
+
+    def mut27(f):
+        m = copy.deepcopy(mot0)
+        f(m[ID_MOTEUR]["sequence"])
+        return check_ecritures_preparatoires(m[ID_MOTEUR]["sequence"])
+
+    def _i(seq, pred):
+        return next(i for i, s in enumerate(seq) if isinstance(s, dict) and pred(s))
+
+    def _i_wait(seq, instant):
+        return _i(seq, lambda s: isinstance(s.get("wait_template"), str)
+                  and instant in s["wait_template"])
+
+    def _i_svc(seq, svc, cible):
+        return _i(seq, lambda s: _service(s) == svc and cible in _cibles(s))
+
+    # (1) confirmation carte replacée AVANT l'écriture d'eau : le
+    #     rafraîchissement qui la rend probante n'a alors pas encore eu lieu.
+    def _avant_eau(seq):
+        i_w = _i_wait(seq, "t_carte")
+        w, ch = seq.pop(i_w), seq.pop(i_w)
+        j = _i_svc(seq, SVC_EAU, NATIF_EAU)
+        seq[j - 1:j - 1] = [w, ch]
+    c.viole(mut27(_avant_eau), "ordre non conforme",
+            "CI-27/M1 confirmation carte avant l'eau")
+
+    # (2) aspiration déplacée AVANT la confirmation de carte.
+    def _asp_avant(seq):
+        i_a = _i_svc(seq, SVC_ASPIRATION, NATIF_VACUUM)
+        a = seq.pop(i_a)
+        seq.insert(_i_wait(seq, "t_carte"), a)
+    c.viole(mut27(_asp_avant), "ordre non conforme",
+            "CI-27/M2 aspiration avant la confirmation de carte")
+
+    # (3) commande déplacée AVANT la confirmation de carte : ASP-IMC-1.
+    def _cmd_avant(seq):
+        i_c = _i_svc(seq, SVC_COMMANDE, NATIF_VACUUM)
+        cmd = seq.pop(i_c)
+        seq.insert(_i_wait(seq, "t_carte"), cmd)
+    c.viole(mut27(_cmd_avant), "violation directe d'ASP-IMC-1",
+            "CI-27/M3 commande avant la confirmation cartographique")
+
+    # (4) le rafraîchissement indirect disparaît : l'écriture d'eau est
+    #     remplacée par une primitive qui ne passe pas par `send()`.
+    def _sans_refresh(seq):
+        i_e = _i_svc(seq, SVC_EAU, NATIF_EAU)
+        seq[i_e] = {"action": "input_text.set_value", "continue_on_error": True,
+                    "target": {"entity_id": ID_TRACE},
+                    "data": {"value": "x"}}
+    c.viole(mut27(_sans_refresh), "hors des trois écritures préparatoires",
+            "CI-27/M4 écriture d'eau remplacée, plus aucun refresh")
+
+    # (10) `last_updated` au lieu de `last_reported` : preuve inopérante.
+    def _last_updated(seq):
+        i = _i_wait(seq, "t_carte")
+        seq[i]["wait_template"] = seq[i]["wait_template"].replace(
+            "last_reported", "last_updated")
+    c.viole(mut27(_last_updated), "n'exige pas la publication fraîche",
+            "CI-27/M10 last_updated au lieu de last_reported")
+
+    # (12 bis) comparaison `>=` : une publication contemporaine ne prouve rien.
+    def _large(seq):
+        i = _i_wait(seq, "t_aspiration")
+        seq[i]["wait_template"] = seq[i]["wait_template"].replace(
+            "> t_aspiration", ">= t_aspiration")
+    c.viole(mut27(_large), "n'exige pas la publication fraîche",
+            "CI-27/M-large comparaison non stricte")
+
+    # (11) instant GLOBAL réutilisé pour les trois écritures.
+    def _global(seq):
+        for st in seq:
+            if isinstance(st, dict) and isinstance(st.get("variables"), dict):
+                for nom in ("t_eau", "t_aspiration"):
+                    if nom in st["variables"]:
+                        del st["variables"][nom]
+                        st["variables"]["t_carte"] = "{{ now().timestamp() }}"
+    c.viole(mut27(_global), "instant de référence",
+            "CI-27/M11 instant global au lieu de trois instants propres")
+
+    # (12) décision fondée sur `wait.completed` — or le wait n'est pas
+    #      réveillé par une republication identique.
+    def _wait_completed(seq):
+        i = _i_wait(seq, "t_eau") + 1
+        seq[i]["choose"][0]["conditions"][0]["value_template"] = \
+            "{{ not wait.completed }}"
+    c.viole(mut27(_wait_completed), "wait.completed",
+            "CI-27/M12 décision fondée sur wait.completed")
+
+    # L'instant capturé APRÈS son écriture ne borne plus rien.
+    def _apres(seq):
+        i_v = _i(seq, lambda s: isinstance(s.get("variables"), dict)
+                 and "t_carte" in s["variables"])
+        v = seq.pop(i_v)
+        seq.insert(_i_svc(seq, SVC_EAU, NATIF_CARTE) + 1, v)
+    c.viole(mut27(_apres), "capturé APRÈS son écriture",
+            "CI-27/M-ordre instant capturé après l'appel")
+
+    # `continue_on_timeout` retiré : le timeout deviendrait un arrêt sec, et la
+    # relecture finale — seule preuve sur une republication identique — ne
+    # serait jamais atteinte.
+    def _sans_cot(seq):
+        seq[_i_wait(seq, "t_carte")].pop("continue_on_timeout", None)
+    c.viole(mut27(_sans_cot), "continue_on_timeout",
+            "CI-27/M-cot confirmation sans continue_on_timeout")
+
+    # Le refus attendu remplacé par l'autre code : carte et réglage ne se
+    # substituent jamais l'un à l'autre.
+    def _mauvais_refus(seq):
+        i = _i_wait(seq, "t_carte") + 1
+        for pas in seq[i]["choose"][0]["sequence"]:
+            if _service(pas) == "input_text.set_value":
+                pas["data"]["value"] = "REFUS/REGLAGE_NON_CONFIRME"
+    c.viole(mut27(_mauvais_refus), "ne pose pas `REFUS/CARTE_NON_CONFIRMEE`",
+            "CI-27/M-refus code permuté entre carte et réglage")
+
+    # Le `stop:` retiré : la séquence poursuivrait après un refus.
+    def _sans_stop(seq):
+        i = _i_wait(seq, "t_eau") + 1
+        seq[i]["choose"][0]["sequence"] = [
+            p for p in seq[i]["choose"][0]["sequence"]
+            if not (isinstance(p, dict) and "stop" in p)]
+    c.viole(mut27(_sans_stop), "avec un `stop:`",
+            "CI-27/M-stop refus de confirmation sans stop")
+
+    # `continue_on_error` hors allowlist — l'émission, et une écriture de
+    # helper. Les deux doivent tomber.
+    for cible_svc, cible_ent in ((SVC_COMMANDE, NATIF_VACUUM),
+                                 ("input_text.set_value", ID_VERDICT)):
+        def _hors(seq, s=cible_svc, e=cible_ent):
+            for st in seq:
+                if isinstance(st, dict) and _service(st) == s and e in _cibles(st):
+                    st["continue_on_error"] = True
+        c.viole(mut27(_hors), "hors des trois écritures préparatoires",
+                f"CI-27/M-allowlist continue_on_error sur {cible_svc}")
+
+    # (5-9) LES CAS DE RENDU. La postcondition est jouée sur des états
+    # simulés : c'est ici que « valeur juste mais périmée », « fraîche mais
+    # fausse » et « une seule des deux lectures fraîche » sont opposables.
+    for instant in INSTANTS_PREPARATOIRES:
+        gabarit = next(s["wait_template"] for s in seq0
+                       if isinstance(s, dict)
+                       and isinstance(s.get("wait_template"), str)
+                       and instant in s["wait_template"])
+        c.conforme(_postcondition_rendue(instant, gabarit),
+                   f"CI-27 postcondition rendue — {instant}")
+        # La fraîcheur retirée — chirurgicalement : seules les conjonctions de
+        # fraîcheur tombent, le gabarit reste SYNTAXIQUEMENT valide. Sans quoi
+        # la mutation serait détectée pour une mauvaise raison (gabarit cassé)
+        # et ne prouverait rien du contrôle de fraîcheur lui-même.
+        sans = re.sub(r"\s*and as_timestamp\(states\.[^,]+,\s*0\)\s*>\s*t_\w+",
+                      "", gabarit)
+        assert sans != gabarit and "as_timestamp" not in sans, \
+            f"mutation de fraîcheur inopérante sur {instant}"
+        c.viole(_postcondition_rendue(instant, sans), "doit REFUSER",
+                f"CI-27 fraîcheur retirée — {instant}")
+
+    # ---- R1 : la visite doit être EXHAUSTIVE ------------------------------
+    # Seize mutations passaient au vert tant que le parcours ne descendait que
+    # dans `choose`. Chaque charge fautive est ici logée dans CHACUNE des
+    # structures composites du schéma, et doit être vue.
+    def _repeat(a):
+        return {"repeat": {"count": 1, "sequence": [a]}}
+
+    def _if_then(a):
+        return {"if": [{"condition": "template", "value_template": "{{ true }}"}],
+                "then": [a]}
+
+    def _if_else(a):
+        return {"if": [{"condition": "template", "value_template": "{{ false }}"}],
+                "then": [{"stop": "rien"}], "else": [a]}
+
+    def _parallel(a):
+        return {"parallel": [{"sequence": [a]}]}
+
+    def _choose_dans_repeat(a):
+        return {"repeat": {"count": 1, "sequence": [
+            {"choose": [{"conditions": [{"condition": "template",
+                                         "value_template": "{{ true }}"}],
+                         "sequence": [a]}]}]}}
+
+    ENVELOPPES = (("repeat.sequence", _repeat), ("if.then", _if_then),
+                  ("if.else", _if_else), ("parallel[].sequence", _parallel),
+                  ("choose dans repeat", _choose_dans_repeat))
+
+    def _cmd_en_trop():
+        return {"action": SVC_COMMANDE, "continue_on_error": True,
+                "target": {"entity_id": NATIF_VACUUM},
+                "data": {"command": COMMANDE_SEGMENTEE,
+                         "params": [{"segments": [16]}]}}
+
+    def _writer_en_trop():
+        return {"action": "input_text.set_value",
+                "target": {"entity_id": ID_VERDICT},
+                "data": {"value": "LANCEE/DEMARRAGE_OBSERVE"}}
+
+    for nom_env, env in ENVELOPPES:
+        # (a) seconde émission cachée -> unicité de la commande (ASP-CI-12/17)
+        m = copy.deepcopy(mot0)
+        m[ID_MOTEUR]["sequence"].append(env(_cmd_en_trop()))
+        c.viole(check_charge_utile(_aplatir(m[ID_MOTEUR]["sequence"])),
+                "EXACTEMENT un", f"CI-12/R1 seconde émission dans {nom_env}")
+        # (b) la même porte `continue_on_error` -> allowlist (ASP-CI-27)
+        c.viole(check_ecritures_preparatoires(m[ID_MOTEUR]["sequence"]),
+                "hors des trois écritures préparatoires",
+                f"CI-27/R1 continue_on_error dans {nom_env}")
+        # (c) écrivain du verdict hors chemin nominal (ASP-CI-18)
+        m2 = copy.deepcopy(mot0)
+        m2[ID_MOTEUR]["sequence"].append(env(_writer_en_trop()))
+        c.viole(check_vocabulaire_verdict(m2[ID_MOTEUR]["sequence"], rt0),
+                "hors du chemin nominal",
+                f"CI-18/R1 écrivain du verdict dans {nom_env}")
+
+    # La visite elle-même : chaque structure doit être atteinte, avec chemin.
+    for nom_env, env in ENVELOPPES:
+        sonde = {"action": "vacuum.stop", "target": {"entity_id": NATIF_VACUUM}}
+        chemins = [ch for ch, st in _actions([env(sonde)])
+                   if _service(st) == "vacuum.stop"]
+        assert len(chemins) == 1, \
+            f"_actions n'atteint pas {nom_env} — trouvé {chemins}"
+        c.conformes += 1
+
+    # ---- R2 : forme ET typage de l'instant --------------------------------
+    # `now().timestamp()` en sous-chaîne ne suffit pas : six variantes
+    # passaient. La forme est désormais canonique, et le gabarit est RENDU.
+    FORMES_FAUTIVES = (
+        ("{{ now().timestamp() - 3600 }}", "antidate"),
+        ("{{ now().timestamp() + 1 }}", "postdate"),
+        ("{{ now().timestamp() | string }}", "retypage en chaîne"),
+        ("{{ now().timestamp() | int }}", "troncature"),
+        ("{{ now().timestamp() | default(0) }}", "repli"),
+        ("{{ now().timestamp() > 0 }}", "booléen"),
+        ("{{ 0 }}", "littéral"),
+        ("{{ 1e309 * 10 }}", "non fini"),
+        ("{{ t_carte }}", "référence à un autre instant"),
+    )
+    for gabarit, quoi in FORMES_FAUTIVES:
+        def _forme(seq, g=gabarit):
+            for st in seq:
+                if isinstance(st, dict) and isinstance(st.get("variables"), dict) \
+                        and "t_carte" in st["variables"]:
+                    st["variables"]["t_carte"] = g
+        c.viole(mut27(_forme), "doit être EXACTEMENT",
+                f"CI-27/R2 instant — {quoi}")
+
+    # Le typage est contrôlé SÉPARÉMENT de la forme : une forme canonique dont
+    # le rendu ne serait pas numérique doit tomber elle aussi.
+    for valeur, attendu in ((("texte"), "str"), ((True), "bool")):
+        errs_typage = _postcondition_rendue(
+            "t_aspiration",
+            next(s["wait_template"] for s in seq0
+                 if isinstance(s, dict) and isinstance(s.get("wait_template"), str)
+                 and "t_aspiration" in s["wait_template"]),
+            valeur)
+        assert errs_typage, \
+            f"une valeur d'instant {attendu} doit produire un écart"
+        c.violations += 1
+
+    # ---- M-A : MAPPINGS NUS dans les structures composites ----------------
+    # `SCRIPT_SCHEMA` applique `ensure_list` : un mapping nu est une forme
+    # VALIDE partout où une séquence est attendue, et `choose` accepte un
+    # choix unique en mapping. Quarante-deux mutations passaient au vert — ou
+    # faisaient PLANTER le checker — tant que ces formes n'étaient pas
+    # normalisées.
+    def _env_seq_nue(a):
+        return {"sequence": a}
+
+    def _env_choose_mapping(a):
+        return {"choose": {"conditions": [{"condition": "template",
+                                           "value_template": "{{ true }}"}],
+                           "sequence": a}}
+
+    def _env_choose_seq_nue(a):
+        return {"choose": [{"conditions": [{"condition": "template",
+                                            "value_template": "{{ true }}"}],
+                            "sequence": a}]}
+
+    def _env_default_nu(a):
+        return {"choose": [{"conditions": [{"condition": "template",
+                                            "value_template": "{{ false }}"}],
+                            "sequence": [{"stop": "rien"}]}], "default": a}
+
+    def _env_repeat_nu(a):
+        return {"repeat": {"count": 1, "sequence": a}}
+
+    def _env_then_nu(a):
+        return {"if": [{"condition": "template", "value_template": "{{ true }}"}],
+                "then": a}
+
+    def _env_else_nu(a):
+        return {"if": [{"condition": "template", "value_template": "{{ false }}"}],
+                "then": [{"stop": "rien"}], "else": a}
+
+    def _env_parallel_nu(a):
+        return {"parallel": a}
+
+    NUS = (("sequence nue", _env_seq_nue),
+           ("choose en mapping", _env_choose_mapping),
+           ("choose[].sequence nue", _env_choose_seq_nue),
+           ("choose.default nu", _env_default_nu),
+           ("repeat.sequence nue", _env_repeat_nu),
+           ("if.then nu", _env_then_nu), ("if.else nu", _env_else_nu),
+           ("parallel nu", _env_parallel_nu))
+
+    def _verdict_hors():
+        return {"action": "input_text.set_value",
+                "target": {"entity_id": ID_VERDICT},
+                "data": {"value": "MISSION/PRESQUE_LANCEE"}}
+
+    def _writer_robot():
+        return {"action": SVC_EAU, "target": {"entity_id": NATIF_CARTE},
+                "data": {"option": "Annexe"}}
+
+    for nom_nu, env in NUS:
+        # (a) la visite ATTEINT la forme — sinon rien d'autre n'a de sens.
+        sonde = {"action": "vacuum.stop", "target": {"entity_id": NATIF_VACUUM}}
+        atteints = [ch for ch, st in _actions([env(sonde)])
+                    if _service(st) == "vacuum.stop"]
+        assert len(atteints) == 1, \
+            f"_actions n'atteint pas « {nom_nu} » — trouvé {atteints}"
+        c.conformes += 1
+        # (b) seconde émission cachée sous la forme nue
+        m = copy.deepcopy(mot0)
+        m[ID_MOTEUR]["sequence"].append(env(_cmd_en_trop()))
+        c.viole(check_charge_utile(_aplatir(m[ID_MOTEUR]["sequence"])),
+                "EXACTEMENT un", f"CI-12/M-A seconde émission sous {nom_nu}")
+        c.viole(check_ecritures_preparatoires(m[ID_MOTEUR]["sequence"]),
+                "hors des trois écritures préparatoires",
+                f"CI-27/M-A continue_on_error sous {nom_nu}")
+        # (c) verdict hors vocabulaire
+        m2 = copy.deepcopy(mot0)
+        m2[ID_MOTEUR]["sequence"].append(env(_verdict_hors()))
+        c.viole(check_vocabulaire_verdict(m2[ID_MOTEUR]["sequence"], rt0),
+                "NON fermé", f"CI-18/M-A verdict hors vocabulaire sous {nom_nu}")
+        # (d) writer Roborock supplémentaire
+        m3 = copy.deepcopy(mot0)
+        m3[ID_MOTEUR]["sequence"].append(env(_writer_robot()))
+        c.viole(check_ordre_sequence(m3[ID_MOTEUR]["sequence"]),
+                "exactement une écriture",
+                f"CI-16/M-A writer Roborock sous {nom_nu}")
+
+    # m-C — un `choose` en mapping nu est ANALYSÉ, jamais un traceback.
+    valide = copy.deepcopy(mot0)
+    valide[ID_MOTEUR]["sequence"].append(
+        _env_choose_mapping({"stop": "branche inerte"}))
+    c.conforme(check_ecritures_preparatoires(valide[ID_MOTEUR]["sequence"]),
+               "m-C choose en mapping nu : analysé sans écart")
+    c.conforme(check_chemins_silencieux(valide[ID_MOTEUR]["sequence"]),
+               "m-C choose en mapping nu : aucun chemin silencieux")
+
+    # Une forme INVALIDE produit un écart lisible, jamais une exception.
+    difforme = copy.deepcopy(mot0)
+    difforme[ID_MOTEUR]["sequence"].append({"repeat": {"count": 1,
+                                                       "sequence": 42}})
+    c.viole(check_chemins_silencieux(difforme[ID_MOTEUR]["sequence"]),
+            "conteneur d'actions de type int",
+            "M-A forme invalide diagnostiquée, non levée")
+
+    # ---- M-B : multiplicité ET position des verdicts structurants ----------
+    def _ecrire(v):
+        return {"action": "input_text.set_value",
+                "target": {"entity_id": ID_VERDICT}, "data": {"value": v}}
+
+    def _rang_cmd(seq):
+        return next(i for i, s in enumerate(seq) if _service(s) == SVC_COMMANDE)
+
+    for valeur, _nature, _cote in VERDICTS_STRUCTURANTS:
+        # duplication : l'occurrence correcte ne doit plus masquer la fautive
+        m = copy.deepcopy(mot0)
+        seq = m[ID_MOTEUR]["sequence"]
+        seq.insert(_rang_cmd(seq), _ecrire(valeur))
+        c.viole(check_vocabulaire_verdict(seq, rt0), "EXACTEMENT une fois",
+                f"CI-18/M-B duplication de {valeur}")
+        # suppression : une issue muette
+        m2 = copy.deepcopy(mot0)
+        seq2 = m2[ID_MOTEUR]["sequence"]
+        for ch, st in _actions(seq2):
+            if (_service(st) == "input_text.set_value"
+                    and ID_VERDICT in _cibles(st)
+                    and (st.get("data") or {}).get("value") == valeur):
+                # Remplacée par un refus NON structurant, déjà présent
+                # plusieurs fois : la valeur supprimée passe à 0 occurrence
+                # sans perturber les quatre autres.
+                st["data"]["value"] = "REFUS/ROBOT_INDISPONIBLE"
+                break
+        c.viole(check_vocabulaire_verdict(seq2, rt0), "EXACTEMENT une fois",
+                f"CI-18/M-B suppression de {valeur}")
+
+    # permutation succès / échec de la transition
+    m = copy.deepcopy(mot0)
+    for ch, st in _actions(m[ID_MOTEUR]["sequence"]):
+        if _service(st) == "input_text.set_value" and ID_VERDICT in _cibles(st):
+            v = (st.get("data") or {}).get("value")
+            if v == "LANCEE/DEMARRAGE_OBSERVE":
+                st["data"]["value"] = "ECHEC/TRANSITION_NON_OBSERVEE"
+            elif v == "ECHEC/TRANSITION_NON_OBSERVEE":
+                st["data"]["value"] = "LANCEE/DEMARRAGE_OBSERVE"
+    c.viole(check_vocabulaire_verdict(m[ID_MOTEUR]["sequence"], rt0),
+            "attendu « branche", "CI-18/M-B succès et échec permutés")
+
+    # une valeur structurante logée dans un composite imbriqué
+    m = copy.deepcopy(mot0)
+    seq = m[ID_MOTEUR]["sequence"]
+    for i, st in enumerate(seq):
+        if (_service(st) == "input_text.set_value" and ID_VERDICT in _cibles(st)
+                and (st.get("data") or {}).get("value")
+                == "EMISSION/COMMANDE_ACCEPTEE"):
+            seq[i] = _env_repeat_nu(_env_choose_mapping(
+                _ecrire("EMISSION/COMMANDE_ACCEPTEE")))
+            break
+    c.viole(check_vocabulaire_verdict(seq, rt0), "hors du chemin nominal",
+            "CI-18/M-B ACCEPTEE dans un composite imbriqué")
+
+    # ---- m-A : aucun ordre fabriqué entre branches exclusives -------------
+    # Deux branches d'un même `choose`, PERMUTÉES : leur ordre textuel ne doit
+    # rien changer, puisqu'elles sont mutuellement exclusives.
+    def _permuter_branches(seq):
+        for st in seq:
+            if isinstance(st, dict) and isinstance(st.get("choose"), list) \
+                    and len(st["choose"]) > 1:
+                st["choose"].reverse()
+    permute = copy.deepcopy(mot0)
+    _permuter_branches(permute[ID_MOTEUR]["sequence"])
+    c.conforme(check_ordre_sequence(permute[ID_MOTEUR]["sequence"]),
+               "m-A ordre insensible à la permutation de branches exclusives")
+    avant = check_vocabulaire_verdict(mot0[ID_MOTEUR]["sequence"], rt0)
+    apres = check_vocabulaire_verdict(permute[ID_MOTEUR]["sequence"], rt0)
+    assert avant == apres, \
+        f"m-A : la permutation de branches exclusives change la conclusion — {apres}"
+    c.conformes += 1
+
+    # Une action ordonnée déplacée DANS une branche : l'ordre devient
+    # indécidable, et le contrôle le DIT au lieu de l'inventer.
+    m = copy.deepcopy(mot0)
+    seq = m[ID_MOTEUR]["sequence"]
+    i_asp = next(i for i, s in enumerate(seq) if _service(s) == SVC_ASPIRATION)
+    seq[i_asp] = _env_then_nu(seq[i_asp])
+    c.viole(check_ordre_sequence(seq), "absente(s) du chemin nominal",
+            "m-A aspiration hors chemin nominal : ordre indécidable")
+
+    # ---- m-B : deux contextes réellement distincts ------------------------
+    ctxs = contextes_postcondition(corps0)
+    assert len(ctxs) >= 2, f"m-B : moins de deux contextes — {ctxs}"
+    a, b = ctxs[0], ctxs[1]
+    for cle in ("eau_cible", "mode_attendu", "aspiration_cible"):
+        assert a[cle] != b[cle], f"m-B : contextes non distincts sur {cle}"
+    assert a["ctx_carte"]["option"] != b["ctx_carte"]["option"], \
+        "m-B : contextes non distincts sur l'option de carte"
+    assert a["ctx_carte"]["noms"] != b["ctx_carte"]["noms"], \
+        "m-B : contextes non distincts sur les noms de pièces"
+    c.conformes += 1
+
+    # Chaque substitution par littéral doit être vue par le SECOND contexte.
+    SUBSTITUTIONS = (("ctx_carte.option", "'RDC'"),
+                     ("eau_cible", "'off'"),
+                     ("mode_attendu", "'vacuum'"),
+                     ("aspiration_cible", "'balanced'"))
+    for avant_s, apres_s in SUBSTITUTIONS:
+        m = copy.deepcopy(mot0)
+        corps_m = m[ID_MOTEUR]
+        for st in corps_m["sequence"]:
+            if isinstance(st, dict) and isinstance(st.get("wait_template"), str):
+                st["wait_template"] = st["wait_template"].replace(avant_s, apres_s)
+        c.viole(check_ecritures_preparatoires(corps_m["sequence"], corps_m),
+                "postcondition de",
+                f"m-B littéral substitué à `{avant_s}`")
+
+    # ---- m-C bis : LE CHEMIN RÉEL COMPLET, et l'anti-régression -----------
+    #
+    # Trois accès directs à `choose` avaient échappé au banc précédent parce
+    # que celui-ci n'appelait qu'une SÉLECTION de contrôles. La leçon est
+    # inscrite ici : les tests passent désormais par la liste EXHAUSTIVE des
+    # contrôles runtime, et cette liste est confrontée à ce que `run()`
+    # invoque réellement.
+
+    CONTROLES_RUNTIME = (
+        "check_ecrivain_unique", "check_charge_utile", "check_voies_interdites",
+        "check_mode_jamais_ecrit", "check_ordre_sequence",
+        "check_vocabulaire_verdict", "check_decompte_vocabulaire",
+        "check_motif_total", "check_constantes_temporelles",
+        "check_concordance_runtime", "check_rendus_moteur",
+        "check_etat_canonique_rendu", "check_garde_rendue",
+        "check_branches_tardives", "check_chemins_silencieux",
+        "check_ecritures_preparatoires",
+    )
+
+    def _tous_controles(moteur_yaml, runtime):
+        """Appelle TOUS les contrôles runtime, comme `run()` le fait."""
+        corps_m = moteur_yaml.get(ID_MOTEUR) or {}
+        top_m = corps_m.get("sequence") or []
+        plat_m = _aplatir(top_m)
+        helpers_m = yaml.safe_load(runtime[RUNTIME_HELPERS]) or {}
+        out = []
+        out += check_ecrivain_unique(moteur_yaml, runtime, {})
+        out += check_charge_utile(plat_m)
+        out += check_voies_interdites(runtime)
+        out += check_mode_jamais_ecrit(plat_m)
+        out += check_ordre_sequence(top_m)
+        out += check_vocabulaire_verdict(top_m, runtime)
+        out += check_decompte_vocabulaire(runtime, t09r)
+        out += check_motif_total(t09r, t02r, runtime[RUNTIME_MOTIF])
+        out += check_constantes_temporelles(runtime)
+        out += check_concordance_runtime(corps_m, runtime, helpers_m, t02r,
+                                         t03r, audit0)
+        out += check_rendus_moteur(corps_m, plat_m, t02r)
+        out += check_etat_canonique_rendu(runtime[RUNTIME_ETAT])
+        out += check_garde_rendue(runtime[RUNTIME_GARDE])
+        out += check_branches_tardives(plat_m)
+        out += check_chemins_silencieux(top_m)
+        out += check_ecritures_preparatoires(top_m, corps_m)
+        return out
+
+    # (i) la liste ci-dessus couvre EXACTEMENT ce que `run()` invoque.
+    src_run = inspect.getsource(run)
+    invoques = set(re.findall(r"\b(check_[a-z_]+)\(", src_run))
+    normatifs = {"check_invariants", "check_referentiel", "check_codes",
+                 "check_partition", "check_profils", "check_identifiants",
+                 "check_lovelace", "check_referentiel_technique",
+                 "check_etats_canoniques", "check_fenetres"}
+    manquants = invoques - normatifs - set(CONTROLES_RUNTIME)
+    assert not manquants, \
+        f"m-C bis : `run()` invoque {sorted(manquants)}, absent(s) de la " \
+        f"batterie du selftest — c'est exactement le trou qui a laissé " \
+        f"passer trois accès non normalisés."
+    c.conformes += 1
+
+    # (ii) forme INTACTE et valide : le chemin complet ne plante pas.
+    intact = copy.deepcopy(mot0)
+    c.conforme(_tous_controles(intact, rt0), "m-C bis chemin complet conforme")
+
+    # (iii) `choose` en MAPPING NU aux emplacements des trois sites.
+    #       Le moteur reste fonctionnellement identique — seule la FORME
+    #       change — donc le chemin complet doit rester conforme.
+    def _choose_en_mapping(seq, predicat):
+        touche = 0
+        for st in seq:
+            if (isinstance(st, dict) and isinstance(st.get("choose"), list)
+                    and len(st["choose"]) == 1 and predicat(st)):
+                st["choose"] = st["choose"][0]
+                touche += 1
+        return touche
+
+    # site 1 — la garde de type de `segments`, lue par ASP-CI-22.
+    m_g = copy.deepcopy(mot0)
+    n = _choose_en_mapping(m_g[ID_MOTEUR]["sequence"],
+                           lambda s: "segments is" in str(s.get("choose")))
+    assert n == 1, f"m-C bis : garde `segments` non convertie ({n})"
+    c.conforme(_tous_controles(m_g, rt0),
+               "m-C bis site 1 — garde `segments` en mapping nu")
+
+    # sites 2 et 3 — les deux arbitrages de `check_branches_tardives` sont des
+    # `choose` à branches multiples : on éprouve la normalisation par un
+    # mapping nu inséré JUSTE APRÈS chaque bloc `variables` de garde.
+    for prefixe, libelle in (("g1_", "garde initiale"),
+                             ("g2_", "arbitrage tardif")):
+        m_b = copy.deepcopy(mot0)
+        seq_b = m_b[ID_MOTEUR]["sequence"]
+        i_v = next(i for i, s in enumerate(seq_b)
+                   if isinstance(s, dict) and isinstance(s.get("variables"), dict)
+                   and any(k.startswith(prefixe) for k in s["variables"]))
+        seq_b.insert(i_v + 1, {"choose": {
+            "conditions": [{"condition": "template",
+                            "value_template": "{{ false }}"}],
+            "sequence": {"stop": "branche inerte"}}})
+        errs_b = _tous_controles(m_b, rt0)
+        assert not any("Traceback" in e for e in errs_b)
+        c.viole(errs_b, "ASP-CI-25",
+                f"m-C bis site — mapping nu devant l'{libelle}")
+
+    # (iv) type INVALIDE : diagnostic avec chemin, jamais un traceback.
+    for valeur, quoi in ((42, "int"), ("texte", "str")):
+        m_i = copy.deepcopy(mot0)
+        seq_i = m_i[ID_MOTEUR]["sequence"]
+        i_v = next(i for i, s in enumerate(seq_i)
+                   if isinstance(s, dict) and isinstance(s.get("variables"), dict)
+                   and any(k.startswith("g2_") for k in s["variables"]))
+        seq_i.insert(i_v + 1, {"choose": valeur})
+        c.viole(_tous_controles(m_i, rt0), f"de type {quoi}",
+                f"m-C bis `choose` de type {quoi} — diagnostiqué")
+
+    # (v) liste VIDE là où une branche est attendue : diagnostic, pas
+    #     d'`IndexError`.
+    m_v = copy.deepcopy(mot0)
+    seq_v = m_v[ID_MOTEUR]["sequence"]
+    i_v = next(i for i, s in enumerate(seq_v)
+               if isinstance(s, dict) and isinstance(s.get("variables"), dict)
+               and any(k.startswith("g2_") for k in s["variables"]))
+    seq_v.insert(i_v + 1, {"choose": []})
+    c.viole(_tous_controles(m_v, rt0), "AUCUNE branche",
+            "m-C bis `choose` vide — diagnostiqué, sans IndexError")
+
+    # (vi) ANTI-RÉGRESSION — aucun accès direct à `choose` hors `_ensure_list`.
+    #      Vérifié sur l'AST du module lui-même : la forme du code ne peut
+    #      plus régresser sans que ce test tombe.
+    source = Path(__file__).read_text(encoding="utf-8")
+    arbre = ast.parse(source)
+    ligne_selftest = next(n.lineno for n in ast.walk(arbre)
+                          if isinstance(n, ast.FunctionDef) and n.name == "selftest")
+    enveloppes = {id(a) for n in ast.walk(arbre)
+                  if isinstance(n, ast.Call)
+                  and getattr(n.func, "id", None) == "_ensure_list"
+                  for a in n.args[:1]}
+    nus = []
+    for n in ast.walk(arbre):
+        if not isinstance(n, ast.Subscript):
+            continue
+        cle = getattr(n.slice, "value", None)
+        if cle != "choose" or n.lineno >= ligne_selftest:
+            continue
+        if id(n) not in enveloppes:
+            nus.append(n.lineno)
+    assert not nus, (
+        f"m-C bis : accès direct à `choose` hors `_ensure_list()` aux lignes "
+        f"{nus} — un mapping nu y ferait itérer les CLÉS, ou lever. La "
+        f"primitive de normalisation est unique et doit être traversée.")
+    c.conformes += 1
+
+    # Cohérence des deux ancres : l'allowlist de retypage doit contenir
+    # exactement les trois instants, plus `passages_int`.
+    assert VARIABLES_NUMERIQUES_ADMISES == {"passages_int"} | set(
+        INSTANTS_PREPARATOIRES), \
+        "VARIABLES_NUMERIQUES_ADMISES et INSTANTS_PREPARATOIRES divergent"
+    c.conformes += 1
+
+    print(f"selftest OK — 27 contrôles, {c.total()} cas "
           f"({c.conformes} conformes, {c.violations} violations).")
 
 
