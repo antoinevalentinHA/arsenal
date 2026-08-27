@@ -81,6 +81,108 @@ tout périmètre « Étage complet » qui en compterait sept est non conforme.
 **Aucun segment nommé.** Aucun périmètre, aucun libellé, aucune commande
 ([`01`](01_finalite_et_perimetre.md) §5).
 
+### 2.1 Table technique — libellés exacts de l'appareil
+
+Cette table est le **référentiel technique** du domaine. Elle **ne désigne rien**
+et **ne restitue rien** : elle existe **uniquement** pour sélectionner une carte
+sur l'appareil et **confirmer** cette sélection
+([`06`](06_integrite_mono_carte.md) §3, conditions 2 à 4).
+
+**Pourquoi elle est ratifiée ici.** La sélection de carte passe par un sélecteur
+dont les options sont les **noms de cartes de l'appareil** ; sa confirmation
+passe par la liste des **pièces exposées**, elle aussi nominale. Ces deux
+lectures sont donc, par construction, **nominales** — il n'existe aucune voie
+indicielle établie. Le contrat cesse de laisser ce point implicite : il **fige
+les valeurs exactes**, les rend opposables, et **borne leur usage** aux deux
+gestes ci-dessus.
+
+**Cartes — option exacte du sélecteur.**
+
+| Carte | Option exacte du sélecteur | Statut V1 |
+|---|---|---|
+| `0` | `RDC` | commandable |
+| `1` | `Étage ` | commandable |
+| `2` | `Annexe` | commandable |
+| — | `Garage` | non commandable |
+
+> **L'option de la carte `1` porte une espace finale** — `Étage ` — propagée par
+> l'appareil jusque dans l'identifiant unique de l'entité concernée (§5). Cette
+> espace **fait partie de la valeur** : une écriture qui la supprimerait ne
+> correspondrait à **aucune** option du sélecteur.
+
+**Segments — nom Roborock exact.**
+
+| Segment | Index natif | Nom Roborock exact | Statut V1 |
+|---|---|---|---|
+| `0_16` | `16` | `Salon` | commandable |
+| `0_18` | `18` | `Entrée` | commandable |
+| `0_20` | `20` | `WC RDC` | commandable |
+| `0_21` | `21` | `Cage d'escaliers` | commandable |
+| `1_16` | `16` | `Palier` | commandable |
+| `1_17` | `17` | `Chambre Parents` | commandable |
+| `1_18` | `18` | `Chambre Enfants` | commandable |
+| `1_19` | `19` | `Salle de Jeux` | commandable |
+| `1_20` | `20` | `Dressing` | commandable |
+| `1_21` | `21` | `SDB Parents` | commandable |
+| `1_22` | `22` | `WC Étage` | commandable |
+| `1_23` | `23` | `SDB Enfants` | commandable |
+| `2_16` | `16` | `Salle de bain` | commandable |
+| `2_17` | `17` | `Ext` | non commandable |
+| `2_18` | `18` | `Chambre1` | non commandable |
+| `2_19` | `19` | `Chambre` | commandable |
+
+> **`ASP-INV-66` — source unique, usage borné.** Cette table est la **seule**
+> source de libellés d'appareil du domaine. Son usage est **limité à deux
+> gestes** : écrire l'option de carte sur le sélecteur, et **confirmer** le
+> contexte cartographique ([`06`](06_integrite_mono_carte.md) §3).
+>
+> Elle **ne sert jamais** à désigner un segment dans une intention — la
+> désignation reste la paire `‹carte›_‹segment›` (`ASP-INV-6`) —, **jamais** à
+> restituer un libellé à l'opérateur (`ASP-INV-7`), et **jamais** à composer un
+> périmètre ou un raccourci (§3, [`10`](10_raccourcis.md)).
+>
+> **Un segment `non commandable` de cette table confirme la carte, sans jamais
+> devenir désignable** : `2_17` et `2_18` restent refusés au motif
+> `SEGMENT_INCONNU` ([`06`](06_integrite_mono_carte.md) §3.1). Le `Garage` n'a
+> **aucune** option commandable et ne porte **aucun segment**.
+>
+> **L'index natif ne circule qu'à l'ultime étape.** La colonne « Index natif »
+> est la valeur qui entre dans la charge utile de la commande, **après** que la
+> carte a été sélectionnée et confirmée. Isolé, il reste **ambigu entre cartes**
+> et n'est **jamais** une désignation (`ASP-INV-6`).
+
+> **Ce que cette table n'est pas.**
+>
+> - **Ni une autorité métier.** La vérité de désignation reste le §2. En cas de
+>   divergence, c'est le §2 qui dit ce que le domaine nettoie, et le §2.1
+>   seulement ce que l'appareil appelle cette chose.
+> - **Ni une donnée d'interface.** L'UI expose les **libellés canoniques
+>   Arsenal** du §2, jamais une valeur de cette table (`ASP-INV-7`,
+>   [`11`](11_frontiere_ui.md) §2).
+> - **Ni une confirmation par cardinalité.** Compter les pièces exposées ne
+>   confirme **rien** : la condition 4 exige l'**inclusion nominale** des
+>   segments attendus ([`06`](06_integrite_mono_carte.md) §3.1). Un décompte
+>   juste avec des noms faux est une carte fausse.
+> - **Ni un adossement protocolaire.** `mapStatus` reste **hors runtime**
+>   (`ASP-INV-30`) : cette table ne le promeut pas et n'en dépend pas.
+> - **Ni un chemin de repli.** Aucune valeur de substitution, aucune tolérance,
+>   aucun défaut : l'absence ou la divergence **refusent** (`ASP-INV-51`).
+
+> **`ASP-INV-67` — une dérive de libellé refuse, elle ne recale rien.** Un
+> renommage de carte ou de pièce dans l'application Roborock **remonte** jusqu'à
+> Home Assistant sans intervention (§5). Dès lors qu'une valeur de cette table
+> ne correspond plus à ce que l'appareil expose, la confirmation **échoue** et
+> la mission est **refusée** au motif `CARTE_NON_CONFIRMEE`.
+>
+> Le domaine **ne se réaligne jamais de lui-même** sur la valeur nouvelle, et
+> **n'accepte aucune correspondance approchée** — ni insensible à la casse, ni
+> tolérante aux espaces, ni par préfixe. La remise en service passe par la
+> **révision de cette table**, au sens de `ASP-INV-9`.
+>
+> **Conséquence assumée.** Un renommage opérateur **bloque le domaine** jusqu'à
+> l'amendement. C'est le comportement voulu : l'alternative — deviner — est
+> exactement le recalage silencieux que ce contrat proscrit.
+
 ---
 
 ## 3. Périmètres prédéfinis — V1
@@ -138,9 +240,27 @@ l'entité concernée.
 > l'est **sous son libellé canonique Arsenal** (§2), **ou pas du tout**.
 
 **Corollaire — un libellé n'est pas une clé.** Aucune correspondance du domaine —
-périmètre, raccourci, validation — ne peut reposer sur la **comparaison d'un
-libellé** remonté par l'appareil. Les correspondances reposent sur les **paires
-`‹carte›_‹segment›`**, qui sont, elles, structurelles.
+périmètre, raccourci, désignation d'un segment — ne peut reposer sur la
+**comparaison d'un libellé** remonté par l'appareil. Ces correspondances
+reposent sur les **paires `‹carte›_‹segment›`**, qui sont, elles, structurelles.
+
+**Exception unique, ratifiée et bornée — le contexte cartographique.** La
+sélection d'une carte et sa confirmation n'ont **aucune voie indicielle
+établie** : le sélecteur n'expose que des **noms de cartes**, et les pièces
+exposées ne sont, elles aussi, que des **noms**. Ces deux gestes reposent donc
+nécessairement sur des libellés, et **eux seuls** :
+
+| Geste | Libellé employé | Source |
+|---|---|---|
+| Écrire la sélection de carte | Option exacte du sélecteur | §2.1 |
+| Confirmer la sélection par relecture | Option exacte du sélecteur | §2.1 |
+| Confirmer les pièces exposées de la carte | Nom Roborock exact des segments | §2.1 |
+
+**Ce que l'exception ne relâche pas.** Elle ne rend pas les libellés désignables
+(`ASP-INV-6`), ni restituables (`ASP-INV-7`), ni composables en périmètre. Elle
+est **close** : hors de ces trois lectures, la règle du corollaire s'applique
+sans réserve. Et elle est **stricte** : la comparaison est **littérale**, jamais
+approchée (`ASP-INV-67`).
 
 ---
 

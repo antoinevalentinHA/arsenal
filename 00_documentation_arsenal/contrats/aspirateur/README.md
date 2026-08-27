@@ -57,13 +57,13 @@ Cette convention reprend celle du domaine arrosage
 | Fichier | Contenu |
 |---|---|
 | [`01_finalite_et_perimetre.md`](01_finalite_et_perimetre.md) | Finalité métier V1, expérience opérateur cible, ce que le domaine couvre et ce qu'il ne couvre pas ; place du Garage |
-| [`02_referentiel_cartes_et_pieces.md`](02_referentiel_cartes_et_pieces.md) | Référentiel canonique cartes ↔ segments ↔ pièces, périmètres prédéfinis, règle de restitution des libellés |
+| [`02_referentiel_cartes_et_pieces.md`](02_referentiel_cartes_et_pieces.md) | Référentiel **métier** cartes ↔ segments ↔ pièces, **référentiel technique** des libellés exacts de l'appareil (§2.1), périmètres prédéfinis, règle de restitution des libellés |
 | [`03_profils_metier.md`](03_profils_metier.md) | Les cinq profils arrêtés, mode de nettoyage dérivé et jamais écrit, prérequis matériel des profils avec eau |
 | [`04_nombre_de_passages.md`](04_nombre_de_passages.md) | `×1` / `×2` / `×3`, convention de comptage, interdiction de transposer la convention zonée |
 | [`05_intention_de_mission.md`](05_intention_de_mission.md) | L'intention de mission comme objet complet et atomique ; séparation intention / validation / exécution |
 | [`06_integrite_mono_carte.md`](06_integrite_mono_carte.md) | `ASP-IMC-1` — intégrité mono-carte, ratification contractuelle de la contrainte de sécurité candidate de l'audit |
-| [`07_moteur_de_mission.md`](07_moteur_de_mission.md) | Écrivain unique, **partition fermée des états de lancement**, séquence normative, qualification des trois issues, interdits d'exécution et **reprise sous garde** |
-| [`08_etats_et_observation.md`](08_etats_et_observation.md) | Modèle d'états du domaine ; mission ouverte ≠ nettoyage réel ; autorité de l'état `vacuum` sur le mouvement ; **disjonction déterministe** `MISSION_DEJA_OUVERTE` / `SESSION_INACHEVEE` |
+| [`07_moteur_de_mission.md`](07_moteur_de_mission.md) | Écrivain unique, **partition fermée des états de lancement**, séquence normative, **constantes temporelles 30 s / 60 s** (§3.1), qualification des trois issues, interdits d'exécution et **reprise sous garde** |
+| [`08_etats_et_observation.md`](08_etats_et_observation.md) | Modèle d'états du domaine — **dix états canoniques, total sur la partition** ; mission ouverte ≠ nettoyage réel ; autorité de l'état `vacuum` sur le mouvement ; **disjonction déterministe** `MISSION_DEJA_OUVERTE` / `SESSION_INACHEVEE` |
 | [`09_refus_et_diagnostics.md`](09_refus_et_diagnostics.md) | Catalogue opposable des refus et des échecs, motifs lisibles, interdiction du fallback silencieux |
 | [`10_raccourcis.md`](10_raccourcis.md) | Raccourcis = préréglages d'intention ; interdiction d'un second moteur ou d'un second chemin de commande |
 | [`11_frontiere_ui.md`](11_frontiere_ui.md) | Frontière backend / UI : ce que l'UI rend et sollicite, ce qu'elle ne calcule ni ne commande jamais |

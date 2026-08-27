@@ -74,13 +74,15 @@ Ils ne sont **ni des entités, ni des identifiants Home Assistant**.
 |---|---|---|
 | `CANAL_INDISPONIBLE` | La demande n'est pas parvenue à Home Assistant | **Ne qualifie pas** la commande Roborock — elle peut être parfaitement valide |
 | `COMMANDE_REJETEE` | La commande a été refusée à l'émission | Ne dit rien d'un problème de canal |
-| `TRANSITION_NON_OBSERVEE` | La commande a été acceptée, mais aucune transition d'état attendue n'a été observée dans la fenêtre retenue | **Ne conclut ni au succès ni à l'immobilité** : il constate une absence de preuve |
+| `TRANSITION_NON_OBSERVEE` | La commande a été acceptée, mais aucune transition d'état attendue n'a été observée dans la fenêtre de **60 s** ([`07`](07_moteur_de_mission.md) §3.1) | **Ne conclut ni au succès ni à l'immobilité** : il constate une absence de preuve |
 | `MISSION_INTERROMPUE` | La mission s'est arrêtée avant son terme, hors geste opérateur | Ne présume pas la cause |
 | `ERREUR_EN_MISSION` | Une erreur robot ou dock est survenue en cours de mission | — |
 
-> **La fenêtre d'observation de `TRANSITION_NON_OBSERVEE` n'est pas chiffrée par
-> ce contrat.** Aucun précédent ni arbitrage ne fonde une valeur ; la fixer ici
-> serait inventer un seuil
+> **La fenêtre d'observation de `TRANSITION_NON_OBSERVEE` est de 60 s**
+> ([`07`](07_moteur_de_mission.md) §3.1, `ASP-INV-69`). Elle porte
+> **exclusivement** sur la transition de démarrage. Les **30 s** des
+> confirmations de carte et de réglage relèvent, elles, des refus
+> `CARTE_NON_CONFIRMEE` et `REGLAGE_NON_CONFIRME` — jamais de ce code
 > ([`13`](13_hors_perimetre_arbitrages_et_questions_ouvertes.md), `ARB-3`).
 
 ---
