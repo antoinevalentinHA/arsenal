@@ -1,0 +1,101 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY_SENSOR
+#     Aspirateur — Conditions de lancement satisfaites, hors contexte
+#     cartographique
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer, en une lecture honnête, si les conditions de lancement du
+#   §5.1 du contrat 07 sont satisfaites — état machine en classe R,
+#   témoins d'erreur nominaux, aucune session ouverte. C'est la garde
+#   OBSERVABLE du domaine, celle qu'une future UI projettera.
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             07_moteur_de_mission.md §5.0, §5.1, §5.2, §5.4
+#             08_etats_et_observation.md §3.1 (ASP-INV-64)
+#
+# 🧩 PÉRIMÈTRE — CE QU'ELLE COUVRE, ET CE QU'ELLE NE COUVRE PAS
+#   Couvre   : les trois conditions du §5.1 qui ne dépendent NI de la
+#              carte demandée, NI du profil demandé.
+#   Ne couvre PAS, délibérément :
+#     - le CONTEXTE CARTOGRAPHIQUE : il dépend de la carte désignée par
+#       l'intention et exige une écriture puis une confirmation. Il ne
+#       peut donc pas être un état observable hors mission (ASP-IMC-1) ;
+#     - la SERPILLIÈRE : elle n'est décisive que pour un profil AVEC eau
+#       (03 §4), donc elle dépend de l'intention, pas de l'appareil seul.
+#   D'où le nom : « hors carte ».
+#
+# 🔖 NATURE
+#   autorisation_logique (garde observable, NON actionnelle)
+#
+# 🆔 UNIQUE_ID
+#   aspirateur_conditions_lancement_hors_carte
+#
+# 🔗 DÉPENDANCES (lecture seule)
+#   sensor.roborock_q7_max_etat                    — autorité de l'activité
+#   sensor.roborock_q7_max_erreur_de_l_aspirateur  — nominal : `none`
+#   sensor.roborock_q7_max_dock_erreur_de_dock     — nominal : `ok`
+#   binary_sensor.roborock_q7_max_nettoyage        — témoin de session
+#
+# 🧱 PRINCIPE (off par défaut, JAMAIS unknown)
+#   on  = état machine en classe R (`charger_disconnected` ou `charging`)
+#         ET les deux témoins d'erreur à leur valeur nominale
+#         ET aucune session ouverte.
+#   off = toute autre situation, y compris une donnée illisible.
+#   `unknown` / `unavailable` ne valent NI nominal, NI `false` au sens
+#   d'une absence d'erreur : ils valent INDISPONIBILITÉ, et une
+#   indisponibilité refuse (ASP-INV-45). La sortie reste explicitement
+#   'on'/'off' : une garde qui devient `unknown` est une garde muette.
+#
+# ⚠️ NON-ACTIONNEL, ET NON DÉCIDEUR
+#   Cette garde NE déclenche rien et n'est PAS lue par le moteur : le
+#   moteur relit lui-même les quatre témoins natifs, parce qu'un booléen
+#   ne peut pas porter le MOTIF exact du refus (ASP-INV-50), et parce
+#   qu'une garde indisponible ne doit jamais produire un refus fantôme.
+#   Les deux lectures appliquent la MÊME règle sur les MÊMES entités ;
+#   leur concordance est vérifiée par le checker (ASP-CI-11).
+#
+# 🚫 INTERDITS
+#   - Piloter un équipement, déclencher une action
+#   - Transformer une donnée inconnue en feu vert
+#   - Prétendre couvrir le contexte cartographique ou la serpillière
+#   - Servir de preuve de mouvement (autorité : état du `vacuum`, 08 §2)
+#
+# 🏷️ STATUT
+#   Autorisation — domaine aspirateur, lot L1
+# ==========================================================
+
+- binary_sensor:
+    - name: "Aspirateur conditions lancement hors carte"
+      unique_id: aspirateur_conditions_lancement_hors_carte
+      icon: >
+        {% set e = states('sensor.roborock_q7_max_etat') %}
+        {% set ev = states('sensor.roborock_q7_max_erreur_de_l_aspirateur') %}
+        {% set ed = states('sensor.roborock_q7_max_dock_erreur_de_dock') %}
+        {% set s = states('binary_sensor.roborock_q7_max_nettoyage') %}
+        {{ 'mdi:lock-open-check'
+           if (e in ['charger_disconnected', 'charging']
+               and ev == 'none' and ed == 'ok' and s == 'off')
+           else 'mdi:lock' }}
+      state: >
+        {% set e = states('sensor.roborock_q7_max_etat') %}
+        {% set ev = states('sensor.roborock_q7_max_erreur_de_l_aspirateur') %}
+        {% set ed = states('sensor.roborock_q7_max_dock_erreur_de_dock') %}
+        {% set s = states('binary_sensor.roborock_q7_max_nettoyage') %}
+        {{ 'on'
+           if (e in ['charger_disconnected', 'charging']
+               and ev == 'none' and ed == 'ok' and s == 'off')
+           else 'off' }}
+      attributes:
+        # Chaque sous-condition est exposée séparément : une garde qui dit
+        # seulement « non » n'aide personne (ASP-INV-50, esprit).
+        etat_en_classe_repos: >
+          {{ states('sensor.roborock_q7_max_etat')
+             in ['charger_disconnected', 'charging'] }}
+        erreur_robot_nominale: >
+          {{ states('sensor.roborock_q7_max_erreur_de_l_aspirateur') == 'none' }}
+        erreur_dock_nominale: >
+          {{ states('sensor.roborock_q7_max_dock_erreur_de_dock') == 'ok' }}
+        aucune_session_ouverte: >
+          {{ states('binary_sensor.roborock_q7_max_nettoyage') == 'off' }}
+        # Rappel permanent de ce que cette garde ne couvre pas, pour qu'un
+        # consommateur ne la prenne jamais pour un feu vert complet.
+        hors_perimetre: "contexte cartographique, serpilliere"

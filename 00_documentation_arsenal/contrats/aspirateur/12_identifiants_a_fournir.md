@@ -53,6 +53,25 @@ Les rôles sont notés `‹…›`, convention du domaine
 | `‹etat_canonique›` | L'état du domaine parmi les **dix** du chapitre [`08`](08_etats_et_observation.md), `‹mission_ouverte›` étant rendu séparément (`ASP-INV-68`) |
 | `‹derniere_intention_lancee›` | La trace de l'intention effectivement émise — jamais relue depuis l'appareil (`ASP-INV-15`) |
 
+> **`ASP-INV-70` — vocabulaire de cycle de vie du verdict, fermé et distinct.**
+> Le rôle `‹verdict_de_mission›` porte, **en plus** des codes du catalogue
+> ([`09`](09_refus_et_diagnostics.md)), un **ensemble fermé de valeurs de cycle
+> de vie** : elles disent **où en est** la demande — validation engagée, issue
+> non établie, commande prise en charge, démarrage observé — là où un code dit
+> **pourquoi** elle n'aboutit pas.
+>
+> **Ces deux vocabulaires ne se confondent jamais.** Une valeur de cycle de vie
+> n'est **ni un refus ni un échec** : elle n'entre pas au catalogue, et
+> l'inscrire y ferait croire à un motif qui n'existe pas. Réciproquement, un
+> code du catalogue ne décrit **jamais** une étape.
+>
+> **L'ensemble est arrêté par le lot runtime et gardé par la CI.** Ce contrat
+> n'en propose aucune valeur — `ASP-INV-58` s'applique sans réserve. Il exige
+> seulement que l'ensemble soit **fermé**, **énuméré au runtime**, et
+> **mécaniquement confronté** : une valeur écrite hors de cet ensemble est une
+> non-conformité, au même titre qu'un motif de refus hors catalogue
+> (`ASP-INV-52`).
+
 ---
 
 ## 3. Ce qui n'est **pas** à fournir

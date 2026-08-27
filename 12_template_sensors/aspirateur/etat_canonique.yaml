@@ -1,0 +1,110 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Aspirateur — État canonique du domaine
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Projeter l'état machine natif du robot sur le VOCABULAIRE CANONIQUE
+#   du domaine — dix états, dix codes, aucun synonyme. Rôle contractuel
+#   `‹etat_canonique›`.
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             08_etats_et_observation.md §1 (ASP-INV-44, ASP-INV-68)
+#             07_moteur_de_mission.md §5.0 (partition R / A / E / N)
+#
+# 🧩 PÉRIMÈTRE
+#   - Dérivation pure, aucune action, aucun pilotage
+#   - Aucune agrégation de confort : les états ne sont jamais fondus
+#     en un booléen « occupé / libre » (ASP-INV-44)
+#
+# 🔖 NATURE
+#   Diagnostic dérivé (projection d'état)
+#
+# 🆔 UNIQUE_ID
+#   aspirateur_etat_canonique
+#
+# 🔗 DÉPENDANCES (lecture seule)
+#   sensor.roborock_q7_max_etat              — autorité de l'ACTIVITÉ
+#   binary_sensor.roborock_q7_max_nettoyage  — témoin de SESSION
+#
+# 🧱 IMAGE TOTALE DE LA PARTITION (ASP-INV-68)
+#   Classe R : charger_disconnected -> repos_hors_base
+#              charging             -> charge
+#   Classe A : cleaning · segment_cleaning · zoned_cleaning
+#                                   -> nettoyage_reel
+#              paused               -> pause
+#              returning_home       -> retour_base
+#              docking              -> amarrage
+#   Classe E : error                -> erreur
+#              device_offline · unknown · unavailable
+#                                   -> indisponibilite
+#   Classe N : TOUTE AUTRE VALEUR   -> etat_non_qualifie
+#
+#   La branche finale est un FOURRE-TOUT FERMÉ, et c'est voulu : le
+#   relevé passif du 2026-08-27 établit que l'énumération native compte
+#   43 valeurs, dont 32 que le contrat ne classe pas (`idle`,
+#   `charging_complete`, variantes serpillière…). Elles valent
+#   `etat_non_qualifie` — jamais un repos, jamais la valeur connue « la
+#   plus proche » (ASP-INV-60).
+#
+# 🧭 MISSION OUVERTE — ORTHOGONALE, DONC EXPOSÉE À PART
+#   Le dixième état canonique ne dérive PAS de l'état machine mais du
+#   témoin de session : il se SUPERPOSE aux neuf autres au lieu de les
+#   exclure. Il est donc porté par un ATTRIBUT dédié, jamais fondu dans
+#   la valeur d'état (ASP-INV-68). `unknown` / `unavailable` y valent
+#   `indisponible`, jamais `non` (ASP-INV-45).
+#
+# 🚫 INTERDITS
+#   - Agréger, simplifier ou masquer un état
+#   - Lire ce capteur comme une preuve de MOUVEMENT : l'autorité du
+#     mouvement est l'état du `vacuum` (08 §2)
+#   - Employer le témoin de session comme preuve de mouvement (ASP-INV-47)
+#   - Déclencher une action depuis ce capteur
+#
+# 🏷️ STATUT
+#   Observation — domaine aspirateur, lot L1
+# ==========================================================
+
+- sensor:
+    - name: "Aspirateur etat canonique"
+      unique_id: aspirateur_etat_canonique
+      icon: >
+        {% set e = states('sensor.roborock_q7_max_etat') %}
+        {{ 'mdi:robot-vacuum' if e in ['cleaning', 'segment_cleaning',
+                                       'zoned_cleaning']
+           else 'mdi:pause-circle' if e == 'paused'
+           else 'mdi:home-import-outline' if e in ['returning_home', 'docking']
+           else 'mdi:battery-charging' if e == 'charging'
+           else 'mdi:map-marker-radius-outline' if e == 'charger_disconnected'
+           else 'mdi:alert-circle' if e == 'error'
+           else 'mdi:cloud-off-outline' if e in ['device_offline', 'unknown',
+                                                 'unavailable']
+           else 'mdi:help-rhombus-outline' }}
+      state: >
+        {% set e = states('sensor.roborock_q7_max_etat') %}
+        {{ 'repos_hors_base' if e == 'charger_disconnected'
+           else 'charge' if e == 'charging'
+           else 'nettoyage_reel' if e in ['cleaning', 'segment_cleaning',
+                                          'zoned_cleaning']
+           else 'pause' if e == 'paused'
+           else 'retour_base' if e == 'returning_home'
+           else 'amarrage' if e == 'docking'
+           else 'erreur' if e == 'error'
+           else 'indisponibilite' if e in ['device_offline', 'unknown',
+                                           'unavailable']
+           else 'etat_non_qualifie' }}
+      attributes:
+        # Dixième état canonique — orthogonal, jamais fondu dans l'état.
+        mission_ouverte: >
+          {% set s = states('binary_sensor.roborock_q7_max_nettoyage') %}
+          {{ 'oui' if s == 'on' else 'non' if s == 'off' else 'indisponible' }}
+        # Classe de la partition 07 §5.0 dont l'état courant relève.
+        classe_partition: >
+          {% set e = states('sensor.roborock_q7_max_etat') %}
+          {{ 'R' if e in ['charger_disconnected', 'charging']
+             else 'A' if e in ['cleaning', 'segment_cleaning', 'zoned_cleaning',
+                               'paused', 'returning_home', 'docking']
+             else 'E' if e in ['error', 'device_offline', 'unknown',
+                               'unavailable']
+             else 'N' }}
+        # Valeur native brute — diagnostic technique, jamais restituée à
+        # l'opérateur comme un état du domaine.
+        etat_machine_brut: "{{ states('sensor.roborock_q7_max_etat') }}"

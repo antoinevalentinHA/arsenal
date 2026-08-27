@@ -1,0 +1,980 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Aspirateur — Moteur de mission (écrivain unique, lot runtime L1)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Recevoir une INTENTION DE MISSION atomique (carte, segments, profil,
+#   passages), la valider, sélectionner et CONFIRMER le contexte
+#   cartographique, écrire et CONFIRMER le profil, émettre UNE SEULE
+#   commande segmentée, puis qualifier son issue. Rôle contractuel
+#   `‹moteur_de_mission›`.
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             07_moteur_de_mission.md (séquence, issues, interdits)
+#             06_integrite_mono_carte.md (ASP-IMC-1)
+#             02/03/04/05 (référentiels et intention)
+#             09_refus_et_diagnostics.md (catalogue opposable)
+#   Audit factuel : 00_documentation_arsenal/audits/01_rapports/
+#             aspirateur/audit_faisabilite_roborock_q7_max.md
+#
+# 🧱 DOCTRINE
+#   - ÉCRIVAIN UNIQUE (ASP-INV-31) : ce script est la SEULE frontière
+#     entre l'intention de l'opérateur et l'appareil. Aucune entité
+#     native d'action du robot n'est exposée ailleurs, aucun autre
+#     script, aucune automation, aucune UI n'écrit vers le Roborock.
+#   - ATOMICITÉ (ASP-INV-23) : les quatre champs sont reçus ENSEMBLE.
+#     Aucun champ absent n'est complété — ni par un défaut, ni par la
+#     dernière valeur utilisée, ni par l'état courant de l'appareil.
+#   - ORDRE CONTRACTUEL (ASP-INV-34) : eau AVANT aspiration, et le mode
+#     de nettoyage n'est JAMAIS écrit — l'écrire écraserait le profil
+#     d'aspiration (03 §3).
+#   - REFUS = LIVRABLE (ASP-INV-50) : chaque refus arrête la séquence,
+#     pose un code du catalogue et n'émet rien.
+#   - AUCUN FALLBACK (ASP-INV-51) : aucune troncature au sous-ensemble
+#     valide, aucun profil de substitution, aucune seconde tentative.
+#   - AUCUNE RÉÉMISSION (ASP-INV-39) : la relance est un geste opérateur.
+#
+# 📥 ENTRÉES — les quatre champs de l'intention, TOUS obligatoires
+#   carte     : "0" (RDC) · "1" (Étage) · "2" (Annexe)
+#   segments  : LISTE de paires `‹carte›_‹segment›` du référentiel V1,
+#               toutes de la carte désignée. Une pièce désignée deux fois
+#               désigne la même pièce : l'intention porte un ENSEMBLE de
+#               pièces, et le doublon est absorbé sans qu'aucune pièce
+#               demandée ne soit perdue. Ce n'est PAS une troncature de
+#               périmètre (ASP-INV-27) : le périmètre demandé est intact.
+#               ⚠️ Un MAPPING est explicitement REFUSÉ. En Jinja, un
+#               dictionnaire satisfait `is sequence`, et `map('string')` en
+#               itérerait les CLÉS : `{"0_18": 1}` aurait été pris pour la
+#               demande `["0_18"]`. Interpréter une structure pour une
+#               autre est exactement le genre de complaisance que
+#               `ASP-INV-23` proscrit — d'où le test `is mapping`.
+#   profil    : l'une des CINQ clés de `profils` ci-dessous
+#   passages  : 1 · 2 · 3
+#
+#   ⚠️ Les quatre champs sont déclarés `required: false` DÉLIBÉRÉMENT.
+#      `fields` est une MÉTADONNÉE D'INTERFACE, jamais une validation
+#      serveur : le service d'un script est enregistré sous
+#      `SCRIPT_SERVICE_SCHEMA = vol.Schema(dict)`, et `fields` n'alimente
+#      que `async_set_service_schema`, c'est-à-dire le formulaire. Un appel
+#      programmatique sans `passages` aboutit donc au script quoi qu'il
+#      arrive.
+#      Le raisonnement est donc le suivant, et pas un autre : déclarer
+#      `required: true` ferait BLOQUER LE FORMULAIRE par le frontal, et
+#      l'opérateur ne verrait jamais le refus contractuel ni son motif
+#      lisible (ASP-INV-23, ASP-INV-50). L'obligation est portée par la
+#      séquence — qui, elle, s'applique à TOUS les appelants.
+#
+# 📤 SORTIES — écrites par ce script, et par lui seul
+#   input_text.aspirateur_mission_verdict           (vocabulaire fermé)
+#   input_text.aspirateur_derniere_intention_lancee (trace)
+#   Vocabulaire et sémantique : 04_input_texts/aspirateur/mission.yaml
+#
+# 🔗 ENTITÉS NATIVES — toutes attestées par l'audit du domaine
+#   Écrites  : select.roborock_q7_max_carte_selectionnee      (§3.4)
+#              select.roborock_q7_max_intensite_de_frottement (§3.1)
+#              vacuum.roborock_q7_max — via vacuum.set_fan_speed (§3.1)
+#              vacuum.roborock_q7_max — via vacuum.send_command  (§9)
+#   Lues     : sensor.roborock_q7_max_piece_actuelle           (§3.2)
+#              select.entree_roborock_q7_max_mode_de_nettoyage (§3.1)
+#              sensor.roborock_q7_max_etat                     (§3.2)
+#              sensor.roborock_q7_max_erreur_de_l_aspirateur   (§3.4)
+#              sensor.roborock_q7_max_dock_erreur_de_dock      (§3.4)
+#              binary_sensor.roborock_q7_max_nettoyage         (§3.2)
+#              binary_sensor.roborock_q7_max_serpilliere_fixee (§3.3)
+#
+# ⏱️ CONSTANTES TEMPORELLES — deux, et deux seulement (ASP-INV-69, ARB-3)
+#   00:00:30  confirmation de carte (étape 6), d'eau (8), d'aspiration (10)
+#   00:01:00  observation de la transition de démarrage (étape 13)
+#   Écrites LITTÉRALEMENT ici. Le domaine n'expose AUCUN réglage temporel :
+#   ni helper, ni entité, ni paramètre d'appel. Leur révision est un
+#   amendement CONJOINT du contrat, du checker et de ce fichier.
+#
+# 🧭 OBSERVATION DE LA TRANSITION — QUALIFIÉE AU TERRAIN LE 2026-08-27
+#   L'autorité sur le MOUVEMENT est l'état du `vacuum` (08 §2), et l'étape 13
+#   l'observe. Ce choix est ÉTABLI PAR ESSAI, pas déduit.
+#
+#   Essai du 2026-08-27, lancé depuis l'application officielle — aspiration
+#   `quiet`, eau `medium`, mode dérivé `vac_and_mop` confirmé actif de bout
+#   en bout, commande segmentée ×1 sur `0_21` :
+#       12:03:43.767 UTC  sensor.…_etat        -> segment_cleaning
+#       12:03:43.770 UTC  vacuum.…_q7_max      -> cleaning
+#   soit **3 ms** entre les deux, pour une fenêtre de 60 s. Cycle complet
+#   nominal : 4,7 m², 4,65 min, retour au dock, erreurs `none` / `ok`.
+#
+#   Le point qui inquiétait est donc TRANCHÉ : une mission AVEC EAU rapporte
+#   `segment_cleaning`, exactement comme une mission à sec. L'appareil ne
+#   produit pas les variantes `*_mop_*`.
+#
+#   Ce que le fait de code reste, et pourquoi il est rappelé ici.
+#   `STATE_CODE_TO_STATE` (`components/roborock/vacuum.py`, 2026.8.3) ne
+#   mappe que 25 des 43 valeurs, et AUCUNE des neuf variantes `*_mop_*` :
+#   pour l'une d'elles, `activity` rendrait `None` et l'entité `vacuum`
+#   `unknown`, pas `cleaning`. Ce risque existe toujours dans le code — il
+#   ne se matérialise pas sur cet appareil.
+#
+#   PORTÉE DE LA QUALIFICATION, bornée : Roborock Q7 Max
+#   (`roborock.vacuum.a38`), firmware `02.09.18`, intégration `roborock` de
+#   Home Assistant 2026.8.3, classe protocole V1 (`supported_features =
+#   30524`). Un changement de l'un de ces trois éléments, ou un autre
+#   appareil du parc, rouvre la question.
+#
+#   `sensor.…_etat` reste, lui, l'autorité de la garde anti-double-lancement
+#   (ASP-INV-46), et n'est employé qu'à cela. Aucun état `*_mop_*` n'est
+#   classé : la partition 07 §5.0 les laisse en classe N, et c'est elle qui
+#   fait foi — l'essai n'en a produit aucun, il n'y a rien à reclasser.
+#
+# 🧭 TÉMOIN DE SESSION — CONSTAT DISTINCT DU MÊME ESSAI
+#   Le témoin est repassé à `off` à 12:08:33.757 UTC alors que le robot
+#   roulait encore : il n'a atteint le dock qu'à 12:09:02.029, soit
+#   **28,3 s de déplacement à `off`** — après 53 s en T1 et 25 s en T2.
+#   Troisième reproduction du désalignement, `ASP-INV-47` confirmé.
+#   SANS CONSÉQUENCE SUR L'ÉTAPE 13, qui lit l'entité `vacuum` et non ce
+#   témoin. Le témoin ne sert ici qu'aux gardes des étapes 4 et 11.
+#
+# ⛔ ISSUES POST-ÉMISSION — ce que ce lot peut qualifier, et ce qu'il ne
+#   peut pas. `COMMANDE_REJETEE` n'est PAS atteignable en L1 : Home
+#   Assistant n'expose aucune construction YAML d'attrapage d'erreur
+#   (`_handle_exception` de helpers/script.py ne propose que
+#   `continue_on_error`, qui absorbe l'exception SANS la rendre lisible).
+#   Distinguer un rejet d'une interruption d'exécution exigerait un
+#   observateur survivant à l'appel, donc un second script — hors
+#   périmètre L1. Ce script n'emploie donc AUCUN `continue_on_error` :
+#   l'exception du service remonte INTACTE à l'appelant et reste visible
+#   dans la trace Home Assistant. `CANAL_INDISPONIBLE` appartient à
+#   l'appelant, qui seul observe une erreur de transport ; ce moteur ne le
+#   déduit jamais de l'absence de mutation des helpers.
+#   Le verdict porté dans ce cas est `COMMANDE/ISSUE_NON_ETABLIE` — l'« issue
+#   non établie » ratifiée par le contrat 07 §4 : un constat d'absence de
+#   connaissance, sans attribution de cause.
+#
+# ⛔ SECOND APPEL CONCURRENT — REFUSÉ EN SILENCE PAR HOME ASSISTANT
+#   `mode: single` protège de la concurrence, mais il faut dire COMMENT.
+#   `helpers/script.py` : sur un appel alors que le script tourne déjà,
+#   Home Assistant journalise « Already running », pose
+#   `script_execution_set("failed_single")` et fait `return None`. Il ne
+#   lève AUCUNE exception et n'écrit AUCUN verdict.
+#   Conséquence assumée : le second appelant voit un appel de service qui
+#   réussit et ne produit rien ; les deux helpers gardent les valeurs de la
+#   mission en cours. C'est un SILENCE, contraire à l'esprit d'ASP-INV-49,
+#   et il n'est pas corrigeable depuis ce script — il appartient au moteur
+#   de scripts. Il est consigné ici plutôt que passé sous silence.
+#
+# 🚫 NE FAIT PAS
+#   - N'écrit JAMAIS select.entree_roborock_q7_max_mode_de_nettoyage
+#   - N'émet JAMAIS vacuum.start, vacuum.clean_area, ni une routine
+#     ⚠️ Note rectifiée au 2026.8.3 : `vacuum.clean_area` EXISTE bel et bien
+#        comme service (`SERVICE_CLEAN_AREA`, bit `CLEAN_AREA`). L'audit
+#        §3.1 le disait « inutilisable en l'état » faute de mappage area ↔
+#        segment — constat daté et exact, mais qui pourrait se lire comme
+#        une absence. Ce n'est pas l'absence qui l'exclut : il reste écarté
+#        parce qu'il ne porte TOUJOURS PAS `repeat` (04 §5) et qu'il FILTRE
+#        EN SILENCE les segments hors carte active (06 §1).
+#   - N'emploie JAMAIS la voie zonée (app_zoned_clean, repeats)
+#   - N'émet JAMAIS de charge utile nue (forme enveloppée exclusivement)
+#   - N'émet JAMAIS une seconde commande de démarrage
+#   - Ne porte AUCUN geste de conduite (pause, reprise, arrêt, retour base)
+#   - Ne supervise RIEN après la fin de la séquence
+#
+# 🏷️ STATUT
+#   Runtime supervisé — domaine aspirateur, lot L1
+# ==========================================================
+
+aspirateur_lancer_mission:
+  alias: "Aspirateur - Lancer une mission"
+  icon: mdi:robot-vacuum
+  mode: single
+
+  fields:
+    carte:
+      name: Carte
+      description: "Carte désignée : 0 (RDC), 1 (Étage), 2 (Annexe)."
+      required: false
+      example: "0"
+    segments:
+      name: Segments
+      description: >-
+        Liste de paires carte_segment du référentiel V1, toutes de la
+        carte désignée. Exemple : ["0_18", "0_21"].
+      required: false
+      example: '["0_18", "0_21"]'
+    profil:
+      name: Profil
+      description: >-
+        aspiration_normale, aspiration_turbo, aspiration_maximale,
+        serpilliere_moyenne, serpilliere_intensive
+      required: false
+      example: "aspiration_normale"
+    passages:
+      name: Passages
+      description: "1, 2 ou 3."
+      required: false
+      example: "1"
+
+  sequence:
+
+    # ======================================================
+    # 📚 RÉFÉRENTIELS EMBARQUÉS
+    # ------------------------------------------------------
+    # Le moteur est le PROPRIÉTAIRE runtime de ces tables : ASP-INV-31 lui
+    # confie la validation, et 10 §2 / 11 §2 interdisent leur duplication
+    # AILLEURS (raccourci, UI). Leur concordance littérale avec le contrat
+    # 02 §2 / §2.1 et 03 §1 est confrontée par le checker (ASP-CI-21).
+    #
+    # ⚠️ `option` de la carte 1 porte une ESPACE FINALE — "Étage " — qui
+    #    fait partie de la valeur (02 §2.1). La supprimer ne correspondrait
+    #    à AUCUNE option du sélecteur.
+    # ⚠️ `noms` sert EXCLUSIVEMENT à confirmer la carte (condition 4 de
+    #    ASP-IMC-1), par INCLUSION et jamais par égalité ni cardinalité
+    #    (ASP-INV-63). Ces libellés ne désignent rien (ASP-INV-6) et ne
+    #    sont jamais restitués (ASP-INV-7).
+    # ⚠️ `2_17` (Ext) et `2_18` (Chambre1) sont HORS référentiel V1 : leur
+    #    absence ici est ce qui les rend refusés (QO-1).
+    # ⚠️ Chaque segment ne porte QUE son index natif. Le libellé canonique
+    #    Arsenal (02 §2) N'EST PAS embarqué : aucune étape ne le lit, et
+    #    aucun motif de L1 ne nomme une pièce. L'embarquer sans le lire
+    #    aurait été une table morte, donc une table qui dérive sans que rien
+    #    ne le signale. Le lot qui nommera une pièce dans un motif le
+    #    réintroduira AVEC sa confrontation au 02 §2 dans le checker.
+    # ======================================================
+    - variables:
+        referentiel:
+          "0":
+            option: "RDC"
+            noms: ["Salon", "Entrée", "WC RDC", "Cage d'escaliers"]
+            segments:
+              "0_16": {index: 16}
+              "0_18": {index: 18}
+              "0_20": {index: 20}
+              "0_21": {index: 21}
+          "1":
+            option: "Étage "
+            noms: ["Palier", "Chambre Parents", "Chambre Enfants",
+                   "Salle de Jeux", "Dressing", "SDB Parents",
+                   "WC Étage", "SDB Enfants"]
+            segments:
+              "1_16": {index: 16}
+              "1_17": {index: 17}
+              "1_18": {index: 18}
+              "1_19": {index: 19}
+              "1_20": {index: 20}
+              "1_21": {index: 21}
+              "1_22": {index: 22}
+              "1_23": {index: 23}
+          "2":
+            option: "Annexe"
+            noms: ["Salle de bain", "Chambre"]
+            segments:
+              "2_16": {index: 16}
+              "2_19": {index: 19}
+        profils:
+          aspiration_normale: {eau: "off", aspiration: "balanced", mode: "vacuum"}
+          aspiration_turbo: {eau: "off", aspiration: "turbo", mode: "vacuum"}
+          aspiration_maximale: {eau: "off", aspiration: "max", mode: "vacuum"}
+          serpilliere_moyenne: {eau: "medium", aspiration: "quiet", mode: "vac_and_mop"}
+          serpilliere_intensive: {eau: "high", aspiration: "quiet", mode: "vac_and_mop"}
+        # Partition fermée de l'état machine (07 §5.0). Toute valeur non
+        # classée ici relève de la classe N et REFUSE (ASP-INV-60).
+        classe_r: ["charger_disconnected", "charging"]
+        classe_a: ["cleaning", "segment_cleaning", "zoned_cleaning",
+                   "paused", "returning_home", "docking"]
+        classe_e_indispo: ["device_offline", "unknown", "unavailable"]
+        # `unknown` / `unavailable` ne valent NI nominal, NI false
+        # (ASP-INV-45). `none` est ici la valeur NOMINALE du témoin
+        # d'erreur robot, jamais une indisponibilité — d'où une liste
+        # strictement limitée aux deux régimes du contrat.
+        indispo: ["unknown", "unavailable"]
+
+    # ======================================================
+    # 🔄 ÉTAPE 0 — Ouvrir un canal de résultat propre
+    # ------------------------------------------------------
+    # Chaque appel nettoie son propre canal résultat AVANT d'écrire
+    # (patron ecs_appliquer_consigne_confirmee). Conséquence recherchée :
+    # un verdict resté sur une valeur TERMINALE d'une mission antérieure
+    # n'a plus qu'une seule lecture — « aucune nouvelle exécution n'est
+    # observable dans les helpers Arsenal ». Le moteur n'en conclut RIEN
+    # d'autre, et surtout aucun `CANAL_INDISPONIBLE`, qui appartient à
+    # l'appelant lorsqu'il observe lui-même une erreur de transport.
+    # ======================================================
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.aspirateur_mission_verdict
+      data:
+        value: "VALIDATION_EN_COURS"
+
+    # ======================================================
+    # 🧾 ÉTAPE 1 — Intention complète (05 §2, ASP-INV-23)
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ carte is not defined or carte is none
+                   or (carte | string | trim) == ''
+                   or segments is not defined or segments is none
+                   or segments is string or segments is mapping
+                   or segments is not sequence
+                   or (segments | count) == 0 }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/SELECTION_VIDE"
+            - stop: "Refus : intention incomplete (carte ou segments absents)"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ profil is not defined or profil is none
+                   or (profil | string) not in (profils.keys() | list) }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/PROFIL_INCONNU"
+            - stop: "Refus : profil absent ou hors des cinq profils arretes"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ passages is not defined or passages is none
+                   or (passages | string) not in ['1', '2', '3'] }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/PASSAGES_HORS_CONTRAT"
+            - stop: "Refus : nombre de passages hors x1 / x2 / x3"
+
+    # ======================================================
+    # 🗺️ ÉTAPE 2 — Cohérence contre le référentiel (02, ASP-INV-6)
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ (carte | string) not in (referentiel.keys() | list) }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/CARTE_NON_CONFIRMEE"
+            - stop: "Refus : carte hors referentiel V1, aucune selection possible"
+
+    - variables:
+        # ⚠️ LE CONTEXTE DE CARTE EST PORTÉ EN BLOC, JAMAIS EN SCALAIRES.
+        # Deux comportements de Home Assistant l'imposent, tous deux
+        # vérifiés dans le code de `helpers/template.py` (2026.8.3) :
+        #   1. `Template.async_render` fait `render_result.strip()` AVANT
+        #      d'analyser : un scalaire rendu depuis `"Étage "` perdrait
+        #      son ESPACE FINALE et ne correspondrait plus à aucune option
+        #      du sélecteur — l'Étage deviendrait définitivement
+        #      inlançable, sous un `CARTE_NON_CONFIRMEE` inexplicable.
+        #   2. `_parse_result` reconvertit tout rendu numérique : un
+        #      scalaire rendu depuis `"0"` redeviendrait l'ENTIER 0, et
+        #      `referentiel[0]` ne résoudrait plus rien.
+        # Rendre le sous-dictionnaire ENTIER contourne les deux : la
+        # troncature ne mord que sur les bords du `repr`, et les valeurs
+        # internes sont restituées telles quelles. Les littéraux du bloc
+        # `referentiel` ci-dessus sont, eux, STATIQUES : Home Assistant les
+        # rend sans les tronquer.
+        ctx_carte: "{{ referentiel[carte | string] }}"
+        # Ensemble des pièces désignées, dans l'ordre de première mention.
+        # `unique` absorbe une désignation répétée de la MÊME pièce : aucun
+        # périmètre demandé n'est perdu (distinct d'ASP-INV-27).
+        segments_demandes: "{{ segments | map('string') | unique | list }}"
+        toutes_paires: >-
+          {{ referentiel.values() | map(attribute='segments')
+             | map('list') | sum(start=[]) | list }}
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ (segments_demandes | reject('in', toutes_paires)
+                    | list | count) > 0 }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/SEGMENT_INCONNU"
+            - stop: "Refus : au moins un segment hors referentiel V1"
+
+    # ======================================================
+    # 🧭 ÉTAPE 3 — Sélection vide, inconnue ou multi-carte (ASP-IMC-1)
+    # ------------------------------------------------------
+    # Condition 1 d'ASP-IMC-1 d'abord (les segments ne mêlent pas
+    # plusieurs cartes), puis condition 5 (ils appartiennent tous à la
+    # carte DÉSIGNÉE — ASP-INV-24 : c'est la carte qui arbitre, jamais
+    # l'inverse). Aucune agrégation multi-carte (ASP-INV-28).
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ (segments_demandes | map('regex_replace', '_.*$', '')
+                    | unique | list | count) > 1 }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/SELECTION_MULTI_CARTE"
+            - stop: "Refus : segments repartis sur plusieurs cartes"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ (segments_demandes
+                    | reject('in', ctx_carte.segments.keys() | list)
+                    | list | count) > 0 }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/SEGMENT_INCONNU"
+            - stop: "Refus : segment n'appartenant pas a la carte designee"
+
+    # ======================================================
+    # 🧺 ÉTAPE 3 bis — Prérequis matériel du profil (03 §4, ASP-INV-13)
+    # ------------------------------------------------------
+    # Impossibilité PHYSIQUE (catégorie A) : poser la serpillière est un
+    # geste opérateur. Aucun override. Le témoin n'est décisif que pour un
+    # profil AVEC eau ; illisible, il refuse en indisponibilité et jamais
+    # en `false` (ASP-INV-45).
+    # ======================================================
+    - variables:
+        profil_cle: "{{ profil | string }}"
+        eau_cible: "{{ profils[profil | string].eau }}"
+        aspiration_cible: "{{ profils[profil | string].aspiration }}"
+        mode_attendu: "{{ profils[profil | string].mode }}"
+        passages_int: "{{ passages | int }}"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ eau_cible != 'off'
+                   and states('binary_sensor.roborock_q7_max_serpilliere_fixee')
+                       in indispo }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/ROBOT_INDISPONIBLE"
+            - stop: "Refus : temoin de serpilliere illisible pour un profil avec eau"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ eau_cible != 'off'
+                   and is_state('binary_sensor.roborock_q7_max_serpilliere_fixee',
+                                'off') }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/PREREQUIS_MATERIEL_ABSENT"
+            - stop: "Refus : serpilliere absente pour un profil avec eau"
+
+    # ======================================================
+    # 🛡️ ÉTAPE 4 — État de lancement (07 §5, ASP-INV-64)
+    # ------------------------------------------------------
+    # LECTURE VIVE : l'état machine tranche EN PREMIER et seul ; le témoin
+    # de session n'est consulté qu'en classe R. Couverture totale, sans
+    # recouvrement (ASP-INV-65).
+    # ======================================================
+    - variables:
+        g1_etat: "{{ states('sensor.roborock_q7_max_etat') }}"
+        g1_err_vac: "{{ states('sensor.roborock_q7_max_erreur_de_l_aspirateur') }}"
+        g1_err_dock: "{{ states('sensor.roborock_q7_max_dock_erreur_de_dock') }}"
+        g1_session: "{{ states('binary_sensor.roborock_q7_max_nettoyage') }}"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ g1_etat in classe_a }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/MISSION_DEJA_OUVERTE"
+            - stop: "Refus : activite ou mission en cours (classe A)"
+        - conditions:
+            - condition: template
+              value_template: "{{ g1_etat == 'error' }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/ERREUR_EQUIPEMENT"
+            - stop: "Refus : etat machine en erreur"
+        - conditions:
+            - condition: template
+              value_template: "{{ g1_etat in classe_e_indispo }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/ROBOT_INDISPONIBLE"
+            - stop: "Refus : robot injoignable ou etat illisible"
+        - conditions:
+            - condition: template
+              value_template: "{{ g1_etat not in classe_r }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/ETAT_NON_QUALIFIE"
+            - stop: "Refus : etat machine non classe par le contrat (classe N)"
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ g1_err_vac in indispo or g1_err_dock in indispo }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/ROBOT_INDISPONIBLE"
+            - stop: "Refus : temoin d'erreur illisible"
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ g1_err_vac != 'none' or g1_err_dock != 'ok' }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/ERREUR_EQUIPEMENT"
+            - stop: "Refus : temoin d'erreur hors valeur nominale"
+        - conditions:
+            - condition: template
+              value_template: "{{ g1_session in indispo }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/ROBOT_INDISPONIBLE"
+            - stop: "Refus : temoin de session illisible"
+        - conditions:
+            - condition: template
+              value_template: "{{ g1_session == 'on' }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/SESSION_INACHEVEE"
+            - stop: "Refus : session ouverte alors que le robot est au repos"
+
+    # ======================================================
+    # 🗺️ ÉTAPE 5 — Sélectionner la carte (ASP-IMC-1, conditions 2 et 6)
+    # ------------------------------------------------------
+    # Contrôles PRÉALABLES à l'écriture : sélecteur lisible, et option
+    # exacte réellement offerte. Une dérive de libellé remontée depuis
+    # l'application Roborock REFUSE, elle ne recale rien (ASP-INV-67).
+    # ======================================================
+    - variables:
+        options_selecteur: >-
+          {{ state_attr('select.roborock_q7_max_carte_selectionnee', 'options') }}
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ states('select.roborock_q7_max_carte_selectionnee') in indispo
+                   or options_selecteur is none
+                   or options_selecteur is string
+                   or options_selecteur is not sequence
+                   or (options_selecteur | count) == 0
+                   or ctx_carte.option not in options_selecteur }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/CARTE_NON_CONFIRMEE"
+            - stop: "Refus : selecteur de carte illisible ou option exacte absente"
+
+    # ⚠️ `data` EST RENDU EN BLOC, ET C'EST OBLIGATOIRE.
+    # `Template.async_render` (helpers/template.py, 2026.8.3) fait
+    # `render_result.strip()` : écrit sous la forme habituelle
+    # `option: "{{ ctx_carte.option }}"`, la valeur envoyée au sélecteur
+    # serait « Étage » SANS son espace finale — donc AUCUNE option
+    # existante, et la carte Étage serait définitivement inlançable.
+    # Rendre le mapping entier place l'espace À L'INTÉRIEUR du `repr` :
+    # la troncature ne mord que sur les accolades, et
+    # `async_prepare_call_from_config` accepte explicitement un `data`
+    # qui se rend en dictionnaire (helpers/service.py).
+    - action: select.select_option
+      target:
+        entity_id: select.roborock_q7_max_carte_selectionnee
+      data: "{{ {'option': ctx_carte.option} }}"
+
+    # ======================================================
+    # ✅ ÉTAPE 6 — Confirmer le contexte cartographique — 30 s
+    # ------------------------------------------------------
+    # DOUBLE confirmation (ASP-INV-29) : le sélecteur relu dit ce qui a été
+    # DEMANDÉ ; les pièces exposées disent ce qui a été CHARGÉ.
+    # Comparaison LITTÉRALE, jamais approchée. Condition 4 = INCLUSION des
+    # segments V1, jamais égalité ni cardinalité (ASP-INV-63) : c'est ce
+    # qui rend l'Annexe commandable malgré `Ext` et `Chambre1`.
+    # `options` absente, non-liste ou vide vaut ABSENCE de confirmation.
+    # ======================================================
+    - wait_template: >-
+        {% set p = state_attr('sensor.roborock_q7_max_piece_actuelle', 'options') %}
+        {{ states('select.roborock_q7_max_carte_selectionnee') == ctx_carte.option
+           and p is not none and p is not string and p is sequence
+           and (p | count) > 0
+           and (ctx_carte.noms | reject('in', p) | list | count) == 0 }}
+      timeout: "00:00:30"
+      continue_on_timeout: true
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {% set p = state_attr('sensor.roborock_q7_max_piece_actuelle',
+                                      'options') %}
+                {{ not (states('select.roborock_q7_max_carte_selectionnee')
+                          == ctx_carte.option
+                        and p is not none and p is not string and p is sequence
+                        and (p | count) > 0
+                        and (ctx_carte.noms | reject('in', p)
+                             | list | count) == 0) }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/CARTE_NON_CONFIRMEE"
+            - stop: "Refus : contexte cartographique non confirme sous 30 s"
+
+    # ======================================================
+    # 💧 ÉTAPE 7 — Écrire l'intensité d'eau (ASP-INV-14, ASP-INV-34)
+    # ------------------------------------------------------
+    # L'eau AVANT l'aspiration. Le mode suit tout seul et n'est JAMAIS
+    # écrit (ASP-INV-12). Le réglage est écrit MÊME s'il paraît déjà
+    # conforme : l'appareil le rétablit en fin de cycle (03 §5).
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {% set o = state_attr(
+                     'select.roborock_q7_max_intensite_de_frottement',
+                     'options') %}
+                {{ o is none or o is string or o is not sequence
+                   or eau_cible not in o }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/REGLAGE_NON_CONFIRME"
+            - stop: "Refus : intensite d'eau du profil non offerte par le selecteur"
+
+    - action: select.select_option
+      target:
+        entity_id: select.roborock_q7_max_intensite_de_frottement
+      data:
+        option: "{{ eau_cible }}"
+
+    # ======================================================
+    # ✅ ÉTAPE 8 — Confirmer l'eau et la cohérence du mode — 30 s
+    # ------------------------------------------------------
+    # Le mode est RELU pour cohérence (off => vacuum, sinon vac_and_mop) —
+    # contrôle, JAMAIS écriture (03 §6).
+    # ======================================================
+    - wait_template: >-
+        {{ is_state('select.roborock_q7_max_intensite_de_frottement', eau_cible)
+           and is_state('select.entree_roborock_q7_max_mode_de_nettoyage',
+                        mode_attendu) }}
+      timeout: "00:00:30"
+      continue_on_timeout: true
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ not (is_state(
+                          'select.roborock_q7_max_intensite_de_frottement',
+                          eau_cible)
+                        and is_state(
+                          'select.entree_roborock_q7_max_mode_de_nettoyage',
+                          mode_attendu)) }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/REGLAGE_NON_CONFIRME"
+            - stop: "Refus : eau ou mode derive non confirmes sous 30 s"
+
+    # ======================================================
+    # 🌀 ÉTAPE 9 — Écrire la puissance d'aspiration
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {% set f = state_attr('vacuum.roborock_q7_max',
+                                      'fan_speed_list') %}
+                {{ f is none or f is string or f is not sequence
+                   or aspiration_cible not in f }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/REGLAGE_NON_CONFIRME"
+            - stop: "Refus : puissance d'aspiration du profil non offerte"
+
+    - action: vacuum.set_fan_speed
+      target:
+        entity_id: vacuum.roborock_q7_max
+      data:
+        fan_speed: "{{ aspiration_cible }}"
+
+    # ======================================================
+    # ✅ ÉTAPE 10 — Confirmer l'aspiration — 30 s
+    # ======================================================
+    - wait_template: >-
+        {{ state_attr('vacuum.roborock_q7_max', 'fan_speed')
+           == aspiration_cible }}
+      timeout: "00:00:30"
+      continue_on_timeout: true
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ state_attr('vacuum.roborock_q7_max', 'fan_speed')
+                   != aspiration_cible }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/REGLAGE_NON_CONFIRME"
+            - stop: "Refus : puissance d'aspiration non confirmee sous 30 s"
+
+    # ======================================================
+    # 🛡️ ÉTAPE 11 — Revérifier INTÉGRALEMENT l'état (ASP-INV-36)
+    # ------------------------------------------------------
+    # Ce n'est PAS une redite de l'étape 4 : du temps s'est écoulé et trois
+    # écritures ont eu lieu. Les quatre témoins sont RELUS À NEUF ici —
+    # `g2_*` ne réutilise aucune valeur de `g1_*`. La revérification porte
+    # sur la TOTALITÉ des conditions du §5, `SESSION_INACHEVEE` comprise :
+    # un cycle lancé puis arrêté depuis l'application entre les deux étapes
+    # laisserait une session ouverte.
+    # ======================================================
+    - variables:
+        g2_etat: "{{ states('sensor.roborock_q7_max_etat') }}"
+        g2_err_vac: "{{ states('sensor.roborock_q7_max_erreur_de_l_aspirateur') }}"
+        g2_err_dock: "{{ states('sensor.roborock_q7_max_dock_erreur_de_dock') }}"
+        g2_session: "{{ states('binary_sensor.roborock_q7_max_nettoyage') }}"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ g2_etat in classe_a }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/MISSION_DEJA_OUVERTE"
+            - stop: "Refus tardif : activite ou mission en cours (classe A)"
+        - conditions:
+            - condition: template
+              value_template: "{{ g2_etat == 'error' }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/ERREUR_EQUIPEMENT"
+            - stop: "Refus tardif : etat machine en erreur"
+        - conditions:
+            - condition: template
+              value_template: "{{ g2_etat in classe_e_indispo }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/ROBOT_INDISPONIBLE"
+            - stop: "Refus tardif : robot injoignable ou etat illisible"
+        - conditions:
+            - condition: template
+              value_template: "{{ g2_etat not in classe_r }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/ETAT_NON_QUALIFIE"
+            - stop: "Refus tardif : etat machine non classe par le contrat"
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ g2_err_vac in indispo or g2_err_dock in indispo }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/ROBOT_INDISPONIBLE"
+            - stop: "Refus tardif : temoin d'erreur illisible"
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ g2_err_vac != 'none' or g2_err_dock != 'ok' }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/ERREUR_EQUIPEMENT"
+            - stop: "Refus tardif : temoin d'erreur hors valeur nominale"
+        - conditions:
+            - condition: template
+              value_template: "{{ g2_session in indispo }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/ROBOT_INDISPONIBLE"
+            - stop: "Refus tardif : temoin de session illisible"
+        - conditions:
+            - condition: template
+              value_template: "{{ g2_session == 'on' }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "REFUS/SESSION_INACHEVEE"
+            - stop: "Refus tardif : session ouverte apparue pendant la sequence"
+
+    # ======================================================
+    # 📡 ÉTAPE 12 — Émettre UNE SEULE commande segmentée (ASP-INV-35)
+    # ------------------------------------------------------
+    # ORDRE DES DEUX ÉCRITURES, ET FENÊTRE D'INTERRUPTION — dit franchement.
+    # La trace est posée D'ABORD, le verdict ENSUITE, juste avant l'appel.
+    # Ce sont DEUX appels de service distincts : ils ne sont PAS atomiques.
+    # Une interruption entre les deux — arrêt de Home Assistant, annulation
+    # du run — laisse la trace de la NOUVELLE intention à côté du verdict
+    # de la mission PRÉCÉDENTE. Cet ordre est délibéré : il rend le couple
+    # incohérent DE FAÇON VISIBLE (une trace neuve sous un verdict
+    # terminal), là où l'ordre inverse aurait produit un couple d'apparence
+    # cohérente et faux. La fenêtre se referme à l'écriture du verdict.
+    #
+    # `COMMANDE/ISSUE_NON_ETABLIE` dit EXACTEMENT ceci : l'issue de la
+    # commande n'est pas établie. Elle n'affirme NI qu'une émission a eu
+    # lieu — le run peut être annulé entre cette écriture et l'appel —, NI
+    # que la commande a atteint le service, NI qu'elle a été transmise au
+    # robot, NI qu'elle a été rejetée, NI que le canal était indisponible.
+    # C'est l'« issue non établie » du contrat 07 §4 : un constat d'absence
+    # de connaissance, jamais l'attribution d'une cause.
+    #
+    # AUCUN `continue_on_error` : l'exception éventuelle du service arrête
+    # la séquence (07 §3) et remonte INTACTE à l'appelant, où elle reste
+    # lisible — journal et trace Home Assistant.
+    #
+    # CHARGE UTILE ENVELOPPÉE (ASP-INV-33) : une LISTE contenant UN
+    # mapping. La forme nue échoue en silence et n'est jamais employée.
+    # PASSAGES (ASP-INV-18/19) : x1 => champ `repeat` ABSENT ; x2 => 2 ;
+    # x3 => 3. Sémantique de COMPTAGE — jamais la convention décalée de la
+    # voie zonée, qui n'est pas employée ici.
+    # ======================================================
+    - variables:
+        indices: >-
+          {%- set ns = namespace(v=[]) -%}
+          {%- for p in segments_demandes -%}
+          {%- set ns.v = ns.v + [ctx_carte.segments[p].index] -%}
+          {%- endfor -%}
+          {{ ns.v }}
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.aspirateur_derniere_intention_lancee
+      data:
+        value: >-
+          carte={{ carte | string }}|segments={{ segments_demandes | join(',') }}|profil={{ profil_cle }}|passages={{ passages_int }}
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.aspirateur_mission_verdict
+      data:
+        value: "COMMANDE/ISSUE_NON_ETABLIE"
+
+    - action: vacuum.send_command
+      target:
+        entity_id: vacuum.roborock_q7_max
+      data:
+        command: app_segment_clean
+        params: >-
+          {{ [ dict(segments=indices, repeat=passages_int) ]
+             if passages_int > 1
+             else [ dict(segments=indices) ] }}
+
+    # ------------------------------------------------------
+    # Retour RÉUSSI du service — et seulement là.
+    # Acceptation, JAMAIS démarrage (ASP-INV-38).
+    # ------------------------------------------------------
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.aspirateur_mission_verdict
+      data:
+        value: "EMISSION/COMMANDE_ACCEPTEE"
+
+    # ======================================================
+    # 👁️ ÉTAPE 13 — Observer la transition de démarrage — 60 s
+    # ------------------------------------------------------
+    # Autorité du MOUVEMENT = état du `vacuum` (08 §2). L'expiration ne
+    # conclut NI au succès NI à l'immobilité : elle constate une absence de
+    # preuve, et le dit (ASP-INV-38, 09 §3). Aucune réémission, aucune
+    # seconde attente, aucune poursuite au bénéfice du doute.
+    # Le moteur s'arrête ICI : aucune supervision continue en L1.
+    # ======================================================
+    - wait_template: "{{ is_state('vacuum.roborock_q7_max', 'cleaning') }}"
+      timeout: "00:01:00"
+      continue_on_timeout: true
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ is_state('vacuum.roborock_q7_max', 'cleaning') }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "LANCEE/DEMARRAGE_OBSERVE"
+      default:
+        - action: input_text.set_value
+          target:
+            entity_id: input_text.aspirateur_mission_verdict
+          data:
+            value: "ECHEC/TRANSITION_NON_OBSERVEE"

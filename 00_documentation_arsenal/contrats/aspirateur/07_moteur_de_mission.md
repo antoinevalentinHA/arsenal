@@ -178,6 +178,20 @@ normalement.
 > **Une erreur de transport ne qualifie jamais la commande Roborock.** Conclure à
 > l'invalidité d'une commande sur la seule foi d'une erreur côté client est
 > **non conforme**.
+>
+> **Issue non établie — lorsque la plateforme ne permet pas de trancher.**
+> Lorsqu'aucune primitive de la plateforme ne permet de distinguer un **refus**
+> d'une **interruption de l'exécution**, le moteur porte une **issue non
+> établie** : il constate que l'issue n'est pas connue, et **n'attribue aucune
+> cause**. La qualification complète est alors **partagée** — le moteur dit ce
+> qu'il a constaté, l'appelant dit ce qu'il a observé du canal, et la trace de
+> la plateforme porte l'erreur exacte.
+>
+> **Ce que cette clause n'autorise pas.** Elle ne dispense d'aucune des trois
+> issues ci-dessus lorsqu'elles **sont** distinguables ; elle n'autorise ni à
+> présenter une issue non établie comme une acceptation, ni à la nommer refus.
+> Une issue non établie **n'est pas** un motif d'échec du catalogue
+> ([`09`](09_refus_et_diagnostics.md) §3) : elle en est l'absence assumée.
 
 > **`ASP-INV-38` — acceptation ≠ démarrage.** L'acceptation d'une commande n'est
 > **jamais** présentée comme un lancement. Le domaine attend une **transition
