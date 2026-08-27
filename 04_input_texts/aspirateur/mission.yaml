@@ -1,0 +1,168 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT
+#     Aspirateur — Verdict de mission et dernière intention lancée
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter les DEUX helpers de diagnostic du domaine `aspirateur` :
+#   le VERDICT de la mission (rôle contractuel `‹verdict_de_mission›`)
+#   et la TRACE de la dernière intention effectivement engagée
+#   (rôle `‹derniere_intention_lancee›`).
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             09_refus_et_diagnostics.md · 08_etats_et_observation.md §5
+#             12_identifiants_a_fournir.md §2.3
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucun parsing, aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🔖 NATURE
+#   Diagnostic textuel (verdict) · Trace événementielle (intention)
+#
+# ✍️ ÉCRIVAIN UNIQUE
+#   script.aspirateur_lancer_mission — et lui seul (ASP-INV-31).
+#   Aucune automation, aucune UI, aucun autre script n'écrit ici.
+#
+# 👁️ CONSOMMATEURS
+#   sensor.aspirateur_motif_lisible (dérivation du motif — ASP-INV-50)
+#   Lecture humaine (Developer Tools). Aucune UI en L1.
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Déclencher une action à partir de ces helpers
+#   - Écrire un verdict qui dépasse la connaissance acquise
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🧾 VERDICT DE MISSION
+# ----------------------------------------------------------
+# 📋 FORMAT — vocabulaire FERMÉ : 18 VALEURS DE VERDICT, aucune autre.
+#
+#   ⚠️ Ne pas confondre avec les 18 CODES DU CATALOGUE (09 §2 + §3).
+#      Les deux ensembles comptent 18 elements, et ils SE RECOUPENT :
+#        · 14 codes du catalogue figurent dans le verdict — les 13 refus
+#          sous le prefixe REFUS/, plus TRANSITION_NON_OBSERVEE sous le
+#          prefixe ECHEC/ ;
+#        ·  4 codes du catalogue en sont ABSENTS : CANAL_INDISPONIBLE,
+#          COMMANDE_REJETEE, MISSION_INTERROMPUE, ERREUR_EN_MISSION ;
+#        ·  4 valeurs de CYCLE DE VIE (ASP-INV-70) n'appartiennent a aucun
+#          catalogue : VALIDATION_EN_COURS, ISSUE_NON_ETABLIE,
+#          COMMANDE_ACCEPTEE, DEMARRAGE_OBSERVE.
+#      14 + 4 = 18 valeurs de verdict ; 14 + 4 = 18 codes du catalogue.
+#      La coincidence des deux totaux est fortuite. Ce fichier ecrit
+#      toujours « valeurs de verdict » ou « codes du catalogue », jamais
+#      « 18 » seul. Ce decompte est confronte par le checker (ASP-CI-18).
+#
+#   Cycle de vie
+#     VALIDATION_EN_COURS            posé en PREMIÈRE action de chaque
+#                                    appel du moteur. Rend la péremption
+#                                    du helper univoque : une valeur
+#                                    terminale d'une mission antérieure
+#                                    signifie qu'AUCUNE nouvelle exécution
+#                                    n'est observable dans les helpers.
+#
+#   Refus AVANT émission — les 13 codes du catalogue (09 §2)
+#     REFUS/SELECTION_VIDE
+#     REFUS/SEGMENT_INCONNU
+#     REFUS/SELECTION_MULTI_CARTE
+#     REFUS/CARTE_NON_CONFIRMEE
+#     REFUS/PROFIL_INCONNU
+#     REFUS/PASSAGES_HORS_CONTRAT
+#     REFUS/PREREQUIS_MATERIEL_ABSENT
+#     REFUS/ROBOT_INDISPONIBLE
+#     REFUS/ETAT_NON_QUALIFIE
+#     REFUS/ERREUR_EQUIPEMENT
+#     REFUS/MISSION_DEJA_OUVERTE
+#     REFUS/SESSION_INACHEVEE
+#     REFUS/REGLAGE_NON_CONFIRME
+#
+#   Émission et issue
+#     COMMANDE/ISSUE_NON_ETABLIE     posé JUSTE AVANT l'appel du service,
+#                                    APRÈS la trace d'intention. Signifie
+#                                    EXCLUSIVEMENT : « l'issue de la
+#                                    commande n'est pas établie ».
+#                                    N'affirme PAS qu'une émission a eu
+#                                    lieu — le run peut être annulé entre
+#                                    cette écriture et l'appel —, ni que la
+#                                    commande a atteint le service, ni
+#                                    qu'elle a été transmise au robot, ni
+#                                    qu'elle a été rejetée, ni que le canal
+#                                    était indisponible. C'est l'« issue non
+#                                    établie » du contrat 07 §4 : un constat
+#                                    d'absence de connaissance, sans cause.
+#     EMISSION/COMMANDE_ACCEPTEE     posé au RETOUR RÉUSSI du service, et
+#                                    seulement là. Acceptation, JAMAIS
+#                                    démarrage (ASP-INV-38).
+#     ECHEC/TRANSITION_NON_OBSERVEE  aucune transition observée en 60 s —
+#                                    absence de preuve, ni succès ni
+#                                    immobilité (09 §3).
+#     LANCEE/DEMARRAGE_OBSERVE       transition observée sur l'autorité du
+#                                    mouvement (08 §2). Condition qualifiée
+#                                    au terrain le 2026-08-27, eau comprise :
+#                                    3 ms entre l'état machine et l'entité
+#                                    `vacuum`, pour une fenêtre de 60 s.
+#                                    Portée bornée à ce modèle, ce firmware
+#                                    et cette version d'intégration — voir
+#                                    10_scripts/aspirateur/lancer_mission.yaml.
+#
+# ⛔ CODES NON ATTEIGNABLES EN L1 — limite de lot, consignée
+#     COMMANDE_REJETEE   distinguer un rejet d'une interruption d'exécution
+#                        exigerait un observateur survivant à l'appel, donc
+#                        un second script — hors périmètre L1. Le moteur
+#                        n'écrit JAMAIS ce code. L'exception du service
+#                        remonte intacte à l'appelant et reste visible dans
+#                        la trace Home Assistant.
+#     CANAL_INDISPONIBLE appartient à l'APPELANT lorsqu'il observe lui-même
+#                        une erreur de transport. Le moteur ne le déduit
+#                        jamais de la seule absence de mutation des helpers.
+#     MISSION_INTERROMPUE · ERREUR_EN_MISSION
+#                        relèvent de la supervision continue — hors L1.
+#   Les 18 CODES DU CATALOGUE restent TOUS traduits par
+#   sensor.aspirateur_motif_lisible.
+#
+# 📏 CAPACITÉ
+#   Valeur la plus longue : REFUS/PREREQUIS_MATERIEL_ABSENT (31 car.)
+#   max: 255 — marge vérifiée par le checker (ASP-CI-21).
+# ----------------------------------------------------------
+aspirateur_mission_verdict:
+  name: "Aspirateur — Verdict de mission"
+  # PAS de clé `initial` (doctrine restauration_etat_helpers) : premier
+  # boot = unknown, traité comme « aucune mission tracée ».
+  max: 255
+  icon: mdi:robot-vacuum-alert
+
+# ----------------------------------------------------------
+# 🧾 DERNIÈRE INTENTION LANCÉE
+# ----------------------------------------------------------
+# 📋 FORMAT — sérialisation plate, séparateur `|`
+#   carte=<c>|segments=<p1>,<p2>,…|profil=<clé>|passages=<n>
+#
+#   Exemple (intention V1 la plus longue possible, 96 caractères) :
+#   carte=1|segments=1_16,1_17,1_18,1_19,1_20,1_21,1_22,1_23|profil=serpilliere_intensive|passages=1
+#
+#   Les segments sont des PAIRES `‹carte›_‹segment›` (ASP-INV-6) : jamais
+#   un index nu. Aucun libellé Roborock n'y figure (ASP-INV-7).
+#
+# 📏 CAPACITÉ — vérifiée mécaniquement
+#   Le pire cas est l'Étage : 8 segments + le profil dont la clé est la
+#   plus longue + un chiffre de passages = 96 caractères. max: 255 laisse
+#   159 caractères de marge. Le checker RECALCULE ce pire cas depuis le
+#   référentiel du moteur (ASP-CI-21) : il ne fait pas confiance à ce
+#   commentaire.
+#
+# 🧭 HONNÊTETÉ (ASP-INV-15)
+#   Cette trace est l'intention dont l'émission va être tentée. Elle est
+#   écrite JUSTE AVANT le verdict `COMMANDE/ISSUE_NON_ETABLIE`, mais les
+#   deux écritures sont DEUX appels de service distincts : elles ne sont
+#   PAS atomiques. Une interruption entre les deux laisse cette trace
+#   neuve à côté du verdict de la mission PRÉCÉDENTE — incohérence
+#   VISIBLE, et voulue telle : l'ordre inverse aurait produit un couple
+#   d'apparence cohérente et faux.
+#   Elle n'est JAMAIS relue depuis l'appareil, et ne prouve rien du
+#   profil réellement appliqué.
+# ----------------------------------------------------------
+aspirateur_derniere_intention_lancee:
+  name: "Aspirateur — Dernière intention lancée"
+  # PAS de clé `initial` (doctrine restauration_etat_helpers).
+  max: 255
+  icon: mdi:clipboard-text-clock

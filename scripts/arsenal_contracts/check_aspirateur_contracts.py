@@ -8,16 +8,32 @@ Audit factuel du domaine    : 00_documentation_arsenal/audits/01_rapports/
 
 PÉRIMÈTRE — ce que ce checker vérifie, et ce qu'il ne vérifie pas.
 
-Le domaine Aspirateur est **antérieur au runtime** : il n'existe ni helper, ni
-script, ni automation, ni dashboard à confronter. Les obligations de conduite du
-contrat (écrivain unique, forme enveloppée de la charge utile, interdiction
-d'écrire le mode de nettoyage, séquence de lancement) ne sont donc **pas**
-vérifiables aujourd'hui : elles le deviendront avec le premier lot runtime, et
-ce checker ne prétend pas les couvrir.
+Deux couches, depuis le lot runtime L1.
 
-Ce qui EST vérifiable maintenant est l'**intégrité du système normatif
-lui-même** : un contrat dont le référentiel, le catalogue de refus ou la
-partition d'états se troue cesse d'être opposable, et le trou est silencieux.
+1. L'**intégrité du système normatif lui-même** (ASP-CI-1 … ASP-CI-10) : un
+   contrat dont le référentiel, le catalogue de refus ou la partition d'états
+   se troue cesse d'être opposable, et le trou est silencieux.
+
+2. La **conduite runtime** (ASP-CI-11 … ASP-CI-21). Les obligations que le
+   contrat énonçait sans pouvoir les confronter — écrivain unique, forme
+   enveloppée de la charge utile, convention de passages, interdiction
+   d'écrire le mode dérivé, ordre de la séquence, unicité de la commande,
+   fermeture du vocabulaire de verdict, totalité du motif lisible, constantes
+   temporelles — le sont désormais.
+
+CE QUE LE LOT L1 NE COUVRE PAS, ET POURQUOI C'EST ÉCRIT ICI. L1 porte le seul
+lancement : ni conduite d'une mission ouverte, ni supervision continue, ni UI.
+Trois codes du catalogue restent donc sans écrivain — `MISSION_INTERROMPUE` et
+`ERREUR_EN_MISSION` (supervision continue, lot ultérieur) et
+`CANAL_INDISPONIBLE` (diagnostic de l'APPELANT : si la demande n'atteint pas
+Home Assistant, aucun moteur ne s'exécute pour l'écrire). Un quatrième,
+`COMMANDE_REJETEE`, est **structurellement** hors de portée : Home Assistant
+n'expose aucune construction YAML d'attrapage d'erreur, et distinguer un rejet
+d'une interruption d'exécution exigerait un observateur survivant à l'appel,
+donc un second script. ASP-CI-18 **interdit** au moteur d'écrire ces codes — un
+verdict anticipé affirmerait un rejet avant qu'un rejet soit observable —
+pendant qu'ASP-CI-19 **exige** leur traduction dans le motif lisible : le
+catalogue reste total, sans qu'aucun verdict ne dépasse la connaissance acquise.
 
 TROIS ANCRES INDÉPENDANTES DU CONTRAT. Un contrôle qui ne lit que le contrat ne
 prouve que sa cohérence interne : falsifier la table ET ses consommateurs le
@@ -99,6 +115,83 @@ Dix contrôles, tous adossés à une clause déjà normée par le contrat :
                           CONJOINTE contrat + checker + runtime
                           (ASP-INV-69, ARB-3).
 
+Quinze contrôles de CONDUITE, adossés au runtime L1 :
+
+  ASP-CI-11 Écrivain unique — un seul script, `mode: single`, quatre champs ;
+                          AUCUN autre YAML de configuration n'écrit les deux
+                          helpers ni n'appelle `vacuum.*` / `roborock.*` ; la
+                          garde template et le moteur appliquent la MÊME règle
+                          sur les MÊMES témoins (ASP-INV-31/32/61).
+  ASP-CI-12 Charge utile — le gabarit `params` est RENDU, pas cherché à la
+                          regex : le résultat doit être une LISTE contenant UN
+                          mapping, la forme nue échouant en silence
+                          (ASP-INV-33).
+  ASP-CI-13 Passages    — rendu pour ×1, ×2, ×3 : `repeat` ABSENT pour ×1, et
+                          jamais `0` ni `1`, qui transposeraient la convention
+                          DÉCALÉE de la voie zonée (ASP-INV-18/19).
+  ASP-CI-14 Voies       — ni `app_zoned_clean`, ni `repeats`, ni `vacuum.start`,
+                          ni `clean_area` : commentaires neutralisés d'abord,
+                          faute de quoi l'en-tête qui INTERDIT ces voies les
+                          déclencherait lui-même (07 §6).
+  ASP-CI-15 Mode dérivé — `select.entree_…_mode_de_nettoyage` n'est jamais la
+                          CIBLE d'une écriture : l'écrire écrase le profil
+                          d'aspiration (ASP-INV-12).
+  ASP-CI-16 Ordre       — carte, puis EAU, puis ASPIRATION, puis commande, et
+                          une relecture des gardes INTERCALÉE entre le dernier
+                          réglage et l'émission, portant sur les QUATRE témoins
+                          (ASP-INV-34/36).
+  ASP-CI-17 Commande    — exactement une émission de démarrage (ASP-INV-35).
+  ASP-CI-18 Verdict     — DÉCOMPTE du vocabulaire RECALCULÉ et confronté au
+                          texte du helper : les valeurs de verdict et les codes
+                          du catalogue comptent 18 éléments chacun et SE
+                          RECOUPENT, un décompte qui les dirait disjoints est
+                          faux ; vocabulaire FERMÉ et intégralement atteignable ;
+                          `ISSUE_NON_ETABLIE` posé AVANT l'appel avec la
+                          trace, `COMMANDE_ACCEPTEE` seulement au retour
+                          réussi ; aucun `continue_on_error` ; aucun des quatre
+                          codes hors de portée de L1 (ASP-INV-37/38/49).
+  ASP-CI-19 Motif       — les 18 codes du catalogue et les 4 valeurs de cycle
+                          de vie traduits, chacun sous 255 caractères, sans
+                          index nu, sans libellé d'appareil, sans nom d'entité
+                          (ASP-INV-6/7/50/53).
+  ASP-CI-20 Constantes  — trois fenêtres de 30 s et une de 60 s dans le moteur,
+                          aucune autre temporisation, aucun helper temporel
+                          (ASP-INV-69).
+  ASP-CI-21 Concordance — les six identifiants ATTRIBUÉS par l'opérateur, le
+                          référentiel embarqué confronté aux tables §2 / §2.1
+                          — espace finale de `Étage ` comprise —, les cinq
+                          profils, la partition, l'attestation des entités
+                          natives par l'audit, et la CAPACITÉ réelle des
+                          helpers face à la sérialisation MAXIMALE d'une
+                          intention V1 (ASP-INV-58/63/66/67).
+  ASP-CI-22 Rendus      — les DEUX défauts de plateforme que ce lot revendique
+                          avoir évités sont VERROUILLÉS, en rendant les
+                          gabarits : le `data:` de la sélection de carte doit
+                          se rendre en mapping et restituer l'option EXACTE,
+                          espace finale comprise (sinon `.strip()` la mange) ;
+                          aucune variable ne doit se rendre en valeur que
+                          `_parse_result` retype (sinon `referentiel[0]` ne
+                          résout plus) ; et la garde de type de `segments`
+                          refuse un MAPPING, dont Jinja itérerait les clés.
+  ASP-CI-23 État rendu  — le gabarit d'état canonique est RENDU sur les 43
+                          valeurs réellement exposées par l'appareil, plus
+                          `unavailable`, et confronté à l'image contractuelle
+                          classe par classe ; `mission_ouverte` doit distinguer
+                          l'indisponibilité de `non` (ASP-INV-45/68).
+  ASP-CI-24 Garde rendue— la garde de lancement est RENDUE sur le produit
+                          cartésien des quatre témoins et confrontée à la règle
+                          du moteur : une garde qui ne calcule plus rien ne
+                          passe plus (07 §5.1).
+  ASP-CI-25 Refus tardifs— chaque COMPARAISON exigée à l'étape 11 existe, et
+                          produit LE code de refus qui lui correspond, avec
+                          `stop:`. C'est la comparaison qui est contrôlée, pas
+                          la seule présence du nom du témoin : retirer
+                          `g2_err_dock != 'ok'` en laissant `g2_err_dock` dans
+                          une autre branche passait au vert, alors qu'un dock
+                          en erreur ne refusait plus rien. Le jeu de refus
+                          tardifs égale par ailleurs celui de la garde
+                          initiale (ASP-INV-36, ASP-INV-50).
+
 
 Les blocs de code clôturés sont neutralisés avant TOUS les contrôles, et aussi
 sur l'audit : un exemple documentaire n'est normatif nulle part, et un faux
@@ -142,6 +235,8 @@ import argparse
 import re
 import sys
 from pathlib import Path
+
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 DOMAIN = ROOT / "00_documentation_arsenal" / "contrats" / "aspirateur"
@@ -1291,6 +1386,1081 @@ def check_fenetres(textes: dict[str, str]) -> list[str]:
 
 
 # ─────────────────────────────────────────────────────────────
+# RUNTIME L1 — ASP-CI-22 … ASP-CI-25 : contrôles PAR RENDU
+#
+# Les contrôles 11 à 21 lisent la STRUCTURE des artefacts. Un contre-audit a
+# montré que cela ne suffit pas : les deux défauts que ce lot revendique avoir
+# évités — la troncature de `Template.async_render` et le retypage de
+# `_parse_result` — pouvaient être RÉINTRODUITS sans qu'aucun contrôle ne
+# bronche, et le contenu des deux gabarits template pouvait être remplacé par
+# n'importe quoi. Les quatre contrôles ci-dessous RENDENT les gabarits, comme
+# ASP-CI-12 le fait déjà pour la charge utile, et confrontent le RÉSULTAT.
+# ─────────────────────────────────────────────────────────────
+
+# Motif du chemin rapide numérique de `_parse_result`, recopié à l'identique
+# depuis helpers/template/__init__.py (2026.8.3). C'est lui qui retype `"0"`
+# en entier, et qui a failli rendre `referentiel[carte_cle]` insoluble.
+IS_NUMERIC_HA = re.compile(r"^[+-]?(?!0\d)\d*(?:\.\d*)?$")
+
+# Variables du moteur dont le retypage numérique est VOULU et sans danger.
+# Toute autre variable retypée est une régression.
+VARIABLES_NUMERIQUES_ADMISES = frozenset({"passages_int"})
+
+# Énumération NATIVE de `sensor.roborock_q7_max_etat`, relevée en lecture seule
+# le 2026-08-27 (attribut `options`). Ancre extérieure au contrat : c'est elle
+# qui rend testable la TOTALITÉ de l'image canonique, classe N comprise.
+ETATS_NATIFS_RELEVES = (
+    "unknown", "starting", "charger_disconnected", "idle",
+    "remote_control_active", "cleaning", "returning_home", "manual_mode",
+    "charging", "charging_problem", "paused", "spot_cleaning", "error",
+    "shutting_down", "updating", "docking", "going_to_target",
+    "zoned_cleaning", "segment_cleaning", "emptying_the_bin",
+    "washing_the_mop", "washing_the_mop_2", "going_to_wash_the_mop", "in_call",
+    "mapping", "egg_attack", "patrol", "attaching_the_mop",
+    "detaching_the_mop", "charging_complete", "device_offline", "locked",
+    "air_drying_stopping", "robot_status_mopping", "clean_mop_cleaning",
+    "clean_mop_mopping", "segment_mopping", "segment_clean_mop_cleaning",
+    "segment_clean_mop_mopping", "zoned_mopping", "zoned_clean_mop_cleaning",
+    "zoned_clean_mop_mopping", "back_to_dock_washing_duster")
+
+
+def _env_jinja(etats: dict[str, object] | None = None):
+    """Bac à sable Jinja muni des primitives Home Assistant, sur un état simulé."""
+    from jinja2.sandbox import ImmutableSandboxedEnvironment
+
+    etats = etats or {}
+
+    def _st(eid):
+        v = etats.get(eid, "unknown")
+        return v["state"] if isinstance(v, dict) else v
+
+    def _attr(eid, cle):
+        v = etats.get(eid)
+        return v.get("attrs", {}).get(cle) if isinstance(v, dict) else None
+
+    env = ImmutableSandboxedEnvironment()
+    env.globals["states"] = _st
+    env.globals["state_attr"] = _attr
+    env.globals["is_state"] = lambda eid, val: _st(eid) == val
+    return env
+
+
+def rendu_ha(gabarit: str, etats=None, **variables):
+    """Reproduit `Template.async_render(parse_result=True)` : rendu, PUIS
+    `.strip()`, PUIS `_parse_result`. Les trois étapes, dans cet ordre — c'est
+    la deuxième qui mange l'espace finale de `Étage `, et la troisième qui
+    retype `"0"`."""
+    import ast
+
+    brut = _env_jinja(etats).from_string(gabarit).render(**variables)
+    rendu = brut.strip()
+    if IS_NUMERIC_HA.match(rendu):
+        try:
+            return float(rendu) if "." in rendu else int(rendu)
+        except ValueError:
+            pass
+    try:
+        valeur = ast.literal_eval(rendu)
+    except (ValueError, TypeError, SyntaxError, MemoryError):
+        return rendu
+    return rendu if isinstance(valeur, (str, complex)) else valeur
+
+
+def _bloc_variables(corps):
+    """Toutes les étapes `variables:` du moteur, dans l'ordre."""
+    return [s["variables"] for s in _aplatir(corps.get("sequence"))
+            if isinstance(s, dict) and "variables" in s]
+
+
+def check_rendus_moteur(corps, etapes, t02) -> list[str]:
+    """ASP-CI-22 — troncature, retypage et garde de type, prouvés par RENDU."""
+    errs = []
+    tech = bloc_technique(t02)
+    cartes = {idx: opt for idx, opt, statut in TECH_CARTE.findall(tech)
+              if idx and statut == "commandable"}
+    ref = next((v["referentiel"] for v in _bloc_variables(corps)
+                if "referentiel" in v), None)
+    if ref is None:
+        errs.append("ASP-CI-22 : référentiel embarqué introuvable.")
+        return errs
+
+    # (a) l'écriture de carte doit être rendue EN BLOC.
+    ecritures = [s for s in etapes
+                 if _service(s) == SVC_EAU and NATIF_CARTE in _cibles(s)]
+    if len(ecritures) != 1:
+        errs.append(f"ASP-CI-22 : une seule écriture du sélecteur de carte est "
+                    f"attendue — trouvé {len(ecritures)}.")
+        return errs
+    data = ecritures[0].get("data")
+    if not isinstance(data, str):
+        errs.append(
+            "ASP-CI-22 : le `data:` de la sélection de carte doit être UN "
+            "GABARIT rendu en bloc, pas un mapping de scalaires. "
+            "`Template.async_render` tronque chaque rendu : sous la forme "
+            "`option: \"{{ ctx_carte.option }}\"`, l'espace finale de "
+            "l'option `Étage ` disparaît et la carte devient inlançable.")
+        return errs
+
+    # (a2) rendu réel, carte par carte, espace finale comprise.
+    for idx, opt in sorted(cartes.items()):
+        if idx not in ref:
+            continue
+        obtenu = rendu_ha(data, ctx_carte=ref[idx])
+        if not isinstance(obtenu, dict):
+            errs.append(f"ASP-CI-22 : carte `{idx}` — le `data:` doit se rendre "
+                        f"en dictionnaire ; obtenu {obtenu!r}.")
+        elif obtenu.get("option") != opt:
+            errs.append(
+                f"ASP-CI-22 : carte `{idx}` — l'option transmise au sélecteur "
+                f"vaut {obtenu.get('option')!r}, le contrat exige {opt!r}. "
+                f"La comparaison porte sur la valeur EXACTE, espace finale "
+                f"comprise (ASP-INV-66, ASP-INV-67).")
+
+    # (b) aucune variable retypée par le chemin rapide numérique.
+    stub = {"carte": "0", "passages": "1", "profil": "aspiration_normale",
+            "segments": ["0_18"], "segments_demandes": ["0_18"]}
+    for bloc in _bloc_variables(corps):
+        contexte = dict(stub)
+        for cle, val in bloc.items():
+            if not isinstance(val, str) or "{" not in val:
+                contexte[cle] = val
+                continue
+            try:
+                brut = _env_jinja().from_string(val).render(**contexte).strip()
+            except Exception:                      # noqa: BLE001
+                contexte[cle] = ""
+                continue
+            contexte[cle] = rendu_ha(val, **contexte)
+            if IS_NUMERIC_HA.match(brut) and cle not in VARIABLES_NUMERIQUES_ADMISES:
+                errs.append(
+                    f"ASP-CI-22 : la variable `{cle}` se rend en {brut!r}, que "
+                    f"`_parse_result` retype en {type(rendu_ha(val, **contexte)).__name__}. "
+                    f"Une clé de carte retypée rend `referentiel[…]` insoluble. "
+                    f"Porter le contexte EN BLOC, ou déclarer la variable dans "
+                    f"VARIABLES_NUMERIQUES_ADMISES.")
+
+    # (c) la garde de type de `segments` doit refuser un mapping.
+    gardes = [c["value_template"]
+              for s in etapes if isinstance(s, dict) and "choose" in s
+              for o in s["choose"] for c in (o.get("conditions") or [])
+              if isinstance(c, dict) and "segments is" in str(c.get("value_template"))]
+    if not gardes:
+        errs.append("ASP-CI-22 : aucune garde de type sur `segments`.")
+    else:
+        for forme, description in (
+                ({"0_18": 1, "0_21": 2}, "un mapping"),
+                ("0_18", "une chaîne"),
+                ([], "une liste vide")):
+            if not any(rendu_ha(g, carte="0", segments=forme,
+                                profil="aspiration_normale", passages="1")
+                       is True for g in gardes):
+                errs.append(
+                    f"ASP-CI-22 : {description} passée en `segments` n'est pas "
+                    f"refusée. En Jinja un dictionnaire satisfait `is sequence` "
+                    f"et `map('string')` en itérerait les CLÉS : la demande "
+                    f"serait comprise pour une autre (ASP-INV-23).")
+    return errs
+
+
+def check_etat_canonique_rendu(texte_etat) -> list[str]:
+    """ASP-CI-23 — image TOTALE, prouvée en rendant le gabarit sur les 44
+    valeurs réellement exposées par l'appareil."""
+    errs = []
+    try:
+        bloc = yaml.safe_load(texte_etat)[0]["sensor"][0]
+    except (TypeError, KeyError, IndexError, yaml.YAMLError) as exc:
+        return [f"ASP-CI-23 : `{ID_ETAT_CANON}` illisible : {exc}"]
+    attrs = bloc.get("attributes") or {}
+    for cle in ("state",):
+        if cle not in bloc:
+            return [f"ASP-CI-23 : `{ID_ETAT_CANON}` sans clé `{cle}`."]
+
+    for etat in ETATS_NATIFS_RELEVES + ("unavailable",):
+        ctx = {NATIF_ETAT: etat, NATIF_SESSION: "off"}
+        attendu = IMAGE_ATTENDUE.get(etat, CODE_CANONIQUE_CLASSE_N)
+        obtenu = rendu_ha(bloc["state"], etats=ctx)
+        if obtenu != attendu:
+            errs.append(f"ASP-CI-23 : état natif `{etat}` — image obtenue "
+                        f"{obtenu!r}, image contractuelle {attendu!r} "
+                        f"(08 §1, ASP-INV-68).")
+        if "classe_partition" in attrs:
+            classe = next((c for c, v in PARTITION_ATTENDUE.items()
+                           if etat in v), CLASSE_NON_QUALIFIEE)
+            vue = rendu_ha(attrs["classe_partition"], etats=ctx)
+            if str(vue) != classe:
+                errs.append(f"ASP-CI-23 : état natif `{etat}` — classe obtenue "
+                            f"{vue!r}, partition contractuelle {classe!r} "
+                            f"(07 §5.0).")
+    # l'état orthogonal reste orthogonal, et l'indisponibilité n'est pas `non`
+    if ETAT_ORTHOGONAL not in "".join(str(v) for v in attrs.values()) \
+            and ETAT_ORTHOGONAL not in attrs:
+        errs.append(f"ASP-CI-23 : `{ETAT_ORTHOGONAL}` doit être exposé "
+                    f"SÉPARÉMENT, jamais fondu dans la valeur d'état "
+                    f"(ASP-INV-68).")
+    if ETAT_ORTHOGONAL in attrs:
+        rendus = {s: rendu_ha(attrs[ETAT_ORTHOGONAL],
+                              etats={NATIF_SESSION: s, NATIF_ETAT: "charging"})
+                  for s in ("on", "off", "unknown", "unavailable")}
+        if rendus["on"] == rendus["off"]:
+            errs.append("ASP-CI-23 : `mission_ouverte` ne distingue pas une "
+                        "session ouverte d'une session close.")
+        for indispo in ("unknown", "unavailable"):
+            if rendus[indispo] in (rendus["off"], rendus["on"]):
+                errs.append(f"ASP-CI-23 : `mission_ouverte` rend "
+                            f"{rendus[indispo]!r} sur `{indispo}` — une "
+                            f"indisponibilité ne vaut ni `oui` ni `non` "
+                            f"(ASP-INV-45).")
+    for etat in ETATS_NATIFS_RELEVES:
+        if rendu_ha(bloc["state"], etats={NATIF_ETAT: etat,
+                                          NATIF_SESSION: "off"}) \
+                not in ETATS_CANONIQUES:
+            errs.append(f"ASP-CI-23 : état natif `{etat}` produit un code hors "
+                        f"du vocabulaire canonique (ASP-INV-44).")
+    return errs
+
+
+def check_garde_rendue(texte_garde) -> list[str]:
+    """ASP-CI-24 — la garde template applique la MÊME règle que le moteur,
+    prouvé sur le produit cartésien des témoins."""
+    errs = []
+    try:
+        bloc = yaml.safe_load(texte_garde)[0]["binary_sensor"][0]
+    except (TypeError, KeyError, IndexError, yaml.YAMLError) as exc:
+        return [f"ASP-CI-24 : `{ID_GARDE}` illisible : {exc}"]
+    if "state" not in bloc:
+        return [f"ASP-CI-24 : `{ID_GARDE}` sans clé `state`."]
+
+    etats = ("charging", "charger_disconnected", "idle", "cleaning", "paused",
+             "error", "device_offline", "unknown", "charging_complete")
+    err_vac = (NOMINAL_ERR_VAC, "wheels_suspended", "unknown", "unavailable")
+    err_dock = (NOMINAL_ERR_DOCK, "dust_full", "unknown", "unavailable")
+    sessions = ("off", "on", "unknown", "unavailable")
+    joues = 0
+    for e in etats:
+        for ev in err_vac:
+            for ed in err_dock:
+                for se in sessions:
+                    joues += 1
+                    ctx = {NATIF_ETAT: e, NATIF_ERR_VAC: ev,
+                           NATIF_ERR_DOCK: ed, NATIF_SESSION: se}
+                    attendu = ("on" if (e in PARTITION_ATTENDUE["R"]
+                                        and ev == NOMINAL_ERR_VAC
+                                        and ed == NOMINAL_ERR_DOCK
+                                        and se == "off") else "off")
+                    obtenu = rendu_ha(bloc["state"], etats=ctx)
+                    if str(obtenu) != attendu:
+                        errs.append(
+                            f"ASP-CI-24 : garde divergente — état `{e}`, "
+                            f"erreur robot `{ev}`, erreur dock `{ed}`, session "
+                            f"`{se}` : garde `{obtenu}`, règle du moteur "
+                            f"`{attendu}` (07 §5.1).")
+                        if len(errs) > 6:
+                            errs.append("ASP-CI-24 : … divergences suivantes "
+                                        "tronquées.")
+                            return errs
+    if joues < 100:
+        errs.append(f"ASP-CI-24 : seulement {joues} combinaisons jouées.")
+    return errs
+
+
+def check_branches_tardives(etapes) -> list[str]:
+    """ASP-CI-25 — chaque témoin relu tardivement PRODUIT son refus, par la
+    COMPARAISON EXACTE qui le motive.
+
+    La version précédente se contentait de voir le NOM du témoin quelque part
+    dans les conditions. C'était insuffisant, et un contre-audit l'a montré :
+    retirer `g2_err_dock != 'ok'` de la condition d'erreur, en laissant
+    `g2_err_dock` dans la branche d'indisponibilité, passait au vert — alors
+    qu'un dock en erreur ne refusait plus rien. Le contrôle exige désormais,
+    pour chaque couple (témoin, comparaison), une branche qui porte CETTE
+    comparaison, écrit CE code de refus, et s'arrête.
+    """
+    errs = []
+    i_var = [i for i, s in enumerate(etapes)
+             if isinstance(s, dict) and "variables" in s
+             and any(k.startswith("g2_") for k in s["variables"])]
+    if not i_var:
+        errs.append("ASP-CI-25 : aucune relecture tardive des gardes "
+                    "(ASP-INV-36).")
+        return errs
+    suite = [s for s in etapes[i_var[0] + 1:]
+             if isinstance(s, dict) and "choose" in s]
+    if not suite:
+        errs.append("ASP-CI-25 : la relecture tardive n'est suivie d'aucun "
+                    "arbitrage — relire sans refuser ne garde rien.")
+        return errs
+    bloc = suite[0]["choose"]
+
+    # Chaque branche : sa condition normalisée, ses verdicts, son `stop:`.
+    branches = []
+    codes_tardifs = set()
+    for opt in bloc:
+        conditions = " ".join(
+            str(c.get("value_template", "")) if isinstance(c, dict) else str(c)
+            for c in (opt.get("conditions") or [])).split()
+        conditions = " ".join(conditions)
+        sequence = opt.get("sequence") or []
+        verdicts = {v for _i, v in _ecritures_verdict(sequence)}
+        arrete = any(isinstance(s, dict) and "stop" in s for s in sequence)
+        branches.append((conditions, verdicts, arrete))
+        if not verdicts:
+            errs.append(f"ASP-CI-25 : une branche tardive n'écrit aucun "
+                        f"verdict — un refus est un livrable (ASP-INV-50) : "
+                        f"{conditions[:70]}")
+        if not arrete:
+            errs.append(f"ASP-CI-25 : une branche tardive n'arrête pas la "
+                        f"séquence (ASP-INV-51) : {conditions[:70]}")
+        codes_tardifs |= {v for v in verdicts if v.startswith("REFUS/")}
+
+    # Le coeur du contrôle : la COMPARAISON, pas le nom.
+    for temoin, comparaison, code in COMPARAISONS_TARDIVES:
+        motif = f"{temoin} {comparaison}"
+        portantes = [b for b in branches if motif in b[0]]
+        if not portantes:
+            errs.append(
+                f"ASP-CI-25 : la revérification tardive ne compare jamais "
+                f"`{motif}`. Voir le nom `{temoin}` ailleurs ne prouve rien : "
+                f"c'est CETTE comparaison qui produit `{code}` (07 §5, "
+                f"ASP-INV-36).")
+            continue
+        if not any(code in b[1] for b in portantes):
+            vus = sorted({v for b in portantes for v in b[1]}) or ["aucun"]
+            errs.append(
+                f"ASP-CI-25 : `{motif}` ne produit pas `{code}` mais {vus} — "
+                f"le refus doit nommer le manque réel (ASP-INV-50, "
+                f"ASP-INV-60).")
+        if not any(b[2] for b in portantes if code in b[1]):
+            errs.append(f"ASP-CI-25 : la branche `{motif}` -> `{code}` "
+                        f"n'arrête pas la séquence (ASP-INV-51).")
+
+    # Chaque témoin relu doit être effectivement comparé quelque part.
+    for temoin in TEMOINS_TARDIFS:
+        if not any(temoin in b[0] for b in branches):
+            errs.append(f"ASP-CI-25 : témoin relu sans aucune branche de "
+                        f"refus : `{temoin}` (ASP-INV-36).")
+
+    # Le jeu de refus tardifs doit égaler celui de la garde initiale.
+    i_var_1 = [i for i, s in enumerate(etapes)
+               if isinstance(s, dict) and "variables" in s
+               and any(k.startswith("g1_") for k in s["variables"])]
+    if i_var_1:
+        premier = next((s for s in etapes[i_var_1[0] + 1:]
+                        if isinstance(s, dict) and "choose" in s), None)
+        if premier:
+            codes_init = set()
+            for opt in premier["choose"]:
+                codes_init |= {v for _i, v
+                               in _ecritures_verdict(opt.get("sequence") or [])
+                               if v.startswith("REFUS/")}
+            if codes_init != codes_tardifs:
+                errs.append(
+                    f"ASP-CI-25 : la revérification tardive ne produit pas les "
+                    f"mêmes refus que la garde initiale — manquants "
+                    f"{sorted(codes_init - codes_tardifs)}, en trop "
+                    f"{sorted(codes_tardifs - codes_init)} (ASP-INV-36).")
+    return errs
+
+
+def sans_commentaires_yaml(texte: str) -> str:
+    """Neutralise les lignes de commentaire YAML, en conservant le compte.
+
+    Un en-tête Arsenal ÉNUMÈRE ce que le fichier s'interdit : sans cette
+    neutralisation, la clause « n'émet JAMAIS vacuum.start » déclencherait
+    elle-même le contrôle qui interdit `vacuum.start`.
+    """
+    return "\n".join("" if l.lstrip().startswith("#") else l
+                     for l in texte.splitlines())
+
+
+# ═════════════════════════════════════════════════════════════
+# RUNTIME L1 — ASP-CI-11 … ASP-CI-21
+#
+# Le domaine cesse d'être antérieur au runtime : les obligations de CONDUITE
+# deviennent confrontables. Ces quinze contrôles ne relisent PAS le contrat pour
+# se donner raison — chacun est ancré soit sur une constante de module figée
+# ici, soit sur la table du contrat, soit sur le comportement RÉEL du gabarit
+# (les charges utiles sont RENDUES, pas cherchées à la regex).
+# ═════════════════════════════════════════════════════════════
+
+RUNTIME_MOTEUR = "10_scripts/aspirateur/lancer_mission.yaml"
+RUNTIME_HELPERS = "04_input_texts/aspirateur/mission.yaml"
+RUNTIME_ETAT = "12_template_sensors/aspirateur/etat_canonique.yaml"
+RUNTIME_MOTIF = "12_template_sensors/aspirateur/motif_lisible.yaml"
+RUNTIME_GARDE = "12_template_sensors/aspirateur/conditions_lancement_hors_carte.yaml"
+RUNTIME_FICHIERS = (RUNTIME_MOTEUR, RUNTIME_HELPERS, RUNTIME_ETAT,
+                    RUNTIME_MOTIF, RUNTIME_GARDE)
+
+# Identifiants ATTRIBUÉS PAR L'OPÉRATEUR au lot L1 (ASP-INV-58 : le contrat
+# n'en propose aucun). Figés ici : un renommage silencieux échoue.
+ID_MOTEUR = "aspirateur_lancer_mission"
+ID_VERDICT = "input_text.aspirateur_mission_verdict"
+ID_TRACE = "input_text.aspirateur_derniere_intention_lancee"
+ID_ETAT_CANON = "aspirateur_etat_canonique"
+ID_MOTIF = "aspirateur_motif_lisible"
+ID_GARDE = "aspirateur_conditions_lancement_hors_carte"
+
+# Vocabulaire FERMÉ du verdict — 18 valeurs, aucune autre.
+VOCABULAIRE_VERDICT = frozenset({
+    "VALIDATION_EN_COURS",
+    "REFUS/SELECTION_VIDE", "REFUS/SEGMENT_INCONNU", "REFUS/SELECTION_MULTI_CARTE",
+    "REFUS/CARTE_NON_CONFIRMEE", "REFUS/PROFIL_INCONNU",
+    "REFUS/PASSAGES_HORS_CONTRAT", "REFUS/PREREQUIS_MATERIEL_ABSENT",
+    "REFUS/ROBOT_INDISPONIBLE", "REFUS/ETAT_NON_QUALIFIE",
+    "REFUS/ERREUR_EQUIPEMENT", "REFUS/MISSION_DEJA_OUVERTE",
+    "REFUS/SESSION_INACHEVEE", "REFUS/REGLAGE_NON_CONFIRME",
+    "COMMANDE/ISSUE_NON_ETABLIE", "EMISSION/COMMANDE_ACCEPTEE",
+    "ECHEC/TRANSITION_NON_OBSERVEE", "LANCEE/DEMARRAGE_OBSERVE"})
+
+# Codes du catalogue que L1 NE PEUT PAS écrire, et pourquoi. Le moteur ne doit
+# en porter AUCUN littéralement : un verdict anticipé affirmerait un rejet
+# avant qu'un rejet soit observable. Leur TRADUCTION reste obligatoire dans le
+# motif lisible — le catalogue demeure total.
+CODES_HORS_PORTEE_L1 = {
+    "COMMANDE_REJETEE": "un rejet n'est distinguable d'une interruption que "
+                        "par un observateur survivant à l'appel",
+    "CANAL_INDISPONIBLE": "appartient à l'appelant, qui seul observe une "
+                          "erreur de transport",
+    "MISSION_INTERROMPUE": "supervision continue, hors L1",
+    "ERREUR_EN_MISSION": "supervision continue, hors L1"}
+
+# Valeurs de cycle de vie que le motif lisible doit traduire en plus des
+# 18 codes du catalogue.
+CYCLE_DE_VIE = ("VALIDATION_EN_COURS", "ISSUE_NON_ETABLIE",
+                "COMMANDE_ACCEPTEE", "DEMARRAGE_OBSERVE")
+
+# Entités natives dont le moteur a besoin, par rôle. Figées ici : elles sont
+# CONFRONTÉES à l'audit (ASP-CI-21), jamais tirées de lui.
+NATIF_CARTE = "select.roborock_q7_max_carte_selectionnee"
+NATIF_EAU = "select.roborock_q7_max_intensite_de_frottement"
+NATIF_MODE = "select.entree_roborock_q7_max_mode_de_nettoyage"
+NATIF_VACUUM = "vacuum.roborock_q7_max"
+NATIF_PIECE = "sensor.roborock_q7_max_piece_actuelle"
+NATIF_ETAT = "sensor.roborock_q7_max_etat"
+NATIF_ERR_VAC = "sensor.roborock_q7_max_erreur_de_l_aspirateur"
+NATIF_ERR_DOCK = "sensor.roborock_q7_max_dock_erreur_de_dock"
+NATIF_SESSION = "binary_sensor.roborock_q7_max_nettoyage"
+NATIF_MOP = "binary_sensor.roborock_q7_max_serpilliere_fixee"
+
+# Les quatre témoins du §5.1, et leurs valeurs nominales (ARB-5). Le moteur ET
+# la garde template doivent appliquer la MÊME règle sur les MÊMES entités.
+TEMOINS_GARDE = (NATIF_ETAT, NATIF_ERR_VAC, NATIF_ERR_DOCK, NATIF_SESSION)
+NOMINAL_ERR_VAC = "none"
+NOMINAL_ERR_DOCK = "ok"
+
+# Séquence normative : eau -> aspiration -> commande (ASP-INV-34, ASP-INV-35).
+SVC_EAU = "select.select_option"
+SVC_ASPIRATION = "vacuum.set_fan_speed"
+SVC_COMMANDE = "vacuum.send_command"
+COMMANDE_SEGMENTEE = "app_segment_clean"
+
+# Voies formellement interdites (07 §6).
+VOIES_INTERDITES = ("app_zoned_clean", "set_vacuum_zoned_cleaning", "repeats",
+                    "vacuum.start", "vacuum.clean_area", "clean_area",
+                    "app_start", "resume_segment_clean")
+
+# Comparaisons EXIGEES a l'etape 11, temoin par temoin. C'est la comparaison
+# qui est controlee, jamais la seule presence du nom : retirer
+# `g2_err_dock != 'ok'` en laissant `g2_err_dock` ailleurs passait au vert dans
+# la version precedente, alors qu'un dock en erreur ne refusait plus rien.
+TEMOINS_TARDIFS = ("g2_etat", "g2_err_vac", "g2_err_dock", "g2_session")
+COMPARAISONS_TARDIVES = (
+    ("g2_etat", "in classe_a", "REFUS/MISSION_DEJA_OUVERTE"),
+    ("g2_etat", "== 'error'", "REFUS/ERREUR_EQUIPEMENT"),
+    ("g2_etat", "in classe_e_indispo", "REFUS/ROBOT_INDISPONIBLE"),
+    ("g2_etat", "not in classe_r", "REFUS/ETAT_NON_QUALIFIE"),
+    ("g2_err_vac", "in indispo", "REFUS/ROBOT_INDISPONIBLE"),
+    ("g2_err_vac", "!= 'none'", "REFUS/ERREUR_EQUIPEMENT"),
+    ("g2_err_dock", "in indispo", "REFUS/ROBOT_INDISPONIBLE"),
+    ("g2_err_dock", "!= 'ok'", "REFUS/ERREUR_EQUIPEMENT"),
+    ("g2_session", "in indispo", "REFUS/ROBOT_INDISPONIBLE"),
+    ("g2_session", "== 'on'", "REFUS/SESSION_INACHEVEE"),
+)
+
+FENETRE_CONFIRMATION_YAML = "00:00:30"
+FENETRE_TRANSITION_YAML = "00:01:00"
+NB_CONFIRMATIONS = 3          # carte (6), eau (8), aspiration (10)
+
+# Capacité d'un état de capteur Home Assistant.
+MAX_ETAT_CAPTEUR = 255
+
+
+def _aplatir(seq, out=None):
+    """Étapes d'un script en ordre de DOCUMENT, branches comprises."""
+    if out is None:
+        out = []
+    for step in seq or []:
+        out.append(step)
+        if isinstance(step, dict) and "choose" in step:
+            for opt in step["choose"] or []:
+                _aplatir((opt or {}).get("sequence"), out)
+            _aplatir(step.get("default"), out)
+    return out
+
+
+def _service(step):
+    return step.get("action") or step.get("service") if isinstance(step, dict) else None
+
+
+def _cibles(step):
+    tgt = (step.get("target") or {}) if isinstance(step, dict) else {}
+    eid = tgt.get("entity_id")
+    if eid is None:
+        return []
+    return [eid] if isinstance(eid, str) else list(eid)
+
+
+def _ecritures_verdict(etapes):
+    """Valeurs écrites dans le helper de verdict, en ordre de document."""
+    out = []
+    for i, step in enumerate(etapes):
+        if _service(step) != "input_text.set_value":
+            continue
+        if ID_VERDICT not in _cibles(step):
+            continue
+        data = step.get("data")
+        if isinstance(data, dict) and isinstance(data.get("value"), str):
+            out.append((i, data["value"].strip()))
+    return out
+
+
+def _index_service(etapes, svc):
+    return [i for i, s in enumerate(etapes) if _service(s) == svc]
+
+
+def charge_utile(params_tpl: str, indices: list[int], passages: int):
+    """REND réellement le gabarit de charge utile — aucune lecture à la regex.
+
+    C'est ce qui rend ASP-CI-12 et ASP-CI-13 opposables : une forme nue, une
+    enveloppe perdue ou un `repeat` mal conditionné se voient dans le RÉSULTAT,
+    là où une recherche textuelle se laisserait berner par un commentaire.
+    """
+    import ast
+
+    from jinja2 import StrictUndefined
+    from jinja2.sandbox import ImmutableSandboxedEnvironment
+
+    env = ImmutableSandboxedEnvironment(undefined=StrictUndefined)
+    rendu = env.from_string(params_tpl).render(
+        indices=indices, passages_int=passages).strip()
+    try:
+        return ast.literal_eval(rendu)
+    except (ValueError, SyntaxError):
+        return rendu
+
+
+def check_ecrivain_unique(moteur_yaml, textes_runtime, yaml_depot) -> list[str]:
+    """ASP-CI-11 — un seul moteur, un seul écrivain, une seule règle de garde."""
+    errs = []
+    if list(moteur_yaml) != [ID_MOTEUR]:
+        errs.append(
+            f"ASP-CI-11 : le fichier moteur doit déclarer EXACTEMENT le script "
+            f"`{ID_MOTEUR}` — trouvé {sorted(moteur_yaml)} (ASP-INV-31).")
+        return errs
+    corps = moteur_yaml[ID_MOTEUR]
+    if corps.get("mode") != "single":
+        errs.append(f"ASP-CI-11 : `{ID_MOTEUR}` doit porter `mode: single` — "
+                    f"trouvé {corps.get('mode')!r} (ASP-INV-32).")
+    attendus = {"carte", "segments", "profil", "passages"}
+    recus = set(corps.get("fields") or {})
+    if recus != attendus:
+        errs.append(f"ASP-CI-11 : l'intention est atomique — quatre champs "
+                    f"exactement, {sorted(attendus)} ; trouvé {sorted(recus)} "
+                    f"(ASP-INV-23).")
+
+    # Aucun autre fichier du dépôt n'écrit les helpers ni ne commande le robot.
+    for rel, txt in sorted(yaml_depot.items()):
+        if rel in RUNTIME_FICHIERS:
+            continue
+        for helper in (ID_VERDICT, ID_TRACE):
+            if helper in txt:
+                errs.append(f"ASP-CI-11 : {rel} référence `{helper}` — les "
+                            f"helpers du domaine n'ont qu'UN écrivain, le "
+                            f"moteur (ASP-INV-31).")
+        # `- action: vacuum.stop` comme `  action: vacuum.stop` : le tiret de
+        # liste fait partie de la ligne, l'oublier laisserait passer la forme
+        # la plus courante.
+        for m in re.finditer(r'^[ \t]*-?[ \t]*(?:action|service)[ \t]*:[ \t]*'
+                             r'(vacuum\.[a-z_]+|roborock\.[a-z_]+)[ \t]*$',
+                             sans_commentaires_yaml(txt), re.M):
+            errs.append(f"ASP-CI-11 : {rel} appelle `{m.group(1)}` — seul le "
+                        f"moteur commande l'appareil (ASP-INV-31).")
+
+    # Moteur et garde template appliquent la MÊME règle sur les MÊMES témoins.
+    garde = textes_runtime.get(RUNTIME_GARDE, "")
+    mot = textes_runtime.get(RUNTIME_MOTEUR, "")
+    for temoin in TEMOINS_GARDE:
+        if temoin not in garde:
+            errs.append(f"ASP-CI-11 : la garde `{ID_GARDE}` ignore le témoin "
+                        f"`{temoin}` que le moteur consulte — deux règles "
+                        f"divergentes pour une seule condition (07 §5.1).")
+        if temoin not in mot:
+            errs.append(f"ASP-CI-11 : le moteur ne relit pas `{temoin}` "
+                        f"(07 §5.1).")
+    for nominal, quoi in ((NOMINAL_ERR_VAC, "robot"), (NOMINAL_ERR_DOCK, "dock")):
+        if f"'{nominal}'" not in garde:
+            errs.append(f"ASP-CI-11 : la garde n'exige pas la valeur nominale "
+                        f"`{nominal}` du témoin d'erreur {quoi} (ASP-INV-61).")
+    return errs
+
+
+def check_charge_utile(etapes) -> list[str]:
+    """ASP-CI-12 / ASP-CI-13 — forme enveloppée, et convention ×1 / ×2 / ×3."""
+    errs = []
+    idx = _index_service(etapes, SVC_COMMANDE)
+    if len(idx) != 1:
+        errs.append(f"ASP-CI-12 : le moteur doit émettre EXACTEMENT un "
+                    f"`{SVC_COMMANDE}` — trouvé {len(idx)} (ASP-INV-35).")
+        return errs
+    step = etapes[idx[0]]
+    data = step.get("data") or {}
+    if data.get("command") != COMMANDE_SEGMENTEE:
+        errs.append(f"ASP-CI-12 : la commande protocolaire doit être "
+                    f"`{COMMANDE_SEGMENTEE}` — trouvé "
+                    f"{data.get('command')!r} (07 §2).")
+        return errs
+    tpl = data.get("params")
+    if not isinstance(tpl, str):
+        errs.append("ASP-CI-12 : `params` doit être un gabarit rendant la "
+                    "charge utile enveloppée (ASP-INV-33).")
+        return errs
+    for passages, attendu_repeat in ((1, None), (2, 2), (3, 3)):
+        rendu = charge_utile(tpl, [16, 21], passages)
+        if not isinstance(rendu, list) or len(rendu) != 1 \
+                or not isinstance(rendu[0], dict):
+            errs.append(f"ASP-CI-12 : ×{passages} — la charge utile doit être "
+                        f"une LISTE contenant UN mapping (forme enveloppée) ; "
+                        f"rendu : {rendu!r}. La forme nue échoue en silence "
+                        f"(ASP-INV-33).")
+            continue
+        utile = rendu[0]
+        if utile.get("segments") != [16, 21]:
+            errs.append(f"ASP-CI-12 : ×{passages} — la charge utile doit "
+                        f"porter les index natifs demandés ; rendu : "
+                        f"{utile!r}.")
+        if attendu_repeat is None:
+            if "repeat" in utile:
+                errs.append(f"ASP-CI-13 : ×1 exige l'ABSENCE du champ "
+                            f"`repeat` — rendu : {utile!r} (ASP-INV-18).")
+        elif utile.get("repeat") != attendu_repeat:
+            errs.append(f"ASP-CI-13 : ×{passages} exige `repeat: "
+                        f"{attendu_repeat}` — rendu : {utile!r} (ASP-INV-18).")
+        if utile.get("repeat") in (0, 1):
+            errs.append(f"ASP-CI-13 : `repeat: {utile['repeat']}` transpose la "
+                        f"convention DÉCALÉE de la voie zonée sur la commande "
+                        f"segmentée — non conforme (ASP-INV-19).")
+    return errs
+
+
+def check_voies_interdites(textes_runtime) -> list[str]:
+    """ASP-CI-14 / ASP-CI-15 — voie zonée, mode dérivé, démarreurs interdits."""
+    errs = []
+    for rel in RUNTIME_FICHIERS:
+        txt = sans_commentaires_yaml(textes_runtime.get(rel, ""))
+        for interdit in VOIES_INTERDITES:
+            if re.search(rf'\b{re.escape(interdit)}\b', txt):
+                errs.append(f"ASP-CI-14 : {rel} emploie `{interdit}` — voie "
+                            f"zonée ou démarreur interdit (07 §6, "
+                            f"ASP-INV-19).")
+    return errs
+
+
+def check_mode_jamais_ecrit(etapes) -> list[str]:
+    """ASP-CI-15 — le mode de nettoyage se lit et se confirme, jamais ne s'écrit."""
+    errs = []
+    for step in etapes:
+        svc = _service(step)
+        if not svc:
+            continue
+        if NATIF_MODE in _cibles(step):
+            errs.append(f"ASP-CI-15 : `{NATIF_MODE}` est la CIBLE de `{svc}` — "
+                        f"écrire le mode écrase silencieusement le profil "
+                        f"d'aspiration (ASP-INV-12).")
+        data = step.get("data")
+        if isinstance(data, dict):
+            for v in data.values():
+                if isinstance(v, str) and NATIF_MODE in v and svc != "input_text.set_value":
+                    errs.append(f"ASP-CI-15 : `{NATIF_MODE}` apparaît dans les "
+                                f"données de `{svc}` (ASP-INV-12).")
+    return errs
+
+
+def check_ordre_sequence(etapes) -> list[str]:
+    """ASP-CI-16 / ASP-CI-17 — eau -> aspiration -> revérification -> commande."""
+    errs = []
+    i_eau = [i for i, s in enumerate(etapes)
+             if _service(s) == SVC_EAU and NATIF_EAU in _cibles(s)]
+    i_carte = [i for i, s in enumerate(etapes)
+               if _service(s) == SVC_EAU and NATIF_CARTE in _cibles(s)]
+    i_asp = _index_service(etapes, SVC_ASPIRATION)
+    i_cmd = _index_service(etapes, SVC_COMMANDE)
+    if len(i_eau) != 1 or len(i_asp) != 1 or len(i_cmd) != 1 or len(i_carte) != 1:
+        errs.append(f"ASP-CI-16 : la séquence exige exactement une écriture de "
+                    f"carte ({len(i_carte)}), d'eau ({len(i_eau)}), "
+                    f"d'aspiration ({len(i_asp)}) et une commande "
+                    f"({len(i_cmd)}) — 07 §3.")
+        return errs
+    if not i_carte[0] < i_eau[0] < i_asp[0] < i_cmd[0]:
+        errs.append("ASP-CI-16 : ordre non conforme — carte, puis EAU, puis "
+                    "ASPIRATION, puis commande. L'inverser écraserait le "
+                    "profil d'aspiration (ASP-INV-34).")
+    # Revérification tardive et INTÉGRALE entre le dernier réglage et l'émission.
+    relectures = [i for i, s in enumerate(etapes)
+                  if isinstance(s, dict) and "variables" in s
+                  and any(k.startswith("g2_") for k in s["variables"])]
+    if not relectures:
+        errs.append("ASP-CI-16 : aucune relecture des gardes entre le dernier "
+                    "réglage et l'émission (ASP-INV-36).")
+    elif not (i_asp[0] < relectures[0] < i_cmd[0]):
+        errs.append("ASP-CI-16 : la relecture des gardes doit se situer APRÈS "
+                    "les réglages et AVANT l'émission (ASP-INV-36).")
+    else:
+        lues = set(etapes[relectures[0]]["variables"].values())
+        for temoin in TEMOINS_GARDE:
+            if not any(temoin in v for v in lues if isinstance(v, str)):
+                errs.append(f"ASP-CI-16 : la revérification tardive omet "
+                            f"`{temoin}` — elle porte sur la TOTALITÉ des "
+                            f"conditions du §5 (ASP-INV-36).")
+    return errs
+
+
+def check_decompte_vocabulaire(textes_runtime, t09) -> list[str]:
+    """ASP-CI-18 — le DÉCOMPTE annoncé dans le helper est-il vrai ?
+
+    Les deux ensembles — valeurs de verdict et codes du catalogue — comptent
+    18 éléments, et **se recoupent**. Une version antérieure du helper
+    affirmait qu'ils étaient disjoints, avec une répartition 13 / 5 / 5 qui ne
+    tombait juste que par compensation d'erreurs : `TRANSITION_NON_OBSERVEE`
+    appartient bien au catalogue ET figure au verdict sous `ECHEC/`. Le
+    décompte est donc RECALCULÉ ici et confronté au texte.
+    """
+    errs = []
+    refus, echecs = split_catalogue(t09)
+    catalogue = refus | echecs
+    if not catalogue:
+        return ["ASP-CI-18 : catalogue du contrat illisible — décompte du "
+                "vocabulaire non vérifiable."]
+    codes_verdict = {v.split("/")[-1] for v in VOCABULAIRE_VERDICT}
+    presents = codes_verdict & catalogue
+    absents = catalogue - codes_verdict
+    cycle = codes_verdict - catalogue
+    attendus = {
+        r"(\d+) codes du catalogue figurent": len(presents),
+        r"(\d+) codes du catalogue en sont ABSENTS": len(absents),
+        r"(\d+) valeurs de CYCLE DE VIE": len(cycle),
+    }
+    texte = textes_runtime.get(RUNTIME_HELPERS, "")
+    for motif, valeur in attendus.items():
+        trouve = re.search(motif, texte)
+        if not trouve:
+            errs.append(f"ASP-CI-18 : le helper de verdict n'énonce pas son "
+                        f"décompte — motif attendu « {motif} » (ASP-INV-70).")
+        elif int(trouve.group(1)) != valeur:
+            errs.append(
+                f"ASP-CI-18 : décompte FAUX dans le helper — « {motif} » "
+                f"annonce {trouve.group(1)}, le calcul donne {valeur}. "
+                f"Codes du catalogue au verdict : {sorted(presents)} ; "
+                f"absents : {sorted(absents)} ; cycle de vie : "
+                f"{sorted(cycle)}.")
+    if len(presents) + len(cycle) != len(VOCABULAIRE_VERDICT):
+        errs.append(f"ASP-CI-18 : la décomposition ne totalise pas le "
+                    f"vocabulaire — {len(presents)} + {len(cycle)} ≠ "
+                    f"{len(VOCABULAIRE_VERDICT)}.")
+    if sorted(cycle) != sorted(CYCLE_DE_VIE):
+        errs.append(f"ASP-CI-18 : valeurs de cycle de vie calculées "
+                    f"{sorted(cycle)} ≠ constante de module "
+                    f"{sorted(CYCLE_DE_VIE)} (ASP-INV-70).")
+    return errs
+
+
+def check_vocabulaire_verdict(etapes, textes_runtime) -> list[str]:
+    """ASP-CI-18 — vocabulaire fermé, et ordonnancement des trois issues."""
+    errs = []
+    ecrits = _ecritures_verdict(etapes)
+    valeurs = {v for _, v in ecrits}
+    if not valeurs:
+        errs.append(f"ASP-CI-18 : le moteur n'écrit jamais `{ID_VERDICT}` — "
+                    f"un refus est un livrable (ASP-INV-50).")
+        return errs
+    hors = valeurs - VOCABULAIRE_VERDICT
+    if hors:
+        errs.append(f"ASP-CI-18 : vocabulaire de verdict NON fermé — valeurs "
+                    f"hors contrat : {sorted(hors)} (ASP-INV-52).")
+    absentes = VOCABULAIRE_VERDICT - valeurs
+    if absentes:
+        errs.append(f"ASP-CI-18 : le moteur n'écrit jamais {sorted(absentes)} "
+                    f"— le vocabulaire fermé doit être intégralement "
+                    f"atteignable (ASP-INV-65).")
+    moteur = sans_commentaires_yaml(textes_runtime.get(RUNTIME_MOTEUR, ""))
+    for code, pourquoi in sorted(CODES_HORS_PORTEE_L1.items()):
+        if re.search(rf'\b{code}\b', moteur):
+            errs.append(f"ASP-CI-18 : le moteur porte `{code}` alors que L1 ne "
+                        f"peut pas l'observer ({pourquoi}) — aucun verdict ne "
+                        f"doit affirmer un rejet avant qu'un rejet soit "
+                        f"observable (09 §5).")
+    # Ordonnancement : non concluant AVANT l'appel, acceptation APRÈS.
+    pos = {v: i for i, v in ecrits}
+    i_cmd = _index_service(etapes, SVC_COMMANDE)
+    if i_cmd and "COMMANDE/ISSUE_NON_ETABLIE" in pos \
+            and "EMISSION/COMMANDE_ACCEPTEE" in pos:
+        if not pos["COMMANDE/ISSUE_NON_ETABLIE"] < i_cmd[0]:
+            errs.append("ASP-CI-18 : `COMMANDE/ISSUE_NON_ETABLIE` doit être "
+                        "posé AVANT l'appel — après, l'issue d'un appel qui ne "
+                        "revient pas ne serait plus tracée (ASP-INV-49).")
+        if not pos["EMISSION/COMMANDE_ACCEPTEE"] > i_cmd[0]:
+            errs.append("ASP-CI-18 : `EMISSION/COMMANDE_ACCEPTEE` ne peut être "
+                        "posé qu'au RETOUR RÉUSSI du service (ASP-INV-37).")
+        if "ECHEC/TRANSITION_NON_OBSERVEE" in pos and \
+                not pos["ECHEC/TRANSITION_NON_OBSERVEE"] > pos["EMISSION/COMMANDE_ACCEPTEE"]:
+            errs.append("ASP-CI-18 : `ECHEC/TRANSITION_NON_OBSERVEE` suit "
+                        "l'acceptation, jamais l'inverse (ASP-INV-38).")
+    # La trace d'intention accompagne le verdict non concluant, pas l'inverse.
+    i_trace = [i for i, s in enumerate(etapes)
+               if _service(s) == "input_text.set_value" and ID_TRACE in _cibles(s)]
+    if len(i_trace) != 1:
+        errs.append(f"ASP-CI-18 : `{ID_TRACE}` doit être écrit exactement une "
+                    f"fois par exécution — trouvé {len(i_trace)} (08 §5).")
+    elif i_cmd and not i_trace[0] < i_cmd[0]:
+        errs.append("ASP-CI-18 : la trace d'intention est posée AVANT l'appel, "
+                    "avec le verdict non concluant — sinon trace et verdict "
+                    "décriraient deux missions différentes (08 §5).")
+    # Aucun `continue_on_error` : l'exception doit rester accessible.
+    for step in etapes:
+        if isinstance(step, dict) and step.get("continue_on_error"):
+            errs.append("ASP-CI-18 : `continue_on_error` absorbe l'exception "
+                        "sans la rendre lisible — le moteur ne peut plus "
+                        "qualifier l'issue (07 §4).")
+    return errs
+
+
+def check_motif_total(t09: str, t02: str, motif_txt: str) -> list[str]:
+    """ASP-CI-19 — les 18 codes traduits, sans mécanique interne."""
+    errs = []
+    refus, echecs = split_catalogue(t09)
+    catalogue = refus | echecs
+    if len(catalogue) != 18:
+        errs.append(f"ASP-CI-19 : le catalogue du contrat compte "
+                    f"{len(catalogue)} codes au lieu de 18 — le contrôle de "
+                    f"totalité perd son ancre (09 §2, §3).")
+    manquants = sorted(c for c in catalogue
+                       if not re.search(rf"'{c}'\s*:", motif_txt))
+    if manquants:
+        errs.append(f"ASP-CI-19 : `{ID_MOTIF}` ne traduit pas {manquants} — le "
+                    f"catalogue doit rester TOTAL, y compris pour les codes "
+                    f"qu'aucun lot n'écrit encore (ASP-INV-50).")
+    for valeur in CYCLE_DE_VIE:
+        if not re.search(rf"'{valeur}'\s*:", motif_txt):
+            errs.append(f"ASP-CI-19 : `{ID_MOTIF}` ne traduit pas la valeur de "
+                        f"cycle de vie `{valeur}` (ASP-INV-49).")
+    # Aucun index nu, aucun libellé d'appareil, aucun nom d'entité.
+    motifs = re.findall(r'^\s*"([^"\n]{20,})",?\s*$', motif_txt, re.M)
+    noms_roborock = {n for _, _, n, _ in TECH_SEGMENT.findall(bloc_technique(t02))}
+    noms_roborock |= {c for _, c, _ in TECH_CARTE.findall(bloc_technique(t02))}
+    for m in motifs:
+        if len(m) > MAX_ETAT_CAPTEUR:
+            errs.append(f"ASP-CI-19 : motif de {len(m)} caractères — l'état "
+                        f"d'un capteur est borné à {MAX_ETAT_CAPTEUR} : "
+                        f"« {m[:60]}… ».")
+        if re.search(r'\b\d+_\d+\b', m):
+            errs.append(f"ASP-CI-19 : un motif expose un index de segment nu — "
+                        f"« {m[:60]}… » (ASP-INV-6, ASP-INV-53).")
+        if re.search(r'\b(?:sensor|binary_sensor|select|vacuum|input_text)\.',
+                     m) or COMMANDE_SEGMENTEE in m:
+            errs.append(f"ASP-CI-19 : un motif expose de la mécanique interne "
+                        f"— « {m[:60]}… » (09 §4).")
+        for nom in noms_roborock:
+            if nom.strip() and re.search(rf'\b{re.escape(nom.strip())}\b', m):
+                errs.append(f"ASP-CI-19 : un motif restitue le libellé "
+                            f"d'appareil « {nom.strip()} » — jamais de libellé "
+                            f"brut (ASP-INV-7, ASP-INV-53).")
+    return errs
+
+
+def check_constantes_temporelles(textes_runtime) -> list[str]:
+    """ASP-CI-20 — 30 s x3, 60 s x1, et aucune autre temporisation."""
+    errs = []
+    moteur = sans_commentaires_yaml(textes_runtime.get(RUNTIME_MOTEUR, ""))
+    timeouts = re.findall(r'^[ \t]*-?[ \t]*timeout[ \t]*:[ \t]*"?([0-9:]+)"?[ \t]*$',
+                          moteur, re.M)
+    n30 = timeouts.count(FENETRE_CONFIRMATION_YAML)
+    n60 = timeouts.count(FENETRE_TRANSITION_YAML)
+    if n30 != NB_CONFIRMATIONS:
+        errs.append(f"ASP-CI-20 : {NB_CONFIRMATIONS} fenêtres de confirmation "
+                    f"de {FENETRE_CONFIRMATION_S} s sont exigées — carte, eau, "
+                    f"aspiration ; trouvé {n30} (ASP-INV-69).")
+    if n60 != 1:
+        errs.append(f"ASP-CI-20 : une seule fenêtre d'observation de "
+                    f"{FENETRE_TRANSITION_S} s est exigée — la transition de "
+                    f"démarrage ; trouvé {n60} (ASP-INV-69).")
+    autres = sorted(set(timeouts) - {FENETRE_CONFIRMATION_YAML,
+                                     FENETRE_TRANSITION_YAML})
+    if autres:
+        errs.append(f"ASP-CI-20 : durée(s) concurrente(s) dans le moteur : "
+                    f"{autres} — deux constantes, et deux seulement "
+                    f"(ASP-INV-69).")
+    for rel in RUNTIME_FICHIERS:
+        txt = sans_commentaires_yaml(textes_runtime.get(rel, ""))
+        for cle in ("delay", "wait_for_trigger"):
+            # Le tiret de liste fait partie de la ligne : `- delay:` est la
+            # forme la plus courante, et l'ignorer viderait la garde.
+            if re.search(rf'^[ \t]*-?[ \t]*{cle}[ \t]*:', txt, re.M):
+                errs.append(f"ASP-CI-20 : {rel} porte `{cle}:` — aucune "
+                            f"temporisation hors des deux constantes "
+                            f"(ASP-INV-69).")
+        if "input_number." in txt:
+            errs.append(f"ASP-CI-20 : {rel} référence un `input_number` — le "
+                        f"domaine n'expose AUCUN réglage temporel "
+                        f"(12 §3, ASP-INV-69).")
+    return errs
+
+
+def check_concordance_runtime(corps, textes_runtime, helpers_yaml, t02, t03,
+                              audit) -> list[str]:
+    """ASP-CI-21 — identifiants, référentiel embarqué, profils, capacité."""
+    errs = []
+    # a) identifiants attribués, aux fichiers attribués
+    attendus = ((RUNTIME_HELPERS, ID_VERDICT.split(".", 1)[1]),
+                (RUNTIME_HELPERS, ID_TRACE.split(".", 1)[1]),
+                (RUNTIME_ETAT, ID_ETAT_CANON),
+                (RUNTIME_MOTIF, ID_MOTIF),
+                (RUNTIME_GARDE, ID_GARDE))
+    for rel, ident in attendus:
+        if ident not in textes_runtime.get(rel, ""):
+            errs.append(f"ASP-CI-21 : identifiant `{ident}` absent de {rel} — "
+                        f"attribution opérateur non respectée (ASP-INV-58).")
+    if set(helpers_yaml) != {ID_VERDICT.split(".", 1)[1],
+                             ID_TRACE.split(".", 1)[1]}:
+        errs.append(f"ASP-CI-21 : le domaine expose EXACTEMENT deux helpers "
+                    f"textuels — trouvé {sorted(helpers_yaml)} (12 §2.3).")
+
+    # b) référentiel embarqué == table du contrat (métier ET technique)
+    variables = next((s["variables"] for s in (corps.get("sequence") or [])
+                      if isinstance(s, dict) and "variables" in s
+                      and "referentiel" in s["variables"]), None)
+    if variables is None:
+        errs.append("ASP-CI-21 : le moteur ne porte aucun référentiel de "
+                    "segments — la validation n'a plus de vérité de "
+                    "désignation (ASP-INV-6).")
+        return errs
+    ref = variables["referentiel"]
+    tech = bloc_technique(t02)
+    cartes_contrat = {idx: opt for idx, opt, statut in TECH_CARTE.findall(tech)
+                      if idx and statut == "commandable"}
+    segments_contrat = {seg: (int(nat), nom)
+                        for seg, nat, nom, statut in TECH_SEGMENT.findall(tech)
+                        if statut == "commandable"}
+    if set(ref) != set(cartes_contrat):
+        errs.append(f"ASP-CI-21 : cartes embarquées {sorted(ref)} ≠ cartes "
+                    f"commandables du contrat {sorted(cartes_contrat)} "
+                    f"(02 §2.1).")
+    for idx, opt in sorted(cartes_contrat.items()):
+        if idx in ref and ref[idx].get("option") != opt:
+            errs.append(f"ASP-CI-21 : option de la carte `{idx}` — le moteur "
+                        f"porte {ref[idx].get('option')!r}, le contrat "
+                        f"{opt!r}. La comparaison est LITTÉRALE, espace finale "
+                        f"comprise (ASP-INV-66, ASP-INV-67).")
+    embarques = {seg: (info["index"], carte)
+                 for carte, bloc in ref.items()
+                 for seg, info in (bloc.get("segments") or {}).items()}
+    if set(embarques) != set(segments_contrat):
+        manque = sorted(set(segments_contrat) - set(embarques))
+        trop = sorted(set(embarques) - set(segments_contrat))
+        errs.append(f"ASP-CI-21 : segments embarqués non conformes au "
+                    f"référentiel V1 — manquants {manque}, en trop {trop} "
+                    f"(02 §2, QO-1).")
+    for seg, (nat, _nom) in sorted(segments_contrat.items()):
+        if seg in embarques and embarques[seg][0] != nat:
+            errs.append(f"ASP-CI-21 : index natif de `{seg}` — moteur "
+                        f"{embarques[seg][0]}, contrat {nat} (02 §2.1).")
+    for seg in SEGMENTS_NON_COMMANDABLES:
+        if seg in embarques:
+            errs.append(f"ASP-CI-21 : `{seg}` est hors référentiel V1 et ne "
+                        f"peut pas devenir commandable (QO-1).")
+    # noms Roborock exacts, pour la seule confirmation de carte
+    for carte, bloc in sorted(ref.items()):
+        attendus_noms = sorted(nom for seg, (_i, nom) in segments_contrat.items()
+                               if seg.split("_")[0] == carte)
+        if sorted(bloc.get("noms") or []) != attendus_noms:
+            errs.append(f"ASP-CI-21 : noms Roborock de la carte `{carte}` — "
+                        f"moteur {sorted(bloc.get('noms') or [])}, contrat "
+                        f"{attendus_noms} (06 §3.1, ASP-INV-63).")
+
+    # c) profils : les cinq du contrat, valeurs natives bornées
+    profils = variables.get("profils") or {}
+    contrat_profils = parse_profils(t03)
+    if len(profils) != 5 or len(contrat_profils) != 5:
+        errs.append(f"ASP-CI-21 : cinq profils exactement — moteur "
+                    f"{len(profils)}, contrat {len(contrat_profils)} "
+                    f"(ASP-INV-10).")
+    couples_contrat = {(a, e) for _l, a, e in contrat_profils}
+    couples_moteur = {(p["aspiration"], p["eau"]) for p in profils.values()}
+    if couples_moteur != couples_contrat:
+        errs.append(f"ASP-CI-21 : couples (aspiration, eau) du moteur "
+                    f"{sorted(couples_moteur)} ≠ contrat "
+                    f"{sorted(couples_contrat)} (03 §1).")
+    for cle, p in sorted(profils.items()):
+        if p.get("aspiration") == FAN_SPEED_EXCLUE:
+            errs.append(f"ASP-CI-21 : le profil `{cle}` emploie "
+                        f"`{FAN_SPEED_EXCLUE}`, exclu du domaine "
+                        f"(ASP-INV-11).")
+        attendu = "vacuum" if p.get("eau") == "off" else "vac_and_mop"
+        if p.get("mode") != attendu:
+            errs.append(f"ASP-CI-21 : mode dérivé du profil `{cle}` — "
+                        f"eau `{p.get('eau')}` implique `{attendu}`, trouvé "
+                        f"`{p.get('mode')}` (03 §3).")
+
+    # d) partition embarquée == partition du module
+    for classe, cle in (("R", "classe_r"), ("A", "classe_a")):
+        if set(variables.get(cle) or []) != set(PARTITION_ATTENDUE[classe]):
+            errs.append(f"ASP-CI-21 : classe {classe} embarquée "
+                        f"{sorted(variables.get(cle) or [])} ≠ partition "
+                        f"contractuelle {sorted(PARTITION_ATTENDUE[classe])} "
+                        f"(07 §5.0).")
+    if set(variables.get("classe_e_indispo") or []) != \
+            set(PARTITION_ATTENDUE["E"]) - {"error"}:
+        errs.append("ASP-CI-21 : les valeurs d'indisponibilité embarquées ne "
+                    "recouvrent pas la classe E hors `error` (07 §5.0).")
+    if set(variables.get("indispo") or []) != {"unknown", "unavailable"}:
+        errs.append("ASP-CI-21 : le régime d'indisponibilité doit être "
+                    "exactement {`unknown`, `unavailable`} — y ajouter `none` "
+                    "confondrait la valeur NOMINALE du témoin d'erreur avec "
+                    "une absence (ASP-INV-45, ASP-INV-61).")
+
+    # e) entités natives attestées par l'audit
+    attestes = tous_les_jetons(audit)
+    for natif in (NATIF_CARTE, NATIF_EAU, NATIF_MODE, NATIF_VACUUM, NATIF_PIECE,
+                  NATIF_ETAT, NATIF_ERR_VAC, NATIF_ERR_DOCK, NATIF_SESSION,
+                  NATIF_MOP):
+        if natif not in attestes:
+            errs.append(f"ASP-CI-21 : `{natif}` n'est attesté par aucun relevé "
+                        f"de l'audit du domaine (ASP-INV-58).")
+
+    # f) capacité : la sérialisation MAXIMALE d'une intention V1 tient
+    pire = 0
+    for carte, bloc in ref.items():
+        paires = ",".join(sorted(bloc.get("segments") or {}))
+        for cle in profils:
+            for n in ("1", "2", "3"):
+                pire = max(pire, len(
+                    f"carte={carte}|segments={paires}|profil={cle}|passages={n}"))
+    capacite = (helpers_yaml.get(ID_TRACE.split(".", 1)[1]) or {}).get("max")
+    if not isinstance(capacite, int):
+        errs.append(f"ASP-CI-21 : `{ID_TRACE}` doit déclarer une capacité "
+                    f"`max` explicite (04_input_texts §Structure).")
+    elif pire > capacite:
+        errs.append(f"ASP-CI-21 : la sérialisation maximale d'une intention V1 "
+                    f"occupe {pire} caractères pour une capacité de "
+                    f"{capacite} — la trace serait tronquée ou refusée "
+                    f"(08 §5).")
+    verdict_max = (helpers_yaml.get(ID_VERDICT.split(".", 1)[1]) or {}).get("max")
+    pire_verdict = max(len(v) for v in VOCABULAIRE_VERDICT)
+    if isinstance(verdict_max, int) and pire_verdict > verdict_max:
+        errs.append(f"ASP-CI-21 : le verdict le plus long occupe "
+                    f"{pire_verdict} caractères pour une capacité de "
+                    f"{verdict_max}.")
+    return errs
+
+
+# ─────────────────────────────────────────────────────────────
 # Exécution réelle
 # ─────────────────────────────────────────────────────────────
 
@@ -1306,6 +2476,34 @@ def load_lovelace() -> dict[str, str]:
     for d in LOVELACE_DIRS:
         base = ROOT / d
         if not base.is_dir():
+            continue
+        for p in sorted(base.rglob("*.yaml")):
+            if p.is_file():
+                out[p.relative_to(ROOT).as_posix()] = p.read_text(
+                    encoding="utf-8", errors="ignore")
+    return out
+
+
+def load_runtime() -> dict[str, str]:
+    """Les cinq fichiers du lot L1, tels quels — commentaires compris."""
+    out: dict[str, str] = {}
+    for rel in RUNTIME_FICHIERS:
+        p = ROOT / rel
+        if p.is_file():
+            out[rel] = p.read_text(encoding="utf-8", errors="ignore")
+    return out
+
+
+def load_yaml_depot() -> dict[str, str]:
+    """Tout le YAML de configuration Home Assistant du dépôt.
+
+    Sert l'ANTI-CONCURRENCE d'ASP-CI-11 : prouver qu'aucun autre fichier
+    n'écrit les helpers du domaine ni ne commande l'appareil suppose de les
+    avoir tous lus, pas seulement ceux du lot.
+    """
+    out: dict[str, str] = {}
+    for base in sorted(ROOT.iterdir()):
+        if not base.is_dir() or not re.match(r"^\d{2}_", base.name):
             continue
         for p in sorted(base.rglob("*.yaml")):
             if p.is_file():
@@ -1354,6 +2552,57 @@ def run() -> int:
         ("ASP-CI-10 fenêtres temporelles", check_fenetres(textes)),
     )
 
+    # ── Runtime L1 — obligations de CONDUITE, désormais confrontables ──
+    runtime = load_runtime()
+    manquants = [r for r in RUNTIME_FICHIERS if r not in runtime]
+    if manquants:
+        sys.stderr.write(
+            "erreur : runtime L1 introuvable : " + ", ".join(manquants) + "\n")
+        return 2
+    try:
+        moteur_yaml = yaml.safe_load(runtime[RUNTIME_MOTEUR]) or {}
+        helpers_yaml = yaml.safe_load(runtime[RUNTIME_HELPERS]) or {}
+    except yaml.YAMLError as exc:
+        sys.stderr.write(f"erreur : runtime L1 illisible : {exc}\n")
+        return 2
+    corps = (moteur_yaml.get(ID_MOTEUR) or {}) if isinstance(moteur_yaml, dict) else {}
+    etapes = _aplatir(corps.get("sequence"))
+    depot = load_yaml_depot()
+
+    controles += (
+        ("ASP-CI-11 écrivain unique",
+         check_ecrivain_unique(moteur_yaml, runtime, depot)),
+        ("ASP-CI-12 charge utile enveloppée · ASP-CI-13 passages",
+         check_charge_utile(etapes)),
+        ("ASP-CI-14 voies interdites", check_voies_interdites(runtime)),
+        ("ASP-CI-15 mode dérivé jamais écrit", check_mode_jamais_ecrit(etapes)),
+        ("ASP-CI-16 ordre · ASP-CI-17 commande unique",
+         check_ordre_sequence(etapes)),
+        ("ASP-CI-18 vocabulaire de verdict",
+         check_vocabulaire_verdict(etapes, runtime)
+         + check_decompte_vocabulaire(runtime,
+                                      textes.get(FICHIER_CATALOGUE, ""))),
+        ("ASP-CI-19 motif lisible total",
+         check_motif_total(textes.get(FICHIER_CATALOGUE, ""),
+                           textes.get("02_referentiel_cartes_et_pieces.md", ""),
+                           runtime[RUNTIME_MOTIF])),
+        ("ASP-CI-20 constantes temporelles du moteur",
+         check_constantes_temporelles(runtime)),
+        ("ASP-CI-21 concordance runtime ↔ contrat",
+         check_concordance_runtime(corps, runtime, helpers_yaml,
+                                   textes.get("02_referentiel_cartes_et_pieces.md", ""),
+                                   textes.get("03_profils_metier.md", ""), audit)),
+        ("ASP-CI-22 rendus du moteur (troncature, retypage, type)",
+         check_rendus_moteur(corps, etapes,
+                             textes.get("02_referentiel_cartes_et_pieces.md", ""))),
+        ("ASP-CI-23 état canonique rendu sur les 44 valeurs",
+         check_etat_canonique_rendu(runtime[RUNTIME_ETAT])),
+        ("ASP-CI-24 garde de lancement rendue", check_garde_rendue(
+            runtime[RUNTIME_GARDE])),
+        ("ASP-CI-25 branches de refus tardives",
+         check_branches_tardives(etapes)),
+    )
+
     erreurs: list[str] = []
     for label, errs in controles:
         print(f"  {'✗' if errs else '✔'} {label}")
@@ -1362,14 +2611,16 @@ def run() -> int:
     attestes_audit = tous_les_jetons(audit)
     print(f"\n  périmètre : {len(textes)} fichiers de contrat · "
           f"{len(lovelace)} fichiers Lovelace balayés · "
+          f"{len(runtime)} fichiers runtime L1 · "
+          f"{len(depot)} fichiers YAML de configuration balayés · "
           f"{len(attestes_audit)} identifiants attestés par l'audit")
     if erreurs:
         print("\nAspirateur — écarts contractuels détectés :")
         for e in erreurs:
             print(f"- {e}")
         return 1
-    print("\nOK - domaine Aspirateur : intégrité normative vérifiée "
-          "(10 contrôles, 0 écart).")
+    print("\nOK - domaine Aspirateur : intégrité normative et conduite "
+          "runtime vérifiées (25 contrôles, 0 écart).")
     return 0
 
 
@@ -2046,7 +3297,458 @@ def selftest() -> None:
         image={k: v for k, v in IMAGE_ATTENDUE.items() if k != "docking"}),
         "AUCUNE image", "i-2 état retiré de l'image canonique")
 
-    print(f"selftest OK — 10 contrôles, {c.total()} cas "
+    # ═════════════════════════════════════════════════════════════
+    # RUNTIME L1 — ASP-CI-11 … ASP-CI-21
+    # Les mutations portent sur l'ARTEFACT RÉEL, pas sur une maquette : un
+    # contrôle qui ne se déclenche que sur une fixture inventée ne prouve rien
+    # du fichier qui part en production.
+    # ═════════════════════════════════════════════════════════════
+    import copy
+
+    rt0 = load_runtime()
+    assert len(rt0) == len(RUNTIME_FICHIERS), \
+        f"runtime L1 introuvable : {sorted(set(RUNTIME_FICHIERS) - set(rt0))}"
+    mot0 = yaml.safe_load(rt0[RUNTIME_MOTEUR])
+    hlp0 = yaml.safe_load(rt0[RUNTIME_HELPERS])
+    corps0 = mot0[ID_MOTEUR]
+    etapes0 = _aplatir(corps0["sequence"])
+    depot0 = load_yaml_depot()
+    doc0 = sans_clotures(load_domain())
+    t02r = doc0["02_referentiel_cartes_et_pieces.md"]
+    t03r = doc0["03_profils_metier.md"]
+    t09r = doc0[FICHIER_CATALOGUE]
+    audit0 = strip_fences(AUDIT.read_text(encoding="utf-8", errors="ignore"))
+
+    def mot_txt(vieux, neuf, n=1):
+        """Mutation TEXTUELLE du moteur réel."""
+        r = dict(rt0)
+        assert vieux in r[RUNTIME_MOTEUR], f"ancre absente : {vieux!r}"
+        r[RUNTIME_MOTEUR] = r[RUNTIME_MOTEUR].replace(vieux, neuf, n)
+        return r
+
+    def mot_yml(mutation):
+        """Mutation STRUCTURELLE du moteur réel — renvoie (corps, étapes)."""
+        m = copy.deepcopy(mot0)
+        mutation(m[ID_MOTEUR])
+        return m, _aplatir(m[ID_MOTEUR]["sequence"])
+
+    def vars0(m):
+        return next(s["variables"] for s in m["sequence"]
+                    if isinstance(s, dict) and "variables" in s
+                    and "referentiel" in s["variables"])
+
+    # ---- ASP-CI-11 : écrivain unique -------------------------------------
+    c.conforme(check_ecrivain_unique(mot0, rt0, depot0), "CI-11 conforme")
+    m, _ = mot_yml(lambda s: s.__setitem__("mode", "restart"))
+    c.viole(check_ecrivain_unique(m, rt0, depot0),
+            "mode: single", "CI-11 mode concurrent autorisé")
+    m, _ = mot_yml(lambda s: s["fields"].pop("passages"))
+    c.viole(check_ecrivain_unique(m, rt0, depot0),
+            "quatre champs", "CI-11 intention non atomique")
+    c.viole(check_ecrivain_unique(
+        mot0, rt0, dict(depot0, **{"11_automations/x.yaml":
+                                   f"  value: {ID_VERDICT}\n"})),
+        "n'ont qu'UN écrivain", "CI-11 second écrivain du verdict")
+    c.viole(check_ecrivain_unique(
+        mot0, rt0, dict(depot0, **{"11_automations/x.yaml":
+                                   "    - action: vacuum.stop\n"})),
+        "seul le moteur commande", "CI-11 commande concurrente du robot")
+    c.viole(check_ecrivain_unique(
+        mot0, {**rt0, RUNTIME_GARDE: rt0[RUNTIME_GARDE].replace(
+            NATIF_SESSION, "binary_sensor.autre_chose")}, depot0),
+        "ignore le témoin", "CI-11 garde et moteur divergents")
+    c.viole(check_ecrivain_unique(
+        mot0, {**rt0, RUNTIME_GARDE: rt0[RUNTIME_GARDE].replace(
+            "'ok'", "'OK'")}, depot0),
+        "valeur nominale `ok`", "CI-11 valeur nominale du dock altérée")
+
+    # ---- ASP-CI-12 / ASP-CI-13 : charge utile et passages -----------------
+    c.conforme(check_charge_utile(etapes0), "CI-12/13 conforme")
+
+    def _params(step_mut):
+        m = copy.deepcopy(mot0)
+        for s in _aplatir(m[ID_MOTEUR]["sequence"]):
+            if _service(s) == SVC_COMMANDE:
+                step_mut(s)
+        return _aplatir(m[ID_MOTEUR]["sequence"])
+
+    c.viole(check_charge_utile(_params(
+        lambda s: s["data"].__setitem__(
+            "params", "{{ dict(segments=indices) }}"))),
+        "forme enveloppée", "CI-12 charge utile NUE")
+    c.viole(check_charge_utile(_params(
+        lambda s: s["data"].__setitem__(
+            "params", "{{ [dict(segments=indices, repeat=passages_int)] }}"))),
+        "×1 exige l'ABSENCE", "CI-13 repeat: 1 émis pour ×1")
+    c.viole(check_charge_utile(_params(
+        lambda s: s["data"].__setitem__(
+            "params",
+            "{{ [dict(segments=indices, repeat=passages_int - 1)]"
+            " if passages_int > 1 else [dict(segments=indices)] }}"))),
+        "×2 exige `repeat: 2`", "CI-13 convention zonée transposée")
+    c.viole(check_charge_utile(_params(
+        lambda s: s["data"].__setitem__("command", "app_zoned_clean"))),
+        "app_segment_clean", "CI-12 commande protocolaire détournée")
+    doublon = copy.deepcopy(mot0)
+    doublon[ID_MOTEUR]["sequence"].append(
+        {"action": SVC_COMMANDE, "target": {"entity_id": NATIF_VACUUM},
+         "data": {"command": COMMANDE_SEGMENTEE, "params": "{{ [] }}"}})
+    c.viole(check_charge_utile(_aplatir(doublon[ID_MOTEUR]["sequence"])),
+            "EXACTEMENT un", "CI-17 seconde commande de démarrage")
+
+    # ---- ASP-CI-14 : voies interdites ------------------------------------
+    c.conforme(check_voies_interdites(rt0), "CI-14 conforme")
+    for interdit in ("app_zoned_clean", "vacuum.start", "vacuum.clean_area"):
+        c.viole(check_voies_interdites(
+            mot_txt("      command: app_segment_clean",
+                    f"      command: {interdit}")),
+            "voie zonée ou démarreur interdit", f"CI-14 {interdit}")
+
+    # ---- ASP-CI-15 : le mode dérivé ne s'écrit jamais --------------------
+    c.conforme(check_mode_jamais_ecrit(etapes0), "CI-15 conforme")
+    m2 = copy.deepcopy(mot0)
+    for s in _aplatir(m2[ID_MOTEUR]["sequence"]):
+        if _service(s) == SVC_EAU and NATIF_EAU in _cibles(s):
+            s["target"]["entity_id"] = NATIF_MODE
+    c.viole(check_mode_jamais_ecrit(_aplatir(m2[ID_MOTEUR]["sequence"])),
+            "est la CIBLE", "CI-15 écriture du mode dérivé")
+
+    # ---- ASP-CI-16 / ASP-CI-17 : ordre et revérification -----------------
+    c.conforme(check_ordre_sequence(etapes0), "CI-16/17 conforme")
+    inv = copy.deepcopy(mot0)
+    seqi = inv[ID_MOTEUR]["sequence"]
+    i_eau = next(i for i, s in enumerate(seqi)
+                 if _service(s) == SVC_EAU and NATIF_EAU in _cibles(s))
+    i_asp = next(i for i, s in enumerate(seqi) if _service(s) == SVC_ASPIRATION)
+    seqi[i_eau], seqi[i_asp] = seqi[i_asp], seqi[i_eau]
+    c.viole(check_ordre_sequence(_aplatir(seqi)),
+            "ordre non conforme", "CI-16 aspiration écrite avant l'eau")
+    sans_g2 = copy.deepcopy(mot0)
+    sans_g2[ID_MOTEUR]["sequence"] = [
+        s for s in sans_g2[ID_MOTEUR]["sequence"]
+        if not (isinstance(s, dict) and "variables" in s
+                and any(k.startswith("g2_") for k in s["variables"]))]
+    c.viole(check_ordre_sequence(_aplatir(sans_g2[ID_MOTEUR]["sequence"])),
+            "aucune relecture des gardes", "CI-16 revérification supprimée")
+    partiel = copy.deepcopy(mot0)
+    for s in partiel[ID_MOTEUR]["sequence"]:
+        if isinstance(s, dict) and "variables" in s and "g2_session" in s["variables"]:
+            s["variables"].pop("g2_session")
+    c.viole(check_ordre_sequence(_aplatir(partiel[ID_MOTEUR]["sequence"])),
+            "revérification tardive omet", "CI-16 revérification partielle")
+
+    # ---- ASP-CI-18 : vocabulaire de verdict ------------------------------
+    c.conforme(check_vocabulaire_verdict(etapes0, rt0), "CI-18 conforme")
+    c.viole(check_vocabulaire_verdict(
+        _aplatir(yaml.safe_load(mot_txt(
+            'value: "REFUS/SESSION_INACHEVEE"',
+            'value: "REFUS/SESSION_BIZARRE"')[RUNTIME_MOTEUR])[ID_MOTEUR]["sequence"]),
+        rt0),
+        "NON fermé", "CI-18 valeur hors vocabulaire")
+    r_sup = mot_txt('value: "LANCEE/DEMARRAGE_OBSERVE"',
+                    'value: "EMISSION/COMMANDE_ACCEPTEE"')
+    c.viole(check_vocabulaire_verdict(
+        _aplatir(yaml.safe_load(r_sup[RUNTIME_MOTEUR])[ID_MOTEUR]["sequence"]),
+        r_sup),
+        "n'écrit jamais", "CI-18 valeur du vocabulaire inatteignable")
+    r_rej = mot_txt('value: "COMMANDE/ISSUE_NON_ETABLIE"',
+                    'value: "ECHEC/COMMANDE_REJETEE"')
+    c.viole(check_vocabulaire_verdict(
+        _aplatir(yaml.safe_load(r_rej[RUNTIME_MOTEUR])[ID_MOTEUR]["sequence"]),
+        r_rej),
+        "affirmer un rejet avant", "CI-18 verdict de rejet anticipé")
+    tard = copy.deepcopy(mot0)
+    sq = tard[ID_MOTEUR]["sequence"]
+    i_nc = next(i for i, s in enumerate(sq)
+                if _service(s) == "input_text.set_value"
+                and (s.get("data") or {}).get("value")
+                == "COMMANDE/ISSUE_NON_ETABLIE")
+    i_cmd = next(i for i, s in enumerate(sq) if _service(s) == SVC_COMMANDE)
+    sq.insert(i_cmd + 1, sq.pop(i_nc))
+    c.viole(check_vocabulaire_verdict(_aplatir(sq), rt0),
+            "AVANT l'appel", "CI-18 verdict non concluant posé trop tard")
+    coe = copy.deepcopy(mot0)
+    for s in coe[ID_MOTEUR]["sequence"]:
+        if _service(s) == SVC_COMMANDE:
+            s["continue_on_error"] = True
+    c.viole(check_vocabulaire_verdict(_aplatir(coe[ID_MOTEUR]["sequence"]), rt0),
+            "absorbe l'exception", "CI-18 continue_on_error réintroduit")
+
+    # ---- ASP-CI-19 : motif lisible total ---------------------------------
+    c.conforme(check_motif_total(t09r, t02r, rt0[RUNTIME_MOTIF]),
+               "CI-19 conforme")
+    c.viole(check_motif_total(t09r, t02r, rt0[RUNTIME_MOTIF].replace(
+        "'COMMANDE_REJETEE':", "'COMMANDE_REJETEE_X':")),
+        "ne traduit pas", "CI-19 code du catalogue non traduit")
+    c.viole(check_motif_total(t09r, t02r, rt0[RUNTIME_MOTIF].replace(
+        "'ISSUE_NON_ETABLIE':", "'AUTRE_CHOSE':")),
+        "cycle de vie", "CI-19 valeur de cycle de vie non traduite")
+    c.viole(check_motif_total(t09r, t02r, rt0[RUNTIME_MOTIF].replace(
+        '"Mission démarrée : le robot nettoie le périmètre demandé.",',
+        '"Mission démarrée : le robot nettoie le segment 0_16 demandé.",')),
+        "index de segment nu", "CI-19 index nu restitué")
+    c.viole(check_motif_total(t09r, t02r, rt0[RUNTIME_MOTIF].replace(
+        '"Mission démarrée : le robot nettoie le périmètre demandé.",',
+        '"Mission démarrée : le robot nettoie Salon comme demandé.",')),
+        "libellé d'appareil", "CI-19 libellé Roborock restitué")
+    c.viole(check_motif_total(t09r, t02r, rt0[RUNTIME_MOTIF].replace(
+        '"Mission démarrée : le robot nettoie le périmètre demandé.",',
+        '"Mission démarrée, voir sensor.roborock_q7_max_etat pour le détail.",')),
+        "mécanique interne", "CI-19 nom d'entité restitué")
+    c.viole(check_motif_total(t09r, t02r, rt0[RUNTIME_MOTIF].replace(
+        '"Mission démarrée : le robot nettoie le périmètre demandé.",',
+        '"' + ("Mission démarrée. " * 20) + '",')),
+        "borné à 255", "CI-19 motif au-delà de la capacité d'un capteur")
+
+    # ---- ASP-CI-20 : constantes temporelles ------------------------------
+    c.conforme(check_constantes_temporelles(rt0), "CI-20 conforme")
+    c.viole(check_constantes_temporelles(
+        mot_txt('timeout: "00:00:30"', 'timeout: "00:00:45"')),
+        "durée(s) concurrente(s)", "CI-20 troisième durée introduite")
+    c.viole(check_constantes_temporelles(
+        mot_txt('timeout: "00:00:30"', 'timeout: "00:01:00"')),
+        "fenêtres de confirmation", "CI-20 confirmation manquante")
+    c.viole(check_constantes_temporelles(
+        mot_txt('timeout: "00:01:00"', 'timeout: "00:00:30"')),
+        "une seule fenêtre d'observation", "CI-20 observation supprimée")
+    c.viole(check_constantes_temporelles(
+        mot_txt('    - action: vacuum.send_command',
+                '    - delay: "00:00:05"\n    - action: vacuum.send_command')),
+        "porte `delay:`", "CI-20 temporisation hors contrat")
+    c.viole(check_constantes_temporelles(
+        mot_txt("passages_int: \"{{ passages | int }}\"",
+                "passages_int: \"{{ states('input_number.aspirateur_x') | int }}\"")),
+        "AUCUN réglage temporel", "CI-20 helper temporel réintroduit")
+
+    # ---- ASP-CI-21 : concordance runtime ↔ contrat -----------------------
+    c.conforme(check_concordance_runtime(corps0, rt0, hlp0, t02r, t03r, audit0),
+               "CI-21 conforme")
+    m, _ = mot_yml(lambda s: vars0(s)["referentiel"]["1"].__setitem__(
+        "option", "Étage"))
+    c.viole(check_concordance_runtime(m[ID_MOTEUR], rt0, hlp0, t02r, t03r, audit0),
+            "espace finale comprise", "CI-21 espace finale de `Étage ` perdue")
+    m, _ = mot_yml(lambda s: vars0(s)["referentiel"]["0"]["segments"]["0_16"]
+                   .__setitem__("index", 17))
+    c.viole(check_concordance_runtime(m[ID_MOTEUR], rt0, hlp0, t02r, t03r, audit0),
+            "index natif", "CI-21 index natif dévié")
+    m, _ = mot_yml(lambda s: vars0(s)["referentiel"]["2"]["segments"]
+                   .__setitem__("2_17", {"index": 17, "libelle": "Ext"}))
+    c.viole(check_concordance_runtime(m[ID_MOTEUR], rt0, hlp0, t02r, t03r, audit0),
+            "hors référentiel V1", "CI-21 segment non commandable promu")
+    m, _ = mot_yml(lambda s: vars0(s)["referentiel"]["0"].__setitem__(
+        "noms", ["Salon", "Entree", "WC RDC", "Cage d'escaliers"]))
+    c.viole(check_concordance_runtime(m[ID_MOTEUR], rt0, hlp0, t02r, t03r, audit0),
+            "noms Roborock de la carte", "CI-21 nom Roborock approximé")
+    m, _ = mot_yml(lambda s: vars0(s)["profils"]["aspiration_normale"]
+                   .__setitem__("mode", "vac_and_mop"))
+    c.viole(check_concordance_runtime(m[ID_MOTEUR], rt0, hlp0, t02r, t03r, audit0),
+            "mode dérivé du profil", "CI-21 mode dérivé incohérent")
+    m, _ = mot_yml(lambda s: vars0(s)["profils"]["aspiration_turbo"]
+                   .__setitem__("aspiration", FAN_SPEED_EXCLUE))
+    c.viole(check_concordance_runtime(m[ID_MOTEUR], rt0, hlp0, t02r, t03r, audit0),
+            "exclu du domaine", "CI-21 `gentle` réintroduit")
+    m, _ = mot_yml(lambda s: vars0(s).__setitem__(
+        "indispo", ["unknown", "unavailable", "none"]))
+    c.viole(check_concordance_runtime(m[ID_MOTEUR], rt0, hlp0, t02r, t03r, audit0),
+            "valeur NOMINALE", "CI-21 `none` confondu avec une indisponibilité")
+    m, _ = mot_yml(lambda s: vars0(s).__setitem__(
+        "classe_r", ["charger_disconnected", "charging", "idle"]))
+    c.viole(check_concordance_runtime(m[ID_MOTEUR], rt0, hlp0, t02r, t03r, audit0),
+            "classe R embarquée", "CI-21 classe de repos élargie")
+    hlp_petit = copy.deepcopy(hlp0)
+    hlp_petit[ID_TRACE.split(".", 1)[1]]["max"] = 50
+    c.viole(check_concordance_runtime(corps0, rt0, hlp_petit, t02r, t03r, audit0),
+            "sérialisation maximale", "CI-21 capacité de trace insuffisante")
+    c.viole(check_concordance_runtime(
+        corps0, {**rt0, RUNTIME_GARDE: rt0[RUNTIME_GARDE].replace(ID_GARDE, "autre")},
+        hlp0, t02r, t03r, audit0),
+        "attribution opérateur non respectée", "CI-21 identifiant renommé")
+
+    # ═════════════════════════════════════════════════════════════
+    # RUNTIME L1 — ASP-CI-22 … ASP-CI-25 : mutations PAR RENDU
+    # Chacune réintroduit un défaut RÉEL que les contrôles structurels
+    # laissaient passer. Les deux premières sont exactement les deux défauts
+    # que ce lot revendique avoir évités : sans elles, la revendication
+    # n'était adossée à aucune garde.
+    # ═════════════════════════════════════════════════════════════
+    t02r_2 = doc0["02_referentiel_cartes_et_pieces.md"]
+    c.conforme(check_rendus_moteur(corps0, etapes0, t02r_2), "CI-22 conforme")
+    c.conforme(check_etat_canonique_rendu(rt0[RUNTIME_ETAT]), "CI-23 conforme")
+    c.conforme(check_garde_rendue(rt0[RUNTIME_GARDE]), "CI-24 conforme")
+    c.conforme(check_branches_tardives(etapes0), "CI-25 conforme")
+
+    # ---- ASP-CI-22 : le défaut de TRONCATURE, réintroduit -----------------
+    scalaire = mot_txt(
+        '      data: "{{ {\'option\': ctx_carte.option} }}"',
+        '      data:\n        option: "{{ ctx_carte.option }}"')
+    m_sc = yaml.safe_load(scalaire[RUNTIME_MOTEUR])[ID_MOTEUR]
+    c.viole(check_rendus_moteur(m_sc, _aplatir(m_sc["sequence"]), t02r_2),
+            "GABARIT rendu en bloc",
+            "CI-22 `.strip()` — data de carte repassé en scalaires")
+
+    # ---- ASP-CI-22 : la même chose, mais l'espace finale perdue en table --
+    m_esp = copy.deepcopy(mot0)
+    vars0(m_esp[ID_MOTEUR])["referentiel"]["1"]["option"] = "Étage"
+    c.viole(check_rendus_moteur(m_esp[ID_MOTEUR],
+                                _aplatir(m_esp[ID_MOTEUR]["sequence"]), t02r_2),
+            "espace finale comprise",
+            "CI-22 option de carte amputée de son espace finale")
+
+    # ---- ASP-CI-22 : le défaut de RETYPAGE, réintroduit -------------------
+    retype = mot_txt(
+        '        ctx_carte: "{{ referentiel[carte | string] }}"',
+        '        carte_cle: "{{ carte | string }}"\n'
+        '        ctx_carte: "{{ referentiel[carte | string] }}"')
+    m_rt = yaml.safe_load(retype[RUNTIME_MOTEUR])[ID_MOTEUR]
+    c.viole(check_rendus_moteur(m_rt, _aplatir(m_rt["sequence"]), t02r_2),
+            "retype", "CI-22 `_parse_result` — clé de carte rendue en scalaire")
+
+    # ---- ASP-CI-22 : la garde de type de `segments` affaiblie -------------
+    sans_map = mot_txt("or segments is string or segments is mapping",
+                       "or segments is string")
+    m_sm = yaml.safe_load(sans_map[RUNTIME_MOTEUR])[ID_MOTEUR]
+    c.viole(check_rendus_moteur(m_sm, _aplatir(m_sm["sequence"]), t02r_2),
+            "un mapping", "CI-22 mapping accepté pour une liste de segments")
+
+    # ---- ASP-CI-23 : image canonique falsifiée ---------------------------
+    c.viole(check_etat_canonique_rendu(rt0[RUNTIME_ETAT].replace(
+        "else 'etat_non_qualifie' }}", "else 'repos_hors_base' }}")),
+        "image contractuelle",
+        "CI-23 fourre-tout de classe N promu en repos admissible")
+    c.viole(check_etat_canonique_rendu(rt0[RUNTIME_ETAT].replace(
+        "'repos_hors_base' if e == 'charger_disconnected'",
+        "'charge' if e == 'charger_disconnected'")),
+        "image obtenue", "CI-23 état de classe R déplacé dans l'image")
+    c.viole(check_etat_canonique_rendu(rt0[RUNTIME_ETAT].replace(
+        "{{ 'oui' if s == 'on' else 'non' if s == 'off' else 'indisponible' }}",
+        "{{ 'oui' if s == 'on' else 'non' }}")),
+        "ni `oui` ni `non`",
+        "CI-23 indisponibilité de session rabattue sur `non`")
+
+    # ---- ASP-CI-24 : garde neutralisée ------------------------------------
+    lg = rt0[RUNTIME_GARDE].split("\n")
+    i_g = next(k for k, l in enumerate(lg) if l.strip().startswith("state: >"))
+    j_g = next(k for k in range(i_g + 1, len(lg))
+               if lg[k].strip().startswith("attributes:"))
+    c.viole(check_garde_rendue("\n".join(
+        lg[:i_g] + ["      state: \"{{ 'on' }}\""] + lg[j_g:])),
+        "garde divergente", "CI-24 garde remplacée par un `on` constant")
+    c.viole(check_garde_rendue(rt0[RUNTIME_GARDE].replace(
+        "and s == 'off')", "and s != 'jamais')")),
+        "garde divergente", "CI-24 session ouverte n'interdit plus le feu vert")
+    c.viole(check_garde_rendue(rt0[RUNTIME_GARDE].replace(
+        "and ev == 'none' and ed == 'ok'", "and ev != 'jamais'")),
+        "garde divergente", "CI-24 témoins d'erreur retirés de la garde")
+
+    # ---- ASP-CI-25 : branches de refus tardives --------------------------
+    sans_g2 = copy.deepcopy(mot0)
+    for st in sans_g2[ID_MOTEUR]["sequence"]:
+        if isinstance(st, dict) and "choose" in st and any(
+                "g2_session" in str(o.get("conditions")) for o in st["choose"]):
+            st["choose"] = [o for o in st["choose"]
+                            if "g2_session" not in str(o.get("conditions"))]
+    c.viole(check_branches_tardives(_aplatir(sans_g2[ID_MOTEUR]["sequence"])),
+            "ne compare jamais",
+            "CI-25 refus tardif SESSION_INACHEVEE supprimé")
+    muet = copy.deepcopy(mot0)
+    for st in muet[ID_MOTEUR]["sequence"]:
+        if isinstance(st, dict) and "choose" in st and any(
+                "g2_session" in str(o.get("conditions")) for o in st["choose"]):
+            for o in st["choose"]:
+                if "g2_session" in str(o.get("conditions")):
+                    o["sequence"] = [s for s in o["sequence"]
+                                     if not (isinstance(s, dict)
+                                             and "stop" in s)]
+    c.viole(check_branches_tardives(_aplatir(muet[ID_MOTEUR]["sequence"])),
+            "n'arrête pas la séquence",
+            "CI-25 branche tardive sans `stop:`")
+
+    # ═════════════════════════════════════════════════════════════
+    # N1 — le DÉCOMPTE annoncé par le helper doit être vrai
+    # ═════════════════════════════════════════════════════════════
+    t09_n = doc0[FICHIER_CATALOGUE]
+    c.conforme(check_decompte_vocabulaire(rt0, t09_n), "CI-18 décompte conforme")
+    faux = rt0[RUNTIME_HELPERS].replace(
+        "14 codes du catalogue figurent", "13 codes du catalogue figurent")
+    c.viole(check_decompte_vocabulaire({**rt0, RUNTIME_HELPERS: faux}, t09_n),
+            "décompte FAUX", "CI-18 codes présents sous-comptés (13 au lieu de 14)")
+    faux = rt0[RUNTIME_HELPERS].replace(
+        "4 codes du catalogue en sont ABSENTS",
+        "5 codes du catalogue en sont ABSENTS")
+    c.viole(check_decompte_vocabulaire({**rt0, RUNTIME_HELPERS: faux}, t09_n),
+            "décompte FAUX", "CI-18 codes absents sur-comptés (5 au lieu de 4)")
+    faux = rt0[RUNTIME_HELPERS].replace(
+        "4 valeurs de CYCLE DE VIE", "5 valeurs de CYCLE DE VIE")
+    c.viole(check_decompte_vocabulaire({**rt0, RUNTIME_HELPERS: faux}, t09_n),
+            "décompte FAUX", "CI-18 valeurs de cycle de vie sur-comptées")
+    c.viole(check_decompte_vocabulaire(
+        {**rt0, RUNTIME_HELPERS: "aucun decompte ici"}, t09_n),
+        "n'énonce pas son décompte", "CI-18 décompte absent du helper")
+
+    # ═════════════════════════════════════════════════════════════
+    # N3 / N4 — ASP-CI-25 contrôle la COMPARAISON, pas le nom
+    # Chaque mutation retire ou fausse UNE comparaison en laissant le nom du
+    # témoin ailleurs dans le bloc : la version précédente les laissait toutes
+    # passer.
+    # ═════════════════════════════════════════════════════════════
+    def _tardif(vieux, neuf):
+        m = yaml.safe_load(mot_txt(vieux, neuf)[RUNTIME_MOTEUR])[ID_MOTEUR]
+        return _aplatir(m["sequence"])
+
+    # N3, cas nommé par le contre-audit : `g2_err_dock != 'ok'` retiré, le nom
+    # restant présent dans la branche d'indisponibilité.
+    c.viole(check_branches_tardives(_tardif(
+        "{{ g2_err_vac != 'none' or g2_err_dock != 'ok' }}",
+        "{{ g2_err_vac != 'none' }}")),
+        "g2_err_dock != 'ok'", "CI-25 comparaison du dock retirée, nom conservé")
+    # symétrique : erreur aspirateur
+    c.viole(check_branches_tardives(_tardif(
+        "{{ g2_err_vac != 'none' or g2_err_dock != 'ok' }}",
+        "{{ g2_err_dock != 'ok' }}")),
+        "g2_err_vac != 'none'", "CI-25 comparaison de l'aspirateur retirée")
+    # témoin de session : comparaison faussée
+    c.viole(check_branches_tardives(_tardif(
+        '"{{ g2_session == \'on\' }}"', '"{{ g2_session == \'oui\' }}"')),
+        "g2_session == 'on'", "CI-25 comparaison de session faussée")
+    # état machine : classe de repos comparée au lieu de la classe d'activité
+    c.viole(check_branches_tardives(_tardif(
+        '"{{ g2_etat in classe_a }}"', '"{{ g2_etat in classe_r }}"')),
+        "g2_etat in classe_a", "CI-25 comparaison d'activité détournée")
+    # état machine : indisponibilité
+    c.viole(check_branches_tardives(_tardif(
+        '"{{ g2_etat in classe_e_indispo }}"', '"{{ g2_etat in indispo }}"')),
+        "g2_etat in classe_e_indispo", "CI-25 comparaison d'indisponibilité détournée")
+    # état machine : fourre-tout de classe N
+    c.viole(check_branches_tardives(_tardif(
+        '"{{ g2_etat not in classe_r }}"', '"{{ g2_etat not in classe_a }}"')),
+        "g2_etat not in classe_r", "CI-25 fourre-tout de classe N détourné")
+
+    # N4 — le motif du refus tardif `error` doit rester exact.
+    m_n4 = copy.deepcopy(mot0)
+    for st in m_n4[ID_MOTEUR]["sequence"]:
+        if isinstance(st, dict) and "choose" in st:
+            for o in st["choose"]:
+                if "g2_etat == 'error'" in str(o.get("conditions")):
+                    for pas in o["sequence"]:
+                        if _service(pas) == "input_text.set_value":
+                            pas["data"]["value"] = "REFUS/ROBOT_INDISPONIBLE"
+    c.viole(check_branches_tardives(_aplatir(m_n4[ID_MOTEUR]["sequence"])),
+            "ne produit pas `REFUS/ERREUR_EQUIPEMENT`",
+            "CI-25/N4 état tardif `error` diagnostiqué en indisponibilité")
+
+    # N4 bis — la branche `error` doit continuer d'arrêter la séquence.
+    m_n4b = copy.deepcopy(mot0)
+    for st in m_n4b[ID_MOTEUR]["sequence"]:
+        if isinstance(st, dict) and "choose" in st:
+            for o in st["choose"]:
+                if "g2_etat == 'error'" in str(o.get("conditions")):
+                    o["sequence"] = [p for p in o["sequence"]
+                                     if not (isinstance(p, dict) and "stop" in p)]
+    c.viole(check_branches_tardives(_aplatir(m_n4b[ID_MOTEUR]["sequence"])),
+            "n'arrête pas la séquence",
+            "CI-25/N4 branche `error` tardive sans `stop:`")
+
+    print(f"selftest OK — 25 contrôles, {c.total()} cas "
           f"({c.conformes} conformes, {c.violations} violations).")
 
 

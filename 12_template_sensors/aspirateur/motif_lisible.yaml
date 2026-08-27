@@ -1,0 +1,154 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Aspirateur — Motif lisible
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   DÉRIVER du verdict de mission un motif intelligible, disant à
+#   l'opérateur ce qui manque et quel geste est attendu, sans qu'il ait à
+#   lire le contrat ni ouvrir un journal. Rôle contractuel
+#   `‹motif_lisible›`.
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             09_refus_et_diagnostics.md §4 (ASP-INV-50, ASP-INV-53)
+#
+# 🧩 PÉRIMÈTRE
+#   - Dérivation PURE du verdict — le motif n'est JAMAIS écrit séparément
+#   - Aucune décision, aucune requalification (09 §5)
+#   - Aucune action
+#
+# 🔖 NATURE
+#   Diagnostic dérivé (restitution)
+#
+# 🆔 UNIQUE_ID
+#   aspirateur_motif_lisible
+#
+# 🔗 DÉPENDANCES (lecture seule)
+#   input_text.aspirateur_mission_verdict — ÉCRIT par le moteur, et par
+#   lui seul. Ce capteur ne fait que le traduire.
+#
+# 🧱 COUVERTURE — LES 18 CODES DU CATALOGUE, SANS EXCEPTION
+#   ⚠️ « 18 codes du catalogue » n'est PAS « 18 valeurs de verdict »
+#      (04_input_texts/aspirateur/mission.yaml). Les deux ensembles
+#      comptent 18 éléments par coïncidence et ne se recouvrent pas.
+#   Les 13 refus (09 §2) et les 5 échecs (09 §3) sont TOUS traduits ici,
+#   y compris les quatre que le lot L1 n'écrit jamais :
+#     COMMANDE_REJETEE · CANAL_INDISPONIBLE  — hors portée du moteur
+#     MISSION_INTERROMPUE · ERREUR_EN_MISSION — supervision continue, L2
+#   Les traduire malgré tout garde le catalogue TOTAL : aucun code du
+#   contrat n'est orphelin de restitution, et un lot ultérieur qui les
+#   écrira n'aura rien à ajouter ici.
+#   S'y ajoutent les valeurs de CYCLE DE VIE du verdict (ASP-INV-70),
+#   qui n'appartiennent à aucun catalogue et n'y entreront jamais.
+#
+# 🧭 HONNÊTETÉ
+#   - `ISSUE_NON_ETABLIE` n'affirme PAS qu'une émission a eu lieu — le
+#     run peut être annulé entre son écriture et l'appel du service —,
+#     ni que la commande a atteint le service, ni qu'elle a été
+#     transmise au robot, ni qu'elle a été rejetée, ni que le canal
+#     était indisponible. C'est l'« issue non établie » du 07 §4.
+#   - `COMMANDE_ACCEPTEE` ne prétend jamais que la mission a démarré
+#     (ASP-INV-38).
+#   - `TRANSITION_NON_OBSERVEE` ne conclut ni au succès ni à l'immobilité.
+#     La condition d'observation qui le produit est qualifiée au terrain
+#     depuis le 2026-08-27, eau comprise — voir lancer_mission.yaml, bloc
+#     « OBSERVATION DE LA TRANSITION ».
+#   - Une valeur terminale d'une mission ANTÉRIEURE ne signifie qu'une
+#     chose : aucune nouvelle exécution n'est observable dans les helpers
+#     Arsenal. Ce capteur n'en déduit AUCUN `CANAL_INDISPONIBLE`.
+#
+# 🚫 INTERDITS
+#   - Restituer un libellé de pièce ou de carte issu du robot (ASP-INV-7)
+#   - Afficher un index de segment nu (ASP-INV-6)
+#   - Exposer un nom d'entité ou un code protocolaire (09 §4)
+#   - Reformuler ou requalifier une décision du moteur (11 §2)
+#
+# 📏 CAPACITÉ
+#   L'état d'un capteur Home Assistant est borné à 255 caractères. Chaque
+#   motif reste sous cette borne, et le checker le vérifie (ASP-CI-19).
+#
+# 🏷️ STATUT
+#   Diagnostic — domaine aspirateur, lot L1
+# ==========================================================
+
+- sensor:
+    - name: "Aspirateur motif lisible"
+      unique_id: aspirateur_motif_lisible
+      icon: >
+        {% set v = states('input_text.aspirateur_mission_verdict') %}
+        {{ 'mdi:hand-back-right-off' if v.startswith('REFUS/')
+           else 'mdi:alert-octagon-outline' if v.startswith('ECHEC/')
+           else 'mdi:progress-question' if v.startswith('COMMANDE/')
+           else 'mdi:check-network-outline' if v.startswith('EMISSION/')
+           else 'mdi:robot-vacuum' if v.startswith('LANCEE/')
+           else 'mdi:timer-sand' if v == 'VALIDATION_EN_COURS'
+           else 'mdi:comment-question-outline' }}
+      state: >
+        {% set v = states('input_text.aspirateur_mission_verdict') %}
+        {% set code = v.split('/')[-1] %}
+        {% set motifs = {
+          'VALIDATION_EN_COURS':
+            "Validation d'une demande en cours : aucune commande n'a encore été émise.",
+          'SELECTION_VIDE':
+            "Demande incomplète : la carte ou les pièces n'ont pas été transmises. Reprenez la demande en désignant une carte et au moins une pièce.",
+          'SEGMENT_INCONNU':
+            "Une pièce demandée n'appartient pas au référentiel de la carte désignée. Reprenez la sélection parmi les pièces de cette carte.",
+          'SELECTION_MULTI_CARTE':
+            "Les pièces demandées relèvent de plusieurs cartes. Une mission porte une seule carte : lancez deux missions successives.",
+          'CARTE_NON_CONFIRMEE':
+            "La carte n'a pas été confirmée : sélection impossible, ou pièces exposées non concordantes. Vérifiez la carte dans l'application du robot, puis relancez.",
+          'PROFIL_INCONNU':
+            "Le profil demandé ne fait pas partie des cinq profils du domaine. Choisissez un profil, puis relancez.",
+          'PASSAGES_HORS_CONTRAT':
+            "Le nombre de passages demandé n'est ni 1, ni 2, ni 3. Choisissez l'une de ces trois valeurs, puis relancez.",
+          'PREREQUIS_MATERIEL_ABSENT':
+            "Le profil demandé lave le sol et la serpillière n'est pas posée. Posez la serpillière sur le robot, puis relancez.",
+          'ROBOT_INDISPONIBLE':
+            "Une information nécessaire à la décision n'est pas lisible : le robot ou l'un de ses témoins est indisponible. Réessayez plus tard.",
+          'ETAT_NON_QUALIFIE':
+            "Le robot rapporte un état que le domaine ne sait pas qualifier. Aucune mission n'est lancée. Ramenez le robot au repos, puis relancez.",
+          'ERREUR_EQUIPEMENT':
+            "Le robot ou son dock signale une erreur. Traitez l'erreur sur l'appareil, puis relancez.",
+          'MISSION_DEJA_OUVERTE':
+            "Une activité est déjà en cours sur le robot. Attendez sa fin, ou arrêtez-la, avant de lancer une nouvelle mission.",
+          'SESSION_INACHEVEE':
+            "Le robot est au repos mais une session de nettoyage reste ouverte. Arrêtez cette session, ou demandez le retour à la base, avant de relancer.",
+          'REGLAGE_NON_CONFIRME':
+            "Un réglage du profil n'a pas été confirmé par relecture. Aucune mission n'est lancée. Réessayez ; si cela persiste, vérifiez l'appareil.",
+          'ISSUE_NON_ETABLIE':
+            "L'issue de la commande n'est pas établie. Vérifiez l'état du robot et la trace Home Assistant avant toute relance.",
+          'COMMANDE_ACCEPTEE':
+            "La commande a été prise en charge. Cela ne prouve pas que la mission a démarré : le démarrage reste à observer.",
+          'DEMARRAGE_OBSERVE':
+            "Mission démarrée : le robot nettoie le périmètre demandé.",
+          'CANAL_INDISPONIBLE':
+            "La demande n'est pas parvenue à Home Assistant. Cela ne dit rien de la validité de la commande. Relancez la demande.",
+          'COMMANDE_REJETEE':
+            "La commande a été refusée à l'émission. Consultez la trace Home Assistant, puis relancez si nécessaire.",
+          'TRANSITION_NON_OBSERVEE':
+            "La commande a été acceptée, mais aucun démarrage n'a été observé en 60 s. Ni succès ni immobilité : vérifiez le robot avant toute relance.",
+          'MISSION_INTERROMPUE':
+            "La mission s'est arrêtée avant son terme, hors geste opérateur. La cause n'est pas présumée : vérifiez le robot.",
+          'ERREUR_EN_MISSION':
+            "Une erreur du robot ou du dock est survenue pendant la mission. Traitez l'erreur sur l'appareil."
+        } %}
+        {{ motifs.get(code, "Aucune mission n'a encore été tracée.") }}
+      attributes:
+        # Code porté par le verdict courant, sans son préfixe. Selon la
+        # valeur, c'est un code du catalogue (09 §2 ou §3) OU une valeur de
+        # cycle de vie (ASP-INV-70) : cet attribut ne préjuge pas laquelle.
+        code: >
+          {{ states('input_text.aspirateur_mission_verdict').split('/')[-1] }}
+        # PHASE de la demande — où elle en est. Ce n'est PAS la dichotomie
+        # contractuelle refus / échec du 09 §1, qui ne connaît que deux
+        # natures et se prononce sur le POURQUOI. Une phase dit le QUAND, et
+        # `commande`, `emission`, `lancee` et `validation` n'y ont aucun
+        # équivalent. Les confondre reviendrait à étendre en silence un
+        # vocabulaire contractuel fermé.
+        phase: >
+          {% set v = states('input_text.aspirateur_mission_verdict') %}
+          {{ 'refus' if v.startswith('REFUS/')
+             else 'echec' if v.startswith('ECHEC/')
+             else 'commande' if v.startswith('COMMANDE/')
+             else 'emission' if v.startswith('EMISSION/')
+             else 'lancee' if v.startswith('LANCEE/')
+             else 'validation' if v == 'VALIDATION_EN_COURS'
+             else 'aucune' }}
