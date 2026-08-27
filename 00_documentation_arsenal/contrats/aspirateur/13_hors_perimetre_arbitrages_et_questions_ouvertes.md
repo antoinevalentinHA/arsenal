@@ -87,20 +87,50 @@ lequel la reprise est autorisée (`ASP-INV-62`).
 **Alternative écartée à ce stade.** Émettre puis qualifier l'issue — recevable
 **sur preuve terrain**, pas avant.
 
-### `ARB-3` — Aucun délai ni seuil numérique
+### `ARB-3` — Deux fenêtres temporelles arrêtées
 
 **Question.** Quelles durées d'attente, de confirmation et d'observation de
 transition retenir ?
 
-**Arbitrage retenu.** **Aucune valeur n'est fixée.** Le contrat exige des
-**confirmations effectives** et une **fenêtre d'observation**, sans les chiffrer :
-aucun précédent Arsenal ni arbitrage opérateur ne fonde une valeur, et
-l'inventer serait une clause opposable sans fondement.
+**État antérieur.** La version v1.0 du contrat ne fixait **aucune valeur** :
+aucun précédent Arsenal ni arbitrage opérateur ne la fondait, et l'inventer
+aurait été une clause opposable sans fondement.
 
-**Ce que cela implique.** Le lot runtime devra proposer un dimensionnement,
-**explicitement empirique et révisable**, sur le modèle de la stabilisation
+**Arbitrage retenu — valeurs déclarées par l'opérateur.** Deux constantes, et
+deux seulement ([`07`](07_moteur_de_mission.md) §3.1, `ASP-INV-69`) :
+
+| Fenêtre | Valeur | Opérations couvertes | Issue en dépassement |
+|---|---|---|---|
+| **Confirmation** | **30 s** | Confirmation de **carte** (étape 6), d'**intensité d'eau** (étape 8), d'**aspiration** (étape 10) | Refus — `CARTE_NON_CONFIRMEE` ou `REGLAGE_NON_CONFIRME` |
+| **Observation de transition** | **60 s** | **Uniquement** la transition de démarrage après émission (étape 13) | Échec — `TRANSITION_NON_OBSERVEE` |
+
+**Niveau de preuve, dit franchement.** Ces deux valeurs sont **déclarées par
+l'opérateur**, comme les valeurs nominales des témoins d'erreur (`ARB-5`). Elles
+ne sont **adossées à aucune mesure terrain** de ces opérations : le lot T1/T2 n'a
+chronométré ni une confirmation de réglage, ni un délai de démarrage. Le contrat
+les **assume** à ce titre, et ne prétend pas les avoir mesurées.
+
+**Ce que « révisable » signifie ici — et ne signifie pas.** La révision est un
+**amendement conjoint** du contrat, du checker et du runtime, dans un même lot.
+Ces valeurs ne sont **pas** modifiables à chaud : le domaine **n'expose aucun
+helper temporel**, aucune entité et aucun paramètre d'appel qui les porterait.
+Un réglage temporel exploitable serait un **second arbitre de la sûreté**, hors
+contrat et hors CI — exactement ce que l'autorité unique proscrit.
+
+**Aucun fallback.** Une échéance atteinte refuse ou qualifie un échec ; elle ne
+retombe sur aucune valeur de repli et n'accorde aucune seconde attente.
+
+**Ce que cela ferme.** Le lot runtime n'a plus de dimensionnement à proposer :
+il **écrit littéralement** ces deux constantes. Le modèle de la stabilisation
 post-allumage du domaine climatisation
-([`../climatisation/08_execution.md`](../climatisation/08_execution.md)).
+([`../climatisation/08_execution.md`](../climatisation/08_execution.md)) reste la
+référence de méthode pour une **révision** ultérieure, plus pour une invention
+initiale.
+
+**Révision.** Une mesure terrain établissant qu'une de ces fenêtres est trop
+courte — une confirmation honnête arrivant après son échéance — amenderait le
+§3.1 du chapitre [`07`](07_moteur_de_mission.md), le contrôle CI correspondant et
+le moteur, **ensemble**.
 
 ### `ARB-4` — `×3` par déduction protocolaire
 

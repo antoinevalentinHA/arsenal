@@ -10,23 +10,67 @@ et l'honnêteté d'observation opposable.
 
 ## 1. États canoniques du domaine
 
-Le domaine distingue **huit** situations, qui ne se confondent jamais :
+Le domaine distingue **dix** situations, qui ne se confondent jamais :
 
-| État canonique | Ce qu'il signifie |
-|---|---|
-| **Mission ouverte** | Une session de nettoyage est **ouverte** — donc reprenable. **Ne dit rien** du mouvement du robot. |
-| **Nettoyage réel** | Le robot **nettoie effectivement**. |
-| **Pause** | La mission est ouverte et **suspendue**. |
-| **Erreur** | Le robot **ou le dock** signale une condition d'erreur. |
-| **Retour à la base** | Le robot **roule vers son dock**. C'est du **mouvement**. |
-| **Amarrage** | Le robot **s'amarre**. |
-| **Charge** | Le robot est **en charge**. |
-| **Indisponibilité** | L'état n'est **pas connu** — `unknown`, `unavailable`, appareil hors ligne. |
+| État canonique | Code | Ce qu'il signifie |
+|---|---|---|
+| **Mission ouverte** | `mission_ouverte` | Une session de nettoyage est **ouverte** — donc reprenable. **Ne dit rien** du mouvement du robot. |
+| **Nettoyage réel** | `nettoyage_reel` | Le robot **nettoie effectivement**. |
+| **Pause** | `pause` | La mission est ouverte et **suspendue**. |
+| **Erreur** | `erreur` | Le robot **ou le dock** signale une condition d'erreur. |
+| **Retour à la base** | `retour_base` | Le robot **roule vers son dock**. C'est du **mouvement**. |
+| **Amarrage** | `amarrage` | Le robot **s'amarre**. |
+| **Charge** | `charge` | Le robot est **en charge**. |
+| **Repos hors base** | `repos_hors_base` | Le robot est **immobile et hors de son dock**, sans activité reconnue. C'est un **repos admissible au lancement** ([`07`](07_moteur_de_mission.md) §5.0, classe R) — l'état d'un robot transporté vers un étage sans base. |
+| **Indisponibilité** | `indisponibilite` | L'état n'est **pas connu** — `unknown`, `unavailable`, appareil hors ligne. |
+| **État non qualifié** | `etat_non_qualifie` | L'état machine porte une valeur que ce contrat **ne classe pas** ([`07`](07_moteur_de_mission.md) §5.0, classe N). Le robot **est joignable** et rapporte fidèlement un état : c'est le **contrat** qui ne sait pas le lire. |
 
-> **`ASP-INV-44`** — Ces huit états sont **exposés distinctement**. Le domaine ne
+**Le code est le vocabulaire opposable** ; le libellé est sa restitution. Dix
+états, dix codes, **aucun synonyme** : un onzième état canonique, ou un second
+code pour un même état, est **non conforme** (`ASP-INV-52` par analogie —
+l'extension du vocabulaire est un acte contractuel).
+
+> **`ASP-INV-44`** — Ces dix états sont **exposés distinctement**. Le domaine ne
 > les agrège **jamais** en un booléen « occupé / libre », et ne présente jamais
 > l'un pour l'autre. Une agrégation de confort est une perte d'information, pas
 > une simplification.
+
+> **`ASP-INV-68` — le modèle d'états est total sur la partition.** Toute valeur
+> de l'état machine possède **exactement un** état canonique, par la
+> correspondance suivante avec les quatre classes de
+> [`07`](07_moteur_de_mission.md) §5.0 :
+>
+> | Classe | Valeur de l'état machine | Code canonique |
+> |---|---|---|
+> | **R** | `charger_disconnected` | `repos_hors_base` |
+> | **R** | `charging` | `charge` |
+> | **A** | `cleaning` · `segment_cleaning` · `zoned_cleaning` | `nettoyage_reel` |
+> | **A** | `paused` | `pause` |
+> | **A** | `returning_home` | `retour_base` |
+> | **A** | `docking` | `amarrage` |
+> | **E** | `error` | `erreur` |
+> | **E** | `device_offline` · `unknown` · `unavailable` | `indisponibilite` |
+> | **N** | toute autre valeur | `etat_non_qualifie` |
+>
+> **Deux conséquences au lancement, explicites.** `repos_hors_base` est un état
+> **admissible** au lancement — c'est la classe R, et c'est le besoin de
+> fonctionnement après transport (`ARB-1`). `etat_non_qualifie` **refuse** au
+> motif `ETAT_NON_QUALIFIE` ([`09`](09_refus_et_diagnostics.md)) : il n'est
+> **ni** une indisponibilité (`ROBOT_INDISPONIBLE`), **ni** une erreur
+> d'équipement (`ERREUR_EQUIPEMENT`) — les confondre produirait un diagnostic
+> faux (`ASP-INV-60`).
+>
+> **Mission ouverte est orthogonal.** Le dixième état — **Mission ouverte** — ne
+> dérive **pas** de l'état machine mais du **témoin de session** (§3). Il se
+> superpose aux neuf autres au lieu de les exclure : une mission peut être
+> ouverte pendant un nettoyage réel comme pendant un repos hors base. Il est
+> donc **exposé séparément**, jamais fondu dans la valeur d'état.
+>
+> **Pourquoi cette totalité est écrite.** Sans elle, `charger_disconnected` —
+> l'état de repos le **plus courant** après un transport du robot, et un
+> lancement **admis** par `ARB-1` — n'avait aucune image dans ce chapitre : le
+> domaine aurait dû le rendre sous un état faux, ou pas du tout. `ASP-INV-49`
+> proscrit les deux.
 
 > **`ASP-INV-45` — l'indisponibilité est un état, pas un trou.** Conformément à
 > [`principes_generaux.md`](../../architecture/03_doctrines/principes_generaux.md)

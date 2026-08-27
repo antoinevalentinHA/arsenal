@@ -78,11 +78,11 @@ son échec **refuse la mission** et **arrête la séquence**.
 | **3** | **Refuser** une sélection vide, inconnue ou multi-carte | `SELECTION_VIDE`, `SEGMENT_INCONNU`, `SELECTION_MULTI_CARTE` |
 | **4** | **Vérifier l'état de lancement** — état machine dans la classe de repos admissible, erreurs nominales, aucune session ouverte (§5) | `ETAT_NON_QUALIFIE`, `ROBOT_INDISPONIBLE`, `ERREUR_EQUIPEMENT`, `MISSION_DEJA_OUVERTE`, `SESSION_INACHEVEE` |
 | **5** | **Sélectionner la carte** de l'intention | `CARTE_NON_CONFIRMEE` |
-| **6** | **Attendre et confirmer le contexte cartographique** — sélecteur relu **et** pièces exposées concordantes ([`06`](06_integrite_mono_carte.md) §3, conditions 2 à 4) | `CARTE_NON_CONFIRMEE` |
+| **6** | **Attendre et confirmer le contexte cartographique** — sélecteur relu **et** pièces exposées concordantes ([`06`](06_integrite_mono_carte.md) §3, conditions 2 à 4), sous **30 s** (§3.1) | `CARTE_NON_CONFIRMEE` |
 | **7** | **Écrire l'intensité d'eau** du profil | `REGLAGE_NON_CONFIRME` |
-| **8** | **Confirmer l'intensité** et la **cohérence du mode dérivé** — jamais l'écrire ([`03`](03_profils_metier.md) §3) | `REGLAGE_NON_CONFIRME` |
+| **8** | **Confirmer l'intensité** et la **cohérence du mode dérivé** — jamais l'écrire ([`03`](03_profils_metier.md) §3), sous **30 s** (§3.1) | `REGLAGE_NON_CONFIRME` |
 | **9** | **Écrire la puissance d'aspiration** du profil | `REGLAGE_NON_CONFIRME` |
-| **10** | **Confirmer l'aspiration** | `REGLAGE_NON_CONFIRME` |
+| **10** | **Confirmer l'aspiration**, sous **30 s** (§3.1) | `REGLAGE_NON_CONFIRME` |
 | **11** | **Revérifier intégralement l'état de lancement** (§5) — classe de repos, erreurs nominales, absence de mission concurrente **et absence de session ouverte** | `ETAT_NON_QUALIFIE`, `ROBOT_INDISPONIBLE`, `ERREUR_EQUIPEMENT`, `MISSION_DEJA_OUVERTE`, `SESSION_INACHEVEE` |
 | **12** | **Émettre une seule commande segmentée** | qualification de l'issue, §4 |
 | **13** | **Exposer** acceptation, progression, retour, fin ou échec ([`08`](08_etats_et_observation.md)) | — |
@@ -114,11 +114,40 @@ son échec **refuse la mission** et **arrête la séquence**.
 > étapes laisse une session ouverte : l'omettre de la revérification viderait de
 > son sens la raison même pour laquelle cette étape existe.
 
-**Ce que le contrat ne fixe pas.** Les **délais** d'attente et de confirmation
-(étapes 6, 8, 10) ne sont **pas chiffrés** ici : aucun précédent ni arbitrage ne
-les fonde ([`13`](13_hors_perimetre_arbitrages_et_questions_ouvertes.md),
-`ARB-3`). Le contrat exige une **confirmation effective**, pas une temporisation
-d'une durée donnée.
+### 3.1 Constantes temporelles du domaine
+
+> **`ASP-INV-69` — deux constantes, et deux seulement.** Le domaine arrête
+> **deux** durées, opposables et exhaustives :
+>
+> | Constante | Valeur | Portée |
+> |---|---|---|
+> | **Fenêtre de confirmation** | **30 s** | Chaque confirmation de **carte** ou de **réglage** — étapes 6, 8 et 10 |
+> | **Fenêtre d'observation de transition** | **60 s** | L'observation de la transition de démarrage — étape 13 (§4, `ASP-INV-38`) |
+>
+> **Elles sont des constantes du contrat, écrites littéralement dans le moteur.**
+> Le domaine **n'expose aucun réglage temporel** : ni helper, ni entité, ni
+> paramètre d'appel ne porte ces durées. Une valeur temporelle configurable à
+> chaud serait un **second arbitre** de la sûreté, hors contrat et hors CI.
+>
+> **Aucune autre durée n'existe.** Toute temporisation du domaine qui ne serait
+> ni l'une ni l'autre est **non conforme**.
+>
+> **Aucun fallback.** Une échéance atteinte **refuse** ou **qualifie un échec** ;
+> elle ne déclenche jamais une valeur de repli, une seconde attente, une
+> ré-émission ni une poursuite « au bénéfice du doute » (`ASP-INV-39`,
+> `ASP-INV-51`).
+>
+> **« Révisable » signifie amendement conjoint.** Ces valeurs se révisent par
+> modification **simultanée** du contrat, du checker et du runtime — jamais par
+> un geste d'exploitation ([`13`](13_hors_perimetre_arbitrages_et_questions_ouvertes.md),
+> `ARB-3`).
+>
+> **Ce que le dépassement produit.** L'échéance de 30 s **refuse** la mission
+> (`CARTE_NON_CONFIRMEE` ou `REGLAGE_NON_CONFIRME`) ; celle de 60 s **qualifie
+> un échec** (`TRANSITION_NON_OBSERVEE`), car la commande, elle, a été émise.
+> Une confirmation obtenue **avant** l'échéance poursuit immédiatement la
+> séquence : le contrat exige une **confirmation effective**, la durée n'en est
+> que la borne.
 
 > **Ce que le terrain rend praticable.** La séquence « régler, confirmer, puis
 > lancer » a été exécutée deux fois : le réglage a été **appliqué et tenu pendant
@@ -156,8 +185,9 @@ normalement.
 > absence est un **échec qualifié** (`TRANSITION_NON_OBSERVEE`), jamais un
 > succès par défaut.
 >
-> **La fenêtre d'observation n'est pas chiffrée par ce contrat**
-> ([`13`](13_hors_perimetre_arbitrages_et_questions_ouvertes.md), `ARB-3`).
+> **La fenêtre d'observation est de 60 s** (§3.1, `ASP-INV-69`). Son expiration
+> ne conclut **ni au succès ni à l'immobilité** : elle constate une **absence de
+> preuve**, et le dit ([`09`](09_refus_et_diagnostics.md)).
 
 > **`ASP-INV-39` — aucune reprise implicite.** Une issue non concluante ne
 > provoque **jamais** de ré-émission automatique, de seconde tentative ni de

@@ -50,7 +50,7 @@ Les rôles sont notés `‹…›`, convention du domaine
 |---|---|
 | `‹verdict_de_mission›` | Le résultat de la validation : autorisée, ou refusée avec son code ([`09`](09_refus_et_diagnostics.md)) |
 | `‹motif_lisible›` | La justification humaine alignée sur le code de refus ou d'échec |
-| `‹etat_canonique›` | L'état du domaine parmi les huit du chapitre [`08`](08_etats_et_observation.md) |
+| `‹etat_canonique›` | L'état du domaine parmi les **dix** du chapitre [`08`](08_etats_et_observation.md), `‹mission_ouverte›` étant rendu séparément (`ASP-INV-68`) |
 | `‹derniere_intention_lancee›` | La trace de l'intention effectivement émise — jamais relue depuis l'appareil (`ASP-INV-15`) |
 
 ---
@@ -64,7 +64,8 @@ Les rôles sont notés `‹…›`, convention du domaine
 | **Mappage area ↔ segment** | Sans objet pour la voie retenue |
 | **Entités désactivées du registre** | Aucune réactivation n'est exigée par ce contrat au-delà de celles déjà réalisées ; le domaine ne dépend d'aucune entité désactivée |
 | **Entrée `recorder`** | Aucune ([`08`](08_etats_et_observation.md) §6) |
-| **Checker CI** | Aucun — lot ultérieur |
+| **Helper temporel** | **Aucun.** Les deux fenêtres du domaine sont des **constantes de contrat** écrites littéralement dans le moteur ([`07`](07_moteur_de_mission.md) §3.1, `ASP-INV-69`) : aucun `input_number`, aucune entité et aucun paramètre d'appel ne les porte. |
+| **Checker CI** | Étendu au lot d'intégrité normative — aucun nouveau checker à fournir |
 
 ---
 

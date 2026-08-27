@@ -54,9 +54,10 @@ chapitre l'instancie pour le domaine sans la redéfinir.
    quatre champs, sans complétion implicite (`ASP-INV-23`).
 2. **Représenter l'intention opérateur**, pas l'état de l'appareil, sur la
    sélection de profil et de passages (`ASP-INV-16`).
-3. **Restituer les états canoniques distinctement** — les huit du
+3. **Restituer les états canoniques distinctement** — les **dix** du
    chapitre [`08`](08_etats_et_observation.md), sans agrégation de confort
-   (`ASP-INV-44`).
+   (`ASP-INV-44`). **Mission ouverte** se superpose aux neuf autres et se rend
+   **séparément**, jamais fondu dans la valeur d'état (`ASP-INV-68`).
 4. **Restituer les motifs de refus et d'échec** tels que produits, de façon
    lisible et non tronquée (`ASP-INV-50`).
 5. **Isoler l'action de la lecture** — les cartes d'action sont physiquement

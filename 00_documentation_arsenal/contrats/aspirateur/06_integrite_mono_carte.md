@@ -57,9 +57,9 @@ satisfaites, **dans l'ordre** :
 | # | Condition | Défaut ⇒ refus |
 |---|---|---|
 | 1 | **Une seule carte est demandée** par l'intention | `SELECTION_MULTI_CARTE` |
-| 2 | Cette carte est **explicitement sélectionnée** sur l'appareil | `CARTE_NON_CONFIRMEE` |
-| 3 | La sélection est **confirmée par relecture** | `CARTE_NON_CONFIRMEE` |
-| 4 | Les **pièces exposées** pour cette carte **contiennent l'intégralité** des segments du référentiel V1 de cette carte ([`02`](02_referentiel_cartes_et_pieces.md)) — voir §3.1 | `CARTE_NON_CONFIRMEE` |
+| 2 | Cette carte est **explicitement sélectionnée** sur l'appareil, sous l'**option exacte** du sélecteur ([`02`](02_referentiel_cartes_et_pieces.md) §2.1) | `CARTE_NON_CONFIRMEE` |
+| 3 | La sélection est **confirmée par relecture**, par comparaison **littérale** à cette même option | `CARTE_NON_CONFIRMEE` |
+| 4 | Les **pièces exposées** pour cette carte **contiennent l'intégralité** des segments du référentiel V1 de cette carte ([`02`](02_referentiel_cartes_et_pieces.md) §2, §2.1) — voir §3.1 | `CARTE_NON_CONFIRMEE` |
 | 5 | **Tous** les segments demandés appartiennent à cette carte | `SEGMENT_INCONNU` |
 | 6 | La carte active est **lisible** — ni `unknown`, ni `unavailable` | `CARTE_NON_CONFIRMEE` |
 
@@ -88,6 +88,16 @@ satisfaites, **dans l'ordre** :
 > **Un segment du référentiel manquant à l'appel refuse.** Si l'appareil
 > n'expose pas l'un des segments attendus, la carte chargée n'est pas celle que le
 > contrat décrit : `CARTE_NON_CONFIRMEE`.
+>
+> **Comment l'inclusion se constate.** Les pièces exposées le sont **sous leur
+> nom Roborock**, jamais sous leur index. La condition 4 confronte donc ces noms
+> aux **noms Roborock exacts** des segments V1 de la carte désignée, tels que
+> ratifiés en [`02`](02_referentiel_cartes_et_pieces.md) §2.1 — comparaison
+> **littérale**, jamais approchée (`ASP-INV-66`, `ASP-INV-67`). C'est l'unique
+> endroit du domaine où un nom de segment remonté par l'appareil est comparé, et
+> il n'en sort **aucune désignation** : la condition 4 **confirme**, la condition
+> 5 **autorise** — les segments demandés restent, eux, des paires
+> `‹carte›_‹segment›`.
 
 > **`ASP-INV-27` — le refus est la seule alternative.** Si **une** condition
 > manque ou diverge, la mission est **refusée**, avec un motif lisible. Elle
@@ -113,8 +123,8 @@ quatre heures et à travers deux missions.
 
 | Lecture | Statut contractuel |
 |---|---|
-| **Relecture du sélecteur de carte** (`select.roborock_q7_max_carte_selectionnee`) | **Obligatoire** — condition 3 |
-| **Inclusion des pièces exposées** par rapport au référentiel V1 de la carte (`sensor.roborock_q7_max_piece_actuelle`) | **Obligatoire** — condition 4, **seconde lecture distincte** dans la même couche entités (§3.1) |
+| **Relecture du sélecteur de carte** (`select.roborock_q7_max_carte_selectionnee`) | **Obligatoire** — condition 3, comparaison littérale à l'option exacte ([`02`](02_referentiel_cartes_et_pieces.md) §2.1) |
+| **Inclusion des pièces exposées** par rapport au référentiel V1 de la carte (`sensor.roborock_q7_max_piece_actuelle`) | **Obligatoire** — condition 4, **seconde lecture distincte** dans la même couche entités (§3.1), sur les noms exacts de [`02`](02_referentiel_cartes_et_pieces.md) §2.1 |
 | **Statut protocolaire brut de la carte** (`mapStatus`, observé en diagnostic terrain) | **Non retenu comme dépendance runtime** — voir §5 |
 
 > **`ASP-INV-29` — la double confirmation est la règle.** La confirmation repose
