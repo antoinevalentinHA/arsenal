@@ -1,0 +1,296 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Aspirateur — Projection persistante d'entretien (lot N1)
+#
+#  ID : 10280000000003
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Automation de PROJECTION D'ÉTAT MÉTIER, et rien d'autre.
+#
+#   Elle projette dans l'UI UNE notification persistante — et une
+#   seule — tant qu'au moins un poste d'entretien est DÛ, en y
+#   recensant les postes effectivement dus. Elle la disqualifie
+#   lorsque la projection établit, de façon fiable, qu'aucun poste
+#   ne l'est.
+#
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             14_entretien.md §2 (ASP-INV-75, ASP-INV-76)
+#                              §3 (ASP-INV-77 — aucune remise à zéro
+#                                  automatique)
+#                              §5 (ASP-INV-83 cloisonnement,
+#                                  ASP-INV-84 rien hors mission)
+#             00_documentation_arsenal/contrats/notifications.md
+#   Cadrage ratifié (D-44) : cadrage_l2_maintenance_ui,
+#             08_NOTIFICATIONS.md §1 (canal 2, identifiant de
+#                                     notification `aspirateur_entretien`)
+#                                §2 (contraintes de forme T1…T6)
+#                                §4 (les six exigences, les trois
+#                                    déclencheurs, l'acquittement)
+#             10_LOTS.md §2 (contenu du lot N1)
+#
+# ----------------------------------------------------------
+# 🧱 NATURE
+#   LECTEUR PUR. Projection d'un état métier courant.
+#   Aucune décision, aucun pilotage, aucune mémoire d'événement.
+#
+# ----------------------------------------------------------
+# ✍️ WRITER UNIQUE
+#   Cette automation est le SEUL writer de la notification
+#   persistante `aspirateur_entretien`. Création ET suppression
+#   vivent ici, dans le même fichier et dans le même `choose` :
+#   aucun autre objet ne crée, ne met à jour ni ne supprime cet
+#   identifiant.
+#
+# ----------------------------------------------------------
+# 🧮 AUTORITÉ — UNE SEULE, CELLE DU LOT M1
+#   sensor.aspirateur_entretien_du        — liste canonique des
+#                                           postes dus (état + attributs)
+#   binary_sensor.aspirateur_entretien_requis
+#                                         — le témoin : au moins un
+#                                           poste réclame une intervention
+#
+#   Cette automation NE RECALCULE RIEN. Elle ne lit aucun compteur
+#   natif, aucun plafond, aucun seuil : le périmètre fermé, les
+#   quatre plafonds et le seuil unique vivent dans le SEUL bloc
+#   `variables:` de M1, et c'est lui qui tranche. Lire ici une
+#   cinquième source, ou refaire la comparaison au seuil, créerait
+#   une seconde autorité — et deux autorités divergent tôt ou tard.
+#
+#   Aucune boucle : l'autorité ne relit pas la notification, et la
+#   notification n'écrit aucune entité. Le graphe est un arbre.
+#
+# ----------------------------------------------------------
+# ⚙️ DÉCLENCHEURS — TROIS, ET TROIS SEULEMENT
+#   • binary_sensor.aspirateur_entretien_requis — le franchissement
+#     de seuil, jamais le rythme du coordinateur (08_NOTIFICATIONS
+#     §4.2 : les capteurs natifs se rafraîchissent toutes les 30 à
+#     60 s ; s'y brancher réécrirait la notification en continu) ;
+#   • sensor.aspirateur_entretien_du, BORNÉ À L'ATTRIBUT
+#     `postes_dus` — la LISTE change alors que le témoin reste
+#     vrai : un second poste devient dû, ou un poste dû est soldé
+#     pendant qu'un autre le reste. Sans ce déclencheur, la
+#     notification afficherait un contenu périmé ;
+#   • input_boolean.systeme_stable → on — réconciliation au
+#     redémarrage : Home Assistant NE RESTAURE PAS les notifications
+#     persistantes, alors que les compteurs natifs, eux, reviennent.
+#     Sans cette re-projection, un entretien dû deviendrait
+#     silencieux après un reboot.
+#
+#   POURQUOI `attribute: postes_dus`, ET PAS UN DÉCLENCHEUR NU.
+#   Un déclencheur d'état sans `to:`, sans `from:` et sans
+#   `attribute:` passe en `match_all` côté Home Assistant : il part
+#   alors sur TOUT changement d'état ou D'ATTRIBUT de l'entité. Or
+#   l'attribut `postes` de l'autorité republie `restant_h` et
+#   `restant_pourcentage` des quatre postes : la moindre
+#   décroissance d'un compteur natif — donc toute session de
+#   nettoyage — réveillerait la projection et réécrirait la
+#   notification au rythme du coordinateur. Ce serait exactement le
+#   défaut que l'interposition des deux entités dérivées du §4.2
+#   sert à empêcher. Borné à `postes_dus`, le déclencheur ne part
+#   plus que si la LISTE DES POSTES DUS change réellement.
+#
+#   Aucun déclencheur temporel, aucun événement transitoire, aucun
+#   `homeassistant.start` nu : le patron de readiness du dépôt est
+#   `input_boolean.systeme_stable`, et c'est lui qui est employé.
+#
+# ----------------------------------------------------------
+# 🔌 MISE EN SERVICE — REDÉMARRAGE ET `automation.reload`
+#   Les deux ne sont PAS équivalents, et la différence se voit au
+#   déploiement.
+#
+#   • REDÉMARRAGE COMPLET — l'automation `10120000000018` remet
+#     `input_boolean.systeme_stable` à `off` sur `homeassistant.start`,
+#     puis à `on` 45 s plus tard. Il y a donc un FRONT réel, et la
+#     réconciliation a lieu.
+#
+#   • SIMPLE `automation.reload` — si `systeme_stable` vaut déjà
+#     `on`, le rechargement ne produit AUCUN front : ni le témoin ni
+#     l'autorité ne changent, et cette projection ne se réveille pas.
+#     Après une mise en service par simple rechargement, la
+#     réconciliation immédiate demande donc un déclenchement
+#     opérateur explicite de cette automation ; à défaut, elle
+#     attend le prochain changement de `postes_dus` ou du témoin.
+#
+#   Cette limite N'AUTORISE AUCUN déclencheur temporel ni aucun
+#   polling : la réponse est une procédure de déploiement, pas une
+#   quatrième source de réveil.
+#
+# ----------------------------------------------------------
+# 🔁 MODE — `restart`, et pourquoi
+#   Les deux entités d'autorité mutent dans le MÊME cycle
+#   d'évaluation : le témoin binaire dérive du capteur de liste. Un
+#   franchissement de seuil produit donc deux déclenchements
+#   rapprochés, et c'est le DERNIER état qui fait foi.
+#
+#   `restart` fait converger sur cet état — c'est le mode de tous
+#   les précédents de projection persistante du dépôt (lave-vaisselle
+#   10080000000006, panne secteur 10040000000004, babysitting
+#   10090000000011).
+#
+#   `single` serait un piège : le second déclenchement serait
+#   ABANDONNÉ en silence, et la notification resterait sur le
+#   contenu du premier. `queued` rejouerait un rendu déjà périmé.
+#
+# ----------------------------------------------------------
+# 🕳️ L'INDISPONIBILITÉ N'EST PAS « AUCUN ENTRETIEN »
+#   (ASP-INV-45, ASP-INV-74, ASP-INV-76)
+#
+#   Le `choose` ci-dessous n'a PAS de branche `default:`. C'est le
+#   point de conception du fichier, et il est délibéré.
+#
+#   Le témoin binaire est INDISPONIBLE quand la question n'est pas
+#   tranchable — aucun poste dû, mais au moins un poste illisible.
+#   Un `default:` y ferait tomber la suppression, et convertirait un
+#   TROU D'INFORMATION en « rien à faire ». Sans branche par défaut,
+#   une projection non évaluable ne produit AUCUNE action : la
+#   notification reste exactement dans l'état où la dernière
+#   information fiable l'avait laissée.
+#
+#   Symétriquement, aucune dette n'est inventée : une projection
+#   illisible ne crée pas de notification.
+#
+# ----------------------------------------------------------
+# 🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#   - Aucune commande robot, aucun appel `vacuum.*` / `roborock.*`
+#   - AUCUNE pression de bouton : la remise à zéro est un geste
+#     opérateur explicite (ASP-INV-77), portée par le lot M2 et par
+#     lui seul (ASP-INV-81). Cette projection ne la propose même pas
+#   - Ne déclare aucun entretien effectué, ne conclut aucun solde
+#   - Ne lit ni n'écrit le verdict de mission ni la trace
+#     d'intention — les helpers du lot L1 n'ont qu'un écrivain, le
+#     moteur (ASP-INV-31). Leurs identifiants ne sont pas même cités
+#     ici : ASP-CI-11 balaie ce fichier COMMENTAIRES COMPRIS
+#   - Ne lit aucun helper d'intention : la couche d'intention est le
+#     lot U0, et il n'existe pas
+#   - N'émet AUCUNE notification mobile, et n'en connaît aucune
+#     cible : hors mission, le domaine n'ajoute rien (ASP-INV-84)
+#   - Ne crée aucune notification persistante d'erreur : une erreur
+#     robot ou dock n'est pas un entretien (ASP-INV-83)
+#   - Ne prédit AUCUNE date, aucune échéance, aucune tendance : le
+#     seuil se constate, il ne se prévoit pas (14 §2)
+#   - Ne porte aucune durée restante chiffrée : elle changerait à
+#     chaque cycle du coordinateur et réécrirait la notification en
+#     permanence (08_NOTIFICATIONS §4.2)
+#   - Ne mémorise aucun acquittement (D-30) : rien n'est stocké, et
+#     la recalculabilité forte reste satisfaite
+#
+# ----------------------------------------------------------
+# 🏷️ STATUT
+#   Projection — domaine aspirateur, lot N1
+# ==========================================================
+
+- id: "10280000000003"
+  alias: "Aspirateur - Notification entretien requis"
+  description: >
+    Projette une notification persistante unique tant qu'au moins un poste
+    d'entretien est dû, en y recensant les postes effectivement dus, et la
+    disqualifie lorsque la projection établit qu'aucun poste ne l'est.
+    Lecteur pur de la projection d'entretien du lot M1.
+  mode: restart
+
+  # ======================================================
+  # 🔔 Déclencheurs — franchissement de seuil, changement de
+  #    liste, réconciliation au readiness
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.aspirateur_entretien_requis
+
+    # Borné à l'attribut : un déclencheur nu partirait sur `postes`,
+    # donc au rythme du coordinateur. Voir l'en-tête.
+    - platform: state
+      entity_id: sensor.aspirateur_entretien_du
+      attribute: postes_dus
+
+    # Re-projection post-démarrage : HA ne restaure pas les persistantes
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  # ======================================================
+  # 🔄 Actions — création/mise à jour, ou disqualification
+  #
+  # AUCUN `default:` — voir l'en-tête. Les deux branches sont
+  # mutuellement exclusives et NON exhaustives : la troisième
+  # situation, non évaluable, ne produit délibérément rien.
+  # ======================================================
+  action:
+
+    - choose:
+
+        ####################################################
+        # 🧰 Au moins un poste dû → création ou mise à jour
+        #
+        # L'identifiant de notification est STABLE et FERMÉ :
+        # `persistent_notification.create` REMPLACE à identifiant
+        # identique. L'anti-doublon est donc structurel, et rien
+        # ne peut s'empiler.
+        ####################################################
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.aspirateur_entretien_requis
+              state: "on"
+            # La liste est lue sur la MÊME autorité, jamais recalculée.
+            # Une liste absente n'écrit aucun message : on ne rend pas
+            # une notification dont on ne peut pas nommer l'objet.
+            - condition: template
+              value_template: >
+                {{ (state_attr('sensor.aspirateur_entretien_du',
+                               'postes_dus') or []) | count > 0 }}
+          sequence:
+            - service: persistent_notification.create
+              data:
+                notification_id: aspirateur_entretien
+                title: "🧰 Aspirateur – Entretien requis"
+                message: >
+                  **Postes dus :** {{ state_attr('sensor.aspirateur_entretien_du',
+                  'postes_dus') | join(', ') }}
+
+                  La remise à zéro d'un poste est un geste opérateur
+                  explicite : elle n'est jamais déclenchée par cette
+                  projection.
+
+                  Cette notification reste visible tant qu'un poste
+                  reste dû. Une suppression manuelle persiste jusqu'au
+                  prochain changement de la liste des postes dus, ou
+                  jusqu'à une réconciliation de démarrage : une simple
+                  évolution des compteurs ne la recrée pas.
+
+        ####################################################
+        # ✅ Aucun poste dû, projection COMPLÈTE → disqualification
+        #
+        # TROIS exigences, et la suppression n'a lieu que si les
+        # trois sont réunies :
+        #   · le témoin binaire vaut FAUX — il n'y parvient que si
+        #     aucun poste n'est dû ET qu'aucun n'est illisible ;
+        #   · l'état du capteur de liste est le SCALAIRE `aucun`, et
+        #     lui seul — jamais `non_evaluable`, jamais `unknown`,
+        #     jamais `unavailable`, et jamais une liste de valeurs
+        #     acceptées qui en admettrait une deuxième ;
+        #   · l'attribut `postes_dus` est PRÉSENT et VIDE. Un état
+        #     nominal porté par une entité dont l'attribut a disparu
+        #     n'est pas une autorité : l'attribut absent se rend
+        #     `none`, et `none` ne vaut pas « aucun poste dû ».
+        #
+        # Exiger les trois est ce qui rend la suppression sûre : une
+        # seule d'entre elles, faussée, ne suffit pas à effacer une
+        # dette réelle. La symétrie avec la branche de création est
+        # exacte — celle-ci exige `postes_dus | count > 0`, celle-là
+        # `postes_dus` présent et `| count == 0`.
+        ####################################################
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.aspirateur_entretien_requis
+              state: "off"
+            - condition: state
+              entity_id: sensor.aspirateur_entretien_du
+              state: "aucun"
+            - condition: template
+              value_template: >
+                {% set dus = state_attr('sensor.aspirateur_entretien_du',
+                                        'postes_dus') %}
+                {{ dus is not none and dus | count == 0 }}
+          sequence:
+            - service: persistent_notification.dismiss
+              data:
+                notification_id: aspirateur_entretien
