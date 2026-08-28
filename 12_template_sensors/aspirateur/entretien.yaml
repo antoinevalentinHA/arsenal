@@ -1,0 +1,236 @@
+# ==========================================================
+# 🧰 ARSENAL — TEMPLATE SENSORS
+#     Aspirateur — Projection d'entretien (lot M1)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Projeter les QUATRE compteurs natifs de consommable sur la
+#   classification contractuelle de l'échéance — DÛ / NON DÛ /
+#   NON ÉVALUABLE — et n'exposer que cela.
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             14_entretien.md §1 (ASP-INV-73, ASP-INV-74)
+#                              §2 (ASP-INV-75, ASP-INV-76)
+#   Cadrage ratifié (D-44) : cadrage_l2_maintenance_ui,
+#             08_NOTIFICATIONS.md §4.2 — les deux entités dérivées
+#             06_ENTITES_ENTRETIEN.md §8.1 — trois situations
+#
+# 🧩 PÉRIMÈTRE
+#   - Dérivation pure : aucune action, aucun service, aucun pilotage
+#   - AUCUNE pression de bouton, AUCUNE commande robot
+#   - AUCUNE notification : le lot N1 CONSOMME cette projection
+#   - AUCUNE lecture ni écriture du verdict de mission
+#   - AUCUNE prédiction : ni date, ni tendance, ni rythme d'usage
+#
+# 🔖 NATURE
+#   Projection d'état — recalculable, sans mémoire
+#
+# 🆔 UNIQUE_ID
+#   aspirateur_entretien_du · aspirateur_entretien_requis
+#
+# 🔗 DÉPENDANCES (lecture seule) — QUATRE, ET QUATRE SEULEMENT
+#   sensor.roborock_q7_max_temps_restant_filtre
+#   sensor.roborock_q7_max_temps_restant_brosse_principale
+#   sensor.roborock_q7_max_temps_restant_brosse_laterale
+#   sensor.roborock_q7_max_temps_restant_capteurs
+#
+# 🧮 AUTORITÉ DE CALCUL — UNE SEULE
+#   Le bloc `variables:` du capteur de liste porte le PÉRIMÈTRE
+#   FERMÉ — quatre sources, quatre plafonds — et le SEUIL UNIQUE.
+#   L'état et les cinq attributs le lisent ; ils ne le redéclarent
+#   jamais. Le témoin binaire ne relit PAS les capteurs natifs : il
+#   consomme les attributs du capteur de liste. Déplacer un plafond
+#   ou substituer une source se fait donc en UN seul endroit, et
+#   la CI y est confrontée (ASP-CI-34).
+#
+# 📐 SEUIL — UN SEUL, POUR LES QUATRE POSTES (ASP-INV-75)
+#   Un poste est DÛ lorsque son restant est INFÉRIEUR OU ÉGAL à
+#   10 % de son plafond. Aucune pondération, aucune exception.
+#
+#   Plafonds contractuels, en HEURES — 14_entretien.md §1 :
+#     brosse principale 300 · brosse latérale 200
+#     filtre            150 · nettoyage des capteurs 30
+#   Ils sont corroborés à la seconde près par le relevé
+#   d'attestation, et re-vérifiés en lecture passive : le restant
+#   de la brosse latérale, 185,64 h, n'est compatible qu'avec 200.
+#
+# 🕳️ L'INDISPONIBILITÉ N'EST PAS UNE VALEUR (ASP-INV-74, ASP-INV-76)
+#   `unknown`, `unavailable`, l'absence d'entité et toute valeur
+#   non numérique valent NON ÉVALUABLE — jamais zéro, jamais la
+#   dernière valeur connue, jamais « non dû ». Il n'existe donc
+#   AUCUN repli numérique dans ce fichier : la garde est
+#   `is_number`, et `float` est appelé SANS valeur par défaut.
+#
+#   Le témoin binaire n'a que deux valeurs ; la troisième situation
+#   n'y entre pas de force. Quand aucun poste n'est dû mais qu'au
+#   moins un est illisible, le témoin devient INDISPONIBLE — dire
+#   « faux » y convertirait un trou d'information en « non dû ».
+#   Quand un poste est dû, la question est tranchée, et le témoin
+#   vaut vrai quelle que soit la lisibilité des autres.
+#
+# 🚫 INTERDITS
+#   - Convertir une indisponibilité en état nominal
+#   - Introduire un repli numérique (`| float(0)` et semblables)
+#   - Prédire une date, une échéance ou une tendance
+#   - Lire une cinquième source, ou substituer l'une des quatre
+#   - Lire ou écrire le verdict de mission — helper du lot L1, dont le
+#     moteur est l'écrivain unique. L'identifiant n'est pas même cité
+#     ici : ASP-CI-11 balaie ce fichier COMMENTAIRES COMPRIS, et le
+#     citer suffirait à déclencher la garde. C'est voulu, et c'est bien.
+#   - Émettre une notification depuis ce fichier
+#
+# 🏷️ STATUT
+#   Projection — domaine aspirateur, lot M1
+# ==========================================================
+
+- sensor:
+
+    # ------------------------------------------------------
+    # AUTORITÉ — liste canonique des postes dus, en libellés
+    # Arsenal. C'est ici, et nulle part ailleurs, que le
+    # périmètre, les plafonds et le seuil sont déclarés.
+    # ------------------------------------------------------
+    - name: "Aspirateur entretien du"
+      unique_id: aspirateur_entretien_du
+      default_entity_id: sensor.aspirateur_entretien_du
+      icon: mdi:broom
+
+      variables:
+        seuil_pct: 10
+        perimetre:
+          - nom: "Filtre"
+            source: sensor.roborock_q7_max_temps_restant_filtre
+            plafond_h: 150
+          - nom: "Brosse principale"
+            source: sensor.roborock_q7_max_temps_restant_brosse_principale
+            plafond_h: 300
+          - nom: "Brosse latérale"
+            source: sensor.roborock_q7_max_temps_restant_brosse_laterale
+            plafond_h: 200
+          - nom: "Nettoyage des capteurs"
+            source: sensor.roborock_q7_max_temps_restant_capteurs
+            plafond_h: 30
+
+      # Trois issues, jamais deux :
+      #   - un ou plusieurs postes dus  -> la LISTE de leurs libellés
+      #   - aucun dû, tous lisibles     -> `aucun`
+      #   - aucun dû, au moins un trou  -> `non_evaluable`
+      # La troisième n'est pas repliée sur la deuxième : ce serait
+      # affirmer qu'il n'y a rien à faire sans l'avoir constaté.
+      state: >
+        {% set ns = namespace(dus=[], illisibles=[]) %}
+        {% for p in perimetre %}
+          {% set s = states(p.source) %}
+          {% if s | is_number %}
+            {% if (s | float) <= p.plafond_h * seuil_pct / 100 %}
+              {% set ns.dus = ns.dus + [p.nom] %}
+            {% endif %}
+          {% else %}
+            {% set ns.illisibles = ns.illisibles + [p.nom] %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.dus | join(', ') if ns.dus
+           else 'non_evaluable' if ns.illisibles
+           else 'aucun' }}
+
+      attributes:
+
+        # Le seuil, restitué depuis la MÊME variable que le calcul.
+        seuil_pourcentage: "{{ seuil_pct }}"
+
+        # Consommé par le témoin binaire et par la projection N1.
+        postes_dus: >
+          {% set ns = namespace(items=[]) %}
+          {% for p in perimetre %}
+            {% set s = states(p.source) %}
+            {% if s | is_number and (s | float) <= p.plafond_h * seuil_pct / 100 %}
+              {% set ns.items = ns.items + [p.nom] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items }}
+
+        # Établi POSITIVEMENT : lisible ET au-dessus du seuil.
+        # Un poste illisible n'entre jamais ici.
+        postes_non_dus: >
+          {% set ns = namespace(items=[]) %}
+          {% for p in perimetre %}
+            {% set s = states(p.source) %}
+            {% if s | is_number and (s | float) > p.plafond_h * seuil_pct / 100 %}
+              {% set ns.items = ns.items + [p.nom] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items }}
+
+        # La troisième situation, nommée. Consommée par la
+        # disponibilité du témoin binaire.
+        postes_non_evaluables: >
+          {% set ns = namespace(items=[]) %}
+          {% for p in perimetre %}
+            {% if not states(p.source) | is_number %}
+              {% set ns.items = ns.items + [p.nom] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items }}
+
+        # Détail par poste — restant et plafond, en heures, unité
+        # native restituée du capteur source. Aucune projection de
+        # date : seulement ce qui est mesuré, et son plafond.
+        postes: >
+          {% set ns = namespace(items=[]) %}
+          {% for p in perimetre %}
+            {% set s = states(p.source) %}
+            {% if s | is_number %}
+              {% set ns.items = ns.items + [{
+                'poste': p.nom,
+                'classe': 'du' if (s | float) <= p.plafond_h * seuil_pct / 100
+                          else 'non_du',
+                'restant_h': (s | float) | round(3),
+                'plafond_h': p.plafond_h,
+                'restant_pourcentage': ((s | float) / p.plafond_h * 100)
+                                       | round(2) }] %}
+            {% else %}
+              {% set ns.items = ns.items + [{
+                'poste': p.nom,
+                'classe': 'non_evaluable',
+                'restant_h': none,
+                'plafond_h': p.plafond_h,
+                'restant_pourcentage': none }] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items }}
+
+- binary_sensor:
+
+    # ------------------------------------------------------
+    # CONSOMMATEUR — « au moins un entretien réclame une
+    # intervention ». Il ne relit AUCUN capteur natif : toute la
+    # classification vient du capteur de liste ci-dessus.
+    # ------------------------------------------------------
+    - name: "Aspirateur entretien requis"
+      unique_id: aspirateur_entretien_requis
+      default_entity_id: binary_sensor.aspirateur_entretien_requis
+      # L'icône dérive de l'AUTORITÉ, jamais de l'état précédent du témoin.
+      # Se relire soi-même ferait dépendre le premier rendu d'un état qui
+      # n'existe pas encore : l'icône serait fausse au démarrage, puis
+      # rattraperait au cycle suivant. Elle lit donc `postes_dus`, comme
+      # l'état, et elle est juste dès le premier rendu.
+      icon: >
+        {{ 'mdi:broom'
+           if state_attr('sensor.aspirateur_entretien_du', 'postes_dus')
+           else 'mdi:check-circle-outline' }}
+
+      # Disponible quand la question est TRANCHABLE :
+      #   - un poste au moins est dû            -> vrai, tranché ;
+      #   - aucun dû et aucun illisible         -> faux, tranché ;
+      #   - aucun dû mais un poste illisible    -> INDISPONIBLE.
+      # Le troisième cas n'a pas de valeur booléenne honnête, et on
+      # n'en invente pas une (ASP-INV-45, ASP-INV-76).
+      availability: >
+        {% set dus = state_attr('sensor.aspirateur_entretien_du',
+                                'postes_dus') %}
+        {% set illisibles = state_attr('sensor.aspirateur_entretien_du',
+                                       'postes_non_evaluables') %}
+        {{ dus is not none and illisibles is not none
+           and (dus | count > 0 or illisibles | count == 0) }}
+
+      state: >
+        {{ state_attr('sensor.aspirateur_entretien_du',
+                      'postes_dus') | count > 0 }}
