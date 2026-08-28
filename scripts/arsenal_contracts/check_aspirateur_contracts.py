@@ -256,6 +256,7 @@ from __future__ import annotations
 import argparse
 import ast
 import inspect
+import math
 import re
 import sys
 from pathlib import Path
@@ -351,6 +352,83 @@ EXCLUS_YAML = ("00_documentation_arsenal/", ".github/", "scripts/", "tools/",
                "node_modules/", ".venv/")
 SEUIL_ENTRETIEN_PCT = 10
 CLASSES_ECHEANCE = ("dû", "non dû", "non évaluable")
+
+# ═════════════════════════════════════════════════════════════
+# MAINTENANCE — lot M1, PROJECTION d'entretien (ASP-CI-34 … ASP-CI-36)
+#
+# M1 est un lot de TEMPLATES : deux entites derivees, aucune action, aucune
+# notification, aucune commande. Les deux identifiants ne sont PAS inventes
+# ici : ils sont FIXES par le cadrage ratifie (D-44), 08_NOTIFICATIONS.md
+# §4.2. ASP-INV-58 — « aucun identifiant invente » — est donc respecte, et
+# les figer ici fait echouer un renommage silencieux.
+#
+# Aucun invariant neuf. M1 ne cree aucune obligation : il rend IMMEDIATEMENT
+# OPPOSABLES celles que le chapitre 14 avait deja posees et rangees au regime
+# DIFFERE (§6) — ASP-INV-73 perimetre ferme, ASP-INV-74 l'indisponibilite
+# n'est pas une valeur, ASP-INV-75 seuil unique, ASP-INV-76 aucune echeance
+# conclue sur une donnee absente.
+# ═════════════════════════════════════════════════════════════
+
+RUNTIME_M1 = "12_template_sensors/aspirateur/entretien.yaml"
+ID_M1_LISTE = "aspirateur_entretien_du"
+ID_M1_TEMOIN = "aspirateur_entretien_requis"
+ENTITE_M1_LISTE = "sensor." + ID_M1_LISTE
+ENTITE_M1_TEMOIN = "binary_sensor." + ID_M1_TEMOIN
+
+# Libelles Arsenal des quatre postes, tels que le chapitre 14 §1 les nomme.
+LIBELLES_M1 = {
+    "filtre": "Filtre",
+    "brosse principale": "Brosse principale",
+    "brosse laterale": "Brosse latérale",
+    "capteurs": "Nettoyage des capteurs",
+}
+# Perimetre attendu du bloc `variables:` — libelle -> (source, plafond en
+# heures). Il DERIVE de POSTES_ENTRETIEN : contrat, releve et runtime sont
+# ainsi confrontes a une seule et meme constante figee.
+PERIMETRE_M1 = {LIBELLES_M1[k]: (v[0], v[2])
+                for k, v in POSTES_ENTRETIEN.items()}
+
+ORDRE_M1 = tuple(LIBELLES_M1[k] for k in POSTES_ENTRETIEN)
+ETAT_M1_AUCUN = "aucun"
+ETAT_M1_NON_EVAL = "non_evaluable"
+CLASSES_M1 = ("du", "non_du", "non_evaluable")
+# Les deux icones du temoin. Elles derivent de `postes_dus` du capteur de
+# liste — jamais de l'etat precedent du temoin lui-meme, qui n'existe pas
+# au premier rendu.
+ICONE_M1_DUE = "mdi:broom"
+ICONE_M1_SOLDEE = "mdi:check-circle-outline"
+# Cinq attributs, et cinq seulement — un par besoin identifie des lots avals :
+#   seuil_pourcentage      restitution du seuil, depuis la variable du calcul
+#   postes_dus             consomme par le temoin binaire et par N1
+#   postes_non_dus         etabli POSITIVEMENT, jamais par difference
+#   postes_non_evaluables  la troisieme situation, nommee ; disponibilite N1/UI
+#   postes                 detail restant/plafond par poste, pour UI et M2
+ATTRIBUTS_M1 = ("seuil_pourcentage", "postes_dus", "postes_non_dus",
+                "postes_non_evaluables", "postes")
+CLES_POSTE_M1 = ("poste", "classe", "restant_h", "plafond_h",
+                 "restant_pourcentage")
+
+# Valeurs qu'un capteur natif peut porter SANS etre une mesure. Aucune ne vaut
+# zero, aucune ne vaut « non du » (ASP-INV-74, ASP-INV-76).
+ILLISIBLES_M1 = ("unavailable", "unknown", "none", "", "abc", "  ")
+
+# Repli numerique, sous ses formes courantes : `| float(0)`, `| int(0)`,
+# `| default(0)`. C'est EXACTEMENT ce que le lot s'interdit — une valeur de
+# repli transformerait un trou d'information en mesure nominale.
+REPLI_NUMERIQUE = re.compile(
+    r"\|\s*(?:float|int)\s*\(\s*[^)\s]|\|\s*default\s*\(\s*[-+]?[\d'\"]")
+# Primitives TEMPORELLES : elles ouvrent la date, la tendance et le rythme.
+# Le domaine CONSTATE un seuil, il ne le prevoit pas (14 §2).
+TEMPOREL_M1 = ("now(", "utcnow(", "today_at(", "as_timestamp(", "timedelta(",
+               "as_datetime(", "strptime(", "relative_time(", "time_since(",
+               "time_until(", "last_changed", "last_updated", "last_reported",
+               "states.sensor", "states.binary_sensor")
+# Tout appel de service, quel qu'il soit : un capteur template n'en emet
+# aucun, et on le PROUVE plutot que de l'affirmer.
+SERVICE_M1 = re.compile(
+    r"^[^\S\n]*(?:-[^\S\n]*)?(?:service|action|perform_action)[^\S\n]*:", re.M)
+# Notification, sous ses deux formes de plateforme.
+NOTIFICATION_M1 = ("persistent_notification", "notify.", "notify:")
 
 # Un appel de `button.press` sous une cle de service, quelle que soit la facon
 # de viser la cible. C'est le SERVICE qui est garde, pas le ciblage.
@@ -3662,6 +3740,13 @@ def load_yaml_fonctionnel() -> dict[str, str]:
     return out
 
 
+def load_runtime_m1() -> str:
+    """Le fichier UNIQUE du lot M1 — la projection d'entretien."""
+    p = ROOT / RUNTIME_M1
+    return (p.read_text(encoding="utf-8", errors="ignore")
+            if p.is_file() else "")
+
+
 def load_yaml_depot() -> dict[str, str]:
     """Tout le YAML de configuration Home Assistant du dépôt.
 
@@ -3705,6 +3790,11 @@ def run() -> int:
     lovelace = load_lovelace()
     # F2 : perimetre YAML FONCTIONNEL explicite, propre a ASP-CI-31.
     fonctionnel = load_yaml_fonctionnel()
+    # M1 : la projection d'entretien. Le fichier est aussi balaye par
+    # ASP-CI-11 (anti-concurrence) et par ASP-CI-31 (primitive) : les
+    # trois controles M1 s'ajoutent a ces gardes, ils ne s'y substituent
+    # pas.
+    m1 = load_runtime_m1()
 
     controles = (
         ("ASP-CI-1  invariants", check_invariants(textes)),
@@ -3797,6 +3887,11 @@ def run() -> int:
         ("ASP-CI-33 notifications d'entretien et routage",
          check_notifications_entretien(textes.get(FICHIER_ENTRETIEN, ""),
                                        textes.get(FICHIER_ETATS, ""))),
+        ("ASP-CI-34 projection d'entretien (périmètre, seuil, autorité)",
+         check_projection_entretien(m1)),
+        ("ASP-CI-35 projection rendue sur les trois situations",
+         check_projection_rendue(m1)),
+        ("ASP-CI-36 interdits de la projection", check_interdits_projection(m1)),
     )
 
     erreurs: list[str] = []
@@ -3810,15 +3905,17 @@ def run() -> int:
           f"{len(runtime)} fichiers runtime L1 · "
           f"{len(depot)} fichiers YAML balayés par ASP-CI-11 · "
           f"{len(fonctionnel)} fichiers YAML fonctionnels balayés par ASP-CI-31 · "
-          f"{len(attestes_audit)} identifiants attestés (audit + relevé)")
+          f"{len(attestes_audit)} identifiants attestés (audit + relevé) · "
+          f"{1 if m1 else 0} fichier runtime M1 (projection d'entretien)")
     if erreurs:
         print("\nAspirateur — écarts contractuels détectés :")
         for e in erreurs:
             print(f"- {e}")
         return 1
     print("\nOK - domaine Aspirateur : intégrité normative, conduite "
-          "runtime et acte contractuel Maintenance vérifiés — "
-          f"{len(controles)} lignes affichées pour 32 contrôles logiques, "
+          "runtime, acte contractuel Maintenance et projection "
+          "d'entretien vérifiés — "
+          f"{len(controles)} lignes affichées pour 35 contrôles logiques, "
           "0 écart.")
     print("     décompte : ASP-CI-12/13 et ASP-CI-16/17 partagent chacun une "
           "ligne ; ASP-CI-28 est RÉSERVÉ au lot U0 et n'est pas exécuté.")
@@ -4205,6 +4302,666 @@ def check_notifications_entretien(t14: str, t08: str) -> list[str]:
 # ─────────────────────────────────────────────────────────────
 # Selftest — le juge se vérifie avant de juger
 # ─────────────────────────────────────────────────────────────
+
+
+# ═════════════════════════════════════════════════════════════
+# MAINTENANCE — lot M1 : ASP-CI-34 … ASP-CI-36
+#
+# Les trois controles ne relisent pas le contrat pour se donner raison : ils
+# confrontent le RUNTIME a POSTES_ENTRETIEN et a SEUIL_ENTRETIEN_PCT, deja
+# figes pour M0, et ils RENDENT les gabarits plutot que de les chercher a la
+# regex. Un faux vert de M1 supposerait donc de deplacer la constante commune
+# aux deux lots — c'est-a-dire de modifier le juge, sous revue (14 §6.2).
+# ═════════════════════════════════════════════════════════════
+
+_SENTINELLE_M1 = object()
+
+
+def _est_nombre(valeur) -> bool:
+    """`is_number` de Home Assistant, a l'identique.
+
+    C'est la SEULE garde du runtime M1 : ce qu'elle refuse devient
+    `non_evaluable`. La reproduire fidelement ici est donc la condition pour
+    que le rendu simule prouve quoi que ce soit.
+    """
+    if isinstance(valeur, bool):
+        return False
+    if isinstance(valeur, (int, float)):
+        return not (math.isnan(valeur) or math.isinf(valeur))
+    try:
+        f = float(valeur)
+    except (ValueError, TypeError):
+        return False
+    return not (math.isnan(f) or math.isinf(f))
+
+
+def _float_ha(valeur, defaut=_SENTINELLE_M1):
+    """`float` de Home Assistant : SANS defaut, il LEVE — il ne replie pas.
+
+    Jinja rend `0.0` sur une valeur non convertible ; Home Assistant leve une
+    erreur. Employer le filtre de Jinja ici transformerait silencieusement
+    `unavailable` en `0.0` — exactement la conversion que le lot interdit — et
+    le rendu simule vaudrait alors le contraire de ce qu'il pretend prouver.
+    """
+    try:
+        return float(valeur)
+    except (ValueError, TypeError):
+        if defaut is _SENTINELLE_M1:
+            raise ValueError(f"float sans défaut sur {valeur!r}")
+        return defaut
+
+
+def _env_m1(etats: dict[str, object] | None = None):
+    """Bac a sable du moteur, muni des deux filtres propres a M1.
+
+    Les filtres sont ajoutes APRES coup, sur l'environnement commun : aucun
+    controle L1 ne les voit, donc aucun ne change de comportement.
+    """
+    env = _env_jinja(etats)
+    env.filters["is_number"] = _est_nombre
+    env.filters["float"] = _float_ha
+    return env
+
+
+def rendu_m1(gabarit: str, etats: dict[str, object], **variables):
+    """Rend un gabarit M1 comme Home Assistant le ferait, retypage compris."""
+    import ast
+    txt = _env_m1(etats).from_string(gabarit).render(**variables).strip()
+    try:
+        return ast.literal_eval(txt)
+    except (ValueError, SyntaxError):
+        return txt
+
+
+def entites_m1(txt: str):
+    """(capteur de liste, temoin binaire, nombre total d'entites du fichier)."""
+    try:
+        doc = yaml.safe_load(txt) or []
+    except yaml.YAMLError:
+        return None, None, -1
+    liste = temoin = None
+    total = 0
+    if not isinstance(doc, list):
+        return None, None, -1
+    for bloc in doc:
+        if not isinstance(bloc, dict):
+            continue
+        for domaine, entites in bloc.items():
+            for e in entites or []:
+                if not isinstance(e, dict):
+                    continue
+                total += 1
+                if domaine == "sensor" and e.get("unique_id") == ID_M1_LISTE:
+                    liste = e
+                if (domaine == "binary_sensor"
+                        and e.get("unique_id") == ID_M1_TEMOIN):
+                    temoin = e
+    return liste, temoin, total
+
+
+def _gabarits_m1(entite: dict) -> str:
+    """Concatene TOUS les gabarits d'une entite — etat, disponibilite, icone
+    et attributs. Un interdit glisse dans un attribut compte autant que dans
+    l'etat."""
+    if not isinstance(entite, dict):
+        return ""
+    morceaux = [str(entite.get(cle) or "")
+                for cle in ("state", "availability", "icon")]
+    attrs = entite.get("attributes")
+    if isinstance(attrs, dict):
+        morceaux += [str(v) for v in attrs.values()]
+    return "\n".join(morceaux)
+
+
+def check_projection_entretien(m1: str) -> list[str]:
+    """ASP-CI-34 — perimetre ferme, plafonds, seuil unique, AUTORITE UNIQUE.
+
+    Le point dur est la DERNIERE section : chacune des quatre sources natives
+    doit apparaitre UNE SEULE FOIS dans le fichier. Une seconde declaration —
+    dans un attribut, ou dans le temoin binaire — serait une seconde autorite
+    de calcul, et deux autorites divergent tot ou tard.
+    """
+    errs: list[str] = []
+    if not m1:
+        return [f"ASP-CI-34 : runtime M1 introuvable — `{RUNTIME_M1}`. La "
+                "projection d'entretien n'existe pas."]
+    liste, temoin, total = entites_m1(m1)
+    if total < 0:
+        return [f"ASP-CI-34 : `{RUNTIME_M1}` est illisible en YAML."]
+    if liste is None:
+        errs.append(f"ASP-CI-34 : le capteur de liste `{ID_M1_LISTE}` est "
+                    "absent — le cadrage ratifié le nomme (08_NOTIFICATIONS "
+                    "§4.2).")
+    if temoin is None:
+        errs.append(f"ASP-CI-34 : le témoin binaire `{ID_M1_TEMOIN}` est "
+                    "absent — le cadrage ratifié le nomme (08_NOTIFICATIONS "
+                    "§4.2).")
+    if liste is None or temoin is None:
+        return errs
+    if total != 2:
+        errs.append(f"ASP-CI-34 : le fichier M1 déclare {total} entité(s) — il "
+                    "en porte exactement deux, celles que le cadrage nomme.")
+    for entite, attendu, quoi in ((liste, ENTITE_M1_LISTE, "capteur de liste"),
+                                  (temoin, ENTITE_M1_TEMOIN, "témoin binaire")):
+        if entite.get("default_entity_id") != attendu:
+            errs.append(f"ASP-CI-34 : le {quoi} n'épingle pas son identifiant "
+                        f"`{attendu}` — `default_entity_id` vaut "
+                        f"{entite.get('default_entity_id')!r}. Les lots N1, M2 "
+                        "et UI consomment cet identifiant nommément.")
+
+    # ── Le bloc `variables:` : UNE seule declaration du perimetre ─────────
+    variables = liste.get("variables")
+    if not isinstance(variables, dict):
+        errs.append("ASP-CI-34 : le capteur de liste ne porte aucun bloc "
+                    "`variables:` — le périmètre et le seuil y sont déclarés "
+                    "une fois, et une seule.")
+        return errs
+    seuil = variables.get("seuil_pct")
+    if seuil != SEUIL_ENTRETIEN_PCT:
+        errs.append(f"ASP-CI-34 : le seuil déclaré vaut {seuil!r} — le domaine "
+                    f"en connaît UN SEUL, {SEUIL_ENTRETIEN_PCT} %, pour les "
+                    "quatre postes (ASP-INV-75).")
+    perimetre = variables.get("perimetre")
+    if not isinstance(perimetre, list):
+        errs.append("ASP-CI-34 : `variables.perimetre` est absent ou n'est pas "
+                    "une liste — le périmètre fermé n'est pas déclaré.")
+        return errs
+    if len(perimetre) != len(PERIMETRE_M1):
+        errs.append(f"ASP-CI-34 : le périmètre déclare {len(perimetre)} "
+                    f"poste(s) — il en compte exactement {len(PERIMETRE_M1)}, "
+                    "ni plus, ni moins (ASP-INV-73).")
+    vus = {}
+    for i, p in enumerate(perimetre):
+        if not isinstance(p, dict):
+            errs.append(f"ASP-CI-34 : l'entrée {i} du périmètre n'est pas un "
+                        "mapping `nom` / `source` / `plafond_h`.")
+            continue
+        nom = p.get("nom")
+        if nom not in PERIMETRE_M1:
+            errs.append(f"ASP-CI-34 : le poste {nom!r} n'appartient pas au "
+                        "périmètre contractuel — les quatre libellés Arsenal "
+                        f"sont {sorted(PERIMETRE_M1)} (ASP-INV-73).")
+            continue
+        if nom in vus:
+            errs.append(f"ASP-CI-34 : le poste « {nom} » est déclaré deux "
+                        "fois.")
+        vus[nom] = True
+        source, plafond = PERIMETRE_M1[nom]
+        if p.get("source") != source:
+            errs.append(f"ASP-CI-34 : le poste « {nom} » lit "
+                        f"{p.get('source')!r} — sa source attestée est "
+                        f"`{source}` (ASP-INV-73).")
+        if p.get("plafond_h") != plafond:
+            errs.append(f"ASP-CI-34 : le plafond du poste « {nom} » vaut "
+                        f"{p.get('plafond_h')!r} h — le contrat en fixe "
+                        f"{plafond} h (14 §1).")
+    for nom in sorted(set(PERIMETRE_M1) - set(vus)):
+        errs.append(f"ASP-CI-34 : le poste « {nom} » est ABSENT du périmètre "
+                    "déclaré — un poste manquant est une non-conformité, pas "
+                    "une simplification (ASP-INV-73).")
+
+    # ── Filet ferme sur la famille des capteurs natifs ────────────────────
+    nu = sans_commentaires_yaml(m1)
+    for jeton in sorted(set(FAMILLE_CAPTEUR.findall(nu))):
+        if jeton not in CAPTEURS_ENTRETIEN:
+            errs.append(f"ASP-CI-34 : le runtime M1 lit `{jeton}`, hors de la "
+                        "liste fermée des quatre capteurs d'entretien "
+                        "(ASP-INV-73).")
+
+    # ── AUTORITE UNIQUE : une source, une seule declaration ───────────────
+    for nom, (source, _plafond) in sorted(PERIMETRE_M1.items()):
+        n = nu.count(source)
+        if n > 1:
+            errs.append(f"ASP-CI-34 : `{source}` est déclarée {n} fois dans le "
+                        "runtime M1 — le périmètre a UNE autorité, le bloc "
+                        "`variables:`. Deux déclarations divergent tôt ou "
+                        "tard.")
+    # Le graphe de dependance est un ARBRE, et il n'a que deux etages :
+    # quatre natifs -> le capteur de liste -> le temoin. L'autorite ne relit
+    # donc ni le temoin, ni elle-meme ; le temoin ne relit pas les natifs, ni
+    # lui-meme. Aucun cycle n'est possible, et c'est verifie des deux cotes.
+    gabarits_liste = _gabarits_m1(liste)
+    for jeton, quoi in ((ENTITE_M1_LISTE, "se relit elle-même"),
+                        (ENTITE_M1_TEMOIN, "relit le témoin qui en dérive")):
+        if jeton in gabarits_liste:
+            errs.append(f"ASP-CI-34 : l'autorité de calcul {quoi} — "
+                        f"`{jeton}` apparaît dans ses gabarits. La projection "
+                        "dérive des quatre capteurs natifs, et d'eux seuls : "
+                        "toute autre lecture ouvre un cycle.")
+    gabarits_temoin = _gabarits_m1(temoin)
+    if ENTITE_M1_TEMOIN in gabarits_temoin:
+        errs.append(f"ASP-CI-34 : le témoin binaire se relit lui-même — "
+                    f"`{ENTITE_M1_TEMOIN}` apparaît dans ses propres "
+                    "gabarits. Une entité qui dépend de son état précédent "
+                    "est fausse à son PREMIER rendu, puis se rattrape : le "
+                    "témoin dérive de l'autorité de calcul, jamais de "
+                    "lui-même.")
+    for jeton in sorted(set(FAMILLE_CAPTEUR.findall(gabarits_temoin))):
+        errs.append(f"ASP-CI-34 : le témoin binaire lit directement `{jeton}` "
+                    "— il ne CONSOMME plus la projection, il la recalcule. "
+                    "C'est une seconde autorité de calcul.")
+    if ENTITE_M1_LISTE not in gabarits_temoin:
+        errs.append(f"ASP-CI-34 : le témoin binaire ne consomme pas "
+                    f"`{ENTITE_M1_LISTE}` — sa valeur ne dérive donc pas de "
+                    "l'autorité de calcul du lot.")
+    if not str(temoin.get("availability") or "").strip():
+        errs.append("ASP-CI-34 : le témoin binaire n'a pas de `availability:` "
+                    "— sans elle, la situation « non évaluable » se replierait "
+                    "sur `off`, c'est-à-dire sur « non dû » (ASP-INV-76).")
+
+    # ── Les cinq attributs, exactement ────────────────────────────────────
+    attrs = liste.get("attributes")
+    if not isinstance(attrs, dict):
+        errs.append("ASP-CI-34 : le capteur de liste n'expose aucun attribut "
+                    "— les lots N1, M2 et UI n'ont rien à consommer.")
+    elif tuple(attrs) != ATTRIBUTS_M1:
+        errs.append(f"ASP-CI-34 : les attributs exposés sont {list(attrs)} — "
+                    f"le lot en expose exactement {list(ATTRIBUTS_M1)}, dans "
+                    "cet ordre : ni moins, sans quoi un consommateur manque ; "
+                    "ni plus, le lot n'exposant que le nécessaire.")
+    return errs
+
+
+def _liste_de_libelles(valeur, quoi: str, scenario: str) -> list[str]:
+    """Refuse tout ce qui n'est pas une liste de LIBELLES Arsenal.
+
+    Un `entity_id` restitue a la place d'un libelle, un doublon, un libelle
+    substitue : chacun se voit ici, et aucun ne se voyait quand seul le
+    CARDINAL etait confronte.
+    """
+    errs: list[str] = []
+    if not isinstance(valeur, list):
+        return [f"ASP-CI-35 : « {scenario} » — `{quoi}` rend {valeur!r}, qui "
+                "n'est pas une liste."]
+    for item in valeur:
+        if not isinstance(item, str):
+            errs.append(f"ASP-CI-35 : « {scenario} » — `{quoi}` porte "
+                        f"{item!r}, qui n'est pas un libellé.")
+        elif item not in ORDRE_M1:
+            quoi_dit = ("un identifiant d'entité" if "." in item
+                        else "un libellé hors du vocabulaire Arsenal")
+            errs.append(f"ASP-CI-35 : « {scenario} » — `{quoi}` porte "
+                        f"{item!r} : {quoi_dit}. Les quatre libellés sont "
+                        f"{list(ORDRE_M1)}, et l'UI les restitue tels quels.")
+    if len(valeur) != len(set(valeur)):
+        errs.append(f"ASP-CI-35 : « {scenario} » — `{quoi}` porte des "
+                    f"doublons : {valeur!r}.")
+    rang = {nom: i for i, nom in enumerate(ORDRE_M1)}
+    connus = [x for x in valeur if isinstance(x, str) and x in rang]
+    if connus != sorted(connus, key=rang.__getitem__):
+        errs.append(f"ASP-CI-35 : « {scenario} » — `{quoi}` rend {valeur!r} "
+                    "hors de l'ordre canonique du périmètre "
+                    f"{list(ORDRE_M1)} : l'UI et `N1` restituent une liste "
+                    "stable, pas un ordre qui bouge d'un rendu à l'autre.")
+    return errs
+
+
+def _partition_m1(dus, non_dus, illisibles, scenario: str) -> list[str]:
+    """Les trois listes PARTITIONNENT les quatre postes — toujours.
+
+    C'est l'assertion generale : union exacte, intersections vides, total de
+    quatre, chaque libelle une fois et une seule. Un poste vu deux fois ou
+    disparu ne peut plus se cacher derriere trois cardinaux qui tombent juste.
+    """
+    errs: list[str] = []
+    listes = {"postes_dus": dus, "postes_non_dus": non_dus,
+              "postes_non_evaluables": illisibles}
+    if any(not isinstance(v, list) for v in listes.values()):
+        return errs                       # deja signale par _liste_de_libelles
+    total = [x for v in listes.values() for x in v]
+    if len(total) != len(ORDRE_M1):
+        errs.append(f"ASP-CI-35 : « {scenario} » — les trois listes cumulent "
+                    f"{len(total)} entrée(s) pour {len(ORDRE_M1)} postes. "
+                    "Chaque poste relève d'exactement une des trois "
+                    "situations (14 §2).")
+    for nom in ORDRE_M1:
+        n = total.count(nom)
+        if n != 1:
+            ou = [c for c, v in listes.items() if nom in v]
+            errs.append(f"ASP-CI-35 : « {scenario} » — « {nom} » apparaît "
+                        f"{n} fois dans les trois listes"
+                        + (f" ({', '.join(ou)})" if ou else " — nulle part")
+                        + ". Un poste est dû, non dû ou non évaluable : "
+                          "jamais deux à la fois, jamais aucune.")
+    for a, b in (("postes_dus", "postes_non_dus"),
+                 ("postes_dus", "postes_non_evaluables"),
+                 ("postes_non_dus", "postes_non_evaluables")):
+        commun = sorted(set(listes[a]) & set(listes[b]))
+        if commun:
+            errs.append(f"ASP-CI-35 : « {scenario} » — `{a}` et `{b}` se "
+                        f"recoupent sur {commun}. Les trois situations sont "
+                        "exclusives (ASP-INV-76).")
+    if set(total) != set(ORDRE_M1):
+        errs.append(f"ASP-CI-35 : « {scenario} » — l'union des trois listes "
+                    f"vaut {sorted(set(total))}, attendu {list(ORDRE_M1)}.")
+    return errs
+
+
+# Tolerances de la confrontation numerique.
+#
+# Le runtime arrondit `restant_h` a 3 decimales et `restant_pourcentage` a 2.
+# L'ecart legitime est donc borne par une DEMI-unite du dernier rang :
+# 5e-4 h et 5e-3 point. Les tolerances retenues valent le double, ce qui
+# absorbe le flottant sans rien laisser passer d'autre :
+#
+#   `restant_h` x2 ..................... ecart de l'ordre de 67 h
+#   `restant_h` en secondes ............ ecart de l'ordre de 241 000
+#   mauvais diviseur (plafond x2) ...... ecart de 22 points
+#   plafond permute ................... ecart de plusieurs dizaines de points
+#   pourcentage arrondi a l'entier ..... ecart jusqu'a 0,5 point
+#   pourcentage remplace par 50 ........ ecart de plusieurs points
+#
+# La plus fine de ces mutations — l'arrondi a l'entier — laisse jusqu'a
+# 0,5 point d'ecart, soit CINQUANTE fois la tolerance. La marge est donc
+# large des deux cotes : aucun faux positif de flottant, aucun faux vert.
+TOL_RESTANT_H = 1e-3
+TOL_POURCENTAGE = 1e-2
+
+
+def check_projection_rendue(m1: str) -> list[str]:
+    """ASP-CI-35 — les TROIS situations, RENDUES sur des etats simules.
+
+    Ce controle ne cherche aucun mot-cle : il execute les gabarits. Un repli
+    numerique, une indisponibilite rabattue sur « non du », un seuil deplace
+    ou un poste disparu changent le RESULTAT, et c'est le resultat qui est
+    confronte.
+
+    Revue ciblee — deux angles morts fermes. Les listes sont confrontees
+    VALEUR PAR VALEUR, plus seulement par leur cardinal, et la charge
+    NUMERIQUE de `postes` est verifiee au lieu d'etre supposee.
+    """
+    errs: list[str] = []
+    if not m1:
+        return [f"ASP-CI-35 : runtime M1 introuvable — `{RUNTIME_M1}`."]
+    liste, temoin, _total = entites_m1(m1)
+    if liste is None or temoin is None:
+        return ["ASP-CI-35 : les deux entités de la projection sont "
+                "introuvables — rien à rendre."]
+    variables = liste.get("variables")
+    if not isinstance(variables, dict):
+        return ["ASP-CI-35 : bloc `variables:` absent — rien à rendre."]
+    attrs = liste.get("attributes") or {}
+
+    # Le releve du 2026-08-27, RECONDUIT a l'observation passive du
+    # 2026-08-28 : les quatre compteurs n'ont pas bouge, le robot n'ayant pas
+    # nettoye entre les deux. Aucun poste n'est du, le plus avance etant a
+    # 13,377 % de restant.
+    #
+    # Les restants sont donnes en SECONDES — l'unite native, celle du releve
+    # d'attestation §4 — et les heures en DERIVENT. C'est la forme falsifiable
+    # de la fixture : `restant = plafond - travail cumule` s'y verifie a la
+    # seconde pres, et 668 299 n'est compatible qu'avec le plafond de 720 000.
+    F, P, L, C = ORDRE_M1
+    SOURCE = {nom: src for nom, (src, _p) in PERIMETRE_M1.items()}
+    RESTANT_S = {F: 241253, P: 286868, L: 668299, C: 14447}
+    REEL = {SOURCE[nom]: repr(s / 3600) for nom, s in RESTANT_S.items()}
+
+    def etats(**remplacements):
+        """Le releve reel, avec les postes nommes remplaces ou retires."""
+        e = dict(REEL)
+        for cle, val in remplacements.items():
+            cible = SOURCE[{"filtre": F, "principale": P, "laterale": L,
+                            "capteurs": C}[cle]]
+            if val is None:
+                e.pop(cible, None)
+            else:
+                e[cible] = val
+        return e
+
+    # (états natifs, état attendu, dus, non dus, non évaluables,
+    #  témoin disponible ?, témoin allumé ?, postes au-dessus du plafond,
+    #  libellé)
+    scenarios = [
+        (etats(), ETAT_M1_AUCUN, [], [F, P, L, C], [], True, False, [],
+         "relevé réel"),
+        (etats(capteurs="3.0"), C, [C], [F, P, L], [], True, True, [],
+         "seuil atteint pile"),
+        (etats(capteurs="3.001"), ETAT_M1_AUCUN, [], [F, P, L, C], [], True,
+         False, [], "juste au-dessus du seuil"),
+        (etats(capteurs="0"), C, [C], [F, P, L], [], True, True, [],
+         "compteur à zéro"),
+        (etats(capteurs="-1"), C, [C], [F, P, L], [], True, True, [],
+         "compteur négatif"),
+        (etats(filtre="15.0", capteurs="unavailable"), F, [F], [P, L], [C],
+         True, True, [], "un dû et un illisible"),
+        ({}, ETAT_M1_NON_EVAL, [], [], [F, P, L, C], False, None, [],
+         "les quatre absents"),
+        ({SOURCE[n]: "0" for n in ORDRE_M1}, ", ".join(ORDRE_M1),
+         [F, P, L, C], [], [], True, True, [], "les quatre dus"),
+        # ── Revue ciblee : valeur SUPERIEURE au plafond ───────────────────
+        #
+        # Valeur ACCEPTEE du compteur natif : le restant remonte a son
+        # plafond apres une remise a zero, et rien ne garantit qu'il n'y
+        # depasse jamais — le plafond vit en constante amont, pas dans
+        # l'entite. Le poste est alors LISIBLE et NON DU, et le pourcentage
+        # est restitue TEL QUEL, au-dessus de 100. Le normaliser
+        # silencieusement a 100 masquerait un etat reel de l'appareil.
+        # Ce n'est ni une anomalie a signaler, ni une prediction.
+        (etats(capteurs="35"), ETAT_M1_AUCUN, [], [F, P, L, C], [], True,
+         False, [C], "restant au-dessus du plafond"),
+        # ── Revue ciblee : PLUSIEURS illisibles, et un poste du ───────────
+        #
+        # L'information incomplete ne masque pas l'entretien effectivement
+        # du : le temoin reste DISPONIBLE et ALLUME, parce que la question
+        # « au moins un entretien reclame-t-il une intervention ? » est
+        # tranchee des qu'un poste est du.
+        (etats(filtre="15.0", principale="unavailable", laterale="unknown"),
+         F, [F], [C], [P, L], True, True, [], "deux illisibles et un dû"),
+    ]
+    for illisible in ILLISIBLES_M1:
+        scenarios.append(
+            (etats(capteurs=illisible), ETAT_M1_NON_EVAL, [], [F, P, L], [C],
+             False, None, [], f"capteurs = {illisible!r}"))
+    scenarios.append(
+        (etats(capteurs=None), ETAT_M1_NON_EVAL, [], [F, P, L], [C], False,
+         None, [], "capteurs absent du registre"))
+
+    for (natifs, attendu, dus, non_dus, illisibles, dispo, allume, sup_100,
+         quoi) in scenarios:
+        try:
+            etat = rendu_m1(str(liste.get("state") or ""), natifs, **variables)
+            rendus = {cle: rendu_m1(str(gab), natifs, **variables)
+                      for cle, gab in attrs.items()}
+        except Exception as exc:                       # noqa: BLE001
+            errs.append(f"ASP-CI-35 : le rendu échoue sur « {quoi} » — "
+                        f"{type(exc).__name__} : {exc}. Un gabarit qui lève "
+                        "rend l'entité indisponible sans le dire.")
+            continue
+        if etat != attendu:
+            errs.append(f"ASP-CI-35 : « {quoi} » rend l'état {etat!r} — "
+                        f"attendu {attendu!r} (14 §2, ASP-INV-75 / "
+                        "ASP-INV-76).")
+
+        # ── Les trois listes, VALEUR par VALEUR ───────────────────────────
+        for cle, cible in (("postes_dus", dus), ("postes_non_dus", non_dus),
+                           ("postes_non_evaluables", illisibles)):
+            obtenu = rendus.get(cle)
+            errs += _liste_de_libelles(obtenu, cle, quoi)
+            if obtenu != cible:
+                errs.append(f"ASP-CI-35 : « {quoi} » rend `{cle}` "
+                            f"{obtenu!r} — attendu {cible!r}"
+                            + (" ; un poste illisible n'est JAMAIS « non dû » "
+                               "(ASP-INV-76)."
+                               if cle == "postes_non_dus" else "."))
+        errs += _partition_m1(rendus.get("postes_dus"),
+                              rendus.get("postes_non_dus"),
+                              rendus.get("postes_non_evaluables"), quoi)
+
+        if rendus.get("seuil_pourcentage") != SEUIL_ENTRETIEN_PCT:
+            errs.append(f"ASP-CI-35 : « {quoi} » restitue le seuil "
+                        f"{rendus.get('seuil_pourcentage')!r} — attendu "
+                        f"{SEUIL_ENTRETIEN_PCT}.")
+
+        # ── Le detail : classe, plafond, ET CHARGE NUMERIQUE ──────────────
+        detail = rendus.get("postes")
+        if not isinstance(detail, list) or len(detail) != len(PERIMETRE_M1):
+            errs.append(f"ASP-CI-35 : « {quoi} » rend un détail de "
+                        f"{detail!r} — les quatre postes y figurent toujours, "
+                        "y compris illisibles.")
+            continue
+        for ligne in detail:
+            if not isinstance(ligne, dict) or tuple(ligne) != CLES_POSTE_M1:
+                errs.append(f"ASP-CI-35 : « {quoi} » — le détail d'un poste "
+                            f"porte {list(ligne) if isinstance(ligne, dict) else ligne!r}"
+                            f", attendu {list(CLES_POSTE_M1)}.")
+                break
+            nom = ligne["poste"]
+            if nom not in PERIMETRE_M1:
+                errs.append(f"ASP-CI-35 : « {quoi} » — le détail nomme "
+                            f"{nom!r}, hors du périmètre.")
+                continue
+            source, plafond = PERIMETRE_M1[nom]
+            if ligne["plafond_h"] != plafond:
+                errs.append(f"ASP-CI-35 : « {quoi} » — le plafond restitué "
+                            f"pour « {nom} » vaut {ligne['plafond_h']!r} h, "
+                            f"attendu {plafond} h.")
+            brut = natifs.get(source)
+            lisible = _est_nombre(brut)
+            classe = ("non_evaluable" if not lisible
+                      else "du" if float(brut) <= plafond * SEUIL_ENTRETIEN_PCT
+                      / 100 else "non_du")
+            if ligne["classe"] != classe:
+                errs.append(f"ASP-CI-35 : « {quoi} » — « {nom} » est classé "
+                            f"{ligne['classe']!r}, attendu {classe!r} "
+                            "(ASP-INV-75, ASP-INV-76).")
+            if not lisible:
+                for cle in ("restant_h", "restant_pourcentage"):
+                    if ligne[cle] is not None:
+                        errs.append(f"ASP-CI-35 : « {quoi} » — « {nom} » est "
+                                    f"non évaluable et porte pourtant "
+                                    f"`{cle}` = {ligne[cle]!r}. Une valeur de "
+                                    "repli est apparue (ASP-INV-74).")
+                continue
+            v = float(brut)
+            for cle, exact, tol, quoi_dit in (
+                    ("restant_h", v, TOL_RESTANT_H,
+                     "la valeur native, rendue en HEURES"),
+                    ("restant_pourcentage", v / plafond * 100,
+                     TOL_POURCENTAGE, "`restant_h / plafond_h × 100`")):
+                obtenu = ligne[cle]
+                if not isinstance(obtenu, (int, float)) or \
+                        isinstance(obtenu, bool):
+                    errs.append(f"ASP-CI-35 : « {quoi} » — « {nom} » rend "
+                                f"`{cle}` = {obtenu!r}, qui n'est pas un "
+                                "nombre.")
+                elif not math.isclose(obtenu, exact, rel_tol=0.0,
+                                      abs_tol=tol):
+                    errs.append(f"ASP-CI-35 : « {quoi} » — « {nom} » rend "
+                                f"`{cle}` = {obtenu!r}, attendu {exact!r} à "
+                                f"{tol} près — c'est {quoi_dit}. L'écart "
+                                f"vaut {abs(obtenu - exact):.6g}, bien "
+                                "au-delà de l'arrondi de restitution.")
+            if nom in sup_100 and not (
+                    isinstance(ligne["restant_pourcentage"], (int, float))
+                    and ligne["restant_pourcentage"] > 100):
+                errs.append(f"ASP-CI-35 : « {quoi} » — « {nom} » a un restant "
+                            "SUPÉRIEUR à son plafond et rend pourtant "
+                            f"{ligne['restant_pourcentage']!r} %. La valeur "
+                            "est restituée telle quelle : la normaliser à 100 "
+                            "masquerait un état réel de l'appareil.")
+
+        # ── Le temoin binaire, rendu SUR la projection ────────────────────
+        simule = dict(natifs)
+        simule[ENTITE_M1_LISTE] = {"state": etat, "attrs": rendus}
+        try:
+            d = rendu_m1(str(temoin.get("availability") or ""), simule)
+            v_etat = rendu_m1(str(temoin.get("state") or ""), simule)
+            ico = rendu_m1(str(temoin.get("icon") or ""), simule)
+        except Exception as exc:                       # noqa: BLE001
+            errs.append(f"ASP-CI-35 : le témoin échoue sur « {quoi} » — "
+                        f"{type(exc).__name__} : {exc}.")
+            continue
+        if bool(d) is not dispo:
+            errs.append(f"ASP-CI-35 : « {quoi} » — le témoin est "
+                        f"{'disponible' if d else 'indisponible'}, attendu "
+                        f"{'disponible' if dispo else 'INDISPONIBLE'}. Rendre "
+                        "un booléen quand la question n'est pas tranchable "
+                        "convertit un trou d'information en « non dû » "
+                        "(ASP-INV-76).")
+        if dispo and bool(v_etat) is not allume:
+            errs.append(f"ASP-CI-35 : « {quoi} » — le témoin vaut {v_etat!r}, "
+                        f"attendu {allume!r}.")
+        # L'icone derive de l'AUTORITE, jamais de l'etat precedent du temoin.
+        # Elle est donc juste DES LE PREMIER rendu, sans etat anterieur : le
+        # bac a sable n'en fournit aucun, et c'est exactement le point.
+        if dispo:
+            attendue = ICONE_M1_DUE if allume else ICONE_M1_SOLDEE
+            if ico != attendue:
+                errs.append(f"ASP-CI-35 : « {quoi} » — l'icône du témoin rend "
+                            f"{ico!r}, attendu {attendue!r}. Elle doit dériver "
+                            f"de `postes_dus` du capteur de liste, et être "
+                            "juste dès le PREMIER rendu — aucun état "
+                            "antérieur n'existe alors.")
+    return errs
+
+
+def check_interdits_projection(m1: str) -> list[str]:
+    """ASP-CI-36 — ce que M1 ne fait pas, et qu'aucun commentaire n'excuse.
+
+    Le balayage porte sur le fichier PRIVE DE SES COMMENTAIRES : un en-tete
+    qui ENUMERE ce que le lot s'interdit ne doit pas declencher la garde qui
+    l'interdit. Un interdit reintroduit en commentaire n'execute rien.
+    """
+    errs: list[str] = []
+    if not m1:
+        return [f"ASP-CI-36 : runtime M1 introuvable — `{RUNTIME_M1}`."]
+    nu = sans_commentaires_yaml(m1)
+
+    for m in SERVICE_M1.finditer(nu):
+        errs.append(f"ASP-CI-36 : le runtime M1 porte une clé de service "
+                    f"(ligne « {m.group(0).strip()} ») — une projection "
+                    "n'agit pas. Aucun appel de service, donc aucune pression "
+                    "de bouton et aucune commande robot (ASP-INV-77, "
+                    "ASP-INV-82).")
+    if PRESS_SERVICE.search(nu):
+        errs.append("ASP-CI-36 : le runtime M1 appelle `button.press` — la "
+                    "primitive irréversible n'appartient qu'au script du lot "
+                    "M2 (ASP-INV-81).")
+    for bouton in sorted(set(BOUTON_ENTRETIEN_RE.findall(nu))):
+        errs.append(f"ASP-CI-36 : le runtime M1 mentionne `{bouton}` — M1 "
+                    "projette, il ne remet rien à zéro (ASP-INV-81).")
+    for m in re.finditer(r"\b(?:vacuum|roborock)\.[a-z0-9_]+", nu):
+        errs.append(f"ASP-CI-36 : le runtime M1 mentionne `{m.group(0)}` — "
+                    "l'écrivain unique du domaine est le moteur de mission, "
+                    "et M1 ne commande pas l'appareil (ASP-INV-31).")
+    for jeton in NOTIFICATION_M1:
+        if jeton in nu:
+            errs.append(f"ASP-CI-36 : le runtime M1 porte `{jeton}` — M1 ne "
+                        "notifie pas. Le lot N1 CONSOMMERA cette projection "
+                        "(14 §5).")
+    for helper in (ID_VERDICT, ID_TRACE):
+        if helper in nu:
+            errs.append(f"ASP-CI-36 : le runtime M1 référence `{helper}` — la "
+                        "projection d'entretien ne lit ni n'écrit le verdict "
+                        "de mission ; les deux périmètres sont cloisonnés "
+                        "(ASP-INV-31, 14 §5).")
+    for m in REPLI_NUMERIQUE.finditer(nu):
+        errs.append(f"ASP-CI-36 : le runtime M1 emploie un repli numérique "
+                    f"(« {m.group(0).strip()} ») — il convertirait une donnée "
+                    "absente en mesure nominale, contre ASP-INV-74. La garde "
+                    "du lot est `is_number`, et `float` y est appelé SANS "
+                    "défaut.")
+    for jeton in TEMPOREL_M1:
+        if jeton in nu:
+            errs.append(f"ASP-CI-36 : le runtime M1 emploie `{jeton}` — le "
+                        "domaine CONSTATE un seuil, il ne projette aucune "
+                        "date, aucune tendance et aucun rythme d'usage "
+                        "(14 §2).")
+    # La garde d'illisibilite doit etre presente autant de fois qu'il y a de
+    # gabarits qui lisent une source : la retirer d'un seul suffirait a
+    # rabattre un trou sur une mesure.
+    liste, _temoin, _t = entites_m1(m1)
+    if isinstance(liste, dict):
+        for cle, gabarit in [("state", liste.get("state"))] + \
+                list((liste.get("attributes") or {}).items()):
+            g = str(gabarit or "")
+            if "p.source" in g and "is_number" not in g:
+                errs.append(f"ASP-CI-36 : le gabarit « {cle} » lit une source "
+                            "sans la garde `is_number` — une valeur non "
+                            "numérique y serait traitée comme une mesure "
+                            "(ASP-INV-74).")
+    return errs
+
 
 class Compteur:
     """Décompte DÉRIVÉ des cas joués : aucun total n'est écrit à la main."""
@@ -5911,7 +6668,11 @@ def selftest() -> None:
                  "check_perimetre_entretien", "check_echeance_entretien",
                  "check_primitive_irreversible", "check_remise_a_zero",
                  "check_notifications_entretien"}
-    manquants = invoques - normatifs - set(CONTROLES_RUNTIME)
+    # M1 : controles de RUNTIME TEMPLATE, joues par la batterie de
+    # mutations ASP-CI-34 … ASP-CI-36 plus bas, sur le fichier reel.
+    controles_m1 = {"check_projection_entretien", "check_projection_rendue",
+                    "check_interdits_projection"}
+    manquants = invoques - normatifs - set(CONTROLES_RUNTIME) - controles_m1
     assert not manquants, \
         f"m-C bis : `run()` invoque {sorted(manquants)}, absent(s) de la " \
         f"batterie du selftest — c'est exactement le trou qui a laissé " \
@@ -6208,7 +6969,291 @@ def selftest() -> None:
         "**Aucune notification ajoutée**", "**Une notification est émise**"), T08),
         "AUCUNE", "CI-33 notification hors mission")
 
-    print(f"selftest OK — 32 contrôles logiques (ASP-CI-28 réservé, non "
+
+    # ═══════════════════════════════════════════════════════════════════
+    # M1 — ASP-CI-34 / 35 / 36, joues sur le FICHIER RUNTIME REEL
+    #
+    # Les mutations portent sur le fichier tel qu'il est livre, jamais sur un
+    # gabarit de laboratoire : une reecriture du runtime fera ECHOUER cette
+    # batterie plutot que passer en silence. C'est la direction sure.
+    # ═══════════════════════════════════════════════════════════════════
+
+    M1_0 = (ROOT / RUNTIME_M1).read_text(encoding="utf-8")
+
+    def m1_mut(vieux: str, neuf: str, tout: bool = False) -> str:
+        assert vieux in M1_0, f"ancre M1 absente du runtime réel : {vieux[:70]}"
+        return M1_0.replace(vieux, neuf) if tout \
+            else M1_0.replace(vieux, neuf, 1)
+
+    # ---- le runtime livre passe les trois controles -----------------------
+    c.conforme(check_projection_entretien(M1_0), "CI-34 runtime M1 conforme")
+    c.conforme(check_projection_rendue(M1_0), "CI-35 runtime M1 conforme")
+    c.conforme(check_interdits_projection(M1_0), "CI-36 runtime M1 conforme")
+
+    # ---- ASP-CI-34 : perimetre, plafonds, seuil, autorite -----------------
+    c.viole(check_projection_entretien(""), "introuvable", "CI-34 M1 absent")
+    c.viole(check_projection_entretien("- sensor: [\n"), "illisible",
+            "CI-34 YAML illisible")
+    c.viole(check_projection_entretien(m1_mut("seuil_pct: 10",
+                                              "seuil_pct: 11")),
+            "UN SEUL", "CI-34 seuil à 11 %")
+    c.viole(check_projection_entretien(m1_mut("plafond_h: 300",
+                                              "plafond_h: 250")),
+            "le contrat en fixe", "CI-34 plafond erroné")
+    c.viole(check_projection_entretien(m1_mut(
+        "            plafond_h: 30\n",
+        "            plafond_h: 30\n"
+        "          - nom: \"Bac à poussière\"\n"
+        "            source: sensor.roborock_q7_max_temps_restant_bac\n"
+        "            plafond_h: 90\n")),
+        "exactement", "CI-34 cinquième source")
+    c.viole(check_projection_entretien(m1_mut(
+        "source: sensor.roborock_q7_max_temps_restant_filtre",
+        "source: sensor.roborock_q7_max_batterie")),
+        "hors de la liste fermée", "CI-34 source substituée")
+    c.viole(check_projection_entretien(m1_mut(
+        "          - nom: \"Nettoyage des capteurs\"\n"
+        "            source: sensor.roborock_q7_max_temps_restant_capteurs\n"
+        "            plafond_h: 30\n", "")),
+        "est ABSENT du périmètre", "CI-34 poste supprimé")
+    c.viole(check_projection_entretien(m1_mut(
+        "        seuil_pourcentage: \"{{ seuil_pct }}\"\n",
+        "        seuil_pourcentage: \"{{ seuil_pct }}\"\n"
+        "        source_bis: \"{{ "
+        "states('sensor.roborock_q7_max_temps_restant_filtre') }}\"\n")),
+        "est déclarée 2 fois", "CI-34 seconde déclaration d'une source")
+    c.viole(check_projection_entretien(m1_mut(
+        "        {{ state_attr('sensor.aspirateur_entretien_du',\n"
+        "                      'postes_dus') | count > 0 }}",
+        "        {{ states('sensor.roborock_q7_max_temps_restant_capteurs')\n"
+        "           | float < 3 }}")),
+        "seconde autorité de calcul", "CI-34 témoin qui recalcule")
+    c.viole(check_projection_entretien(m1_mut(
+        "      availability: >\n", "      indisponible_si: >\n")),
+        "availability", "CI-34 témoin sans disponibilité")
+    c.viole(check_projection_entretien(m1_mut(
+        "        postes_non_evaluables: >", "        postes_illisibles: >")),
+        "exactement", "CI-34 attribut renommé")
+    c.viole(check_projection_entretien(m1_mut(
+        "      default_entity_id: sensor.aspirateur_entretien_du",
+        "      default_entity_id: sensor.aspirateur_entretien")),
+        "n'épingle pas son identifiant", "CI-34 identifiant déplacé")
+    c.viole(check_projection_entretien(m1_mut(
+        "      unique_id: aspirateur_entretien_requis",
+        "      unique_id: aspirateur_entretien_binaire")),
+        "témoin binaire `aspirateur_entretien_requis` est absent",
+        "CI-34 témoin renommé")
+
+    # ---- ASP-CI-35 : les trois situations, RENDUES ------------------------
+    #
+    # Ces mutations laissent la STRUCTURE intacte : le périmètre, les
+    # plafonds et le seuil déclaré restent exacts. Seul le rendu change — et
+    # c'est le rendu qui les attrape.
+    c.viole(check_projection_rendue(m1_mut(
+        "else 'non_evaluable' if ns.illisibles", "else 'aucun' if ns.illisibles")),
+        "attendu 'non_evaluable'", "CI-35 indisponibilité rabattue sur `aucun`")
+    c.viole(check_projection_rendue(m1_mut(
+        "            {% if not states(p.source) | is_number %}",
+        "            {% if false %}")),
+        "postes_non_evaluables", "CI-35 troisième situation vidée")
+    c.viole(check_projection_rendue(m1_mut(
+        "{{ dus is not none and illisibles is not none\n"
+        "           and (dus | count > 0 or illisibles | count == 0) }}",
+        "{{ dus is not none }}")),
+        "attendu INDISPONIBLE", "CI-35 témoin toujours disponible")
+    c.viole(check_projection_rendue(m1_mut(
+        "p.plafond_h * seuil_pct / 100", "p.plafond_h * 5 / 100", tout=True)),
+        "rend l'état", "CI-35 seuil recopié en dur dans les gabarits")
+    c.viole(check_projection_rendue(m1_mut(
+        "{% if (s | float) <= p.plafond_h * seuil_pct / 100 %}",
+        "{% if (s | float) < p.plafond_h * seuil_pct / 100 %}")),
+        "seuil atteint pile", "CI-35 seuil rendu strict")
+    c.viole(check_projection_rendue(m1_mut(
+        "'restant_h': none,", "'restant_h': 0,")),
+        "valeur de repli est apparue", "CI-35 restant nul sur un illisible")
+    c.viole(check_projection_rendue(m1_mut(
+        "{% set s = states(p.source) %}\n"
+        "          {% if s | is_number %}\n"
+        "            {% if (s | float) <= p.plafond_h * seuil_pct / 100 %}\n"
+        "              {% set ns.dus = ns.dus + [p.nom] %}\n"
+        "            {% endif %}\n"
+        "          {% else %}\n"
+        "            {% set ns.illisibles = ns.illisibles + [p.nom] %}\n"
+        "          {% endif %}",
+        "{% set s = states(p.source) %}\n"
+        "          {% if s | is_number and (s | float)\n"
+        "                <= p.plafond_h * seuil_pct / 100 %}\n"
+        "            {% set ns.dus = ns.dus + [p.nom] %}\n"
+        "          {% endif %}")),
+        "attendu 'non_evaluable'", "CI-35 branche illisible supprimée")
+
+    # ---- ASP-CI-36 : ce que M1 ne fait pas --------------------------------
+    c.viole(check_interdits_projection(""), "introuvable", "CI-36 M1 absent")
+    c.viole(check_interdits_projection(m1_mut(
+        "(s | float)", "(s | float(0))", tout=True)),
+        "repli numérique", "CI-36 `| float(0)`")
+    c.viole(check_interdits_projection(m1_mut(
+        "| round(3)", "| default(0) | round(3)")),
+        "repli numérique", "CI-36 `| default(0)`")
+    c.viole(check_interdits_projection(m1_mut(
+        "      icon: mdi:broom\n",
+        "      icon: mdi:broom\n      action: button.press\n")),
+        "clé de service", "CI-36 button.press ajouté")
+    c.viole(check_interdits_projection(m1_mut(
+        "      icon: mdi:broom\n",
+        "      icon: mdi:broom\n      action: vacuum.start\n")),
+        "clé de service", "CI-36 commande robot ajoutée")
+    c.viole(check_interdits_projection(m1_mut(
+        "      icon: mdi:broom\n",
+        "      icon: mdi:broom\n"
+        "      declencheur: vacuum.roborock_q7_max\n")),
+        "vacuum.roborock_q7_max", "CI-36 entité robot citée")
+    c.viole(check_interdits_projection(m1_mut(
+        "      icon: mdi:broom\n",
+        "      icon: mdi:broom\n"
+        "      bouton: "
+        "button.roborock_q7_max_reinitialiser_le_consommable_du_filtre_a_air\n")),
+        "il ne remet rien à zéro", "CI-36 bouton d'entretien cité")
+    c.viole(check_interdits_projection(m1_mut(
+        "      icon: mdi:broom\n",
+        "      icon: mdi:broom\n      canal: persistent_notification\n")),
+        "M1 ne notifie pas", "CI-36 notification ajoutée")
+    c.viole(check_interdits_projection(m1_mut(
+        "      icon: mdi:broom\n",
+        "      icon: mdi:broom\n      verdict: \"{{ states('"
+        + ID_VERDICT + "') }}\"\n")),
+        "ne lit ni n'écrit le verdict", "CI-36 lecture du verdict")
+    c.viole(check_interdits_projection(m1_mut(
+        "      icon: mdi:broom\n",
+        "      icon: mdi:broom\n      trace: \"{{ states('"
+        + ID_TRACE + "') }}\"\n")),
+        "ne lit ni n'écrit le verdict", "CI-36 lecture de la trace")
+    c.viole(check_interdits_projection(m1_mut(
+        "{{ ns.dus | join(', ') if ns.dus",
+        "{{ now().timestamp() }}{{ ns.dus | join(', ') if ns.dus")),
+        "aucune tendance", "CI-36 prédiction ajoutée")
+    c.viole(check_interdits_projection(m1_mut(
+        "{% set s = states(p.source) %}\n"
+        "            {% if s | is_number %}\n"
+        "              {% set ns.items = ns.items + [{\n"
+        "                'poste': p.nom,",
+        "{% set s = states(p.source) %}\n"
+        "            {% if s %}\n"
+        "              {% set ns.items = ns.items + [{\n"
+        "                'poste': p.nom,")),
+        "sans la garde `is_number`", "CI-36 garde d'illisibilité retirée")
+
+
+    # ---- Revue ciblée : les deux angles morts d'ASP-CI-35, et l'icône -----
+    #
+    # Toutes ces mutations SURVIVAIENT au checker de `f94108f2` : elles ne
+    # touchaient ni au cardinal des listes, ni au plafond restitué, ni à la
+    # structure — les seules choses que le contrôle regardait alors. Elles
+    # sont ici pour qu'aucune ne revienne.
+
+    NON_DUS = ("        postes_non_dus: >\n"
+               "          {% set ns = namespace(items=[]) %}\n"
+               "          {% for p in perimetre %}\n"
+               "            {% set s = states(p.source) %}\n"
+               "            {% if s | is_number and (s | float) > "
+               "p.plafond_h * seuil_pct / 100 %}\n"
+               "              {% set ns.items = ns.items + [p.nom] %}\n"
+               "            {% endif %}\n"
+               "          {% endfor %}\n"
+               "          {{ ns.items }}\n")
+
+    # ── §2 : la liste `postes_non_dus`, valeur par valeur ─────────────────
+    c.viole(check_projection_rendue(m1_mut(
+        NON_DUS, NON_DUS.replace("+ [p.nom] %}", "+ [p.source] %}"))),
+        "identifiant d'entité", "CI-35 non_dus rend des entity_id")
+    c.viole(check_projection_rendue(m1_mut(
+        NON_DUS, NON_DUS.replace("+ [p.nom] %}", "+ [perimetre[0].nom] %}"))),
+        "doublons", "CI-35 non_dus répète le premier libellé")
+    c.viole(check_projection_rendue(m1_mut(
+        NON_DUS, NON_DUS.replace("+ [p.nom] %}",
+                                 "+ [p.nom ~ ' (à voir)'] %}"))),
+        "hors du vocabulaire Arsenal", "CI-35 libellé substitué")
+    c.viole(check_projection_rendue(m1_mut(
+        "          {{ ns.items }}\n\n        # La troisième situation",
+        "          {{ ns.items | reverse | list }}\n\n"
+        "        # La troisième situation")),
+        "ordre canonique", "CI-35 ordre de non_dus inversé")
+    c.viole(check_projection_rendue(m1_mut(
+        NON_DUS, NON_DUS.replace(
+            "{% if s | is_number and (s | float) > "
+            "p.plafond_h * seuil_pct / 100 %}",
+            "{% if s | is_number %}"))),
+        "se recoupent", "CI-35 un poste dans deux listes")
+    c.viole(check_projection_rendue(m1_mut(
+        NON_DUS, NON_DUS.replace(
+            "p.plafond_h * seuil_pct / 100 %}",
+            "p.plafond_h * seuil_pct / 100\n"
+            "                  and p.nom != perimetre[0].nom %}"))),
+        "nulle part", "CI-35 un poste dans aucune liste")
+
+    # ── §3 : la charge numérique de `postes` ──────────────────────────────
+    c.viole(check_projection_rendue(m1_mut(
+        "'restant_h': (s | float) | round(3),",
+        "'restant_h': (s | float * 2) | round(3),")),
+        "`restant_h`", "CI-35 restant_h doublé")
+    c.viole(check_projection_rendue(m1_mut(
+        "'restant_h': (s | float) | round(3),",
+        "'restant_h': (s | float * 3600) | round(3),")),
+        "rendue en HEURES", "CI-35 restant_h en secondes")
+    c.viole(check_projection_rendue(m1_mut(
+        "'restant_pourcentage': ((s | float) / p.plafond_h * 100)",
+        "'restant_pourcentage': ((s | float) / (p.plafond_h * 2) * 100)")),
+        "restant_pourcentage", "CI-35 mauvais diviseur")
+    c.viole(check_projection_rendue(m1_mut(
+        "'restant_pourcentage': ((s | float) / p.plafond_h * 100)\n"
+        "                                       | round(2) }] %}",
+        "'restant_pourcentage': ((s | float) / p.plafond_h * 100)\n"
+        "                                       | round(0) }] %}")),
+        "au-delà de l'arrondi", "CI-35 pourcentage arrondi à l'entier")
+    c.viole(check_projection_rendue(m1_mut(
+        "'restant_pourcentage': ((s | float) / p.plafond_h * 100)\n"
+        "                                       | round(2) }] %}",
+        "'restant_pourcentage': 50 }] %}")),
+        "restant_pourcentage", "CI-35 pourcentage constant")
+    c.viole(check_projection_rendue(m1_mut(
+        "'plafond_h': p.plafond_h,\n"
+        "                'restant_pourcentage':",
+        "'plafond_h': perimetre[(loop.index0 + 1) % 4].plafond_h,\n"
+        "                'restant_pourcentage':")),
+        "plafond restitué", "CI-35 plafond restitué permuté")
+
+    # ── §4 : l'icône, dérivée de l'autorité ───────────────────────────────
+    ICONE = ("        {{ 'mdi:broom'\n"
+             "           if state_attr('sensor.aspirateur_entretien_du', "
+             "'postes_dus')\n"
+             "           else 'mdi:check-circle-outline' }}")
+    c.viole(check_projection_entretien(m1_mut(
+        ICONE,
+        "        {{ 'mdi:broom'\n"
+        "           if is_state('binary_sensor.aspirateur_entretien_requis', "
+        "'on')\n"
+        "           else 'mdi:check-circle-outline' }}")),
+        "se relit lui-même", "CI-34 autoréférence de l'icône réintroduite")
+    ECHO = '        seuil_pourcentage: "{{ seuil_pct }}"\n'
+    c.viole(check_projection_entretien(m1_mut(
+        ECHO, ECHO + '        echo: "{{ '
+        "states('sensor.aspirateur_entretien_du') }}\"\n")),
+        "se relit elle-même", "CI-34 autorité qui se relit")
+    c.viole(check_projection_entretien(m1_mut(
+        ECHO, ECHO + '        boucle: "{{ '
+        "states('binary_sensor.aspirateur_entretien_requis') }}\"\n")),
+        "relit le témoin", "CI-34 cycle autorité → témoin")
+    c.viole(check_projection_rendue(m1_mut(ICONE, "        mdi:broom")),
+            "l'icône du témoin", "CI-35 icône figée")
+    c.viole(check_projection_rendue(m1_mut(
+        ICONE,
+        "        {{ 'mdi:check-circle-outline'\n"
+        "           if state_attr('sensor.aspirateur_entretien_du', "
+        "'postes_dus')\n"
+        "           else 'mdi:broom' }}")),
+        "l'icône du témoin", "CI-35 icône inversée")
+
+    print(f"selftest OK — 35 contrôles logiques (ASP-CI-28 réservé, non "
           f"exécuté), {c.total()} cas "
           f"({c.conformes} conformes, {c.violations} violations).")
 
