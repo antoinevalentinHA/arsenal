@@ -1,24 +1,53 @@
-# Artefact de cadrage — domaine Aspirateur Arsenal — **V3.2**
+# Artefact de cadrage — domaine Aspirateur Arsenal — **V4**
 
-**Objet.** Livrable de chantier **non ratifié**, **antérieur à toute
-implémentation**. Cet artefact est autonome : il doit permettre à une session
+**Objet.** Livrable de chantier **ratifié le 2026-08-28** (`D-44`), désormais
+**référence architecturale opposable** des lots L2, Maintenance, Notifications
+et UI. Cet artefact est autonome : il doit permettre à une session
 d'audit indépendante de vérifier les conclusions **sans accès à la conversation
 d'origine et sans accès à l'instance Home Assistant**.
 
-**Version :** **V3.2** — **la V3.1, corrigée du seul finding `F-1` de l'audit
-du commit** (un compteur d'arbitrages resté à quatorze dans la table de contenu)
-**et des deux libellés de version courante** signalés avec lui. Aucune autre
-différence.
+**Version :** **V4** — **la V3.2, augmentée des quinze arbitrages rendus par
+l'opérateur.** Quatorze sont **totalement** fermés, un **partiellement**
+(`A-5`, sur ses seules icônes et ses cinq raccourcis). Quatre décisions acquises sont ajoutées (`D-40` à `D-43`).
 
-La **V3.1** était **la V3 normalisée en fins de ligne `LF`**, augmentée des
-corrections documentaires `R-2` à `R-5` du contrôle documentaire final et de
-l'annotation de levée de la réserve de chaîne de garde. La **V3** était
-elle-même strictement corrective après réaudit delta de la V2.
+> **La V4 n'est pas une version corrective.** Les V2, V3, V3.1 et V3.2
+> corrigeaient des findings d'audit. La V4 **intègre des décisions**. Aucun
+> finding n'est traité, aucune régression n'est corrigée, et **aucun constat
+> des versions V1 à V3.2 n'est réécrit**.
 
-**Relevés d'instance :** 2026-08-27 · **Artefact V3.2 constitué le :** 2026-08-28
-**Dépôt de référence :** Arsenal — `main` à `112ad3c3d64a619f8ec883dcd645ec0187d884bb`
-**Statut :** cadrage corrigé, **non ratifié**. **Aucun lot n'est engageable.**
-**Arbitrages ouverts : quinze. Aucun rendu.**
+La **V3.2** était la V3.1 corrigée du seul finding `F-1` de l'audit du commit.
+La **V3.1** était la V3 normalisée en fins de ligne `LF`, augmentée des
+corrections `R-2` à `R-5` et de l'annotation de levée de la réserve de chaîne de
+garde. La **V3** était elle-même strictement corrective après réaudit delta de
+la V2.
+
+**Relevés d'instance :** 2026-08-27 · **Artefact V4 constitué le :** 2026-08-28
+**Dépôt de référence :** Arsenal — `main` à `3ce2c46eb34c2dd33d0aa11dae1a264571da1a07`
+*(squash de la PR #732, qui a intégré la V3.2 ; l'arbre du domaine y est
+identique à celui de `112ad3c3`, révision de référence des versions antérieures
+et toujours citée telle quelle dans les fichiers de références.)*
+**Statut :** arbitrages rendus, cadrage **RATIFIÉ** (`D-44`, 2026-08-28).
+**Trois lots engageables, trois sous condition, deux bloqués** —
+`10_LOTS.md` §5.2. **Aucune implémentation n'est autorisée** hors du périmètre
+et des dépendances propres à chaque lot.
+**Arbitrages : quinze — quatorze fermés, un partiel, zéro non rendu.**
+
+> ### ⚠ Passage caduc — conservé pour l'historique, annoté le 2026-08-28
+>
+> **Le cadrage est ratifié depuis le 2026-08-28** — décision `D-44`,
+> [`01_DECISIONS_ACQUISES.md`](01_DECISIONS_ACQUISES.md) §G bis. L'énoncé
+> ci-dessous était exact jusqu'à cette date.
+>
+> Le cadrage **a été audité** — `GO` avec réserves, `R1` à `R7` corrigées — puis
+> **ratifié**. **L'autorité courante est `D-44`.**
+>
+> **Ce qui reste vrai :** rendre les arbitrages ne ratifiait pas le cadrage ; il
+> a fallu un acte opérateur distinct.
+
+> **Rendre les arbitrages ne ratifie pas le cadrage.** Les décisions `D-37` et
+> `D-38` sont inchangées : le cadrage reste un livrable **opposable et non
+> ratifié**, et la préparation du lot combiné reste **interrompue** tant qu'il
+> n'est pas audité.
 
 > **Pourquoi une V3.1.** Treize des quinze fichiers de la V3 portaient des fins
 > de ligne `CRLF`, alors que le manifeste déclarait `LF`. Le dépôt Arsenal
@@ -26,6 +55,38 @@ elle-même strictement corrective après réaudit delta de la V2.
 > **treize empreintes du manifeste auraient cessé de vérifier au moment même de
 > l'intégration**. Les quinze fichiers sont désormais en `LF`, et le manifeste
 > est **entièrement recalculé** sur les octets réellement destinés au dépôt.
+
+---
+
+## 0. Ce que la V4 rend
+
+| Réf. | Décision rendue | Statut |
+|---|---|---|
+| `A-1` | Seuil unique : **restant ≤ 10 %**, quatre postes | **fermé** |
+| `A-2` | Pression unique, aucun retry, **fenêtre de 30 s**, terminal explicite, poste toujours dû | **fermé** |
+| `A-3` | **Quatre** identifiants attribués | **fermé** |
+| `A-4` | Vocabulaire de **34 valeurs** | **fermé** |
+| `A-5` | Les **vingt objets** de la couche d'intention | **partiel** |
+| `A-6` | Nouveau chapitre **`14_entretien.md`** | **fermé** |
+| `A-7` | Capteur NAS existant **intact** ; capteur de santé **neuf** en `U1` | **fermé** |
+| `A-8` | Pendant mission → mobile ; hors mission → rien de nouveau | **fermé** |
+| `A-9` | Nouveau chapitre **`15_conduite_et_supervision.md`** | **fermé** |
+| `A-10` | Voie **`O1`** ; partition **`O`, `O-R`, `T`, `H`** ratifiée | **fermé** |
+| `A-11` | Exclusion **par le verdict** ; amarrage à **W3** | **fermé** |
+| `A-12` | **Automation dédiée `10280000000004`** | **fermé** |
+| `A-13` | Confrontation **obligatoire**, objet fixé, **contrôle dédié `ASP-CI-28`** | **fermé** |
+| `A-14` | **Liste d'autorisation nominative** | **fermé** |
+| `A-15` | **30 s** mutualisées ; amarrage événementiel | **fermé** |
+
+**Quatre décisions acquises nouvelles :** `D-40` place de la tuile Aspirateur ·
+`D-41` patron dynamique et logique côté backend · `D-42` classes d'état et
+priorité · `D-43` restitution et notification indépendantes.
+
+**Les sept points restés ouverts** — dont **deux seulement** relèvent encore
+d'un arbitrage partiellement rendu — sont énumérés dans
+`11_ARBITRAGES_RENDUS.md` §7. Le point 7 est **réduit à son second volet** : la
+**ratification** est posée depuis le 2026-08-28, l'**ordre et le regroupement
+des lots** restent ouverts et **ne bloquent aucun lot**.
 
 ---
 
@@ -78,11 +139,13 @@ Le nombre d'arbitrages ouverts passe de **8 à 14**.
 | Fichier | Contenu |
 |---|---|
 | `README.md` | Ce document — contrôles attendus et limites de preuve |
-| `DELTA_AUDIT_V2_V3.md` | **Correspondance finding → correction de la génération courante** — `M-6` et `N-1` à `N-11` |
+| **`11_ARBITRAGES_RENDUS.md`** | **Registre des arbitrages rendus** — matrice d'état, décision par décision, conséquences vérifiées, points restés ouverts *(V4)* |
+| **`DELTA_V3_2_V4.md`** | **Correspondance arbitrage rendu → conséquence documentaire** *(V4)* |
+| `DELTA_AUDIT_V2_V3.md` | Correspondance **finding → correction** de la génération V3 — `M-6` et `N-1` à `N-11` |
 | `DELTA_AUDIT_V1_V2.md` | Correspondance de la génération précédente, **conservée** — `B-1`…`B-3`, `M-1`…`M-11`, `m-1`…`m-8`, `i-1`…`i-5` |
 | `00_CADRAGE.md` | Le cadrage complet corrigé |
 | `01_DECISIONS_ACQUISES.md` | Registre des décisions opérateur déjà prises |
-| `02_ARBITRAGES_OUVERTS.md` | Les **quinze** arbitrages ouverts |
+| `02_ARBITRAGES_OUVERTS.md` | Les **quinze** arbitrages, posés et analysés — **avec leur bannière de statut V4** |
 | `03_REFERENCES_CONTRATS.md` | Références précises aux contrats et contrôles Arsenal |
 | `04_REFERENCES_SOURCES.md` | Références Home Assistant 2026.8.3 et python-roborock 5.31.1 |
 | `05_DIAGNOSTICS_SANITISES.md` | Extraits sanitaires, faits nécessaires uniquement |
@@ -90,7 +153,7 @@ Le nombre d'arbitrages ouverts passe de **8 à 14**.
 | `07_MACHINE_L2.md` | Machine d'états L2, trois writers, vocabulaires envisagés |
 | `08_NOTIFICATIONS.md` | Architecture des notifications |
 | `09_UI.md` | Architecture d'interface arrêtée |
-| `10_LOTS.md` | Découpage proposé — **non ratifié** |
+| `10_LOTS.md` | Découpage **ratifié** — table d'engageabilité au §5.2 |
 | `MANIFESTE.md` | Inventaire et SHA-256 |
 
 ---
@@ -150,13 +213,28 @@ Confronter `08_NOTIFICATIONS.md` au contrat et aux contrôles `T1` à `T6`.
 Vérifier en particulier que la V2 ne promet plus une re-projection immédiate
 après suppression manuelle.
 
-### C4 bis — Aucun choix implicite sur les trois arbitrages sensibles
+### C4 bis — **change d'objet en V4** : la décision doit être écrite, non absente
 
-| Réf. | Ce qui doit être constaté |
+> Jusqu'à la V3.2, ce contrôle prouvait qu'**aucun** de ces trois arbitrages
+> n'avait été rendu **en silence**. Ils sont désormais rendus **explicitement**.
+> Le contrôle vérifie donc que la décision est **écrite et tracée**.
+
+| Réf. | Ce qui devait être constaté **jusqu'à V3.2** | Ce qui doit être constaté **en V4** |
+|---|---|---|
+| **`A-11`** | Aucune valeur de clôture de chaîne de retour attribuée à un writer ; décompte en matrice, jamais un nombre unique | La clôture de retour confirmée est attribuée **nommément à W3** ; le décompte vaut **34** — un nombre unique **parce qu'il est rendu**, et sa dérivation depuis la matrice est **écrite** |
+| **`A-12`** | Nombre d'automations donné comme trois ou quatre ; identifiants nouveaux comme deux certains plus un conditionnel | **Quatre** automations, **quatre** identifiants, tous **donnés par l'opérateur** ; la conditionnalité est **levée**, jamais contournée |
+| **`A-15`** | Aucune durée de fenêtre L2 nulle part | **30 s**, mutualisées, **rendues par l'opérateur** ; **aucune constante nouvelle** — le domaine reste à `{30 s, 60 s}` |
+
+### C4 ter — **nouveau en V4** : aucun arbitrage rendu au-delà du mandat
+
+| Vérification | Ce qui doit être constaté |
 |---|---|
-| **`A-11`** | Aucune valeur de clôture de chaîne de retour n'est attribuée à un writer ; le décompte du vocabulaire est une **matrice**, jamais un nombre unique |
-| **`A-12`** | Le nombre d'automations est **trois ou quatre** ; les identifiants nouveaux sont **deux certains plus un conditionnel** |
-| **`A-15`** | **Aucune durée de fenêtre L2** n'apparaît — ni proposée, ni suggérée, ni citée en exemple |
+| **Aucun identifiant inventé** | Les seuls identifiants d'automation cités sont les **quatre** attribués par l'opérateur. Le capteur de santé NAS et son gabarit sont désignés par leur **rôle**, jamais par un `entity_id` — `ASP-INV-58` |
+| **Aucune durée supplémentaire** | **30 s** pour les quatre gestes L2 **et** pour la relecture de la remise à zéro d'entretien. Le domaine reste à **deux** constantes, `{30 s, 60 s}` |
+| **Aucune couleur ni valeur d'état inventée** pour la tuile Aspirateur | Seules des **contraintes** sont établies à partir des patrons existants ; ni le vocabulaire, ni la couleur, ni le capteur support, ni son emplacement ne sont choisis |
+| **L'ordre de la ligne 5 de Navigation n'est pas figé** | Seule sa **composition** est établie — Audi, Imprimerie, Énergie, Santé |
+| **Les deux chapitres contractuels ne sont pas écrits** | `14_entretien.md` et `15_conduite_et_supervision.md` sont **décrits comme livrables futurs**, et n'existent pas dans `00_documentation_arsenal/contrats/aspirateur/` |
+| **Aucun fichier de dépôt hors documentation** | Aucun runtime, helper, script, automation, checker ni Lovelace n'est créé ou modifié |
 
 ### C5 — Cohérence du vocabulaire et totalité de la machine
 
@@ -179,12 +257,47 @@ Confronter `09_UI.md` au chapitre `11_frontiere_ui.md`. Vérifier que la V2
 du référentiel des segments, et ouvre l'arbitrage **A-13** au lieu de conclure
 qu'aucun amendement de contrôle n'est nécessaire.
 
-### C7 — Aucun arbitrage rendu
+### C7 — **réécrit le 2026-08-28** : arbitrages rendus, cadrage **ratifié**
 
-Vérifier que les **quinze** arbitrages de `02_ARBITRAGES_OUVERTS.md` sont
-**posés et non tranchés**, et qu'aucun lot de `10_LOTS.md` n'est présenté comme
-engageable. Le contrôle `C4 bis` porte sur les trois plus exposés au choix
-implicite.
+> Jusqu'à la V3.2, ce contrôle vérifiait qu'**aucun** arbitrage n'était rendu.
+> Il vérifie désormais que **tous le sont explicitement**, et que **rien d'autre**
+> ne l'est.
+
+1. Les **quinze** arbitrages de `02_ARBITRAGES_OUVERTS.md` portent chacun une
+   **bannière de statut**, et leur texte d'origine est **intact**.
+2. Le registre `11_ARBITRAGES_RENDUS.md` donne **quatorze fermés, un partiel,
+   zéro non rendu** — et le décompte se recoupe avec `02` et avec `00` §7.
+3. Le seul arbitrage **partiel** nomme précisément ce qui **reste ouvert**, sans
+   le combler : `A-5` — **icônes** et **cinq raccourcis exacts**, et rien
+   d'autre.
+4. La table d'engageabilité de `10_LOTS.md` **§5.2** donne un statut **justifié
+   par ses dépendances** à chacun des huit lots — **trois `ENGAGEABLE`, trois
+   `ENGAGEABLE SOUS CONDITION`, deux `BLOQUÉ`** — et énonce que « débloquer un
+   lot n'est pas l'engager ».
+5. **`D-44` est l'unique autorité de ratification** ; `D-37` et `D-38` sont
+   **conservées intégralement**, datées et supersédées dans
+   `01_DECISIONS_ACQUISES.md` §F.
+6. **Aucun lot n'est déclaré engageable** alors qu'il consomme un choix resté
+   ouvert : `U0` et `U2` sont `BLOQUÉ`, et les points ouverts d'interface ne
+   sont propagés à **aucun** lot qui ne les consomme.
+
+Le contrôle `C4 bis` porte sur les trois arbitrages les plus exposés au choix
+implicite ; le contrôle `C4 ter` porte sur ce qui **ne devait pas** être rendu.
+
+### C8 — **nouveau en V4** : cohérence arithmétique
+
+| Grandeur | Valeur attendue | Où elle se vérifie |
+|---|---|---|
+| Décisions `D-xx` · règles `D-Rx` · total | **43 · 5 · 48** | `01` §G, recompté ligne à ligne |
+| Arbitrages : fermés · partiels · non rendus | **14 · 1 · 0** | `02`, `00` §7, `11` §1 |
+| Vocabulaire de verdict | **34** = 18 + 11 + 5 | `07` §3.3 bis |
+| Répartition du vocabulaire | **16 présents · 2 absents · 18 cycle de vie** | `07` §3.3 bis, 34 − 16 = 18 |
+| Partition des valeurs | **8 `O` · 1 `O-R` · 8 `T` · 17 `H`** = 34 | `07` §4.4 |
+| Rôles et automations | **4 · 4** | `07` §7 |
+| Identifiants d'automation attribués | **4** | `07` §7, `11` §6.6 |
+| Postes d'entretien dus au relevé, au seuil de 10 % | **0 sur 4** | `06` §4.1, recalculable depuis `06` §3 |
+| Tuiles de Navigation avant · après | **20 · 20** | `09` §5.3.1 |
+| Fichiers de contenu de l'artefact | **16** | `MANIFESTE.md` §2 |
 
 ---
 
@@ -234,6 +347,13 @@ preuve identique aux arbitrages `ARB-3` et `ARB-5` du contrat.
 Aucun secret, aucun identifiant d'appareil, aucune adresse, aucun jeton, aucune
 trace complète de diagnostic, aucun chemin propre à une machine, **aucun patch
 d'implémentation**, aucun fichier de dépôt modifié.
+
+> **Précision de portée, ajoutée le 2026-08-28.** Cette clause décrit le
+> **contenu de l'artefact**, pas l'effet de son intégration. Depuis la V4,
+> l'artefact **vit dans le dépôt** : le commit qui l'intègre écrit sous
+> `00_documentation_arsenal/` — ce dossier et l'entrée de navigation
+> `audits/index.md` — et **rien d'autre**. Aucun fichier fonctionnel n'est
+> touché. Voir `01_DECISIONS_ACQUISES.md` §F, encadré `D-39`.
 
 Les chemins cités sont **relatifs à la racine du dépôt Arsenal** et servent de
 références de lecture, jamais de cibles d'écriture.

@@ -1,11 +1,24 @@
-# Machine L2 — conduite et supervision — **V3.1**
+# Machine L2 — conduite et supervision — **V4**
+
+> ### V4 — six arbitrages rendus s'appliquent à ce fichier
+>
+> `A-3` identifiants · `A-4` vocabulaire · `A-9` forme contractuelle ·
+> `A-10` garde de geste et partition · `A-11` sérialisation, volets 1 et 2 ·
+> `A-15` fenêtres de relecture.
+> Registre des décisions : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md).
+>
+> **Le vocabulaire est désormais arrêté : trente-quatre valeurs.** Les passages
+> qui le donnaient en **matrice à quatre issues** sont **conservés et datés** —
+> ils décrivaient exactement l'état de l'artefact tant que `A-10` et `A-11`
+> n'étaient pas rendus. **Aucune analyse n'est supprimée.**
 
 > **V3.1 — corrections `R-3` et `R-5` : deux renvois périmés au décompte, et la nomenclature du §6.2 qui rangeait une valeur hors vocabulaire en classe H.**
 
 **Statut.** Les décisions D-01 à D-11 et D-R1 à D-R5 sont **acquises**.
-Tout le reste est **proposition**. Le **vocabulaire n'est pas arrêté** : son
-contenu et son décompte dépendent **conjointement** des arbitrages **A-10** et
-**A-11 volet 2** — quatre issues possibles, voir §3.3.
+Le vocabulaire est **arrêté en V4** à **trente-quatre valeurs** (§3.3 bis).
+Jusqu'à la V3.2, il ne l'était pas : son contenu et son décompte dépendaient
+**conjointement** des arbitrages **A-10** et **A-11 volet 2** — quatre issues
+possibles, voir §3.3.
 
 > **Corrections V2 :** L2 est un **acte contractuel** avant d'être un
 > amendement de CI (§8, A-9) ; la disjonction des valeurs n'est **pas** une
@@ -90,6 +103,13 @@ ECHEC/TRANSITION_NON_OBSERVEE
 
 ## 3. W2 et W3 — valeurs proposées
 
+> ### ⚠ Section rendue caduque par la V4 — conservée pour l'historique
+>
+> **Les §3.1, §3.2 et §3.3 décrivent l'état de la proposition jusqu'à la V3.2**,
+> lorsque le vocabulaire n'était pas arrêté. **Le vocabulaire arrêté est au
+> §3.3 bis.** Rien n'est supprimé ici : c'est cette analyse qui a rendu
+> l'arbitrage possible.
+
 > **Aucune dénomination ci-dessous n'est arrêtée**, hors les quatre valeurs
 > acquises. Le champ lexical est contraint par `ASP-INV-70` : une valeur de
 > cycle de vie **ne peut pas se nommer comme un refus**. Arbitrage **A-4**.
@@ -145,6 +165,17 @@ faute d'écrivain (§5.3).
 
 ### 3.3 Décompte — **non arrêté**
 
+> ### ⚠ Passage caduc — conservé pour l'historique, annoté en V4
+>
+> **Le décompte est arrêté depuis la V4 : il vaut 34** (§3.3 bis). Le titre et
+> la matrice ci-dessous décrivent l'état de la proposition **jusqu'à la V3.2**,
+> lorsque `A-10` et `A-11` volet 2 n'étaient pas rendus.
+>
+> **Le passage n'est ni supprimé ni réécrit** : c'est cette matrice qui rendait
+> l'arbitrage possible, et son écart avec le résultat rendu est lui-même
+> instructif — l'arbitrage a **ajouté une dimension** que la matrice ne portait
+> pas. **L'autorité courante est le §3.3 bis.**
+
 Le total dépend désormais de **deux** arbitrages, et non plus d'un seul.
 
 | A-10 | A-11 volet 2 | W1 | W2 | W3 | **Total** | Catalogue présents / absents | Cycle de vie |
@@ -156,6 +187,79 @@ Le total dépend désormais de **deux** arbitrages, et non plus d'un seul.
 
 > **Le décompte n'est arrêté par aucune de ces lignes.** Il le sera lorsque
 > **A-10** et **A-11 volet 2** auront été rendus, et pas avant.
+
+*(Énoncé d'origine, exact jusqu'à la V3.2. Rendu caduc en V4 : voir l'encadré
+en tête de section et le §3.3 bis.)*
+
+### 3.3 bis Vocabulaire **arrêté** — rendu en V4
+
+> **Trente-quatre valeurs**, et trente-quatre seulement.
+
+| Writer | Nombre | Fichier porteur |
+|---|---|---|
+| **W1** — moteur de lancement, inchangé | **18** | `10_scripts/aspirateur/lancer_mission.yaml` |
+| **W2** — conduite | **11** | script de conduite, lot `L2` |
+| **W3** — supervision, `10280000000001` | **5** | automation de supervision, lot `L2` |
+| | **34** | |
+
+**W2 — les onze valeurs**
+
+| Valeur | Classe | Origine |
+|---|---|---|
+| `CONDUITE/PAUSE_ENGAGEE` | **O** | **ajoutée en V4** — engagement exigé par `A-11` |
+| `CONDUITE/PAUSE_CONFIRMEE` | **O** | proposée en V2, retenue |
+| `CONDUITE/PAUSE_NON_CONFIRMEE` | **O** | proposée en V2, retenue |
+| `CONDUITE/REPRISE_ENGAGEE` | **O** | **ajoutée en V4** — engagement exigé par `A-11` |
+| `CONDUITE/REPRISE_CONFIRMEE` | **O** | proposée en V2, retenue |
+| `CONDUITE/REPRISE_NON_CONFIRMEE` | **O** | proposée en V2, retenue |
+| `CONDUITE/ARRET_ENGAGE` | **O** | **ajoutée en V4** — engagement exigé par `A-11` |
+| `CLOTURE/APRES_ARRET_CONFIRME` | **T** | proposée en V2, retenue |
+| `CLOTURE/APRES_ARRET_NON_CONFIRME` | **T** | **acquise — D-10** |
+| `CONDUITE/RETOUR_ENGAGE` | **O-R** | proposée en V2, retenue |
+| `CLOTURE/APRES_RETOUR_NON_CONFIRME` | **T** | **acquise — D-10** |
+
+**W3 — les cinq valeurs**
+
+| Valeur | Classe | Origine |
+|---|---|---|
+| `ECHEC/MISSION_INTERROMPUE` | **T** | acquise — `D-11`, catalogue `09` |
+| `ECHEC/ERREUR_EN_MISSION` | **T** | acquise — `D-11`, catalogue `09` |
+| `CLOTURE/FIN_NOMINALE` | **T** | proposée en V2, retenue |
+| `CLOTURE/APRES_RETOUR_CONFIRME` | **T** | **déplacée en V4 de W2 vers W3** — `A-11` volet 2 |
+| `CLOTURE/ISSUE_OPAQUE_APRES_REDEMARRAGE` | **T** | proposée en V2, retenue |
+
+> **Pourquoi 34, alors que la matrice du §3.3 plafonnait à 33.** L'arbitrage
+> rendu a **ajouté une dimension** que la matrice ne portait pas — les **trois
+> valeurs d'engagement** exigées par `A-11` — et il a **déplacé** la clôture de
+> retour confirmée vers W3 **au lieu de la retirer**. La matrice n'était pas
+> fausse : elle était exhaustive sur les seules issues d'`A-10` × `A-11` volet 2.
+>
+> **9 + 3 − 1 = 11** pour W2 ; **4 + 1 = 5** pour W3 ; **18 + 11 + 5 = 34.**
+
+**Vérifications faites sur ce vocabulaire :**
+
+| Contrôle | Résultat |
+|---|---|
+| Disjonction W1 ∩ W2, W1 ∩ W3, W2 ∩ W3 (`D-09`) | **vide** dans les trois cas |
+| Préfixes partagés admis (`D-09`) | `ECHEC/` par W1 et W3 ; `CLOTURE/` par W2 et W3 |
+| `D-10` — deux clôtures non confirmées, distinctes et terminales | présentes, distinctes, toutes deux de classe **T** |
+| `D-11` — codes du catalogue conservés tels quels | les quatre codes nommés sont présents à l'identique |
+| `ASP-INV-70` — aucune valeur de cycle de vie ne se nomme comme un refus | **aucune** des seize valeurs nouvelles ne porte `REFUS` |
+| `ASP-INV-52` — extension du catalogue | **non déclenché** : aucune valeur nouvelle n'y entre |
+| Ancre « 18 codes » de `ASP-CI-19` | **intacte** |
+
+**Répartition à écrire dans l'en-tête du fichier L1 — désormais calculable :**
+
+| Grandeur | Valeur | Calcul |
+|---|---|---|
+| Codes du catalogue **présents** | **16** | 14 écrits par W1 + les deux codes d'échec écrits par W3 |
+| Codes du catalogue **absents** | **2** | commande rejetée et canal indisponible — **inchangé** |
+| Valeurs de **cycle de vie** | **18** | 34 − 16 |
+| **Total** | **34** | |
+
+**Les deux codes sans écrivain restent les mêmes**, et pour les mêmes raisons :
+le code de canal indisponible appartient à l'**appelant** ; celui de commande
+rejetée est **structurellement** hors de portée.
 
 **Deux codes du catalogue restent délibérément sans écrivain**, inchangé :
 le code de canal indisponible, qui appartient à l'**appelant** ; et le code de
@@ -197,6 +301,10 @@ commande rejetée, **structurellement** hors de portée.
 | **O** | `LANCEE/DEMARRAGE_OBSERVE` — **une seule** |
 | **T** | *aucune* |
 | **H** | les **13** refus, plus `VALIDATION_EN_COURS`, `COMMANDE/ISSUE_NON_ETABLIE`, `EMISSION/COMMANDE_ACCEPTEE`, `ECHEC/TRANSITION_NON_OBSERVEE` — **dix-sept** |
+
+> **Partition ratifiée en V4.** `A-10` **ratifie** cette partition en trois
+> classes et sa sous-classe **`O-R`** : `O`, `O-R`, `T`, `H`. Elle cesse d'être
+> une proposition. Le §4.4 donne sa répartition sur les trente-quatre valeurs.
 
 **Pourquoi trois classes et non deux.** Une acceptation de commande et un refus
 de lancement ne sont **ni** des missions ouvertes **ni** des clôtures de
@@ -245,6 +353,38 @@ exact que `ASP-INV-49` proscrit.
 > porte d'entrée sans elles. Les deux lectures échouaient : soit le décompte
 > était faux, soit la mémoire de mission était effacée. C'était le bloquant B-2.
 
+> ### ✅ `A-10` rendu en V4 — **voie `O1`**
+>
+> Un geste **physiquement dépourvu de sens**, ou **demandé hors mission**,
+> **n'écrit rien** au verdict. Le script **s'arrête**, avec un **message
+> explicite au caller**. Le cas **hors vocabulaire** est traité **séparément**.
+>
+> **La voie `O2` est écartée** : le vocabulaire ne gagne **aucune** valeur de
+> garde. C'est ce qui explique que W2 compte onze valeurs et non treize.
+>
+> **Où vit le refus — la question que `A-10` laissait explicitement ouverte.**
+> Dans la **réponse du script à son appelant**, et nulle part ailleurs. Le motif
+> lisible exigé par `ASP-INV-50` est porté par le message d'arrêt, visible au
+> journal et à la trace Home Assistant — **le canal par lequel une exception du
+> moteur remonte déjà, intacte, aujourd'hui**. Aucun helper, aucun canal nouveau.
+>
+> **La contrainte non négociable est préservée** : un refus de geste **n'écrit
+> rien**, donc il ne peut pas écraser une valeur de classe `O` ni effacer la
+> mémoire d'une mission encore ouverte.
+
+### 4.4 Partition des trente-quatre valeurs — **ajouté en V4**
+
+| Classe | Nombre | Détail |
+|---|---|---|
+| **O** | **8** | `LANCEE/DEMARRAGE_OBSERVE` (W1) + les **sept** valeurs de conduite de W2 hors retour |
+| **O-R** | **1** | `CONDUITE/RETOUR_ENGAGE` |
+| **T** | **8** | les **trois** clôtures de W2 + les **cinq** valeurs de W3 |
+| **H** | **17** | les treize refus, `VALIDATION_EN_COURS`, `COMMANDE/ISSUE_NON_ETABLIE`, `EMISSION/COMMANDE_ACCEPTEE`, `ECHEC/TRANSITION_NON_OBSERVEE` |
+| | **34** | 8 + 1 + 8 + 17 |
+
+**Les quatre classes sont exhaustives et disjointes** sur les trente-quatre
+valeurs. Le cas **hors vocabulaire** leur reste **extérieur** (§6.1).
+
 ---
 
 ## 5. Machine d'états
@@ -258,6 +398,13 @@ C'est la **seule** définition employée dans tout l'artefact. Elle est
 énumérable : sous la voie O1, la classe O compte **six** valeurs — la valeur de
 démarrage observé de W1, et les cinq valeurs de conduite de W2. Sous la voie O2,
 elle en compte **huit**.
+
+> **Corrigé en V4.** La voie `O1` est retenue, mais `A-11` ajoute **trois**
+> valeurs d'engagement de classe `O`. **La classe `O`, sous-classe `O-R`
+> comprise, compte donc neuf valeurs** : `LANCEE/DEMARRAGE_OBSERVE`, les sept
+> valeurs de conduite de W2 hors retour, et `CONDUITE/RETOUR_ENGAGE` (§4.4).
+> **Six** était juste sous la voie `O1` **seule** ; l'écart est exactement
+> l'apport d'`A-11`.
 
 **N'ouvrent rien**, et c'est explicite : l'acceptation de commande — une
 acceptation n'est jamais un démarrage (`ASP-INV-38`) —, l'issue non établie, la
@@ -281,12 +428,46 @@ relecture dans une fenêtre → verdict. Aucune réémission (`ASP-INV-39`).
 > **A-14** — que la V2 n'avait pas cherchée sur son propre lot phare.
 > **Arbitrage A-15. Aucune durée n'est proposée ici.**
 
-| Geste | Garde | Confirmé | Non confirmé |
-|---|---|---|---|
-| **Pause** | activité en cours | classe **O** | classe **O** — la mission peut rouler encore ; on le dit, on ne conclut pas |
-| **Reprise** | garde fermée `ASP-INV-62`, **quatre conditions** : état de pause · session réellement ouverte · aucune erreur ni indisponibilité · **geste opérateur explicite, jamais une initiative du système** ; plus « mission Arsenal ouverte » au titre de D-07 | classe **O** | classe **O** |
-| **Retour base** | le robot n'y est pas déjà et n'y va pas déjà | passe d'abord en **O-R** ; **la clôture à l'amarrage n'a pas d'écrivain déterminé — A-11 volet 2** | clôture **T** — `CLOTURE/APRES_RETOUR_NON_CONFIRME` |
-| **Arrêt** | mission ouverte ; jamais plus contraint que le lancement (`ASP-INV-43`) | clôture **T** | clôture **T** — `CLOTURE/APRES_ARRET_NON_CONFIRME` |
+> ### ✅ `A-15` rendu en V4 — **30 s**, mutualisées sur les quatre gestes
+>
+> Pause, reprise, arrêt et **engagement du retour** : **30 secondes**. La fenêtre
+> du retour **confirme seulement l'entrée dans la chaîne de retour** ;
+> l'**amarrage** reste observé **événementiellement** par W3, sans fenêtre.
+>
+> **Aucune constante temporelle nouvelle n'est créée.** Le domaine reste à
+> `{30 s, 60 s}` : `ASP-INV-69` reçoit une **extension de portée** aux fenêtres
+> L2, et `ASP-CI-20` une **extension de périmètre** aux fichiers L2.
+> **Aucune autre temporisation** n'est admise dans un fichier L2.
+>
+> **La reprise n'a lieu que par geste opérateur explicite** — ce qui confirme la
+> quatrième condition de `ASP-INV-62` plutôt que de l'assouplir.
+>
+> **Conséquence vérifiée : `ASP-CI-10` n'a pas à être amendé** — voir §8.2.
+
+**Séquence de geste, telle que rendue en V4 :** garde de sens physique
+(`ASP-INV-48`) → **écriture de l'engagement** (`A-11`) → **émission unique** →
+relecture dans la fenêtre de **30 s** → verdict. Aucune réémission
+(`ASP-INV-39`).
+
+| Geste | Garde | Engagement écrit d'abord | Confirmé | Non confirmé |
+|---|---|---|---|---|
+| **Pause** | activité en cours | `CONDUITE/PAUSE_ENGAGEE` — **O** | `CONDUITE/PAUSE_CONFIRMEE` — **O** | `CONDUITE/PAUSE_NON_CONFIRMEE` — **O** : la mission peut rouler encore ; on le dit, on ne conclut pas |
+| **Reprise** | garde fermée `ASP-INV-62`, **quatre conditions** : état de pause · session réellement ouverte · aucune erreur ni indisponibilité · **geste opérateur explicite, jamais une initiative du système** ; plus « mission Arsenal ouverte » au titre de D-07 | `CONDUITE/REPRISE_ENGAGEE` — **O** | `CONDUITE/REPRISE_CONFIRMEE` — **O** | `CONDUITE/REPRISE_NON_CONFIRMEE` — **O** |
+| **Retour base** | le robot n'y est pas déjà et n'y va pas déjà | `CONDUITE/RETOUR_ENGAGE` — **O-R** | **W2 s'arrête là.** L'amarrage est observé par **W3**, qui écrit `CLOTURE/APRES_RETOUR_CONFIRME` — **T** | clôture **T** — `CLOTURE/APRES_RETOUR_NON_CONFIRME`, sur défaut d'entrée dans la chaîne |
+| **Arrêt** | mission ouverte ; jamais plus contraint que le lancement (`ASP-INV-43`) | `CONDUITE/ARRET_ENGAGE` — **O** | clôture **T** — `CLOTURE/APRES_ARRET_CONFIRME` | clôture **T** — `CLOTURE/APRES_ARRET_NON_CONFIRME` |
+
+> **Ce que la fenêtre du retour confirme, et ce qu'elle ne confirme pas.** Elle
+> confirme **l'entrée dans la chaîne de retour**, pas son aboutissement. Le
+> retour est le **seul geste à traîne longue** : lui appliquer une fenêtre de
+> clôture reviendrait à borner un trajet physique par une durée, ce qui est
+> exactement ce que `A-15` refuse. C'est pourquoi l'amarrage est **événementiel**
+> et revient à W3.
+
+> **`CONDUITE/ARRET_ENGAGE` n'est pas une sous-classe symétrique de `O-R`.**
+> La **signature positive de l'arrêt reste inconnue** : cette valeur dit
+> qu'Arsenal a **engagé** un arrêt, elle **n'observe rien**. Elle ne rend pas
+> l'arrêt observable, et c'est ce qui maintient
+> `CLOTURE/APRES_ARRET_NON_CONFIRME` **nécessaire et terminale** (`D-10`).
 
 > **La signature positive de l'arrêt reste inconnue et n'est pas complétée.**
 > Aucune déduction ne vient en tenir lieu.
@@ -302,7 +483,19 @@ relecture dans une fenêtre → verdict. Aucune réémission (`ASP-INV-39`).
 | Interruption hors geste opérateur | `ECHEC/MISSION_INTERROMPUE` — **ne présume pas la cause** |
 | Erreur robot ou dock | `ECHEC/ERREUR_EN_MISSION` |
 | Retour puis amarrage observés, **sans retour ordonné par Arsenal** | `CLOTURE/FIN_NOMINALE` |
-| Amarrage observé **après un retour ordonné par Arsenal** | **cas disputé — ni le writer ni la valeur ne sont déterminés. A-11 volet 2** |
+| Amarrage observé **après un retour ordonné par Arsenal** | ~~cas disputé~~ → **rendu en V4** : `CLOTURE/APRES_RETOUR_CONFIRME`, écrit par **W3** |
+
+> **`A-11` volet 2, rendu.** W3 est le **seul** writer autorisé à conclure après
+> un retour ordonné par Arsenal. W2 s'arrête à `CONDUITE/RETOUR_ENGAGE` et **ne
+> prétend pas conclure** : il n'y a donc plus deux candidats au même événement
+> physique. La valeur disputée est **conservée** et **change de writer** — elle
+> passe de W2 à W3, et cesse d'être suspendue.
+
+> **W3 n'écrit aucune interruption pendant un engagement.** Tant que le verdict
+> vaut `CONDUITE/PAUSE_ENGAGEE`, `CONDUITE/REPRISE_ENGAGEE`,
+> `CONDUITE/ARRET_ENGAGE` ou `CONDUITE/RETOUR_ENGAGE`, W3 **s'abstient** de
+> produire `ECHEC/MISSION_INTERROMPUE`. C'est l'exclusion rendue par `A-11`, et
+> elle ne coûte **aucun helper** : W3 lit le verdict qu'il surveille déjà.
 
 ### 5.4 Course entre W2 et W3 — problème posé, **non résolu**
 
@@ -332,6 +525,38 @@ de geste, ou autre mécanisme.
 
 > **Aucune garde n'est choisie ici. Arbitrage A-11, volets 1 et 2.**
 
+### 5.5 La garde rendue — **`A-11`, volets 1 et 2, en V4**
+
+> **Exclusion des writers par le verdict lui-même, sans helper supplémentaire.**
+
+| # | Règle rendue |
+|---|---|
+| 1 | **W2 écrit l'engagement avant chaque commande** |
+| 2 | **W3 ne produit aucune interruption pendant un engagement** |
+| 3 | **W2 conclut** la pause, la reprise et l'arrêt |
+| 4 | Sur un retour : **W2 s'arrête à `CONDUITE/RETOUR_ENGAGE`** ; **W3 seul** observe l'amarrage et écrit `CLOTURE/APRES_RETOUR_CONFIRME` |
+
+**Reprise de la séquence du §5.4, sous la garde rendue.** L'opérateur demande
+l'arrêt → **W2 écrit `CONDUITE/ARRET_ENGAGE`** → W2 émet → le robot s'immobilise
+→ pendant la fenêtre de relecture, W3 **voit l'engagement dans le verdict et
+s'abstient** → W2 conclut, confirmé ou non.
+**Il n'y a plus ni échec perdu, ni échec faux.**
+
+**Ce que la règle 1 apporte, et qui n'existait pas.** Les trois valeurs
+d'engagement rendent la fenêtre de relecture **visible dans le verdict**. C'est
+ce qui permet à l'exclusion de fonctionner **sans helper** : le jalon
+d'exclusion envisagé par la V2 n'est pas nécessaire, parce que le verdict le
+porte déjà.
+
+**Les quatre questions du volet 2 reçoivent quatre réponses :**
+
+| # | Question | Réponse rendue |
+|---|---|---|
+| 1 | Quel writer conclut après un retour ordonné par Arsenal ? | **W3** |
+| 2 | Quelle valeur exacte à l'amarrage ? | `CLOTURE/APRES_RETOUR_CONFIRME` |
+| 3 | Comment l'autre writer est-il neutralisé ? | **W2 s'arrête** à l'engagement du retour |
+| 4 | La valeur est-elle conservée ? | **Oui** — elle **change de writer**, de W2 vers W3 |
+
 ---
 
 ## 6. Réconciliation au redémarrage — **table totale**
@@ -343,7 +568,7 @@ Déclencheur : passage à l'état stable du système.
 | # | Classe du verdict | État machine | Action | Règles servies |
 |---|---|---|---|---|
 | **1** | **T**, **H**, ou verdict inconnu | **quelconque** | **Rien.** Aucune supervision, aucune notification, aucun verdict écrit | D-R4, D-R5 |
-| **2** | **O-R** | retour ou amarrage en cours | **Poursuivre** la supervision de la chaîne. **La clôture à l'amarrage relève du cas disputé — A-11 volet 2** | D-R2 |
+| **2** | **O-R** | retour ou amarrage en cours | **Poursuivre** la supervision de la chaîne. **La clôture à l'amarrage revient à W3, qui écrit `CLOTURE/APRES_RETOUR_CONFIRME`** *(rendu en V4 — la V3.2 y lisait le cas disputé d'`A-11` volet 2)* | D-R2 |
 | **3** | **O-R** | **tout autre état** | Clôture **opaque** | D-R1, D-R3 |
 | **4** | **O** hors O-R | classe d'**activité** | Re-projeter la persistante, reprendre la supervision. **Aucune transition inventée** | D-R1 |
 | **5** | **O** hors O-R | classe de **repos**, **quel que soit le témoin de session** | Clôture **opaque** | D-R1, D-R3 |
@@ -354,6 +579,10 @@ Déclencheur : passage à l'état stable du système.
 Les classes de verdict `{T, H, hors vocabulaire}`, `{O-R}` et `{O hors O-R}`
 sont **exhaustives et disjointes** sur l'ensemble des valeurs **augmenté du cas
 hors vocabulaire**.
+
+> **Précision V4.** L'ensemble couvert vaut désormais **34 valeurs** augmentées
+> du cas hors vocabulaire. La preuve de totalité est **inchangée dans sa
+> structure** : elle porte sur les **classes**, jamais sur un décompte.
 
 > **Précision V3.** La V2 énonçait l'exhaustivité « sur les 31 ou 33 valeurs »,
 > alors que le verdict **inconnu** — helper non initialisé au premier démarrage,
@@ -409,7 +638,28 @@ que **la chaîne est devenue inobservable** — et c'est cela qui doit s'écrire
 
 ---
 
-## 7. Rôles d'automation — **quatre rôles, trois ou quatre automations**
+## 7. Rôles d'automation — **quatre rôles, quatre automations** *(rendu en V4)*
+
+> ### ✅ `A-3` et `A-12` rendus en V4 — quatre identifiants attribués
+>
+> | Identifiant | Rôle |
+> |---|---|
+> | `10280000000001` | Supervision de mission — W3 |
+> | `10280000000002` | Projection persistante de **mission** |
+> | `10280000000003` | Projection persistante de **maintenance** |
+> | `10280000000004` | **Remise à zéro de la composition d'intention** |
+>
+> **La conditionnalité du §7.1 est levée** : `A-12` retient l'**automation
+> dédiée**, donc le quatrième identifiant est nécessaire **et** attribué. Le
+> domaine compte **quatre rôles et quatre automations** — le « trois ou quatre »
+> du titre historique ci-dessous est **résolu à quatre**.
+>
+> **Aucun identifiant n'est déduit par l'artefact** : les quatre sont **donnés
+> par l'opérateur**. Le registre `06_input_selects/system/prefix_id.yaml` porte
+> l'entrée `1028 - aspirateur`, ce qui les rend **bien formés** au regard des
+> deux doctrines d'identifiants.
+
+### 7.0 Titre historique — **quatre rôles, trois ou quatre automations**
 
 > **Correction V2.** La V1 n'en annonçait que trois rôles. Il en faut **quatre**.
 > **Correction V3.** Le nombre d'**automations** — et donc d'identifiants — est
@@ -419,10 +669,22 @@ que **la chaîne est devenue inobservable** — et c'est cela qui doit s'écrire
 
 | # | Rôle | Nature | Identifiant |
 |---|---|---|---|
-| 1 | Supervision de mission — détection, clôtures, réconciliation, envoi mobile | **écrivain** | `10280000000001` — **seul acquis** (D-04) |
-| 2 | Projection persistante de mission | **lecteur pur** | **à attribuer — certain** |
-| 3 | Projection persistante d'entretien | **lecteur pur** | **à attribuer — certain** |
-| 4 | **Remise à zéro de la composition d'intention au redémarrage** | écrivain de helpers d'interface | **à attribuer seulement si A-12 retient la branche « automation dédiée »** |
+| 1 | Supervision de mission — détection, clôtures, réconciliation, envoi mobile | **écrivain** | `10280000000001` — acquis (D-04) |
+| 2 | Projection persistante de mission | **lecteur pur** | **`10280000000002`** *(attribué en V4)* |
+| 3 | Projection persistante d'entretien | **lecteur pur** | **`10280000000003`** *(attribué en V4)* |
+| 4 | **Remise à zéro de la composition d'intention** | écrivain de helpers d'interface, **lecteur** du verdict | **`10280000000004`** *(attribué en V4)* |
+
+> **Le rôle 4 s'élargit en V4.** `A-12` lui donne **deux** déclencheurs, et non
+> plus le seul redémarrage : `input_boolean.systeme_stable` passant à `on`, **et**
+> le verdict prenant la valeur `COMMANDE/ISSUE_NON_ETABLIE`. Il **lit** donc le
+> verdict — sans jamais l'écrire — ce qui exige une **exception nominative
+> minimale à `ASP-CI-11`**. Détail :
+> [`09_UI.md`](09_UI.md) §3.3 bis et
+> [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §4.2.
+>
+> **Le rôle 4 reste un lecteur pur du verdict et un écrivain des seuls helpers
+> d'interface.** L'écrivain unique vers l'appareil demeure le moteur
+> (`ASP-INV-31`), et l'écrivain du verdict demeure le trio W1/W2/W3.
 
 ### 7.1 Décompte conditionnel des identifiants
 
@@ -467,6 +729,10 @@ recréerait l'autre.
 > **Deux identifiants certains, un troisième conditionnel — voir §7.1.**
 > Aucun n'est préattribué, ni suggéré, ni déduit d'une suite arithmétique.
 > Arbitrages **A-3** et **A-12**.
+>
+> **Rendu en V4 :** les trois identifiants nouveaux sont **attribués par
+> l'opérateur** — `…02`, `…03`, `…04`. La conditionnalité est **levée**, pas
+> contournée : `A-12` a retenu l'automation dédiée.
 
 ---
 
@@ -491,6 +757,22 @@ de conduite.
 > extension du chapitre `07` ? **Situation symétrique de A-6**, correctement
 > ouvert pour la Maintenance.
 
+> ### ✅ `A-9` rendu en V4 — **nouveau chapitre `15_conduite_et_supervision.md`**
+>
+> Avec **amendements minimaux à `ASP-INV-31` et `ASP-INV-42`**, le **checker**
+> correspondant, et la **mise à jour du registre de couverture**.
+>
+> La forme 1 étant retenue **pour `A-6` comme pour `A-9`**, la conséquence
+> documentaire du §8.6 se réalise : **deux** chapitres contractuels nouveaux
+> feront dériver le compte du registre, et chacun doit le mettre à jour **dans
+> son propre lot**.
+>
+> **« Minimal » se lit strictement.** Les deux invariants énumèrent nommément
+> l'interruption et le retour à la base parmi les écritures réservées au moteur
+> unique : l'amendement ouvre **ces gestes-là**, au **seul** script de conduite,
+> et ne relâche ni l'écrivain unique vers l'appareil, ni la garde fermée
+> `ASP-INV-62` sur la primitive de démarrage.
+
 ### 8.2 Amendements de CI, une fois l'acte contractuel rendu
 
 | Contrôle | Action | Nature |
@@ -500,9 +782,35 @@ de conduite.
 | `ASP-CI-18` | Élargir le vocabulaire fermé et sa constante de cycle de vie ; **le décompte confronté au fichier L1 doit être réécrit** | **amendement** |
 | **`ASP-CI-19`** | **Étendre l'obligation de motif lisible aux valeurs nouvelles.** Le contrôle n'ancre aujourd'hui que les 18 codes du catalogue et les 4 valeurs de cycle de vie : sans amendement, les valeurs L2 n'auraient **aucune** obligation de motif, contre `ASP-INV-50` | **amendement — manquait à la V1** |
 | **`ASP-CI-20`** | **Étendre le périmètre aux fichiers L2.** Le contrôle refuse toute temporisation concurrente mais **ne balaie que les cinq fichiers L1** : une fenêtre de relecture L2 y échapperait entièrement. Sa forme dépend de **A-15** | **amendement — manquait à la V2** |
-| `ASP-CI-10` | **Selon A-15.** Le contrôle exige que le tableau des fenêtres du chapitre `07` porte **exactement deux lignes**, comparées à l'ensemble `{30, 60}` : une troisième ligne le fait échouer **même à 30 s** | **amendement conditionnel — A-15** |
+| `ASP-CI-10` | ~~**Selon A-15.**~~ **Aucun amendement — rendu en V4.** Voir l'encadré ci-dessous | **retiré du lot** |
 | `ASP-CI-3` | **À rejouer** lors de la rédaction contractuelle L2 — voir §8.5 | **réexécution** |
 | `ASP-CI-21` | **À réexécuter, pas à amender.** La marge de capacité est recalculée par le contrôle lui-même ; la valeur la plus longue proposée reste très en deçà de la capacité déclarée | **réexécution** |
+
+> ### `ASP-CI-10` n'a **pas** à être amendé — vérifié en V4
+>
+> La V3.2 inscrivait au lot `L2` un « amendement conditionnel de `ASP-CI-10`
+> selon `A-15` ». **La condition ne se réalise pas**, pour deux raisons dont
+> chacune suffit :
+>
+> 1. Le contrôle n'admet que `{30, 60}` secondes sur **tous** les chapitres du
+>    domaine. `A-15` ayant **mutualisé à 30 s**, un chapitre `15` portant ces
+>    fenêtres ne produit **aucune durée concurrente**.
+> 2. L'exigence de « **exactement deux lignes** » porte sur le **seul** tableau
+>    des fenêtres du chapitre `07`, que le contrôle lit **dans ce chapitre-là**.
+>    Un chapitre `15` doté de son propre tableau ne le fait pas dériver.
+>
+> **C'est la mutualisation qui l'évite.** Une quatrième valeur, ou une ligne
+> supplémentaire dans le tableau du `07`, l'aurait rendu obligatoire.
+>
+> **L'amendement est retiré du contenu du lot `L2`** — voir
+> [`10_LOTS.md`](10_LOTS.md) §2.
+
+> ### Ce que `A-15` ajoute au lot, et qui remplace l'amendement retiré
+>
+> | Contrôle ou invariant | Action rendue |
+> |---|---|
+> | `ASP-INV-69` | **Extension de portée** aux fenêtres L2 — **aucune constante nouvelle** |
+> | `ASP-CI-20` | **Extension du périmètre** aux fichiers L2, avec interdiction de toute temporisation non contractualisée |
 
 ### 8.3 Deux fichiers L1 sont réellement touchés
 
@@ -530,6 +838,13 @@ de conduite.
 Porter la constante de 18 à un total qui dépend de A-10 et A-11 sans livrer
 conjointement les fichiers qui écrivent les valeurs nouvelles fait **échouer la
 CI immédiatement**.
+
+> **Précisé en V4.** Le total ne dépend plus d'un arbitrage : il vaut **34**, et
+> la répartition à écrire dans l'en-tête du fichier L1 est **16 présents · 2
+> absents · 18 valeurs de cycle de vie** (§3.3 bis). **L'indissociabilité n'en
+> est pas affaiblie** — elle est même renforcée : les seize valeurs nouvelles
+> étant désormais nommées, chacune doit avoir un écrivain **dans le même lot**,
+> sous peine d'échec d'atteignabilité.
 
 > **Il n'existe donc aucun lot de CI seul, et aucun ordonnancement où
 > l'amendement précéderait le runtime.** L'acte contractuel, l'amendement de

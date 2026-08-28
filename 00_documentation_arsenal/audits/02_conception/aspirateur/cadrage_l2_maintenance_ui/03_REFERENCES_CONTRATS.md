@@ -1,4 +1,15 @@
-# Références aux contrats Arsenal — **V3**
+# Références aux contrats Arsenal — **V4**
+
+> ### V4 — trois conséquences d'arbitrages sur cette table
+>
+> `A-6` et `A-9` nomment **deux chapitres contractuels futurs** — §1.1.
+> `A-12` impose une **exception nominative minimale** à `ASP-CI-11` — §3.1.
+> `A-15` établit que **`ASP-CI-10` n'a pas à être amendé** — §3.2.
+>
+> **Aucune référence existante n'est modifiée.** Les portées, invariants et
+> contrôles décrits ici restent ceux du dépôt **à la révision citée**, et sont
+> toujours exacts. Registre :
+> [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md).
 
 Chemins **relatifs à la racine du dépôt Arsenal**, à la révision
 `112ad3c3d64a619f8ec883dcd645ec0187d884bb`.
@@ -36,6 +47,33 @@ Quatorze fichiers, dont un index.
 | `11_frontiere_ui.md` | Interdits et obligations opposables à l'interface |
 | `12_identifiants_a_fournir.md` | Rôles abstraits ; `ASP-INV-58`, `ASP-INV-59` |
 | `13_hors_perimetre_arbitrages_et_questions_ouvertes.md` | `ARB-1` à `ARB-5`, `QO-1` à `QO-6` |
+
+### 1.1 Deux chapitres à créer — **livrables futurs, non écrits** *(V4)*
+
+Les arbitrages `A-6` et `A-9` retiennent, l'un et l'autre, la forme
+« **nouveau chapitre** ».
+
+| Chapitre | Objet | Lot porteur | Amendement conjoint |
+|---|---|---|---|
+| **`14_entretien.md`** | Périmètre à quatre éléments, plafonds, sens de variation, primitive de remise à zéro, vocabulaire du verdict d'entretien, invariants d'absence de remise à zéro automatique et de répétition, qualification du vidage | **M0** | chapitre `08` §6 — levée de l'exclusion des consommables, **minimale** |
+| **`15_conduite_et_supervision.md`** | Conduite, supervision, writers, vocabulaire de 34 valeurs, fenêtres de relecture L2 | **L2** | `ASP-INV-31` et `ASP-INV-42` — ouverture aux gestes de conduite, **minimale** |
+
+> **Ces deux fichiers n'existent pas et ne sont pas écrits par cet artefact.**
+> Ils sont **décrits** comme livrables de lot. Le présent dossier reste un
+> cadrage : il ne crée **aucun contrat normatif**.
+
+> **Conséquence mécanique commune, déjà généralisée en V3.** Le contrôle
+> transverse `check_ci_coverage_registry.py` **compte les `.md`** sous
+> `00_documentation_arsenal/contrats/` et confronte ce nombre au registre de
+> couverture. **Chaque chapitre nouveau fait dériver ce compte** : le registre
+> doit être mis à jour **dans le lot qui crée le chapitre**, séparément pour
+> `M0` et pour `L2`.
+
+> **Deux conséquences de périmètre à connaître.** Les chapitres `14` et `15`
+> entreront dans le balayage de `ASP-CI-3` — jetons majuscules entre accents
+> graves — et de `ASP-CI-10` — durées admises `{30, 60}`. Les deux pièges de
+> rédaction de [`10_LOTS.md`](10_LOTS.md) §3.5 s'appliquent donc à eux
+> **littéralement**.
 
 ### Invariants mobilisés par ce cadrage
 
@@ -174,6 +212,90 @@ niveau dont le nom correspond à `^\d{2}_`.
 >
 > *La V2 écrivait « tout le YAML du dépôt » — dans le tableau même qu'elle
 > introduisait pour donner « la portée exacte de chaque contrôle ».*
+
+### 3.1 Exception nominative à `ASP-CI-11` — **imposée par `A-12`** *(V4)*
+
+`A-12` retient une automation dédiée, `10280000000004`, déclenchée notamment par
+la transition du verdict vers `COMMANDE/ISSUE_NON_ETABLIE`. Elle doit donc
+**lire** `input_text.aspirateur_mission_verdict`, ce que `ASP-CI-11` refuse à
+tout fichier hors des cinq fichiers L1.
+
+| Portée de l'exception | Valeur |
+|---|---|
+| Bénéficiaire | **la seule** automation `10280000000004` |
+| Droit accordé | **lecture** du verdict |
+| Objet couvert | **la seule** transition vers `COMMANDE/ISSUE_NON_ETABLIE` |
+| Droit d'écriture | **aucun** — l'écrivain unique reste le moteur (`ASP-INV-31`) |
+
+> **C'est un amendement de CI, pas un amendement de contrat.** `ASP-INV-31` porte
+> sur l'**écriture vers l'appareil** et `ASP-CI-11` sur la **mention du helper** :
+> accorder une lecture ne touche aucun invariant. L'amendement vit dans le
+> checker, et il est **indissociable** de l'automation — livrer l'une sans
+> l'autre fait échouer la CI immédiatement. **Lot `U0`.**
+
+### 3.2 `ASP-CI-10` — **aucun amendement** *(V4)*
+
+La V3.2 inscrivait au lot `L2` un amendement **conditionnel** de ce contrôle,
+suspendu à `A-15`. **La condition ne se réalise pas**, pour deux raisons dont
+chacune suffit :
+
+1. Le contrôle n'admet que `{30, 60}` secondes sur **tous** les chapitres du
+   domaine. `A-15` ayant **mutualisé les quatre fenêtres L2 à 30 s**, aucun
+   chapitre nouveau ne produit de **durée concurrente**.
+2. L'exigence de « **exactement deux lignes** » porte sur le **seul** tableau des
+   fenêtres du chapitre `07`, que le contrôle lit **dans ce chapitre-là**. Un
+   chapitre `15` doté de son propre tableau ne le fait pas dériver.
+
+> **C'est la mutualisation qui l'évite.** Une quatrième valeur, ou une ligne
+> supplémentaire dans le tableau du `07`, l'aurait rendu obligatoire.
+
+**Ce qui remplace l'amendement retiré :** l'**extension de portée** de
+`ASP-INV-69` aux fenêtres L2, et l'**extension de périmètre** de `ASP-CI-20` aux
+fichiers L2 — l'une contractuelle, l'autre mécanique.
+
+> **La fenêtre Maintenance rendue par `A-2` ne change pas cette conclusion.**
+> Elle vaut **30 s** — la même valeur —, de sorte que le domaine conserve
+> **deux constantes temporelles, et deux seulement**. `ASP-CI-10` reste
+> inchangé, et l'ensemble de valeurs de `ASP-INV-69` aussi ; seule sa **portée**
+> s'étend. La garde mécanique de cette fenêtre relève du même amendement de
+> `ASP-CI-20`, dont le périmètre doit couvrir le fichier qui la porte — **une
+> rédaction de lot, pas un arbitrage**, et qui ne peut faire apparaître aucune
+> durée nouvelle.
+
+### 3.3 `ASP-CI-28` — le contrôle à créer, imposé par `A-13` *(V4)*
+
+`A-13` retient un **contrôle dédié**, ajouté au checker Aspirateur **existant** —
+ni extension de `ASP-CI-21`, ni checker autonome.
+
+| Point | Valeur |
+|---|---|
+| Identifiant | **`ASP-CI-28`** |
+| Fichier hôte | `scripts/arsenal_contracts/check_aspirateur_contracts.py` |
+| Objet confronté | les **quatorze** booléens de segment, leurs **paires canoniques**, leur **appartenance aux cartes**, leurs **libellés Arsenal**, le chapitre `02` et le **référentiel embarqué** du moteur L1 |
+| Tolérance | **aucune** — ni entrée supplémentaire, ni manquante, ni divergente |
+| Lot porteur | **U0** |
+
+> **`ASP-CI-28` est vérifié libre, et non supposé.** Le checker déclare
+> `ASP-CI-1` à `ASP-CI-27` **sans trou** ; **aucun** des quatorze chapitres de
+> contrat ne cite d'identifiant `ASP-CI` ; et aucune occurrence de `ASP-CI-28`
+> ou au-delà n'existe ailleurs dans le dépôt.
+
+> **Deux effets de bord que ce véhicule évite.**
+>
+> **① `ASP-CI-21` n'est pas touché.** Ce contrôle travaille sur `RUNTIME_FICHIERS`,
+> **liste de cinq fichiers figée en dur** et **partagée par les onze contrôles de
+> conduite `ASP-CI-11` à `ASP-CI-21`**. L'élargir pour y loger des booléens
+> d'interface aurait modifié le périmètre de tous ces contrôles à la fois.
+>
+> **② Le registre de couverture ne dérive pas.** Un checker **autonome** aurait
+> porté le dépôt de **88** à **89** checkers, imposant la mise à jour de
+> `REGISTRE_COUVERTURE_VERIFICATION.md` **et** l'enregistrement du fichier dans
+> `.github/workflows/contracts_all.yml`, sous peine d'erreur dure de
+> `check_ci_coverage_registry.py`. **Un contrôle interne ne touche ni le nombre
+> de checkers, ni les workflows.**
+>
+> Le lot `U0` reste tenu de **rejouer le checker et son auto-test** : le contrôle
+> nouveau doit y apparaître comme les vingt-sept autres.
 
 ### Conclusion opposable — **restreinte en V2, portée précisée en V3**
 

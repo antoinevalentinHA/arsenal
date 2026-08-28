@@ -1,40 +1,54 @@
-# Manifeste d'intégrité — **V3.2**
+# Manifeste d'intégrité — **V4**
 
-**Artefact :** cadrage du domaine Aspirateur Arsenal, **version 3.2**
-**Relevés d'instance :** 2026-08-27 · **Artefact V3.2 constitué le :** 2026-08-28
-**Révision de dépôt de référence :** `112ad3c3d64a619f8ec883dcd645ec0187d884bb`
+**Artefact :** cadrage du domaine Aspirateur Arsenal, **version 4**
+**Relevés d'instance :** 2026-08-27 · **Artefact V4 constitué le :** 2026-08-28
+**Révision de dépôt de référence :** `3ce2c46eb34c2dd33d0aa11dae1a264571da1a07`
 **Algorithme :** SHA-256, sur les octets bruts du fichier
 
-> **Ce qu'est la V3.2, en une phrase.**
-> **La V3.1, corrigée du seul finding `F-1` de l'audit du commit** — un
-> compteur d'arbitrages resté à « quatorze » dans la table de contenu du
-> `README.md` — **et des deux libellés de version courante** signalés avec lui.
-> **Aucune autre différence.**
+> **Ce qu'est la V4, en une phrase.**
+> **La V3.2, augmentée des quinze arbitrages rendus par l'opérateur** — quatorze
+> totalement, un partiellement — **et de quatre décisions acquises nouvelles**,
+> `D-40` à `D-43`.
 
-> **Ce que la V3.2 ne touche pas.**
-> **Un seul fichier couvert change : `README.md`.** Les **treize autres** sont
-> **strictement identiques à la V3.1**, empreintes comprises. Le présent
-> manifeste change lui aussi, mais **uniquement** pour le rescellement du
-> `README.md`, la mise à jour des totaux et la description de la version
-> courante — **aucune autre empreinte n'est modifiée**.
+> **Nature : intégration de décisions, non correction d'audit.** Les versions V2
+> à V3.2 corrigeaient des findings. **La V4 n'en corrige aucun.** Aucun constat
+> des versions V1 à V3.2 n'est réécrit : là où un arbitrage rendu falsifie un
+> énoncé antérieur, l'énoncé est **conservé, encadré et daté**.
+
+> **Portée exacte du rescellement.** **Toutes** les lignes du §2 sont
+> recalculées, et le tableau passe de **quatorze** à **seize** fichiers.
 >
-> Aucune correction de contenu métier. Aucun arbitrage rendu. Aucune référence
-> historique à V1, V2, V3 ou V3.1 n'est réécrite lorsqu'elle désigne réellement
-> une étape antérieure.
+> | Catégorie | Nombre | Fichiers |
+> |---|---|---|
+> | **Nouveaux** | **2** | `11_ARBITRAGES_RENDUS.md`, `DELTA_V3_2_V4.md` |
+> | **Modifiés** | **10** | `00`, `01`, `02`, `03`, `06`, `07`, `08`, `09`, `10`, `README.md` |
+> | **Inchangés, empreinte V3.2 reconduite** | **4** | `04_REFERENCES_SOURCES.md`, `05_DIAGNOSTICS_SANITISES.md`, `DELTA_AUDIT_V1_V2.md`, `DELTA_AUDIT_V2_V3.md` |
+>
+> Les quatre empreintes reconduites sont **identiques, caractère pour
+> caractère**, à celles de la V3.2 : c'est vérifiable en les comparant au
+> manifeste précédent, et c'est la preuve qu'aucun fait de source, aucun relevé
+> et aucun record historique d'audit n'a été touché.
 
-> **Rappel de généalogie.** La **V3.1** était la V3 normalisée en fins de ligne
-> `LF`, augmentée des corrections `R-2` à `R-5` du contrôle documentaire final
-> et de l'annotation de levée de la réserve de chaîne de garde.
+> **Rappel de généalogie.** La **V3.2** était la V3.1 corrigée du seul finding
+> `F-1` de l'audit du commit. La **V3.1** était la V3 normalisée en fins de ligne
+> `LF`, augmentée des corrections `R-2` à `R-5` et de l'annotation de levée de la
+> réserve de chaîne de garde.
 
-**Nature :** strictement **corrective et mécanique**.
-**Aucun arbitrage rendu. Aucun identifiant nouveau préattribué. Aucune durée
-choisie. Aucun writer désigné pour la clôture disputée.**
+**Ce que la V4 ne fait pas :**
+**aucun contrat normatif créé** — `14_entretien.md` et
+`15_conduite_et_supervision.md` restent des livrables futurs **décrits** ;
+**aucun identifiant inventé** — les quatre identifiants d'automation sont
+**donnés par l'opérateur** ; **aucune durée ajoutée** — le domaine reste à
+`{30 s, 60 s}` ; **aucune couleur ni valeur d'état choisie** pour la tuile
+Aspirateur ; **aucun fichier de runtime, de CI ou de Lovelace touché** ;
+**aucune implémentation** — la ratification du 2026-08-28 n'en autorise aucune
+hors du périmètre et des dépendances propres à chaque lot.
 
 ---
 
 ## 1. Portée et chaîne de garde
 
-Ce manifeste couvre les **quatorze fichiers de contenu** de l'artefact.
+Ce manifeste couvre les **seize fichiers de contenu** de l'artefact.
 Il **ne se couvre pas lui-même** — c'est arithmétiquement impossible.
 
 > **L'intégrité du manifeste est couverte, transitivement, par l'empreinte de
@@ -44,7 +58,12 @@ Il **ne se couvre pas lui-même** — c'est arithmétiquement impossible.
 **Ordre de vérification attendu.**
 
 1. Vérifier l'empreinte de **l'archive**, transmise hors bande.
-2. Extraire, puis vérifier les quatorze empreintes du §2.
+2. Extraire, puis vérifier les seize empreintes du §2.
+
+> **Voie de vérification supplémentaire, ouverte en V4.** L'artefact vivant
+> désormais dans le dépôt Arsenal, les seize empreintes se vérifient **aussi**
+> directement contre l'arbre Git, sans archive. Les deux voies doivent donner le
+> même résultat ; si elles divergent, c'est le dépôt qui fait foi.
 
 ### 1.1 Réserve de chaîne de garde — **LEVÉE**
 
@@ -80,31 +99,30 @@ Il **ne se couvre pas lui-même** — c'est arithmétiquement impossible.
 **Toutes les empreintes ci-dessous sont calculées sur les octets `LF`
 réellement destinés au dépôt.**
 
-> **Rescellement V3.2 — portée exacte.** Seule la ligne **14**, `README.md`, est
-> recalculée : **12 505 → 12 735 octets**, **241 → 246 lignes**, empreinte
-> nouvelle. **Les treize autres lignes sont reprises à l'identique de la V3.1**,
-> et les totaux du bas sont mis à jour en conséquence.
-
 | # | Fichier | Octets | Lignes | SHA-256 |
 |---|---|---|---|---|
-| 1 | `00_CADRAGE.md` | 12 920 | 254 | `f926843495992906d522b35a4d01f7d8807ea4e723594456fc7955b8547fa97f` |
-| 2 | `01_DECISIONS_ACQUISES.md` | 6 959 | 136 | `d5deaa8531bc607645b50772e5e76342c22630cdfe02ef561efbd808a3ab13d0` |
-| 3 | `02_ARBITRAGES_OUVERTS.md` | 21 893 | 478 | `d32aee00f17c4d090865eabbae1c75a97ea29ff601247c544d04b20e20683c70` |
-| 4 | `03_REFERENCES_CONTRATS.md` | 17 025 | 241 | `eaef24ba0a36732f2a30c738d6421118ac2393ba8094246f4b5c409d9fafae24` |
-| 5 | `04_REFERENCES_SOURCES.md` | 14 353 | 341 | `e2629e6fdf5c97d3ebc1e2f6f4c5859a993c678809a8ef90ce699edf0e47bbf6` |
-| 6 | `05_DIAGNOSTICS_SANITISES.md` | 11 214 | 293 | `87462fa9e3da4a8adc0df716344e538637a826e1ab087656c4af5b4e8697c9cd` |
-| 7 | `06_ENTITES_ENTRETIEN.md` | 10 196 | 192 | `4f464b253702b6ca1bd67c2b5a15d50b10c508e9f0c199a4c8a5d07918c1cfff` |
-| 8 | `07_MACHINE_L2.md` | 31 286 | 584 | `934c7225f1304320b4ce1efca11c6497ebd3056ebbf9a3f5949dd0595eac999d` |
-| 9 | `08_NOTIFICATIONS.md` | 12 333 | 249 | `7cf82350ca663e0604281a64153c69de8202d545d0232311fd488386f1a9f876` |
-| 10 | `09_UI.md` | 14 495 | 298 | `7354e7a61881d74733753521259dbc371c32bbf87864fbcdbc3a31f1e8e39c63` |
-| 11 | `10_LOTS.md` | 10 674 | 194 | `09090d3463572151ea255f804a0fd307997bce838780121c3119baacf19d492f` |
-| 12 | `DELTA_AUDIT_V1_V2.md` | 20 594 | 363 | `ae1ac2dff3125c9cb975753c9cb10257a5cdc57824bd62a55b21aeb9cacd97d7` |
-| 13 | `DELTA_AUDIT_V2_V3.md` | 22 907 | 380 | `38f7c578d8045c6f66acc633bd2c1cddc043af4fdede4046ea0f9fbf88b2b014` |
-| 14 | `README.md` | 12 735 | 246 | `06d0bff8c8a706e2ef6c25136f22182614ca2ba575a920c161741e1e402db478` |
+| 1 | `00_CADRAGE.md` | 16 715 | 318 | `7ba6f6f6d74cc283327ccef3be21f20ece7f507c61c304f8904bb06a61be6cdb` |
+| 2 | `01_DECISIONS_ACQUISES.md` | 14 836 | 260 | `d3fce9bdcf178e6b574ac5356b20cb868fe996b50f6cb1de45c8069b95caaaef` |
+| 3 | `02_ARBITRAGES_OUVERTS.md` | 35 315 | 711 | `e940e8a196f0a187473392f561b3b68c87ae036cb4ad6d21eb683690e546329e` |
+| 4 | `03_REFERENCES_CONTRATS.md` | 23 957 | 363 | `67c2c157058d29a44aa359e61ec27a3eb44c400cc628d78e96f36ddd3c409093` |
+| 5 | `04_REFERENCES_SOURCES.md` | 14 353 | 341 | `e2629e6fdf5c97d3ebc1e2f6f4c5859a993c678809a8ef90ce699edf0e47bbf6` |
+| 6 | `05_DIAGNOSTICS_SANITISES.md` | 11 214 | 293 | `87462fa9e3da4a8adc0df716344e538637a826e1ab087656c4af5b4e8697c9cd` |
+| 7 | `06_ENTITES_ENTRETIEN.md` | 14 634 | 267 | `ebdce95ae884726e6608195f3c87c8e0c8c91ed20967e721c6ce423d15556c8c` |
+| 8 | `07_MACHINE_L2.md` | 48 554 | 899 | `482781cbeb1d2c52951b4603ceb815c9f1154c6d6a6716f8f0da3250b0ec3457` |
+| 9 | `08_NOTIFICATIONS.md` | 16 291 | 323 | `3f1b96874c46819a0fc7b121e015b4c12fa4f9c7a72e8d8816a551281e516389` |
+| 10 | `09_UI.md` | 38 534 | 703 | `86e99d8b8135fb9a84c9ac298ed6637f74b054d3f5d50d170c6eb545aa096457` |
+| 11 | `10_LOTS.md` | 23 219 | 373 | `a07f7ae907611e61c4327a90fae099a2460c35940832f803aabadaa5f7c52f69` |
+| 12 | `11_ARBITRAGES_RENDUS.md` | 44 882 | 795 | `1a7c8341b4f5e2314dd8325b7ea847f27b6d4530599768fdeb2b18800160a36c` |
+| 13 | `DELTA_AUDIT_V1_V2.md` | 20 594 | 363 | `ae1ac2dff3125c9cb975753c9cb10257a5cdc57824bd62a55b21aeb9cacd97d7` |
+| 14 | `DELTA_AUDIT_V2_V3.md` | 22 907 | 380 | `38f7c578d8045c6f66acc633bd2c1cddc043af4fdede4046ea0f9fbf88b2b014` |
+| 15 | `DELTA_V3_2_V4.md` | 18 610 | 312 | `f476dedd323477ee66bd2493968e79c8f98a25d156d2dd3682a9794fe8ddee36` |
+| 16 | `README.md` | 21 297 | 366 | `c45b4142fb275c46d890585aca23a3bd29e61367928c1a8c1900eee6d3e8fd23` |
 
-**Total couvert par ce manifeste : 14 fichiers, 219 584 octets, 4 249 lignes.**
+**Total couvert par ce manifeste : 16 fichiers, 385 912 octets, 7 067 lignes.**
 
-*(L'artefact complet compte **15 entrées**, ce manifeste inclus.)*
+*(L'artefact complet compte **17 entrées**, ce manifeste inclus.)*
+
+> **Décompte V3.2, pour mémoire :** 14 fichiers, 219 584 octets, 4 249 lignes.
 
 ---
 
@@ -112,8 +130,8 @@ réellement destinés au dépôt.**
 
 | Propriété | Valeur | Contrôle mené |
 |---|---|---|
-| Encodage | **UTF-8** | décodage strict des quinze fichiers, sans erreur |
-| Fins de ligne | **`LF` uniquement** | **zéro octet `CR`** dans les quinze fichiers |
+| Encodage | **UTF-8** | décodage strict des dix-sept fichiers, sans erreur |
+| Fins de ligne | **`LF` uniquement** | **zéro octet `CR`** dans les dix-sept fichiers |
 | Marque d'ordre d'octets | **absente** | les trois premiers octets de chaque fichier vérifiés |
 
 > **Pourquoi cette section existe.** Le manifeste de la V3 déclarait `LF` alors
@@ -128,6 +146,9 @@ réellement destinés au dépôt.**
 >
 > **En V3.1, la déclaration et les octets coïncident** — et le manifeste atteste
 > **exactement les fichiers destinés au dépôt**, non une archive distincte.
+> **En V4, les dix-sept fichiers sont vérifiés un à un**, et les quatre fichiers
+> inchangés reconduisent leur empreinte V3.2 à l'identique, ce qui **prouve**
+> que la normalisation n'a pas dérivé depuis.
 
 ---
 
@@ -136,17 +157,17 @@ réellement destinés au dépôt.**
 Depuis la racine de l'artefact, sur un système disposant de `sha256sum` :
 
 ```bash
-sha256sum 00_CADRAGE.md 01_DECISIONS_ACQUISES.md 02_ARBITRAGES_OUVERTS.md 03_REFERENCES_CONTRATS.md 04_REFERENCES_SOURCES.md 05_DIAGNOSTICS_SANITISES.md 06_ENTITES_ENTRETIEN.md 07_MACHINE_L2.md 08_NOTIFICATIONS.md 09_UI.md 10_LOTS.md DELTA_AUDIT_V1_V2.md DELTA_AUDIT_V2_V3.md README.md
+sha256sum 00_CADRAGE.md 01_DECISIONS_ACQUISES.md 02_ARBITRAGES_OUVERTS.md 03_REFERENCES_CONTRATS.md 04_REFERENCES_SOURCES.md 05_DIAGNOSTICS_SANITISES.md 06_ENTITES_ENTRETIEN.md 07_MACHINE_L2.md 08_NOTIFICATIONS.md 09_UI.md 10_LOTS.md 11_ARBITRAGES_RENDUS.md DELTA_AUDIT_V1_V2.md DELTA_AUDIT_V2_V3.md DELTA_V3_2_V4.md README.md
 ```
 
-Les quatorze empreintes doivent correspondre **exactement** au tableau du §2.
+Les seize empreintes doivent correspondre **exactement** au tableau du §2.
 Toute divergence invalide l'artefact.
 
-> **Transport.** L'artefact étant désormais en `LF`, la règle `*.md text eol=lf`
-> du dépôt le laisse **inchangé octet pour octet** à l'écriture. Une archive
-> binaire reste néanmoins le mode de transport recommandé : un copier-coller par
-> un éditeur en mode Windows réintroduirait des `CRLF` et invaliderait les
-> quatorze empreintes.
+> **Transport.** L'artefact étant en `LF`, la règle `*.md text eol=lf` du dépôt
+> le laisse **inchangé octet pour octet** à l'écriture. Une archive binaire
+> reste néanmoins le mode de transport recommandé : un copier-coller par un
+> éditeur en mode Windows réintroduirait des `CRLF` et invaliderait les seize
+> empreintes.
 
 ---
 
@@ -159,10 +180,14 @@ Toute divergence invalide l'artefact.
 | Identifiants d'appareil, clés, jetons, numéros de série | **aucun** |
 | Chemins absolus propres à une machine | **aucun** |
 | Trace complète de diagnostic | **aucune** |
-| Fichier du dépôt Arsenal modifié | **aucun** |
+| Fichier du dépôt Arsenal modifié **hors de ce dossier** | **un seul** — `00_documentation_arsenal/audits/index.md`, entrée de navigation documentaire |
 | Patch d'implémentation | **aucun** |
-| Identifiants d'automation cités | **un seul** — `10280000000001`, acquis |
-| Documents PDF, archives historiques | **aucun** — l'artefact ne contient que les quinze `.md` |
+| Contrat normatif créé | **aucun** — `14_entretien.md` et `15_conduite_et_supervision.md` sont **décrits**, non écrits |
+| Identifiants d'automation cités | **quatre** — `…01` à `…04`, **tous attribués par l'opérateur** |
+| Identifiant de contrôle CI désigné | **un** — `ASP-CI-28`, **vérifié libre** contre le checker, les chapitres de contrat et le dépôt entier |
+| Identifiant inventé par l'artefact | **aucun** — `ASP-INV-58` |
+| Durée introduite au-delà de `{30 s, 60 s}` | **aucune** |
+| Documents PDF, archives historiques | **aucun** — l'artefact ne contient que les dix-sept `.md` |
 
 Les seuls chemins cités sont **relatifs à la racine du dépôt Arsenal**.
 
@@ -172,23 +197,39 @@ Les seuls chemins cités sont **relatifs à la racine du dépôt Arsenal**.
 
 | Compteur | Valeur | Source de vérité |
 |---|---|---|
-| Décisions `D-xx` | **39** | `01_DECISIONS_ACQUISES.md` §G |
+| Décisions `D-xx` | **44** | `01_DECISIONS_ACQUISES.md` §G |
 | Règles de redémarrage `D-Rx` | **5** | idem |
-| **Total des décisions acquises** | **44** | idem |
+| **Total des décisions acquises** | **49** | idem |
+| — dont ajoutées en V4 | **5** | `D-40` → `D-43` *(bloc `E bis`)* et **`D-44`** *(bloc `G bis`, ratification)* |
+| — décisions **supersédées**, conservées et datées | **2** | `D-37` *(clause d'antériorité)* · `D-38` *(en totalité)* — autorité reportée sur `D-44` |
 | Vidage et Maintenance réunis, `D-12` → `D-25` | **14** | idem |
-| **Arbitrages ouverts** | **15** | `02_ARBITRAGES_OUVERTS.md` |
-| — inchangés | 9 | `A-1`, `A-5`, `A-6`, `A-7`, `A-8`, `A-9`, `A-10`, `A-13`, `A-14` |
-| — reformulés en V2 | 2 | `A-2`, `A-4` |
-| — reformulés en V3 | 2 | `A-3`, `A-11` |
-| — ajouté en V3 | 1 | `A-15` |
+| **Arbitrages** | **15** | `02_ARBITRAGES_OUVERTS.md`, `11_ARBITRAGES_RENDUS.md` |
+| — **totalement rendus** | **14** | `A-1`, `A-2`, `A-3`, `A-4`, `A-6`, `A-7`, `A-8`, `A-9`, `A-10`, `A-11`, `A-12`, `A-13`, `A-14`, `A-15` |
+| — **partiellement rendus** | **1** | `A-5` *(icônes, cinq raccourcis)* |
+| — **non rendus** | **0** | — |
 | **Rôles d'automation** | **4** | `07_MACHINE_L2.md` §7 |
-| **Automations** | **3 ou 4** | conditionnel à `A-12` — §7.1 |
-| — identifiants acquis | **1** | `10280000000001`, décision `D-04` |
-| — identifiants nouveaux **certains** | **2** | les deux projections |
-| — identifiant nouveau **conditionnel** | **1** | seulement si `A-12` retient l'automation dédiée |
+| **Automations** | **4** | conditionnalité levée par `A-12` |
+| — identifiants attribués | **4** | `10280000000001` … `10280000000004` |
+| — identifiants restant à attribuer | **0** | — |
+| **Vocabulaire de verdict** | **34** | **arrêté** — `07_MACHINE_L2.md` §3.3 bis |
+| — répartition par writer | **18 · 11 · 5** | idem |
+| — codes du catalogue présents / absents | **16 / 2** | idem |
+| — valeurs de cycle de vie | **18** | 34 − 16 |
+| — partition `O` / `O-R` / `T` / `H` | **8 / 1 / 8 / 17** | `07_MACHINE_L2.md` §4.4 |
+| **Constantes temporelles du domaine** | **2** — 30 s et 60 s | inchangé — `ASP-INV-69`, portée étendue à L2 ; **L2 et Maintenance emploient la même valeur de 30 s** |
+| **Contrôles de CI du domaine**, actuels / après lot | **27 / 28** | `ASP-CI-28` retenu pour `A-13`, dans le checker existant — **aucun checker nouveau**, aucune dérive du registre |
+| **Postes d'entretien dus au relevé**, seuil 10 % | **0 sur 4** | `06_ENTITES_ENTRETIEN.md` §4.1 |
+| **Tuiles de Navigation**, avant / après | **20 / 20** | `09_UI.md` §5.3.1 |
 | Lots proposés | **8** | `10_LOTS.md` |
-| — dont engageables | **0** | aucun : le cadrage n'est pas ratifié |
-| **Vocabulaire de verdict** | **30, 31, 32 ou 33** | **non arrêté** — matrice `A-10` × `A-11` volet 2 |
+| — bloqués par un arbitrage | **0** | `10_LOTS.md` §5.1 |
+| — `ENGAGEABLE` | **3** | `M0` · `L2` · `U1` — `10_LOTS.md` §5.2 |
+| — `ENGAGEABLE SOUS CONDITION` | **3** | `M1` · `M2` · `N1` — dépendance d'ordre du §3 |
+| — `BLOQUÉ` | **2** | `U0` · `U2` — consomment un choix resté ouvert |
+| Points restés ouverts | **7** | `11_ARBITRAGES_RENDUS.md` §7 |
+| — dont **non bloquants** pour tout lot | **1** | point `7`, réduit à son second volet — ordre et regroupement des lots |
+| — relevant encore d'un arbitrage partiel | **2** | `A-5` — icônes, cinq raccourcis |
+| — valeurs de conception restantes | **4** | §7.2 |
+| — volet posé le 2026-08-28 | **1** | la **ratification**, premier volet du point `7` — `D-44` |
 | Findings de l'audit initial | **27** | `DELTA_AUDIT_V1_V2.md` — 24 corrigés, 3 sans correction |
 | Points du réaudit delta | **12** | `DELTA_AUDIT_V2_V3.md` — `M-6` + `N-1` à `N-11`, tous traités |
 | Réserves du contrôle final | **5** | `R-1` → `R-5`, **toutes traitées en V3.1** |
@@ -199,12 +240,15 @@ Les seuls chemins cités sont **relatifs à la racine du dépôt Arsenal**.
 
 | Élément | État |
 |---|---|
-| Cadrage | **V3.2, NON RATIFIÉE** |
+| Cadrage | **V4, RATIFIÉE le 2026-08-28** — décision `D-44` |
 | Fins de ligne | **`LF` — attestées et vérifiées** |
-| Décisions opérateur | **44 acquises, inchangées depuis la V1** |
-| Arbitrages ouverts | **15, aucun rendu** |
-| Choix implicite sur `A-11`, `A-12`, `A-15` | **aucun** — `R-3b` en a retiré un qui subsistait |
-| Lots | **proposés, non ratifiés, aucun engageable** |
-| Implémentation | **aucune** |
-| Identifiants nouveaux préattribués | **aucun** |
+| Décisions opérateur | **48 acquises** — 44 depuis la V1, **4 ajoutées en V4** |
+| Arbitrages | **15 rendus** — 14 totalement, 1 partiellement, **0 non rendu** |
+| Choix implicite sur `A-11`, `A-12`, `A-15` | **aucun** — les trois sont rendus **explicitement**, et leur dérivation est écrite |
+| Arbitrage rendu au-delà du mandat opérateur | **aucun** — contrôle `C4 ter` du `README.md` |
+| Lots | **3 engageables · 3 sous condition · 2 bloqués** — aucun engagé |
+| Implémentation | **aucune** — `D-44` n'en autorise aucune hors lot |
+| Ratification | **`D-44`, 2026-08-28** — autorité **unique** ; `D-37` et `D-38` conservées, datées, supersédées |
+| Contrat normatif créé | **aucun** |
+| Identifiants inventés par l'artefact | **aucun** |
 | Réserve de chaîne de garde | **levée** — §1.1 |

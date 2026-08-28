@@ -1,4 +1,12 @@
-# Architecture des notifications — **V3**
+# Architecture des notifications — **V4**
+
+> **V4 — deux arbitrages rendus s'appliquent à ce fichier.**
+> **`A-8`** fixe le routage des erreurs de robot et de dock : le §6 le consigne
+> et le §5 en tire la conséquence. **`A-1`** fixe le seuil d'échéance à
+> **restant ≤ 10 %**, ce qui **falsifie** la conséquence de déploiement annoncée
+> au §4.4 : celle-ci est **datée et recalculée**. **Aucune contrainte de forme,
+> aucun contrôle `T1` à `T6`, aucun canal n'est modifié.**
+> Registre des décisions : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md).
 
 > **Aucune correction V3 sur ce fichier.**
 
@@ -170,12 +178,41 @@ satisfaite. La seule façon de faire disparaître durablement la notification es
 de **solder l'entretien** — solde confirmé par relecture du compteur, non
 déclaré sur parole.
 
-### 4.4 Conséquence connue du déploiement
+### 4.4 Conséquence connue du déploiement — **recalculée en V4**
 
-L'élément « nettoyage des capteurs » est consommé à **86,6 %**. Tout seuil
-raisonnable rendra la notification **immédiatement due**. Ce n'est pas une
-notification de test — c'est une projection d'état réelle et légitime — mais
-il faut le savoir avant de déployer. Voir arbitrage **A-1**.
+> ### ⚠ Passage caduc — conservé pour l'historique, annoté en V4
+>
+> > L'élément « nettoyage des capteurs » est consommé à **86,6 %**. Tout seuil
+> > raisonnable rendra la notification **immédiatement due**. Ce n'est pas une
+> > notification de test — c'est une projection d'état réelle et légitime — mais
+> > il faut le savoir avant de déployer. Voir arbitrage **A-1**.
+>
+> **Faux au seuil rendu.** `A-1` fixe l'échéance à **restant ≤ 10 %**, et le
+> poste est à **13,38 %** de restant au relevé : il est **au-dessus** du seuil.
+
+**État réel au seuil rendu, sur le relevé du 2026-08-27**
+([`06_ENTITES_ENTRETIEN.md`](06_ENTITES_ENTRETIEN.md) §4.1) :
+
+| Poste | % restant | Dû ? |
+|---|---|---|
+| Nettoyage des capteurs | 13,38 % | **non** — marge **1,01 h** de nettoyage |
+| Brosse principale | 26,56 % | non — marge 49,69 h |
+| Filtre | 44,68 % | non — marge 52,02 h |
+| Brosse latérale | 92,82 % | non — marge 165,64 h |
+
+> **Aucun des quatre postes n'est dû.** Au déploiement, la liste des éléments dus
+> serait donc **vide**, le témoin binaire **faux**, et **aucune notification
+> persistante ne serait créée**.
+>
+> **Ce que cela change pour le lot `N1`.** Il **cesse d'être** le seul lot qui
+> crée une notification dès son déploiement. Il en créera une **tôt** — la marge
+> du poste « capteurs » est d'environ **une heure de nettoyage effectif** — mais
+> le moment dépend de l'usage réel, que l'artefact n'observe pas et ne prédit
+> pas.
+>
+> **Ce que cela ne change pas.** La conception du §4.2 est inchangée : la
+> projection ne se réveille qu'au **franchissement de seuil**, et c'est ce
+> franchissement, non le déploiement, qui créera la notification.
 
 ---
 
@@ -183,6 +220,10 @@ il faut le savoir avant de déployer. Voir arbitrage **A-1**.
 
 **Réservé aux événements** : `ECHEC/MISSION_INTERROMPUE` et
 `ECHEC/ERREUR_EN_MISSION`.
+
+> **Précision V4, par `A-8`.** S'y ajoute l'**erreur de dock observée pendant
+> une mission**, routée vers ce même canal. **Hors mission, rien n'est ajouté.**
+> Voir §6.1.
 
 **Jamais** pour : une échéance d'entretien (D-29, et interdiction contractuelle
 du push pour un état durable), une clôture nominale, une clôture confirmée,
@@ -235,6 +276,39 @@ nominales vers le canal d'alerte robot/dock déjà décidé.
 
 **Reste ouvert :** une erreur de dock justifie-t-elle un envoi **mobile**, ou
 seulement le refus de lancement déjà en place ? Arbitrage **A-8**.
+
+### 6.1 `A-8` — rendu en V4
+
+> **La réponse est conditionnée à la mission, et non à la nature de l'erreur.**
+>
+> | Contexte | Routage |
+> |---|---|
+> | **Pendant une mission Arsenal** | Erreur robot **ou** erreur de dock → **notification mobile** |
+> | **Hors mission** | **Aucune notification ajoutée** — ni mobile, ni persistante |
+
+**Pourquoi cette ligne de partage est cohérente avec le contrat.** Le canal
+mobile est réservé aux **événements** (`D-28`, §1). Une erreur survenant
+**pendant une mission** en est un : elle interrompt un cycle en cours et appelle
+une décision. Hors mission, la même valeur du témoin décrit un **état durable**
+— et un état durable ne se pousse pas (contrat Notifications, §5).
+
+**Ce que cela ajoute au périmètre du canal mobile.** Le §5 réservait ce canal à
+`ECHEC/MISSION_INTERROMPUE` et `ECHEC/ERREUR_EN_MISSION`. L'erreur de **dock**
+observée en mission y entre désormais, au même titre que l'erreur robot — ce que
+`D-16` autorisait déjà, faute d'arbitrage sur le routage.
+
+**Ce que cela n'ajoute pas.** Hors mission, **rien** : ni canal, ni entité, ni
+automation, ni identifiant de notification. Le refus de lancement déjà en place
+reste la seule restitution, et le moteur L1 lit **déjà** le témoin.
+
+> **Cet arbitrage ne porte que sur les notifications.** La décision `D-43`
+> l'énonce explicitement : hors mission, un état réclamant une intervention
+> **reste rouge dans Navigation**. Ne pas notifier n'est pas ne pas restituer.
+
+> **Les deux bornes d'honnêteté du §6 restent entières.** Un vidage **en cours**
+> n'est toujours pas observable, et **aucune alerte d'absence de vidage** ne doit
+> être construite. `A-8` route une **erreur observée** ; il ne crée aucune
+> observation nouvelle.
 
 ---
 
