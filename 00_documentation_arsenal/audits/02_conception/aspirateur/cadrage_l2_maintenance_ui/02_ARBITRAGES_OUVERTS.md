@@ -1,25 +1,69 @@
-# Arbitrages ouverts — **quinze**
+# Arbitrages ouverts — **quinze** — **rendus en V4**
 
-Ces points **ne sont pas tranchés**. Ils sont isolés plutôt que comblés par
-déduction. **Aucun n'est rendu par ce document.**
+> ### ⚠ Statut du fichier, changé en V4
+>
+> **Les quinze arbitrages sont rendus** — **quatorze totalement**, **un
+> partiellement** (`A-5`, sur ses seules icônes et ses cinq raccourcis). Le
+> registre des décisions rendues est
+> [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md).
+>
+> **Ce fichier n'est pas réécrit.** Il reste le texte qui **pose** les quinze
+> arbitrages, avec leur analyse, leurs faits établis et leurs coûts comparés —
+> c'est cela qui **motive** les décisions rendues, et cela se conserve. Chaque
+> arbitrage reçoit seulement une **bannière de statut**. **Aucun énoncé n'est
+> supprimé.**
+>
+> Là où un arbitrage rendu **falsifie** un fait avancé ici, la bannière le dit et
+> le date ; elle ne corrige pas le texte sous elle.
+
+Ces points **n'étaient pas tranchés** à la V3.2. Ils étaient isolés plutôt que
+comblés par déduction.
 
 La V1 en annonçait huit ; l'audit initial en a établi quatorze ; le réaudit
 delta de la V2 en a établi **quinze**.
 
-| Statut | Références |
-|---|---|
-| **Inchangés** | `A-1` · `A-5` · `A-6` · `A-7` · `A-8` · `A-9` · `A-10` · `A-13` · `A-14` |
-| **Reformulés en V2** | `A-2` · `A-4` |
-| **Reformulés en V3** | `A-3` *(décompte conditionnel)* · `A-11` *(second volet)* |
-| **Ajouté en V3** | **`A-15`** |
+| Statut de rédaction | Nombre | Références |
+|---|---|---|
+| **Inchangés** | 10 | `A-1` · `A-5` · `A-6` · `A-7` · `A-8` · `A-9` · `A-10` · **`A-12`** · `A-13` · `A-14` |
+| **Reformulés en V2** | 2 | `A-2` · `A-4` |
+| **Reformulés en V3** | 2 | `A-3` *(décompte conditionnel)* · `A-11` *(second volet)* |
+| **Ajouté en V3** | 1 | **`A-15`** |
+| **Total** | **15** | l'ensemble des quinze, **chacun exactement une fois** |
 
-> **Aucun des quinze n'est rendu par le présent artefact.**
+> **Ce que cette table dit, et qu'elle ne disait pas assez.** Elle est
+> **centrée sur la V3** : « Inchangés » signifie **non touchés par la V3**, et
+> non « présents depuis la V1 ». `A-9`, `A-10`, `A-12`, `A-13` et `A-14` ont été
+> **ouverts en V2** et n'ont pas été retouchés en V3 : ils relèvent donc bien de
+> cette ligne. Le récapitulatif de fin de fichier donne, lui, l'**origine** de
+> chaque arbitrage.
+>
+> **Corrigé après audit.** `A-12` manquait à cette table, qui n'en listait que
+> **quatorze**. **Son statut de décision n'est pas touché par cette
+> correction** : il figure, inchangé, dans la table de décision ci-dessous et au
+> récapitulatif.
+
+| Statut de décision — **V4** | Nombre | Références |
+|---|---|---|
+| **Totalement rendus** | **14** | `A-1` · `A-2` · `A-3` · `A-4` · `A-6` · `A-7` · `A-8` · `A-9` · `A-10` · `A-11` · `A-12` · `A-13` · `A-14` · `A-15` |
+| **Partiellement rendus** | **1** | `A-5` *(icônes, cinq raccourcis)* |
+| **Non rendus** | **0** | — |
 
 ---
 
 # INCHANGÉS
 
 ## A-1 — Seuils d'échéance d'entretien
+
+> ### ✅ RENDU en V4 — seuil unique : **restant ≤ 10 %**, pour les quatre postes
+>
+> Détail et conséquences : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §2.1.
+>
+> **Une conséquence de ce texte est falsifiée par l'arbitrage rendu.** L'énoncé
+> ci-dessous — « tout seuil raisonnable rendra l'élément *nettoyage des capteurs*
+> **dû dès le déploiement** » — est **faux à 10 %** : ce poste est à **13,38 %**
+> de restant au relevé du 2026-08-27, donc **au-dessus** du seuil. **Aucun des
+> quatre postes n'est dû au relevé.** L'énoncé est conservé — il était honnête
+> **sans seuil connu** — et **daté ici**.
 
 **Question.** À partir de quelle fraction restante un élément devient-il « dû » ?
 
@@ -40,6 +84,16 @@ c'est une projection d'état légitime.
 
 ## A-5 — Identifiants de la couche d'intention
 
+> ### 🟨 PARTIELLEMENT RENDU en V4 — les vingt objets sont adoptés
+>
+> Chemins, clés YAML, `entity_id`, noms affichés, traductions, absence
+> d'`initial`, valeurs de la remise à zéro et forme des trois scripts sont
+> **rendus** : [`09_UI.md`](09_UI.md) §3.5 et
+> [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §4.1.
+>
+> **Restent ouverts, et non comblés :** les **icônes** des vingt objets, et les
+> **cinq raccourcis exacts** exposés par le champ fermé `raccourci`.
+
 Trois sélecteurs, quatorze booléens de segment, trois scripts. L'architecture
 est arrêtée ; les identifiants ne le sont pas.
 
@@ -48,6 +102,12 @@ est arrêtée ; les identifiants ne le sont pas.
 ---
 
 ## A-6 — Forme de l'acte contractuel Maintenance
+
+> ### ✅ RENDU en V4 — **nouveau chapitre `14_entretien.md`**, avec amendement minimal du chapitre `08`
+>
+> La forme 1 est retenue. Elle déclenche la règle de
+> [`10_LOTS.md`](10_LOTS.md) §3.4 : mise à jour du registre de couverture **dans
+> le même lot**. Détail : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §2.3.
 
 L'entretien est aujourd'hui **exclu** du contrat (chapitre `08` §6).
 Deux formes possibles : un **nouveau chapitre** avec amendement du `08` §6, ou
@@ -59,6 +119,17 @@ une **extension du `08`** seul.
 
 ## A-7 — Devenir du capteur d'état de navigation NAS
 
+> ### ✅ RENDU en V4 — le capteur existant n'est **ni déplacé, ni renommé, ni réutilisé, ni modifié**
+>
+> Le lot `U1` crée un **capteur de santé NAS neuf** pour Système — synthèse
+> complète, classe d'indisponibilité propre, attributs de diagnostic, carte de
+> synthèse et navigation, rattachement à `sensor.etat_systeme_dashboard`. Le
+> colorant actuel reste intact tant que la tuile NAS existe dans Navigation, et
+> sa suppression est un **lot de propreté séparé**, postérieur à `U2`.
+>
+> Détail et motifs : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §5.1.
+> **Aucun identifiant n'est attribué au capteur neuf.**
+
 Une fois le bouton retiré de Navigation, ce capteur devient orphelin.
 Le conserver pour colorer le raccourci du dashboard Système, ou le retirer dans
 un lot ultérieur.
@@ -68,6 +139,12 @@ un lot ultérieur.
 ---
 
 ## A-8 — Routage des erreurs de vidage vers le canal mobile
+
+> ### ✅ RENDU en V4 — **pendant une mission** → mobile ; **hors mission** → rien de nouveau
+>
+> Détail : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §3.1.
+> L'arbitrage porte sur les **notifications** seules : la décision `D-43`
+> maintient la restitution visuelle **rouge** dans Navigation hors mission.
 
 Le témoin existe, son énumération est fermée, sa valeur nominale est arrêtée, et
 le moteur L1 le lit **déjà**. **Rien n'est à créer.**
@@ -83,6 +160,19 @@ mais n'appelle pas nécessairement une action immédiate de nuit.
 # REFORMULÉS
 
 ## A-2 — Confirmation d'une remise à zéro *(reformulé)*
+
+> ### ✅ RENDU en V4 — pression unique, **aucun retry**, terminal explicite, poste **toujours dû**
+>
+> Si la relecture ne confirme pas : issue terminale « remise à zéro non
+> confirmée », le poste **reste dû**, et une **vérification opérateur** est
+> requise avant une éventuelle nouvelle tentative **manuelle**. L'absence de
+> confirmation **n'est jamais** transformée en preuve d'échec matériel.
+>
+> **La fenêtre de relecture vaut 30 secondes**, et le poste ne reçoit **aucune
+> nouvelle pression automatique**. Cette valeur appartient aux deux constantes
+> déjà admises `{30 s, 60 s}` : elle **n'amende ni le contrat, ni le checker**,
+> et **aucune durée Maintenance nouvelle n'apparaît**.
+> Détail : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §2.2.
 
 > **Ce que la V1 demandait :** « quelle valeur pour une troisième constante
 > temporelle ? », en supposant que 60 s bornait la cadence et qu'ajouter une
@@ -117,6 +207,17 @@ durée.
 ---
 
 ## A-3 — Identifiants d'automation *(reformulé en V3 : décompte conditionnel)*
+
+> ### ✅ RENDU en V4 — **quatre** identifiants attribués
+>
+> `10280000000001` supervision · `10280000000002` projection persistante de
+> mission · `10280000000003` projection persistante de maintenance ·
+> `10280000000004` remise à zéro de la composition.
+>
+> **La conditionnalité est levée** : `A-12` ayant retenu l'automation dédiée, le
+> quatrième identifiant est nécessaire, et il est attribué. Le domaine compte
+> **quatre rôles et quatre automations**.
+> Détail : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §6.6.
 
 > **Correction V3.** La V2 affirmait « **trois** identifiants à attribuer »
 > comme un acquis. **C'était une sur-assertion** : le troisième n'est nécessaire
@@ -153,6 +254,14 @@ La doctrine impose une attribution **avant le codage**, **par l'opérateur**.
 
 ## A-4 — Vocabulaire L2 *(reformulé : contrainte contractuelle, pas seulement dénomination)*
 
+> ### ✅ RENDU en V4 — **34 valeurs**, énumérées writer par writer
+>
+> 18 pour W1, **11** pour W2, **5** pour W3. Aucune valeur n'entre au catalogue :
+> `ASP-INV-52` **n'est pas déclenché**, et l'ancre « 18 codes » de `ASP-CI-19`
+> reste **intacte**. La voie « renommer hors du champ lexical du refus » est donc
+> celle qui est suivie, à coût nul.
+> Énumération et vérifications : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §6.4.
+
 **Ce qui est acquis** (D-10, D-11) : les quatre valeurs déjà arrêtées et
 l'interdiction de substituer des préfixes de commodité aux codes du catalogue.
 
@@ -177,6 +286,14 @@ motif du catalogue. Deux voies, aux coûts très différents :
 # AJOUTÉS
 
 ## A-9 — Forme de l'acte contractuel L2
+
+> ### ✅ RENDU en V4 — **nouveau chapitre `15_conduite_et_supervision.md`**
+>
+> Avec **amendements minimaux à `ASP-INV-31` et `ASP-INV-42`**, checker
+> correspondant, et **mise à jour du registre de couverture**. La forme 1 étant
+> retenue, la conséquence documentaire annoncée par la V3 se réalise, pour `L2`
+> comme pour `M0`.
+> Détail : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §6.1.
 
 **Question.** `ASP-INV-31` énumère nommément l'interruption et le retour à la
 base parmi les écritures réservées au moteur unique ; `ASP-INV-42` le redit pour
@@ -203,6 +320,17 @@ vert sur une violation d'invariant restée intacte.
 ---
 
 ## A-10 — Statut des valeurs de garde de geste, et partition terminale
+
+> ### ✅ RENDU en V4 — **voie `O1`** ; partition **`O`, `O-R`, `T`, `H`** ratifiée
+>
+> Un geste physiquement dépourvu de sens, ou demandé hors mission, **n'écrit
+> rien** au verdict : le script **s'arrête** avec un **message explicite au
+> caller**, qui porte le motif lisible exigé par `ASP-INV-50`. Le cas **hors
+> vocabulaire** est traité séparément. La voie `O2` est **écartée** : le
+> vocabulaire ne gagne **aucune** valeur de garde.
+> Détail : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §6.2.
+>
+> **Le volet 3 est caduc** : le décompte n'est plus une matrice, il vaut **34**.
 
 ### Volet 1 — un geste refusé ne doit pas refermer la mission
 
@@ -245,6 +373,17 @@ fichier L1 : il ne peut être écrit qu'après cet arbitrage.
 ---
 
 ## A-11 — Sérialisation des writers
+
+> ### ✅ RENDU en V4 — **exclusion par le verdict**, sans helper supplémentaire
+>
+> W2 écrit l'**engagement** avant chaque commande ; W3 ne produit **aucune
+> interruption pendant un engagement** ; W2 conclut pause, reprise et arrêt ;
+> sur un retour, **W2 s'arrête à `CONDUITE/RETOUR_ENGAGE`** et **W3 seul**
+> observe l'amarrage et écrit `CLOTURE/APRES_RETOUR_CONFIRME`.
+>
+> **Le volet 2 est résolu :** la valeur disputée est **conservée** et **change de
+> writer**. Elle n'est plus suspendue.
+> Détail : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §6.3.
 
 **Question.** Quelle garde d'exclusion entre la conduite et la supervision
 pendant une fenêtre de geste ?
@@ -305,6 +444,18 @@ falsifiant le décompte. Ou bien **deux writers sont candidats au même
 
 ## A-12 — Remise à zéro de la composition d'intention
 
+> ### ✅ RENDU en V4 — **automation dédiée `10280000000004`**
+>
+> Deux déclencheurs : `input_boolean.systeme_stable` passant à `on`, et le
+> verdict prenant la valeur `COMMANDE/ISSUE_NON_ETABLIE`. Les **refus antérieurs
+> à l'émission conservent la composition**. L'automation **lit** le verdict et
+> **ne l'écrit jamais** ; **seul le script de remise à zéro écrit les helpers**.
+>
+> **Conséquence de CI, indissociable :** une **exception nominative minimale** à
+> `ASP-CI-11` est requise — lecture seule, cette automation seule, cette
+> transition seule.
+> Détail : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §4.2.
+
 ### Volet 1 — au redémarrage
 
 **La remise à zéro explicite est obligatoire, pas optionnelle.** La voie native
@@ -355,6 +506,20 @@ composition subsiste. Le rattrapage est alors le volet 1, au prochain démarrage
 
 ## A-13 — Confrontation de CI du référentiel embarqué de la couche d'intention
 
+> ### ✅ RENDU en V4 — confrontation **obligatoire**, objet **fixé**, véhicule **retenu**
+>
+> Un contrôle de CI confronte **exactement les quatorze booléens et leur
+> mapping** au chapitre `02` **et** au référentiel embarqué du moteur L1. La
+> troisième branche — « architecture évitant la seconde copie » — est
+> **écartée** : la seconde copie est **assumée**, et c'est la confrontation qui
+> la garde.
+>
+> **Véhicule retenu : un contrôle dédié `ASP-CI-28`, ajouté au checker
+> Aspirateur existant.** Ni extension de `ASP-CI-21`, ni checker autonome.
+> `ASP-CI-28` est **vérifié libre** — le checker déclare `ASP-CI-1` à
+> `ASP-CI-27` sans trou, et aucun identifiant supérieur n'existe dans le dépôt.
+> Détail : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §4.3.
+
 **Question.** Quatorze booléens nommés par segment, plus le script qui les
 traduit en paires carte-segment, constituent une **seconde matérialisation** de
 la table du chapitre `02`.
@@ -377,6 +542,19 @@ contrôle dédié, ou architecture évitant la seconde copie ?
 ---
 
 ## A-14 — Garde de CI sur la primitive irréversible de remise à zéro
+
+> ### ✅ RENDU en V4 — **liste d'autorisation nominative** du seul script Maintenance
+>
+> Seul le futur script Maintenance peut presser **les quatre boutons exacts**.
+> **Une pression par déclaration opérateur.** Aucun `repeat`, aucun retry, aucun
+> appel direct depuis Lovelace ni depuis une automation. Confirmation **par
+> relecture**, sans transformer l'absence de confirmation en preuve d'échec
+> matériel.
+>
+> La troisième des trois voies est donc retenue. **Le fichier de contrôle qui
+> portera cette liste n'est pas désigné** : c'est un point d'implémentation du
+> lot `M2`, non un arbitrage.
+> Détail : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §2.4.
 
 **Question.** La remise à zéro d'un consommable passe par une **pression de
 bouton sur une entité native**. Aucun contrôle ne l'attrape :
@@ -402,6 +580,18 @@ script de déclaration d'entretien ?
 ---
 
 ## A-15 — Fenêtres de relecture des gestes L2 et couverture temporelle *(ajouté en V3)*
+
+> ### ✅ RENDU en V4 — **30 s**, mutualisées sur les quatre gestes
+>
+> Pause, reprise, arrêt et **engagement du retour** : 30 s. La fenêtre du retour
+> **confirme seulement l'entrée dans la chaîne de retour** ; l'**amarrage** reste
+> observé **événementiellement** par W3. **Extension de portée** de `ASP-INV-69`
+> et **extension de périmètre** de `ASP-CI-20` à L2. **Aucune autre
+> temporisation.** La **reprise** n'a lieu que par **geste opérateur explicite**.
+>
+> **Aucune constante temporelle nouvelle n'est introduite** : le domaine reste à
+> `{30 s, 60 s}`. **Conséquence vérifiée : `ASP-CI-10` n'a pas à être amendé.**
+> Détail : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §6.5.
 
 **Question.** Le lot L2 fonde chaque geste sur « émission unique → relecture
 dans une fenêtre → verdict », **sans jamais donner ni discuter cette fenêtre**.
@@ -467,12 +657,55 @@ dans une fenêtre → verdict », **sans jamais donner ni discuter cette fenêtr
 | A-14 | Garde de CI sur la primitive irréversible | M2 | ajouté en V2 |
 | **A-15** | **Fenêtres de relecture des gestes L2 et couverture temporelle** | **L2** | **ajouté en V3** |
 
-**Aucun de ces quinze arbitrages n'est rendu par le présent artefact.**
+> **Cette phrase était vraie jusqu'à la V3.2 :** « Aucun de ces quinze
+> arbitrages n'est rendu par le présent artefact. » **Elle ne l'est plus.**
+> Elle est **conservée et datée** — elle décrivait exactement l'état de
+> l'artefact au moment où elle a été écrite.
 
-## Trois arbitrages où aucun choix implicite ne doit subsister
+## Statut de décision — **V4**
 
-| Réf. | Vérification à faire par l'auditeur |
-|---|---|
-| **A-11** | Aucune valeur de clôture de chaîne de retour n'est attribuée à un writer, et le décompte du vocabulaire est donné sous forme de matrice, jamais comme un nombre unique |
-| **A-12** | Le nombre d'automations est donné comme **trois ou quatre**, et le nombre d'identifiants nouveaux comme **deux certains plus un conditionnel** |
-| **A-15** | **Aucune durée de fenêtre L2 n'apparaît nulle part** dans l'artefact — ni proposée, ni suggérée, ni citée en exemple |
+| Réf. | Décision rendue | Statut | Lot débloqué |
+|---|---|---|---|
+| `A-1` | seuil : restant ≤ 10 %, quatre postes | **fermé** | M1, N1 |
+| `A-2` | pression unique, fenêtre de **30 s**, terminal explicite, poste toujours dû | **fermé** | M2 |
+| `A-3` | quatre identifiants attribués | **fermé** | N1, L2, U0, U2 |
+| `A-4` | vocabulaire de **34** valeurs | **fermé** | L2 |
+| `A-5` | vingt objets adoptés, libellés alignés sur le chapitre `03` | **partiel** — icônes, cinq raccourcis | U0 |
+| `A-6` | nouveau chapitre `14_entretien.md` | **fermé** | M0 |
+| `A-7` | capteur existant intact ; capteur de santé neuf en `U1` | **fermé** | — |
+| `A-8` | mobile en mission, rien hors mission | **fermé** | N1 |
+| `A-9` | nouveau chapitre `15_conduite_et_supervision.md` | **fermé** | L2 |
+| `A-10` | voie `O1` ; partition `O`, `O-R`, `T`, `H` | **fermé** | L2 |
+| `A-11` | exclusion par le verdict ; amarrage à W3 | **fermé** | L2 |
+| `A-12` | automation dédiée `10280000000004` | **fermé** | U0 |
+| `A-13` | confrontation obligatoire, objet fixé, contrôle dédié **`ASP-CI-28`** | **fermé** | U0 |
+| `A-14` | liste d'autorisation nominative | **fermé** | M2 |
+| `A-15` | 30 s mutualisées ; amarrage événementiel | **fermé** | L2 |
+
+**Quatorze fermés · un partiel · zéro non rendu.**
+
+> ### ⚠ Passage caduc — conservé pour l'historique, annoté le 2026-08-28
+>
+> **Le cadrage est ratifié depuis le 2026-08-28** — décision `D-44`,
+> [`01_DECISIONS_ACQUISES.md`](01_DECISIONS_ACQUISES.md) §G bis. L'énoncé
+> ci-dessous était exact jusqu'à cette date.
+>
+> **`D-44` a ratifié le cadrage.** Voir [`10_LOTS.md`](10_LOTS.md) §5.2.
+> **Ce qui reste vrai :** débloquer un lot n'est pas l'engager.
+
+> **Débloquer un lot n'est pas l'engager.** Les décisions `D-37` et `D-38` sont
+> inchangées : le cadrage reste **non ratifié**, et **aucun lot n'est
+> engageable**.
+
+## Trois arbitrages où aucun choix implicite ne devait subsister — **contrôle levé en V4**
+
+> Ce contrôle `C4 bis` visait à prouver qu'**aucun de ces trois arbitrages
+> n'avait été rendu en silence**. Ils sont désormais rendus **explicitement**,
+> et le contrôle change d'objet : il vérifie que la décision est **écrite**, pas
+> qu'elle est **absente**.
+
+| Réf. | Ce qui devait être constaté **jusqu'à la V3.2** | Ce qui se constate **en V4** |
+|---|---|---|
+| **A-11** | Aucune valeur de clôture de chaîne de retour attribuée à un writer ; décompte en matrice, jamais un nombre unique | La clôture de retour confirmée est attribuée **nommément à W3**, et le décompte vaut **34** — un nombre unique, parce qu'il est **rendu** |
+| **A-12** | Nombre d'automations donné comme **trois ou quatre** ; identifiants nouveaux comme **deux certains plus un conditionnel** | **Quatre** automations, **quatre** identifiants, tous **attribués par l'opérateur** — la conditionnalité est levée, pas contournée |
+| **A-15** | **Aucune durée de fenêtre L2** nulle part — ni proposée, ni suggérée, ni citée en exemple | **30 s**, mutualisées, **rendues par l'opérateur** — et **aucune constante nouvelle** : le domaine reste à `{30 s, 60 s}` |

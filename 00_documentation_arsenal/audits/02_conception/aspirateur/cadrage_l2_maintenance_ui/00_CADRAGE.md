@@ -1,13 +1,52 @@
-# Cadrage complet corrigé — domaine Aspirateur — **V3.1**
+# Cadrage complet — domaine Aspirateur — **V4, ratifiée**
+
+> ### 2026-08-28 — le cadrage est **ratifié** (`D-44`)
+>
+> Il devient la **référence architecturale opposable** des lots **L2**,
+> **Maintenance**, **Notifications** et **UI**.
+>
+> **Cette ratification n'autorise aucune implémentation** hors du périmètre et
+> des dépendances propres à chaque lot. La table d'engageabilité courante est en
+> [`10_LOTS.md`](10_LOTS.md) §5.2 : **trois engageables, trois sous condition,
+> deux bloqués**. **Ratifier n'est pas engager.**
+
+> ### V4 — les quinze arbitrages sont rendus
+>
+> **Quatorze totalement, un partiellement** (`A-5`, sur ses seules icônes et
+> ses cinq raccourcis). Le §7 change donc
+> d'objet : il cesse d'énumérer ce qui n'est pas tranché, pour donner l'**état
+> de décision** des quinze. Registre :
+> [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md).
+>
+> **Les §1 à §6 sont inchangés** — aucun fait, aucun relevé, aucune limite de
+> preuve n'est modifié par un arbitrage.
+
+> ### ⚠ Passage caduc — conservé pour l'historique, annoté le 2026-08-28
+>
+> **Le cadrage est ratifié depuis le 2026-08-28** — décision `D-44`,
+> [`01_DECISIONS_ACQUISES.md`](01_DECISIONS_ACQUISES.md) §G bis. L'énoncé
+> ci-dessous était exact jusqu'à cette date.
+>
+> **L'autorité courante est `D-44`.**
+
+> **Le cadrage reste NON RATIFIÉ, et aucun lot n'est engageable.** Rendre les
+> arbitrages ne ratifie pas le cadrage : `D-37` et `D-38` sont inchangées.
 
 > **V3.1 — correction `R-4` : la synthèse du §7 annonçait encore quatorze arbitrages et omettait les trois apports de la V3.**
 
 **Révision de dépôt :** `112ad3c3d64a619f8ec883dcd645ec0187d884bb` (`main`)
 **État du domaine :** lot runtime **L1 livré**, mergé, déployé, rechargé et
 vérifié passivement. **Aucun lot L2, aucune maintenance, aucune UI.**
-**Statut :** cadrage **non ratifié**. **Aucun lot n'est engageable.**
-**Version :** **V3.1** — la V3 normalisée en `LF`, avec les corrections `R-2`
-à `R-5`. **Quinze** arbitrages ouverts, aucun rendu. Voir `DELTA_AUDIT_V2_V3.md`.
+**Statut :** cadrage **RATIFIÉ le 2026-08-28** — décision `D-44`. Il est la
+**référence architecturale opposable** des lots L2, Maintenance, Notifications
+et UI. **Trois lots engageables, trois sous condition, deux bloqués**
+(`10_LOTS.md` §5.2). **Aucune implémentation n'est autorisée hors du périmètre
+et des dépendances propres à chaque lot.**
+**Version :** **V4** — les **quinze** arbitrages sont **rendus** : quatorze
+totalement, un partiellement. Voir `11_ARBITRAGES_RENDUS.md` et
+`DELTA_V3_2_V4.md`.
+*(La V3.1 était la V3 normalisée en `LF`, avec les corrections `R-2` à `R-5` ;
+la V3.2 corrigeait le seul finding `F-1`. Voir `DELTA_AUDIT_V2_V3.md`.)*
 
 ---
 
@@ -211,38 +250,63 @@ Détail : `06_ENTITES_ENTRETIEN.md`.
 
 | Domaine | Document | État |
 |---|---|---|
-| Entités et plafonds | `06_ENTITES_ENTRETIEN.md` | établi par source, vérifié par recoupement |
-| Machine L2 et writers | `07_MACHINE_L2.md` | **proposition** ; vocabulaire **non arrêté** — dépend de A-10 |
-| Notifications | `08_NOTIFICATIONS.md` | canaux arrêtés ; seuils et routage à arbitrer |
-| Interface | `09_UI.md` | **architecture arrêtée** par décision opérateur ; duplication du référentiel à arbitrer |
-| Lots | `10_LOTS.md` | **proposition non ratifiée, aucun lot engageable** |
+| Entités et plafonds | `06_ENTITES_ENTRETIEN.md` | établi par source, vérifié par recoupement ; **seuil rendu en V4** |
+| Machine L2 et writers | `07_MACHINE_L2.md` | vocabulaire **arrêté en V4 — 34 valeurs** ; partition ratifiée ; course résolue |
+| Notifications | `08_NOTIFICATIONS.md` | canaux arrêtés ; **seuil et routage rendus en V4** |
+| Interface | `09_UI.md` | **architecture arrêtée** par décision opérateur ; **vingt objets rendus en V4** ; confrontation du référentiel **obligatoire**, portée par le contrôle dédié `ASP-CI-28` |
+| **Arbitrages rendus** | `11_ARBITRAGES_RENDUS.md` | **quatorze fermés, un partiel, zéro non rendu** |
+| Lots | `10_LOTS.md` | **ratifié** — trois engageables, trois sous condition, deux bloqués (§5.2) |
 
 ---
 
-## 7. Ce que ce cadrage ne tranche pas
+## 7. État de décision des quinze arbitrages — **rendu en V4**
 
-**Quinze** arbitrages sont **isolés** dans `02_ARBITRAGES_OUVERTS.md`, jamais
-comblés par déduction.
+Les quinze arbitrages restent **isolés** dans `02_ARBITRAGES_OUVERTS.md`, jamais
+comblés par déduction. **Ils sont désormais rendus** — quatorze totalement, un
+partiellement.
 
-**Ce qui reste ouvert, arbitrage par arbitrage :**
+| Réf. | Décision rendue | Statut |
+|---|---|---|
+| `A-1` | Seuil unique : **restant ≤ 10 %**, pour les quatre postes | **fermé** |
+| `A-2` | Pression unique, aucun retry, fenêtre de **30 s**, **terminal explicite**, poste toujours dû | **fermé** |
+| `A-3` | **Quatre** identifiants attribués — `…01` à `…04` | **fermé** |
+| `A-4` | Vocabulaire de **34 valeurs**, énumérées writer par writer | **fermé** |
+| `A-5` | Les **vingt objets** de la couche d'intention | **partiel** — icônes, cinq raccourcis |
+| `A-6` | Nouveau chapitre **`14_entretien.md`**, amendement minimal du `08` | **fermé** |
+| `A-7` | Capteur existant **intact** ; capteur de santé **neuf** en `U1` | **fermé** |
+| `A-8` | **Pendant mission** → mobile ; **hors mission** → rien de nouveau | **fermé** |
+| `A-9` | Nouveau chapitre **`15_conduite_et_supervision.md`** | **fermé** |
+| `A-10` | Voie **`O1`** ; partition **`O`, `O-R`, `T`, `H`** ratifiée | **fermé** |
+| `A-11` | Exclusion **par le verdict**, sans helper ; amarrage à **W3** | **fermé** |
+| `A-12` | **Automation dédiée `10280000000004`**, deux déclencheurs | **fermé** |
+| `A-13` | Confrontation **obligatoire**, objet fixé, **contrôle dédié `ASP-CI-28`** dans le checker existant | **fermé** |
+| `A-14` | **Liste d'autorisation nominative** du seul script Maintenance | **fermé** |
+| `A-15` | **30 s** mutualisées ; amarrage événementiel ; extensions de portée | **fermé** |
 
-| Réf. | Ce qui n'est pas tranché |
-|---|---|
-| `A-1` | **Aucun seuil d'échéance n'est fixé** |
-| `A-2` | Le comportement à l'expiration d'une confirmation sur acte irréversible |
-| `A-3` | **La conditionnalité du nombre d'identifiants** — deux certains, un troisième suspendu à `A-12`. **Aucun identifiant nouveau n'est attribué ni préattribué** |
-| `A-4` | La dénomination des valeurs de conduite et de clôture, sous contrainte contractuelle |
-| `A-5` | Les identifiants de la couche d'intention |
-| `A-6` | La **forme de l'acte contractuel Maintenance** |
-| `A-7` | Le devenir du capteur d'état de navigation NAS |
-| `A-8` | Le routage des erreurs de vidage vers le canal mobile |
-| `A-9` | La **forme de l'acte contractuel L2** |
-| `A-10` | Le **statut des valeurs de garde de geste** et la **partition terminale** |
-| `A-11` | La **garde de sérialisation** entre writers — volet 1 ; et **l'écrivain de la clôture de la chaîne de retour** — volet 2 |
-| `A-12` | Le mécanisme de remise à zéro de la composition, et son moment |
-| `A-13` | La confrontation de CI du référentiel embarqué |
-| `A-14` | La garde de CI sur la primitive irréversible |
-| `A-15` | Les **fenêtres de relecture des gestes L2** et leur couverture temporelle |
+> ### ⚠ Passage caduc — conservé pour l'historique, annoté le 2026-08-28
+>
+> **Le cadrage est ratifié depuis le 2026-08-28** — décision `D-44`,
+> [`01_DECISIONS_ACQUISES.md`](01_DECISIONS_ACQUISES.md) §G bis. L'énoncé
+> ci-dessous était exact jusqu'à cette date.
+>
+> **`D-44` a ratifié le cadrage.** L'engageabilité courante est en
+> [`10_LOTS.md`](10_LOTS.md) §5.2. **Ce qui reste vrai :** rendre un arbitrage
+> n'engage aucun lot, et ratifier non plus.
+
+> **Ce que rendre quinze arbitrages ne fait pas.** Cela ne ratifie pas le
+> cadrage, et cela n'engage aucun lot. **`D-37` et `D-38` sont inchangées**, et
+> [`10_LOTS.md`](10_LOTS.md) §5.1 maintient les huit lots à **non engageables**.
+
+**Ce qui reste réellement ouvert** — **sept** points, dont **deux seulement**
+relèvent encore d'un arbitrage partiellement rendu — est énuméré dans
+[`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §7.
+
+> **Une conséquence de ce cadrage est falsifiée par `A-1`.** L'énoncé, répété de
+> la V1 à la V3.2, selon lequel « tout seuil raisonnable rendra l'élément
+> *nettoyage des capteurs* dû dès le déploiement » est **faux à 10 %** : ce poste
+> est à **13,38 %** de restant, donc **au-dessus** du seuil, et **aucun des
+> quatre postes n'est dû au relevé**. L'énoncé est **conservé et daté** partout
+> où il figure ; il était honnête **sans seuil connu**.
 
 **Trois faits techniques restent par ailleurs non établis, et ne sont pas
 complétés par déduction :**

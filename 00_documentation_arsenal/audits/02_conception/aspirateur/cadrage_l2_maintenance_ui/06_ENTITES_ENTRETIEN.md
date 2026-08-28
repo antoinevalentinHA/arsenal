@@ -1,4 +1,11 @@
-# Entités d'entretien et plafonds — **V3**
+# Entités d'entretien et plafonds — **V4**
+
+> **V4 — deux arbitrages rendus s'appliquent à ce fichier.**
+> **`A-1`** fixe le seuil d'échéance à **restant ≤ 10 %**, pour les quatre
+> postes : le §4 est recalculé en conséquence, et l'énoncé qu'il portait est
+> **daté et retiré**. **`A-2`** fixe le comportement à l'expiration de la
+> confirmation : le §6 le consigne. **Aucun fait de source n'est modifié.**
+> Registre des décisions : [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md).
 
 > **Aucune correction V3 sur ce fichier.**
 
@@ -71,8 +78,37 @@ erreur d'attribution des constantes serait donc immédiatement visible.
 | Filtre | 55,32 % | 44,68 % — 67,01 h |
 | Brosse latérale | 7,18 % | 92,82 % — 185,64 h |
 
-> **Point d'attention pour l'arbitrage A-1.** Tout seuil raisonnable rendra
-> l'élément « capteurs » **dû dès le déploiement**.
+> ### ⚠ Passage caduc — conservé pour l'historique, annoté en V4
+>
+> > **Point d'attention pour l'arbitrage A-1.** Tout seuil raisonnable rendra
+> > l'élément « capteurs » **dû dès le déploiement**.
+>
+> **Cet énoncé est faux au seuil rendu.** Il était honnête **sans seuil connu**,
+> et il ne se réécrit pas : il se date.
+
+### 4.1 Application du seuil rendu — **ajouté en V4**
+
+**Seuil `A-1` : un poste est dû lorsque son restant est inférieur ou égal à
+10 % de son plafond.** Un seul seuil, pour les quatre postes.
+
+| Poste | Plafond (s) | Seuil à 10 % (s) | Restant relevé (s) | % restant | **Dû au relevé ?** | Marge avant échéance |
+|---|---|---|---|---|---|---|
+| Brosse principale | 1 080 000 | 108 000 | 286 868 | 26,56 % | **non** | 178 868 s — **49,69 h** |
+| Brosse latérale | 720 000 | 72 000 | 668 299 | 92,82 % | **non** | 596 299 s — **165,64 h** |
+| Filtre | 540 000 | 54 000 | 241 253 | 44,68 % | **non** | 187 253 s — **52,02 h** |
+| **Nettoyage des capteurs** | 108 000 | **10 800** | **14 447** | **13,38 %** | **non** | **3 647 s — 1,01 h** |
+
+> **Aucun des quatre postes n'est dû au relevé du 2026-08-27.** Le plus avancé,
+> le nettoyage des capteurs, se situe **au-dessus** du seuil, à 13,38 %.
+>
+> **La marge se compte en temps de nettoyage effectif**, le compteur ne
+> décroissant que pendant le nettoyage : **1,01 h** pour les capteurs. Le poste
+> sera donc dû après **environ une heure de missions cumulées** postérieures au
+> relevé.
+>
+> **Ce tableau est un calcul, pas une prédiction de date.** L'échéance réelle
+> dépend de l'usage entre le relevé et la mise en service, que l'artefact
+> n'observe pas.
 
 ---
 
@@ -139,6 +175,44 @@ valeur de 30 s ou 60 s est **nul** — `ASP-CI-10` admet déjà ces deux durées
 deux constantes temporelles **n'est pas nécessairement amendé**, contrairement
 à ce qu'annonçait la V1.
 
+### 6.1 Comportement à l'expiration — **rendu en V4**
+
+> **Une seule pression** sur le bouton concerné. **Aucune répétition, aucun
+> retry.** Relecture pendant une fenêtre **maximale de 30 secondes**.
+> **Si la confirmation n'est pas obtenue :** issue **terminale**, « remise à
+> zéro non confirmée » ; le **poste reste dû** ; **aucune nouvelle pression
+> automatique** ; une **vérification opérateur** est requise avant une
+> éventuelle nouvelle tentative **manuelle**.
+
+**Ce que ce comportement refuse, des deux côtés à la fois :**
+
+| Tentation | Pourquoi elle est écartée |
+|---|---|
+| Conclure au **succès** faute de contre-preuve | Une relecture non obtenue n'est pas une relecture positive ; l'effet lui-même est **prédit, non testé** (§5, §8) |
+| Conclure à l'**échec matériel** | Une confirmation non obtenue **ne prouve rien** sur le micrologiciel : le délai de propagation n'a **aucune borne supérieure démontrable** (§6) |
+| **Retenter** automatiquement | `D-24` et `D-25` l'interdisent, et l'acte est irréversible |
+| Laisser le poste **soldé** | Le solde n'est acquis que par la **remontée du compteur** (§6, niveau 2) |
+
+**Le poste reste donc dû, et le système le dit.** L'issue terminale est
+**explicite** : elle nomme l'absence de confirmation, elle ne l'interprète pas.
+La reprise passe par un **geste opérateur**, après vérification.
+
+> **La durée est fixée à 30 secondes**, et c'est une **valeur déjà admise** :
+> le fait établi ci-dessus le montre — `ASP-CI-10` accepte `{30, 60}` sur
+> l'ensemble des chapitres du domaine, de sorte que ce choix **n'amende ni le
+> contrat, ni le checker**. Toute autre valeur l'aurait imposé.
+>
+> **Le domaine reste à deux constantes temporelles, et deux seulement.** L2 et
+> Maintenance emploient **la même** valeur de 30 s : `ASP-INV-69` est confirmé
+> dans son décompte, et seule sa **portée** est étendue, jamais son ensemble de
+> valeurs.
+>
+> **Ce que la fenêtre borne, et ce qu'elle ne borne pas.** Elle borne
+> l'**attente** de la confirmation, jamais son **interprétation** : le délai réel
+> de propagation vers l'entité reste **sans borne supérieure démontrable** (§6),
+> et c'est précisément pourquoi l'expiration produit un **terminal explicite** —
+> jamais un constat d'échec matériel.
+
 ---
 
 ## 7. Éléments hors périmètre, et pourquoi
@@ -163,7 +237,8 @@ deux constantes temporelles **n'est pas nécessairement amendé**, contrairement
   n'est démontrable.** *(Corrigé en V2 : la V1 le disait « borné par la source
   à un cycle de coordinateur ».)*
 - **Le mode de connexion de l'instance** — local ou repli nuage. **Non relevé.**
-- Le **seuil métier** d'échéance — arbitrage **A-1**.
+- ~~Le **seuil métier** d'échéance — arbitrage **A-1**.~~ **Rendu en V4 :
+  restant ≤ 10 %** (§4.1). Ce point sort de la liste des non-établis.
 - Le comportement des compteurs en cas de remplacement physique **sans** remise
   à zéro : le compteur continue simplement de décroître. Consigné pour mémoire.
 
