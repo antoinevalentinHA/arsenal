@@ -266,8 +266,103 @@ ROOT = Path(__file__).resolve().parents[2]
 DOMAIN = ROOT / "00_documentation_arsenal" / "contrats" / "aspirateur"
 AUDIT = (ROOT / "00_documentation_arsenal" / "audits" / "01_rapports" /
          "aspirateur" / "audit_faisabilite_roborock_q7_max.md")
+# Seconde source d'attestation, NOMMEE et FERMEE : le releve des entites
+# d'entretien. L'audit de faisabilite est anterieur au perimetre Maintenance et
+# n'atteste AUCUNE de ses huit entites ; sans cette source, ASP-CI-6 refuserait
+# le chapitre 14 alors que ces entites sont bel et bien relevees.
+# Ce fichier n'apporte QUE des faits d'existence : aucune regle, aucun seuil.
+RELEVE_ENTRETIEN = (ROOT / "00_documentation_arsenal" / "audits" / "01_rapports" /
+                    "aspirateur" / "releve_entites_entretien.md")
 LOVELACE_DIRS = ("18_lovelace", "19_button_card_templates")
 FICHIER_CATALOGUE = "09_refus_et_diagnostics.md"
+FICHIER_ENTRETIEN = "14_entretien.md"
+FICHIER_ETATS = "08_etats_et_observation.md"
+
+# ═════════════════════════════════════════════════════════════
+# MAINTENANCE — ASP-CI-29 … ASP-CI-33 (lot M0, chapitre 14)
+#
+# ASP-CI-28 est RESERVE a la confrontation du referentiel embarque de la
+# couche d'intention (arbitrage A-13, lot U0). Il n'est pas libre : il est
+# pris. La numerotation du domaine se lit donc 1..27 + [28 reserve] + 29..33.
+# ═════════════════════════════════════════════════════════════
+
+# Les quatre postes, FIGES ICI. Ils sont CONFRONTES au releve d'attestation,
+# jamais tires de lui : un releve falsifie ne peut pas deplacer la verite.
+POSTES_ENTRETIEN = {
+    "filtre": ("sensor.roborock_q7_max_temps_restant_filtre",
+               "button.roborock_q7_max_reinitialiser_le_consommable_du_filtre_a_air",
+               150),
+    "brosse principale": (
+        "sensor.roborock_q7_max_temps_restant_brosse_principale",
+        "button.roborock_q7_max_reinitialiser_le_consommable_de_la_brosse_principale",
+        300),
+    "brosse laterale": (
+        "sensor.roborock_q7_max_temps_restant_brosse_laterale",
+        "button.roborock_q7_max_reinitialiser_le_consommable_de_la_brosse_laterale",
+        200),
+    "capteurs": ("sensor.roborock_q7_max_temps_restant_capteurs",
+                 "button.roborock_q7_max_reinitialiser_le_consommable_du_capteur",
+                 30),
+}
+BOUTONS_ENTRETIEN = frozenset(v[1] for v in POSTES_ENTRETIEN.values())
+CAPTEURS_ENTRETIEN = frozenset(v[0] for v in POSTES_ENTRETIEN.values())
+
+# ── F3 : familles FERMEES. Tout jeton de ces deux familles, cite dans le
+# chapitre 14 ou dans le releve d'attestation, doit appartenir exactement aux
+# listes ci-dessus. Une falsification COORDONNEE des deux documents ne deplace
+# donc plus la verite : elle se heurte a la constante figee ici.
+FAMILLE_CAPTEUR = re.compile(r"sensor\.roborock_q7_max_[a-z0-9_]+")
+FAMILLE_BOUTON = re.compile(r"button\.roborock_q7_max_[a-z0-9_]+")
+# Jetons de ces familles legitimement cites HORS perimetre Maintenance : ils
+# appartiennent au lot L1 et sont attestes par l'audit de faisabilite.
+HORS_MAINTENANCE = frozenset({
+    "sensor.roborock_q7_max_etat",
+    "sensor.roborock_q7_max_erreur_de_l_aspirateur",
+    "sensor.roborock_q7_max_dock_erreur_de_dock",
+    "sensor.roborock_q7_max_piece_actuelle",
+    "button.roborock_q7_max_nettoyage_complet",
+})
+
+# ── F4/F8 : VERROU TRANSITOIRE. L'allowlist est vide en M0, et elle doit le
+# rester : le visiteur YAML recursif complet n'existe pas encore. Le desserrer
+# avant M2 exposerait la seule primitive irreversible du domaine derriere un
+# parseur qui ne couvre ni le flow mapping, ni `tap_action: call-service`, ni
+# le scalaire replie, ni les alias YAML, ni le ciblage par `device_id`, ni
+# l'entite templatisee. Toute allowlist non vide leve donc une ERREUR, avant
+# toute analyse permissive.
+ALLOWLIST_PRESSION: frozenset[str] = frozenset()
+VISITEUR_YAML_RECURSIF = False   # M2 le passera a True, avec le parseur
+
+# ── F2 : perimetre YAML FONCTIONNEL, explicite et justifie.
+# INCLUS — configuration Home Assistant reellement chargee :
+RACINE_HA = ("configuration.yaml", "logbook.yaml", "logger.yaml",
+             "recorder.yaml", "utility_meter.yaml")
+DOSSIERS_FONCTIONNELS = ("blueprints", "esphome", "custom_components",
+                         "zigbee2mqtt")
+# EXCLUS, et pourquoi :
+#   .git/                    internes du gestionnaire de versions ;
+#   00_documentation_arsenal documentation — le chapitre 14 y NOMME les quatre
+#                            boutons : la balayer ferait s'auto-declencher la
+#                            garde sur le contrat qu'elle protege ;
+#   .github/                 orchestration CI, pas de la configuration HA ;
+#   scripts/                 outillage et registres de checkers ;
+#   tools/**/tests/fixtures/ contre-exemples deliberes.
+EXCLUS_YAML = ("00_documentation_arsenal/", ".github/", "scripts/", "tools/",
+               "node_modules/", ".venv/")
+SEUIL_ENTRETIEN_PCT = 10
+CLASSES_ECHEANCE = ("dû", "non dû", "non évaluable")
+
+# Un appel de `button.press` sous une cle de service, quelle que soit la facon
+# de viser la cible. C'est le SERVICE qui est garde, pas le ciblage.
+PRESS_SERVICE = re.compile(
+    r"^[^\S\n]*(?:-[^\S\n]*)?(?:service|action|perform_action)"
+    r"[^\S\n]*:[^\S\n]*[\"']?(button\.press)", re.M)
+# Toute mention d'un bouton d'entretien, ou l'un des quatre boutons nommes.
+BOUTON_ENTRETIEN_RE = re.compile(
+    r"button\.roborock_q7_max_reinitialiser_le_consommable_[a-z_]+")
+# Repetitions interdites autour d'une pression.
+REPETITION = re.compile(r"^[^\S\n]*(?:-[^\S\n]*)?(repeat|until|while|count)"
+                        r"[^\S\n]*:", re.M)
 FICHIER_INDEX = "README.md"
 
 # ── Ancre 2 : constantes de module, jamais relues du contrat ────────────────
@@ -3533,6 +3628,40 @@ def load_runtime() -> dict[str, str]:
     return out
 
 
+def load_yaml_fonctionnel() -> dict[str, str]:
+    """Tout le YAML FONCTIONNEL du depot — `.yaml` ET `.yml`.
+
+    F2 : le balayage d'ASP-CI-11 n'itere que les repertoires `^\\d{2}_` et ne
+    connait que `.yaml`. Il laissait donc hors perimetre les fichiers de
+    configuration de racine, `blueprints/`, `esphome/`, et toute extension
+    `.yml`. ASP-CI-31 garde la seule primitive irreversible du domaine : son
+    perimetre est defini ici, explicitement, et les exclusions sont justifiees
+    en tete de module.
+    """
+    out: dict[str, str] = {}
+
+    def prendre(p: Path) -> None:
+        if not p.is_file():
+            return
+        rel = p.relative_to(ROOT).as_posix()
+        if any(rel.startswith(x) for x in EXCLUS_YAML):
+            return
+        out[rel] = p.read_text(encoding="utf-8", errors="ignore")
+
+    for nom in RACINE_HA:
+        prendre(ROOT / nom)
+    for base in sorted(ROOT.iterdir()):
+        if not base.is_dir():
+            continue
+        if not (re.match(r"^\d{2}_", base.name)
+                or base.name in DOSSIERS_FONCTIONNELS):
+            continue
+        for motif in ("*.yaml", "*.yml"):
+            for p in sorted(base.rglob(motif)):
+                prendre(p)
+    return out
+
+
 def load_yaml_depot() -> dict[str, str]:
     """Tout le YAML de configuration Home Assistant du dépôt.
 
@@ -3565,7 +3694,17 @@ def run() -> int:
     textes = sans_clotures(bruts)
     brut_audit = AUDIT.read_text(encoding="utf-8", errors="ignore") if AUDIT.is_file() else ""
     audit = strip_fences(brut_audit)
+    brut_releve = (RELEVE_ENTRETIEN.read_text(encoding="utf-8", errors="ignore")
+                   if RELEVE_ENTRETIEN.is_file() else "")
+    releve = strip_fences(brut_releve)
+    # ASP-CI-6 atteste contre les DEUX sources factuelles, nommees et fermees :
+    # l'audit de faisabilite (mission) et le releve d'entretien (Maintenance).
+    # L'audit est anterieur au perimetre Maintenance : sans le releve, le
+    # chapitre 14 nommerait huit entites que nulle attestation ne couvre.
+    attestation = audit + "\n" + releve
     lovelace = load_lovelace()
+    # F2 : perimetre YAML FONCTIONNEL explicite, propre a ASP-CI-31.
+    fonctionnel = load_yaml_fonctionnel()
 
     controles = (
         ("ASP-CI-1  invariants", check_invariants(textes)),
@@ -3578,7 +3717,7 @@ def run() -> int:
                          textes.get("08_etats_et_observation.md", ""))),
         ("ASP-CI-5  table des profils",
          check_profils(textes.get("03_profils_metier.md", ""))),
-        ("ASP-CI-6  identifiants", check_identifiants(textes, audit)),
+        ("ASP-CI-6  identifiants", check_identifiants(textes, attestation)),
         ("ASP-CI-7  Lovelace", check_lovelace(lovelace)),
         ("ASP-CI-8  référentiel technique",
          check_referentiel_technique(
@@ -3644,6 +3783,20 @@ def run() -> int:
          check_chemins_silencieux(corps.get("sequence") or [])),
         ("ASP-CI-27 écritures préparatoires (allowlist, fraîcheur, ordre)",
          check_ecritures_preparatoires(corps.get("sequence") or [], corps)),
+        # ASP-CI-28 : RÉSERVÉ — confrontation du référentiel embarqué de la
+        # couche d'intention (A-13, lot U0). Non libre, non réutilisable.
+        ("ASP-CI-29 périmètre et entités d'entretien",
+         check_perimetre_entretien(textes.get(FICHIER_ENTRETIEN, ""), releve)),
+        ("ASP-CI-30 échéance d'entretien et honnêteté",
+         check_echeance_entretien(textes.get(FICHIER_ENTRETIEN, ""))),
+        ("ASP-CI-31 primitive irréversible (allowlist fermée)",
+         check_primitive_irreversible(textes.get(FICHIER_ENTRETIEN, ""),
+                                      fonctionnel, lovelace)),
+        ("ASP-CI-32 séquence de remise à zéro",
+         check_remise_a_zero(textes.get(FICHIER_ENTRETIEN, ""))),
+        ("ASP-CI-33 notifications d'entretien et routage",
+         check_notifications_entretien(textes.get(FICHIER_ENTRETIEN, ""),
+                                       textes.get(FICHIER_ETATS, ""))),
     )
 
     erreurs: list[str] = []
@@ -3651,20 +3804,402 @@ def run() -> int:
         print(f"  {'✗' if errs else '✔'} {label}")
         erreurs.extend(errs)
 
-    attestes_audit = tous_les_jetons(audit)
+    attestes_audit = tous_les_jetons(attestation)
     print(f"\n  périmètre : {len(textes)} fichiers de contrat · "
           f"{len(lovelace)} fichiers Lovelace balayés · "
           f"{len(runtime)} fichiers runtime L1 · "
-          f"{len(depot)} fichiers YAML de configuration balayés · "
-          f"{len(attestes_audit)} identifiants attestés par l'audit")
+          f"{len(depot)} fichiers YAML balayés par ASP-CI-11 · "
+          f"{len(fonctionnel)} fichiers YAML fonctionnels balayés par ASP-CI-31 · "
+          f"{len(attestes_audit)} identifiants attestés (audit + relevé)")
     if erreurs:
         print("\nAspirateur — écarts contractuels détectés :")
         for e in erreurs:
             print(f"- {e}")
         return 1
-    print("\nOK - domaine Aspirateur : intégrité normative et conduite "
-          "runtime vérifiées (27 contrôles, 0 écart).")
+    print("\nOK - domaine Aspirateur : intégrité normative, conduite "
+          "runtime et acte contractuel Maintenance vérifiés — "
+          f"{len(controles)} lignes affichées pour 32 contrôles logiques, "
+          "0 écart.")
+    print("     décompte : ASP-CI-12/13 et ASP-CI-16/17 partagent chacun une "
+          "ligne ; ASP-CI-28 est RÉSERVÉ au lot U0 et n'est pas exécuté.")
     return 0
+
+
+
+# ═════════════════════════════════════════════════════════════
+# MAINTENANCE — ASP-CI-29 … ASP-CI-33
+# ═════════════════════════════════════════════════════════════
+
+
+def texte_plat(s: str) -> str:
+    """Aplatit un texte Markdown pour une recherche de PHRASE normative.
+
+    Un contrat se relit et se re-enveloppe : une garde qui casserait au premier
+    retour a la ligne serait fragile. Les marqueurs de citation et les suites
+    d'espaces sont donc reduits a une espace simple.
+
+    ⚠️ F1 : l'aplatissement sert aux PHRASES COMPLETES, jamais aux mots-cles.
+    Chercher un mot isole dans le texte aplati laisse passer toute mutation
+    dont le mot survit ailleurs dans le chapitre — c'est exactement le faux
+    vert que l'audit a demontre. Les structures — tableaux, colonnes, ordre —
+    se verifient sur les LIGNES, par les aides ci-dessous.
+    """
+    return re.sub(r"\s+", " ", re.sub(r"\n>\s*", " ", s))
+
+
+def cellules(ligne: str) -> list[str]:
+    """Cellules d'une ligne de tableau Markdown, marqueur de citation retire."""
+    nu = re.sub(r"^\s*>\s?", "", ligne).strip()
+    if not nu.startswith("|"):
+        return []
+    return [c.strip() for c in nu.strip("|").split("|")]
+
+
+def lignes_tableau(txt: str, *entetes: str) -> list[list[str]]:
+    """Lignes de DONNEES du premier tableau dont l'en-tete porte `entetes`.
+
+    Ancre STRUCTURELLE : on localise l'en-tete par ses libelles de colonnes,
+    on saute le separateur, puis on rend les lignes tant qu'elles sont des
+    lignes de tableau. Supprimer une ligne la fait disparaitre ICI — ce qu'un
+    `in` sur le texte aplati ne voyait pas.
+    """
+    lignes = txt.splitlines()
+    for k, ligne in enumerate(lignes):
+        cols = cellules(ligne)
+        if not cols or not all(any(e in c for c in cols) for e in entetes):
+            continue
+        if k + 1 >= len(lignes) or not set(
+                cellules(lignes[k + 1]) and "".join(cellules(lignes[k + 1]))) <= set("-: "):
+            continue
+        out = []
+        for suite in lignes[k + 2:]:
+            cols2 = cellules(suite)
+            if not cols2:
+                break
+            out.append(cols2)
+        return out
+    return []
+
+
+def sans_accent_bas(s: str) -> str:
+    return s.lower().replace("*", "").replace("`", "").strip()
+
+
+# ═════════════════════════════════════════════════════════════
+# MAINTENANCE — ASP-CI-29 … ASP-CI-33
+# ═════════════════════════════════════════════════════════════
+
+
+def _entites_hors_liste(txt: str, source: str, prefixe: str) -> list[str]:
+    """F3 — filet ferme sur les deux familles d'entites du domaine."""
+    errs = []
+    for motif, permis, quoi in ((FAMILLE_CAPTEUR, CAPTEURS_ENTRETIEN, "capteur"),
+                                (FAMILLE_BOUTON, BOUTONS_ENTRETIEN, "bouton")):
+        for jeton in sorted(set(motif.findall(txt))):
+            if jeton in permis or jeton in HORS_MAINTENANCE:
+                continue
+            errs.append(f"{prefixe} : {source} cite le {quoi} `{jeton}`, hors "
+                        "de la liste fermée des quatre postes — une "
+                        "falsification coordonnée du contrat et du relevé ne "
+                        "déplace pas la vérité (ASP-INV-73).")
+    return errs
+
+
+def check_perimetre_entretien(t14: str, releve: str) -> list[str]:
+    """ASP-CI-29 — quatre postes, huit entites, plafonds en heures.
+
+    F3 : le filet est FERME dans les deux sens. Une entite manquante est
+    refusee ; une entite SUPPLEMENTAIRE de l'une des deux familles l'est aussi,
+    dans le chapitre comme dans le releve.
+    """
+    errs: list[str] = []
+    if not t14:
+        return ["ASP-CI-29 : chapitre 14 introuvable — le périmètre "
+                "Maintenance n'a aucune vérité de désignation."]
+    if not releve:
+        return ["ASP-CI-29 : relevé d'attestation des entités d'entretien "
+                "introuvable — aucune entité ne peut être attestée."]
+    plat = texte_plat(t14)
+    for poste, (capteur, bouton, plafond) in sorted(POSTES_ENTRETIEN.items()):
+        for jeton, quoi in ((capteur, "capteur"), (bouton, "bouton")):
+            if jeton not in t14:
+                errs.append(f"ASP-CI-29 : le {quoi} du poste « {poste} » est "
+                            f"ABSENT du chapitre 14 — `{jeton}`.")
+            if jeton not in releve:
+                errs.append(f"ASP-CI-29 : `{jeton}` n'est pas attesté par le "
+                            "relevé — un contrat ne nomme pas une entité que "
+                            "nul relevé n'a vue.")
+        if f"{plafond} h" not in plat:
+            errs.append(f"ASP-CI-29 : le plafond du poste « {poste} » doit "
+                        f"s'écrire en HEURES — `{plafond} h` absent du "
+                        "chapitre 14 (en secondes, ASP-CI-10 y lirait une "
+                        "durée concurrente).")
+    # F3 — filet ferme, confronte SEPAREMENT au contrat puis au releve.
+    errs += _entites_hors_liste(t14, "le chapitre 14", "ASP-CI-29")
+    errs += _entites_hors_liste(releve, "le relevé d'attestation", "ASP-CI-29")
+    # Le tableau du perimetre porte EXACTEMENT quatre lignes.
+    table = lignes_tableau(t14, "Poste", "Capteur", "Bouton")
+    if len(table) != len(POSTES_ENTRETIEN):
+        errs.append(f"ASP-CI-29 : le tableau du périmètre porte {len(table)} "
+                    f"ligne(s) — il en faut exactement {len(POSTES_ENTRETIEN)} "
+                    "(ASP-INV-73).")
+    if "quatre postes" not in plat.lower():
+        errs.append("ASP-CI-29 : le chapitre 14 n'énonce pas la clôture du "
+                    "périmètre à quatre postes.")
+    return errs
+
+
+def check_echeance_entretien(t14: str) -> list[str]:
+    """ASP-CI-30 — seuil unique, et TABLEAU des trois situations.
+
+    F1 : la garde est ancree sur les LIGNES du tableau et sur leurs COLONNES.
+    Remplacer « non evaluable » par « non du » dans la ligne de la mesure
+    indisponible echoue ici, meme si les deux libelles subsistent ailleurs.
+    """
+    errs: list[str] = []
+    if not t14:
+        return ["ASP-CI-30 : chapitre 14 introuvable."]
+    plat = texte_plat(t14)
+    seuils = {int(m) for m in re.findall(
+        r"(?:inférieur ou égal à|≤)\s*\*{0,2}(\d{1,3})\s*%", plat)}
+    if not seuils:
+        errs.append("ASP-CI-30 : aucun seuil d'échéance lisible dans le "
+                    "chapitre 14 — l'échéance n'est pas opposable.")
+    elif seuils != {SEUIL_ENTRETIEN_PCT}:
+        errs.append(f"ASP-CI-30 : seuil(s) d'échéance {sorted(seuils)} % — le "
+                    f"domaine n'admet que {SEUIL_ENTRETIEN_PCT} %, identique "
+                    "pour les quatre postes (ASP-INV-75).")
+    if "même seuil s'applique aux quatre postes" not in plat.lower():
+        errs.append("ASP-CI-30 : la phrase normative « le même seuil "
+                    "s'applique aux quatre postes » est absente.")
+
+    # ── Ancre STRUCTURELLE : le tableau des situations ────────────────────
+    table = lignes_tableau(t14, "Situation", "Condition")
+    if len(table) != 3:
+        errs.append(f"ASP-CI-30 : le tableau des situations porte "
+                    f"{len(table)} ligne(s) — trois situations sont exigées, "
+                    "jamais deux (ASP-INV-76).")
+    else:
+        libelles = [sans_accent_bas(l[0]) for l in table]
+        attendus = ["dû", "non dû", "non évaluable"]
+        if libelles != attendus:
+            errs.append(f"ASP-CI-30 : situations {libelles} — attendu "
+                        f"exactement {attendus}, dans cet ordre (ASP-INV-76).")
+        # La ligne de la mesure INDISPONIBLE doit porter « non évaluable ».
+        for lib, cond in ((sans_accent_bas(l[0]), sans_accent_bas(l[1]))
+                          for l in table):
+            if "indisponible" in cond or "inconnue" in cond:
+                if lib != "non évaluable":
+                    errs.append(
+                        f"ASP-CI-30 : la mesure indisponible est classée "
+                        f"« {lib} » — elle doit produire « non évaluable », "
+                        "jamais « dû » ni « non dû » (ASP-INV-76).")
+        if not any("indisponible" in sans_accent_bas(l[1]) or
+                   "inconnue" in sans_accent_bas(l[1]) for l in table):
+            errs.append("ASP-CI-30 : aucune ligne du tableau ne traite la "
+                        "mesure indisponible (ASP-INV-76).")
+
+    if "aucune anticipation prédictive" not in plat.lower():
+        errs.append("ASP-CI-30 : la clause « aucune anticipation prédictive » "
+                    "est absente.")
+    if not ("`unknown`" in t14 and "`unavailable`" in t14):
+        errs.append("ASP-CI-30 : le chapitre 14 ne nomme pas les deux régimes "
+                    "d'indisponibilité — ils ne peuvent pas être exclus sans "
+                    "être nommés (ASP-INV-74).")
+    if "ni la dernière valeur connue" not in plat:
+        errs.append("ASP-CI-30 : le chapitre 14 n'exclut pas la dernière "
+                    "valeur connue comme substitut d'une mesure absente.")
+    return errs
+
+
+def check_primitive_irreversible(t14: str, fonctionnel: dict[str, str],
+                                 lovelace: dict[str, str]) -> list[str]:
+    """ASP-CI-31 — allowlist FERMEE, verrou transitoire, balayage etendu.
+
+    F1 : les interdits sont cherches dans les LIGNES du tableau d'interdits,
+    pas dans le texte aplati — supprimer une ligne echoue ici.
+    F2 : le balayage porte sur le perimetre YAML fonctionnel explicite.
+    F4/F8 : une allowlist non vide leve une erreur AVANT toute analyse.
+    """
+    errs: list[str] = []
+
+    # ── F4/F8 : verrou transitoire, evalue en PREMIER ─────────────────────
+    if ALLOWLIST_PRESSION and not VISITEUR_YAML_RECURSIF:
+        errs.append(
+            "ASP-CI-31 : VERROU M0 — l'allowlist de pression est non vide "
+            f"({sorted(ALLOWLIST_PRESSION)}) alors que le visiteur YAML "
+            "récursif complet n'est pas implémenté. Le desserrer maintenant "
+            "exposerait la seule primitive irréversible du domaine derrière "
+            "un parseur qui ne couvre ni le flow mapping, ni "
+            "`tap_action: call-service`, ni le scalaire replié, ni les alias "
+            "YAML, ni le ciblage par `device_id`, ni l'entité templatisée. "
+            "Le lot M2 doit livrer ce parseur AVANT toute autorisation.")
+        return errs
+
+    if not t14:
+        return ["ASP-CI-31 : chapitre 14 introuvable."]
+    plat = texte_plat(t14)
+    if "n'est appelable que par **un seul objet**" not in plat:
+        errs.append("ASP-CI-31 : la phrase normative d'exclusivité — « n'est "
+                    "appelable que par **un seul objet** » — est absente ou "
+                    "affaiblie (ASP-INV-81).")
+    for clause in ("allowlist", "nominative", "fermée"):
+        if clause not in plat.lower():
+            errs.append(f"ASP-CI-31 : le chapitre 14 n'énonce pas d'allowlist "
+                        f"« {clause} » sur la primitive irréversible.")
+
+    # ── Ancre STRUCTURELLE : le tableau des interdits ─────────────────────
+    interdits = lignes_tableau(t14, "Interdit", "Portée")
+    corpus = " ".join(sans_accent_bas(l[0]) for l in interdits)
+    for motif, quoi in (("lovelace", "l'appel depuis un fichier Lovelace"),
+                        ("automation", "l'appel depuis une automation"),
+                        ("repeat", "la répétition (`repeat`, retry, boucle)"),
+                        ("device_id", "l'appel générique par `device_id`"),
+                        ("plusieurs", "la pression de plusieurs boutons")):
+        if motif not in corpus:
+            errs.append(f"ASP-CI-31 : le tableau des interdits ne porte aucune "
+                        f"ligne interdisant {quoi} (ASP-INV-81).")
+    if len(interdits) < 5:
+        errs.append(f"ASP-CI-31 : le tableau des interdits porte "
+                    f"{len(interdits)} ligne(s) — au moins cinq sont exigées.")
+
+    # ── F2 : balayage du perimetre fonctionnel explicite ──────────────────
+    for source, ensemble in (("configuration fonctionnelle", fonctionnel),
+                             ("Lovelace", lovelace)):
+        for rel, txt in sorted(ensemble.items()):
+            nu = sans_commentaires_yaml(txt)
+            boutons = set(BOUTON_ENTRETIEN_RE.findall(nu))
+            if not boutons:
+                continue
+            if rel not in ALLOWLIST_PRESSION:
+                errs.append(f"ASP-CI-31 : {rel} ({source}) mentionne "
+                            f"{', '.join('`' + b + '`' for b in sorted(boutons))} "
+                            "— hors allowlist nominative (ASP-INV-81).")
+    return errs
+
+
+def check_remise_a_zero(t14: str) -> list[str]:
+    """ASP-CI-32 — sequence ORDONNEE, fenetre, terminal.
+
+    F1 : les quatre etapes sont verifiees dans le TABLEAU et DANS L'ORDRE.
+    Supprimer la ligne de relecture echoue ici, meme si le mot « relecture »
+    subsiste dans une phrase voisine.
+    """
+    errs: list[str] = []
+    if not t14:
+        return ["ASP-CI-32 : chapitre 14 introuvable."]
+    plat = texte_plat(t14)
+
+    # ── Ancre STRUCTURELLE : la sequence, dans son ordre normatif ─────────
+    seq = lignes_tableau(t14, "Étape", "Obligation")
+    etapes = [sans_accent_bas(l[1]) for l in seq] if seq else []
+    attendues = ["déclaration opérateur", "émission", "relecture", "issue"]
+    if etapes != attendues:
+        errs.append(f"ASP-CI-32 : séquence {etapes} — les quatre étapes "
+                    f"{attendues} sont exigées, dans cet ordre (ASP-INV-77). "
+                    "L'ordre est normatif : on n'observe pas avant d'émettre.")
+    else:
+        relecture = sans_accent_bas(seq[2][2])
+        if "postcondition" not in relecture:
+            errs.append("ASP-CI-32 : l'étape de relecture ne nomme pas la "
+                        "postcondition observée (ASP-INV-79).")
+        if not re.search(r"\d+\s*s\b", relecture):
+            errs.append("ASP-CI-32 : l'étape de relecture ne porte aucune "
+                        "fenêtre — une confirmation non bornée n'est pas une "
+                        "confirmation.")
+        emission = sans_accent_bas(seq[1][2])
+        if "une seule pression" not in emission:
+            errs.append("ASP-CI-32 : l'étape d'émission n'exige pas une seule "
+                        "pression (ASP-INV-78).")
+
+    phrases = (
+        ("aucun retry", "l'interdiction de retry"),
+        ("remise à zéro non confirmée", "l'issue terminale nommée"),
+        ("le poste **reste dû**", "le maintien du poste comme dû"),
+        ("ne conclut à aucune panne matérielle", "le refus de conclure à la panne"),
+        ("nouveau geste manuel", "la reprise par geste manuel"),
+        ("n'atteste **rien** de son **effet**", "la distinction pression / effet"),
+    )
+    for motif, quoi in phrases:
+        if motif.lower() not in plat.lower():
+            errs.append(f"ASP-CI-32 : le chapitre 14 n'énonce pas {quoi} "
+                        f"— « {motif} » absent.")
+    fen = {int(m) for m in re.findall(r"(\d{1,3})\s*s\b", plat)}
+    fen |= {int(m) for m in re.findall(r"(\d{1,3})\s*secondes", plat)}
+    hors = sorted(fen - {FENETRE_CONFIRMATION_S, FENETRE_TRANSITION_S})
+    if hors:
+        errs.append(f"ASP-CI-32 : durée(s) {hors} s hors des constantes "
+                    f"admises {sorted((FENETRE_CONFIRMATION_S, FENETRE_TRANSITION_S))} "
+                    "— le domaine n'en compte que deux (ASP-INV-69).")
+    return errs
+
+
+def check_notifications_entretien(t14: str, t08: str) -> list[str]:
+    """ASP-CI-33 — routage A-8, cloisonnement, amendement MINIMAL du 08.
+
+    F1 : les trois exclusions du 08 §6 sont verifiees comme PUCES de liste,
+    ancrees en debut de ligne — supprimer une puce echoue ici.
+    """
+    errs: list[str] = []
+    if not t14:
+        return ["ASP-CI-33 : chapitre 14 introuvable."]
+    plat = texte_plat(t14)
+    if "pendant une mission arsenal" not in plat.lower():
+        errs.append("ASP-CI-33 : le chapitre 14 ne contractualise pas le "
+                    "routage PENDANT une mission (A-8).")
+    if "aucune notification ajoutée" not in plat.lower():
+        errs.append("ASP-CI-33 : le chapitre 14 n'énonce pas qu'AUCUNE "
+                    "notification n'est ajoutée hors mission (ASP-INV-84).")
+    for reste in ("état natif", "refus de lancement"):
+        if reste not in plat:
+            errs.append(f"ASP-CI-33 : le chapitre 14 ne nomme pas « {reste} » "
+                        "parmi les seules restitutions hors mission.")
+    # Ancre STRUCTURELLE : le tableau des trois objets, une ligne chacun.
+    objets = lignes_tableau(t14, "Objet", "Nature", "Canal")
+    noms = [sans_accent_bas(l[0]) for l in objets]
+    for attendu in ("entretien dû", "erreur robot ou dock", "cycle en cours"):
+        if attendu not in noms:
+            errs.append(f"ASP-CI-33 : l'objet « {attendu} » n'a pas sa ligne "
+                        "propre dans le tableau de cloisonnement (ASP-INV-83).")
+    if len(objets) != 3:
+        errs.append(f"ASP-CI-33 : le tableau de cloisonnement porte "
+                    f"{len(objets)} ligne(s) — trois objets distincts sont "
+                    "exigés (ASP-INV-83).")
+
+    # ── Amendement MINIMAL du 08 §6 : les trois puces, en tete de ligne ───
+    if t08:
+        # Une puce Markdown court sur sa ligne ET ses lignes de continuation
+        # indentees : la lire ligne a ligne couperait « statistiques d'usage »
+        # en deux et produirait un faux positif.
+        puces, courante = [], None
+        for ligne in t08.splitlines():
+            if ligne.startswith("- "):
+                if courante is not None:
+                    puces.append(courante)
+                courante = ligne
+            elif courante is not None and ligne.startswith("  ") and ligne.strip():
+                courante += " " + ligne.strip()
+            elif courante is not None and not ligne.strip():
+                puces.append(courante)
+                courante = None
+        if courante is not None:
+            puces.append(courante)
+        corpus = " ".join(sans_accent_bas(p) for p in puces)
+        for motif, quoi in (
+                ("aucune historisation", "l'exclusion d'historisation"),
+                ("aucune mesure de rendement", "l'exclusion des mesures de rendement"),
+                ("aucune position cartographique", "l'exclusion de la position")):
+            if motif not in corpus:
+                errs.append(f"ASP-CI-33 : l'amendement du chapitre 08 §6 a "
+                            f"emporté {quoi} — seule la durée de vie des "
+                            "consommables devait être levée.")
+        if "statistiques d'usage" not in corpus:
+            errs.append("ASP-CI-33 : l'amendement du 08 §6 a emporté "
+                        "l'exclusion des statistiques d'usage.")
+        if "14_entretien.md" not in t08:
+            errs.append("ASP-CI-33 : le chapitre 08 §6 ne renvoie pas au "
+                        "chapitre 14 — l'exclusion levée n'est pas tracée.")
+    return errs
 
 
 # ─────────────────────────────────────────────────────────────
@@ -5370,7 +5905,12 @@ def selftest() -> None:
     normatifs = {"check_invariants", "check_referentiel", "check_codes",
                  "check_partition", "check_profils", "check_identifiants",
                  "check_lovelace", "check_referentiel_technique",
-                 "check_etats_canoniques", "check_fenetres"}
+                 "check_etats_canoniques", "check_fenetres",
+                 # Maintenance (M0) : contrôles de TEXTE contractuel, joués par
+                 # la batterie de mutations ASP-CI-29 … ASP-CI-33 plus bas.
+                 "check_perimetre_entretien", "check_echeance_entretien",
+                 "check_primitive_irreversible", "check_remise_a_zero",
+                 "check_notifications_entretien"}
     manquants = invoques - normatifs - set(CONTROLES_RUNTIME)
     assert not manquants, \
         f"m-C bis : `run()` invoque {sorted(manquants)}, absent(s) de la " \
@@ -5476,7 +6016,200 @@ def selftest() -> None:
         "VARIABLES_NUMERIQUES_ADMISES et INSTANTS_PREPARATOIRES divergent"
     c.conformes += 1
 
-    print(f"selftest OK — 27 contrôles, {c.total()} cas "
+    # ═════════════════════════════════════════════════════════
+    # MAINTENANCE — ASP-CI-29 … ASP-CI-33 (lot M0)
+    #
+    # F1 : les fixtures sont le CHAPITRE REEL et le CHAPITRE 08 REEL, pas un
+    # texte plat reconstruit. Une garde qui passe sur une fixture simplifiee
+    # ne prouve rien sur le contrat qu'elle protege.
+    #
+    # Chaque mutation part du chapitre conforme et n'altere QU'UNE structure.
+    # Des LEURRES sont injectes : les mots-cles cherches subsistent ailleurs
+    # dans le chapitre, si bien qu'un `in` global resterait vert — c'est
+    # exactement le faux vert que l'audit a demontre.
+    # ═════════════════════════════════════════════════════════
+
+    dom_m0 = load_domain()
+    T14 = sans_clotures(dom_m0).get(FICHIER_ENTRETIEN, "")
+    T08 = sans_clotures(dom_m0).get(FICHIER_ETATS, "")
+    REL = (RELEVE_ENTRETIEN.read_text(encoding="utf-8", errors="ignore")
+           if RELEVE_ENTRETIEN.is_file() else "")
+    assert T14 and T08 and REL, "selftest M0 : sources reelles introuvables"
+
+    # Leurres : chaque mot-cle des gardes est REPETE hors de sa structure.
+    LEURRE = ("\n\nNote de relecture — leurres deliberes : non evaluable, "
+              "non du, du, Lovelace, automation, repeat, device_id, "
+              "postcondition, relecture, une seule pression, "
+              "Aucune historisation, statistiques d'usage, "
+              "un seul objet, Entretien du, Cycle en cours, "
+              "Erreur robot ou dock, 30 s.\n")
+    T14L, T08L = T14 + LEURRE, T08 + LEURRE
+
+    # ---- ASP-CI-29 : périmètre et entités ------------------------------
+    c.conforme(check_perimetre_entretien(T14, REL), "CI-29 chapitre reel")
+    c.conforme(check_perimetre_entretien(T14L, REL), "CI-29 leurres tolérés")
+    c.viole(check_perimetre_entretien("", REL), "chapitre 14 introuvable",
+            "CI-29 chapitre absent")
+    c.viole(check_perimetre_entretien(T14, ""), "relevé d'attestation",
+            "CI-29 relevé absent")
+    _cap0 = sorted(CAPTEURS_ENTRETIEN)[0]
+    _bt0 = sorted(BOUTONS_ENTRETIEN)[0]
+    c.viole(check_perimetre_entretien(T14.replace(_cap0, "sensor.autre_chose"), REL),
+            "ABSENT du chapitre 14", "CI-29 capteur retiré")
+    c.viole(check_perimetre_entretien(T14, REL.replace(_bt0, "button.autre_chose")),
+            "n'est pas attesté par le relevé", "CI-29 bouton non attesté")
+    # F3 — cinquieme entite AJOUTEE, contrat ET releve coordonnes.
+    _cinq = ("\n| **Moteur** | `sensor.roborock_q7_max_usure_moteur_principal` | "
+             "`button.roborock_q7_max_reset_filtre_hepa` |\n")
+    c.viole(check_perimetre_entretien(T14 + _cinq, REL + _cinq),
+            "hors de la liste fermée", "F3/CI-29 cinquième entité coordonnée")
+    c.viole(check_perimetre_entretien(
+        T14.replace(_cap0, "sensor.roborock_q7_max_usure_moteur_principal"),
+        REL.replace(_cap0, "sensor.roborock_q7_max_usure_moteur_principal")),
+        "ASP-CI-29", "F3/CI-29 substitution de capteur")
+    c.viole(check_perimetre_entretien(
+        T14.replace(_bt0, "button.roborock_q7_max_reset_filtre_hepa"),
+        REL.replace(_bt0, "button.roborock_q7_max_reset_filtre_hepa")),
+        "ASP-CI-29", "F3/CI-29 substitution de bouton")
+    c.viole(check_perimetre_entretien(T14.replace("**150 h**", "**540000 s**"), REL),
+            "en HEURES", "CI-29 plafond en secondes")
+
+    # ---- ASP-CI-30 : échéance -------------------------------------------
+    c.conforme(check_echeance_entretien(T14), "CI-30 chapitre reel")
+    c.conforme(check_echeance_entretien(T14L), "CI-30 leurres tolérés")
+    # F1-a : la ligne « non evaluable » devient « non du » DANS LE TABLEAU,
+    # alors que les deux libelles subsistent ailleurs (leurres).
+    c.viole(check_echeance_entretien(T14L.replace(
+        "| **non évaluable** | la mesure est **indisponible** ou inconnue |",
+        "| **non dû** | la mesure est **indisponible** ou inconnue |")),
+        "ASP-CI-30", "F1-a/CI-30 indisponible classée « non dû »")
+    c.viole(check_echeance_entretien(T14L.replace(
+        "| **non évaluable** | la mesure est **indisponible** ou inconnue |\n", "")),
+        "trois situations", "F1/CI-30 ligne supprimée")
+    c.viole(check_echeance_entretien(T14.replace(
+        "inférieur ou égal à 10 %", "inférieur ou égal à 15 %")),
+        "n'admet que 10 %", "CI-30 seuil faux")
+    c.viole(check_echeance_entretien(T14L.replace(
+        "**Le même\n> seuil s'applique aux quatre postes**", "**Chaque poste a le sien**")),
+        "phrase normative", "F1/CI-30 uniformité supprimée")
+    c.viole(check_echeance_entretien(T14L.replace(
+        "**ni la dernière valeur\n> connue**", "**sinon la précédente**")),
+        "dernière valeur connue", "CI-30 indispo assimilée")
+    c.viole(check_echeance_entretien(T14L.replace(
+        "**Aucune anticipation prédictive.**", "**Une projection est admise.**")),
+        "anticipation prédictive", "CI-30 prédiction non exclue")
+
+    # ---- ASP-CI-31 : primitive irréversible ------------------------------
+    c.conforme(check_primitive_irreversible(T14, {}, {}), "CI-31 chapitre reel")
+    c.conforme(check_primitive_irreversible(T14L, {}, {}), "CI-31 leurres tolérés")
+    # F1-b : la phrase d'exclusivite est affaiblie, « un seul objet » restant
+    # present dans les leurres.
+    c.viole(check_primitive_irreversible(T14L.replace(
+        "n'est appelable que par **un seul objet**",
+        "est appelable par **tout objet**"), {}, {}),
+        "phrase normative d'exclusivité", "F1-b/CI-31 exclusivité affaiblie")
+    # F1-c : la LIGNE interdisant Lovelace est supprimee, le mot subsistant.
+    c.viole(check_primitive_irreversible(T14L.replace(
+        "| Appel depuis un **fichier Lovelace** ou un gabarit de carte | sans exception |\n",
+        ""), {}, {}),
+        "aucune ligne interdisant", "F1-c/CI-31 ligne Lovelace supprimée")
+    c.viole(check_primitive_irreversible(T14L.replace(
+        "| Appel depuis une **automation** | sans exception |\n", ""), {}, {}),
+        "aucune ligne interdisant", "F1/CI-31 ligne automation supprimée")
+    c.viole(check_primitive_irreversible(T14L.replace(
+        "| **Boucle**, `repeat`, retry, seconde pression | sans exception |\n", ""), {}, {}),
+        "aucune ligne interdisant", "F1/CI-31 ligne repeat supprimée")
+    # F2 : le bouton interdit, dans chaque famille nouvellement couverte.
+    _presse = f"  - action: button.press\n    entity_id: {_bt0}\n"
+    for _f in ("configuration.yaml",
+               "blueprints/automation/homeassistant/motion_light.yaml",
+               "esphome/esp32-ble-proxy-1.yaml",
+               "11_automations/aspirateur/x.yml"):
+        c.viole(check_primitive_irreversible(T14, {_f: _presse}, {}),
+                "hors allowlist nominative", f"F2/CI-31 pression dans {_f}")
+    c.viole(check_primitive_irreversible(T14, {}, {"18_lovelace/y.yaml": _presse}),
+            "hors allowlist nominative", "F2/CI-31 pression dans Lovelace")
+    c.conforme(check_primitive_irreversible(
+        T14, {"11_automations/z.yaml": f"# {_bt0} en commentaire\n"}, {}),
+        "CI-31 mention en commentaire ignorée")
+
+    # ---- F4/F8 : verrou transitoire --------------------------------------
+    global ALLOWLIST_PRESSION
+    _sauv = ALLOWLIST_PRESSION
+    try:
+        ALLOWLIST_PRESSION = frozenset({"10_scripts/aspirateur/declarer.yaml"})
+        _verrou = check_primitive_irreversible(T14, {}, {})
+        c.viole(_verrou, "VERROU M0", "F4/CI-31 allowlist non vide refusée")
+        assert len(_verrou) == 1, \
+            "F4 : le verrou doit court-circuiter TOUTE autre analyse"
+        c.conformes += 1
+    finally:
+        ALLOWLIST_PRESSION = _sauv
+    c.conforme(check_primitive_irreversible(T14, {}, {}),
+               "F4/CI-31 allowlist vide : analyse normale")
+
+    # ---- ASP-CI-32 : séquence de remise à zéro ---------------------------
+    c.conforme(check_remise_a_zero(T14), "CI-32 chapitre reel")
+    c.conforme(check_remise_a_zero(T14L), "CI-32 leurres tolérés")
+    # F1-d : l'ETAPE de relecture est supprimee du tableau, le mot subsistant.
+    c.viole(check_remise_a_zero(T14L.replace(
+        "| 3 | Relecture | Observation de la postcondition pendant **30 s au plus** |\n",
+        "")), "séquence", "F1-d/CI-32 étape de relecture supprimée")
+    # Ordre normatif : observer avant d'emettre est refuse.
+    c.viole(check_remise_a_zero(T14L.replace(
+        "| 2 | Émission | **Une seule pression** sur le **bouton exact** du poste |\n"
+        "| 3 | Relecture | Observation de la postcondition pendant **30 s au plus** |\n",
+        "| 2 | Relecture | Observation de la postcondition pendant **30 s au plus** |\n"
+        "| 3 | Émission | **Une seule pression** sur le **bouton exact** du poste |\n")),
+        "dans cet ordre", "F1/CI-32 ordre inversé")
+    c.viole(check_remise_a_zero(T14L.replace(
+        "| 2 | Émission | **Une seule pression** sur le **bouton exact** du poste |",
+        "| 2 | Émission | Des pressions successives sur le **bouton exact** |")),
+        "une seule pression", "CI-32 pression non unique")
+    c.viole(check_remise_a_zero(T14L.replace(
+        "pendant **30 s au plus**", "pendant **45 s au plus**")),
+        "hors des constantes admises", "CI-32 durée non admise")
+    c.viole(check_remise_a_zero(T14L.replace(
+        "**Aucun retry**", "**Un retry est admis**")),
+        "l'interdiction de retry", "CI-32 retry non interdit")
+    c.viole(check_remise_a_zero(T14L.replace(
+        "le poste **reste dû** ;", "le poste est soldé ;")),
+        "maintien du poste", "CI-32 poste soldé à tort")
+    c.viole(check_remise_a_zero(T14L.replace(
+        "**ne conclut à aucune panne matérielle**", "**déclare le matériel en panne**")),
+        "refus de conclure à la panne", "CI-32 panne conclue")
+    c.viole(check_remise_a_zero(T14L.replace(
+        "> geste manuel.**", "> relance automatique.**")),
+        "reprise par geste manuel", "CI-32 relance automatique")
+
+    # ---- ASP-CI-33 : notifications ---------------------------------------
+    c.conforme(check_notifications_entretien(T14, T08), "CI-33 chapitres reels")
+    c.conforme(check_notifications_entretien(T14L, T08L), "CI-33 leurres tolérés")
+    # F1-e : la PUCE d'exclusion d'historisation est supprimee du 08, le mot
+    # subsistant dans les leurres.
+    c.viole(check_notifications_entretien(T14, "\n".join(
+        l for l in T08L.splitlines()
+        if not l.startswith("- **Aucune historisation.**"))),
+        "exclusion d'historisation", "F1-e/CI-33 puce historisation supprimée")
+    c.viole(check_notifications_entretien(T14, "\n".join(
+        l for l in T08L.splitlines()
+        if not l.startswith("- **Aucune position cartographique fine**"))),
+        "exclusion de la position", "F1/CI-33 puce position supprimée")
+    c.viole(check_notifications_entretien(T14, T08L.replace(
+        "statistiques\n  d'usage", "toute mesure")),
+        "statistiques d'usage", "CI-33 amendement 08 trop large")
+    c.viole(check_notifications_entretien(T14, T08L.replace(
+        "[`14`](14_entretien.md)", "un chapitre à venir")),
+        "ne renvoie pas au", "CI-33 renvoi absent")
+    c.viole(check_notifications_entretien(T14L.replace(
+        "| **Entretien dû** | état durable | **persistant** — projection du lot `N1` |\n",
+        ""), T08), "ligne propre", "F1/CI-33 objet retiré du cloisonnement")
+    c.viole(check_notifications_entretien(T14L.replace(
+        "**Aucune notification ajoutée**", "**Une notification est émise**"), T08),
+        "AUCUNE", "CI-33 notification hors mission")
+
+    print(f"selftest OK — 32 contrôles logiques (ASP-CI-28 réservé, non "
+          f"exécuté), {c.total()} cas "
           f"({c.conformes} conformes, {c.violations} violations).")
 
 

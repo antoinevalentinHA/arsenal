@@ -69,6 +69,7 @@ Cette convention reprend celle du domaine arrosage
 | [`11_frontiere_ui.md`](11_frontiere_ui.md) | Frontière backend / UI : ce que l'UI rend et sollicite, ce qu'elle ne calcule ni ne commande jamais |
 | [`12_identifiants_a_fournir.md`](12_identifiants_a_fournir.md) | Rôles abstraits dont l'identifiant doit être attribué par l'opérateur — aucune valeur proposée |
 | [`13_hors_perimetre_arbitrages_et_questions_ouvertes.md`](13_hors_perimetre_arbitrages_et_questions_ouvertes.md) | Hors périmètre du domaine, arbitrages contractuels explicites, questions ouvertes |
+| [`14_entretien.md`](14_entretien.md) | **Entretien des consommables** — quatre postes, seuil d'échéance, remise à zéro confirmée, allowlist de la primitive irréversible, routage des erreurs |
 
 ---
 
