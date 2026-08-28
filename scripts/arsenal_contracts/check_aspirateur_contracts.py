@@ -2707,6 +2707,104 @@ def sans_commentaires_yaml(texte: str) -> str:
 
 
 # ═════════════════════════════════════════════════════════════
+# C-6 — SLOTS CRITIQUES LITTÉRAUX
+#
+# LE DÉFAUT. Les gardes de ce module cherchent `vacuum.start`,
+# `button.press`, `notify.` ou un identifiant d'entité EN SOUS-CHAÎNE du YAML
+# livré. Home Assistant, lui, résout la valeur d'un slot par Jinja avant de
+# l'employer : `service: "{{ 'vacu' ~ 'um.start' }}"` commande réellement
+# l'appareil sans qu'aucune sous-chaîne interdite n'apparaisse. Les gardes
+# concluaient « absent » là où la vérité est « je ne sais pas ».
+#
+# LA RÈGLE, et elle tient en une phrase. Dans les fichiers du domaine que ce
+# module protège NOMMÉMENT, les quatre slots critiques — `service`, `action`,
+# `perform_action`, `entity_id` — doivent être LITTÉRAUX. Tout `{{` ou `{%`
+# dans leur valeur est refusé, avec le fichier, la ligne et la clé.
+#
+# POURQUOI PAS DE RÉSOLUTION. Décider ce que vaut un gabarit demanderait de
+# reproduire Jinja et la portée réelle des variables de Home Assistant. Une
+# reproduction partielle se contourne par le premier filtre non prévu et
+# introduit ses propres faux positifs : elle rend un verdict là où elle
+# devrait s'abstenir. Refuser le gabarit à cet endroit précis ne demande
+# aucun verdict — et c'est exactement ce que le domaine peut exiger de ses
+# propres fichiers, où aucun slot critique n'est aujourd'hui templatisé.
+#
+# PORTÉE, dite plutôt que passée sous silence. La règle ne s'applique QU'AUX
+# périmètres nominatifs (`RUNTIME_FICHIERS`, `DOSSIER_N1`). Elle ne balaie
+# pas le dépôt, ne cherche aucun marqueur de contenu, et ne remplace aucune
+# garde existante : elle leur garantit un texte sur lequel elles disent vrai.
+# Un fichier tiers qui construirait une commande reste hors garantie — c'est
+# une limite assumée, renvoyée à la revue humaine (L2/M2), pas un oubli.
+# ═════════════════════════════════════════════════════════════
+
+CLES_SERVICE = ("service", "action", "perform_action")
+CLES_CIBLE = ("entity_id",)
+CLES_SENSIBLES = CLES_SERVICE + CLES_CIBLE
+
+INDICATEUR_BLOC = re.compile(r"^[|>][+-]?\d*$")
+LIGNE_SLOT = re.compile(
+    r"^(?P<tete>[ \t]*(?:-[ \t]+)?)"
+    r"(?P<cle>service|action|perform_action|entity_id)"
+    r"[ \t]*:[ \t]*(?P<val>.*?)[ \t]*$")
+
+
+def slots_sensibles(txt, cles=CLES_SENSIBLES):
+    """(ligne, clé, valeur nue) de chaque slot critique du texte.
+
+    Les scalaires de bloc (`>-`, `|`) sont recollés — sans quoi un gabarit
+    écrit sous la clé, et non sur sa ligne, échapperait au relevé. Les lignes
+    de commentaire sont ignorées.
+
+    C'est une lecture de SCALAIRES, et rien de plus : ni flow mapping, ni
+    alias, ni ancre, ni ciblage par `device_id`. Ceux-là relèvent du visiteur
+    YAML du lot M2, et le verrou `VISITEUR_YAML_RECURSIF` reste fermé.
+    """
+    if not isinstance(txt, str):
+        return []
+    lignes = txt.splitlines()
+    out = []
+    for i, ligne in enumerate(lignes):
+        if ligne.lstrip().startswith("#"):
+            continue
+        m = LIGNE_SLOT.match(ligne)
+        if not m or m.group("cle") not in cles:
+            continue
+        val = m.group("val")
+        if INDICATEUR_BLOC.match(val):
+            marge, corps, j = len(m.group("tete")), [], i + 1
+            while j < len(lignes):
+                s = lignes[j]
+                if s.strip() and (len(s) - len(s.lstrip())) <= marge:
+                    break
+                corps.append(s.strip())
+                j += 1
+            val = " ".join(x for x in corps if x)
+        val = val.strip()
+        if len(val) >= 2 and val[0] == val[-1] and val[0] in "\"'":
+            val = val[1:-1]
+        out.append((i + 1, m.group("cle"), val))
+    return out
+
+
+def slots_templatises(txt, cles=CLES_SENSIBLES):
+    """Les slots critiques dont la valeur porte du Jinja."""
+    return [(no, cle, val) for no, cle, val in slots_sensibles(txt, cles)
+            if "{{" in val or "{%" in val]
+
+
+def refus_slots_templatises(code: str, rel: str, txt: str,
+                            cles=CLES_SENSIBLES) -> list[str]:
+    """Le refus, formulé une seule fois pour tous les sites d'appel."""
+    return [
+        f"{code} : {rel}:{no} — `{cle}` porte un gabarit Jinja : "
+        f"{val.strip()[:80]!r}. Dans les fichiers du domaine, les slots "
+        f"critiques sont LITTÉRAUX : un identifiant assemblé en Jinja "
+        f"désigne à l'exécution ce qu'aucune garde textuelle ne peut lire. "
+        f"Écrire la valeur en clair."
+        for no, cle, val in slots_templatises(txt, cles)]
+
+
+# ═════════════════════════════════════════════════════════════
 # RUNTIME L1 — ASP-CI-11 … ASP-CI-21
 #
 # Le domaine cesse d'être antérieur au runtime : les obligations de CONDUITE
@@ -3130,12 +3228,25 @@ def check_ecrivain_unique(moteur_yaml, textes_runtime, yaml_depot) -> list[str]:
                             f"moteur (ASP-INV-31).")
         # `- action: vacuum.stop` comme `  action: vacuum.stop` : le tiret de
         # liste fait partie de la ligne, l'oublier laisserait passer la forme
-        # la plus courante.
-        for m in re.finditer(r'^[ \t]*-?[ \t]*(?:action|service)[ \t]*:[ \t]*'
-                             r'(vacuum\.[a-z_]+|roborock\.[a-z_]+)[ \t]*$',
+        # la plus courante. Le guillemet est optionnel — un scalaire cite est
+        # le meme appel — et `perform_action` est l'alias moderne de
+        # `service`, que la forme anterieure ignorait.
+        for m in re.finditer(r'^[ \t]*-?[ \t]*(?:action|service|perform_action)'
+                             r'[ \t]*:[ \t]*["\']?'
+                             r'(vacuum\.[a-z_]+|roborock\.[a-z_]+)["\']?[ \t]*$',
                              sans_commentaires_yaml(txt), re.M):
             errs.append(f"ASP-CI-11 : {rel} appelle `{m.group(1)}` — seul le "
                         f"moteur commande l'appareil (ASP-INV-31).")
+
+    # C-6 : dans les CINQ fichiers runtime que ce module nomme, les slots
+    # critiques sont litteraux. Les balayages ci-dessus sont textuels ; sans
+    # cette regle, `service: "{{ 'vacu' ~ 'um.start' }}"` les traversait sans
+    # qu'aucune sous-chaine interdite n'apparaisse. Le perimetre vient de
+    # `RUNTIME_FICHIERS`, pas d'une recherche de mots dans le contenu.
+    for rel in RUNTIME_FICHIERS:
+        errs += refus_slots_templatises(
+            "ASP-CI-11", rel,
+            sans_commentaires_yaml(textes_runtime.get(rel, "")))
 
     # Moteur et garde template appliquent la MÊME règle sur les MÊMES témoins.
     garde = textes_runtime.get(RUNTIME_GARDE, "")
@@ -7841,6 +7952,96 @@ def selftest() -> None:
         "      entity_id: binary_sensor.presence_maison\n")),
         "seconde autorite", "CI-39 entite etrangere lue")
 
+
+    # ═════════════════════════════════════════════════════════════
+    # C-6 — SLOTS CRITIQUES LITTÉRAUX
+    #
+    # Une seule propriete est garantie, donc une seule est prouvee : dans les
+    # fichiers que le module protege NOMMEMENT, un slot critique porteur de
+    # Jinja est refuse. Les cas ci-dessous couvrent les quatre cles, les deux
+    # formes d'ecriture (ligne et scalaire de bloc), les deux acceptations
+    # (litteral nu, litteral cite), la correction d'alias conservee, la borne
+    # de perimetre, et l'absorption des formes invalides.
+    # ═════════════════════════════════════════════════════════════
+
+    def n1_slot(bloc: str) -> dict[str, str]:
+        """Le runtime N1 reel, augmente d'UN bloc d'action."""
+        return n1_mut(ANCRE_39, ANCRE_39 + "  bidon:\n" + bloc)
+
+    # ---- Jinja refuse dans chacune des quatre cles critiques -------------
+    for _cle in ("service", "action", "perform_action"):
+        c.viole(check_interdits_n1(n1_slot(
+            f"    - {_cle}: \"{{{{ 'vacu' ~ 'um.start' }}}}\"\n")),
+            "porte un gabarit Jinja", f"C-6/CI-39 Jinja dans `{_cle}`")
+    c.viole(check_interdits_n1(n1_slot(
+        "    - service: persistent_notification.create\n"
+        "      target:\n"
+        "        entity_id: \"{{ cible }}\"\n")),
+        "porte un gabarit Jinja", "C-6/CI-39 Jinja dans `entity_id`")
+
+    # ---- scalaire de bloc : le gabarit est sous la cle, pas sur sa ligne --
+    c.viole(check_interdits_n1(n1_slot(
+        "    - service: >-\n"
+        "        {{ 'button' ~ '.press' }}\n")),
+        "porte un gabarit Jinja", "C-6/CI-39 Jinja en scalaire de bloc")
+    c.viole(check_interdits_n1(n1_slot(
+        "    - service: persistent_notification.create\n"
+        "      target:\n"
+        "        entity_id: |\n"
+        "          {% set b = 'button' %}{{ b ~ '.press' }}\n")),
+        "porte un gabarit Jinja", "C-6/CI-39 `{% %}` en scalaire de bloc")
+
+    # ---- les deux formes litterales restent acceptees --------------------
+    c.conforme(check_interdits_n1(N1_0), "C-6/CI-39 runtime N1 reel conforme")
+    c.conforme(check_interdits_n1(n1_slot(
+        "    - service: persistent_notification.create\n")),
+        "C-6/CI-39 litteral nu accepte")
+    c.conforme(check_interdits_n1(n1_slot(
+        "    - service: \"persistent_notification.create\"\n"
+        "      target:\n"
+        "        entity_id: \"sensor.aspirateur_entretien_du\"\n")),
+        "C-6/CI-39 litteral cite accepte")
+
+    # ---- ASP-CI-11 : la meme regle sur les CINQ fichiers runtime nommes ---
+    c.conforme(check_ecrivain_unique(mot0, rt0, depot0),
+               "C-6/CI-11 runtime L1 reel conforme")
+    c.viole(check_ecrivain_unique(
+        mot0, {**rt0, RUNTIME_MOTEUR: rt0[RUNTIME_MOTEUR]
+               + "\n  - action: \"{{ 'vacu' ~ 'um.stop' }}\"\n"}, depot0),
+        "porte un gabarit Jinja", "C-6/CI-11 Jinja dans un fichier nomme")
+
+    # ---- corrections conservees : scalaire cite, et alias `perform_action`
+    for _forme, _libelle in (('    - action: "vacuum.stop"\n', "scalaire cite"),
+                             ("    - perform_action: vacuum.stop\n",
+                              "alias `perform_action`")):
+        c.viole(check_ecrivain_unique(mot0, rt0, dict(
+            depot0, **{"11_automations/x.yaml": _forme})),
+            "seul le moteur commande",
+            f"C-6/CI-11 primitive interdite — {_libelle}")
+
+    # ---- BORNE DE PERIMETRE : hors des fichiers nommes, aucun refus -------
+    # La regle ne balaie pas le depot et ne cherche aucun marqueur de
+    # contenu. Un fichier tiers templatise n'est pas refuse — limite assumee.
+    c.conforme(check_ecrivain_unique(mot0, rt0, dict(
+        depot0, **{"11_automations/aspirateur/tiers.yaml":
+                   '    - service: "{{ svc }}"\n'
+                   '      target:\n'
+                   '        entity_id: "{{ cible }}"\n'})),
+        "C-6/CI-11 fichier hors perimetre nominatif non refuse")
+
+    # ---- formes invalides : diagnostiquees, jamais une exception ----------
+    _degats = []
+    for _f in (None, 12, 3.5, True, ["service: x"], {"a": 1}, b"x", object(),
+               "", "service: {{ 'a' ~ }}\n", "{{ unclosed",
+               "a: &x 1\nb: *x\nc: {d: e}\nservice: >-\n  x\n"):
+        try:
+            slots_sensibles(_f)
+            slots_templatises(_f)
+            refus_slots_templatises("ASP-CI-39", "f.yaml", _f)
+        except Exception as exc:                       # noqa: BLE001
+            _degats.append(f"{type(_f).__name__} {_f!r:.30} leve {exc!r}")
+    c.conforme(_degats, "C-6 formes invalides absorbees sans traceback")
+
     print(f"selftest OK — 38 contrôles logiques (ASP-CI-28 réservé, non "
           f"exécuté), {c.total()} cas "
           f"({c.conformes} conformes, {c.violations} violations).")
@@ -8525,6 +8726,10 @@ def check_interdits_n1(n1: dict[str, str]) -> list[str]:
         return [f"ASP-CI-39 : dossier N1 introuvable — `{DOSSIER_N1}`."]
     for rel, txt in sorted(n1.items()):
         nu = sans_commentaires_yaml(txt)
+        # C-6 : N1 est un perimetre FERME, lu par dossier nomme. Ses slots
+        # critiques sont litteraux — sans quoi aucun des interdits ci-dessous
+        # ne pourrait etre etabli sur ce fichier.
+        errs += refus_slots_templatises("ASP-CI-39", rel, nu)
         # Le lexique de prediction est cherche dans le CODE, jamais dans les
         # commentaires : un en-tete qui s'INTERDIT nommement une tendance ou
         # une date previsionnelle ne la produit pas — l'y refuser rendrait
