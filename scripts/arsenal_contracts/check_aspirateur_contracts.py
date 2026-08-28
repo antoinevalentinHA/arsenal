@@ -412,6 +412,162 @@ CLES_POSTE_M1 = ("poste", "classe", "restant_h", "plafond_h",
 # zero, aucune ne vaut « non du » (ASP-INV-74, ASP-INV-76).
 ILLISIBLES_M1 = ("unavailable", "unknown", "none", "", "abc", "  ")
 
+# ═════════════════════════════════════════════════════════════
+# NOTIFICATIONS — lot N1, PROJECTION PERSISTANTE (ASP-CI-37 … ASP-CI-39)
+#
+# N1 est un lot de NOTIFICATIONS : des automations de projection, lecteurs
+# purs, sans aucune ecriture vers l'appareil ni vers le verdict. Les
+# identifiants ne sont PAS inventes ici : ils sont ATTRIBUES par l'operateur
+# (A-3, rendu en V4 — 07_MACHINE_L2.md §7, 11_ARBITRAGES_RENDUS.md §6.6), et
+# les figer dans ce module fait echouer un renommage silencieux (ASP-INV-58).
+#
+# CE QUE N1 IMPLEMENTE, ET CE QU'IL DIFFERE — etabli avant codage.
+#
+#   Canal 2, entretien requis    -> IMPLEMENTE. Son autorite existe et elle
+#                                   est deployee : les deux entites derivees
+#                                   du lot M1.
+#   Canal 1, cycle en cours      -> DIFFERE au lot L2. 08_NOTIFICATIONS.md §3
+#                                   fixe son autorite : le verdict persistant,
+#                                   apparition en classe O, extinction « a
+#                                   toute valeur de classe T, sans exception ».
+#                                   Or 07_MACHINE_L2.md §4.1 etablit que, sur
+#                                   les dix-huit valeurs du vocabulaire L1, la
+#                                   CLASSE T EST VIDE. L'autorite de creation
+#                                   existe ; celle de SUPPRESSION n'existe pas.
+#                                   Une projection livree maintenant creerait
+#                                   une notification qu'aucun etat ne pourrait
+#                                   plus eteindre, et transformerait le verdict
+#                                   L1 FIGE — `LANCEE/DEMARRAGE_OBSERVE`, seule
+#                                   valeur de classe O — en preuve permanente
+#                                   de cycle courant. Substituer le temoin de
+#                                   session natif adopterait une mission
+#                                   externe, ce que 07 §6.2 interdit (D-06,
+#                                   D-R4) et qu'ASP-INV-47 refuse deja.
+#                                   10_LOTS.md §2 range d'ailleurs « automation
+#                                   de projection de mission » dans le lot L2.
+#   Canal 3, erreur robot/dock   -> DIFFERE a L2/W3. `A-8` conditionne l'envoi
+#                                   mobile a « PENDANT une mission Arsenal »,
+#                                   et 07 §5.1 n'en connait qu'une definition :
+#                                   verdict en classe O. Le verdict L1 etant
+#                                   fige, « pendant une mission » serait
+#                                   indiscernable de « apres n'importe quelle
+#                                   mission passee » : chaque erreur ulterieure
+#                                   partirait en push HORS MISSION, contre
+#                                   ASP-INV-84 et contre la seconde branche
+#                                   d'`A-8` elle-meme. 07 §7.0 attribue de plus
+#                                   l'envoi mobile au ROLE 1 — la supervision
+#                                   W3, `10280000000001`, lot L2.
+#
+# Aucun invariant neuf, aucun contrat modifie. N1 rend opposables des
+# obligations deja posees : ASP-INV-76 (aucune echeance conclue sur une donnee
+# absente), ASP-INV-77 (aucune remise a zero automatique), ASP-INV-83
+# (cloisonnement des trois objets), ASP-INV-84 (rien hors mission).
+# ═════════════════════════════════════════════════════════════
+
+DOSSIER_N1 = "11_automations/aspirateur"
+RUNTIME_N1 = DOSSIER_N1 + "/notification_entretien.yaml"
+
+# Identifiants d'automation. ATTRIBUES par l'operateur, jamais deduits.
+AID_N1_MISSION = "10280000000002"       # projection persistante de mission
+AID_N1_MAINTENANCE = "10280000000003"   # projection persistante de maintenance
+AID_N1_AUTORISES = frozenset({AID_N1_MISSION, AID_N1_MAINTENANCE})
+# Hors perimetre N1, et pour des raisons distinctes : `...01` est la
+# supervision W3 (ecrivain du verdict, lot L2) ; `...04` la remise a zero de
+# la composition d'intention (lot U0, bloque par `A-5`).
+AID_HORS_N1 = {"10280000000001": "supervision de mission W3 — lot L2",
+               "10280000000004": "remise a zero de la composition — lot U0"}
+# Tout identifiant du domaine, quelle que soit sa valeur. Balaye le TEXTE du
+# dossier, commentaires compris : le parseur YAML ne voit que les automations
+# qu'il sait lire, et un identifiant cite ailleurs — une forme non couverte,
+# un renvoi de commentaire — echapperait a la table `vus`.
+AID_DOMAINE = re.compile(r"\b(1028\d{10})\b")
+
+# ── VERROU N1/MISSION : la projection de cycle reste NON CONSTRUITE ────────
+# Elle le reste tant que son autorite d'EXTINCTION n'existe pas, c'est-a-dire
+# tant qu'aucune valeur de classe T n'est ecrite par un writer. Le verrou ne
+# prouve pas que L2 sera correct le jour ou il existera : il rend la
+# construction de cette projection VISIBLE et DELIBEREE — jamais accidentelle.
+# Le lever exige de modifier CE module, sous revue, en meme temps que le
+# runtime. C'est le meme mecanisme que le verrou transitoire de `M0`.
+VERROU_N1_MISSION = True
+
+# Identifiants de notification. FERMES : 08_NOTIFICATIONS.md §1 en fixe deux,
+# un par canal persistant, et le lot n'en instancie qu'un.
+NOTIF_N1_ENTRETIEN = "aspirateur_entretien"
+NOTIF_N1_MISSION = "aspirateur_mission"
+NOTIF_N1_FERMES = frozenset({NOTIF_N1_ENTRETIEN, NOTIF_N1_MISSION})
+# Ce que N1 instancie REELLEMENT. La difference avec l'ensemble ferme est le
+# volet differe, et elle est verifiee — pas seulement commentee.
+NOTIF_N1_INSTANCIES = frozenset({NOTIF_N1_ENTRETIEN})
+
+TITRE_N1_ENTRETIEN = "\U0001F9F0 Aspirateur \u2013 Entretien requis"
+# Readiness : le patron du depot, et le seul admis pour la re-projection.
+READINESS_N1 = "input_boolean.systeme_stable"
+# Autorite metier de la projection d'entretien — les deux entites de M1, et
+# elles seules. Toute autre entite lue serait une seconde autorite.
+AUTORITE_N1 = (ENTITE_M1_LISTE, ENTITE_M1_TEMOIN)
+# Le SEUL attribut que le message a le droit de lire. Lire `postes`,
+# `postes_non_dus` ou `seuil_pourcentage` ouvrirait la duree chiffree que
+# 08_NOTIFICATIONS.md §4.2 proscrit, et la date que 14 §2 refuse.
+ATTRIBUT_N1_MESSAGE = "postes_dus"
+# Le MEME attribut borne le declencheur de liste, et c'est la meme raison.
+# Un declencheur d'etat sans `to:`, `from:` ni `attribute:` passe en
+# `match_all` : il part sur tout changement d'attribut, `postes` compris —
+# donc a chaque decroissance d'un compteur natif. Ce que le declencheur
+# surveille et ce que le message rend sont ainsi la meme donnee, et ils le
+# restent : deplacer l'un deplace l'autre.
+ATTRIBUT_N1_DECLENCHEUR = ATTRIBUT_N1_MESSAGE
+# Etat de synthese, UNIQUE et SCALAIRE, qui autorise la disqualification.
+# Une liste de valeurs acceptees y glisserait `unknown` ou `unavailable` sans
+# casser le nominal : c'est la mutation que la garde structurelle refuse.
+ETAT_N1_SUPPRESSION = ETAT_M1_AUCUN
+# Modes admis. `single` abandonnerait EN SILENCE le second declenchement d'un
+# franchissement de seuil — les deux entites d'autorite mutent dans le meme
+# cycle ; `queued` rejouerait un rendu deja perime. Les trois precedents de
+# projection persistante du depot portent `restart`.
+MODES_N1 = frozenset({"restart"})
+# Types de condition que l'evaluateur de scenarios sait rendre FIDELEMENT. Un
+# type absent d'ici fait ECHOUER le controle, jamais passer : un evaluateur
+# silencieusement incomplet rendrait un faux vert.
+CONDITIONS_N1_RENDABLES = frozenset({"state", "template"})
+# Services d'envoi mobile, sous toutes leurs formes dans le depot. N1 n'en
+# appelle AUCUN : le canal 3 est differe.
+MOBILE_N1 = ("notify.", "notify:", "script.notification_envoyer",
+             "notification_envoyer_famille", "notification_envoyer_avance",
+             "telephone_parent_1_notify", "telephone_parent_2_notify")
+# Lexique d'ERREUR robot/dock. Aucune notification persistante ne le porte :
+# hors mission, le domaine n'ajoute rien (ASP-INV-84), et une erreur n'est pas
+# un entretien (ASP-INV-83).
+ERREUR_N1 = ("erreur_de_dock", "erreur_de_l_aspirateur", "dock_erreur",
+             "ERREUR_EN_MISSION", "MISSION_INTERROMPUE")
+# Jetons du vocabulaire de verdict L1 dont la CITATION dans ce lot trahirait
+# une deduction de « cycle en cours ». La garde qui les consomme :
+#   · INTERDIT de prendre le verdict L1 FIGE pour autorite d'un cycle
+#     courant — sur les dix-huit valeurs deployees, la classe T est VIDE
+#     (07_MACHINE_L2.md §4.1), donc rien n'eteindrait une telle projection ;
+#   · CONTRIBUE au verrou qui empeche l'implementation prematuree de
+#     l'automation `10280000000002`, aux cotes de `VERROU_N1_MISSION` ;
+#   · NE CONSTITUE PAS une supervision L2 et ne prouve l'existence d'AUCUN
+#     terminal de classe T. Elle constate une absence, elle ne la comble pas.
+# La liste melange deliberement des jetons de classe O et de classe H : elle
+# ne classe rien, elle refuse une citation. L'inclusion d'un jeton de classe H
+# ne fait que rendre la garde plus stricte.
+VERDICT_FIGE_N1 = ("LANCEE/DEMARRAGE_OBSERVE", "DEMARRAGE_OBSERVE",
+                   "EMISSION/COMMANDE_ACCEPTEE", "COMMANDE_ACCEPTEE")
+# Temoins natifs de session et d'activite : les lire ici adopterait une
+# mission externe (07 §6.2, ASP-INV-47).
+SESSION_NATIVE_N1 = ("binary_sensor.roborock_q7_max_nettoyage",
+                     "sensor.roborock_q7_max_etat",
+                     "vacuum.roborock_q7_max")
+# Helpers d'INTENTION — couche U0. Le lot n'existe pas, et N1 ne le prejuge pas.
+INTENTION_N1 = ("input_select.aspirateur", "input_boolean.aspirateur",
+                "input_number.aspirateur", "input_text.aspirateur")
+# Lexique de PREDICTION. Le seuil se constate, il ne se prevoit pas (14 §2).
+PREDICTION_N1 = ("prochaine echeance", "prochaine échéance", "date prevue",
+                 "date prévue", "prevu le", "prévu le", "dans environ",
+                 "d'ici le", "tendance", "estimation", "estimé le",
+                 "estime le", "sera du le", "sera dû le")
+
 # Repli numerique, sous ses formes courantes : `| float(0)`, `| int(0)`,
 # `| default(0)`. C'est EXACTEMENT ce que le lot s'interdit — une valeur de
 # repli transformerait un trou d'information en mesure nominale.
@@ -3795,6 +3951,10 @@ def run() -> int:
     # trois controles M1 s'ajoutent a ces gardes, ils ne s'y substituent
     # pas.
     m1 = load_runtime_m1()
+    # N1 : les automations de projection. Le DOSSIER est lu, pas un fichier
+    # nomme : c'est ce qui rend detectable un troisieme writer glisse a cote.
+    n1 = load_runtime_n1()
+    depot = load_yaml_depot()
 
     controles = (
         ("ASP-CI-1  invariants", check_invariants(textes)),
@@ -3892,6 +4052,11 @@ def run() -> int:
         ("ASP-CI-35 projection rendue sur les trois situations",
          check_projection_rendue(m1)),
         ("ASP-CI-36 interdits de la projection", check_interdits_projection(m1)),
+        ("ASP-CI-37 writers, identifiants et cycle de vie N1",
+         check_writers_n1(n1, depot)),
+        ("ASP-CI-38 projection persistante rendue sur les huit scénarios",
+         check_projection_n1_rendue(n1, m1)),
+        ("ASP-CI-39 interdits du lot N1", check_interdits_n1(n1)),
     )
 
     erreurs: list[str] = []
@@ -3906,16 +4071,17 @@ def run() -> int:
           f"{len(depot)} fichiers YAML balayés par ASP-CI-11 · "
           f"{len(fonctionnel)} fichiers YAML fonctionnels balayés par ASP-CI-31 · "
           f"{len(attestes_audit)} identifiants attestés (audit + relevé) · "
-          f"{1 if m1 else 0} fichier runtime M1 (projection d'entretien)")
+          f"{1 if m1 else 0} fichier runtime M1 (projection d'entretien) · "
+          f"{len(n1)} fichier(s) runtime N1 (projection persistante)")
     if erreurs:
         print("\nAspirateur — écarts contractuels détectés :")
         for e in erreurs:
             print(f"- {e}")
         return 1
     print("\nOK - domaine Aspirateur : intégrité normative, conduite "
-          "runtime, acte contractuel Maintenance et projection "
-          "d'entretien vérifiés — "
-          f"{len(controles)} lignes affichées pour 35 contrôles logiques, "
+          "runtime, acte contractuel Maintenance, projection "
+          "d'entretien et projection persistante vérifiées — "
+          f"{len(controles)} lignes affichées pour 38 contrôles logiques, "
           "0 écart.")
     print("     décompte : ASP-CI-12/13 et ASP-CI-16/17 partagent chacun une "
           "ligne ; ASP-CI-28 est RÉSERVÉ au lot U0 et n'est pas exécuté.")
@@ -6672,7 +6838,12 @@ def selftest() -> None:
     # mutations ASP-CI-34 … ASP-CI-36 plus bas, sur le fichier reel.
     controles_m1 = {"check_projection_entretien", "check_projection_rendue",
                     "check_interdits_projection"}
-    manquants = invoques - normatifs - set(CONTROLES_RUNTIME) - controles_m1
+    # N1 : controles de RUNTIME D'AUTOMATION, joues par la batterie de
+    # mutations ASP-CI-37 … ASP-CI-39 plus bas, sur le dossier reel.
+    controles_n1 = {"check_writers_n1", "check_projection_n1_rendue",
+                    "check_interdits_n1"}
+    manquants = (invoques - normatifs - set(CONTROLES_RUNTIME) - controles_m1
+                 - controles_n1)
     assert not manquants, \
         f"m-C bis : `run()` invoque {sorted(manquants)}, absent(s) de la " \
         f"batterie du selftest — c'est exactement le trou qui a laissé " \
@@ -7253,9 +7424,1194 @@ def selftest() -> None:
         "           else 'mdi:broom' }}")),
         "l'icône du témoin", "CI-35 icône inversée")
 
-    print(f"selftest OK — 35 contrôles logiques (ASP-CI-28 réservé, non "
+
+    # ═══════════════════════════════════════════════════════════════════
+    # N1 — ASP-CI-37 / 38 / 39, joues sur le DOSSIER RUNTIME REEL
+    #
+    # Comme pour M1, les mutations portent sur le fichier tel qu'il est livre.
+    # Une reecriture du writer fera ECHOUER cette batterie plutot que passer
+    # en silence.
+    # ═══════════════════════════════════════════════════════════════════
+
+    N1_0 = load_runtime_n1()
+    M1_REEL = (ROOT / RUNTIME_M1).read_text(encoding="utf-8")
+    DEPOT_0 = load_yaml_depot()
+    assert N1_0, "selftest N1 : dossier runtime introuvable"
+    F_N1 = RUNTIME_N1
+    assert F_N1 in N1_0, f"selftest N1 : `{F_N1}` absent du dossier"
+
+    def n1_mut(vieux: str, neuf: str, fichier: str = F_N1,
+               tout: bool = False) -> dict[str, str]:
+        """Le dossier N1, avec UNE substitution dans UN fichier."""
+        base = dict(N1_0)
+        src_f = base[fichier]
+        assert vieux in src_f, f"ancre N1 absente du runtime réel : {vieux[:70]}"
+        base[fichier] = (src_f.replace(vieux, neuf) if tout
+                         else src_f.replace(vieux, neuf, 1))
+        return base
+
+    def n1_plus(rel: str, contenu: str) -> dict[str, str]:
+        """Le dossier N1, augmente d'un fichier — un writer de plus."""
+        base = dict(N1_0)
+        base[rel] = contenu
+        return base
+
+    # ---- le runtime livre passe les trois controles -----------------------
+    c.conforme(check_writers_n1(N1_0, DEPOT_0), "CI-37 runtime N1 conforme")
+    c.conforme(check_projection_n1_rendue(N1_0, M1_REEL),
+               "CI-38 runtime N1 conforme")
+    c.conforme(check_interdits_n1(N1_0), "CI-39 runtime N1 conforme")
+
+    # ---- ASP-CI-37 : writers, identifiants, cycle de vie ------------------
+    c.viole(check_writers_n1({}, DEPOT_0), "introuvable", "CI-37 N1 absent")
+    c.viole(check_writers_n1({F_N1: "- id: [\n"}, DEPOT_0), "illisible",
+            "CI-37 YAML illisible")
+    c.viole(check_writers_n1(n1_mut(f'- id: "{AID_N1_MAINTENANCE}"',
+                                    '- id: "10280000000009"'), DEPOT_0),
+            "hors des deux identifiants", "CI-37 ID d'automation incorrect")
+    c.viole(check_writers_n1(n1_mut(f'- id: "{AID_N1_MAINTENANCE}"',
+                                    '- id: "10280000000001"'), DEPOT_0),
+            "supervision de mission W3", "CI-37 ID reserve a L2 employe")
+    c.viole(check_writers_n1(n1_mut(f'- id: "{AID_N1_MAINTENANCE}"',
+                                    '- id: "10280000000004"'), DEPOT_0),
+            "remise a zero de la composition", "CI-37 ID reserve a U0 employe")
+    c.viole(check_writers_n1(n1_mut(f'- id: "{AID_N1_MAINTENANCE}"',
+                                    f"- id: {AID_N1_MAINTENANCE}"), DEPOT_0),
+            "sans `id:` en CHAINE", "CI-37 identifiant en entier")
+
+    # Troisieme writer : un fichier de plus dans le dossier.
+    TROISIEME = (f'- id: "{AID_N1_MISSION}"\n'
+                 '  alias: "Aspirateur - Notification cycle"\n'
+                 '  mode: restart\n'
+                 '  trigger:\n'
+                 '    - platform: state\n'
+                 f'      entity_id: {READINESS_N1}\n'
+                 '      to: "on"\n'
+                 '  action:\n'
+                 '    - service: persistent_notification.create\n'
+                 '      data:\n'
+                 f'        notification_id: {NOTIF_N1_MISSION}\n'
+                 '        title: "\U0001F916 Aspirateur – Cycle en cours"\n'
+                 '        message: "Un cycle est en cours."\n')
+    c.viole(check_writers_n1(
+        n1_plus(DOSSIER_N1 + "/notification_cycle.yaml", TROISIEME), DEPOT_0),
+        "projection persistante de MISSION", "CI-37 projection de cycle batie")
+    QUATRIEME = TROISIEME.replace(f'"{AID_N1_MISSION}"', '"10280000000007"') \
+                         .replace(NOTIF_N1_MISSION, NOTIF_N1_ENTRETIEN)
+    c.viole(check_writers_n1(
+        n1_plus(DOSSIER_N1 + "/troisieme.yaml", QUATRIEME), DEPOT_0),
+        "hors des deux identifiants", "CI-37 writer a identifiant invente")
+    c.viole(check_writers_n1(
+        n1_plus(DOSSIER_N1 + "/troisieme.yaml", QUATRIEME), DEPOT_0),
+        "qu'UN writer", "CI-37 deux writers pour un meme etat metier")
+    # Le DECOMPTE, atteint par deux fichiers de plus : trois automations pour
+    # deux identifiants attribues. C'est la regle qui attrape un writer de
+    # plus meme lorsqu'il emprunte, chacun, un identifiant admis.
+    c.viole(check_writers_n1(
+        n1_plus(DOSSIER_N1 + "/troisieme.yaml", QUATRIEME
+                + "\n" + QUATRIEME.replace('"10280000000007"',
+                                            '"10280000000008"')), DEPOT_0),
+        "troisieme writer", "CI-37 troisieme automation dans le dossier")
+
+    # Un identifiant du domaine cite HORS de la cle `id:` — forme que le
+    # parseur YAML ne rattache a aucune automation.
+    c.viole(check_writers_n1(n1_mut(
+        "  mode: restart", "  mode: restart\n  # voir 10280000000001"),
+        DEPOT_0), "10280000000001", "CI-37 identifiant reserve cite en commentaire")
+
+    # Identifiant de notification : ferme, stable, non templatise.
+    c.viole(check_writers_n1(n1_mut(
+        f"notification_id: {NOTIF_N1_ENTRETIEN}",
+        "notification_id: aspirateur_entretien_v2", tout=True), DEPOT_0),
+        "hors de l'ensemble ferme", "CI-37 notification ID modifie")
+    c.viole(check_writers_n1(n1_mut(
+        f"notification_id: {NOTIF_N1_ENTRETIEN}\n"
+        '                title:',
+        'notification_id: "{{ \'aspirateur_entretien\' }}"\n'
+        '                title:'), DEPOT_0),
+        "TEMPLATISE", "CI-37 notification ID templatise")
+
+    # Creation sans suppression, et suppression sans creation.
+    SANS_DISMISS = ("            - service: persistent_notification.dismiss\n"
+                    "              data:\n"
+                    f"                notification_id: {NOTIF_N1_ENTRETIEN}\n")
+    c.viole(check_writers_n1(n1_mut(
+        SANS_DISMISS, "            - delay: \"00:00:01\"\n"), DEPOT_0),
+        "'dismiss'", "CI-37 creation sans suppression")
+
+    # Readiness, mode, declencheurs, titre, autorite du message.
+    c.viole(check_writers_n1(n1_mut(
+        "    - platform: state\n"
+        f"      entity_id: {READINESS_N1}\n"
+        '      to: "on"\n', ""), DEPOT_0),
+        "declencheur", "CI-37 absence du trigger systeme_stable")
+    c.viole(check_writers_n1(n1_mut(
+        f'      entity_id: {READINESS_N1}\n      to: "on"',
+        f'      entity_id: {READINESS_N1}'), DEPOT_0),
+        "declencheur", "CI-37 readiness sans `to: on`")
+    c.viole(check_writers_n1(n1_mut("  mode: restart", "  mode: single"),
+                             DEPOT_0),
+            "abandonnerait EN SILENCE", "CI-37 mode single")
+    c.viole(check_writers_n1(n1_mut(
+        f"      entity_id: {ENTITE_M1_LISTE}\n",
+        "      entity_id: sensor.roborock_q7_max_temps_restant_filtre\n"),
+        DEPOT_0), "rythme du coordinateur",
+        "CI-37 declencheur sur un capteur natif")
+    c.viole(check_writers_n1(n1_mut(
+        f'title: "{TITRE_N1_ENTRETIEN}"',
+        'title: "\U0001F9F0 Aspirateur — Entretien requis"'), DEPOT_0),
+        "attendu", "CI-37 titre au cadratin")
+    c.viole(check_writers_n1(n1_mut(
+        "'postes_dus') | join(', ') }}",
+        "'postes') | join(', ') }}"), DEPOT_0),
+        "il ne lit QUE", "CI-37 message qui lit un autre attribut")
+    c.viole(check_writers_n1(n1_mut(
+        "**Postes dus :** {{ state_attr",
+        "**Reste :** {{ states('sensor.roborock_q7_max_temps_restant_filtre') "
+        "}} {{ state_attr"), DEPOT_0),
+        "lecture libre", "CI-37 message qui lit une entite native")
+    DEFAUT = ("      default:\n"
+              "        - service: persistent_notification.dismiss\n"
+              "          data:\n"
+              f"            notification_id: {NOTIF_N1_ENTRETIEN}\n")
+    c.viole(check_writers_n1({F_N1: N1_0[F_N1] + DEFAUT}, DEPOT_0),
+            "`default:`", "CI-37 branche par defaut reintroduite")
+    c.viole(check_projection_n1_rendue({F_N1: N1_0[F_N1] + DEFAUT}, M1_REEL),
+            "conclut `dismiss`", "CI-38 branche par defaut qui supprime")
+
+    # Un writer hors domaine qui ecrirait la meme notification.
+    c.viole(check_writers_n1(N1_0, dict(
+        DEPOT_0, **{"11_automations/modes/intrus.yaml":
+                    f"  notification_id: {NOTIF_N1_ENTRETIEN}\n"})),
+        "hors du domaine", "CI-37 writer concurrent hors domaine")
+
+    # ---- ASP-CI-37 : le declencheur de liste est BORNE (correctif C-1) -----
+    #
+    # Un declencheur d'etat sans `to:`, sans `from:` et sans `attribute:`
+    # passe en `match_all` cote Home Assistant : il part sur tout changement
+    # d'attribut, `postes` compris, donc a chaque decroissance d'un compteur.
+    DECL_LISTE = (f"      entity_id: {ENTITE_M1_LISTE}\n"
+                  f"      attribute: {ATTRIBUT_N1_DECLENCHEUR}\n")
+    c.viole(check_writers_n1(n1_mut(
+        DECL_LISTE, f"      entity_id: {ENTITE_M1_LISTE}\n"), DEPOT_0),
+        "attribute", "CI-37 declencheur de liste nu (attribut retire)")
+    c.viole(check_writers_n1(n1_mut(
+        DECL_LISTE,
+        f"      entity_id: {ENTITE_M1_LISTE}\n"
+        "      attribute: postes\n"), DEPOT_0),
+        "attribute", "CI-37 declencheur borne au mauvais attribut `postes`")
+    c.viole(check_writers_n1(n1_mut(
+        DECL_LISTE,
+        f"      entity_id: {ENTITE_M1_LISTE}\n"
+        "      attribute: postes_non_dus\n"), DEPOT_0),
+        "attribute", "CI-37 declencheur borne a `postes_non_dus`")
+    # Le temoin, lui, doit rester generique : le borner a un attribut lui
+    # ferait manquer le franchissement de seuil, qui est une transition
+    # d'ETAT.
+    c.viole(check_writers_n1(n1_mut(
+        f"      entity_id: {ENTITE_M1_TEMOIN}\n",
+        f"      entity_id: {ENTITE_M1_TEMOIN}\n"
+        f"      attribute: {ATTRIBUT_N1_DECLENCHEUR}\n"), DEPOT_0),
+        "temoin", "CI-37 declencheur du temoin borne a un attribut")
+
+    # ---- ASP-CI-38 : les huit scenarios, RENDUS ---------------------------
+    #
+    # Ces mutations laissent la STRUCTURE intacte — identifiants, titre,
+    # declencheurs, mode. Seule la CONCLUSION change, et c'est le rendu de la
+    # chaine M1 -> N1 qui les attrape.
+    c.viole(check_projection_n1_rendue({}, M1_REEL), "introuvable",
+            "CI-38 N1 absent")
+    c.viole(check_projection_n1_rendue(N1_0, ""), "M1 introuvable",
+            "CI-38 autorite M1 disparue")
+
+    # Suppression sur `unknown` / `unavailable` : le piege central du lot.
+    SUPPR = ("        - conditions:\n"
+             "            - condition: state\n"
+             f"              entity_id: {ENTITE_M1_TEMOIN}\n"
+             '              state: "off"\n'
+             "            - condition: state\n"
+             f"              entity_id: {ENTITE_M1_LISTE}\n"
+             f'              state: "{ETAT_M1_AUCUN}"\n')
+    c.viole(check_projection_n1_rendue(n1_mut(
+        SUPPR,
+        "        - conditions:\n"
+        "            - condition: template\n"
+        '              value_template: "{{ true }}"\n'), M1_REEL),
+        "conclut `dismiss`", "CI-38 suppression inconditionnelle")
+    c.viole(check_projection_n1_rendue(n1_mut(
+        SUPPR,
+        "        - conditions:\n"
+        "            - condition: state\n"
+        f"              entity_id: {ENTITE_M1_TEMOIN}\n"
+        '              state:\n'
+        '                - "off"\n'
+        '                - "unavailable"\n'
+        '                - "unknown"\n'), M1_REEL),
+        "ne consulte pas", "CI-38 suppression sur unavailable/unknown")
+    c.viole(check_projection_n1_rendue(n1_mut(
+        f'              state: "{ETAT_M1_AUCUN}"\n',
+        '              state:\n'
+        f'                - "{ETAT_M1_AUCUN}"\n'
+        f'                - "{ETAT_M1_NON_EVAL}"\n'), M1_REEL),
+        "DEUX faces", "CI-38 non_evaluable traite comme aucun")
+    c.viole(check_projection_n1_rendue(n1_mut(
+        "            - condition: state\n"
+        f"              entity_id: {ENTITE_M1_LISTE}\n"
+        f'              state: "{ETAT_M1_AUCUN}"\n', ""), M1_REEL),
+        "DEUX faces", "CI-38 suppression sur le seul temoin")
+
+    # Le message se met a dependre de la CHARGE NUMERIQUE : deux releves de
+    # meme `postes_dus` ne rendent plus la meme chose. Un reveil deviendrait
+    # alors une reecriture reelle, au rythme du coordinateur.
+    c.viole(check_projection_n1_rendue(n1_mut(
+        f"'{ATTRIBUT_N1_MESSAGE}') | join(', ') }}}}",
+        "'postes') | join(', ') }}"), M1_REEL),
+        "charge numerique", "CI-38 message indexe sur la charge numerique")
+
+    # La liste des postes dus, ignoree ou remplacee.
+    c.viole(check_projection_n1_rendue(n1_mut(
+        "**Postes dus :** {{ state_attr('sensor.aspirateur_entretien_du',\n"
+        "                  'postes_dus') | join(', ') }}",
+        "**Un entretien est du.**"), M1_REEL),
+        "le message nomme", "CI-38 liste des postes dus ignoree")
+    c.viole(check_projection_n1_rendue(n1_mut(
+        "'postes_dus') | join(', ') }}",
+        "'postes_non_evaluables') | join(', ') }}"), M1_REEL),
+        "ASP-CI-38", "CI-38 message qui nomme les postes illisibles")
+
+    # Un message qui predit ou qui chiffre.
+    c.viole(check_projection_n1_rendue(n1_mut(
+        "**Postes dus :** {{ state_attr",
+        "**Echeance dans 12 h.** {{ state_attr"), M1_REEL),
+        "une duree ou un pourcentage", "CI-38 message predisant une date")
+    c.viole(check_projection_n1_rendue(n1_mut(
+        "**Postes dus :** {{ state_attr",
+        "**Reste 4 % du plafond.** {{ state_attr"), M1_REEL),
+        "une duree ou un pourcentage", "CI-38 message chiffrant un restant")
+
+    # Le seuil, rejoue cote N1 au lieu d'etre consomme.
+    c.viole(check_projection_n1_rendue(n1_mut(
+        "            - condition: state\n"
+        f"              entity_id: {ENTITE_M1_TEMOIN}\n"
+        '              state: "on"\n',
+        "            - condition: template\n"
+        "              value_template: >\n"
+        "                {{ states('sensor.roborock_q7_max_temps_restant_capteurs')\n"
+        "                   | float(99) <= 3 }}\n"), M1_REEL),
+        "conclut", "CI-38 seuil recalcule cote N1")
+
+    # L'anti-doublon, et le contenu qui doit suivre la liste.
+    c.viole(check_projection_n1_rendue(n1_mut(
+        f"                notification_id: {NOTIF_N1_ENTRETIEN}\n"
+        f'                title: "{TITRE_N1_ENTRETIEN}"',
+        "                notification_id: >\n"
+        "                  aspirateur_entretien_{{ state_attr(\n"
+        "                    'sensor.aspirateur_entretien_du',\n"
+        "                    'postes_dus') | count }}\n"
+        f'                title: "{TITRE_N1_ENTRETIEN}"'), M1_REEL),
+        "identifiants de notification", "CI-38 identifiant qui empile")
+
+    # Le declencheur de readiness, retire : le scenario 6 tombe.
+    c.viole(check_projection_n1_rendue(n1_mut(
+        "    - platform: state\n"
+        f"      entity_id: {READINESS_N1}\n"
+        '      to: "on"\n', ""), M1_REEL),
+        "redemarrage avec un entretien du",
+        "CI-38 reconciliation au readiness absente")
+
+    # ---- ASP-CI-38 : la suppression est FERMEE (correctif C-2) ------------
+    #
+    # Toutes ces mutations laissent les scenarios nominaux INTACTS : la
+    # suppression continue de partir sur `aucun`. Elles n'ajoutent qu'une
+    # valeur acceptee de plus — et c'est exactement pour cela qu'aucun
+    # scenario ne les attrape, et qu'il faut une garde de FORME.
+    ETAT_SCALAIRE = (f"              entity_id: {ENTITE_M1_LISTE}\n"
+                     f'              state: "{ETAT_M1_AUCUN}"\n')
+    for ajout, nom in ((("unknown"), "unknown"),
+                       (("unavailable"), "unavailable"),
+                       ((ETAT_M1_NON_EVAL), "non_evaluable")):
+        c.viole(check_projection_n1_rendue(n1_mut(
+            ETAT_SCALAIRE,
+            f"              entity_id: {ENTITE_M1_LISTE}\n"
+            "              state:\n"
+            f'                - "{ETAT_M1_AUCUN}"\n'
+            f'                - "{ajout}"\n'), M1_REEL),
+            "LISTE d'etats", f"CI-38 suppression elargie a `{nom}`")
+    # Une liste qui ne contient QUE `aucun` reste une liste : la garde refuse
+    # la forme, pas seulement les valeurs ajoutees.
+    c.viole(check_projection_n1_rendue(n1_mut(
+        ETAT_SCALAIRE,
+        f"              entity_id: {ENTITE_M1_LISTE}\n"
+        "              state:\n"
+        f'                - "{ETAT_M1_AUCUN}"\n'
+        '                - "aucun_entretien"\n'), M1_REEL),
+        "LISTE d'etats", "CI-38 suppression elargie a une valeur voisine")
+    # La garde de presence de l'attribut, telle qu'elle est ecrite.
+    GARDE_ATTR = (
+        "            - condition: template\n"
+        "              value_template: >\n"
+        f"                {{% set dus = state_attr('{ENTITE_M1_LISTE}',\n"
+        f"                                        '{ATTRIBUT_N1_MESSAGE}') %}}\n"
+        "                {{ dus is not none and dus | count == 0 }}\n")
+    # La condition reduite au SEUL temoin : une face de l'autorite sur deux.
+    c.viole(check_projection_n1_rendue(
+        n1_mut("            - condition: state\n" + ETAT_SCALAIRE + GARDE_ATTR,
+               ""), M1_REEL),
+        "ne consulte pas", "CI-38 suppression sur le seul temoin binaire")
+    # L'attribut d'autorite disparait, l'etat dit toujours `aucun`.
+    c.viole(check_projection_n1_rendue(n1_mut(GARDE_ATTR, ""), M1_REEL),
+            "ABSENT",
+            "CI-38 suppression sans garde de presence de l'attribut")
+
+    # Une condition que l'evaluateur ne sait pas rendre : ECHEC, jamais un vert.
+    c.viole(check_projection_n1_rendue(n1_mut(
+        "            - condition: state\n"
+        f"              entity_id: {ENTITE_M1_TEMOIN}\n"
+        '              state: "on"\n',
+        "            - condition: numeric_state\n"
+        f"              entity_id: {ENTITE_M1_LISTE}\n"
+        "              above: 0\n"), M1_REEL),
+        "ne sait pas rendre", "CI-38 condition non rendable")
+
+    # ---- ASP-CI-39 : ce que N1 ne fait pas --------------------------------
+    c.viole(check_interdits_n1({}), "introuvable", "CI-39 N1 absent")
+    ANCRE_39 = "  mode: restart\n"
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + "  bidon:\n    - service: vacuum.start\n")),
+        "commande jamais l'appareil", "CI-39 commande robot")
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + "  bidon:\n    - action: roborock.get_maps\n")),
+        "commande jamais l'appareil", "CI-39 commande roborock sous `action:`")
+    # FLOW MAPPING — forme que le detecteur de service, ancre sur la LIGNE, ne
+    # couvre pas. Elle est neanmoins refusee, par le balayage d'entites : la
+    # projection ne connait que son autorite. La limite du premier parseur est
+    # donc consignee, et elle n'ouvre rien.
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + "  bidon: {service: vacuum.start}\n")),
+        "seconde autorite", "CI-39 commande robot en flow mapping")
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + "  bidon:\n    - service: button.press\n")),
+        "geste operateur explicite", "CI-39 pression de bouton")
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + "  bidon: "
+        "button.roborock_q7_max_reinitialiser_le_consommable_du_filtre_a_air\n")),
+        "ne presse aucun bouton", "CI-39 bouton d'entretien nomme")
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + "  bidon:\n    - service: "
+        "input_text.set_value\n")),
+        "seul service admis", "CI-39 ecriture d'un helper")
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + f"  bidon: \"{{{{ states('{ID_VERDICT}') }}}}\"\n")),
+        "ni n'ecrit le verdict", "CI-39 lecture du verdict")
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + "  bidon: LANCEE/DEMARRAGE_OBSERVE\n")),
+        "verdict FIGE", "CI-39 cycle deduit du verdict fige")
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + "  bidon: "
+        "binary_sensor.roborock_q7_max_nettoyage\n")),
+        "mission externe", "CI-39 temoin natif de session lu")
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + "  bidon:\n    - service: "
+        "script.notification_envoyer\n")),
+        "AUCUN envoi mobile", "CI-39 mobile push")
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + "  bidon:\n    - service: notify.mobile_app_x\n")),
+        "AUCUN envoi mobile", "CI-39 service notify en dur")
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + "  bidon: "
+        "sensor.roborock_q7_max_dock_erreur_de_dock\n")),
+        "pas un entretien", "CI-39 erreur de dock projetee")
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + "  bidon: ECHEC/ERREUR_EN_MISSION\n")),
+        "pas un entretien", "CI-39 erreur en mission projetee")
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + "  bidon: input_select.aspirateur_carte\n")),
+        "helpers d'intention", "CI-39 lecture d'un helper d'intention")
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + '  bidon: "{{ now().timestamp() }}"\n')),
+        "ne se prevoit pas", "CI-39 primitive temporelle")
+    c.viole(check_interdits_n1(n1_mut(
+        "**Postes dus :**", "**Prochaine echeance :** dans environ")),
+        "aucune date previsionnelle", "CI-39 date previsionnelle annoncee")
+    c.viole(check_interdits_n1(n1_mut(
+        ANCRE_39, ANCRE_39 + "  bidon:\n    - repeat:\n        count: 2\n")),
+        "elle ne boucle pas", "CI-39 repetition")
+    c.viole(check_interdits_n1(n1_mut(
+        f"      entity_id: {READINESS_N1}\n",
+        "      entity_id: binary_sensor.presence_maison\n")),
+        "seconde autorite", "CI-39 entite etrangere lue")
+
+    print(f"selftest OK — 38 contrôles logiques (ASP-CI-28 réservé, non "
           f"exécuté), {c.total()} cas "
           f"({c.conformes} conformes, {c.violations} violations).")
+
+
+# ═════════════════════════════════════════════════════════════
+# NOTIFICATIONS — lot N1 : ASP-CI-37 … ASP-CI-39
+#
+# Les trois controles ne relisent pas le cadrage pour se donner raison. Ils
+# confrontent le RUNTIME REEL a des constantes figees dans ce module, et —
+# pour ASP-CI-38 — ils RENDENT la chaine complete : les gabarits M1 sur des
+# etats natifs simules, puis les conditions de N1 sur la projection ainsi
+# obtenue. Un faux vert supposerait donc de deplacer le juge, sous revue.
+# ═════════════════════════════════════════════════════════════
+
+
+def load_runtime_n1() -> dict[str, str]:
+    """Tous les fichiers du dossier d'automations du domaine.
+
+    On lit le DOSSIER, pas un fichier nomme : c'est ce qui rend detectable un
+    TROISIEME writer glisse a cote. Chercher `RUNTIME_N1` seul laisserait
+    passer exactement cela.
+    """
+    base = ROOT / DOSSIER_N1
+    if not base.is_dir():
+        return {}
+    return {p.relative_to(ROOT).as_posix():
+            p.read_text(encoding="utf-8", errors="ignore")
+            for p in sorted(base.rglob("*.yaml")) if p.is_file()}
+
+
+def _automations_n1(textes: dict[str, str]):
+    """(fichier, mapping d'automation) pour chaque automation declaree."""
+    out = []
+    for rel, txt in sorted(textes.items()):
+        try:
+            doc = yaml.safe_load(txt)
+        except yaml.YAMLError:
+            out.append((rel, None))
+            continue
+        for a in (doc if isinstance(doc, list) else [doc]):
+            if isinstance(a, dict):
+                out.append((rel, a))
+    return out
+
+
+def _etapes_n1(noeud):
+    """Aplatit une sequence d'actions, branches de `choose` comprises."""
+    plat = []
+    if isinstance(noeud, list):
+        for x in noeud:
+            plat += _etapes_n1(x)
+    elif isinstance(noeud, dict):
+        plat.append(noeud)
+        for cle in ("sequence", "default", "then", "else", "actions"):
+            plat += _etapes_n1(noeud.get(cle))
+        for opt in noeud.get("choose") or []:
+            if isinstance(opt, dict):
+                plat += _etapes_n1(opt.get("sequence"))
+    return plat
+
+
+def _appels_notif(auto) -> list[tuple[str, dict]]:
+    """(`create` | `dismiss`, data) de chaque appel de notification persistante."""
+    out = []
+    for st in _etapes_n1(auto.get("action") or auto.get("actions")):
+        svc = st.get("service") or st.get("action")
+        if not isinstance(svc, str):
+            continue
+        for verbe in ("create", "dismiss"):
+            if svc == f"persistent_notification.{verbe}":
+                out.append((verbe, st.get("data") or {}))
+    return out
+
+
+def check_writers_n1(n1: dict[str, str], depot: dict[str, str]) -> list[str]:
+    """ASP-CI-37 — writers, identifiants, cycle de vie, readiness.
+
+    Le point dur est la SYMETRIE : creation et suppression d'un meme
+    identifiant de notification doivent vivre dans le MEME writer. Une
+    creation sans suppression laisse une projection orpheline ; une
+    suppression logee ailleurs fait deux autorites pour un seul etat.
+    """
+    errs: list[str] = []
+    if not n1:
+        return [f"ASP-CI-37 : dossier N1 introuvable — `{DOSSIER_N1}`. La "
+                "projection persistante d'entretien n'existe pas."]
+
+    autos = _automations_n1(n1)
+    for rel, a in autos:
+        if a is None:
+            errs.append(f"ASP-CI-37 : `{rel}` est illisible en YAML.")
+    autos = [(rel, a) for rel, a in autos if a is not None]
+    if not autos:
+        return errs or [f"ASP-CI-37 : aucune automation dans `{DOSSIER_N1}`."]
+
+    # ── (a0) aucun identifiant du domaine hors des deux attribues, OU QUE
+    # CE SOIT dans le texte du dossier — commentaires et formes non parsees
+    # comprises. Le parseur YAML ne voit que ce qu'il sait lire ; cette garde
+    # ne depend d'aucune forme.
+    for rel, txt in sorted(n1.items()):
+        for m in AID_DOMAINE.finditer(txt):
+            aid = m.group(1)
+            if aid in AID_N1_AUTORISES:
+                continue
+            motif = AID_HORS_N1.get(aid, "hors des identifiants attribues au "
+                                          "lot N1")
+            errs.append(f"ASP-CI-37 : `{rel}` porte l'identifiant `{aid}` — "
+                        f"{motif}.")
+
+    # ── (a) identifiants d'automation : exactement ceux qui sont autorises ──
+    vus: dict[str, list[str]] = {}
+    for rel, a in autos:
+        aid = a.get("id")
+        if not isinstance(aid, str):
+            errs.append(f"ASP-CI-37 : `{rel}` declare une automation sans "
+                        "`id:` en CHAINE (doctrine id_automatisations).")
+            continue
+        vus.setdefault(aid, []).append(rel)
+        if aid in AID_HORS_N1:
+            errs.append(f"ASP-CI-37 : `{rel}` porte `{aid}` — {AID_HORS_N1[aid]}. "
+                        "Cet identifiant n'appartient pas au lot N1.")
+        elif aid not in AID_N1_AUTORISES:
+            errs.append(f"ASP-CI-37 : `{rel}` porte l'identifiant `{aid}`, hors "
+                        f"des deux identifiants attribues au lot "
+                        f"{sorted(AID_N1_AUTORISES)} (ASP-INV-58 — aucun "
+                        "identifiant invente).")
+    for aid, fichiers in sorted(vus.items()):
+        if len(fichiers) > 1:
+            errs.append(f"ASP-CI-37 : l'identifiant `{aid}` est porte par "
+                        f"{len(fichiers)} automations {fichiers} — un "
+                        "identifiant n'est jamais reutilise.")
+
+    # Le writer de maintenance existe, et il est unique.
+    if AID_N1_MAINTENANCE not in vus:
+        errs.append(f"ASP-CI-37 : le writer de la projection de maintenance "
+                    f"`{AID_N1_MAINTENANCE}` est ABSENT du domaine.")
+
+    # ── (b) aucun troisieme writer : le dossier ne porte que les autorises ──
+    if len(autos) > len(AID_N1_AUTORISES):
+        errs.append(f"ASP-CI-37 : `{DOSSIER_N1}` declare {len(autos)} "
+                    f"automations pour au plus {len(AID_N1_AUTORISES)} "
+                    "identifiants attribues — un troisieme writer est apparu.")
+
+    # ── (c) verrou de la projection de mission, differee ────────────────────
+    if VERROU_N1_MISSION:
+        if AID_N1_MISSION in vus:
+            errs.append(
+                f"ASP-CI-37 : `{AID_N1_MISSION}` — projection persistante de "
+                "MISSION — est construite alors que son autorite d'EXTINCTION "
+                "n'existe pas : la classe T du vocabulaire L1 est vide "
+                "(07_MACHINE_L2 §4.1). Une projection creee ici ne pourrait "
+                "plus s'eteindre. Le verrou `VERROU_N1_MISSION` se leve dans "
+                "le lot qui livre un writer de classe T, sous revue.")
+        # Ancre sur une INSTANCIATION reelle. Le nom nu `aspirateur_mission`
+        # est un PREFIXE de `input_text.aspirateur_mission_verdict`, helper
+        # legitime du lot L1 : le chercher tel quel accuserait trois fichiers
+        # innocents et rendrait le controle inutilisable.
+        for rel, txt in sorted(depot.items()):
+            if re.search(rf"notification_id[ \t]*:[ \t]*[\"']?"
+                         rf"{re.escape(NOTIF_N1_MISSION)}\b", txt):
+                errs.append(f"ASP-CI-37 : `{rel}` instancie la notification "
+                            f"`{NOTIF_N1_MISSION}`, dont le volet est DIFFERE "
+                            "au lot L2.")
+
+    # ── (d) identifiants de notification : fermes, uniques, un seul writer ──
+    par_notif: dict[str, set[str]] = {}
+    for rel, a in autos:
+        appels = _appels_notif(a)
+        if not appels:
+            errs.append(f"ASP-CI-37 : `{rel}` ne projette aucune notification "
+                        "persistante — un writer de projection sans projection.")
+        verbes: dict[str, set[str]] = {}
+        for verbe, data in appels:
+            nid = data.get("notification_id")
+            if not isinstance(nid, str) or not nid:
+                errs.append(f"ASP-CI-37 : `{rel}` appelle "
+                            f"`persistent_notification.{verbe}` sans "
+                            "`notification_id` litteral — l'anti-doublon est "
+                            "structurel, il exige un identifiant stable.")
+                continue
+            if "{{" in nid:
+                errs.append(f"ASP-CI-37 : `{rel}` porte un `notification_id` "
+                            f"TEMPLATISE `{nid}` — un identifiant qui se "
+                            "calcule n'est plus stable, et il empile.")
+                continue
+            if nid not in NOTIF_N1_FERMES:
+                errs.append(f"ASP-CI-37 : `{rel}` emploie le "
+                            f"`notification_id` `{nid}`, hors de l'ensemble "
+                            f"ferme {sorted(NOTIF_N1_FERMES)} "
+                            "(08_NOTIFICATIONS.md §1).")
+                continue
+            verbes.setdefault(nid, set()).add(verbe)
+            par_notif.setdefault(nid, set()).add(rel)
+        # Creation ET suppression, dans le MEME writer.
+        for nid, v in sorted(verbes.items()):
+            if v != {"create", "dismiss"}:
+                manque = {"create", "dismiss"} - v
+                errs.append(f"ASP-CI-37 : `{rel}` porte `{nid}` sans "
+                            f"{sorted(manque)} — creation et suppression "
+                            "vivent dans le meme writer, faute de quoi la "
+                            "projection survit a son etat (contrat "
+                            "Notifications, § Cycle de vie).")
+    for nid, fichiers in sorted(par_notif.items()):
+        if len(fichiers) > 1:
+            errs.append(f"ASP-CI-37 : `{nid}` est ecrit par {len(fichiers)} "
+                        f"fichiers {sorted(fichiers)} — un etat metier n'a "
+                        "qu'UN writer.")
+    instancies = frozenset(par_notif)
+    if instancies != NOTIF_N1_INSTANCIES:
+        errs.append(f"ASP-CI-37 : le lot instancie {sorted(instancies)} ; il "
+                    f"doit instancier exactement {sorted(NOTIF_N1_INSTANCIES)} "
+                    "— le canal de mission est DIFFERE.")
+
+    # ── (e) aucun writer hors du domaine ne touche les deux identifiants ────
+    for rel, txt in sorted(depot.items()):
+        if rel in n1:
+            continue
+        for nid in sorted(NOTIF_N1_FERMES):
+            if re.search(rf"notification_id[ \t]*:[ \t]*[\"']?{re.escape(nid)}\b",
+                         txt):
+                errs.append(f"ASP-CI-37 : `{rel}` — hors du domaine — ecrit la "
+                            f"notification `{nid}`.")
+
+    # ── (f) writer de maintenance : mode, readiness, autorite, titre ────────
+    cible = [(rel, a) for rel, a in autos
+             if a.get("id") == AID_N1_MAINTENANCE]
+    for rel, a in cible:
+        if a.get("mode") not in MODES_N1:
+            errs.append(f"ASP-CI-37 : `{rel}` porte `mode: {a.get('mode')!r}` "
+                        f"— attendu l'un de {sorted(MODES_N1)}. `single` "
+                        "abandonnerait EN SILENCE le second declenchement "
+                        "d'un franchissement de seuil.")
+        decl = a.get("trigger") or a.get("triggers") or []
+        cibles_decl = set()
+        readiness = False
+        for t in decl if isinstance(decl, list) else [decl]:
+            if not isinstance(t, dict):
+                continue
+            eids = t.get("entity_id")
+            eids = [eids] if isinstance(eids, str) else list(eids or [])
+            cibles_decl.update(eids)
+            if READINESS_N1 in eids and t.get("to") == "on":
+                readiness = True
+            # ── Le declencheur de LISTE doit etre borne a `postes_dus`.
+            # Un declencheur d'etat sans `to:`, sans `from:` et sans
+            # `attribute:` passe en `match_all` cote Home Assistant : il part
+            # alors sur tout changement d'etat OU D'ATTRIBUT. L'attribut
+            # `postes` de l'autorite republiant `restant_h` et
+            # `restant_pourcentage`, un declencheur nu reveillerait la
+            # projection a chaque decroissance d'un compteur natif — le
+            # rythme du coordinateur, precisement ce que l'interposition des
+            # deux entites derivees du §4.2 sert a empecher.
+            if ENTITE_M1_LISTE in eids:
+                attr = t.get("attribute")
+                if attr != ATTRIBUT_N1_DECLENCHEUR:
+                    errs.append(
+                        f"ASP-CI-37 : `{rel}` se declenche sur "
+                        f"`{ENTITE_M1_LISTE}` avec "
+                        f"`attribute: {attr!r}` — attendu "
+                        f"`{ATTRIBUT_N1_DECLENCHEUR}`. Sans cette borne, Home "
+                        "Assistant passe le declencheur en `match_all` et le "
+                        "fait partir sur TOUT changement d'attribut, "
+                        "`postes` compris : la notification serait reecrite "
+                        "au rythme du coordinateur "
+                        "(08_NOTIFICATIONS.md §4.2).")
+            # ── Le declencheur du TEMOIN doit rester generique. Le borner a
+            # un attribut lui ferait manquer ses transitions d'ETAT, qui sont
+            # justement le franchissement de seuil.
+            if ENTITE_M1_TEMOIN in eids and t.get("attribute") is not None:
+                errs.append(
+                    f"ASP-CI-37 : `{rel}` borne le declencheur du temoin "
+                    f"`{ENTITE_M1_TEMOIN}` a l'attribut "
+                    f"`{t.get('attribute')}` — le temoin doit se declencher "
+                    "sur son ETAT : c'est lui qui porte le franchissement de "
+                    "seuil.")
+        if not readiness:
+            errs.append(f"ASP-CI-37 : `{rel}` n'a pas de declencheur "
+                        f"`{READINESS_N1}` -> `on`. Home Assistant NE RESTAURE "
+                        "PAS les notifications persistantes : sans cette "
+                        "re-projection, un entretien du devient silencieux "
+                        "apres un redemarrage.")
+        attendus = set(AUTORITE_N1) | {READINESS_N1}
+        if cibles_decl != attendus:
+            errs.append(f"ASP-CI-37 : `{rel}` se declenche sur "
+                        f"{sorted(cibles_decl)} — attendu exactement "
+                        f"{sorted(attendus)}. Se brancher sur un capteur natif "
+                        "reecrirait la notification au rythme du coordinateur "
+                        "(08_NOTIFICATIONS.md §4.2).")
+        # Le titre exact, et lui seul.
+        for verbe, data in _appels_notif(a):
+            if verbe != "create":
+                continue
+            titre = str(data.get("title") or "")
+            if titre != TITRE_N1_ENTRETIEN:
+                errs.append(f"ASP-CI-37 : `{rel}` porte le titre {titre!r} — "
+                            f"attendu {TITRE_N1_ENTRETIEN!r} "
+                            "(08_NOTIFICATIONS.md §2).")
+            msg = str(data.get("message") or "")
+            lus = set(re.findall(
+                r"state_attr\(\s*['\"]([a-z_.]+)['\"]\s*,\s*['\"]([a-z_]+)['\"]",
+                msg))
+            if lus != {(ENTITE_M1_LISTE, ATTRIBUT_N1_MESSAGE)}:
+                errs.append(f"ASP-CI-37 : le message lit {sorted(lus)} — il ne "
+                            f"lit QUE `{ATTRIBUT_N1_MESSAGE}` de "
+                            f"`{ENTITE_M1_LISTE}`. Lire un autre attribut "
+                            "ouvrirait la duree chiffree, proscrite par "
+                            "08_NOTIFICATIONS.md §4.2.")
+            if re.search(r"states\(", msg):
+                errs.append("ASP-CI-37 : le message appelle `states(` — le "
+                            "contenu derive de l'attribut d'autorite, jamais "
+                            "d'une lecture libre.")
+
+    # ── (g) le `choose` du writer n'a AUCUNE branche par defaut ─────────────
+    for rel, a in cible:
+        for st in _etapes_n1(a.get("action") or a.get("actions")):
+            if "choose" in st and st.get("default") is not None:
+                errs.append(f"ASP-CI-37 : `{rel}` porte une branche "
+                            "`default:` — elle ferait tomber la suppression "
+                            "sur une projection INDISPONIBLE, convertissant un "
+                            "trou d'information en « aucun entretien » "
+                            "(ASP-INV-76).")
+    return errs
+
+
+# ── ASP-CI-38 : la chaine M1 -> N1, RENDUE ─────────────────────────────────
+
+def _projeter_m1(m1: str, natifs: dict[str, object]) -> dict[str, object]:
+    """Rend les gabarits REELS de M1 sur des etats natifs simules.
+
+    C'est ce qui ancre N1 sur M1 et sur rien d'autre : la projection n'est pas
+    ecrite a la main ici, elle est CALCULEE par le fichier M1 tel qu'il est
+    livre. Reecrire M1 change donc ce que N1 recoit — et le rendu le voit.
+    """
+    liste, temoin, _ = entites_m1(m1)
+    if not isinstance(liste, dict) or not isinstance(temoin, dict):
+        raise AssertionError("projection M1 illisible")
+    vars_m1 = liste.get("variables") or {}
+    etat = str(rendu_m1(liste["state"], natifs, **vars_m1))
+    attrs = {cle: rendu_m1(gab, natifs, **vars_m1)
+             for cle, gab in (liste.get("attributes") or {}).items()}
+    monde = {ENTITE_M1_LISTE: {"state": etat, "attrs": attrs}}
+    dispo = rendu_m1(temoin["availability"], monde)
+    if dispo is True:
+        brut = rendu_m1(temoin["state"], monde)
+        etat_temoin = "on" if brut is True else "off"
+    else:
+        etat_temoin = "unavailable"
+    monde[ENTITE_M1_TEMOIN] = {"state": etat_temoin, "attrs": {}}
+    return monde
+
+
+def _condition_n1(cond, monde) -> bool:
+    """Rend UNE condition Home Assistant. Refuse ce qu'elle ne sait pas rendre."""
+    if not isinstance(cond, dict):
+        raise AssertionError(f"condition non structuree : {cond!r}")
+    kind = cond.get("condition")
+    if kind not in CONDITIONS_N1_RENDABLES:
+        raise AssertionError(
+            f"ASP-CI-38 ne sait pas rendre `condition: {kind}` — un "
+            "evaluateur silencieusement incomplet rendrait un faux vert.")
+    if kind == "template":
+        return rendu_m1(cond["value_template"], monde) is True
+    eids = cond.get("entity_id")
+    eids = [eids] if isinstance(eids, str) else list(eids or [])
+    attendu = cond.get("state")
+    attendus = attendu if isinstance(attendu, list) else [attendu]
+    for eid in eids:
+        v = monde.get(eid)
+        courant = v["state"] if isinstance(v, dict) else v
+        if str(courant) not in [str(x) for x in attendus]:
+            return False
+    return bool(eids)
+
+
+def _resoudre_n1(auto, monde) -> tuple[str, str]:
+    """(`create` | `dismiss` | `rien`, message rendu) sur un monde simule."""
+    for st in _etapes_n1(auto.get("action") or auto.get("actions")):
+        options = st.get("choose")
+        if not isinstance(options, list):
+            continue
+        for opt in options:
+            conds = opt.get("conditions") or []
+            conds = conds if isinstance(conds, list) else [conds]
+            if all(_condition_n1(c, monde) for c in conds):
+                for verbe, data in _appels_notif({"action": opt.get("sequence")}):
+                    msg = str(data.get("message") or "")
+                    rendu = (str(rendu_m1(msg, monde)) if "{{" in msg else msg)
+                    return verbe, rendu
+                return "rien", ""
+        if st.get("default") is not None:
+            for verbe, data in _appels_notif({"action": st.get("default")}):
+                return verbe, ""
+    return "rien", ""
+
+
+# Les huit scenarios exiges, plus les pieges adverses. Chaque ligne porte les
+# QUATRE compteurs natifs — filtre, principale, laterale, capteurs, en heures,
+# plafonds 150/300/200/30 — et l'issue ATTENDUE de la projection N1.
+SCENARIOS_N1 = (
+    # (libelle, natifs, action attendue, postes attendus dans le message)
+    ("1 · aucun poste du, projection complete",
+     (100.0, 200.0, 150.0, 10.0), "dismiss", ()),
+    ("2 · un poste du",
+     (100.0, 200.0, 150.0, 2.0), "create", ("Nettoyage des capteurs",)),
+    ("3 · plusieurs postes dus",
+     (10.0, 200.0, 150.0, 1.0), "create", ("Filtre", "Nettoyage des capteurs")),
+    ("4 · un poste du + un poste NON EVALUABLE",
+     ("unavailable", 200.0, 150.0, 2.0), "create", ("Nettoyage des capteurs",)),
+    ("5 · projection ENTIEREMENT non evaluable",
+     ("unavailable", "unavailable", "unknown", "unavailable"), "rien", ()),
+    ("8 · entretien redevenu non du apres remise a zero M2",
+     (100.0, 200.0, 150.0, 30.0), "dismiss", ()),
+    # ── pieges adverses : aucune suppression sur un trou d'information ──
+    ("adverse · un seul poste illisible, aucun autre du",
+     (100.0, 200.0, 150.0, "unavailable"), "rien", ()),
+    ("adverse · capteur absent du registre",
+     (100.0, 200.0, 150.0, None), "rien", ()),
+    ("adverse · valeur non numerique",
+     (100.0, 200.0, 150.0, "abc"), "rien", ()),
+    ("adverse · seuil atteint PILE (10 % exactement)",
+     (100.0, 200.0, 150.0, 3.0), "create", ("Nettoyage des capteurs",)),
+)
+
+
+def _natifs_n1(valeurs) -> dict[str, object]:
+    """Les quatre compteurs natifs, dans l'ordre du perimetre fige."""
+    sources = [POSTES_ENTRETIEN[k][0]
+               for k in ("filtre", "brosse principale", "brosse laterale",
+                         "capteurs")]
+    return {s: v for s, v in zip(sources, valeurs) if v is not None}
+
+
+def check_projection_n1_rendue(n1: dict[str, str], m1: str) -> list[str]:
+    """ASP-CI-38 — les huit scenarios, joues sur la chaine REELLE M1 -> N1.
+
+    Rien n'est cherche a la regex : les gabarits M1 sont rendus sur des etats
+    natifs simules, puis les conditions de N1 sont rendues sur la projection
+    obtenue. Ce que le controle affirme, il l'a execute.
+    """
+    errs: list[str] = []
+    if not n1:
+        return [f"ASP-CI-38 : dossier N1 introuvable — `{DOSSIER_N1}`."]
+    if not m1:
+        return [f"ASP-CI-38 : runtime M1 introuvable — `{RUNTIME_M1}`. La "
+                "projection de maintenance n'a plus d'autorite."]
+    cible = [a for _, a in _automations_n1(n1)
+             if isinstance(a, dict) and a.get("id") == AID_N1_MAINTENANCE]
+    if len(cible) != 1:
+        return [f"ASP-CI-38 : {len(cible)} writer(s) `{AID_N1_MAINTENANCE}` — "
+                "il en faut exactement un pour rendre les scenarios."]
+    auto = cible[0]
+
+    # ── Prealable : TOUTE condition du writer doit etre d'un type que
+    # l'evaluateur sait rendre fidelement. On le verifie AVANT de rendre quoi
+    # que ce soit, et on s'arrete la si ce n'est pas le cas : un evaluateur
+    # qui rencontrerait un type inconnu en cours de route rendrait un verdict
+    # partiel, c'est-a-dire un faux vert sur les scenarios non atteints.
+    inconnus = set()
+    for st in _etapes_n1(auto.get("action") or auto.get("actions")):
+        for opt in st.get("choose") or []:
+            conds = opt.get("conditions") if isinstance(opt, dict) else None
+            conds = conds if isinstance(conds, list) else [conds]
+            for cond in conds:
+                if not isinstance(cond, dict):
+                    inconnus.add(repr(cond))
+                elif cond.get("condition") not in CONDITIONS_N1_RENDABLES:
+                    inconnus.add(str(cond.get("condition")))
+    if inconnus:
+        return [f"ASP-CI-38 ne sait pas rendre `condition: {k}` — un "
+                "evaluateur silencieusement incomplet rendrait un faux vert. "
+                "Etendre l'evaluateur est un changement de frontiere CI, "
+                "soumis a revue." for k in sorted(inconnus)]
+
+    libelles = list(ORDRE_M1)
+    for nom, natifs, attendu, dus in SCENARIOS_N1:
+        monde = _projeter_m1(m1, _natifs_n1(natifs))
+        try:
+            action, message = _resoudre_n1(auto, monde)
+        except AssertionError as exc:
+            errs.append(f"ASP-CI-38 : {nom} — {exc}")
+            continue
+        etat_l = monde[ENTITE_M1_LISTE]["state"]
+        etat_t = monde[ENTITE_M1_TEMOIN]["state"]
+        if action != attendu:
+            errs.append(
+                f"ASP-CI-38 : {nom} — la projection M1 rend "
+                f"`{etat_l}` / temoin `{etat_t}`, et N1 conclut `{action}` ; "
+                f"attendu `{attendu}`.")
+            continue
+        if action != "create":
+            continue
+        # Le message nomme EXACTEMENT les postes dus, dans l'ordre canonique.
+        cites = [lib for lib in ORDRE_M1 if lib in message]
+        if tuple(cites) != tuple(dus):
+            errs.append(f"ASP-CI-38 : {nom} — le message nomme {cites} ; "
+                        f"attendu {list(dus)}, dans l'ordre canonique.")
+        for lib in libelles:
+            if lib not in dus and lib in message:
+                errs.append(f"ASP-CI-38 : {nom} — le message nomme « {lib} », "
+                            "qui n'est pas du. Un poste illisible n'est ni du "
+                            "ni solde (ASP-INV-76).")
+        # Aucune duree chiffree, aucun pourcentage, aucune date.
+        for motif, quoi in ((r"\d+([.,]\d+)?\s*(h|heure|%)", "une duree ou un "
+                             "pourcentage"),
+                            (r"\b20\d\d\b", "une annee")):
+            m = re.search(motif, message, re.I)
+            if m:
+                errs.append(f"ASP-CI-38 : {nom} — le message porte "
+                            f"{quoi} ({m.group(0)!r}) : une notification "
+                            "persistante decrit un etat, pas une mesure qui "
+                            "court (08_NOTIFICATIONS.md §4.2).")
+
+    # ── scenario 7 : contenu devenu different, sans empilement ──────────────
+    m_un = _resoudre_n1(auto, _projeter_m1(m1, _natifs_n1(
+        (100.0, 200.0, 150.0, 2.0))))
+    m_deux = _resoudre_n1(auto, _projeter_m1(m1, _natifs_n1(
+        (10.0, 200.0, 150.0, 1.0))))
+    if not (m_un[0] == m_deux[0] == "create"):
+        errs.append("ASP-CI-38 : 7 · les deux etats successifs devraient tous "
+                    f"deux creer — rendus {m_un[0]} puis {m_deux[0]}.")
+    elif m_un[1] == m_deux[1]:
+        errs.append("ASP-CI-38 : 7 · la liste des postes dus a change et le "
+                    "message NE CHANGE PAS — la notification afficherait un "
+                    "contenu perime.")
+    # ── charge numerique qui bouge, `postes_dus` inchange ──────────────────
+    # Les deux releves ci-dessous ne different que par le restant du FILTRE,
+    # qui n'est du dans aucun des deux : la liste des postes dus est la meme.
+    # La projection doit donc rendre EXACTEMENT la meme chose. Combine au
+    # declencheur borne d'ASP-CI-37, cela ferme les deux faces du reveil
+    # parasite : il n'a pas lieu, et il serait de toute facon sans effet.
+    charge_a = _resoudre_n1(auto, _projeter_m1(m1, _natifs_n1(
+        (100.0, 200.0, 150.0, 2.0))))
+    charge_b = _resoudre_n1(auto, _projeter_m1(m1, _natifs_n1(
+        (99.4, 200.0, 150.0, 2.0))))
+    if charge_a != charge_b:
+        errs.append(
+            "ASP-CI-38 : une simple evolution de la charge numerique — "
+            f"`{ATTRIBUT_N1_MESSAGE}` inchange — fait passer la projection de "
+            f"{charge_a!r} a {charge_b!r}. Le message ne doit dependre QUE de "
+            f"`{ATTRIBUT_N1_MESSAGE}` : sans quoi la notification suivrait le "
+            "rythme du coordinateur (08_NOTIFICATIONS.md §4.2).")
+
+    ids = {d.get("notification_id") for v, d in _appels_notif(auto)}
+    if len(ids) != 1:
+        errs.append(f"ASP-CI-38 : 7 · le writer emploie {len(ids)} "
+                    f"identifiants de notification {sorted(map(str, ids))} — "
+                    "l'anti-doublon est structurel, il exige UN identifiant "
+                    "stable, sans quoi les notifications s'empilent.")
+
+    # ── scenario 6 : redemarrage, entretien du ──────────────────────────────
+    decl = auto.get("trigger") or auto.get("triggers") or []
+    readiness = any(isinstance(t, dict) and t.get("to") == "on"
+                    and READINESS_N1 in ([t.get("entity_id")]
+                                         if isinstance(t.get("entity_id"), str)
+                                         else list(t.get("entity_id") or []))
+                    for t in decl)
+    du, _ = _resoudre_n1(auto, _projeter_m1(m1, _natifs_n1(
+        (100.0, 200.0, 150.0, 2.0))))
+    if not (readiness and du == "create"):
+        errs.append("ASP-CI-38 : 6 · redemarrage avec un entretien du — "
+                    f"declencheur de readiness {'present' if readiness else 'ABSENT'}, "
+                    f"issue rendue `{du}`. La re-projection au passage de "
+                    f"`{READINESS_N1}` a `on` est la SEULE voie : Home "
+                    "Assistant ne restaure pas les persistantes.")
+
+    # ── piege : temoin faux ET liste non evaluable — jamais de suppression ──
+    incoherent = {ENTITE_M1_LISTE: {"state": ETAT_M1_NON_EVAL,
+                                    "attrs": {"postes_dus": []}},
+                  ENTITE_M1_TEMOIN: {"state": "off", "attrs": {}}}
+    action, _ = _resoudre_n1(auto, incoherent)
+    if action != "rien":
+        errs.append(f"ASP-CI-38 : temoin `off` alors que la liste vaut "
+                    f"`{ETAT_M1_NON_EVAL}` — N1 conclut `{action}`. Les DEUX "
+                    "faces de l'autorite sont exigees pour supprimer : une "
+                    "seule, faussee, effacerait une dette reelle.")
+    for etat_l in ("unknown", "unavailable"):
+        monde = {ENTITE_M1_LISTE: {"state": etat_l, "attrs": {}},
+                 ENTITE_M1_TEMOIN: {"state": "unavailable", "attrs": {}}}
+        action, _ = _resoudre_n1(auto, monde)
+        if action != "rien":
+            errs.append(f"ASP-CI-38 : projection a `{etat_l}` — N1 conclut "
+                        f"`{action}`. Une indisponibilite ne vaut ni « aucun "
+                        "entretien », ni une dette (ASP-INV-45, ASP-INV-74).")
+
+    # ── La suppression est FERMEE, sur deux plans complementaires ──────────
+    #
+    # (1) STRUCTURELLEMENT. La face « synthese » de l'autorite doit exiger le
+    #     SCALAIRE `aucun`, jamais une liste de valeurs acceptees. Une liste
+    #     elargie — `[aucun, unknown]` — laisse passer TOUS les scenarios
+    #     nominaux : elle ne casse rien, et c'est precisement pourquoi seule
+    #     une garde de forme l'attrape. Home Assistant accepte les deux
+    #     ecritures ; le lot n'en accepte qu'une.
+    errs += _suppression_fermee_n1(auto)
+
+    # (2) PAR RENDU ADVERSE. Le temoin est faux, et la synthese n'etablit
+    #     PAS un nominal fiable. Aucun de ces quatre mondes ne doit supprimer.
+    #     Le quatrieme est le plus fin : l'etat DIT `aucun`, mais l'attribut
+    #     d'autorite a disparu — un nominal porte par une entite dont
+    #     l'attribut manque n'est pas une autorite.
+    for libelle, etat_l, attrs in (
+            ("synthese `unknown`", "unknown", {}),
+            ("synthese `unavailable`", "unavailable", {}),
+            (f"synthese `{ETAT_M1_NON_EVAL}`", ETAT_M1_NON_EVAL,
+             {ATTRIBUT_N1_MESSAGE: []}),
+            (f"etat `{ETAT_M1_AUCUN}` mais attribut "
+             f"`{ATTRIBUT_N1_MESSAGE}` ABSENT", ETAT_M1_AUCUN,
+             {"postes_non_dus": []})):
+        monde = {ENTITE_M1_LISTE: {"state": etat_l, "attrs": attrs},
+                 ENTITE_M1_TEMOIN: {"state": "off", "attrs": {}}}
+        action, _ = _resoudre_n1(auto, monde)
+        if action != "rien":
+            errs.append(
+                f"ASP-CI-38 : temoin `off` + {libelle} — N1 conclut "
+                f"`{action}`. La suppression n'est autorisee que si les DEUX "
+                f"faces etablissent un nominal FIABLE : temoin `off`, etat "
+                f"`{ETAT_N1_SUPPRESSION}`, et attribut "
+                f"`{ATTRIBUT_N1_MESSAGE}` present et vide. Une seule face, "
+                "faussee, effacerait une dette reelle (ASP-INV-76).")
+    return errs
+
+
+def _branche_suppression_n1(auto):
+    """L'option du `choose` dont la sequence supprime la notification."""
+    for st in _etapes_n1(auto.get("action") or auto.get("actions")):
+        for opt in st.get("choose") or []:
+            if not isinstance(opt, dict):
+                continue
+            verbes = {v for v, _ in _appels_notif({"action": opt.get("sequence")})}
+            if "dismiss" in verbes:
+                return opt
+    return None
+
+
+def _suppression_fermee_n1(auto) -> list[str]:
+    """La condition de suppression exige-t-elle le scalaire, et lui seul ?"""
+    opt = _branche_suppression_n1(auto)
+    if opt is None:
+        return ["ASP-CI-38 : aucune branche du `choose` ne supprime la "
+                "notification — la projection survivrait a son etat."]
+    conds = opt.get("conditions") or []
+    conds = conds if isinstance(conds, list) else [conds]
+    vus = 0
+    errs: list[str] = []
+    for c in conds:
+        if not isinstance(c, dict) or c.get("entity_id") != ENTITE_M1_LISTE:
+            continue
+        vus += 1
+        etat = c.get("state")
+        if isinstance(etat, str):
+            if etat != ETAT_N1_SUPPRESSION:
+                errs.append(
+                    f"ASP-CI-38 : la suppression exige l'etat `{etat}` — "
+                    f"attendu `{ETAT_N1_SUPPRESSION}`, et lui seul.")
+        else:
+            errs.append(
+                f"ASP-CI-38 : la suppression accepte une LISTE d'etats "
+                f"{etat!r} au lieu du seul scalaire "
+                f"`{ETAT_N1_SUPPRESSION}`. Elargir cette liste — a "
+                "`unknown`, `unavailable` ou `non_evaluable` — ne casse "
+                "aucun scenario nominal et convertirait un trou "
+                "d'information en « aucun entretien » (ASP-INV-45, "
+                "ASP-INV-76).")
+    if not vus:
+        errs.append(
+            f"ASP-CI-38 : la suppression ne consulte pas l'etat de "
+            f"`{ENTITE_M1_LISTE}` — elle reposerait sur le seul temoin "
+            "binaire, c'est-a-dire sur une face de l'autorite au lieu de "
+            "deux.")
+    return errs
+
+
+def check_interdits_n1(n1: dict[str, str]) -> list[str]:
+    """ASP-CI-39 — ce que N1 ne fait pas, prouve sur le texte livre.
+
+    Le balayage porte sur le fichier ENTIER, commentaires compris : une
+    projection qui NOMME un bouton de remise a zero est deja trop proche de
+    la seule primitive irreversible du domaine.
+    """
+    errs: list[str] = []
+    if not n1:
+        return [f"ASP-CI-39 : dossier N1 introuvable — `{DOSSIER_N1}`."]
+    for rel, txt in sorted(n1.items()):
+        nu = sans_commentaires_yaml(txt)
+        # Le lexique de prediction est cherche dans le CODE, jamais dans les
+        # commentaires : un en-tete qui s'INTERDIT nommement une tendance ou
+        # une date previsionnelle ne la produit pas — l'y refuser rendrait
+        # l'interdit indicible dans le fichier qui le porte.
+        bas = nu.lower()
+
+        for m in re.finditer(
+                r"^[ \t]*-?[ \t]*(?:action|service|perform_action)[ \t]*:"
+                r"[ \t]*[\"']?(vacuum\.[a-z_]+|roborock\.[a-z_]+)", nu, re.M):
+            errs.append(f"ASP-CI-39 : `{rel}` appelle `{m.group(1)}` — une "
+                        "projection ne commande jamais l'appareil "
+                        "(ASP-INV-31).")
+        if PRESS_SERVICE.search(nu):
+            errs.append(f"ASP-CI-39 : `{rel}` appelle `button.press` — la "
+                        "remise a zero est un geste operateur explicite, "
+                        "portee par le SEUL script du lot M2 (ASP-INV-77, "
+                        "ASP-INV-81).")
+        for m in BOUTON_ENTRETIEN_RE.finditer(txt):
+            errs.append(f"ASP-CI-39 : `{rel}` nomme `{m.group(0)}` — N1 ne "
+                        "presse aucun bouton et n'a pas a le connaitre.")
+        if REPETITION.search(nu):
+            errs.append(f"ASP-CI-39 : `{rel}` porte une repetition — une "
+                        "projection se recalcule, elle ne boucle pas.")
+        for helper in (ID_VERDICT, ID_TRACE):
+            if helper in txt:
+                errs.append(f"ASP-CI-39 : `{rel}` cite `{helper}` — N1 ne lit "
+                            "ni n'ecrit le verdict de mission (ASP-INV-31).")
+        for jeton in VERDICT_FIGE_N1:
+            if jeton in txt:
+                errs.append(f"ASP-CI-39 : `{rel}` cite `{jeton}` — un cycle en "
+                            "cours ne se deduit pas d'un verdict FIGE. La "
+                            "classe T du vocabulaire L1 est vide : cette "
+                            "valeur ne s'eteint jamais.")
+        for jeton in SESSION_NATIVE_N1:
+            if jeton in nu:
+                errs.append(f"ASP-CI-39 : `{rel}` lit `{jeton}` — adopter le "
+                            "temoin natif de session reviendrait a adopter une "
+                            "mission externe (07 §6.2, ASP-INV-47).")
+        for jeton in MOBILE_N1:
+            if jeton in nu:
+                errs.append(f"ASP-CI-39 : `{rel}` emploie `{jeton}` — AUCUN "
+                            "envoi mobile dans N1 : le canal 3 est differe a "
+                            "L2/W3, faute d'autorite pour etablir « pendant "
+                            "une mission » (ASP-INV-84).")
+        for jeton in ERREUR_N1:
+            if jeton in nu:
+                errs.append(f"ASP-CI-39 : `{rel}` porte `{jeton}` — une erreur "
+                            "robot ou dock n'est pas un entretien, et hors "
+                            "mission le domaine n'ajoute AUCUNE notification "
+                            "(ASP-INV-83, ASP-INV-84).")
+        for jeton in INTENTION_N1:
+            if jeton in nu:
+                errs.append(f"ASP-CI-39 : `{rel}` lit `{jeton}` — les helpers "
+                            "d'intention relevent du lot U0, qui n'existe pas.")
+        for jeton in TEMPOREL_M1:
+            if jeton in nu:
+                errs.append(f"ASP-CI-39 : `{rel}` emploie `{jeton}` — le seuil "
+                            "se constate, il ne se prevoit pas (14 §2).")
+        for jeton in PREDICTION_N1:
+            if jeton in bas:
+                errs.append(f"ASP-CI-39 : `{rel}` annonce « {jeton} » — aucune "
+                            "date previsionnelle n'est inventee (14 §2).")
+        # Aucune ecriture, d'aucune sorte : un lecteur pur n'ecrit rien.
+        for m in re.finditer(
+                r"^[ \t]*-?[ \t]*(?:action|service|perform_action)[ \t]*:"
+                r"[ \t]*[\"']?([a-z_]+\.[a-z_]+)", nu, re.M):
+            svc = m.group(1)
+            if not svc.startswith("persistent_notification."):
+                errs.append(f"ASP-CI-39 : `{rel}` appelle `{svc}` — le seul "
+                            "service admis dans N1 est "
+                            "`persistent_notification.*`.")
+        # La projection ne lit QUE son autorite et le temoin de readiness.
+        for m in re.finditer(r"\b([a-z_]+\.[a-z0-9_]+)\b", nu):
+            eid = m.group(1)
+            if eid.split(".")[0] not in ("sensor", "binary_sensor",
+                                         "input_boolean", "input_text",
+                                         "input_select", "input_number",
+                                         "vacuum", "button", "switch",
+                                         "script", "automation", "notify"):
+                continue
+            if eid in AUTORITE_N1 or eid == READINESS_N1:
+                continue
+            errs.append(f"ASP-CI-39 : `{rel}` lit `{eid}` — la projection ne "
+                        f"connait que {sorted(AUTORITE_N1)} et "
+                        f"`{READINESS_N1}`. Toute autre entite serait une "
+                        "seconde autorite.")
+    return errs
 
 
 def main(argv: list[str]) -> int:
