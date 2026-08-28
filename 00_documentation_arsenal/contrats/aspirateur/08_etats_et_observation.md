@@ -208,8 +208,17 @@ l'appareil déclare supporter et que l'audit a relevés comme tels. Le domaine
   par ce contrat ; aucune reconstitution a posteriori n'est promise. Extension
   optionnelle, hors chemin critique
   ([`13`](13_hors_perimetre_arbitrages_et_questions_ouvertes.md)).
-- **Aucune mesure de rendement** (surface nettoyée cumulée, statistiques d'usage,
-  durée de vie des consommables).
+- **Aucune mesure de rendement** (surface nettoyée cumulée, statistiques
+  d'usage). ~~Durée de vie des consommables.~~
+
+  > **Amendement minimal — chapitre [`14`](14_entretien.md).** La clause
+  > excluait aussi la **durée de vie des consommables**. Cette seule mention est
+  > **levée** : le chapitre `14` contractualise l'entretien des quatre postes.
+  >
+  > **Ce qui n'est pas levé, et reste exclu :** la surface nettoyée cumulée, les
+  > statistiques d'usage, et **toute mesure de rendement**. Le chapitre `14`
+  > n'ouvre **aucune** statistique : il constate un **temps restant**, sans
+  > historisation ni tendance.
 - **Aucune position cartographique fine** du robot.
 
 ---
