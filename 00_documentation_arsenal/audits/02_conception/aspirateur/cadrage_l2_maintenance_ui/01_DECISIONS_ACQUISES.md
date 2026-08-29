@@ -123,6 +123,21 @@ implémentée.
 > [`11_ARBITRAGES_RENDUS.md`](11_ARBITRAGES_RENDUS.md) §5.3 et
 > [`09_UI.md`](09_UI.md) §5.3 ; **les choix restent à l'opérateur**.
 
+> **Choix rendu par l'opérateur le 2026-08-29 — aucun vert nominal.** La tuile
+> Aspirateur ne rend que **trois** situations : 🔴 entretien dû ou erreur
+> établie, 🔵 cycle réellement en cours (classe `A`), ⚪ **tout le reste**,
+> nominal compris. La branche `confort` est **supprimée** du capteur
+> `sensor.etat_aspirateur_dashboard`.
+>
+> **Effet sur `D-42`, dit et non tu.** Sa clause « l'indisponibilité est
+> distinguée du nominal » n'est plus **visible** : `bouton_navigation_dynamique`
+> peint `off` et l'indisponibilité du même gris. La distinction subsiste là où
+> elle décide — l'`availability:` du capteur, qui **s'abstient** au lieu de
+> fabriquer une valeur, et `sensor.aspirateur_etat_canonique`, qui expose les
+> dix états séparément. Les trois autres clauses de `D-42` — priorité alerte >
+> cycle > nominal, entretien dû comme alerte, cycle distinct — sont
+> **inchangées**, et `D-41` comme `D-43` le sont entièrement.
+
 ---
 
 ## F. Discipline de session

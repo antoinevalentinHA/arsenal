@@ -103,6 +103,16 @@ aspirateur-dashboard:
   show_in_sidebar: false
   filename: 18_lovelace/dashboards/aspirateur/principal.yaml
 
+# Second écran du domaine Aspirateur : les cartes du robot, en lecture
+# seule. Frère de `aspirateur-dashboard`, sur le patron du domaine
+# Voiture (`audi-dashboard` / `audi-position-dashboard`).
+aspirateur-carte-dashboard:
+  mode: yaml
+  title: Carte
+  icon: mdi:map
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/aspirateur/carte.yaml
+
 volets-dashboard:
   mode: yaml
   title: Volets

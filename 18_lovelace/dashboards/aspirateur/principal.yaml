@@ -11,6 +11,12 @@
 #   colonne 4 — un raccourci, et rien d'autre.
 #   Badges de retour : Accueil et Navigation.
 #
+# 🗺️ DEUX ÉCRANS, UN BANDEAU
+#   Le domaine porte un second écran, `/aspirateur-carte-dashboard`,
+#   consacré aux cartes du robot. Les deux se rejoignent par le
+#   bandeau `includes/navigation/aspirateur.yaml`, inclus en tête de
+#   chacun — patron du domaine Voiture, sans variante.
+#
 # 🧱 SQUELETTE PUR
 #   Aucun template Jinja ici : toute la logique de rendu vit dans
 #   l'include de contenu, comme dans tous les dashboards Arsenal.
@@ -19,12 +25,11 @@
 button_card_templates: !include_dir_merge_named /config/19_button_card_templates
 
 views:
-  - badges:
-      - type: custom:button-card
-        template: bouton_accueil_badge_carre
-
-      - type: custom:button-card
-        template: bouton_navigation_badge_carre
+  - badges: !include ../../includes/badges/base.yaml
 
     cards:
-      - !include ../../includes/cartes/aspirateur/panneau_operationnel.yaml
+      - type: vertical-stack
+        cards:
+          - !include ../../includes/navigation/aspirateur.yaml
+
+          - !include ../../includes/cartes/aspirateur/panneau_operationnel.yaml

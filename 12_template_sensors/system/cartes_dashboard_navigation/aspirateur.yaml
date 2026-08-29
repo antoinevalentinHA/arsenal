@@ -22,13 +22,28 @@
 #                      est illisible, ou vaut `indisponibilite`
 #     - alert        → entretien dû, ou robot en `erreur`
 #     - normal       → un cycle est en cours (classe A de la partition)
-#     - confort      → nominal ÉTABLI : robot au repos ou en charge
-#                      (classe R) ET aucun entretien dû
-#     - off          → tout le reste : état non qualifié (classe N),
-#                      ou nominal NON établi faute d'entretien lisible
+#     - off          → TOUT LE RESTE, nominal COMPRIS : repos, charge,
+#                      état non qualifié (classe N), ou entretien illisible
 #
 #  🎨 Couleur (Exception 3 — NAV/HUB) :
-#     alert→🔴  normal→🔵  confort→🟢  off→⚪  indisponible→⚪
+#     alert→🔴  normal→🔵  off→⚪  indisponible→⚪
+#
+#  🚫 AUCUN VERT NOMINAL — correction UX du 2026-08-29
+#     La branche `confort` est SUPPRIMÉE. Une tuile de navigation ne
+#     colore que ce qui appelle un regard : une anomalie (rouge) ou une
+#     activité en cours (bleu). Le nominal — robot au repos ou en charge,
+#     sans entretien dû — n'appelle aucun regard : il tombe au gris de
+#     base, comme les tuiles Prises et Santé, et comme les colorants qui
+#     n'emploient aucun vert (§2 bis, §2 quinquies, §2 nonies du dossier
+#     de cadrage des couleurs de navigation).
+#
+#     CONSÉQUENCE ÉCRITE PLUTÔT QUE MASQUÉE. `bouton_navigation_dynamique`
+#     rend `off` et l'indisponibilité DU MÊME GRIS. Le nominal et
+#     l'inobservable ne se distinguent donc plus SUR LA TUILE. C'est le
+#     choix rendu : la distinction reste entière là où elle décide —
+#     `sensor.aspirateur_etat_canonique` expose les dix états séparément,
+#     et l'`availability:` ci-dessous continue de s'abstenir plutôt que
+#     de fabriquer une valeur (ASP-INV-45, R6).
 #
 #  🧱 Pourquoi cette priorité, et pas une autre :
 #     - R6 — le gris d'indisponibilité prime sur toute couleur
@@ -40,16 +55,18 @@
 #     - R1 — le rouge prime sur le bleu : un entretien dû masque le
 #       cycle en cours. Précédent : `etat_imprimerie_dashboard`, où le
 #       défaut de santé prime sur l'activité de l'usine.
-#     - R4 — le vert n'apparaît qu'à anomalie nulle : il est ici exigé
-#       POSITIVEMENT (classe R établie ET témoin d'entretien à `off`).
-#       Un témoin d'entretien indisponible ne donne donc jamais de vert :
-#       il tombe au gris neutre, jamais au nominal (ASP-INV-45).
+#     - R4 — le vert n'apparaît qu'à anomalie nulle. Ce colorant va plus
+#       loin que la règle et n'en emploie AUCUN : le nominal n'est pas
+#       peint, il est laissé au gris. La règle est donc satisfaite a
+#       fortiori, et un témoin d'entretien indisponible ne peut par
+#       construction produire aucune couleur de nominal (ASP-INV-45).
 #     - Le bleu code une ACTIVITÉ RÉELLE observable, jamais une
 #       existence. Précédents : Imprimerie (régime des presses),
 #       Volets (fermeture pluie en cours).
-#     - Le nominal ne peut être ni `off` ni `standby` : ces deux
-#       valeurs rendent le MÊME gris que l'indisponibilité, et les
-#       employer rabattrait silencieusement l'une sur l'autre.
+#     - Le nominal N'EST PLUS PEINT du tout : il prend `off`, donc le
+#       même gris que l'indisponibilité. Le rabattement que le cadrage
+#       redoutait est ici ASSUMÉ et rendu explicite — voir l'encadré
+#       « aucun vert nominal » ci-dessus.
 #
 #  ⚖️ Le seul point où R1 et R6 se rencontrent, tranché explicitement :
 #     robot inobservable ET entretien dû. R1 voudrait le rouge, R6 le
@@ -119,8 +136,6 @@
           alert
         {% elif classe == 'A' %}
           normal
-        {% elif classe == 'R' and entretien == 'off' %}
-          confort
         {% else %}
           off
         {% endif %}

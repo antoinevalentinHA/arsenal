@@ -48,10 +48,31 @@
 #   une mission qu'Arsenal n'a jamais observé démarrer (D-06, D-R4,
 #   ASP-INV-47, ASP-INV-87).
 #
-#   Le message est rendu par sensor.aspirateur_motif_lisible, qui est
-#   une DÉRIVATION PURE du même verdict — jamais une seconde autorité.
-#   Le graphe reste un arbre : le motif ne relit pas la notification, et
-#   la notification n'écrit aucune entité.
+#   Le message est rendu À PARTIR DU MÊME VERDICT, par une table de
+#   phrases courtes portée ici. Ce n'est pas une seconde autorité : la
+#   table ne décide rien, n'écrit aucune entité et ne couvre que les
+#   neuf valeurs de mission ouverte déjà listées plus bas — le verdict
+#   reste la seule source, et le graphe reste un arbre.
+#
+# ----------------------------------------------------------
+# ✂️ POURQUOI LE MESSAGE EST COURT — correction UX du 2026-08-29
+#   La projection restituait `sensor.aspirateur_motif_lisible` INTÉGRAL,
+#   suivi d'un paragraphe expliquant son propre cycle de vie. Le motif
+#   lisible est un DIAGNOSTIC : il dit ce qui manque et quel geste est
+#   attendu, en deux phrases s'il le faut, et sa place est le panneau du
+#   domaine — où il reste affiché NON TRONQUÉ (ASP-INV-50).
+#
+#   Une notification persistante n'est pas un diagnostic : c'est un
+#   témoin. Elle dit CE QUI SE PASSE, en UNE phrase, et se tait sur la
+#   preuve du démarrage, l'observation, la réconciliation, le verdict,
+#   la suppression manuelle et le fonctionnement de cette automation.
+#   Rien de tout cela n'est perdu : c'est écrit ici, en commentaire, à
+#   destination de qui lit le fichier — pas de qui déverrouille son
+#   téléphone.
+#
+#   BORNE DE FORME : une phrase, 120 caractères au plus, aucun jargon,
+#   aucune promesse. La table ci-dessous s'y tient valeur par valeur, et
+#   la plus longue de ses neuf phrases fait 51 caractères.
 #
 # ----------------------------------------------------------
 # 🔓 POURQUOI CE FICHIER EXISTE MAINTENANT, ET PAS AU LOT N1
@@ -191,6 +212,22 @@
           - "CONDUITE/REPRISE_NON_CONFIRMEE"
           - "CONDUITE/ARRET_ENGAGE"
           - "CONDUITE/RETOUR_ENGAGE"
+        # Phrases de témoin — une par valeur de mission ouverte, dans le
+        # même ordre que la liste ci-dessus. Aucune n'excède 120
+        # caractères, aucune ne porte deux phrases, et aucune n'affirme
+        # ce que le domaine n'observe pas : « en attente de
+        # confirmation » n'est pas « confirmé », et une pause non
+        # confirmée dit que le robot PEUT rouler encore.
+        phrases:
+          "LANCEE/DEMARRAGE_OBSERVE": "Le robot nettoie le périmètre demandé."
+          "CONDUITE/PAUSE_ENGAGEE": "Mise en pause demandée, en attente de confirmation."
+          "CONDUITE/PAUSE_CONFIRMEE": "Mission en pause."
+          "CONDUITE/PAUSE_NON_CONFIRMEE": "Pause non confirmée : le robot peut rouler encore."
+          "CONDUITE/REPRISE_ENGAGEE": "Reprise demandée, en attente de confirmation."
+          "CONDUITE/REPRISE_CONFIRMEE": "Le robot poursuit le périmètre demandé."
+          "CONDUITE/REPRISE_NON_CONFIRMEE": "Reprise non confirmée : la mission reste ouverte."
+          "CONDUITE/ARRET_ENGAGE": "Arrêt demandé, en attente de confirmation."
+          "CONDUITE/RETOUR_ENGAGE": "Retour à la base en cours."
         # Classe T — les huit issues terminales. « Sans exception » :
         # les deux clôtures confirmées, les deux non confirmées, les
         # deux échecs de supervision, la fin nominale et la clôture
@@ -223,13 +260,11 @@
               data:
                 notification_id: aspirateur_mission
                 title: "🤖 Aspirateur – Mission en cours"
+                # Le repli n'est pas décoratif : la branche ne s'ouvre que
+                # sur les neuf valeurs couvertes, mais une notification
+                # sans message ne dirait rien du tout.
                 message: >-
-                  {{ states('sensor.aspirateur_motif_lisible') }}
-
-                  Cette notification reste visible tant que la mission est
-                  ouverte, et disparaît à son issue. Une suppression
-                  manuelle persiste jusqu'au prochain changement du verdict
-                  ou jusqu'à une réconciliation de démarrage.
+                  {{ phrases.get(verdict, 'Mission en cours.') }}
 
         ####################################################
         # 🏁 Issue terminale → extinction
