@@ -195,16 +195,20 @@ views:
             columns: 1
             square: false
             cards:
+              # Carte de SANTÉ, jumelle de Boiler Bridge et Rain Bird
+              # ci-dessus : elle prend sa couleur de l'autorité backend
+              # `sensor.nas_valentin_sante_synthese`, et ne classe rien
+              # elle-même. `bouton_navigation` et sa couleur d'icône
+              # OPAQUE relevaient du contexte NAV/HUB, que l'Exception 3
+              # interdit sur une carte métier.
               - type: custom:button-card
-                template: bouton_navigation
+                template: nas_status_health
+                entity: sensor.nas_valentin_sante_synthese
                 name: NAS
                 icon: mdi:nas
                 tap_action:
                   action: navigate
                   navigation_path: /nas-dashboard
-                styles:
-                  icon:
-                    - color: "rgb(158, 158, 158)"
 
           ####################################################
           # ⚠️ AUTOMATISATIONS DÉSACTIVÉES

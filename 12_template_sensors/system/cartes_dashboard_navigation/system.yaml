@@ -9,6 +9,12 @@
 #   - alert : anomalie systeme structurante ou indisponibilite
 #   - off   : RAS global
 #
+#   La sante du NAS principal y entre au meme titre que le boiler
+#   bridge, et par la meme regle : `ok` ne degrade rien, toute autre
+#   valeur alerte, et une source illisible alerte aussi. Ce capteur
+#   n'a pas d'etat intermediaire, un NAS degrade remonte donc en
+#   `alert` — exactement comme un boiler bridge degrade.
+#
 # ⚠️ SIMPLIFICATION ASSUMEE
 #   - Aucun etat intermediaire
 #   - Les degradations radio Zigbee / Bluetooth ne sont pas
@@ -33,6 +39,7 @@
         {% set coupure = states('binary_sensor.coupure_secteur') %}
         {% set batterie = states('binary_sensor.batterie_a_remplacer') %}
         {% set boiler_bridge = states('sensor.boiler_bridge_sante') %}
+        {% set nas = states('sensor.nas_valentin_sante_synthese') %}
         {% set netatmo_enfants = states('sensor.diagnostic_netatmo_enfants') %}
         {% set netatmo_salle_de_jeux = states('sensor.diagnostic_netatmo_salle_de_jeux') %}
         {% set autos_raw = states('sensor.automatisations_desactivees') %}
@@ -52,6 +59,7 @@
               or coupure in indispo
               or batterie in indispo
               or boiler_bridge in indispo
+              or nas in indispo
               or netatmo_enfants in indispo
               or netatmo_salle_de_jeux in indispo
               or autos_raw in indispo
@@ -62,6 +70,7 @@
               or autos > 0
               or internet != 'ok'
               or boiler_bridge in ['down', 'degraded']
+              or nas != 'ok'
               or netatmo_enfants != 'ok'
               or netatmo_salle_de_jeux != 'ok'
               or couleurs_critiques | count > 0 %}
@@ -88,6 +97,7 @@
           {% set coupure = states('binary_sensor.coupure_secteur') %}
           {% set batterie = states('binary_sensor.batterie_a_remplacer') %}
           {% set boiler_bridge = states('sensor.boiler_bridge_sante') %}
+          {% set nas = states('sensor.nas_valentin_sante_synthese') %}
           {% set netatmo_enfants = states('sensor.diagnostic_netatmo_enfants') %}
           {% set netatmo_salle_de_jeux = states('sensor.diagnostic_netatmo_salle_de_jeux') %}
           {% set autos_raw = states('sensor.automatisations_desactivees') %}
@@ -112,6 +122,8 @@
             Etat batteries indisponible
           {% elif boiler_bridge in indispo %}
             Etat boiler bridge indisponible
+          {% elif nas in ['unavailable', 'none', ''] %}
+            Sante NAS illisible
           {% elif netatmo_enfants in indispo %}
             Diagnostic Netatmo Enfants indisponible
           {% elif netatmo_salle_de_jeux in indispo %}
@@ -134,6 +146,12 @@
             Boiler bridge indisponible
           {% elif boiler_bridge == 'degraded' %}
             Boiler bridge degrade
+          {% elif nas == 'critical' %}
+            NAS en etat critique
+          {% elif nas == 'degraded' %}
+            NAS degrade
+          {% elif nas != 'ok' %}
+            Sante NAS non qualifiee
           {% elif netatmo_enfants == 'muet_ping_ok' %}
             Station Netatmo Enfants sans mesures, ping repond
           {% elif netatmo_enfants == 'muet_ping_ko' %}
@@ -154,6 +172,7 @@
         batterie: "{{ states('binary_sensor.batterie_a_remplacer') }}"
         automatisations_desactivees: "{{ states('sensor.automatisations_desactivees') }}"
         boiler_bridge: "{{ states('sensor.boiler_bridge_sante') }}"
+        nas: "{{ states('sensor.nas_valentin_sante_synthese') }}"
         diagnostic_netatmo_enfants: "{{ states('sensor.diagnostic_netatmo_enfants') }}"
         diagnostic_netatmo_salle_de_jeux: "{{ states('sensor.diagnostic_netatmo_salle_de_jeux') }}"
         memoire_core: "{{ states('sensor.couleur_memoire_moyenne_10_min_core') }}"
