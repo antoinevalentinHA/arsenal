@@ -14,26 +14,37 @@ Deux couches, depuis le lot runtime L1.
    contrat dont le référentiel, le catalogue de refus ou la partition d'états
    se troue cesse d'être opposable, et le trou est silencieux.
 
-2. La **conduite runtime** (ASP-CI-11 … ASP-CI-27). Les obligations que le
+2. La **conduite runtime** (ASP-CI-11 … ASP-CI-27), étendue au lot L2. Les obligations que le
    contrat énonçait sans pouvoir les confronter — écrivain unique, forme
    enveloppée de la charge utile, convention de passages, interdiction
    d'écrire le mode dérivé, ordre de la séquence, unicité de la commande,
    fermeture du vocabulaire de verdict, totalité du motif lisible, constantes
    temporelles — le sont désormais.
 
-CE QUE LE LOT L1 NE COUVRE PAS, ET POURQUOI C'EST ÉCRIT ICI. L1 porte le seul
-lancement : ni conduite d'une mission ouverte, ni supervision continue, ni UI.
-Trois codes du catalogue restent donc sans écrivain — `MISSION_INTERROMPUE` et
-`ERREUR_EN_MISSION` (supervision continue, lot ultérieur) et
-`CANAL_INDISPONIBLE` (diagnostic de l'APPELANT : si la demande n'atteint pas
-Home Assistant, aucun moteur ne s'exécute pour l'écrire). Un quatrième,
-`COMMANDE_REJETEE`, est **structurellement** hors de portée : Home Assistant
+CE QUE LES LOTS COUVRENT, ET CE QU'ILS NE COUVRENT PAS. L1 portait le seul
+lancement. Le lot L2 ajoute la CONDUITE d'une mission ouverte et sa
+SUPERVISION : le verdict compte désormais TROIS écrivains — moteur, script de
+conduite, automation de supervision — à ensembles de valeurs exactes et DEUX À
+DEUX DISJOINTS, dont l'union fait les 34 valeurs du vocabulaire. Deux des
+quatre codes du catalogue qui restaient sans écrivain en trouvent un :
+`MISSION_INTERROMPUE` et `ERREUR_EN_MISSION`, écrits par la supervision.
+
+DEUX RESTENT DÉLIBÉRÉMENT SANS ÉCRIVAIN, et ce n'est pas un manque.
+`CANAL_INDISPONIBLE` est le diagnostic de l'APPELANT : si la demande n'atteint
+pas Home Assistant, aucun objet Arsenal ne s'exécute pour l'écrire.
+`COMMANDE_REJETEE` est **structurellement** hors de portée : Home Assistant
 n'expose aucune construction YAML d'attrapage d'erreur, et distinguer un rejet
-d'une interruption d'exécution exigerait un observateur survivant à l'appel,
-donc un second script. ASP-CI-18 **interdit** au moteur d'écrire ces codes — un
-verdict anticipé affirmerait un rejet avant qu'un rejet soit observable —
-pendant qu'ASP-CI-19 **exige** leur traduction dans le motif lisible : le
-catalogue reste total, sans qu'aucun verdict ne dépasse la connaissance acquise.
+d'une interruption d'exécution exigerait un observateur survivant à l'appel.
+ASP-CI-18 **interdit** au moteur d'écrire ces codes — un verdict anticipé
+affirmerait un rejet avant qu'un rejet soit observable — pendant qu'ASP-CI-19
+**exige** leur traduction dans le motif lisible : le catalogue reste total,
+sans qu'aucun verdict ne dépasse la connaissance acquise.
+
+CE QUE LE LOT L2 NE COUVRE TOUJOURS PAS : l'interface. Aucune couche
+d'intention, aucune surface Lovelace — lots `U0` et `U2`, et `ASP-CI-28` leur
+reste RÉSERVÉ. La SIGNATURE POSITIVE DE L'ARRÊT reste inconnue et n'est pas
+complétée : la confirmation d'arrêt est établie NÉGATIVEMENT, par la cessation
+d'activité, et jamais par un état d'arrêt nommé qu'aucune partition ne classe.
 
 TROIS ANCRES INDÉPENDANTES DU CONTRAT. Un contrôle qui ne lit que le contrat ne
 prouve que sa cohérence interne : falsifier la table ET ses consommateurs le
@@ -115,13 +126,22 @@ Dix contrôles, tous adossés à une clause déjà normée par le contrat :
                           CONJOINTE contrat + checker + runtime
                           (ASP-INV-69, ARB-3).
 
-Dix-sept contrôles de CONDUITE, adossés au runtime L1 :
+Dix-sept contrôles de CONDUITE, adossés au runtime L1 et — depuis le lot L2 —
+au runtime de conduite et de supervision :
 
-  ASP-CI-11 Écrivain unique — un seul script, `mode: single`, quatre champs ;
-                          AUCUN autre YAML de configuration n'écrit les deux
-                          helpers ni n'appelle `vacuum.*` / `roborock.*` ; la
-                          garde template et le moteur appliquent la MÊME règle
-                          sur les MÊMES témoins (ASP-INV-31/32/61).
+  ASP-CI-11 Écrivains  — le moteur : un seul script, `mode: single`, quatre
+                          champs ; le script de conduite : un seul script,
+                          `mode: single`, UN champ fermé. TABLE
+                          `{fichier -> ensemble littéral}` des TROIS écrivains
+                          du verdict, avec DISJONCTION deux à deux, couverture
+                          TOTALE du vocabulaire, et refus de toute valeur non
+                          littérale. La TRACE d'intention garde UN écrivain, le
+                          moteur. Le verdict n'est mentionnable que par le
+                          runtime L1, ses trois écrivains et la SEULE
+                          projection de mission, qui ne l'écrit jamais. Un
+                          appel d'appareil n'est admis que dans DEUX fichiers.
+                          Slots critiques LITTÉRAUX dans les huit fichiers
+                          nommés (ASP-INV-31/32/61/86).
   ASP-CI-12 Charge utile — le gabarit `params` est RENDU, pas cherché à la
                           regex : le résultat doit être une LISTE contenant UN
                           mapping, la forme nue échouant en silence
@@ -132,7 +152,12 @@ Dix-sept contrôles de CONDUITE, adossés au runtime L1 :
   ASP-CI-14 Voies       — ni `app_zoned_clean`, ni `repeats`, ni `vacuum.start`,
                           ni `clean_area` : commentaires neutralisés d'abord,
                           faute de quoi l'en-tête qui INTERDIT ces voies les
-                          déclencherait lui-même (07 §6).
+                          déclencherait lui-même (07 §6). Périmètre ÉTENDU aux
+                          trois fichiers L2, avec UNE exception nominative : la
+                          primitive de démarrage est admise dans le SEUL
+                          fichier de conduite, UNE SEULE FOIS, et seulement si
+                          les quatre ancres de sa garde fermée y figurent
+                          (ASP-INV-62).
   ASP-CI-15 Mode dérivé — `select.entree_…_mode_de_nettoyage` n'est jamais la
                           CIBLE d'une écriture : l'écrire écrase le profil
                           d'aspiration (ASP-INV-12).
@@ -142,21 +167,32 @@ Dix-sept contrôles de CONDUITE, adossés au runtime L1 :
                           (ASP-INV-34/36).
   ASP-CI-17 Commande    — exactement une émission de démarrage (ASP-INV-35).
   ASP-CI-18 Verdict     — DÉCOMPTE du vocabulaire RECALCULÉ et confronté au
-                          texte du helper : les valeurs de verdict et les codes
-                          du catalogue comptent 18 éléments chacun et SE
-                          RECOUPENT, un décompte qui les dirait disjoints est
-                          faux ; vocabulaire FERMÉ et intégralement atteignable ;
-                          `ISSUE_NON_ETABLIE` posé AVANT l'appel avec la
-                          trace, `COMMANDE_ACCEPTEE` seulement au retour
-                          réussi ; aucun `continue_on_error` ; aucun des quatre
-                          codes hors de portée de L1 (ASP-INV-37/38/49).
-  ASP-CI-19 Motif       — les 18 codes du catalogue et les 4 valeurs de cycle
+                          texte du helper : 34 valeurs de verdict pour 18 codes
+                          du catalogue, et les deux ensembles SE RECOUPENT — 16
+                          présents, 2 absents, 18 valeurs de cycle de vie. Le
+                          moteur écrit EXACTEMENT ses 18 valeurs ;
+                          `ISSUE_NON_ETABLIE` posé AVANT l'appel avec la trace,
+                          `COMMANDE_ACCEPTEE` seulement au retour réussi ;
+                          aucun `continue_on_error` sur l'émission ; aucun des
+                          deux codes hors de portée. SÉQUENCE L2, geste par
+                          geste : l'ENGAGEMENT précède la commande, il y a
+                          EXACTEMENT une émission et c'est celle du geste, la
+                          relecture est unique et bornée, et le verdict ne
+                          s'écrit qu'avec les valeurs de CE geste. SUPERVISION :
+                          aucune écriture hors d'une mission ouverte, exclusion
+                          de l'interruption pendant un engagement, clôture
+                          opaque réservée à la réconciliation de redémarrage
+                          (ASP-INV-37/38/49/86/87/88/89/92/94).
+  ASP-CI-19 Motif       — les 18 codes du catalogue et les 18 valeurs de cycle
                           de vie traduits, chacun sous 255 caractères, sans
                           index nu, sans libellé d'appareil, sans nom d'entité
                           (ASP-INV-6/7/50/53).
   ASP-CI-20 Constantes  — trois fenêtres de 30 s et une de 60 s dans le moteur,
-                          aucune autre temporisation, aucun helper temporel
-                          (ASP-INV-69).
+                          QUATRE fenêtres de 30 s dans le script de conduite —
+                          mutualisées, donc sans durée concurrente et sans
+                          amendement d'ASP-CI-10 —, AUCUNE dans la supervision
+                          ni dans la projection, aucune autre temporisation,
+                          aucun helper temporel (ASP-INV-69, A-15).
   ASP-CI-21 Concordance — les six identifiants ATTRIBUÉS par l'opérateur, le
                           référentiel embarqué confronté aux tables §2 / §2.1
                           — espace finale de `Étage ` comprise —, les cinq
@@ -470,12 +506,22 @@ RUNTIME_N1 = DOSSIER_N1 + "/notification_entretien.yaml"
 # Identifiants d'automation. ATTRIBUES par l'operateur, jamais deduits.
 AID_N1_MISSION = "10280000000002"       # projection persistante de mission
 AID_N1_MAINTENANCE = "10280000000003"   # projection persistante de maintenance
-AID_N1_AUTORISES = frozenset({AID_N1_MISSION, AID_N1_MAINTENANCE})
-# Hors perimetre N1, et pour des raisons distinctes : `...01` est la
-# supervision W3 (ecrivain du verdict, lot L2) ; `...04` la remise a zero de
-# la composition d'intention (lot U0, bloque par `A-5`).
-AID_HORS_N1 = {"10280000000001": "supervision de mission W3 — lot L2",
-               "10280000000004": "remise a zero de la composition — lot U0"}
+# AMENDEMENT L2 — le dossier d'automations du domaine porte desormais TROIS
+# automations : la supervision W3, la projection de mission et la projection
+# d'entretien. La table nomme chacune AVEC son fichier : un identifiant
+# deplace d'un fichier a l'autre echoue, la ou un simple ensemble d'IDs
+# l'aurait laisse passer.
+AID_N1_AUTORISES = frozenset({"10280000000001", AID_N1_MISSION,
+                              AID_N1_MAINTENANCE})
+FICHIER_DE_L_AID = {
+    "10280000000001": "11_automations/aspirateur/supervision_mission.yaml",
+    AID_N1_MISSION: "11_automations/aspirateur/notification_mission.yaml",
+    AID_N1_MAINTENANCE: RUNTIME_N1,
+}
+# Hors perimetre du dossier : `...04`, remise a zero de la composition
+# d'intention (lot U0, bloque par `A-5`). Il n'existe pas, et son apparition
+# ici serait une implementation prematuree.
+AID_HORS_N1 = {"10280000000004": "remise a zero de la composition — lot U0"}
 # Tout identifiant du domaine, quelle que soit sa valeur. Balaye le TEXTE du
 # dossier, commentaires compris : le parseur YAML ne voit que les automations
 # qu'il sait lire, et un identifiant cite ailleurs — une forme non couverte,
@@ -489,7 +535,16 @@ AID_DOMAINE = re.compile(r"\b(1028\d{10})\b")
 # construction de cette projection VISIBLE et DELIBEREE — jamais accidentelle.
 # Le lever exige de modifier CE module, sous revue, en meme temps que le
 # runtime. C'est le meme mecanisme que le verrou transitoire de `M0`.
-VERROU_N1_MISSION = True
+#
+# ── VERROU LEVE PAR LE LOT L2, ET PAR LUI SEUL ────────────────────────────
+# La condition posee est REALISEE, et elle l'est par le lot qui fournit
+# l'autorite manquante : `CLASSE_T` compte desormais HUIT valeurs — trois
+# clotures ecrites par le script de conduite, cinq par la supervision. La
+# projection de cycle peut donc s'eteindre, et elle a un writer.
+# Le verrou n'est pas retire du module : il est mis a `False`, de sorte que
+# l'histoire du refus reste lisible et qu'un retour en arriere reste possible
+# sans reecrire le controle.
+VERROU_N1_MISSION = False
 
 # Identifiants de notification. FERMES : 08_NOTIFICATIONS.md §1 en fixe deux,
 # un par canal persistant, et le lot n'en instancie qu'un.
@@ -498,9 +553,10 @@ NOTIF_N1_MISSION = "aspirateur_mission"
 NOTIF_N1_FERMES = frozenset({NOTIF_N1_ENTRETIEN, NOTIF_N1_MISSION})
 # Ce que N1 instancie REELLEMENT. La difference avec l'ensemble ferme est le
 # volet differe, et elle est verifiee — pas seulement commentee.
-NOTIF_N1_INSTANCIES = frozenset({NOTIF_N1_ENTRETIEN})
+NOTIF_N1_INSTANCIES = frozenset({NOTIF_N1_ENTRETIEN, NOTIF_N1_MISSION})
 
 TITRE_N1_ENTRETIEN = "\U0001F9F0 Aspirateur \u2013 Entretien requis"
+TITRE_N1_MISSION = "\U0001F916 Aspirateur \u2013 Mission en cours"
 # Readiness : le patron du depot, et le seul admis pour la re-projection.
 READINESS_N1 = "input_boolean.systeme_stable"
 # Autorite metier de la projection d'entretien — les deux entites de M1, et
@@ -526,6 +582,50 @@ ETAT_N1_SUPPRESSION = ETAT_M1_AUCUN
 # cycle ; `queued` rejouerait un rendu deja perime. Les trois precedents de
 # projection persistante du depot portent `restart`.
 MODES_N1 = frozenset({"restart"})
+# AMENDEMENT L2 — le dossier porte trois automations de natures DIFFERENTES.
+# Les interdits d'ASP-CI-39 ne peuvent donc plus etre une liste unique : un
+# lecteur pur et un ecrivain du verdict n'ont pas les memes droits, et leur
+# appliquer les memes regles rendrait le controle soit inutile, soit faux.
+# La table ci-dessous nomme, fichier par fichier, ce que chacun a le droit de
+# lire et d'appeler. Un fichier absent de la table est REFUSE : le dossier est
+# ferme, et un quatrieme objet n'y apparait pas en silence.
+SCRIPT_MOBILE = "script.notification_envoyer_avance"
+CIBLE_MOBILE = "input_text.telephone_parent_1_notify"
+# La projection d'entretien lit ses deux entites d'autorite ; celle de mission
+# lit le verdict et sa derivation lisible ; la supervision lit le verdict, les
+# trois temoins de l'appareil et la cible mobile.
+AUTORITE_PAR_FICHIER = {
+    RUNTIME_N1: frozenset(AUTORITE_N1) | {READINESS_N1},
+    "11_automations/aspirateur/notification_mission.yaml":
+        frozenset({"input_text.aspirateur_mission_verdict",
+                   "sensor.aspirateur_motif_lisible", READINESS_N1}),
+    "11_automations/aspirateur/supervision_mission.yaml":
+        # `vacuum.roborock_q7_max` y est LU, et seulement lu : c'est le
+        # SEUL temoin du domaine qui dise « pose sur sa base » (07 §5.0),
+        # donc le seul qui puisse prouver un amarrage POSITIVEMENT. Sa
+        # lecture n'ouvre aucune seconde autorite : la supervision ne
+        # commande jamais l'appareil, et l'interdit de commande ci-dessous
+        # reste porte par SERVICES_PAR_FICHIER, qui ne contient aucun
+        # service `vacuum.*`.
+        frozenset({"input_text.aspirateur_mission_verdict",
+                   "sensor.roborock_q7_max_etat",
+                   "sensor.roborock_q7_max_erreur_de_l_aspirateur",
+                   "sensor.roborock_q7_max_dock_erreur_de_dock",
+                   "vacuum.roborock_q7_max",
+                   READINESS_N1, CIBLE_MOBILE}),
+}
+SERVICES_PAR_FICHIER = {
+    RUNTIME_N1: frozenset({"persistent_notification.create",
+                           "persistent_notification.dismiss"}),
+    "11_automations/aspirateur/notification_mission.yaml":
+        frozenset({"persistent_notification.create",
+                   "persistent_notification.dismiss"}),
+    "11_automations/aspirateur/supervision_mission.yaml":
+        frozenset({"input_text.set_value", SCRIPT_MOBILE}),
+}
+# Les deux LECTEURS PURS : ils ne doivent ecrire aucun verdict, ni commander.
+PROJECTIONS_PURES = frozenset({
+    RUNTIME_N1, "11_automations/aspirateur/notification_mission.yaml"})
 # Types de condition que l'evaluateur de scenarios sait rendre FIDELEMENT. Un
 # type absent d'ici fait ECHOUER le controle, jamais passer : un evaluateur
 # silencieusement incomplet rendrait un faux vert.
@@ -2831,8 +2931,26 @@ ID_ETAT_CANON = "aspirateur_etat_canonique"
 ID_MOTIF = "aspirateur_motif_lisible"
 ID_GARDE = "aspirateur_conditions_lancement_hors_carte"
 
-# Vocabulaire FERMÉ du verdict — 18 valeurs, aucune autre.
-VOCABULAIRE_VERDICT = frozenset({
+# ═════════════════════════════════════════════════════════════
+# VOCABULAIRE DU VERDICT — 34 valeurs, TROIS ecrivains (lot L2)
+#
+# Jusqu'au lot L1, le verdict avait UN ecrivain et 18 valeurs. Le lot L2 en
+# ajoute deux, et seize valeurs. Les trois ensembles sont figes ici, SEPAREMENT
+# et non par difference : c'est ce qui rend detectable un deplacement de valeur
+# d'un writer a l'autre, la ou un vocabulaire global en un seul bloc laisserait
+# passer exactement cela.
+#
+# La DISJONCTION porte sur les VALEURS, jamais sur les prefixes (D-09). Deux
+# prefixes sont partages, et c'est conforme : `ECHEC/` entre W1 et W3,
+# `CLOTURE/` entre W2 et W3. Une contrainte de prefixe exclusif serait donc
+# fausse, et le checker n'en pose aucune.
+#
+# Source : contrat 15_conduite_et_supervision.md §1 et §3 ; cadrage V4 ratifie
+# (D-44), 07_MACHINE_L2.md §3.3 bis, arbitrage A-4.
+# ═════════════════════════════════════════════════════════════
+
+# W1 — moteur de lancement. INCHANGE.
+VERDICT_W1 = frozenset({
     "VALIDATION_EN_COURS",
     "REFUS/SELECTION_VIDE", "REFUS/SEGMENT_INCONNU", "REFUS/SELECTION_MULTI_CARTE",
     "REFUS/CARTE_NON_CONFIRMEE", "REFUS/PROFIL_INCONNU",
@@ -2842,6 +2960,45 @@ VOCABULAIRE_VERDICT = frozenset({
     "REFUS/SESSION_INACHEVEE", "REFUS/REGLAGE_NON_CONFIRME",
     "COMMANDE/ISSUE_NON_ETABLIE", "EMISSION/COMMANDE_ACCEPTEE",
     "ECHEC/TRANSITION_NON_OBSERVEE", "LANCEE/DEMARRAGE_OBSERVE"})
+
+# W2 — script de conduite. Trois valeurs d'ENGAGEMENT, trois issues de pause,
+# trois de reprise, deux cloturent l'arret, une cloture le retour non entre.
+VERDICT_W2 = frozenset({
+    "CONDUITE/PAUSE_ENGAGEE", "CONDUITE/PAUSE_CONFIRMEE",
+    "CONDUITE/PAUSE_NON_CONFIRMEE",
+    "CONDUITE/REPRISE_ENGAGEE", "CONDUITE/REPRISE_CONFIRMEE",
+    "CONDUITE/REPRISE_NON_CONFIRMEE",
+    "CONDUITE/ARRET_ENGAGE", "CLOTURE/APRES_ARRET_CONFIRME",
+    "CLOTURE/APRES_ARRET_NON_CONFIRME",
+    "CONDUITE/RETOUR_ENGAGE", "CLOTURE/APRES_RETOUR_NON_CONFIRME"})
+
+# W3 — automation de supervision. Cinq valeurs, TOUTES terminales.
+VERDICT_W3 = frozenset({
+    "ECHEC/MISSION_INTERROMPUE", "ECHEC/ERREUR_EN_MISSION",
+    "CLOTURE/FIN_NOMINALE", "CLOTURE/APRES_RETOUR_CONFIRME",
+    "CLOTURE/ISSUE_OPAQUE_APRES_REDEMARRAGE"})
+
+# Vocabulaire FERME du verdict — l'UNION des trois, et rien d'autre.
+VOCABULAIRE_VERDICT = VERDICT_W1 | VERDICT_W2 | VERDICT_W3
+
+# Classe O, sous-classe O-R comprise — la porte d'entree du 15 §2. NEUF
+# valeurs : la seule de W1 qui ouvre, plus les huit de conduite hors clotures.
+CLASSE_O = frozenset({
+    "LANCEE/DEMARRAGE_OBSERVE",
+    "CONDUITE/PAUSE_ENGAGEE", "CONDUITE/PAUSE_CONFIRMEE",
+    "CONDUITE/PAUSE_NON_CONFIRMEE",
+    "CONDUITE/REPRISE_ENGAGEE", "CONDUITE/REPRISE_CONFIRMEE",
+    "CONDUITE/REPRISE_NON_CONFIRMEE",
+    "CONDUITE/ARRET_ENGAGE", "CONDUITE/RETOUR_ENGAGE"})
+CLASSE_O_R = "CONDUITE/RETOUR_ENGAGE"
+# Classe T — HUIT issues terminales : trois clotures de W2, les cinq de W3.
+CLASSE_T = frozenset({
+    "CLOTURE/APRES_ARRET_CONFIRME", "CLOTURE/APRES_ARRET_NON_CONFIRME",
+    "CLOTURE/APRES_RETOUR_NON_CONFIRME"}) | VERDICT_W3
+# Les quatre valeurs d'ENGAGEMENT — la fenetre de relecture, rendue visible
+# dans le verdict. C'est ce que W3 lit pour s'abstenir (A-11, regle 2).
+ENGAGEMENTS_W2 = ("CONDUITE/PAUSE_ENGAGEE", "CONDUITE/REPRISE_ENGAGEE",
+                  "CONDUITE/ARRET_ENGAGE", "CONDUITE/RETOUR_ENGAGE")
 
 # Codes du catalogue que L1 NE PEUT PAS écrire, et pourquoi. Le moteur ne doit
 # en porter AUCUN littéralement : un verdict anticipé affirmerait un rejet
@@ -2856,9 +3013,20 @@ CODES_HORS_PORTEE_L1 = {
     "ERREUR_EN_MISSION": "supervision continue, hors L1"}
 
 # Valeurs de cycle de vie que le motif lisible doit traduire en plus des
-# 18 codes du catalogue.
+# 18 codes du catalogue. DIX-HUIT depuis le lot L2 : les quatre du lot L1, les
+# onze de la conduite, et les trois valeurs de supervision qui n'appartiennent
+# a aucun catalogue. Les deux autres valeurs de W3 — mission interrompue et
+# erreur en mission — SONT des codes du catalogue et ne comptent pas ici.
 CYCLE_DE_VIE = ("VALIDATION_EN_COURS", "ISSUE_NON_ETABLIE",
-                "COMMANDE_ACCEPTEE", "DEMARRAGE_OBSERVE")
+                "COMMANDE_ACCEPTEE", "DEMARRAGE_OBSERVE",
+                "PAUSE_ENGAGEE", "PAUSE_CONFIRMEE", "PAUSE_NON_CONFIRMEE",
+                "REPRISE_ENGAGEE", "REPRISE_CONFIRMEE",
+                "REPRISE_NON_CONFIRMEE",
+                "ARRET_ENGAGE", "APRES_ARRET_CONFIRME",
+                "APRES_ARRET_NON_CONFIRME",
+                "RETOUR_ENGAGE", "APRES_RETOUR_NON_CONFIRME",
+                "FIN_NOMINALE", "APRES_RETOUR_CONFIRME",
+                "ISSUE_OPAQUE_APRES_REDEMARRAGE")
 
 # Entités natives dont le moteur a besoin, par rôle. Figées ici : elles sont
 # CONFRONTÉES à l'audit (ASP-CI-21), jamais tirées de lui.
@@ -2911,6 +3079,99 @@ COMPARAISONS_TARDIVES = (
 FENETRE_CONFIRMATION_YAML = "00:00:30"
 FENETRE_TRANSITION_YAML = "00:01:00"
 NB_CONFIRMATIONS = 3          # carte (6), eau (8), aspiration (10)
+
+# ═════════════════════════════════════════════════════════════
+# RUNTIME L2 — conduite et supervision (lot L2)
+#
+# Trois fichiers, NOMMES ici. Le perimetre ne vient pas d'une recherche de
+# mots dans le depot : il vient de cette liste, exactement comme
+# `RUNTIME_FICHIERS` pour le lot L1. Un quatrieme fichier qui commanderait
+# l'appareil ou ecrirait le verdict est refuse par le balayage du depot.
+#
+# AUCUN CONTROLE NEUF n'est cree pour ce lot. Les cinq controles de conduite
+# deja en place — ASP-CI-11, 14, 18, 19, 20 — voient leur PERIMETRE etendu,
+# et les deux controles de projection — ASP-CI-37, 39 — leur table de
+# writers elargie. `ASP-CI-10` n'est PAS amende : les quatre fenetres L2
+# sont mutualisees a une valeur deja admise, et ne produisent donc aucune
+# duree concurrente. `ASP-CI-28` reste RESERVE au lot U0.
+# ═════════════════════════════════════════════════════════════
+
+RUNTIME_L2_CONDUITE = "10_scripts/aspirateur/conduire_mission.yaml"
+RUNTIME_L2_SUPERVISION = "11_automations/aspirateur/supervision_mission.yaml"
+RUNTIME_L2_PROJECTION = "11_automations/aspirateur/notification_mission.yaml"
+RUNTIME_L2_FICHIERS = (RUNTIME_L2_CONDUITE, RUNTIME_L2_SUPERVISION,
+                       RUNTIME_L2_PROJECTION)
+
+# Identifiants ATTRIBUES PAR L'OPERATEUR (A-3, rendu en V4). Figes ici : un
+# renommage silencieux echoue (ASP-INV-58).
+ID_CONDUITE = "aspirateur_conduire_mission"
+ID_MOTIF_ENTITE = "sensor.aspirateur_motif_lisible"
+AID_SUPERVISION = "10280000000001"      # W3 — ecrivain du verdict
+AID_PROJECTION_MISSION = "10280000000002"   # projection de cycle, lecteur pur
+NOTIF_MISSION = "aspirateur_mission"
+TITRE_NOTIF_MISSION = "\U0001F916 Aspirateur \u2013 Mission en cours"
+
+# Table des ECRIVAINS du verdict : {fichier -> ensemble litteral}. C'est la
+# forme exigee par l'amendement d'ASP-CI-11. La disjonction deux a deux et la
+# couverture totale sont VERIFIEES, jamais supposees.
+WRITERS_VERDICT = {
+    RUNTIME_MOTEUR: VERDICT_W1,
+    RUNTIME_L2_CONDUITE: VERDICT_W2,
+    RUNTIME_L2_SUPERVISION: VERDICT_W3,
+}
+# LECTEUR nominatif du verdict : la projection persistante de mission, et elle
+# seule. Elle a le droit de MENTIONNER le helper ; elle n'a AUCUN droit
+# d'ecriture — l'ecrivain reste le trio (ASP-INV-31, ASP-INV-86).
+LECTEURS_VERDICT = frozenset({RUNTIME_L2_PROJECTION})
+# Fichiers ou un appel d'appareil est admis. DEUX, et deux seulement.
+COMMANDENT_APPAREIL = frozenset({RUNTIME_MOTEUR, RUNTIME_L2_CONDUITE})
+
+# Les quatre gestes, leur service LITTERAL et leur valeur d'engagement.
+# Figes ici : c'est ce qui rend detectable un geste dont la commande aurait
+# ete remplacee par une autre — un `vacuum.stop` sous la branche « pause »
+# passerait toutes les gardes textuelles sans cette table.
+GESTES_L2 = ("pause", "reprise", "arret", "retour_base")
+SERVICE_DU_GESTE = {
+    "pause": "vacuum.pause",
+    "reprise": "vacuum.start",
+    "arret": "vacuum.stop",
+    "retour_base": "vacuum.return_to_base",
+}
+ENGAGEMENT_DU_GESTE = {
+    "pause": "CONDUITE/PAUSE_ENGAGEE",
+    "reprise": "CONDUITE/REPRISE_ENGAGEE",
+    "arret": "CONDUITE/ARRET_ENGAGE",
+    "retour_base": "CONDUITE/RETOUR_ENGAGE",
+}
+# LE SEUL etat d'arret ATTESTE du domaine (15 §3.1). W2 y fonde sa
+# postcondition d'arret, W3 sa conclusion d'interruption : dans les deux
+# cas la regle est POSITIVE et FERMEE. La regle NEGATIVE qu'elle remplace
+# — « ni activite, ni erreur, ni indisponibilite » — concluait sur TOUT
+# etat de classe N, `emptying_the_bin` compris : une phase de dock
+# nominale y produisait un verdict terminal FAUX.
+ETAT_ARRET_ATTESTE = "idle"
+# Les DEUX temoins d'amarrage, en DISJONCTION (15 §5). `docking` n'en fait
+# pas partie : le contrat le classe en etat de MOUVEMENT (07 §5.0). Une
+# disjonction, et non une sequence : exiger un passage par un etat
+# intermediaire rendrait l'arrivee inobservable des qu'un echantillon
+# manque.
+TEMOINS_AMARRAGE = ("vacuum.roborock_q7_max", "charging")
+# L'etat que le contrat classe en MOUVEMENT et que rien n'autorise a tenir
+# pour une arrivee (07 §5.0). Fige ici pour que sa reintroduction echoue.
+ETAT_MOUVEMENT_DOCK = "docking"
+# Verdicts d'ARRIVEE — les deux seuls que la preuve d'amarrage autorise.
+VERDICTS_ARRIVEE = frozenset({"CLOTURE/APRES_RETOUR_CONFIRME",
+                              "CLOTURE/FIN_NOMINALE"})
+# Fenetre de relecture L2 — la MEME constante que la confirmation L1 (A-15,
+# mutualisation totale). Quatre occurrences, une par geste, et aucune autre.
+NB_FENETRES_L2 = 4
+# La primitive de demarrage est admise dans le SEUL fichier de conduite, et
+# une seule fois (07 §7.1, ASP-INV-62). Les quatre ancres textuelles de sa
+# garde fermee : etat de pause, session ouverte, temoin robot nominal, temoin
+# dock nominal.
+PRIMITIVE_DEMARRAGE = "vacuum.start"
+GARDE_REPRISE_ANCRES = ("'paused'", NATIF_SESSION,
+                        f"'{NOMINAL_ERR_VAC}'", f"'{NOMINAL_ERR_DOCK}'")
 
 # Capacité d'un état de capteur Home Assistant.
 MAX_ETAT_CAPTEUR = 255
@@ -3198,6 +3459,148 @@ def check_chemins_silencieux(top) -> list[str]:
     return errs
 
 
+# ─────────────────────────────────────────────────────────────
+# Lecture STRUCTURELLE des ecrivains du verdict — lots L1 et L2
+#
+# La table `{fichier -> ensemble litteral}` d'ASP-CI-11 exige de savoir ce
+# qu'un fichier ECRIT REELLEMENT, pas ce qu'il MENTIONNE : les trois writers
+# citent tous des valeurs qu'ils n'ecrivent pas — le script de conduite et la
+# supervision portent la liste des neuf valeurs de classe O pour tester la
+# porte d'entree, dont une appartient au moteur. Un balayage textuel du
+# vocabulaire accuserait donc les deux fichiers a tort.
+#
+# La lecture est donc STRUCTURELLE, et elle n'est complete QUE parce que trois
+# gardes tiennent ensemble : le service et la cible sont litteraux (C-6), et la
+# valeur ecrite est verifiee litterale ci-dessous. Une seule de ces trois
+# gardes en moins, et un verdict pourrait etre assemble hors de portee.
+# ─────────────────────────────────────────────────────────────
+
+def _mappings(noeud):
+    """Tous les mappings d'un document YAML, recursivement."""
+    if isinstance(noeud, list):
+        for x in noeud:
+            yield from _mappings(x)
+    elif isinstance(noeud, dict):
+        yield noeud
+        for v in noeud.values():
+            yield from _mappings(v)
+
+
+def _svc_de(step):
+    """Nom de service d'une etape, sous ses trois cles possibles."""
+    if not isinstance(step, dict):
+        return None
+    return (step.get("action") or step.get("service")
+            or step.get("perform_action"))
+
+
+def _ecrit_le_verdict(step) -> bool:
+    return (_svc_de(step) == "input_text.set_value"
+            and ID_VERDICT in _cibles(step))
+
+
+def _verdicts_du_document(doc) -> tuple[set[str], list[str]]:
+    """(valeurs litteralement ecrites, anomalies) pour un document YAML."""
+    valeurs: set[str] = set()
+    anomalies: list[str] = []
+    for st in _mappings(doc):
+        if not _ecrit_le_verdict(st):
+            continue
+        val = (st.get("data") or {}).get("value")
+        if not isinstance(val, str) or "{{" in val or "{%" in val:
+            anomalies.append(repr(val)[:60])
+            continue
+        valeurs.add(val.strip())
+    return valeurs, anomalies
+
+
+def check_table_writers(textes_l2) -> list[str]:
+    """ASP-CI-11 — la table `{fichier -> ensemble litteral}` des trois writers.
+
+    Trois proprietes, verifiees et non affirmees :
+      · chaque fichier ecrit EXACTEMENT son ensemble — ni plus, ni moins ;
+      · les trois ensembles sont DEUX A DEUX DISJOINTS (D-09) ;
+      · leur UNION est le vocabulaire entier — aucune valeur orpheline.
+    """
+    errs: list[str] = []
+    for rel, attendu in sorted(WRITERS_VERDICT.items(),
+                               key=lambda kv: kv[0]):
+        txt = textes_l2.get(rel)
+        if txt is None:
+            errs.append(f"ASP-CI-11 : le writer `{rel}` est ABSENT du depot — "
+                        f"les {len(attendu)} valeurs qu'il porte n'auraient "
+                        "aucun ecrivain (ASP-INV-86).")
+            continue
+        try:
+            doc = yaml.safe_load(txt)
+        except yaml.YAMLError as exc:
+            errs.append(f"ASP-CI-11 : `{rel}` est illisible en YAML ({exc}).")
+            continue
+        vus, anomalies = _verdicts_du_document(doc)
+        for mauvais in anomalies:
+            errs.append(f"ASP-CI-11 : `{rel}` ecrit le verdict avec une valeur "
+                        f"NON LITTERALE {mauvais} — une valeur assemblee en "
+                        "Jinja n'est confrontable a aucun vocabulaire ferme "
+                        "(ASP-INV-70).")
+        if vus - attendu:
+            errs.append(f"ASP-CI-11 : `{rel}` ecrit {sorted(vus - attendu)}, "
+                        "hors de son ensemble. Un writer n'ecrit que SES "
+                        "valeurs — sinon deux writers auraient la meme "
+                        "(ASP-INV-86).")
+        if attendu - vus:
+            errs.append(f"ASP-CI-11 : `{rel}` n'ecrit jamais "
+                        f"{sorted(attendu - vus)} — chaque valeur de "
+                        "l'ensemble doit etre atteignable dans le fichier qui "
+                        "la porte (ASP-CI-18).")
+    noms = sorted(WRITERS_VERDICT)
+    for i, a in enumerate(noms):
+        for b in noms[i + 1:]:
+            commun = WRITERS_VERDICT[a] & WRITERS_VERDICT[b]
+            if commun:
+                errs.append(f"ASP-CI-11 : `{a}` et `{b}` partagent "
+                            f"{sorted(commun)} — la disjonction porte sur les "
+                            "VALEURS (D-09) : aucune valeur n'a deux auteurs.")
+    union = set()
+    for ens in WRITERS_VERDICT.values():
+        union |= ens
+    if union != set(VOCABULAIRE_VERDICT):
+        manque = sorted(set(VOCABULAIRE_VERDICT) - union)
+        trop = sorted(union - set(VOCABULAIRE_VERDICT))
+        errs.append(f"ASP-CI-11 : l'union des trois writers ne recouvre pas le "
+                    f"vocabulaire — manquantes {manque}, en trop {trop}.")
+    return errs
+
+
+def check_conduite_forme(textes_l2) -> list[str]:
+    """ASP-CI-11 — forme du script de conduite : un script, un mode, un champ."""
+    errs: list[str] = []
+    txt = textes_l2.get(RUNTIME_L2_CONDUITE)
+    if txt is None:
+        return [f"ASP-CI-11 : `{RUNTIME_L2_CONDUITE}` est absent — le lot L2 "
+                "n'a pas d'ecrivain de conduite."]
+    try:
+        doc = yaml.safe_load(txt)
+    except yaml.YAMLError as exc:
+        return [f"ASP-CI-11 : `{RUNTIME_L2_CONDUITE}` illisible ({exc})."]
+    if not isinstance(doc, dict) or list(doc) != [ID_CONDUITE]:
+        return [f"ASP-CI-11 : le fichier de conduite doit declarer EXACTEMENT "
+                f"le script `{ID_CONDUITE}` — trouve "
+                f"{sorted(doc) if isinstance(doc, dict) else type(doc)} "
+                "(ASP-INV-31, amendement L2)."]
+    corps = doc[ID_CONDUITE]
+    if corps.get("mode") != "single":
+        errs.append(f"ASP-CI-11 : `{ID_CONDUITE}` doit porter `mode: single` — "
+                    f"trouve {corps.get('mode')!r}. Deux gestes concurrents "
+                    "emettraient deux commandes sur une meme mission.")
+    recus = set(corps.get("fields") or {})
+    if recus != {"geste"}:
+        errs.append(f"ASP-CI-11 : le script de conduite expose {sorted(recus)} "
+                    "— un seul champ, `geste`, et ferme aux quatre gestes "
+                    "(D-02). Tout autre champ ouvrirait un parametre que le "
+                    "contrat ne connait pas.")
+    return errs
+
+
 def check_ecrivain_unique(moteur_yaml, textes_runtime, yaml_depot) -> list[str]:
     """ASP-CI-11 — un seul moteur, un seul écrivain, une seule règle de garde."""
     errs = []
@@ -3218,35 +3621,69 @@ def check_ecrivain_unique(moteur_yaml, textes_runtime, yaml_depot) -> list[str]:
                     f"(ASP-INV-23).")
 
     # Aucun autre fichier du dépôt n'écrit les helpers ni ne commande le robot.
+    #
+    # AMENDEMENT L2 — deux listes d'autorisation NOMINATIVES, et pas une.
+    #   · le VERDICT est mentionnable par les cinq fichiers L1, par les trois
+    #     writers, et par la SEULE projection de mission, lectrice pure ;
+    #   · la TRACE d'intention garde UN seul ecrivain, le moteur : ni la
+    #     conduite ni la supervision ne la citent, et la conduite ne relance
+    #     aucune intention (ASP-INV-15) ;
+    #   · un appel d'appareil n'est admis que dans DEUX fichiers — le moteur
+    #     et la conduite (ASP-INV-31, amendement L2 du 07 §1).
+    verdict_admis = (set(RUNTIME_FICHIERS) | set(WRITERS_VERDICT)
+                     | set(LECTEURS_VERDICT))
     for rel, txt in sorted(yaml_depot.items()):
-        if rel in RUNTIME_FICHIERS:
-            continue
-        for helper in (ID_VERDICT, ID_TRACE):
-            if helper in txt:
-                errs.append(f"ASP-CI-11 : {rel} référence `{helper}` — les "
-                            f"helpers du domaine n'ont qu'UN écrivain, le "
-                            f"moteur (ASP-INV-31).")
+        if ID_VERDICT in txt and rel not in verdict_admis:
+            errs.append(f"ASP-CI-11 : {rel} référence `{ID_VERDICT}` — le "
+                        f"verdict n'est mentionnable que par ses trois "
+                        f"écrivains, par le runtime L1 et par la projection "
+                        f"de mission (ASP-INV-86).")
+        if ID_TRACE in txt and rel not in RUNTIME_FICHIERS:
+            errs.append(f"ASP-CI-11 : {rel} référence `{ID_TRACE}` — la trace "
+                        f"d'intention n'a qu'UN écrivain, le moteur : ni la "
+                        f"conduite ni la supervision ne la connaissent "
+                        f"(ASP-INV-15, ASP-INV-31).")
         # `- action: vacuum.stop` comme `  action: vacuum.stop` : le tiret de
         # liste fait partie de la ligne, l'oublier laisserait passer la forme
         # la plus courante. Le guillemet est optionnel — un scalaire cite est
         # le meme appel — et `perform_action` est l'alias moderne de
         # `service`, que la forme anterieure ignorait.
+        if rel in COMMANDENT_APPAREIL:
+            continue
         for m in re.finditer(r'^[ \t]*-?[ \t]*(?:action|service|perform_action)'
                              r'[ \t]*:[ \t]*["\']?'
                              r'(vacuum\.[a-z_]+|roborock\.[a-z_]+)["\']?[ \t]*$',
                              sans_commentaires_yaml(txt), re.M):
-            errs.append(f"ASP-CI-11 : {rel} appelle `{m.group(1)}` — seul le "
-                        f"moteur commande l'appareil (ASP-INV-31).")
+            errs.append(f"ASP-CI-11 : {rel} appelle `{m.group(1)}` — seuls le "
+                        f"moteur et le script de conduite commandent "
+                        f"l'appareil (ASP-INV-31).")
 
-    # C-6 : dans les CINQ fichiers runtime que ce module nomme, les slots
-    # critiques sont litteraux. Les balayages ci-dessus sont textuels ; sans
-    # cette regle, `service: "{{ 'vacu' ~ 'um.start' }}"` les traversait sans
-    # qu'aucune sous-chaine interdite n'apparaisse. Le perimetre vient de
-    # `RUNTIME_FICHIERS`, pas d'une recherche de mots dans le contenu.
-    for rel in RUNTIME_FICHIERS:
+    # La projection de mission LIT le verdict ; elle ne l'ecrit JAMAIS.
+    for rel in sorted(LECTEURS_VERDICT):
+        try:
+            doc = yaml.safe_load(textes_runtime.get(rel) or "")
+        except yaml.YAMLError:
+            continue
+        ecrites, _ = _verdicts_du_document(doc)
+        if ecrites:
+            errs.append(f"ASP-CI-11 : {rel} ÉCRIT le verdict "
+                        f"{sorted(ecrites)} — cette automation est un lecteur "
+                        f"pur ; l'écrivain reste le trio W1/W2/W3 "
+                        f"(ASP-INV-86).")
+
+    # C-6 : dans les fichiers runtime que ce module nomme — les cinq du lot L1
+    # et les trois du lot L2 —, les slots critiques sont litteraux. Les
+    # balayages ci-dessus sont textuels ; sans cette regle,
+    # `service: "{{ 'vacu' ~ 'um.start' }}"` les traversait sans qu'aucune
+    # sous-chaine interdite n'apparaisse. Le perimetre vient des deux listes de
+    # fichiers, pas d'une recherche de mots dans le contenu.
+    for rel in RUNTIME_FICHIERS + RUNTIME_L2_FICHIERS:
         errs += refus_slots_templatises(
             "ASP-CI-11", rel,
             sans_commentaires_yaml(textes_runtime.get(rel, "")))
+
+    errs += check_conduite_forme(textes_runtime)
+    errs += check_table_writers(textes_runtime)
 
     # Moteur et garde template appliquent la MÊME règle sur les MÊMES témoins.
     garde = textes_runtime.get(RUNTIME_GARDE, "")
@@ -3315,15 +3752,46 @@ def check_charge_utile(etapes) -> list[str]:
 
 
 def check_voies_interdites(textes_runtime) -> list[str]:
-    """ASP-CI-14 / ASP-CI-15 — voie zonée, mode dérivé, démarreurs interdits."""
+    """ASP-CI-14 / ASP-CI-15 — voie zonée, mode dérivé, démarreurs interdits.
+
+    AMENDEMENT L2 — le périmètre s'étend aux trois fichiers du lot L2, et une
+    UNIQUE exception nominative y apparaît : la primitive de démarrage est
+    admise dans le SEUL fichier de conduite, UNE SEULE FOIS, et seulement si
+    les quatre ancres de sa garde fermée y figurent (07 §7.1, ASP-INV-62).
+
+    Sans cette extension, un fichier L2 échapperait entièrement au contrôle :
+    la primitive circulerait sans garde, et `vacuum.start` sur session close
+    déclencherait un nettoyage GLOBAL — toute la carte au lieu du périmètre
+    demandé.
+    """
     errs = []
-    for rel in RUNTIME_FICHIERS:
+    for rel in RUNTIME_FICHIERS + RUNTIME_L2_FICHIERS:
         txt = sans_commentaires_yaml(textes_runtime.get(rel, ""))
         for interdit in VOIES_INTERDITES:
+            if interdit == PRIMITIVE_DEMARRAGE and rel == RUNTIME_L2_CONDUITE:
+                continue
             if re.search(rf'\b{re.escape(interdit)}\b', txt):
                 errs.append(f"ASP-CI-14 : {rel} emploie `{interdit}` — voie "
                             f"zonée ou démarreur interdit (07 §6, "
                             f"ASP-INV-19).")
+    # L'exception, verifiee et non concedee.
+    conduite = sans_commentaires_yaml(textes_runtime.get(RUNTIME_L2_CONDUITE, ""))
+    appels = re.findall(
+        r'^[ \t]*-?[ \t]*(?:action|service|perform_action)[ \t]*:[ \t]*'
+        r'["\']?' + re.escape(PRIMITIVE_DEMARRAGE) + r'["\']?[ \t]*$',
+        conduite, re.M)
+    if len(appels) != 1:
+        errs.append(f"ASP-CI-14 : `{RUNTIME_L2_CONDUITE}` porte {len(appels)} "
+                    f"appel(s) de `{PRIMITIVE_DEMARRAGE}` — il en faut "
+                    "EXACTEMENT un. C'est la seule voie de la primitive de "
+                    "démarrage dans tout le domaine, et le geste de reprise "
+                    "n'émet qu'une commande (ASP-INV-62, ASP-INV-89).")
+    for ancre in GARDE_REPRISE_ANCRES:
+        if ancre not in conduite:
+            errs.append(f"ASP-CI-14 : la garde de reprise ne lit pas `{ancre}` "
+                        "— la garde fermée d'ASP-INV-62 a QUATRE conditions, "
+                        "et sur session close la primitive déclencherait un "
+                        "nettoyage global (07 §6, §7.1).")
     return errs
 
 
@@ -3344,6 +3812,93 @@ def check_mode_jamais_ecrit(etapes) -> list[str]:
                 if isinstance(v, str) and NATIF_MODE in v and svc != "input_text.set_value":
                     errs.append(f"ASP-CI-15 : `{NATIF_MODE}` apparaît dans les "
                                 f"données de `{svc}` (ASP-INV-12).")
+    return errs
+
+
+def _garde_memoire_mission(top) -> list[str]:
+    """ASP-CI-16 — le moteur se TAIT sur une mission deja ouverte (15 §2).
+
+    Le moteur ouvre son canal en ecrivant `VALIDATION_EN_COURS`
+    INCONDITIONNELLEMENT. Cette valeur est de classe H. Ecrite par-dessus un
+    verdict de classe O ou O-R, elle DETRUIT la seule memoire de mission
+    ouverte du domaine — le verdict lui-meme (ASP-INV-87, D-08). Trois
+    consequences en cascade, toutes observables : la supervision perd sa
+    porte d'entree et n'ecrira plus aucune issue ; la projection de cycle
+    perd sa voie d'extinction et laisse sa notification affichee sans fin ;
+    les gestes de conduite sont ensuite refuses, la mission etant devenue
+    invisible alors que le robot roule.
+
+    La propriete exigee, et elle est ORDINALE : au PREMIER NIVEAU de la
+    sequence, un arret sec garde par la classe du verdict precede TOUTE
+    ecriture du verdict. L'ordre se prouve la, et seulement la — une garde
+    logee dans une branche serait mutuellement exclusive des autres, et son
+    rang n'aurait aucun sens d'execution.
+    """
+    errs: list[str] = []
+    ouvert = CLASSE_O | {CLASSE_O_R}
+
+    # (a) la table LUE par la garde, embarquee dans les referentiels.
+    variables = {}
+    for st in top:
+        if isinstance(st, dict) and isinstance(st.get("variables"), dict):
+            variables.update(st["variables"])
+    embarquee = variables.get("verdict_ouvert")
+    if set(embarquee or []) != ouvert:
+        errs.append(
+            f"ASP-CI-16 : le moteur doit embarquer les {len(ouvert)} valeurs "
+            f"de classe O et O-R sous `verdict_ouvert` — trouve "
+            f"{sorted(embarquee or [])}. C'est la table que sa garde LIT ; "
+            "incomplete, elle laisse passer les appels qu'elle doit taire "
+            "(15 §2).")
+
+    # (b) la garde, au premier niveau, et ce qu'elle fait.
+    rang_garde = None
+    anomalies: list[str] = []
+    for i, st in enumerate(top):
+        if not (isinstance(st, dict) and "choose" in st):
+            continue
+        for opt in _ensure_list(st.get("choose"), f"sequence/{i}/choose",
+                                anomalies):
+            if not isinstance(opt, dict):
+                continue
+            cond = _conditions_option(opt)
+            if ID_VERDICT not in cond or "verdict_ouvert" not in cond:
+                continue
+            corps = opt.get("sequence") or []
+            ecrit, _ = _verdicts_du_document(corps)
+            if ecrit:
+                errs.append(
+                    f"ASP-CI-16 : la garde de memoire de mission ECRIT "
+                    f"{sorted(ecrit)}. Elle doit s'ARRETER SEC : toute valeur "
+                    "ecrite ici est de classe H et detruit exactement ce que "
+                    "la garde protege — y compris "
+                    "`REFUS/MISSION_DEJA_OUVERTE`, dont la place reste la "
+                    "mission observee sur les TEMOINS NATIFS (15 §2, D-08).")
+            elif not any("stop" in x for x in corps if isinstance(x, dict)):
+                errs.append("ASP-CI-16 : la garde de memoire de mission ne "
+                            "s'arrete pas — sans `stop`, la sequence poursuit "
+                            "vers l'ouverture du canal et ecrit malgre tout.")
+            if rang_garde is None:
+                rang_garde = i
+    if rang_garde is None:
+        errs.append(
+            f"ASP-CI-16 : le moteur n'a AUCUNE garde de memoire de mission au "
+            f"premier niveau. Appele pendant une mission ouverte, il ecrit "
+            f"`VALIDATION_EN_COURS` — classe H — par-dessus un verdict de "
+            f"classe O : la supervision perd sa porte d'entree, la "
+            f"notification persistante perd sa voie d'extinction, et les "
+            f"gestes de conduite sont ensuite refuses (ASP-INV-87, D-08).")
+        return errs
+
+    # (c) ORDRE : la garde precede toute ecriture du verdict.
+    premieres = [i for i, st in enumerate(top)
+                 if isinstance(st, dict) and _verdicts_du_document([st])[0]]
+    if premieres and min(premieres) < rang_garde:
+        errs.append(
+            f"ASP-CI-16 : le moteur ecrit le verdict au pas {min(premieres)}, "
+            f"AVANT sa garde de memoire de mission (pas {rang_garde}). Une "
+            "garde posee apres l'ecriture ne garde plus rien : la memoire est "
+            "deja detruite quand elle s'evalue (15 §2, D-08).")
     return errs
 
 
@@ -3369,6 +3924,7 @@ def check_ordre_sequence(corps_sequence) -> list[str]:
     """
     errs = []
     top = corps_sequence or []
+    errs += _garde_memoire_mission(top)
 
     def _partout(pred):
         return [ch for ch, s in _actions(top) if pred(s)]
@@ -3622,14 +4178,21 @@ def check_vocabulaire_verdict(corps_sequence, textes_runtime) -> list[str]:
         errs.append(f"ASP-CI-18 : le moteur n'écrit jamais `{ID_VERDICT}` — "
                     f"un refus est un livrable (ASP-INV-50).")
         return errs
-    hors = valeurs - VOCABULAIRE_VERDICT
+    # AMENDEMENT L2 — l'atteignabilite se confronte desormais aux TROIS
+    # writers, pas au moteur seul. Ici, le moteur doit ecrire EXACTEMENT son
+    # ensemble : les seize valeurs des lots L2 ne lui appartiennent pas, et
+    # les lui exiger ferait echouer un fichier conforme. La couverture totale
+    # du vocabulaire par l'union des trois est verifiee par
+    # `check_table_writers` (ASP-CI-11), qui porte la table nominative.
+    hors = valeurs - VERDICT_W1
     if hors:
-        errs.append(f"ASP-CI-18 : vocabulaire de verdict NON fermé — valeurs "
-                    f"hors contrat : {sorted(hors)} (ASP-INV-52).")
-    absentes = VOCABULAIRE_VERDICT - valeurs
+        errs.append(f"ASP-CI-18 : le moteur écrit {sorted(hors)}, hors de son "
+                    f"ensemble de dix-huit valeurs — le vocabulaire est fermé "
+                    f"ET réparti (ASP-INV-52, ASP-INV-86).")
+    absentes = VERDICT_W1 - valeurs
     if absentes:
         errs.append(f"ASP-CI-18 : le moteur n'écrit jamais {sorted(absentes)} "
-                    f"— le vocabulaire fermé doit être intégralement "
+                    f"— l'ensemble d'un writer doit être intégralement "
                     f"atteignable (ASP-INV-65).")
     moteur = sans_commentaires_yaml(textes_runtime.get(RUNTIME_MOTEUR, ""))
     for code, pourquoi in sorted(CODES_HORS_PORTEE_L1.items()):
@@ -3711,6 +4274,408 @@ def check_vocabulaire_verdict(corps_sequence, textes_runtime) -> list[str]:
     return errs
 
 
+# Valeurs qu'un geste a le droit d'ecrire — son engagement et ses issues.
+# Figees ici : un `CLOTURE/APRES_ARRET_CONFIRME` ecrit sous la branche
+# « pause » resterait dans l'ensemble de W2 et passerait toutes les gardes
+# globales. C'est cette table qui l'attrape.
+VALEURS_DU_GESTE = {
+    "pause": frozenset({"CONDUITE/PAUSE_ENGAGEE", "CONDUITE/PAUSE_CONFIRMEE",
+                        "CONDUITE/PAUSE_NON_CONFIRMEE"}),
+    "reprise": frozenset({"CONDUITE/REPRISE_ENGAGEE",
+                          "CONDUITE/REPRISE_CONFIRMEE",
+                          "CONDUITE/REPRISE_NON_CONFIRMEE"}),
+    "arret": frozenset({"CONDUITE/ARRET_ENGAGE",
+                        "CLOTURE/APRES_ARRET_CONFIRME",
+                        "CLOTURE/APRES_ARRET_NON_CONFIRME"}),
+    "retour_base": frozenset({"CONDUITE/RETOUR_ENGAGE",
+                              "CLOTURE/APRES_RETOUR_NON_CONFIRME"}),
+}
+# Tout appel d'appareil, quel qu'il soit — pour compter les emissions d'une
+# branche sans supposer laquelle elle porte.
+SERVICES_APPAREIL = frozenset(SERVICE_DU_GESTE.values()) | {SVC_COMMANDE}
+
+
+def _conditions_option(opt) -> str:
+    """Concatene les conditions d'UNE option de `choose`, sous leurs formes.
+
+    `_texte_conditions` prend le `choose` entier et fond toutes les branches :
+    utilisable pour chercher une comparaison quelque part, inutilisable pour
+    dire QUELLE branche porte QUELLE garde. C'est cette distinction que les
+    controles L2 exigent.
+    """
+    morceaux: list[str] = []
+    _rebut: list[str] = []
+    for cond in _ensure_list((opt or {}).get("conditions"), "", _rebut):
+        if isinstance(cond, str):
+            morceaux.append(cond)
+        elif isinstance(cond, dict):
+            for cle in ("value_template", "state", "id", "condition",
+                        "entity_id"):
+                val = cond.get(cle)
+                if isinstance(val, str):
+                    morceaux.append(val)
+                elif isinstance(val, list):
+                    morceaux += [x for x in val if isinstance(x, str)]
+    return "\n".join(morceaux)
+
+
+def _lineaire(seq):
+    """Etapes d'une sequence, a plat et EN ORDRE DE DOCUMENT.
+
+    Descend dans `choose` et `default`, et NULLE PART ailleurs. Un `repeat`,
+    un `if` ou un `parallel` n'est pas traverse : une ecriture qui s'y
+    logerait resterait invisible a l'analyse d'ordonnancement, et c'est
+    precisement ce que le controle refuse (ASP-INV-49).
+    """
+    out = []
+    if isinstance(seq, dict):
+        seq = [seq]
+    for st in seq or []:
+        if not isinstance(st, dict):
+            continue
+        if "choose" in st:
+            for opt in st.get("choose") or []:
+                if isinstance(opt, dict):
+                    out += _lineaire(opt.get("sequence"))
+            out += _lineaire(st.get("default"))
+        else:
+            out.append(st)
+    return out
+
+
+def check_sequence_conduite(textes_runtime) -> list[str]:
+    """ASP-CI-18 — la sequence opposable d'un geste, geste par geste.
+
+    Quatre proprietes, dans cet ordre, et pour chacun des quatre gestes :
+      1. l'ENGAGEMENT est ecrit AVANT la commande (ASP-INV-88) ;
+      2. il y a EXACTEMENT UNE emission, et c'est celle du geste
+         (ASP-INV-89) ;
+      3. la relecture est UNIQUE et bornee a la constante du domaine ;
+      4. le verdict ne s'ecrit qu'avec les valeurs de CE geste ;
+      5. l'emission ABSORBE son exception (`continue_on_error`) — sans quoi
+         une levee laisse le verdict fige sur l'engagement, sans expiration
+         et sans issue : un engagement PERMANENT (ASP-INV-49) ;
+      6. chaque conclusion RELIT le verdict et n'ecrit que s'il porte ENCORE
+         l'engagement de CE geste — sans quoi l'EXPIRATION de W2 ecrase une
+         conclusion qu'un autre ecrivain a fondee sur une OBSERVATION
+         (15 §4, regle 5).
+
+    C'est le controle qui empeche les quatre regressions concretes du lot :
+    commander le robot a tort, dupliquer une commande, ecrire un verdict
+    impossible, et briser l'unicite d'un writer.
+    """
+    errs: list[str] = []
+    txt = textes_runtime.get(RUNTIME_L2_CONDUITE)
+    if not txt:
+        return [f"ASP-CI-18 : `{RUNTIME_L2_CONDUITE}` est absent."]
+    try:
+        doc = yaml.safe_load(txt)
+    except yaml.YAMLError as exc:
+        return [f"ASP-CI-18 : `{RUNTIME_L2_CONDUITE}` illisible ({exc})."]
+    corps = (doc or {}).get(ID_CONDUITE) or {}
+    seq = corps.get("sequence") or []
+
+    # Aucune repetition, nulle part : la relance est un geste operateur.
+    if REPETITION.search(sans_commentaires_yaml(txt)):
+        errs.append(f"ASP-CI-18 : `{RUNTIME_L2_CONDUITE}` porte une "
+                    "répétition — aucune réémission, aucun retry, aucune "
+                    "seconde attente (ASP-INV-39, ASP-INV-89).")
+
+    branches: dict[str, list] = {}
+    for st in seq:
+        if not isinstance(st, dict) or "choose" not in st:
+            continue
+        for opt in st.get("choose") or []:
+            if not isinstance(opt, dict):
+                continue
+            cond = _conditions_option(opt)
+            for geste in GESTES_L2:
+                if f"geste == '{geste}'" in cond:
+                    branches.setdefault(geste, []).append(opt.get("sequence"))
+
+    for geste in GESTES_L2:
+        trouvees = branches.get(geste) or []
+        if len(trouvees) != 1:
+            errs.append(f"ASP-CI-18 : le geste `{geste}` est porté par "
+                        f"{len(trouvees)} branche(s) — il en faut exactement "
+                        "une. Deux branches pour un geste, c'est deux chemins "
+                        "de commande (ASP-INV-31).")
+            continue
+        etapes = _lineaire(trouvees[0])
+
+        emissions = [(i, _svc_de(st)) for i, st in enumerate(etapes)
+                     if _svc_de(st) in SERVICES_APPAREIL]
+        if len(emissions) != 1:
+            errs.append(f"ASP-CI-18 : le geste `{geste}` émet "
+                        f"{len(emissions)} commande(s) — un geste émet "
+                        "EXACTEMENT une commande (ASP-INV-89).")
+            continue
+        i_svc, svc = emissions[0]
+        if svc != SERVICE_DU_GESTE[geste]:
+            errs.append(f"ASP-CI-18 : le geste `{geste}` émet `{svc}` — "
+                        f"attendu `{SERVICE_DU_GESTE[geste]}`. Un geste qui "
+                        "commande autre chose que ce qu'il annonce commande "
+                        "le robot à tort.")
+        cibles = _cibles(etapes[i_svc])
+        if cibles != [NATIF_VACUUM]:
+            errs.append(f"ASP-CI-18 : le geste `{geste}` vise {cibles} — "
+                        f"attendu `{NATIF_VACUUM}`, littéralement.")
+        if etapes[i_svc].get("continue_on_error") is not True:
+            errs.append(
+                f"ASP-CI-18 : l'émission du geste `{geste}` n'absorbe pas son "
+                "exception — sans `continue_on_error`, une levée du service "
+                "AVORTE la séquence APRÈS l'écriture de l'engagement : le "
+                "verdict reste sur une valeur de classe O, sans expiration et "
+                "sans issue. La supervision s'abstient tant qu'elle voit un "
+                "engagement, la notification persistante reste affichée, et "
+                "les gestes suivants sont refusés. Absorber n'est PAS "
+                "réémettre (ASP-INV-49, ASP-INV-89).")
+
+        ecrits = [(i, v) for i, v in _ecritures_verdict(etapes)]
+        valeurs = {v for _, v in ecrits}
+        interdites = valeurs - VALEURS_DU_GESTE[geste]
+        if interdites:
+            errs.append(f"ASP-CI-18 : le geste `{geste}` écrit "
+                        f"{sorted(interdites)} — hors des valeurs de ce "
+                        f"geste {sorted(VALEURS_DU_GESTE[geste])} "
+                        "(contrat 15 §3.1).")
+
+        engagement = ENGAGEMENT_DU_GESTE[geste]
+        poses = [i for i, v in ecrits if v == engagement]
+        if len(poses) != 1:
+            errs.append(f"ASP-CI-18 : le geste `{geste}` pose `{engagement}` "
+                        f"{len(poses)} fois — exactement une (ASP-INV-88).")
+        elif poses[0] > i_svc:
+            errs.append(f"ASP-CI-18 : le geste `{geste}` pose `{engagement}` "
+                        "APRÈS sa commande. L'engagement rend la fenêtre de "
+                        "relecture visible dans le verdict : posé après, il "
+                        "n'exclut plus la supervision et la course de "
+                        "l'arbitrage A-11 revient (15 §4).")
+        avant = [v for i, v in ecrits if i < min(poses or [i_svc])]
+        if avant:
+            errs.append(f"ASP-CI-18 : le geste `{geste}` écrit {avant} avant "
+                        "son engagement — un refus de geste n'écrit RIEN, et "
+                        "rien ne précède l'engagement (ASP-INV-91).")
+
+        attentes = [i for i, st in enumerate(etapes) if "wait_template" in st]
+        if len(attentes) != 1:
+            errs.append(f"ASP-CI-18 : le geste `{geste}` porte "
+                        f"{len(attentes)} relecture(s) — une seule, bornée "
+                        "(ASP-INV-90).")
+        elif attentes[0] < i_svc:
+            errs.append(f"ASP-CI-18 : le geste `{geste}` relit AVANT "
+                        "d'émettre — la relecture qualifie l'issue d'une "
+                        "commande, elle ne la précède pas.")
+        else:
+            conclusions = [v for i, v in ecrits if i > attentes[0]]
+            if not conclusions:
+                errs.append(f"ASP-CI-18 : le geste `{geste}` ne conclut RIEN "
+                            "après sa relecture — toute mission produit une "
+                            "issue explicite (ASP-INV-49).")
+            errs += _garde_de_course(geste, trouvees[0], set(conclusions))
+    return errs
+
+
+def _garde_de_course(geste, sequence, conclusions) -> list[str]:
+    """ASP-CI-18 — la relecture du verdict avant chaque conclusion (15 §4).
+
+    Ce qu'elle empeche, concretement : W2 engage un retour ; W3 observe
+    l'amarrage et ecrit `CLOTURE/APRES_RETOUR_CONFIRME` ; la fenetre de W2
+    expire ENSUITE et ecrase cette observation par un defaut d'entree dans la
+    chaine. Le meme scenario existe sur les trois autres gestes avec une
+    erreur qualifiee par W3, qui ne s'abstient PAS pendant un engagement.
+
+    La propriete exigee : CHAQUE option qui conclut porte, dans sa condition,
+    la relecture du helper ET l'egalite a l'engagement de CE geste. Et il ne
+    subsiste AUCUN `default:` sur le `choose` de conclusion — un `default`
+    s'executerait precisement quand la garde ne passe pas, c'est-a-dire quand
+    le verdict a deja bouge.
+    """
+    errs: list[str] = []
+    if not conclusions:
+        return errs
+    engagement = ENGAGEMENT_DU_GESTE[geste]
+    for st in _mappings(sequence):
+        if "choose" not in st:
+            continue
+        options = [o for o in _ensure_list(st.get("choose"), "choose", [])
+                   if isinstance(o, dict)]
+        porte = [o for o in options
+                 if _verdicts_du_document(o.get("sequence"))[0] & conclusions]
+        if not porte:
+            continue
+        for opt in porte:
+            cond = _conditions_option(opt)
+            if ID_VERDICT not in cond or f"== '{engagement}'" not in cond:
+                ecrit = sorted(_verdicts_du_document(opt.get("sequence"))[0]
+                               & conclusions)
+                errs.append(
+                    f"ASP-CI-18 : le geste `{geste}` conclut {ecrit} sans "
+                    f"relire le verdict — la condition doit exiger que "
+                    f"`{ID_VERDICT}` vaille ENCORE `{engagement}`. Sans "
+                    "cette relecture, l'EXPIRATION de W2 écrase une "
+                    "conclusion qu'un autre écrivain a fondée sur une "
+                    "OBSERVATION : sur un retour, une arrivée constatée "
+                    "redevient un défaut d'entrée dans la chaîne (15 §4, "
+                    "règle 5).")
+        if st.get("default"):
+            errs.append(
+                f"ASP-CI-18 : le `choose` de conclusion du geste `{geste}` "
+                "porte un `default:` — il s'exécuterait EXACTEMENT quand la "
+                "garde de course ne passe pas, c'est-à-dire quand le verdict "
+                "a déjà bougé. L'absence de `default` EST la troisième issue "
+                "du geste, et elle n'écrit rien (15 §4, règle 5).")
+    return errs
+
+
+def check_supervision(textes_runtime) -> list[str]:
+    """ASP-CI-18 — la supervision : porte d'entree, exclusion, reconciliation.
+
+    Cinq proprietes, chacune fondee sur une regle ecrite :
+      1. AUCUNE ecriture de verdict hors d'une mission ouverte — c'est ce qui
+         rend impossible l'adoption d'une mission externe (ASP-INV-87) ;
+      2. la conclusion d'INTERRUPTION est exclue pendant un engagement — la
+         garde rendue par A-11, regle 2 (ASP-INV-92) ;
+      3. la cloture opaque n'est ecrite QUE sur la reconciliation de
+         redemarrage (15 §6) ;
+      4. l'interruption se conclut POSITIVEMENT, sur le seul etat d'arret
+         atteste, et JAMAIS par negation d'une classe (15 §5) ;
+      5. l'AMARRAGE se prouve POSITIVEMENT, sur les deux temoins en
+         disjonction, et `docking` — etat de MOUVEMENT — n'en est pas un.
+
+    Les deux dernieres sont ce qui empeche la regression qui rendait ce
+    fichier dangereux : une regle negative concluait sur tout etat de classe
+    N, donc sur des etats parfaitement sains, et `docking` faisait passer un
+    trajet en cours pour une arrivee.
+    """
+    errs: list[str] = []
+    txt = textes_runtime.get(RUNTIME_L2_SUPERVISION)
+    if not txt:
+        return [f"ASP-CI-18 : `{RUNTIME_L2_SUPERVISION}` est absent — les "
+                f"{len(VERDICT_W3)} valeurs de supervision n'auraient aucun "
+                "écrivain."]
+    try:
+        doc = yaml.safe_load(txt)
+    except yaml.YAMLError as exc:
+        return [f"ASP-CI-18 : `{RUNTIME_L2_SUPERVISION}` illisible ({exc})."]
+    autos = [a for a in (doc if isinstance(doc, list) else [doc])
+             if isinstance(a, dict)]
+    if len(autos) != 1 or autos[0].get("id") != AID_SUPERVISION:
+        return [f"ASP-CI-18 : `{RUNTIME_L2_SUPERVISION}` doit déclarer "
+                f"EXACTEMENT l'automation `{AID_SUPERVISION}` — trouvé "
+                f"{[a.get('id') for a in autos]} (ASP-INV-58)."]
+    auto = autos[0]
+
+    if REPETITION.search(sans_commentaires_yaml(txt)):
+        errs.append(f"ASP-CI-18 : `{RUNTIME_L2_SUPERVISION}` porte une "
+                    "répétition — une supervision observe, elle ne boucle "
+                    "pas.")
+
+    for st in _mappings(auto):
+        if "wait_template" in st or "delay" in st:
+            errs.append(f"ASP-CI-18 : `{RUNTIME_L2_SUPERVISION}` porte une "
+                        "attente — l'amarrage est ÉVÉNEMENTIEL, jamais borné "
+                        "par une durée (A-15).")
+
+    # ── (4) et (5) : les DEUX règles positives fermées, dans les
+    #    référentiels embarqués. Elles sont contrôlées SUR LES VARIABLES,
+    #    donc une fois, et non branche par branche : c'est là qu'elles
+    #    sont écrites, et c'est de là que les conditions les tirent.
+    variables = {}
+    for st in (auto.get("action") or auto.get("actions") or []):
+        if isinstance(st, dict) and isinstance(st.get("variables"), dict):
+            variables.update(st["variables"])
+
+    if variables.get("arret_atteste") != ETAT_ARRET_ATTESTE:
+        errs.append(
+            f"ASP-CI-18 : `{RUNTIME_L2_SUPERVISION}` doit embarquer "
+            f"`arret_atteste: {ETAT_ARRET_ATTESTE}` — trouvé "
+            f"{variables.get('arret_atteste')!r}. La cessation d'activité ne "
+            "s'établit que sur le SEUL état d'arrêt attesté du domaine "
+            "(15 §5).")
+
+    amarre = variables.get("amarre")
+    if not isinstance(amarre, str):
+        errs.append(f"ASP-CI-18 : `{RUNTIME_L2_SUPERVISION}` n'embarque "
+                    "aucune preuve `amarre` — l'arrivée au dock serait "
+                    "déduite d'une liste d'états, et `docking` y rentrerait "
+                    "de nouveau (15 §5).")
+    else:
+        for temoin in TEMOINS_AMARRAGE:
+            if temoin not in amarre:
+                errs.append(
+                    f"ASP-CI-18 : la preuve d'amarrage n'invoque pas "
+                    f"`{temoin}` — les DEUX témoins sont exigés, EN "
+                    "DISJONCTION : l'un des deux peut être manqué, et exiger "
+                    "une transition intermédiaire rendrait l'arrivée "
+                    "inobservable (15 §5).")
+        if " or " not in amarre:
+            errs.append("ASP-CI-18 : la preuve d'amarrage ne met pas ses deux "
+                        "témoins en DISJONCTION — les conjoindre exigerait un "
+                        "échantillon que rien ne garantit (15 §5).")
+        if ETAT_MOUVEMENT_DOCK in amarre:
+            errs.append(
+                f"ASP-CI-18 : la preuve d'amarrage invoque "
+                f"`{ETAT_MOUVEMENT_DOCK}` — le contrat le classe en état de "
+                "MOUVEMENT, au même titre que `returning_home` (07 §5.0), et "
+                "il n'a jamais été observé sur cet appareil. Le tenir pour "
+                "une arrivée conclut un trajet EN COURS.")
+
+    for st in (auto.get("action") or auto.get("actions") or []):
+        if not isinstance(st, dict) or "choose" not in st:
+            continue
+        for opt in st.get("choose") or []:
+            if not isinstance(opt, dict):
+                continue
+            cond = _conditions_option(opt)
+            ecrites, _ = _verdicts_du_document(opt.get("sequence"))
+            if not ecrites:
+                continue
+            if "verdict_ouvert" not in cond and CLASSE_O_R not in cond:
+                errs.append(
+                    f"ASP-CI-18 : une branche de supervision écrit "
+                    f"{sorted(ecrites)} sans exiger un verdict de classe O — "
+                    "la porte d'entrée est le verdict, et elle seule. Sans "
+                    "elle, une activité du robot qu'Arsenal n'a jamais "
+                    "ouverte serait ADOPTÉE (ASP-INV-87, D-06, D-R4).")
+            if "ECHEC/MISSION_INTERROMPUE" in ecrites and "engagements" not in cond:
+                errs.append(
+                    "ASP-CI-18 : la branche d'interruption ne s'exclut pas "
+                    "pendant un engagement — pendant la fenêtre de relecture "
+                    "d'un geste, elle produirait un échec FAUX, aussitôt "
+                    "écrasé par la clôture du geste (ASP-INV-92, A-11).")
+            if "ECHEC/MISSION_INTERROMPUE" in ecrites:
+                if "arret_atteste" not in cond:
+                    errs.append(
+                        "ASP-CI-18 : la branche d'interruption ne s'appuie "
+                        "pas sur `arret_atteste` — la cessation doit être "
+                        "établie POSITIVEMENT, sur le seul état d'arrêt "
+                        "attesté (15 §5).")
+                if "not in classe" in cond or "!=" in cond:
+                    errs.append(
+                        "ASP-CI-18 : la branche d'interruption conclut par "
+                        "NÉGATION d'une classe. Cette règle conclut sur TOUT "
+                        "état de classe N — un vidage de dock, un séchage, un "
+                        "déplacement non nommé — et produit alors un verdict "
+                        "terminal FAUX, une projection éteinte, une "
+                        "supervision désarmée et une notification mobile "
+                        "mensongère (15 §5).")
+            if ecrites & VERDICTS_ARRIVEE and "amarre" not in cond:
+                errs.append(
+                    f"ASP-CI-18 : une branche écrit {sorted(ecrites & VERDICTS_ARRIVEE)} "
+                    "sans s'appuyer sur la preuve `amarre` — l'arrivée au "
+                    "dock se PROUVE sur ses deux témoins, elle ne se déduit "
+                    "pas d'une liste d'états (15 §5).")
+            if "CLOTURE/ISSUE_OPAQUE_APRES_REDEMARRAGE" in ecrites \
+                    and "readiness" not in cond:
+                errs.append(
+                    "ASP-CI-18 : la clôture opaque est écrite hors de la "
+                    "réconciliation de redémarrage — elle constate qu'une "
+                    "chaîne est devenue inobservable, ce que seul un "
+                    "redémarrage établit (15 §6, ASP-INV-94).")
+    return errs
+
+
 def check_motif_total(t09: str, t02: str, motif_txt: str) -> list[str]:
     """ASP-CI-19 — les 18 codes traduits, sans mécanique interne."""
     errs = []
@@ -3776,7 +4741,7 @@ def check_constantes_temporelles(textes_runtime) -> list[str]:
         errs.append(f"ASP-CI-20 : durée(s) concurrente(s) dans le moteur : "
                     f"{autres} — deux constantes, et deux seulement "
                     f"(ASP-INV-69).")
-    for rel in RUNTIME_FICHIERS:
+    for rel in RUNTIME_FICHIERS + RUNTIME_L2_FICHIERS:
         txt = sans_commentaires_yaml(textes_runtime.get(rel, ""))
         for cle in ("delay", "wait_for_trigger"):
             # Le tiret de liste fait partie de la ligne : `- delay:` est la
@@ -3789,6 +4754,39 @@ def check_constantes_temporelles(textes_runtime) -> list[str]:
             errs.append(f"ASP-CI-20 : {rel} référence un `input_number` — le "
                         f"domaine n'expose AUCUN réglage temporel "
                         f"(12 §3, ASP-INV-69).")
+
+    # ── AMENDEMENT L2 : extension du perimetre aux fichiers du lot L2 ──────
+    #
+    # Sans elle, une fenetre de relecture L2 echapperait ENTIEREMENT au
+    # controle — c'est le trou que l'arbitrage A-15 identifie, et il est
+    # ferme ici, pas ailleurs. Les quatre fenetres sont MUTUALISEES a la
+    # constante de confirmation : le domaine reste a deux durees, et
+    # `ASP-CI-10` n'a donc pas a etre amende.
+    conduite = sans_commentaires_yaml(
+        textes_runtime.get(RUNTIME_L2_CONDUITE, ""))
+    t_l2 = re.findall(
+        r'^[ \t]*-?[ \t]*timeout[ \t]*:[ \t]*"?([0-9:]+)"?[ \t]*$',
+        conduite, re.M)
+    n30 = t_l2.count(FENETRE_CONFIRMATION_YAML)
+    if n30 != NB_FENETRES_L2:
+        errs.append(f"ASP-CI-20 : {NB_FENETRES_L2} fenêtres de relecture de "
+                    f"{FENETRE_CONFIRMATION_S} s sont exigées dans le script "
+                    f"de conduite — pause, reprise, arrêt, engagement du "
+                    f"retour ; trouvé {n30} (ASP-INV-69, A-15).")
+    autres_l2 = sorted(set(t_l2) - {FENETRE_CONFIRMATION_YAML})
+    if autres_l2:
+        errs.append(f"ASP-CI-20 : durée(s) concurrente(s) dans le script de "
+                    f"conduite : {autres_l2} — les quatre fenêtres sont "
+                    f"MUTUALISÉES à une seule valeur, et c'est ce qui évite "
+                    f"d'amender ASP-CI-10 (A-15).")
+    for rel in (RUNTIME_L2_SUPERVISION, RUNTIME_L2_PROJECTION):
+        txt = sans_commentaires_yaml(textes_runtime.get(rel, ""))
+        veilles = re.findall(r'^[ \t]*-?[ \t]*timeout[ \t]*:', txt, re.M)
+        if veilles:
+            errs.append(f"ASP-CI-20 : {rel} porte {len(veilles)} `timeout:` — "
+                        "une supervision et une projection sont "
+                        "ÉVÉNEMENTIELLES : aucune ne borne un fait physique "
+                        "par une durée (A-15).")
     return errs
 
 
@@ -3964,9 +4962,14 @@ def load_lovelace() -> dict[str, str]:
 
 
 def load_runtime() -> dict[str, str]:
-    """Les cinq fichiers du lot L1, tels quels — commentaires compris."""
+    """Les cinq fichiers du lot L1 et les trois du lot L2, tels quels.
+
+    Commentaires compris : plusieurs gardes du domaine balaient le fichier
+    ENTIER, et un identifiant cite en commentaire est deja une proximite trop
+    grande avec ce qu'il designe.
+    """
     out: dict[str, str] = {}
-    for rel in RUNTIME_FICHIERS:
+    for rel in RUNTIME_FICHIERS + RUNTIME_L2_FICHIERS:
         p = ROOT / rel
         if p.is_file():
             out[rel] = p.read_text(encoding="utf-8", errors="ignore")
@@ -4109,23 +5112,26 @@ def run() -> int:
     depot = load_yaml_depot()
 
     controles += (
-        ("ASP-CI-11 écrivain unique",
+        ("ASP-CI-11 écrivains du verdict (table, disjonction, appareil)",
          check_ecrivain_unique(moteur_yaml, runtime, depot)),
         ("ASP-CI-12 charge utile enveloppée · ASP-CI-13 passages",
          check_charge_utile(etapes)),
-        ("ASP-CI-14 voies interdites", check_voies_interdites(runtime)),
+        ("ASP-CI-14 voies interdites · primitive de démarrage L2",
+         check_voies_interdites(runtime)),
         ("ASP-CI-15 mode dérivé jamais écrit", check_mode_jamais_ecrit(etapes)),
         ("ASP-CI-16 ordre · ASP-CI-17 commande unique",
          check_ordre_sequence(corps.get("sequence") or [])),
-        ("ASP-CI-18 vocabulaire de verdict",
+        ("ASP-CI-18 vocabulaire de verdict · séquences L2",
          check_vocabulaire_verdict(corps.get("sequence") or [], runtime)
          + check_decompte_vocabulaire(runtime,
-                                      textes.get(FICHIER_CATALOGUE, ""))),
+                                      textes.get(FICHIER_CATALOGUE, ""))
+         + check_sequence_conduite(runtime)
+         + check_supervision(runtime)),
         ("ASP-CI-19 motif lisible total",
          check_motif_total(textes.get(FICHIER_CATALOGUE, ""),
                            textes.get("02_referentiel_cartes_et_pieces.md", ""),
                            runtime[RUNTIME_MOTIF])),
-        ("ASP-CI-20 constantes temporelles du moteur",
+        ("ASP-CI-20 constantes temporelles du moteur et des fichiers L2",
          check_constantes_temporelles(runtime)),
         ("ASP-CI-21 concordance runtime ↔ contrat",
          check_concordance_runtime(corps, runtime, helpers_yaml,
@@ -4178,12 +5184,14 @@ def run() -> int:
     attestes_audit = tous_les_jetons(attestation)
     print(f"\n  périmètre : {len(textes)} fichiers de contrat · "
           f"{len(lovelace)} fichiers Lovelace balayés · "
-          f"{len(runtime)} fichiers runtime L1 · "
+          f"{len(RUNTIME_FICHIERS)} fichiers runtime L1 · "
+          f"{len(RUNTIME_L2_FICHIERS)} fichiers runtime L2 "
+          f"(conduite, supervision, projection de mission) · "
           f"{len(depot)} fichiers YAML balayés par ASP-CI-11 · "
           f"{len(fonctionnel)} fichiers YAML fonctionnels balayés par ASP-CI-31 · "
           f"{len(attestes_audit)} identifiants attestés (audit + relevé) · "
           f"{1 if m1 else 0} fichier runtime M1 (projection d'entretien) · "
-          f"{len(n1)} fichier(s) runtime N1 (projection persistante)")
+          f"{len(n1)} automation(s) du domaine balayées par ASP-CI-37/39")
     if erreurs:
         print("\nAspirateur — écarts contractuels détectés :")
         for e in erreurs:
@@ -4191,7 +5199,8 @@ def run() -> int:
         return 1
     print("\nOK - domaine Aspirateur : intégrité normative, conduite "
           "runtime, acte contractuel Maintenance, projection "
-          "d'entretien et projection persistante vérifiées — "
+          "d'entretien, projections persistantes, conduite et supervision "
+          "de mission vérifiées — "
           f"{len(controles)} lignes affichées pour 38 contrôles logiques, "
           "0 écart.")
     print("     décompte : ASP-CI-12/13 et ASP-CI-16/17 partagent chacun une "
@@ -5923,8 +6932,9 @@ def selftest() -> None:
     import copy
 
     rt0 = load_runtime()
-    assert len(rt0) == len(RUNTIME_FICHIERS), \
-        f"runtime L1 introuvable : {sorted(set(RUNTIME_FICHIERS) - set(rt0))}"
+    attendus_rt = set(RUNTIME_FICHIERS) | set(RUNTIME_L2_FICHIERS)
+    assert set(rt0) == attendus_rt, \
+        f"runtime introuvable : {sorted(attendus_rt - set(rt0))}"
     mot0 = yaml.safe_load(rt0[RUNTIME_MOTEUR])
     hlp0 = yaml.safe_load(rt0[RUNTIME_HELPERS])
     corps0 = mot0[ID_MOTEUR]
@@ -5965,11 +6975,17 @@ def selftest() -> None:
     c.viole(check_ecrivain_unique(
         mot0, rt0, dict(depot0, **{"11_automations/x.yaml":
                                    f"  value: {ID_VERDICT}\n"})),
-        "n'ont qu'UN écrivain", "CI-11 second écrivain du verdict")
+        "n'est mentionnable que par ses trois écrivains",
+        "CI-11 quatrième mention du verdict")
+    c.viole(check_ecrivain_unique(
+        mot0, rt0, dict(depot0, **{"11_automations/x.yaml":
+                                   f"  value: {ID_TRACE}\n"})),
+        "n'a qu'UN écrivain, le moteur", "CI-11 second lecteur de la trace")
     c.viole(check_ecrivain_unique(
         mot0, rt0, dict(depot0, **{"11_automations/x.yaml":
                                    "    - action: vacuum.stop\n"})),
-        "seul le moteur commande", "CI-11 commande concurrente du robot")
+        "seuls le moteur et le script de conduite",
+        "CI-11 commande concurrente du robot")
     c.viole(check_ecrivain_unique(
         mot0, {**rt0, RUNTIME_GARDE: rt0[RUNTIME_GARDE].replace(
             NATIF_SESSION, "binary_sensor.autre_chose")}, depot0),
@@ -6063,13 +7079,14 @@ def selftest() -> None:
             'value: "REFUS/SESSION_INACHEVEE"',
             'value: "REFUS/SESSION_BIZARRE"')[RUNTIME_MOTEUR])[ID_MOTEUR]["sequence"]),
         rt0),
-        "NON fermé", "CI-18 valeur hors vocabulaire")
+        "hors de son ensemble de dix-huit valeurs",
+        "CI-18 valeur hors vocabulaire")
     r_sup = mot_txt('value: "LANCEE/DEMARRAGE_OBSERVE"',
                     'value: "EMISSION/COMMANDE_ACCEPTEE"')
     c.viole(check_vocabulaire_verdict(
         _aplatir(yaml.safe_load(r_sup[RUNTIME_MOTEUR])[ID_MOTEUR]["sequence"]),
         r_sup),
-        "n'écrit jamais", "CI-18 valeur du vocabulaire inatteignable")
+        "n'écrit jamais", "CI-18 valeur de W1 inatteignable")
     r_rej = mot_txt('value: "COMMANDE/ISSUE_NON_ETABLIE"',
                     'value: "ECHEC/COMMANDE_REJETEE"')
     c.viole(check_vocabulaire_verdict(
@@ -6293,18 +7310,20 @@ def selftest() -> None:
     t09_n = doc0[FICHIER_CATALOGUE]
     c.conforme(check_decompte_vocabulaire(rt0, t09_n), "CI-18 décompte conforme")
     faux = rt0[RUNTIME_HELPERS].replace(
-        "14 codes du catalogue figurent", "13 codes du catalogue figurent")
+        "16 codes du catalogue figurent", "14 codes du catalogue figurent")
     c.viole(check_decompte_vocabulaire({**rt0, RUNTIME_HELPERS: faux}, t09_n),
-            "décompte FAUX", "CI-18 codes présents sous-comptés (13 au lieu de 14)")
+            "décompte FAUX",
+            "CI-18 codes présents sous-comptés (14 au lieu de 16)")
     faux = rt0[RUNTIME_HELPERS].replace(
-        "4 codes du catalogue en sont ABSENTS",
-        "5 codes du catalogue en sont ABSENTS")
+        "2 codes du catalogue en sont ABSENTS",
+        "4 codes du catalogue en sont ABSENTS")
     c.viole(check_decompte_vocabulaire({**rt0, RUNTIME_HELPERS: faux}, t09_n),
-            "décompte FAUX", "CI-18 codes absents sur-comptés (5 au lieu de 4)")
+            "décompte FAUX", "CI-18 codes absents sur-comptés (4 au lieu de 2)")
     faux = rt0[RUNTIME_HELPERS].replace(
-        "4 valeurs de CYCLE DE VIE", "5 valeurs de CYCLE DE VIE")
+        "18 valeurs de CYCLE DE VIE", "4 valeurs de CYCLE DE VIE")
     c.viole(check_decompte_vocabulaire({**rt0, RUNTIME_HELPERS: faux}, t09_n),
-            "décompte FAUX", "CI-18 valeurs de cycle de vie sur-comptées")
+            "décompte FAUX",
+            "CI-18 décompte du helper resté à la répartition du lot L1")
     c.viole(check_decompte_vocabulaire(
         {**rt0, RUNTIME_HELPERS: "aucun decompte ici"}, t09_n),
         "n'énonce pas son décompte", "CI-18 décompte absent du helper")
@@ -6754,7 +7773,7 @@ def selftest() -> None:
         m2 = copy.deepcopy(mot0)
         m2[ID_MOTEUR]["sequence"].append(env(_verdict_hors()))
         c.viole(check_vocabulaire_verdict(m2[ID_MOTEUR]["sequence"], rt0),
-                "NON fermé", f"CI-18/M-A verdict hors vocabulaire sous {nom_nu}")
+                "hors de son ensemble de dix-huit valeurs", f"CI-18/M-A verdict hors vocabulaire sous {nom_nu}")
         # (d) writer Roborock supplémentaire
         m3 = copy.deepcopy(mot0)
         m3[ID_MOTEUR]["sequence"].append(env(_writer_robot()))
@@ -6953,8 +7972,11 @@ def selftest() -> None:
     # mutations ASP-CI-37 … ASP-CI-39 plus bas, sur le dossier reel.
     controles_n1 = {"check_writers_n1", "check_projection_n1_rendue",
                     "check_interdits_n1"}
+    # L2 : controles de RUNTIME DE CONDUITE ET DE SUPERVISION, joues par la
+    # batterie de mutations plus bas, sur les fichiers reels.
+    controles_l2 = {"check_sequence_conduite", "check_supervision"}
     manquants = (invoques - normatifs - set(CONTROLES_RUNTIME) - controles_m1
-                 - controles_n1)
+                 - controles_n1 - controles_l2)
     assert not manquants, \
         f"m-C bis : `run()` invoque {sorted(manquants)}, absent(s) de la " \
         f"batterie du selftest — c'est exactement le trou qui a laissé " \
@@ -7579,10 +8601,12 @@ def selftest() -> None:
             "CI-37 YAML illisible")
     c.viole(check_writers_n1(n1_mut(f'- id: "{AID_N1_MAINTENANCE}"',
                                     '- id: "10280000000009"'), DEPOT_0),
-            "hors des deux identifiants", "CI-37 ID d'automation incorrect")
+            "hors des identifiants attribues au dossier",
+            "CI-37 ID d'automation incorrect")
     c.viole(check_writers_n1(n1_mut(f'- id: "{AID_N1_MAINTENANCE}"',
-                                    '- id: "10280000000001"'), DEPOT_0),
-            "supervision de mission W3", "CI-37 ID reserve a L2 employe")
+                                    f'- id: "{AID_SUPERVISION}"'), DEPOT_0),
+            "un identifiant deplace d'un fichier a l'autre",
+            "CI-37 identifiant de supervision porte par le fichier d'entretien")
     c.viole(check_writers_n1(n1_mut(f'- id: "{AID_N1_MAINTENANCE}"',
                                     '- id: "10280000000004"'), DEPOT_0),
             "remise a zero de la composition", "CI-37 ID reserve a U0 employe")
@@ -7606,12 +8630,14 @@ def selftest() -> None:
                  '        message: "Un cycle est en cours."\n')
     c.viole(check_writers_n1(
         n1_plus(DOSSIER_N1 + "/notification_cycle.yaml", TROISIEME), DEPOT_0),
-        "projection persistante de MISSION", "CI-37 projection de cycle batie")
+        "un identifiant deplace d'un fichier a l'autre",
+        "CI-37 projection de mission logee dans un fichier non attribue")
     QUATRIEME = TROISIEME.replace(f'"{AID_N1_MISSION}"', '"10280000000007"') \
                          .replace(NOTIF_N1_MISSION, NOTIF_N1_ENTRETIEN)
     c.viole(check_writers_n1(
         n1_plus(DOSSIER_N1 + "/troisieme.yaml", QUATRIEME), DEPOT_0),
-        "hors des deux identifiants", "CI-37 writer a identifiant invente")
+        "hors des identifiants attribues au dossier",
+        "CI-37 writer a identifiant invente")
     c.viole(check_writers_n1(
         n1_plus(DOSSIER_N1 + "/troisieme.yaml", QUATRIEME), DEPOT_0),
         "qu'UN writer", "CI-37 deux writers pour un meme etat metier")
@@ -7622,13 +8648,15 @@ def selftest() -> None:
         n1_plus(DOSSIER_N1 + "/troisieme.yaml", QUATRIEME
                 + "\n" + QUATRIEME.replace('"10280000000007"',
                                             '"10280000000008"')), DEPOT_0),
-        "troisieme writer", "CI-37 troisieme automation dans le dossier")
+        "un writer de plus est apparu",
+        "CI-37 automation surnumeraire dans le dossier")
 
     # Un identifiant du domaine cite HORS de la cle `id:` — forme que le
     # parseur YAML ne rattache a aucune automation.
     c.viole(check_writers_n1(n1_mut(
-        "  mode: restart", "  mode: restart\n  # voir 10280000000001"),
-        DEPOT_0), "10280000000001", "CI-37 identifiant reserve cite en commentaire")
+        "  mode: restart", "  mode: restart\n  # voir 10280000000004"),
+        DEPOT_0), "10280000000004",
+        "CI-37 identifiant du lot U0 cite en commentaire")
 
     # Identifiant de notification : ferme, stable, non templatise.
     c.viole(check_writers_n1(n1_mut(
@@ -7910,13 +8938,14 @@ def selftest() -> None:
     c.viole(check_interdits_n1(n1_mut(
         ANCRE_39, ANCRE_39 + "  bidon:\n    - service: "
         "input_text.set_value\n")),
-        "seul service admis", "CI-39 ecriture d'un helper")
+        "hors des services admis", "CI-39 ecriture d'un helper")
     c.viole(check_interdits_n1(n1_mut(
         ANCRE_39, ANCRE_39 + f"  bidon: \"{{{{ states('{ID_VERDICT}') }}}}\"\n")),
         "ni n'ecrit le verdict", "CI-39 lecture du verdict")
     c.viole(check_interdits_n1(n1_mut(
         ANCRE_39, ANCRE_39 + "  bidon: LANCEE/DEMARRAGE_OBSERVE\n")),
-        "verdict FIGE", "CI-39 cycle deduit du verdict fige")
+        "n'observe aucune mission",
+        "CI-39 cycle deduit d'un verdict de mission")
     c.viole(check_interdits_n1(n1_mut(
         ANCRE_39, ANCRE_39 + "  bidon: "
         "binary_sensor.roborock_q7_max_nettoyage\n")),
@@ -7952,6 +8981,372 @@ def selftest() -> None:
         "      entity_id: binary_sensor.presence_maison\n")),
         "seconde autorite", "CI-39 entite etrangere lue")
 
+
+    # ═════════════════════════════════════════════════════════════
+    # RUNTIME L2 — conduite et supervision
+    #
+    # Une matrice VOLONTAIREMENT BORNEE : chaque mutation correspond a une
+    # regression concrete que le lot pourrait subir — commander le robot a
+    # tort, dupliquer une commande, ecrire un verdict impossible, briser
+    # l'unicite d'un writer, ou perdre la garde de serialisation. Aucune
+    # mutation adversariale sans risque reel n'est ajoutee.
+    #
+    # Les mutations portent sur les FICHIERS REELS, jamais sur des maquettes.
+    # ═════════════════════════════════════════════════════════════
+
+    ENG_PAUSE = (
+        "            - action: input_text.set_value\n"
+        "              target:\n"
+        "                entity_id: input_text.aspirateur_mission_verdict\n"
+        "              data:\n"
+        '                value: "CONDUITE/PAUSE_ENGAGEE"\n')
+    # L'emission porte desormais `continue_on_error` : l'ancre suit le
+    # fichier reel, commentaires compris — une ancre approximative ferait
+    # passer une mutation a cote de sa cible.
+    _cnd0 = rt0[RUNTIME_L2_CONDUITE]
+    _deb = _cnd0.index("            - action: vacuum.pause\n")
+    _fin = _cnd0.index("                entity_id: vacuum.roborock_q7_max\n",
+                       _deb) + len("                entity_id: "
+                                   "vacuum.roborock_q7_max\n")
+    CMD_PAUSE = _cnd0[_deb:_fin]
+    WAIT_PAUSE = (
+        "            - wait_template: >-\n"
+        "                {{ is_state('sensor.roborock_q7_max_etat', 'paused') }}\n"
+        '              timeout: "00:00:30"\n'
+        "              continue_on_timeout: true\n")
+    # Le bloc de conclusion du retour est le DERNIER du fichier : le retirer
+    # laisse un YAML valide, et c'est ce qui rend la mutation utilisable.
+    CONCLUSION_RETOUR = _cnd0[_cnd0.rindex("            - choose:"):]
+
+    def l2_mut(fichier: str, vieux: str, neuf: str, n: int = 1):
+        """Le runtime reel, avec UNE substitution dans UN fichier L2."""
+        base = dict(rt0)
+        assert vieux in base[fichier], \
+            f"ancre L2 absente de {fichier} : {vieux[:70]!r}"
+        base[fichier] = base[fichier].replace(vieux, neuf, n)
+        return base
+
+    F_CND = RUNTIME_L2_CONDUITE
+    F_SUP = RUNTIME_L2_SUPERVISION
+    F_PRJ = RUNTIME_L2_PROJECTION
+
+    # ---- le runtime L2 livre passe les controles etendus ------------------
+    c.conforme(check_sequence_conduite(rt0), "L2 conduite conforme")
+    c.conforme(check_supervision(rt0), "L2 supervision conforme")
+    c.conforme(check_table_writers(rt0), "L2 table des trois writers conforme")
+    c.conforme(check_conduite_forme(rt0), "L2 forme du script de conduite")
+
+    # ---- ASP-CI-18 : l'engagement precede la commande (garde A-11) --------
+    c.viole(check_sequence_conduite(
+        l2_mut(F_CND, ENG_PAUSE + "\n" + CMD_PAUSE,
+               CMD_PAUSE + "\n" + ENG_PAUSE)),
+        "APRÈS sa commande", "L2 engagement pose apres la commande")
+
+    # ---- ASP-CI-18 : une commande, et une seule ---------------------------
+    c.viole(check_sequence_conduite(
+        l2_mut(F_CND, CMD_PAUSE, CMD_PAUSE + "\n" + CMD_PAUSE)),
+        "émet 2 commande(s)", "L2 commande dupliquee dans un geste")
+
+    # ---- ASP-CI-18 : le geste commande CE QU'IL ANNONCE -------------------
+    c.viole(check_sequence_conduite(
+        l2_mut(F_CND, "            - action: vacuum.pause",
+               "            - action: vacuum.stop")),
+        "commande le robot à tort", "L2 geste commandant une autre primitive")
+
+    # ---- ASP-CI-18 : un geste n'ecrit que SES valeurs ---------------------
+    c.viole(check_sequence_conduite(
+        l2_mut(F_CND, 'value: "CONDUITE/PAUSE_CONFIRMEE"',
+               'value: "CONDUITE/REPRISE_CONFIRMEE"')),
+        "hors des valeurs de ce geste", "L2 valeur d'un autre geste ecrite")
+
+    # ---- ASP-CI-18 : la relecture est unique, et elle existe --------------
+    c.viole(check_sequence_conduite(l2_mut(F_CND, WAIT_PAUSE, "")),
+            "relecture(s)", "L2 relecture supprimee")
+    c.viole(check_sequence_conduite(
+        l2_mut(F_CND, WAIT_PAUSE, WAIT_PAUSE + WAIT_PAUSE)),
+        "relecture(s)", "L2 seconde relecture ajoutee")
+
+    # ---- ASP-CI-18 : aucune reemission ------------------------------------
+    c.viole(check_sequence_conduite(
+        l2_mut(F_CND, CMD_PAUSE,
+               "            - repeat:\n                count: 2\n"
+               "                sequence:\n" + CMD_PAUSE)),
+        "répétition", "L2 commande sous un `repeat`")
+
+    # ---- ASP-CI-18 : un geste conclut, ou il se tait -----------------------
+    sans_conclusion = l2_mut(F_CND, CONCLUSION_RETOUR, "")
+    c.viole(check_sequence_conduite(sans_conclusion),
+            "ne conclut RIEN", "L2 geste sans issue apres relecture")
+    c.viole(check_table_writers(sans_conclusion),
+            "n'ecrit jamais", "L2 valeur de W2 devenue inatteignable")
+
+    # ---- ASP-CI-11 : la table des writers, et sa disjonction ---------------
+    c.viole(check_table_writers(
+        l2_mut(F_CND, 'value: "CLOTURE/APRES_ARRET_CONFIRME"',
+               'value: "CLOTURE/FIN_NOMINALE"')),
+        "hors de son ensemble", "L2 la conduite ecrit une valeur de W3")
+    c.viole(check_table_writers(
+        l2_mut(F_SUP, 'value: "CLOTURE/FIN_NOMINALE"',
+               'value: "CLOTURE/APRES_ARRET_CONFIRME"')),
+        "hors de son ensemble", "L2 la supervision ecrit une valeur de W2")
+    c.viole(check_table_writers(
+        l2_mut(F_CND, 'value: "CONDUITE/PAUSE_CONFIRMEE"',
+               'value: "{{ \'CONDUITE/PAUSE_\' ~ \'CONFIRMEE\' }}"')),
+        "NON LITTERALE", "L2 verdict assemble en Jinja")
+
+    # ---- ASP-CI-11 : la projection de mission ne peut pas ecrire -----------
+    ecriture = (
+        "    - action: input_text.set_value\n"
+        "      target:\n"
+        "        entity_id: input_text.aspirateur_mission_verdict\n"
+        "      data:\n"
+        '        value: "CLOTURE/FIN_NOMINALE"\n')
+    c.viole(check_ecrivain_unique(
+        mot0, l2_mut(F_PRJ, "  action:\n", "  action:\n" + ecriture),
+        depot0),
+        "ÉCRIT le verdict", "L2 la projection ecrit le verdict")
+
+    # ---- ASP-CI-11 : forme du script de conduite --------------------------
+    c.viole(check_conduite_forme(l2_mut(F_CND, "  mode: single",
+                                        "  mode: parallel")),
+            "mode: single", "L2 conduite en mode concurrent")
+    c.viole(check_conduite_forme(
+        l2_mut(F_CND, "    geste:\n", "    duree:\n      name: D\n"
+               "      required: false\n    geste:\n")),
+        "un seul champ", "L2 champ supplementaire au script de conduite")
+
+    # ---- ASP-CI-14 : la primitive de demarrage, unique et gardee -----------
+    c.viole(check_voies_interdites(
+        l2_mut(F_CND, "            - action: vacuum.start",
+               "            - action: vacuum.start\n"
+               "              target:\n"
+               "                entity_id: vacuum.roborock_q7_max\n"
+               "            - action: vacuum.start")),
+        "EXACTEMENT un", "L2 seconde occurrence de la primitive de demarrage")
+    c.viole(check_voies_interdites(
+        l2_mut(F_CND, "{% set session = states('binary_sensor."
+                      "roborock_q7_max_nettoyage') %}",
+               "{% set session = 'on' %}", 1)),
+        "la garde de reprise ne lit pas",
+        "L2 garde de reprise privee du temoin de session")
+    c.viole(check_voies_interdites(
+        l2_mut(F_SUP, "  mode: queued",
+               "  mode: queued\n  bidon: vacuum.start")),
+        "démarreur interdit", "L2 primitive de demarrage hors du fichier admis")
+
+    # ---- ASP-CI-20 : les fenetres L2 -------------------------------------
+    c.viole(check_constantes_temporelles(
+        l2_mut(F_CND, '              timeout: "00:00:30"',
+               '              timeout: "00:01:00"')),
+        "durée(s) concurrente(s) dans le script de conduite",
+        "L2 fenetre de relecture hors de la constante mutualisee")
+    c.viole(check_constantes_temporelles(
+        l2_mut(F_CND, WAIT_PAUSE, "")),
+        "fenêtres de relecture", "L2 fenetre de relecture manquante")
+    c.viole(check_constantes_temporelles(
+        l2_mut(F_CND, CMD_PAUSE,
+               '            - delay: "00:00:05"\n' + CMD_PAUSE)),
+        "porte `delay:`", "L2 temporisation libre dans la conduite")
+    c.viole(check_constantes_temporelles(
+        l2_mut(F_SUP, "  mode: queued",
+               '  mode: queued\n  timeout: "00:00:30"')),
+        "ÉVÉNEMENTIELLES", "L2 attente bornee dans la supervision")
+
+    # ---- check_supervision : porte d'entree, exclusion, reconciliation -----
+    c.viole(check_supervision(
+        l2_mut(F_SUP, '            - condition: template\n'
+                      '              value_template: "{{ verdict in '
+                      'verdict_ouvert }}"\n'
+                      '            - condition: template\n'
+                      '              value_template: >-\n'
+                      "                {{ etat == 'error'",
+               '            - condition: template\n'
+               '              value_template: >-\n'
+               "                {{ etat == 'error'")),
+        "sans exiger un verdict de classe O",
+        "L2 supervision ecrivant hors mission ouverte")
+    c.viole(check_supervision(
+        l2_mut(F_SUP, '            - condition: template\n'
+                      '              value_template: "{{ verdict not in '
+                      'engagements }}"\n', "")),
+        "ne s'exclut pas pendant un engagement",
+        "L2 garde de serialisation perdue")
+    c.viole(check_supervision(
+        l2_mut(F_SUP, "            - condition: trigger\n"
+                      "              id: readiness\n", "")),
+        "hors de la réconciliation de redémarrage",
+        "L2 cloture opaque ecrite hors reconciliation")
+    c.viole(check_supervision(
+        l2_mut(F_SUP, "  mode: queued",
+               "  mode: queued\n  bidon:\n    - repeat:\n"
+               "        count: 2\n")),
+        "répétition", "L2 repetition dans la supervision")
+
+    # ═════════════════════════════════════════════════════════════
+    # BATTERIE F1-F5 — chaque correction, confrontee a SA regression.
+    # Une mutation par propriete, et chacune REJOUE le defaut d'origine :
+    # ce n'est pas la presence du correctif qui est verifiee, c'est le fait
+    # que son retrait redevienne ROUGE.
+    # ═════════════════════════════════════════════════════════════
+
+    # ---- F1 : la cessation ne s'etablit que sur l'etat atteste ------------
+    REGLE_NEGATIVE = (
+        '              value_template: >-\n'
+        "                {{ etat not in classe_a\n"
+        "                   and etat not in classe_e_indispo\n"
+        "                   and etat != 'error' }}\n")
+    c.viole(check_supervision(
+        l2_mut(F_SUP, '              value_template: "{{ etat == '
+                      'arret_atteste }}"\n', REGLE_NEGATIVE)),
+        "par NÉGATION d'une classe",
+        "F1 interruption conclue negativement sur toute la classe N")
+    c.viole(check_supervision(
+        l2_mut(F_SUP, '        arret_atteste: "idle"',
+               '        arret_atteste: "docked"')),
+        "arret_atteste: idle", "F1 etat d'arret atteste deplace")
+    c.viole(check_supervision(
+        l2_mut(F_SUP, '        arret_atteste: "idle"\n', "")),
+        "arret_atteste", "F1 etat d'arret atteste retire des referentiels")
+
+    # ---- F2 : l'emission absorbe son exception ---------------------------
+    c.viole(check_sequence_conduite(
+        l2_mut(F_CND, "              continue_on_error: true\n", "", 4)),
+        "n'absorbe pas son exception",
+        "F2 exception de service laissant un engagement fige")
+
+    # ---- F3 : la relecture du verdict avant chaque conclusion ------------
+    c.viole(check_sequence_conduite(
+        l2_mut(F_CND,
+               "                        {{ states('input_text."
+               "aspirateur_mission_verdict')\n"
+               "                           == 'CONDUITE/RETOUR_ENGAGE'\n"
+               "                           and states('sensor."
+               "roborock_q7_max_etat')\n"
+               "                               not in retour }}",
+               "                        {{ states('sensor."
+               "roborock_q7_max_etat')\n"
+               "                           not in retour }}")),
+        "sans relire le verdict",
+        "F3 course W2/W3 : le retour conclut sans relire le verdict")
+    c.viole(check_sequence_conduite(
+        l2_mut(F_CND,
+               "                - conditions:\n"
+               "                    - condition: template\n"
+               "                      value_template: >-\n"
+               "                        {{ states('input_text."
+               "aspirateur_mission_verdict')\n"
+               "                           == 'CONDUITE/ARRET_ENGAGE' }}\n"
+               "                  sequence:\n",
+               "              default:\n", 1)),
+        "porte un `default:`",
+        "F3 conclusion d'arret rebasculee dans un `default`")
+
+    # ---- F4 : l'amarrage se prouve, `docking` n'est pas une arrivee ------
+    c.viole(check_supervision(
+        l2_mut(F_SUP,
+               "          {{ is_state('vacuum.roborock_q7_max', 'docked')\n"
+               "             or is_state('sensor.roborock_q7_max_etat', "
+               "'charging') }}",
+               "          {{ etat in ['docking', 'charging'] }}")),
+        "n'invoque pas `vacuum.roborock_q7_max`",
+        "F4 preuve d'amarrage privee du seul temoin d'amarrage")
+    c.viole(check_supervision(
+        l2_mut(F_SUP,
+               "          {{ is_state('vacuum.roborock_q7_max', 'docked')\n"
+               "             or is_state('sensor.roborock_q7_max_etat', "
+               "'charging') }}",
+               "          {{ is_state('vacuum.roborock_q7_max', 'docked')\n"
+               "             or is_state('sensor.roborock_q7_max_etat', "
+               "'docking') }}")),
+        "état de MOUVEMENT",
+        "F4 `docking` reintroduit comme preuve d'arrivee")
+    c.viole(check_supervision(
+        l2_mut(F_SUP, '              value_template: "{{ amarre }}"',
+               "              value_template: \"{{ etat == 'charging' }}\"",
+               1)),
+        "sans s'appuyer sur la preuve `amarre`",
+        "F4 branche d'arrivee affranchie de la preuve d'amarrage")
+
+    # ---- F5 : le moteur se tait sur une mission deja ouverte -------------
+    _mot_txt = rt0[RUNTIME_MOTEUR]
+    GARDE_L1 = _mot_txt[_mot_txt.index("    # \U0001F6E1\ufe0f ÉTAPE 0a"):
+                        _mot_txt.index("    # \U0001F504 ÉTAPE 0 —")]
+
+    def _mut_moteur(vieux, neuf, n=1):
+        assert vieux in _mot_txt, f"ancre moteur absente : {vieux[:60]!r}"
+        return (yaml.safe_load(_mot_txt.replace(vieux, neuf, n))
+                [ID_MOTEUR]["sequence"])
+
+    c.viole(check_ordre_sequence(_mut_moteur(GARDE_L1, "")),
+            "AUCUNE garde de memoire de mission",
+            "F5 garde de memoire de mission supprimee du moteur")
+    c.viole(check_ordre_sequence(_mut_moteur(
+        '            - stop: "Mission Arsenal deja ouverte : le verdict est '
+        'de classe O, la memoire de mission est preservee"',
+        "            - action: input_text.set_value\n"
+        "              target:\n"
+        "                entity_id: input_text.aspirateur_mission_verdict\n"
+        "              data:\n"
+        '                value: "REFUS/MISSION_DEJA_OUVERTE"')),
+        "garde de memoire de mission ECRIT",
+        "F5 la garde ecrit un refus au lieu de se taire")
+    c.viole(check_ordre_sequence(_mut_moteur(
+        '          - "CONDUITE/RETOUR_ENGAGE"\n', "", 1)),
+        "valeurs de classe O et O-R",
+        "F5 table de classe O incomplete dans le moteur")
+
+    # ---- ASP-CI-37 : la projection de mission, symetrique de l'entretien ---
+    N1_L2 = load_runtime_n1()
+    c.viole(check_writers_n1(
+        {**N1_L2, F_PRJ: N1_L2[F_PRJ].replace(
+            f'title: "{TITRE_N1_MISSION}"',
+            'title: "\U0001F916 Aspirateur — Mission en cours"')},
+        DEPOT_0), "attendu", "CI-37 titre de la projection de mission au cadratin")
+    c.viole(check_writers_n1(
+        {**N1_L2, F_PRJ: N1_L2[F_PRJ].replace(
+            f"      entity_id: {ID_VERDICT}\n",
+            "      entity_id: sensor.roborock_q7_max_etat\n")},
+        DEPOT_0), "adopterait une mission externe",
+        "CI-37 projection de mission branchee sur un temoin natif")
+    c.viole(check_writers_n1(
+        {**N1_L2, F_PRJ: N1_L2[F_PRJ].replace(
+            '          - "CLOTURE/FIN_NOMINALE"\n', "")},
+        DEPOT_0), "declare `verdict_terminal`",
+        "CI-37 classe terminale amputee dans la projection")
+    c.viole(check_writers_n1(
+        {**N1_L2, F_PRJ: N1_L2[F_PRJ].replace(
+            '          - "CONDUITE/RETOUR_ENGAGE"\n', "")},
+        DEPOT_0), "declare `verdict_ouvert`",
+        "CI-37 classe ouverte amputee dans la projection")
+
+    # ---- ASP-CI-39 : les trois natures du dossier -------------------------
+    c.viole(check_interdits_n1(
+        {**N1_L2, F_SUP: N1_L2[F_SUP].replace(
+            "  mode: queued",
+            "  mode: queued\n  bidon:\n    - action: vacuum.stop\n")}),
+        "ne commande jamais l'appareil",
+        "CI-39 la supervision commande l'appareil")
+    c.viole(check_interdits_n1(
+        {**N1_L2, F_SUP: N1_L2[F_SUP].replace(
+            "  mode: queued",
+            "  mode: queued\n  bidon:\n"
+            "    - service: persistent_notification.create\n")}),
+        "objet SEPARE", "CI-39 la supervision projette une persistante")
+    c.viole(check_interdits_n1(
+        {**N1_L2, F_PRJ: N1_L2[F_PRJ].replace(
+            "  mode: restart",
+            "  mode: restart\n  bidon:\n"
+            "    - service: script.notification_envoyer\n")}),
+        "AUCUN envoi mobile", "CI-39 envoi mobile depuis la projection")
+    c.viole(check_interdits_n1(
+        {**N1_L2, F_PRJ: N1_L2[F_PRJ].replace(
+            "  mode: restart",
+            "  mode: restart\n  bidon: sensor.roborock_q7_max_etat\n")}),
+        "seconde autorite", "CI-39 projection lisant un temoin natif")
+    c.viole(check_interdits_n1(
+        {**N1_L2, DOSSIER_N1 + "/quatrieme.yaml": "- id: \"1028000000000X\"\n"}),
+        "un quatrieme objet est apparu",
+        "CI-39 fichier surnumeraire dans le dossier")
 
     # ═════════════════════════════════════════════════════════════
     # C-6 — SLOTS CRITIQUES LITTÉRAUX
@@ -8016,7 +9411,7 @@ def selftest() -> None:
                               "alias `perform_action`")):
         c.viole(check_ecrivain_unique(mot0, rt0, dict(
             depot0, **{"11_automations/x.yaml": _forme})),
-            "seul le moteur commande",
+            "seuls le moteur et le script de conduite commandent",
             f"C-6/CI-11 primitive interdite — {_libelle}")
 
     # ---- BORNE DE PERIMETRE : hors des fichiers nommes, aucun refus -------
@@ -8161,12 +9556,19 @@ def check_writers_n1(n1: dict[str, str], depot: dict[str, str]) -> list[str]:
                         "`id:` en CHAINE (doctrine id_automatisations).")
             continue
         vus.setdefault(aid, []).append(rel)
+        attendu = FICHIER_DE_L_AID.get(aid)
+        if attendu and rel != attendu:
+            errs.append(f"ASP-CI-37 : `{aid}` est declare dans `{rel}` — "
+                        f"attendu `{attendu}`. La table nomme chaque "
+                        "automation AVEC son fichier : un identifiant deplace "
+                        "d'un fichier a l'autre change de nature sans que "
+                        "rien ne le signale.")
         if aid in AID_HORS_N1:
             errs.append(f"ASP-CI-37 : `{rel}` porte `{aid}` — {AID_HORS_N1[aid]}. "
                         "Cet identifiant n'appartient pas au lot N1.")
         elif aid not in AID_N1_AUTORISES:
             errs.append(f"ASP-CI-37 : `{rel}` porte l'identifiant `{aid}`, hors "
-                        f"des deux identifiants attribues au lot "
+                        f"des identifiants attribues au dossier "
                         f"{sorted(AID_N1_AUTORISES)} (ASP-INV-58 — aucun "
                         "identifiant invente).")
     for aid, fichiers in sorted(vus.items()):
@@ -8184,7 +9586,7 @@ def check_writers_n1(n1: dict[str, str], depot: dict[str, str]) -> list[str]:
     if len(autos) > len(AID_N1_AUTORISES):
         errs.append(f"ASP-CI-37 : `{DOSSIER_N1}` declare {len(autos)} "
                     f"automations pour au plus {len(AID_N1_AUTORISES)} "
-                    "identifiants attribues — un troisieme writer est apparu.")
+                    "identifiants attribues — un writer de plus est apparu.")
 
     # ── (c) verrou de la projection de mission, differee ────────────────────
     if VERROU_N1_MISSION:
@@ -8211,7 +9613,7 @@ def check_writers_n1(n1: dict[str, str], depot: dict[str, str]) -> list[str]:
     par_notif: dict[str, set[str]] = {}
     for rel, a in autos:
         appels = _appels_notif(a)
-        if not appels:
+        if not appels and rel in PROJECTIONS_PURES:
             errs.append(f"ASP-CI-37 : `{rel}` ne projette aucune notification "
                         "persistante — un writer de projection sans projection.")
         verbes: dict[str, set[str]] = {}
@@ -8354,6 +9756,76 @@ def check_writers_n1(n1: dict[str, str], depot: dict[str, str]) -> list[str]:
                 errs.append("ASP-CI-37 : le message appelle `states(` — le "
                             "contenu derive de l'attribut d'autorite, jamais "
                             "d'une lecture libre.")
+
+    # ── (f bis) writer de la projection de MISSION — lot L2 ────────────────
+    #
+    # Symetrique du (f), sur l'autre canal persistant. Son autorite n'est pas
+    # une paire d'entites derivees mais le VERDICT lui-meme : c'est la seule
+    # memoire de mission ouverte du domaine (D-08), et se brancher ailleurs
+    # adopterait une mission externe.
+    cible_mission = [(rel, a) for rel, a in autos
+                     if a.get("id") == AID_N1_MISSION]
+    if len(cible_mission) != 1:
+        errs.append(f"ASP-CI-37 : {len(cible_mission)} writer(s) "
+                    f"`{AID_N1_MISSION}` — la projection persistante de "
+                    "mission doit exister exactement une fois : le lot L2 "
+                    "livre l'autorite d'extinction qui lui manquait.")
+    for rel, a in cible_mission:
+        if a.get("mode") not in MODES_N1:
+            errs.append(f"ASP-CI-37 : `{rel}` porte `mode: {a.get('mode')!r}` "
+                        f"— attendu l'un de {sorted(MODES_N1)}. Un geste de "
+                        "conduite ecrit son engagement puis son issue en deux "
+                        "ecritures rapprochees : c'est la DERNIERE qui fait "
+                        "foi.")
+        decl = a.get("trigger") or a.get("triggers") or []
+        cibles_decl = set()
+        readiness = False
+        for t in decl if isinstance(decl, list) else [decl]:
+            if not isinstance(t, dict):
+                continue
+            eids = t.get("entity_id")
+            eids = [eids] if isinstance(eids, str) else list(eids or [])
+            cibles_decl.update(eids)
+            if READINESS_N1 in eids and t.get("to") == "on":
+                readiness = True
+        if not readiness:
+            errs.append(f"ASP-CI-37 : `{rel}` n'a pas de declencheur "
+                        f"`{READINESS_N1}` -> `on`. Home Assistant NE RESTAURE "
+                        "PAS les notifications persistantes, alors que le "
+                        "verdict, lui, EST restaure : sans re-projection, une "
+                        "mission ouverte devient silencieuse apres un "
+                        "redemarrage.")
+        attendus = {ID_VERDICT, READINESS_N1}
+        if cibles_decl != attendus:
+            errs.append(f"ASP-CI-37 : `{rel}` se declenche sur "
+                        f"{sorted(cibles_decl)} — attendu exactement "
+                        f"{sorted(attendus)}. Se brancher sur un temoin natif "
+                        "adopterait une mission externe (ASP-INV-87, D-06).")
+        for verbe, data in _appels_notif(a):
+            if verbe != "create":
+                continue
+            titre = str(data.get("title") or "")
+            if titre != TITRE_N1_MISSION:
+                errs.append(f"ASP-CI-37 : `{rel}` porte le titre {titre!r} — "
+                            f"attendu {TITRE_N1_MISSION!r} "
+                            "(08_NOTIFICATIONS.md §2).")
+        # Les deux ensembles de classe, confrontes au vocabulaire : une liste
+        # de valeurs recopiee a la main derive tot ou tard.
+        for st in _etapes_n1(a.get("action") or a.get("actions")):
+            for cle, attendu_ens in (("verdict_ouvert", CLASSE_O),
+                                     ("verdict_terminal", CLASSE_T)):
+                val = (st.get("variables") or {}).get(cle)
+                if val is None:
+                    continue
+                vus_ens = set(val) if isinstance(val, list) else set()
+                if vus_ens != set(attendu_ens):
+                    errs.append(
+                        f"ASP-CI-37 : `{rel}` declare `{cle}` = "
+                        f"{sorted(vus_ens)} — attendu exactement "
+                        f"{sorted(attendu_ens)}. Une classe recopiee a la "
+                        "main derive du vocabulaire, et la projection "
+                        "cesserait alors de s'allumer ou de s'eteindre "
+                        "(contrat 15 §2).")
 
     # ── (g) le `choose` du writer n'a AUCUNE branche par defaut ─────────────
     for rel, a in cible:
@@ -8715,93 +10187,149 @@ def _suppression_fermee_n1(auto) -> list[str]:
 
 
 def check_interdits_n1(n1: dict[str, str]) -> list[str]:
-    """ASP-CI-39 — ce que N1 ne fait pas, prouve sur le texte livre.
+    """ASP-CI-39 — ce que le dossier d'automations du domaine ne fait pas.
 
     Le balayage porte sur le fichier ENTIER, commentaires compris : une
     projection qui NOMME un bouton de remise a zero est deja trop proche de
     la seule primitive irreversible du domaine.
+
+    AMENDEMENT L2 — le dossier porte trois automations de NATURES DIFFERENTES,
+    et le controle les distingue au lieu de leur appliquer une regle unique :
+
+      · les deux PROJECTIONS sont des lecteurs purs — aucune commande, aucune
+        ecriture de verdict, aucun envoi mobile, et une autorite de lecture
+        FERMEE ;
+      · la SUPERVISION est un ecrivain du verdict et le seul emetteur du
+        canal mobile — mais elle ne commande jamais l'appareil, n'ecrit
+        aucune notification persistante et ne connait que quatre entites.
+
+    Un fichier absent de la table est REFUSE. C'est ce qui empeche un
+    quatrieme objet d'apparaitre en silence a cote des trois autorises.
     """
     errs: list[str] = []
     if not n1:
         return [f"ASP-CI-39 : dossier N1 introuvable — `{DOSSIER_N1}`."]
     for rel, txt in sorted(n1.items()):
         nu = sans_commentaires_yaml(txt)
-        # C-6 : N1 est un perimetre FERME, lu par dossier nomme. Ses slots
-        # critiques sont litteraux — sans quoi aucun des interdits ci-dessous
-        # ne pourrait etre etabli sur ce fichier.
-        errs += refus_slots_templatises("ASP-CI-39", rel, nu)
-        # Le lexique de prediction est cherche dans le CODE, jamais dans les
-        # commentaires : un en-tete qui s'INTERDIT nommement une tendance ou
-        # une date previsionnelle ne la produit pas — l'y refuser rendrait
-        # l'interdit indicible dans le fichier qui le porte.
-        bas = nu.lower()
+        if rel not in AUTORITE_PAR_FICHIER:
+            errs.append(f"ASP-CI-39 : `{rel}` n'appartient a aucune des trois "
+                        f"natures declarees du dossier "
+                        f"{sorted(AUTORITE_PAR_FICHIER)} — un quatrieme objet "
+                        "est apparu.")
+            continue
+        pure = rel in PROJECTIONS_PURES
 
+        # C-6 : perimetre FERME, lu par dossier nomme. Ses slots critiques
+        # sont litteraux — sans quoi aucun des interdits ci-dessous ne
+        # pourrait etre etabli sur ce fichier.
+        errs += refus_slots_templatises("ASP-CI-39", rel, nu)
+
+        # ── Interdits COMMUNS aux trois natures ────────────────────────────
         for m in re.finditer(
                 r"^[ \t]*-?[ \t]*(?:action|service|perform_action)[ \t]*:"
                 r"[ \t]*[\"']?(vacuum\.[a-z_]+|roborock\.[a-z_]+)", nu, re.M):
-            errs.append(f"ASP-CI-39 : `{rel}` appelle `{m.group(1)}` — une "
-                        "projection ne commande jamais l'appareil "
-                        "(ASP-INV-31).")
+            errs.append(f"ASP-CI-39 : `{rel}` appelle `{m.group(1)}` — ce "
+                        "fichier ne commande jamais l'appareil : les deux "
+                        "seuls chemins de commande du domaine sont le moteur "
+                        "et le script de conduite (ASP-INV-31).")
         if PRESS_SERVICE.search(nu):
             errs.append(f"ASP-CI-39 : `{rel}` appelle `button.press` — la "
                         "remise a zero est un geste operateur explicite, "
                         "portee par le SEUL script du lot M2 (ASP-INV-77, "
                         "ASP-INV-81).")
         for m in BOUTON_ENTRETIEN_RE.finditer(txt):
-            errs.append(f"ASP-CI-39 : `{rel}` nomme `{m.group(0)}` — N1 ne "
-                        "presse aucun bouton et n'a pas a le connaitre.")
+            errs.append(f"ASP-CI-39 : `{rel}` nomme `{m.group(0)}` — ce "
+                        "fichier ne presse aucun bouton et n'a pas a le "
+                        "connaitre.")
         if REPETITION.search(nu):
             errs.append(f"ASP-CI-39 : `{rel}` porte une repetition — une "
-                        "projection se recalcule, elle ne boucle pas.")
-        for helper in (ID_VERDICT, ID_TRACE):
-            if helper in txt:
-                errs.append(f"ASP-CI-39 : `{rel}` cite `{helper}` — N1 ne lit "
-                            "ni n'ecrit le verdict de mission (ASP-INV-31).")
-        for jeton in VERDICT_FIGE_N1:
-            if jeton in txt:
-                errs.append(f"ASP-CI-39 : `{rel}` cite `{jeton}` — un cycle en "
-                            "cours ne se deduit pas d'un verdict FIGE. La "
-                            "classe T du vocabulaire L1 est vide : cette "
-                            "valeur ne s'eteint jamais.")
-        for jeton in SESSION_NATIVE_N1:
-            if jeton in nu:
-                errs.append(f"ASP-CI-39 : `{rel}` lit `{jeton}` — adopter le "
-                            "temoin natif de session reviendrait a adopter une "
-                            "mission externe (07 §6.2, ASP-INV-47).")
-        for jeton in MOBILE_N1:
-            if jeton in nu:
-                errs.append(f"ASP-CI-39 : `{rel}` emploie `{jeton}` — AUCUN "
-                            "envoi mobile dans N1 : le canal 3 est differe a "
-                            "L2/W3, faute d'autorite pour etablir « pendant "
-                            "une mission » (ASP-INV-84).")
-        for jeton in ERREUR_N1:
-            if jeton in nu:
-                errs.append(f"ASP-CI-39 : `{rel}` porte `{jeton}` — une erreur "
-                            "robot ou dock n'est pas un entretien, et hors "
-                            "mission le domaine n'ajoute AUCUNE notification "
-                            "(ASP-INV-83, ASP-INV-84).")
-        for jeton in INTENTION_N1:
-            if jeton in nu:
-                errs.append(f"ASP-CI-39 : `{rel}` lit `{jeton}` — les helpers "
-                            "d'intention relevent du lot U0, qui n'existe pas.")
+                        "projection se recalcule et une supervision observe : "
+                        "elle ne boucle pas.")
         for jeton in TEMPOREL_M1:
             if jeton in nu:
-                errs.append(f"ASP-CI-39 : `{rel}` emploie `{jeton}` — le seuil "
-                            "se constate, il ne se prevoit pas (14 §2).")
-        for jeton in PREDICTION_N1:
-            if jeton in bas:
-                errs.append(f"ASP-CI-39 : `{rel}` annonce « {jeton} » — aucune "
-                            "date previsionnelle n'est inventee (14 §2).")
-        # Aucune ecriture, d'aucune sorte : un lecteur pur n'ecrit rien.
+                errs.append(f"ASP-CI-39 : `{rel}` emploie `{jeton}` — le "
+                            "domaine constate des faits : un seuil se "
+                            "constate, il ne se prevoit pas, et un fait "
+                            "physique ne se date pas (14 §2, A-15).")
+
+        # ── Interdits propres aux LECTEURS PURS ───────────────────────────
+        if pure:
+            try:
+                doc = yaml.safe_load(txt)
+            except yaml.YAMLError:
+                doc = None
+            ecrites, _ = _verdicts_du_document(doc)
+            if ecrites:
+                errs.append(f"ASP-CI-39 : `{rel}` ECRIT le verdict "
+                            f"{sorted(ecrites)} — une projection est un "
+                            "lecteur pur ; l'ecrivain reste le trio W1/W2/W3 "
+                            "(ASP-INV-86).")
+            for jeton in MOBILE_N1:
+                if jeton in nu:
+                    errs.append(f"ASP-CI-39 : `{rel}` emploie `{jeton}` — "
+                                "AUCUN envoi mobile depuis une projection : le "
+                                "canal mobile appartient a la supervision, et "
+                                "a elle seule (ASP-INV-95).")
+            for jeton in SESSION_NATIVE_N1:
+                if jeton in nu:
+                    errs.append(f"ASP-CI-39 : `{rel}` lit `{jeton}` — adopter "
+                                "le temoin natif de session reviendrait a "
+                                "adopter une mission externe (07 §6.2, "
+                                "ASP-INV-47, ASP-INV-87).")
+            for jeton in PREDICTION_N1:
+                if jeton in nu.lower():
+                    errs.append(f"ASP-CI-39 : `{rel}` annonce « {jeton} » — "
+                                "aucune date previsionnelle n'est inventee "
+                                "(14 §2).")
+
+        # ── Le lot d'entretien garde ses interdits propres ─────────────────
+        if rel == RUNTIME_N1:
+            for jeton in VERDICT_FIGE_N1:
+                if jeton in txt:
+                    errs.append(f"ASP-CI-39 : `{rel}` cite `{jeton}` — un "
+                                "cycle en cours ne se deduit pas d'un verdict "
+                                "de mission : la projection d'entretien "
+                                "n'observe aucune mission (ASP-INV-83).")
+            for helper in (ID_VERDICT, ID_TRACE):
+                if helper in txt:
+                    errs.append(f"ASP-CI-39 : `{rel}` cite `{helper}` — la "
+                                "projection d'entretien ne lit ni n'ecrit le "
+                                "verdict de mission (ASP-INV-83).")
+            for jeton in ERREUR_N1:
+                if jeton in nu:
+                    errs.append(f"ASP-CI-39 : `{rel}` porte `{jeton}` — une "
+                                "erreur robot ou dock n'est pas un entretien, "
+                                "et hors mission le domaine n'ajoute AUCUNE "
+                                "notification (ASP-INV-83, ASP-INV-84).")
+            for jeton in INTENTION_N1:
+                if jeton in nu:
+                    errs.append(f"ASP-CI-39 : `{rel}` lit `{jeton}` — les "
+                                "helpers d'intention relevent du lot U0, qui "
+                                "n'existe pas.")
+
+        # ── La supervision n'ecrit AUCUNE notification persistante ────────
+        if rel not in PROJECTIONS_PURES:
+            if "persistent_notification" in nu:
+                errs.append(f"ASP-CI-39 : `{rel}` touche a une notification "
+                            "persistante — la projection de cycle est un "
+                            "objet SEPARE, et un etat metier n'a qu'un "
+                            "writer (08_NOTIFICATIONS §7).")
+
+        # ── Services : la liste FERMEE de la nature du fichier ────────────
+        admis_svc = SERVICES_PAR_FICHIER[rel]
         for m in re.finditer(
                 r"^[ \t]*-?[ \t]*(?:action|service|perform_action)[ \t]*:"
                 r"[ \t]*[\"']?([a-z_]+\.[a-z_]+)", nu, re.M):
             svc = m.group(1)
-            if not svc.startswith("persistent_notification."):
-                errs.append(f"ASP-CI-39 : `{rel}` appelle `{svc}` — le seul "
-                            "service admis dans N1 est "
-                            "`persistent_notification.*`.")
-        # La projection ne lit QUE son autorite et le temoin de readiness.
+            if svc.startswith("persistent_notification.") and pure:
+                continue
+            if svc in admis_svc:
+                continue
+            errs.append(f"ASP-CI-39 : `{rel}` appelle `{svc}` — hors des "
+                        f"services admis pour ce fichier {sorted(admis_svc)}.")
+
+        # ── Entites : l'autorite FERMEE de la nature du fichier ───────────
+        admis_eid = AUTORITE_PAR_FICHIER[rel] | admis_svc
         for m in re.finditer(r"\b([a-z_]+\.[a-z0-9_]+)\b", nu):
             eid = m.group(1)
             if eid.split(".")[0] not in ("sensor", "binary_sensor",
@@ -8810,12 +10338,11 @@ def check_interdits_n1(n1: dict[str, str]) -> list[str]:
                                          "vacuum", "button", "switch",
                                          "script", "automation", "notify"):
                 continue
-            if eid in AUTORITE_N1 or eid == READINESS_N1:
+            if eid in admis_eid:
                 continue
-            errs.append(f"ASP-CI-39 : `{rel}` lit `{eid}` — la projection ne "
-                        f"connait que {sorted(AUTORITE_N1)} et "
-                        f"`{READINESS_N1}`. Toute autre entite serait une "
-                        "seconde autorite.")
+            errs.append(f"ASP-CI-39 : `{rel}` lit `{eid}` — hors de son "
+                        f"autorite fermee {sorted(AUTORITE_PAR_FICHIER[rel])}. "
+                        "Toute autre entite serait une seconde autorite.")
     return errs
 
 

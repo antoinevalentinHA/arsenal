@@ -1,0 +1,440 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Aspirateur — Supervision de mission (écrivain W3, lot L2)
+#
+#  ID : 10280000000001
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Observer une mission Arsenal OUVERTE, qualifier son issue
+#   terminale, réconcilier au redémarrage, et router le canal mobile.
+#   Rôle contractuel `‹supervision_de_mission›`.
+#
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             15_conduite_et_supervision.md §1 (writers)
+#                                          §2 (partition, porte d'entrée)
+#                                          §4 (sérialisation)
+#                                          §5 (supervision)
+#                                          §6 (réconciliation totale)
+#                                          §7 (canal mobile)
+#             08_etats_et_observation.md §2 (autorité des témoins)
+#             09_refus_et_diagnostics.md §3 (catalogue des échecs)
+#   Cadrage ratifié (D-44) : cadrage_l2_maintenance_ui,
+#             07_MACHINE_L2.md §5.3, §5.5, §6 · 08_NOTIFICATIONS.md §5, §6.1
+#
+# ----------------------------------------------------------
+# 🧱 NATURE
+#   ÉCRIVAIN du verdict — le troisième et dernier (ASP-INV-86).
+#   Elle N'ÉCRIT RIEN vers l'appareil et ne commande jamais le robot :
+#   l'écrivain unique vers l'appareil reste le couple moteur/conduite.
+#
+# ----------------------------------------------------------
+# ✍️ CE QU'ELLE ÉCRIT — CINQ VALEURS, ET CINQ SEULEMENT
+#   input_text.aspirateur_mission_verdict, sur l'ensemble EXACT :
+#     ECHEC/MISSION_INTERROMPUE      ECHEC/ERREUR_EN_MISSION
+#     CLOTURE/FIN_NOMINALE           CLOTURE/APRES_RETOUR_CONFIRME
+#     CLOTURE/ISSUE_OPAQUE_APRES_REDEMARRAGE
+#   Les DEUX premières sont des codes du catalogue (09 §3), conservés
+#   TELS QUELS (D-11). Les trois autres sont des valeurs de cycle de vie
+#   et n'entrent dans aucun catalogue (ASP-INV-70).
+#   Les cinq sont de classe TERMINALE : cette automation ne rouvre
+#   jamais une mission, et n'écrit aucune valeur de classe O.
+#
+# ----------------------------------------------------------
+# 🚪 PORTE D'ENTRÉE — LE VERDICT, ET LUI SEUL (ASP-INV-87)
+#   Toute branche exige un verdict de classe O ou O-R. C'est ce qui
+#   rend l'ADOPTION D'UNE MISSION EXTERNE impossible par construction
+#   (D-06, D-R4) : un robot qui nettoie sans qu'Arsenal l'ait ouvert
+#   n'est ni supervisé, ni clôturé, ni notifié.
+#   Le témoin de session natif n'est JAMAIS lu (ASP-INV-47) ; l'état
+#   machine dit CE QUE FAIT le robot, jamais SI une mission Arsenal est
+#   ouverte.
+#
+# ----------------------------------------------------------
+# 🛡️ EXCLUSION MUTUELLE AVEC W2 — PAR LE VERDICT, SANS HELPER
+#   (arbitrage A-11, 15 §4)
+#
+#   Tant que le verdict porte l'une des QUATRE valeurs d'engagement du
+#   script de conduite, cette automation NE CONCLUT À AUCUNE
+#   INTERRUPTION. C'est la règle 2 de la garde rendue, et elle ne coûte
+#   aucun jalon : le verdict que W3 surveille déjà porte la fenêtre.
+#
+#   Sans elle, la séquence « l'opérateur arrête → le robot s'immobilise
+#   → W3 voit une interruption → W2 écrase avec sa clôture » produirait,
+#   selon l'ordonnancement, un échec PERDU ou un échec FAUX.
+#
+#   PORTÉE EXACTE, et pas plus. L'abstention porte sur la seule
+#   conclusion d'INTERRUPTION. Une ERREUR robot ou dock reste qualifiée
+#   pendant un engagement : une erreur est un fait rapporté par
+#   l'appareil, pas une conclusion tirée d'un silence.
+#
+#   SUR UN RETOUR, c'est l'inverse qui est vrai : W2 s'en tient à
+#   l'engagement et NE PRÉTEND PAS CONCLURE. W3 est alors le SEUL
+#   candidat à l'amarrage — il n'y a plus deux writers pour un même
+#   événement physique (A-11 volet 2).
+#
+# ----------------------------------------------------------
+# ⚙️ DÉCLENCHEURS — CINQ, ET CINQ SEULEMENT
+#   • sensor.roborock_q7_max_etat — l'autorité de l'activité précise
+#     (08 §2). C'est lui qui porte la cessation d'activité, l'entrée en
+#     erreur, et l'un des deux témoins d'amarrage ;
+#   • les DEUX témoins d'erreur, robot et dock — leurs valeurs
+#     nominales sont arrêtées par ARB-5, et le moteur les lit déjà
+#     comme condition de lancement. Rien n'est créé ici : le signal
+#     existe et il est contractualisé ;
+#   • vacuum.roborock_q7_max → `docked` — le SECOND témoin d'amarrage,
+#     et le seul qui dise « posé sur sa base » (07 §5.0). Il est borné
+#     par `to:` : sans lui, l'entité `vacuum` réveillerait cette
+#     automation à chaque changement d'attribut ;
+#   • input_boolean.systeme_stable → on — la réconciliation au
+#     redémarrage, patron de readiness du dépôt.
+#
+#   AUCUN déclencheur temporel, aucun `homeassistant.start` nu, aucun
+#   polling : le domaine n'admet aucune temporisation hors de ses deux
+#   constantes (ASP-INV-69), et cette automation n'en porte AUCUNE.
+#
+#   POURQUOI PAS DE DÉCLENCHEUR SUR LE VERDICT. La supervision réagit
+#   aux transitions du ROBOT ; la projection de cycle, elle, réagit au
+#   verdict. Les fusionner ferait s'annuler la supervision en vol à
+#   chaque écriture de verdict par un autre writer (07_MACHINE_L2 §7).
+#
+# ----------------------------------------------------------
+# 🔁 MODE — `queued`, et pourquoi
+#   Trois sources d'événements indépendantes peuvent muter dans le même
+#   cycle de coordinateur : l'état machine et les deux témoins d'erreur.
+#   `single` ABANDONNERAIT en silence le second déclenchement — ici, un
+#   échec réel perdu. `restart` interromprait une écriture de verdict en
+#   vol. `queued` les traite l'un après l'autre, et chaque exécution
+#   RÉÉVALUE les conditions sur l'état courant : une branche dont la
+#   condition n'est plus vraie ne s'exécute pas.
+#
+# ----------------------------------------------------------
+# 📱 CANAL MOBILE — DEUX ÉVÉNEMENTS, PENDANT UNE MISSION
+#   (ASP-INV-95, arbitrage A-8)
+#
+#   Les deux envois vivent dans les branches d'échec, et NULLE PART
+#   ailleurs. Ils ne sont donc atteignables que sur un verdict de
+#   classe O : « pendant une mission » n'est pas une intention, c'est
+#   une conséquence structurelle de la garde.
+#   HORS MISSION, RIEN n'est ajouté — ni mobile, ni persistante
+#   (ASP-INV-84). Le refus de lancement déjà en place reste la seule
+#   restitution, et la tuile de Navigation reste rouge (D-43).
+#
+#   VARIANTE RETENUE, ET POURQUOI — le cadrage exige que ce choix soit
+#   ÉCRIT dans le lot (08_NOTIFICATIONS §5). La couche centrale expose
+#   trois variantes ; c'est la variante AVANCÉE qui est retenue, pour
+#   sa GARDE : elle vérifie que la valeur du helper cible est bien une
+#   chaîne préfixée par le domaine de notification. La variante simple
+#   n'en porte aucune, et un helper à l'état inconnu y produirait un
+#   appel de service invalide. Le bloc `extra` n'est pas transmis : les
+#   deux événements du domaine n'en ont pas besoin.
+#   Aucun service `notify.*` en dur, aucune cible d'appareil : la cible
+#   est résolue depuis un helper textuel, et un changement de téléphone
+#   ne touche aucun fichier du domaine.
+#
+# ----------------------------------------------------------
+# 🕳️ L'INDISPONIBILITÉ N'EST PAS UNE ISSUE (ASP-INV-45, ASP-INV-93)
+#   `unknown`, `unavailable` et `device_offline` ne produisent AUCUN
+#   verdict terminal. Ils ne sont ni une interruption, ni une erreur,
+#   ni une fin nominale : la supervision s'abstient et la mission reste
+#   ouverte. Un trou d'information n'est pas un fait.
+#
+# ----------------------------------------------------------
+# 🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#   - Aucune commande robot : aucun appel `vacuum.*` / `roborock.*`
+#   - Aucune pression de bouton, aucune remise à zéro
+#   - Aucune valeur de classe O : elle ne rouvre ni ne prolonge rien
+#   - Aucune valeur du moteur ni du script de conduite
+#   - Aucune notification persistante : la projection de cycle est un
+#     lecteur pur, et elle vit dans un autre fichier
+#   - Aucune écriture de la trace d'intention
+#   - Aucune temporisation, aucun `delay`, aucun `repeat`
+#   - Aucune clôture NOMINALE faute d'observation : une chaîne devenue
+#     inobservable se clôt de façon OPAQUE (ASP-INV-94, D-R1)
+#
+# ----------------------------------------------------------
+# 🎯 DEUX RÈGLES POSITIVES ET FERMÉES (15 §5)
+#   L'AMARRAGE se prouve, il ne se déduit pas d'une absence :
+#     `vacuum` == `docked`  OU  état machine == `charging`.
+#   `docking` N'EN FAIT PAS PARTIE : le contrat le classe en état de
+#   MOUVEMENT, au même titre que `returning_home` (07 §5.0), et il n'a
+#   jamais été observé sur cet appareil. Le tenir pour une arrivée
+#   concluait un trajet en cours.
+#
+#   LA CESSATION ne s'établit que sur `idle`, seul état d'arrêt attesté
+#   du domaine. Elle N'EST PLUS déduite négativement de « ni activité,
+#   ni erreur, ni indisponibilité » : cette règle-là concluait sur TOUT
+#   état de classe N, y compris `emptying_the_bin` — une phase de dock
+#   parfaitement nominale, observée au terrain — et produisait alors un
+#   verdict terminal FAUX, une projection éteinte, une supervision
+#   désarmée et une notification mobile mensongère.
+#
+#   TOUT AUTRE ÉTAT DE CLASSE N RESTE INDÉTERMINÉ, et n'écrit rien. La
+#   partition R/A/E/N du contrat 07 §5.0 est INCHANGÉE : ce fichier ne
+#   la reclasse pas, il cesse seulement de conclure sur son fourre-tout.
+#
+# ----------------------------------------------------------
+# ⛔ LIMITES DE LOT, CONSIGNÉES
+#   • Un état de classe N autre que `idle` — un lavage, un séchage, un
+#     déplacement non nommé — ne produit AUCUN verdict. La mission reste
+#     ouverte jusqu'à un amarrage, une erreur, un `idle`, ou la
+#     réconciliation d'un redémarrage. C'est une abstention assumée :
+#     mieux vaut une mission qui reste ouverte qu'une clôture fausse.
+#   • Un retour ordonné qui n'aboutit pas reste en classe O-R jusqu'à
+#     la réconciliation d'un redémarrage, qui le clôt alors de façon
+#     opaque. C'est la conséquence directe et assumée de la règle 2 de
+#     la garde : aucune interruption pendant un engagement.
+#
+# 🏷️ STATUT
+#   Runtime supervisé — domaine aspirateur, lot L2 (writer W3)
+# ==========================================================
+
+- id: "10280000000001"
+  alias: "Aspirateur - Supervision de mission"
+  description: >
+    Observe une mission Arsenal ouverte, qualifie son issue terminale,
+    réconcilie au redémarrage et route le canal mobile. Troisième et
+    dernier écrivain du verdict de mission.
+  mode: queued
+  max: 10
+
+  # ======================================================
+  # ⚙️ Déclencheurs — état machine, deux témoins d'erreur, readiness
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: sensor.roborock_q7_max_etat
+      id: observation
+
+    - platform: state
+      entity_id: sensor.roborock_q7_max_erreur_de_l_aspirateur
+      id: observation
+
+    - platform: state
+      entity_id: sensor.roborock_q7_max_dock_erreur_de_dock
+      id: observation
+
+    # L'amarrage se prouve sur l'entite `vacuum`, qui ne passe `docked`
+    # qu'une fois le robot POSE sur sa base (07 §5.0). Sans ce
+    # declencheur, une arrivee dont l'etat machine reste en vidage ne
+    # reveillerait rien : la preuve existerait sans etre observee.
+    # `to:` est litteral — un declencheur sans `to:` partirait aussi sur
+    # chaque changement d'attribut de l'entite (batterie, puissance).
+    - platform: state
+      entity_id: vacuum.roborock_q7_max
+      to: "docked"
+      id: observation
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: readiness
+
+  # ======================================================
+  # 🔄 Actions
+  # ======================================================
+  action:
+
+    # ==================================================
+    # 📚 Référentiels embarqués — les mêmes que le moteur
+    #    et le script de conduite. Trois écrivains du même
+    #    domaine ne peuvent pas lire trois partitions.
+    # ==================================================
+    - variables:
+        etat: "{{ states('sensor.roborock_q7_max_etat') }}"
+        verdict: "{{ states('input_text.aspirateur_mission_verdict') }}"
+        err_vac: "{{ states('sensor.roborock_q7_max_erreur_de_l_aspirateur') }}"
+        err_dock: "{{ states('sensor.roborock_q7_max_dock_erreur_de_dock') }}"
+        # Partition fermée de l'état machine (07 §5.0).
+        classe_a: ["cleaning", "segment_cleaning", "zoned_cleaning",
+                   "paused", "returning_home", "docking"]
+        indispo: ["unknown", "unavailable"]
+        # Chaîne de retour, côté appareil. `docking` y est un état de
+        # MOUVEMENT (07 §5.0) : il dit que le robot approche, jamais
+        # qu'il est arrivé.
+        retour: ["returning_home", "docking"]
+        # Preuve POSITIVE d'amarrage. Deux témoins, en disjonction, et
+        # aucune transition intermédiaire exigée :
+        #   · `vacuum` ne passe `docked` qu'une fois le robot POSÉ sur sa
+        #     base — c'est le seul témoin d'amarrage du domaine (07 §5.0) ;
+        #   · `charging` est l'état machine terminal stable d'un retour.
+        # Une disjonction, parce que l'un des deux peut être manqué :
+        # exiger les deux, ou exiger un passage par `docking`, rendrait
+        # l'arrivée inobservable dès qu'un échantillon manque.
+        amarre: >-
+          {{ is_state('vacuum.roborock_q7_max', 'docked')
+             or is_state('sensor.roborock_q7_max_etat', 'charging') }}
+        # Le SEUL état attesté de cessation. La règle est POSITIVE et
+        # FERMÉE : hors de lui, aucune cessation n'est établie.
+        arret_atteste: "idle"
+        # Classe O + O-R — la porte d'entrée (15 §2).
+        verdict_ouvert:
+          - "LANCEE/DEMARRAGE_OBSERVE"
+          - "CONDUITE/PAUSE_ENGAGEE"
+          - "CONDUITE/PAUSE_CONFIRMEE"
+          - "CONDUITE/PAUSE_NON_CONFIRMEE"
+          - "CONDUITE/REPRISE_ENGAGEE"
+          - "CONDUITE/REPRISE_CONFIRMEE"
+          - "CONDUITE/REPRISE_NON_CONFIRMEE"
+          - "CONDUITE/ARRET_ENGAGE"
+          - "CONDUITE/RETOUR_ENGAGE"
+        # Les quatre valeurs d'engagement de W2 — la fenêtre de
+        # relecture, rendue visible dans le verdict (A-11, règle 1).
+        engagements:
+          - "CONDUITE/PAUSE_ENGAGEE"
+          - "CONDUITE/REPRISE_ENGAGEE"
+          - "CONDUITE/ARRET_ENGAGE"
+          - "CONDUITE/RETOUR_ENGAGE"
+
+    - choose:
+
+        ####################################################
+        # 🧯 RÉCONCILIATION AU REDÉMARRAGE — table 15 §6
+        #
+        # Lignes 3, 5 et 6 : clôture OPAQUE. Les lignes 1
+        # (T, H, hors vocabulaire), 2 (chaîne de retour en
+        # cours) et 4 (activité en cours) n'écrivent RIEN,
+        # et c'est exactement ce que cette unique branche
+        # produit par sa condition négative.
+        #
+        # La ligne 5 est celle qui manquait à la première
+        # version de la machine : « verdict ouvert, robot au
+        # repos, session encore ouverte » n'était couvert par
+        # aucune ligne — un silence proscrit par ASP-INV-49.
+        # Le témoin de session n'est donc PAS consulté ici :
+        # « quel que soit le témoin de session ».
+        ####################################################
+        - conditions:
+            - condition: trigger
+              id: readiness
+            - condition: template
+              value_template: "{{ verdict in verdict_ouvert }}"
+            - condition: template
+              value_template: >-
+                {{ not ( (verdict == 'CONDUITE/RETOUR_ENGAGE' and etat in retour)
+                         or (verdict != 'CONDUITE/RETOUR_ENGAGE'
+                             and etat in classe_a) ) }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "CLOTURE/ISSUE_OPAQUE_APRES_REDEMARRAGE"
+
+        ####################################################
+        # 🏠 AMARRAGE APRÈS UN RETOUR ORDONNÉ PAR ARSENAL
+        #
+        # Testée AVANT la classe O générique : c'est la règle
+        # de priorité de la sous-classe O-R (15 §5), et c'est
+        # elle qui rend l'amarrage non ambigu.
+        ####################################################
+        - conditions:
+            - condition: trigger
+              id: observation
+            - condition: template
+              value_template: "{{ verdict == 'CONDUITE/RETOUR_ENGAGE' }}"
+            - condition: template
+              value_template: "{{ amarre }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "CLOTURE/APRES_RETOUR_CONFIRME"
+
+        ####################################################
+        # ✅ AMARRAGE SANS RETOUR ORDONNÉ — fin nominale
+        #
+        # Le robot a regagné sa base de lui-même, au terme du
+        # cycle. C'est la seule clôture NOMINALE du domaine, et
+        # elle n'est écrite que sur une observation réelle.
+        ####################################################
+        - conditions:
+            - condition: trigger
+              id: observation
+            - condition: template
+              value_template: "{{ verdict in verdict_ouvert }}"
+            - condition: template
+              value_template: "{{ amarre }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "CLOTURE/FIN_NOMINALE"
+
+        ####################################################
+        # 🚨 ERREUR ROBOT OU DOCK, PENDANT UNE MISSION
+        #
+        # Les valeurs nominales sont celles du contrat : `none`
+        # pour le robot, `ok` pour le dock (ARB-5). Un témoin
+        # INDISPONIBLE n'est pas une erreur : `unknown` et
+        # `unavailable` sont exclus explicitement, faute de quoi
+        # un trou d'information deviendrait un échec métier
+        # (ASP-INV-45, ASP-INV-93).
+        #
+        # Cette branche N'EST PAS inhibée par un engagement :
+        # une erreur est un fait rapporté par l'appareil, pas
+        # une conclusion tirée d'un silence (15 §4).
+        ####################################################
+        - conditions:
+            - condition: trigger
+              id: observation
+            - condition: template
+              value_template: "{{ verdict in verdict_ouvert }}"
+            - condition: template
+              value_template: >-
+                {{ etat == 'error'
+                   or (err_vac not in indispo and err_vac != 'none')
+                   or (err_dock not in indispo and err_dock != 'ok') }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "ECHEC/ERREUR_EN_MISSION"
+
+            - action: script.notification_envoyer_avance
+              data:
+                cible: input_text.telephone_parent_1_notify
+                titre: "🤖 Aspirateur – Erreur en mission"
+                message: >-
+                  Une erreur du robot ou du dock est survenue pendant la
+                  mission. Traitez l'erreur sur l'appareil.
+
+        ####################################################
+        # ⛔ INTERRUPTION HORS GESTE OPÉRATEUR
+        #
+        # L'activité a cessé alors qu'une mission Arsenal était
+        # ouverte, sans qu'un geste ait été engagé, sans erreur,
+        # sans indisponibilité et sans arrivée au dock — les
+        # trois branches précédentes ayant déjà tranché ces cas.
+        #
+        # `verdict not in engagements` EST la garde d'exclusion
+        # rendue par A-11 : pendant une fenêtre de relecture de
+        # W2, cette branche ne peut pas partir.
+        #
+        # Ce verdict NE PRÉSUME AUCUNE CAUSE (09 §3).
+        ####################################################
+        - conditions:
+            - condition: trigger
+              id: observation
+            - condition: template
+              value_template: "{{ verdict in verdict_ouvert }}"
+            - condition: template
+              value_template: "{{ verdict not in engagements }}"
+            - condition: template
+              value_template: "{{ etat == arret_atteste }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "ECHEC/MISSION_INTERROMPUE"
+
+            - action: script.notification_envoyer_avance
+              data:
+                cible: input_text.telephone_parent_1_notify
+                titre: "🤖 Aspirateur – Mission interrompue"
+                message: >-
+                  La mission s'est arrêtée avant son terme, hors geste
+                  opérateur. La cause n'est pas présumée : vérifiez le robot.

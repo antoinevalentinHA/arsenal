@@ -22,22 +22,34 @@
 #   aspirateur_motif_lisible
 #
 # 🔗 DÉPENDANCES (lecture seule)
-#   input_text.aspirateur_mission_verdict — ÉCRIT par le moteur, et par
-#   lui seul. Ce capteur ne fait que le traduire.
+#   input_text.aspirateur_mission_verdict — ÉCRIT par les TROIS writers
+#   du domaine depuis le lot L2 : le moteur, le script de conduite et
+#   l'automation de supervision (ASP-INV-86). Ce capteur ne fait que le
+#   traduire — il n'en écrit AUCUNE valeur.
 #
 # 🧱 COUVERTURE — LES 18 CODES DU CATALOGUE, SANS EXCEPTION
-#   ⚠️ « 18 codes du catalogue » n'est PAS « 18 valeurs de verdict »
-#      (04_input_texts/aspirateur/mission.yaml). Les deux ensembles
-#      comptent 18 éléments par coïncidence et ne se recouvrent pas.
+#   ⚠️ « 18 codes du catalogue » n'est PAS « 34 valeurs de verdict »
+#      (04_input_texts/aspirateur/mission.yaml). Les deux ensembles SE
+#      RECOUPENT : 16 codes du catalogue figurent au verdict, 2 en sont
+#      absents, et 18 valeurs de cycle de vie n'appartiennent à aucun
+#      catalogue.
 #   Les 13 refus (09 §2) et les 5 échecs (09 §3) sont TOUS traduits ici,
-#   y compris les quatre que le lot L1 n'écrit jamais :
-#     COMMANDE_REJETEE · CANAL_INDISPONIBLE  — hors portée du moteur
-#     MISSION_INTERROMPUE · ERREUR_EN_MISSION — supervision continue, L2
+#   y compris les deux qu'aucun lot n'écrit :
+#     COMMANDE_REJETEE · CANAL_INDISPONIBLE  — hors portée du domaine
 #   Les traduire malgré tout garde le catalogue TOTAL : aucun code du
 #   contrat n'est orphelin de restitution, et un lot ultérieur qui les
 #   écrira n'aura rien à ajouter ici.
-#   S'y ajoutent les valeurs de CYCLE DE VIE du verdict (ASP-INV-70),
-#   qui n'appartiennent à aucun catalogue et n'y entreront jamais.
+#   S'y ajoutent les 18 valeurs de CYCLE DE VIE du verdict (ASP-INV-70),
+#   qui n'appartiennent à aucun catalogue et n'y entreront jamais :
+#   les 4 du lot L1, les 11 de la conduite et les 3 de la supervision
+#   qui ne sont pas des codes du catalogue. 18 codes + 18 valeurs de
+#   cycle de vie = 36 traductions, toutes obligatoires (ASP-CI-19).
+#
+#   ⚠️ MISSION_INTERROMPUE et ERREUR_EN_MISSION ne sont plus des codes
+#      « qu'aucun lot n'écrit » : depuis le lot L2, la supervision
+#      10280000000001 les écrit. Leur traduction était déjà là, et elle
+#      n'a rien eu à devenir — c'est précisément ce que la totalité du
+#      catalogue préparait.
 #
 # 🧭 HONNÊTETÉ
 #   - `ISSUE_NON_ETABLIE` n'affirme PAS qu'une émission a eu lieu — le
@@ -66,7 +78,7 @@
 #   motif reste sous cette borne, et le checker le vérifie (ASP-CI-19).
 #
 # 🏷️ STATUT
-#   Diagnostic — domaine aspirateur, lot L1
+#   Diagnostic — domaine aspirateur, lot L1, étendu au lot L2
 # ==========================================================
 
 - sensor:
@@ -79,6 +91,8 @@
            else 'mdi:progress-question' if v.startswith('COMMANDE/')
            else 'mdi:check-network-outline' if v.startswith('EMISSION/')
            else 'mdi:robot-vacuum' if v.startswith('LANCEE/')
+           else 'mdi:robot-vacuum-variant' if v.startswith('CONDUITE/')
+           else 'mdi:flag-checkered' if v.startswith('CLOTURE/')
            else 'mdi:timer-sand' if v == 'VALIDATION_EN_COURS'
            else 'mdi:comment-question-outline' }}
       state: >
@@ -128,7 +142,35 @@
           'MISSION_INTERROMPUE':
             "La mission s'est arrêtée avant son terme, hors geste opérateur. La cause n'est pas présumée : vérifiez le robot.",
           'ERREUR_EN_MISSION':
-            "Une erreur du robot ou du dock est survenue pendant la mission. Traitez l'erreur sur l'appareil."
+            "Une erreur du robot ou du dock est survenue pendant la mission. Traitez l'erreur sur l'appareil.",
+          'PAUSE_ENGAGEE':
+            "Mise en pause demandée : la confirmation du robot est attendue. Aucune autre commande n'est émise.",
+          'PAUSE_CONFIRMEE':
+            "Mission en pause. Elle reste ouverte et reprenable : demandez la reprise, ou l'arrêt.",
+          'PAUSE_NON_CONFIRMEE':
+            "La mise en pause n'a pas été confirmée. La mission reste ouverte et le robot peut rouler encore : vérifiez son état avant tout autre geste.",
+          'REPRISE_ENGAGEE':
+            "Reprise demandée : la confirmation du robot est attendue. Aucune autre commande n'est émise.",
+          'REPRISE_CONFIRMEE':
+            "Mission reprise : le robot poursuit le périmètre demandé, avec les réglages qui étaient les siens.",
+          'REPRISE_NON_CONFIRMEE':
+            "La reprise n'a pas été confirmée. La mission reste ouverte : vérifiez l'état du robot avant de redemander la reprise.",
+          'ARRET_ENGAGE':
+            "Arrêt demandé : la confirmation du robot est attendue. Aucune autre commande n'est émise.",
+          'APRES_ARRET_CONFIRME':
+            "Mission arrêtée : l'activité a cessé. La mission est close.",
+          'APRES_ARRET_NON_CONFIRME':
+            "L'arrêt n'a pas été confirmé. La mission est close, mais l'état du robot n'est pas établi : vérifiez l'appareil.",
+          'RETOUR_ENGAGE':
+            "Retour à la base demandé : le trajet est en cours. Son aboutissement sera observé à l'amarrage.",
+          'APRES_RETOUR_NON_CONFIRME':
+            "Le robot n'est pas entré dans sa chaîne de retour. La mission est close, mais le trajet n'est pas établi : vérifiez l'appareil.",
+          'APRES_RETOUR_CONFIRME':
+            "Retour terminé : le robot est à sa base. La mission est close.",
+          'FIN_NOMINALE':
+            "Mission terminée : le robot a regagné sa base au terme du cycle.",
+          'ISSUE_OPAQUE_APRES_REDEMARRAGE':
+            "La mission était ouverte avant un redémarrage et son déroulement n'est plus observable. Elle est close sans conclusion : ni fin, ni interruption."
         } %}
         {{ motifs.get(code, "Aucune mission n'a encore été tracée.") }}
       attributes:
@@ -150,5 +192,7 @@
              else 'commande' if v.startswith('COMMANDE/')
              else 'emission' if v.startswith('EMISSION/')
              else 'lancee' if v.startswith('LANCEE/')
+             else 'conduite' if v.startswith('CONDUITE/')
+             else 'cloture' if v.startswith('CLOTURE/')
              else 'validation' if v == 'VALIDATION_EN_COURS'
              else 'aucune' }}
