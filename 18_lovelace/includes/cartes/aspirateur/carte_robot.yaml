@@ -1,0 +1,98 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE MÉTIER (INCLUDE)
+#     Aspirateur — cartes du robot, en lecture seule
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Montrer les cartes que le robot a levées, et rien d'autre. Aucun
+#   pilotage, aucune sélection, aucune zone à dessiner.
+#
+# 📡 SOURCE — DES ENTITÉS `image`, ATTESTÉES PAR L'AUDIT DU DOMAINE
+#   L'intégration Roborock expose une entité `image` par carte du
+#   robot. Les quatre sont relevées au terrain, en lecture seule, dans
+#   `00_documentation_arsenal/audits/01_rapports/aspirateur/
+#   audit_faisabilite_roborock_q7_max.md` §4 — table « Cartes
+#   observées » :
+#     image.roborock_q7_max_rdc      → Rez-de-chaussée
+#     image.roborock_q7_max_etage    → Étage
+#     image.roborock_q7_max_annexe   → Annexe
+#     image.roborock_q7_max_garage   → Garage — NON REPRIS, voir plus bas
+#   Aucune entité n'est créée, aucune intégration n'est ajoutée, aucune
+#   ressource frontend n'est installée : la carte native `picture-entity`
+#   de Home Assistant suffit à afficher une entité `image`.
+#
+# 🚫 POURQUOI LE GARAGE N'EST PAS ICI
+#   L'audit l'établit : la carte `Garage` ne porte AUCUNE pièce nommée
+#   (0 segment), et les périmètres métier du domaine sont trois —
+#   Rez-de-chaussée, Étage, Annexe (chapitre `02`). Afficher une carte
+#   qu'aucune mission ne peut viser suggérerait un périmètre qui
+#   n'existe pas. L'entité reste disponible : sa mise à l'écran se
+#   décide, elle ne se déduit pas.
+#
+# 🔒 LECTURE SEULE — ET LE MOT EST PRIS AU SÉRIEUX
+#   - Aucune interaction : `tap_action`, `hold_action` et
+#     `double_tap_action` sont `none` sur les trois cartes.
+#   - AUCUN `select.roborock_q7_max_carte_selectionnee`, sous aucune
+#     forme : écrire ce sélecteur BASCULE le contexte cartographique du
+#     robot — c'est une commande d'appareil, réservée au moteur et au
+#     script de conduite (ASP-INV-31, ASP-CI-7).
+#   - Ces images ne prouvent RIEN de la position du robot : l'audit §4
+#     montre qu'un déplacement manuel ne recale pas le contexte
+#     cartographique. Cet écran montre des plans, jamais une position.
+#
+# 🏷️ LIBELLÉS
+#   Les trois en-têtes portent les libellés MÉTIER Arsenal — ceux du
+#   sélecteur d'intention —, jamais les noms exposés par l'appareil
+#   (ASP-INV-7 ; le nom de carte `Étage ` porte d'ailleurs une espace
+#   finale côté robot, cf. audit §4).
+#
+# 🏷️ STATUT
+#   Interface — domaine aspirateur, second écran (carte)
+# ==========================================================
+
+type: vertical-stack
+cards:
+
+  - type: custom:button-card
+    template: section_header
+    name: 🗺️ Rez-de-chaussée
+
+  - type: picture-entity
+    entity: image.roborock_q7_max_rdc
+    show_name: false
+    show_state: false
+    tap_action:
+      action: none
+    hold_action:
+      action: none
+    double_tap_action:
+      action: none
+
+  - type: custom:button-card
+    template: section_header
+    name: 🗺️ Étage
+
+  - type: picture-entity
+    entity: image.roborock_q7_max_etage
+    show_name: false
+    show_state: false
+    tap_action:
+      action: none
+    hold_action:
+      action: none
+    double_tap_action:
+      action: none
+
+  - type: custom:button-card
+    template: section_header
+    name: 🗺️ Annexe
+
+  - type: picture-entity
+    entity: image.roborock_q7_max_annexe
+    show_name: false
+    show_state: false
+    tap_action:
+      action: none
+    hold_action:
+      action: none
+    double_tap_action:
+      action: none

@@ -1,0 +1,29 @@
+# ==========================================================
+# 🗺️ ARSENAL — DASHBOARD : Aspirateur — Carte
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter le SECOND écran du domaine Aspirateur : les cartes que le
+#   robot a levées, en lecture seule. Le premier écran,
+#   `/aspirateur-dashboard`, porte le panneau opérationnel.
+#
+# 🧭 ACCÈS
+#   Bandeau de navigation du domaine — patron Voiture — inclus en tête
+#   de la vue : Aperçu ⇄ Carte. Badges de retour : Accueil et
+#   Navigation, comme sur les deux écrans.
+#
+# 🧱 SQUELETTE PUR
+#   Aucun template Jinja ici : le contenu vit dans l'include de carte,
+#   comme dans tous les dashboards Arsenal.
+# ==========================================================
+
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges: !include ../../includes/badges/base.yaml
+
+    cards:
+      - type: vertical-stack
+        cards:
+          - !include ../../includes/navigation/aspirateur.yaml
+
+          - !include ../../includes/cartes/aspirateur/carte_robot.yaml
