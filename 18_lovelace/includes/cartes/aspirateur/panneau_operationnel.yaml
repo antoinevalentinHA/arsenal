@@ -54,8 +54,9 @@
 # 🧩 HIÉRARCHIE — QUATRE SECTIONS, DEUX SOUS-SECTIONS
 #   Sections (`section_header`)      : Composition · Lancement ·
 #                                      Conduite · Entretien
-#   Sous-sections (`sub_section_header`) : Pièces · Raccourcis,
-#                                      toutes deux DANS la composition
+#   Sous-sections (`sub_section_header`) : Pièces · Paramètres de
+#                                      nettoyage · Raccourcis, toutes
+#                                      trois DANS la composition
 #   Le bloc d'état ouvre la page sans en-tête : il n'est pas une section,
 #   c'est la lecture d'entrée. Aucun en-tête ne répète le titre du
 #   dashboard, que la barre porte déjà.
@@ -346,6 +347,22 @@ cards:
               entity: input_boolean.aspirateur_segment_2_19
               name: Chambre
               icon: mdi:bed-outline
+
+  # ==================================================
+  # ⚙️ PARAMÈTRES DE NETTOYAGE — profil et passages
+  # --------------------------------------------------
+  # Sous-section SŒUR de Pièces, et c'est tout l'objet de cet en-tête :
+  # sans lui, les cinq profils et les trois passages tombaient sous le
+  # titre « Pièces » et paraissaient lui appartenir. Les pièces disent
+  # OÙ, ces réglages disent COMMENT — deux questions distinctes, deux
+  # en-têtes.
+  #
+  # Contrairement à Pièces, cette sous-section ne se masque JAMAIS :
+  # profil et passages ne dépendent d'aucune carte.
+  # ==================================================
+  - type: custom:button-card
+    template: sub_section_header
+    name: ⚙️ Paramètres de nettoyage
 
   # Cinq profils — les libellés du chapitre 03, à l'identique.
   # Une grille de cinq colonnes tronquerait : deux grilles, 3 puis 2.
