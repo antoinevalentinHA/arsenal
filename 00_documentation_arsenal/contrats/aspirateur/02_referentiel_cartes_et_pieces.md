@@ -132,9 +132,31 @@ gestes ci-dessus.
 | `2_19` | `19` | `Chambre` | commandable |
 
 > **`ASP-INV-66` — source unique, usage borné.** Cette table est la **seule**
-> source de libellés d'appareil du domaine. Son usage est **limité à deux
-> gestes** : écrire l'option de carte sur le sélecteur, et **confirmer** le
-> contexte cartographique ([`06`](06_integrite_mono_carte.md) §3).
+> source de libellés d'appareil du domaine. Son usage est **limité à trois
+> gestes** : écrire l'option de carte sur le sélecteur, **confirmer** le
+> contexte cartographique ([`06`](06_integrite_mono_carte.md) §3), et **lire
+> l'option courante pour désigner, côté backend, la carte à restituer à
+> l'écran**.
+>
+> **Le troisième geste, amendement du 2026-08-29, et ce qui le borne.** Il est
+> une **lecture pure**, et il n'écrit rien. Il ne sert qu'à **désigner** :
+> l'option lue est traduite en libellé canonique du §2 par un capteur dérivé du
+> domaine, et **la valeur d'appareil ne quitte jamais le backend**. `ASP-INV-7`
+> reste donc entier — l'écran n'affiche que les libellés canoniques, jamais une
+> valeur de cette table. Le geste ne confirme rien, n'autorise rien et ne
+> conditionne aucune commande : une carte affichée n'est **pas** une carte
+> confirmée, et le moteur revalide intégralement (`ASP-IMC-1`).
+>
+> **Pourquoi il existe.** L'écran cartographique du domaine doit rendre **une**
+> carte — celle que le robot a effectivement chargée. Aucune autre autorité ne
+> dit laquelle : le sélecteur est le seul objet qui porte le contexte
+> cartographique courant. À défaut de cette lecture, l'écran devrait soit les
+> afficher toutes, soit deviner — et deviner est ce que ce contrat proscrit.
+>
+> **Ce que ce geste ne prouve pas.** Le sélecteur exprime une **sélection**, pas
+> une **localisation** : il ne dit jamais où se trouve le robot, et ne se recale
+> pas après un déplacement physique. La carte rendue est donc le **plan chargé**,
+> jamais une position.
 >
 > Elle **ne sert jamais** à désigner un segment dans une intention — la
 > désignation reste la paire `‹carte›_‹segment›` (`ASP-INV-6`) —, **jamais** à
@@ -255,10 +277,16 @@ nécessairement sur des libellés, et **eux seuls** :
 | Écrire la sélection de carte | Option exacte du sélecteur | §2.1 |
 | Confirmer la sélection par relecture | Option exacte du sélecteur | §2.1 |
 | Confirmer les pièces exposées de la carte | Nom Roborock exact des segments | §2.1 |
+| Désigner la carte à restituer à l'écran | Option exacte du sélecteur | §2.1 |
+
+> **La quatrième ligne est un amendement du 2026-08-29.** Elle ouvre une
+> **lecture**, et rien d'autre : la valeur lue est traduite en libellé canonique
+> du §2 côté backend et **n'est jamais affichée**. Elle n'écrit pas, ne confirme
+> pas et n'autorise aucune commande — voir `ASP-INV-66` §2.1.
 
 **Ce que l'exception ne relâche pas.** Elle ne rend pas les libellés désignables
 (`ASP-INV-6`), ni restituables (`ASP-INV-7`), ni composables en périmètre. Elle
-est **close** : hors de ces trois lectures, la règle du corollaire s'applique
+est **close** : hors de ces quatre lectures, la règle du corollaire s'applique
 sans réserve. Et elle est **stricte** : la comparaison est **littérale**, jamais
 approchée (`ASP-INV-67`).
 

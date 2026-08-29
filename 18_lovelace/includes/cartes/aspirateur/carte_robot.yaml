@@ -1,49 +1,49 @@
 # ==========================================================
 # 🧠 ARSENAL — CARTE MÉTIER (INCLUDE)
-#     Aspirateur — cartes du robot, en lecture seule
+#     Aspirateur — la carte courante du robot, en lecture seule
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Montrer les cartes que le robot a levées, et rien d'autre. Aucun
-#   pilotage, aucune sélection, aucune zone à dessiner.
+#   Montrer UNE carte : celle que le robot a effectivement chargée.
+#   Pas les trois — une page de trois plans est une page qu'on ne lit
+#   pas, et afficher un plan inactif laisserait croire qu'il l'est.
 #
-# 📡 SOURCE — DES ENTITÉS `image`, ATTESTÉES PAR L'AUDIT DU DOMAINE
-#   L'intégration Roborock expose une entité `image` par carte du
-#   robot. Les quatre sont relevées au terrain, en lecture seule, dans
-#   `00_documentation_arsenal/audits/01_rapports/aspirateur/
-#   audit_faisabilite_roborock_q7_max.md` §4 — table « Cartes
-#   observées » :
+# 🧭 QUI DÉSIGNE LA CARTE — LE BACKEND, JAMAIS CETTE CARTE
+#   `sensor.aspirateur_carte_courante` (`12_template_sensors/aspirateur/
+#   carte_courante.yaml`), dérivation pure du contexte cartographique du
+#   robot. L'UI ne devine rien et ne compare aucun libellé d'appareil :
+#   elle lit un jeton — `rdc`, `etage`, `annexe`, `hors_perimetre`,
+#   `indisponible` — et rend le plan correspondant.
+#   Contrat : `02` §2.1 (`ASP-INV-66`, troisième geste) et §5.
+#
+# 📡 SOURCE DES PLANS — ENTITÉS `image`, ATTESTÉES PAR L'AUDIT §4
 #     image.roborock_q7_max_rdc      → Rez-de-chaussée
 #     image.roborock_q7_max_etage    → Étage
 #     image.roborock_q7_max_annexe   → Annexe
-#     image.roborock_q7_max_garage   → Garage — NON REPRIS, voir plus bas
-#   Aucune entité n'est créée, aucune intégration n'est ajoutée, aucune
-#   ressource frontend n'est installée : la carte native `picture-entity`
-#   de Home Assistant suffit à afficher une entité `image`.
+#   La quatrième carte du robot, `Garage`, n'a **aucune pièce nommée** et
+#   n'est aucun des trois périmètres métier : elle n'a pas de plan ici, et
+#   la sélectionner tombe sur `hors_perimetre`.
 #
-# 🚫 POURQUOI LE GARAGE N'EST PAS ICI
-#   L'audit l'établit : la carte `Garage` ne porte AUCUNE pièce nommée
-#   (0 segment), et les périmètres métier du domaine sont trois —
-#   Rez-de-chaussée, Étage, Annexe (chapitre `02`). Afficher une carte
-#   qu'aucune mission ne peut viser suggérerait un périmètre qui
-#   n'existe pas. L'entité reste disponible : sa mise à l'écran se
-#   décide, elle ne se déduit pas.
+# 🕳️ QUAND IL N'Y A RIEN À MONTRER, RIEN N'EST MONTRÉ
+#   `indisponible` — contexte cartographique illisible — et
+#   `hors_perimetre` — carte hors des trois périmètres — n'affichent
+#   AUCUN plan. La carte d'état, elle, reste toujours visible et DIT
+#   lequel des deux cas s'applique : un écran vide sans explication
+#   serait une panne muette.
 #
 # 🔒 LECTURE SEULE — ET LE MOT EST PRIS AU SÉRIEUX
-#   - Aucune interaction : `tap_action`, `hold_action` et
-#     `double_tap_action` sont `none` sur les trois cartes.
-#   - AUCUN `select.roborock_q7_max_carte_selectionnee`, sous aucune
-#     forme : écrire ce sélecteur BASCULE le contexte cartographique du
-#     robot — c'est une commande d'appareil, réservée au moteur et au
-#     script de conduite (ASP-INV-31, ASP-CI-7).
-#   - Ces images ne prouvent RIEN de la position du robot : l'audit §4
-#     montre qu'un déplacement manuel ne recale pas le contexte
-#     cartographique. Cet écran montre des plans, jamais une position.
+#   - `tap_action`, `hold_action`, `double_tap_action` à `none`.
+#   - AUCUN `select.roborock_q7_max_carte_selectionnee` : l'écrire
+#     basculerait le contexte cartographique du robot — c'est une
+#     commande, réservée au moteur et au script de conduite
+#     (`ASP-INV-31`, `ASP-CI-7`).
+#   - AUCUN libellé d'appareil : les trois libellés affichés sont les
+#     libellés canoniques Arsenal du `02` §2 (`ASP-INV-7`).
 #
-# 🏷️ LIBELLÉS
-#   Les trois en-têtes portent les libellés MÉTIER Arsenal — ceux du
-#   sélecteur d'intention —, jamais les noms exposés par l'appareil
-#   (ASP-INV-7 ; le nom de carte `Étage ` porte d'ailleurs une espace
-#   finale côté robot, cf. audit §4).
+# ⚠️ CE QUE CET ÉCRAN N'AFFIRME PAS
+#   Ni où se trouve le robot, ni ce qu'il a nettoyé : le contexte
+#   cartographique est une SÉLECTION, pas une localisation, et il ne se
+#   recale pas après un déplacement physique (audit §4). Cet écran montre
+#   le plan chargé, et s'arrête là.
 #
 # 🏷️ STATUT
 #   Interface — domaine aspirateur, second écran (carte)
@@ -54,45 +54,94 @@ cards:
 
   - type: custom:button-card
     template: section_header
-    name: 🗺️ Rez-de-chaussée
+    name: 🗺️ Carte du robot
 
-  - type: picture-entity
-    entity: image.roborock_q7_max_rdc
-    show_name: false
-    show_state: false
-    tap_action:
-      action: none
-    hold_action:
-      action: none
-    double_tap_action:
-      action: none
-
+  # État de la désignation — TOUJOURS visible, y compris quand aucun plan
+  # ne peut être rendu. Libellés canoniques Arsenal, jamais d'appareil.
   - type: custom:button-card
-    template: section_header
-    name: 🗺️ Étage
+    template: socle_status_label_72
+    entity: sensor.aspirateur_carte_courante
+    name: Carte chargée
+    icon: |
+      [[[
+        const s = entity ? entity.state : null;
+        if (s === 'rdc') return 'mdi:home-floor-g';
+        if (s === 'etage') return 'mdi:stairs-up';
+        if (s === 'annexe') return 'mdi:home-outline';
+        return 'mdi:map-marker-off';
+      ]]]
+    label: |
+      [[[
+        const s = entity ? entity.state : null;
+        if (s === 'rdc') return 'Rez-de-chaussée';
+        if (s === 'etage') return 'Étage';
+        if (s === 'annexe') return 'Annexe';
+        if (s === 'hors_perimetre')
+          return 'Hors des trois périmètres — aucun plan à afficher';
+        return 'Contexte cartographique illisible';
+      ]]]
+    styles:
+      card:
+        - background-color: |
+            [[[
+              const s = entity ? entity.state : null;
+              if (s === 'rdc' || s === 'etage' || s === 'annexe')
+                return 'rgba(33, 150, 243, 0.2)';
+              if (s === 'hors_perimetre')
+                return 'rgba(158, 158, 158, 0.2)';
+              return 'rgba(158, 158, 158, 0.1)';
+            ]]]
+      label:
+        - white-space: normal
+        - line-height: 1.25
 
-  - type: picture-entity
-    entity: image.roborock_q7_max_etage
-    show_name: false
-    show_state: false
-    tap_action:
-      action: none
-    hold_action:
-      action: none
-    double_tap_action:
-      action: none
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: sensor.aspirateur_carte_courante
+        state: rdc
+    card:
+      type: picture-entity
+      entity: image.roborock_q7_max_rdc
+      show_name: false
+      show_state: false
+      tap_action:
+        action: none
+      hold_action:
+        action: none
+      double_tap_action:
+        action: none
 
-  - type: custom:button-card
-    template: section_header
-    name: 🗺️ Annexe
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: sensor.aspirateur_carte_courante
+        state: etage
+    card:
+      type: picture-entity
+      entity: image.roborock_q7_max_etage
+      show_name: false
+      show_state: false
+      tap_action:
+        action: none
+      hold_action:
+        action: none
+      double_tap_action:
+        action: none
 
-  - type: picture-entity
-    entity: image.roborock_q7_max_annexe
-    show_name: false
-    show_state: false
-    tap_action:
-      action: none
-    hold_action:
-      action: none
-    double_tap_action:
-      action: none
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: sensor.aspirateur_carte_courante
+        state: annexe
+    card:
+      type: picture-entity
+      entity: image.roborock_q7_max_annexe
+      show_name: false
+      show_state: false
+      tap_action:
+        action: none
+      hold_action:
+        action: none
+      double_tap_action:
+        action: none

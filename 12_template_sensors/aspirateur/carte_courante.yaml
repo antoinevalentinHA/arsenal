@@ -1,0 +1,78 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Aspirateur — Carte courante du robot
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   DÉSIGNER, en vocabulaire Arsenal, la carte que le robot a
+#   effectivement chargée — afin que l'écran cartographique du domaine
+#   n'en rende QU'UNE, celle-là, au lieu de les afficher toutes.
+#
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             02_referentiel_cartes_et_pieces.md §2.1 (`ASP-INV-66`,
+#             troisième geste, amendé le 2026-08-29) et §5 (quatrième
+#             ligne du tableau de l'exception cartographique)
+#
+# 🔖 NATURE
+#   projection_ui — dérivation pure. Aucune décision, aucune action,
+#   aucune commande, aucune écriture.
+#
+# 🆔 UNIQUE_ID
+#   aspirateur_carte_courante — identifiant ATTRIBUÉ par l'opérateur, le
+#   contrat n'en proposant aucun (`ASP-INV-58`).
+#
+# 🔗 ENTRÉE — UNE, ET UNE SEULE
+#   select.roborock_q7_max_carte_selectionnee, en LECTURE.
+#   C'est le seul objet du runtime qui porte le contexte cartographique
+#   courant ; il est attesté au terrain par l'audit du domaine §4.
+#
+# 🧱 CE QUE CE CAPTEUR REND, ET CE QU'IL NE REND PAS
+#   Il rend un JETON de désignation — `rdc`, `etage`, `annexe`,
+#   `hors_perimetre`, `indisponible` —, jamais un libellé d'appareil.
+#   La valeur technique entre ici et n'en ressort pas : l'écran affiche
+#   les libellés canoniques du §2, et eux seuls (`ASP-INV-7`).
+#
+#   COMPARAISON LITTÉRALE, ESPACE FINALE COMPRISE. L'option de la carte
+#   `1` vaut `Étage ` — l'espace fait partie de la valeur (`ASP-INV-67`).
+#   Aucune correspondance approchée : ni casse ignorée, ni `trim`, ni
+#   préfixe. Un renommage côté Roborock tombe donc sur
+#   `hors_perimetre` — le domaine ne se recale JAMAIS de lui-même.
+#
+#   `hors_perimetre` couvre deux cas, et les couvre HONNÊTEMENT : la
+#   carte `Garage`, qui ne porte aucune pièce nommée et n'est aucun des
+#   trois périmètres métier, et toute option que le référentiel ne
+#   connaît pas. Dans les deux cas l'écran n'affiche AUCUN plan : il dit
+#   qu'il n'a rien à montrer, plutôt que de montrer autre chose.
+#
+# 🚫 CE QUE CE CAPTEUR NE FAIT PAS
+#   - Il n'ÉCRIT pas le sélecteur : l'écrire bascule le contexte
+#     cartographique du robot, et c'est une commande — réservée au
+#     moteur et au script de conduite (`ASP-INV-31`)
+#   - Il ne CONFIRME rien : une carte affichée n'est pas une carte
+#     confirmée, et le moteur revalide intégralement (`ASP-IMC-1`)
+#   - Il ne dit pas OÙ EST le robot : le sélecteur exprime une
+#     sélection, jamais une localisation (audit §4, encadré terrain)
+#   - Il ne lit ni le verdict, ni aucun helper d'intention
+#
+# 🏷️ STATUT
+#   Projection UI — domaine aspirateur, écran cartographique
+# ==========================================================
+
+- sensor:
+
+    - name: "Aspirateur carte courante"
+      unique_id: aspirateur_carte_courante
+
+      state: >
+        {% set UNAV = ['unknown', 'unavailable', 'none', 'None', ''] %}
+        {% set opt = states('select.roborock_q7_max_carte_selectionnee') %}
+        {% if opt in UNAV %}
+          indisponible
+        {% elif opt == 'RDC' %}
+          rdc
+        {% elif opt == 'Étage ' %}
+          etage
+        {% elif opt == 'Annexe' %}
+          annexe
+        {% else %}
+          hors_perimetre
+        {% endif %}
