@@ -1,0 +1,99 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     NAS Valentin — Santé sous-système (status health)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'état synthétique de santé du NAS principal avec la
+#     coloration sémantique du dashboard Système. Jumeau de
+#     `boiler_status_health` et de `rain_bird_status_health`, au
+#     vocabulaire près.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status
+#     - UI uniquement : AUCUNE décision. La santé est calculée par
+#       `sensor.nas_valentin_sante_synthese` et rien n'est reclassé ici.
+#
+# 🎨 SEMANTIQUE
+#     - ok                     -> 🟢 vert    "Sain"
+#     - degraded               -> 🟠 orange  "Dégradé"
+#     - critical               -> 🔴 rouge   "Critique"
+#     - unknown / unavailable  -> ⚪ gris    "Inconnu"
+#     - toute autre valeur     -> 🟡 jaune   "Inconnu" (état non anticipé)
+#
+#     Le gris couvre DEUX réalités que le capteur distingue et que la
+#     couleur ne peut pas séparer : l'abstention — une source illisible,
+#     `unavailable` — et l'état `unknown`, où tout est lisible mais où
+#     un état textuel est inattendu. Le `state_display` les sépare, lui.
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor.nas_valentin_sante_synthese
+#       (state attendu : ok | degraded | critical | unknown)
+#
+# ⚠️ CONTRAINTES
+#     - Réservé au capteur de synthèse de santé du NAS principal
+#     - Le jaune signale un état non reconnu — toute nouvelle valeur
+#       amont doit être ajoutée au mapping explicitement
+#     - Détection case-insensitive (String.toLowerCase)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: nas_status_health
+#     entity: sensor.nas_valentin_sante_synthese
+#     name: NAS
+#
+# ==========================================================
+
+nas_status_health:
+  template:
+    - socle_status
+
+  state_display: >
+    [[[
+      const s = entity ? entity.state : 'unknown';
+
+      if (s === 'ok') return 'Sain';
+      if (s === 'degraded') return 'Dégradé';
+      if (s === 'critical') return 'Critique';
+      if (s === 'unavailable') return 'Illisible';
+      if (s === 'unknown') return 'Inconnu';
+
+      return 'Inconnu';
+    ]]]
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const state = entity ? entity.state : null;
+
+            if (
+              state === null ||
+              state === undefined ||
+              state === '' ||
+              state === 'unknown' ||
+              state === 'unavailable'
+            ) {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            const normalized = String(state).toLowerCase();
+
+            if (normalized === 'ok') {
+              return 'rgba(76, 175, 80, 0.2)';
+            }
+
+            if (normalized === 'degraded') {
+              return 'rgba(255, 152, 0, 0.2)';
+            }
+
+            if (normalized === 'critical') {
+              return 'rgba(244, 67, 54, 0.2)';
+            }
+
+            return 'rgba(255, 235, 59, 0.2)';
+          ]]]

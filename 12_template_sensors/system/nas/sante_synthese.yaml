@@ -1,0 +1,225 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     NAS Valentin — Synthèse de santé
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Agréger la santé du NAS principal en UNE valeur, et n'exposer
+#   que cela. C'est l'autorité que la carte du dashboard Système
+#   restitue, et le signal que `sensor.etat_systeme_dashboard`
+#   consulte. La couleur est produite ICI, jamais dans Lovelace.
+#
+# 🔖 NATURE
+#   synthese — dérivation pure, aucune action, aucun pilotage
+#
+# 🆔 UNIQUE_ID
+#   nas_valentin_sante_synthese
+#
+# 🗣️ VOCABULAIRE — aligné sur `sensor.nas_imprimerie_sante_synthese`
+#   ok        — tous les axes lisibles et sains
+#   degraded  — au moins un avertissement, aucun critique
+#   critical  — au moins un défaut : sécurité, état textuel critique,
+#               secteurs défectueux, ou durée de vie sous le minimum
+#   unknown   — tout est lisible, mais un état textuel n'est
+#               qu'inattendu : ni sain, ni avertissement, ni critique.
+#               On le dit, on ne le devine pas.
+#
+#   `offline` du NAS imprimerie N'EST PAS repris : ce NAS n'a aucun
+#   capteur de connectivité propre, et une valeur qu'aucune source ne
+#   peut produire serait une valeur morte. L'inobservabilité passe par
+#   l'ABSTENTION ci-dessous, ce qui est plus honnête.
+#
+# 🕳️ ABSTENTION — R6, le gris d'indisponibilité prime
+#   Dès qu'UNE source est illisible — `unknown`, `unavailable`, absente
+#   —, le capteur s'ABSTIENT au lieu de fabriquer un verdict partiel.
+#   Une santé calculée sur des sources manquantes serait un faux
+#   nominal, exactement ce que la charte proscrit.
+#
+# 🔠 CLASSIFICATION DES ÉTATS TEXTUELS — RÈGLE REPRISE, NON INVENTÉE
+#   Les états Synology sont des chaînes fournies par l'intégration,
+#   dépendantes de la locale. Le dépôt les classe DÉJÀ, dans le gabarit
+#   `carte_capteur_etat_textuel` qui les affiche sur le dashboard NAS :
+#     critique/critical/erreur/error/échec/echec/fail -> critique
+#     avert/warning/attention/warn                    -> avertissement
+#     ok/normal                                       -> sain
+#     tout le reste                                   -> non qualifié
+#   La même règle est appliquée ici, une seule fois, côté backend :
+#   le gabarit rend, il ne décide plus.
+#
+# 🔗 SOURCES — HUIT, TOUTES PRÉSENTES AU DÉPÔT
+#   binary_sensor.nas_valentin_etat_de_securite
+#   sensor.nas_valentin_volume_1_etat
+#   sensor.nas_valentin_drive_1_etat
+#   sensor.nas_valentin_drive_2_etat
+#   sensor.nas_valentin_drive_1_etat_intelligent
+#   sensor.nas_valentin_drive_2_etat_intelligent
+#   binary_sensor.nas_valentin_drive_2_depassement_du_nombre_maximal_de_secteurs_defectueux
+#   binary_sensor.nas_valentin_drive_2_en_dessous_de_la_duree_de_vie_restante_minimale
+#
+#   Polarités établies par le dépôt, pas supposées : `etat_de_securite`
+#   vaut `off` = sécurisé et `on` = défaut (gabarit `carte_etat_securite`) ;
+#   les deux binaires SMART ne s'affichent sur le dashboard NAS que
+#   lorsqu'ils valent `on`, en alerte critique.
+#
+# ⚖️ COUVERTURE ASYMÉTRIQUE DES DEUX DISQUES — ÉNONCÉE, PAS MASQUÉE
+#   Les axes « secteurs défectueux » et « durée de vie restante »
+#   n'existent au dépôt que pour le DISQUE 2. Le disque 1 est surveillé
+#   par ses états natifs — état et SMART —, et rien d'autre.
+#   Cette absence n'est NI une anomalie du disque 1, NI une raison de
+#   s'abstenir : on ne fabrique pas d'entité manquante, et on ne
+#   transforme pas un trou de couverture en défaut. L'attribut
+#   `couverture` le dit explicitement.
+#
+# 🚫 INTERDITS
+#   - Fabriquer une source absente, ou en supposer une pour le disque 1
+#   - Convertir une indisponibilité en état nominal
+#   - Dupliquer cette classification dans Lovelace
+#
+# 🏷️ STATUT
+#   Synthèse — observabilité système
+# ==========================================================
+
+- sensor:
+
+    # `name` NE PORTE PAS le nom de l'auteur en toutes lettres : le
+    # verrou de publication S7/D4 ne neutralise que la forme collee
+    # `nas_valentin`, pas « NAS Valentin » separe par une espace, et le
+    # signale en CRITICAL dans un fichier runtime. L'`entity_id` validee
+    # est donc portee par `default_entity_id`, ou la forme collee est
+    # legitime — le nom affiche, lui, n'a pas besoin de l'epeler.
+    - name: "NAS Sante Synthese"
+      unique_id: nas_valentin_sante_synthese
+      default_entity_id: sensor.nas_valentin_sante_synthese
+      icon: mdi:nas
+
+      variables:
+        # Les six états textuels, dans l'ordre des axes.
+        textuels:
+          - sensor.nas_valentin_volume_1_etat
+          - sensor.nas_valentin_drive_1_etat
+          - sensor.nas_valentin_drive_2_etat
+          - sensor.nas_valentin_drive_1_etat_intelligent
+          - sensor.nas_valentin_drive_2_etat_intelligent
+        # Les trois binaires, dont la polarité est `on` = anomalie.
+        binaires:
+          - binary_sensor.nas_valentin_etat_de_securite
+          - binary_sensor.nas_valentin_drive_2_depassement_du_nombre_maximal_de_secteurs_defectueux
+          - binary_sensor.nas_valentin_drive_2_en_dessous_de_la_duree_de_vie_restante_minimale
+
+      # Abstention dès qu'une source est illisible (R6).
+      availability: >
+        {% set UNAV = ['unknown', 'unavailable', 'none', 'None', ''] %}
+        {% set ns = namespace(ok=true) %}
+        {% for e in textuels %}
+          {% if states(e) in UNAV %}{% set ns.ok = false %}{% endif %}
+        {% endfor %}
+        {% for e in binaires %}
+          {% if states(e) not in ['on', 'off'] %}{% set ns.ok = false %}{% endif %}
+        {% endfor %}
+        {{ ns.ok }}
+
+      state: >
+        {% set ns = namespace(critique=false, degrade=false, inattendu=false) %}
+        {% for e in textuels %}
+          {% set v = states(e) | lower %}
+          {% if 'critique' in v or 'critical' in v or 'erreur' in v
+                or 'error' in v or 'échec' in v or 'echec' in v
+                or 'fail' in v %}
+            {% set ns.critique = true %}
+          {% elif 'avert' in v or 'warning' in v or 'attention' in v
+                  or 'warn' in v %}
+            {% set ns.degrade = true %}
+          {% elif 'ok' in v or 'normal' in v %}
+          {% else %}
+            {% set ns.inattendu = true %}
+          {% endif %}
+        {% endfor %}
+        {% for e in binaires %}
+          {% if is_state(e, 'on') %}{% set ns.critique = true %}{% endif %}
+        {% endfor %}
+        {{ 'critical' if ns.critique
+           else 'degraded' if ns.degrade
+           else 'unknown' if ns.inattendu
+           else 'ok' }}
+
+      attributes:
+
+        # ---- Un attribut par axe : ce que chacun vaut, en clair ----
+        axe_securite: >
+          {{ 'defaut' if is_state(
+               'binary_sensor.nas_valentin_etat_de_securite', 'on')
+             else 'securise' }}
+
+        axe_volume: "{{ states('sensor.nas_valentin_volume_1_etat') }}"
+
+        axe_disques: >
+          {{ {'disque_1': states('sensor.nas_valentin_drive_1_etat'),
+              'disque_2': states('sensor.nas_valentin_drive_2_etat')} }}
+
+        axe_smart: >
+          {{ {'disque_1': states('sensor.nas_valentin_drive_1_etat_intelligent'),
+              'disque_2': states('sensor.nas_valentin_drive_2_etat_intelligent')} }}
+
+        # Ces deux axes ne portent QUE le disque 2 : l'entité du disque 1
+        # n'existe pas, et une clé `disque_1` vide y ferait croire à une
+        # mesure faite. On nomme le disque couvert, et lui seul.
+        axe_secteurs_defectueux: >
+          {{ {'disque_2': 'depasse' if is_state(
+                'binary_sensor.nas_valentin_drive_2_depassement_du_nombre_maximal_de_secteurs_defectueux',
+                'on') else 'dans_les_bornes'} }}
+
+        axe_duree_de_vie: >
+          {{ {'disque_2': 'sous_le_minimum' if is_state(
+                'binary_sensor.nas_valentin_drive_2_en_dessous_de_la_duree_de_vie_restante_minimale',
+                'on') else 'au_dessus_du_minimum'} }}
+
+        # ---- La couverture réelle, énoncée sans embellissement ----
+        couverture: >
+          {{ {'disque_1': ['etat', 'smart'],
+              'disque_2': ['etat', 'smart', 'secteurs_defectueux',
+                           'duree_de_vie']} }}
+
+        couverture_asymetrique: >
+          Les axes secteurs defectueux et duree de vie restante
+          n'existent au depot que pour le disque 2. Le disque 1 est
+          surveille par son etat et son SMART. Cette absence n'est pas
+          une anomalie du disque 1.
+
+        # ---- Un résumé lisible, pour la carte et le diagnostic ----
+        resume: >
+          {% set ns = namespace(items=[]) %}
+          {% if is_state('binary_sensor.nas_valentin_etat_de_securite', 'on') %}
+            {% set ns.items = ns.items + ['securite en defaut'] %}
+          {% endif %}
+          {% if is_state(
+               'binary_sensor.nas_valentin_drive_2_depassement_du_nombre_maximal_de_secteurs_defectueux',
+               'on') %}
+            {% set ns.items = ns.items + ['disque 2 : secteurs defectueux'] %}
+          {% endif %}
+          {% if is_state(
+               'binary_sensor.nas_valentin_drive_2_en_dessous_de_la_duree_de_vie_restante_minimale',
+               'on') %}
+            {% set ns.items = ns.items + ['disque 2 : duree de vie sous le minimum'] %}
+          {% endif %}
+          {% set libelles = {
+               'sensor.nas_valentin_volume_1_etat': 'volume 1',
+               'sensor.nas_valentin_drive_1_etat': 'disque 1',
+               'sensor.nas_valentin_drive_2_etat': 'disque 2',
+               'sensor.nas_valentin_drive_1_etat_intelligent': 'SMART disque 1',
+               'sensor.nas_valentin_drive_2_etat_intelligent': 'SMART disque 2'
+             } %}
+          {% for e in textuels %}
+            {% set v = states(e) | lower %}
+            {% if 'critique' in v or 'critical' in v or 'erreur' in v
+                  or 'error' in v or 'échec' in v or 'echec' in v
+                  or 'fail' in v %}
+              {% set ns.items = ns.items + [libelles[e] ~ ' : ' ~ states(e)] %}
+            {% elif 'avert' in v or 'warning' in v or 'attention' in v
+                    or 'warn' in v %}
+              {% set ns.items = ns.items + [libelles[e] ~ ' : ' ~ states(e)] %}
+            {% elif 'ok' in v or 'normal' in v %}
+            {% else %}
+              {% set ns.items = ns.items + [libelles[e]
+                                            ~ ' : etat inattendu, ' ~ states(e)] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items | join(' ; ') if ns.items else 'NAS nominal' }}
