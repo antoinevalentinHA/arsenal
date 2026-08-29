@@ -19,9 +19,25 @@
 # 🔖 NATURE
 #   Diagnostic textuel (verdict) · Trace événementielle (intention)
 #
-# ✍️ ÉCRIVAIN UNIQUE
-#   script.aspirateur_lancer_mission — et lui seul (ASP-INV-31).
-#   Aucune automation, aucune UI, aucun autre script n'écrit ici.
+# ✍️ ÉCRIVAINS DU VERDICT — TROIS, ET TROIS SEULEMENT (ASP-INV-86)
+#   Depuis le lot L2, le VERDICT compte trois écrivains, à ensembles de
+#   valeurs EXACTES et DEUX À DEUX DISJOINTS, dont l'union est le
+#   vocabulaire entier :
+#     W1  script.aspirateur_lancer_mission        — 18 valeurs
+#     W2  script.aspirateur_conduire_mission      — 11 valeurs
+#     W3  automation 10280000000001, supervision  —  5 valeurs
+#   Aucune valeur n'a deux auteurs ; aucune n'est orpheline. La table
+#   {fichier -> ensemble littéral} et sa disjonction sont confrontées par
+#   le checker (ASP-CI-11), et l'atteignabilité par ASP-CI-18.
+#
+#   La TRACE, elle, garde UN SEUL écrivain : le moteur, et lui seul
+#   (ASP-INV-31). La conduite ne relance aucune intention et n'y écrit
+#   jamais ; la supervision n'observe qu'une mission déjà ouverte.
+#
+#   Aucune UI, aucune automation hors la supervision, aucun autre script
+#   n'écrit ici. La projection persistante de mission — automation
+#   10280000000002 — est un LECTEUR PUR du verdict : elle le lit et ne
+#   l'écrit jamais.
 #
 # 👁️ CONSOMMATEURS
 #   sensor.aspirateur_motif_lisible (dérivation du motif — ASP-INV-50)
@@ -36,22 +52,27 @@
 # ----------------------------------------------------------
 # 🧾 VERDICT DE MISSION
 # ----------------------------------------------------------
-# 📋 FORMAT — vocabulaire FERMÉ : 18 VALEURS DE VERDICT, aucune autre.
+# 📋 FORMAT — vocabulaire FERMÉ : 34 VALEURS DE VERDICT, aucune autre.
 #
 #   ⚠️ Ne pas confondre avec les 18 CODES DU CATALOGUE (09 §2 + §3).
-#      Les deux ensembles comptent 18 elements, et ils SE RECOUPENT :
-#        · 14 codes du catalogue figurent dans le verdict — les 13 refus
-#          sous le prefixe REFUS/, plus TRANSITION_NON_OBSERVEE sous le
-#          prefixe ECHEC/ ;
-#        ·  4 codes du catalogue en sont ABSENTS : CANAL_INDISPONIBLE,
-#          COMMANDE_REJETEE, MISSION_INTERROMPUE, ERREUR_EN_MISSION ;
-#        ·  4 valeurs de CYCLE DE VIE (ASP-INV-70) n'appartiennent a aucun
-#          catalogue : VALIDATION_EN_COURS, ISSUE_NON_ETABLIE,
-#          COMMANDE_ACCEPTEE, DEMARRAGE_OBSERVE.
-#      14 + 4 = 18 valeurs de verdict ; 14 + 4 = 18 codes du catalogue.
-#      La coincidence des deux totaux est fortuite. Ce fichier ecrit
-#      toujours « valeurs de verdict » ou « codes du catalogue », jamais
-#      « 18 » seul. Ce decompte est confronte par le checker (ASP-CI-18).
+#      Les deux ensembles SE RECOUPENT, sans se confondre :
+#        · 16 codes du catalogue figurent dans le verdict — les 13 refus
+#          sous le prefixe REFUS/, TRANSITION_NON_OBSERVEE sous le prefixe
+#          ECHEC/, plus MISSION_INTERROMPUE et ERREUR_EN_MISSION, ecrits
+#          par la supervision depuis le lot L2 ;
+#        ·  2 codes du catalogue en sont ABSENTS : CANAL_INDISPONIBLE,
+#          COMMANDE_REJETEE ;
+#        · 18 valeurs de CYCLE DE VIE (ASP-INV-70) n'appartiennent a aucun
+#          catalogue et n'y entreront jamais.
+#      16 + 18 = 34 valeurs de verdict ; 16 + 2 = 18 codes du catalogue.
+#      Ce fichier ecrit toujours « valeurs de verdict » ou « codes du
+#      catalogue », jamais un nombre seul. Ce decompte est RECALCULE et
+#      confronte a ce texte par le checker (ASP-CI-18).
+#
+#   ⚠️ REPARTITION PAR ECRIVAIN — 18 + 11 + 5 = 34. Les trois ensembles
+#      sont deux a deux disjoints ; DEUX PREFIXES sont partages, et c'est
+#      conforme (D-09) : ECHEC/ entre W1 et W3, CLOTURE/ entre W2 et W3.
+#      La disjonction porte sur les VALEURS, jamais sur les prefixes.
 #
 #   Cycle de vie
 #     VALIDATION_EN_COURS            posé en PREMIÈRE action de chaque
@@ -105,6 +126,39 @@
 #                                    et cette version d'intégration — voir
 #                                    10_scripts/aspirateur/lancer_mission.yaml.
 #
+#   Conduite d'une mission ouverte — 11 valeurs, ECRITES PAR W2
+#   (script.aspirateur_conduire_mission, contrat 15 §3)
+#     CONDUITE/PAUSE_ENGAGEE           engagement, pose AVANT la commande
+#     CONDUITE/PAUSE_CONFIRMEE         relecture concluante
+#     CONDUITE/PAUSE_NON_CONFIRMEE     la mission peut rouler encore : on
+#                                      le DIT, on ne conclut pas
+#     CONDUITE/REPRISE_ENGAGEE         engagement, sous garde ASP-INV-62
+#     CONDUITE/REPRISE_CONFIRMEE       relecture concluante
+#     CONDUITE/REPRISE_NON_CONFIRMEE   idem pause : non terminal
+#     CONDUITE/ARRET_ENGAGE            engagement. N'OBSERVE RIEN : la
+#                                      signature positive de l'arret reste
+#                                      inconnue
+#     CLOTURE/APRES_ARRET_CONFIRME     terminal — l'activite a cesse
+#     CLOTURE/APRES_ARRET_NON_CONFIRME terminal (D-10)
+#     CONDUITE/RETOUR_ENGAGE           engagement. W2 s'y arrete :
+#                                      l'amarrage revient a W3
+#     CLOTURE/APRES_RETOUR_NON_CONFIRME  terminal, sur defaut d'ENTREE
+#                                      dans la chaine de retour (D-10)
+#
+#   Supervision d'une mission ouverte — 5 valeurs, ECRITES PAR W3
+#   (automation 10280000000001, contrat 15 §5 et §6)
+#     ECHEC/MISSION_INTERROMPUE        code du catalogue, conserve tel quel
+#                                      (D-11). NE PRESUME AUCUNE CAUSE
+#     ECHEC/ERREUR_EN_MISSION          code du catalogue, conserve tel quel
+#     CLOTURE/FIN_NOMINALE             amarrage observe sans retour ordonne
+#     CLOTURE/APRES_RETOUR_CONFIRME    amarrage observe APRES un retour
+#                                      ordonne par Arsenal
+#     CLOTURE/ISSUE_OPAQUE_APRES_REDEMARRAGE
+#                                      la chaine est devenue inobservable.
+#                                      Ni nominale — ce serait inventer une
+#                                      observation —, ni interrompue — ce
+#                                      serait presumer une cause
+#
 # ⛔ CODES NON ATTEIGNABLES EN L1 — limite de lot, consignée
 #     COMMANDE_REJETEE   distinguer un rejet d'une interruption d'exécution
 #                        exigerait un observateur survivant à l'appel, donc
@@ -115,14 +169,19 @@
 #     CANAL_INDISPONIBLE appartient à l'APPELANT lorsqu'il observe lui-même
 #                        une erreur de transport. Le moteur ne le déduit
 #                        jamais de la seule absence de mutation des helpers.
-#     MISSION_INTERROMPUE · ERREUR_EN_MISSION
-#                        relèvent de la supervision continue — hors L1.
-#   Les 18 CODES DU CATALOGUE restent TOUS traduits par
-#   sensor.aspirateur_motif_lisible.
+#   ⚠️ MISSION_INTERROMPUE et ERREUR_EN_MISSION ne sont plus dans ce cas
+#      depuis le lot L2 : ils relèvent de la supervision continue, et
+#      c'est l'automation 10280000000001 qui les écrit. Le moteur, lui,
+#      ne les écrit toujours JAMAIS — le checker le vérifie.
+#
+#   Les 18 CODES DU CATALOGUE et les 18 VALEURS DE CYCLE DE VIE sont TOUS
+#   traduits par sensor.aspirateur_motif_lisible (ASP-CI-19).
 #
 # 📏 CAPACITÉ
-#   Valeur la plus longue : REFUS/PREREQUIS_MATERIEL_ABSENT (31 car.)
-#   max: 255 — marge vérifiée par le checker (ASP-CI-21).
+#   Valeur la plus longue : CLOTURE/ISSUE_OPAQUE_APRES_REDEMARRAGE
+#   (38 car.), écrite par la supervision. max: 255 — la marge est
+#   RECALCULÉE sur le vocabulaire par le checker (ASP-CI-21), qui ne
+#   fait pas confiance à ce commentaire.
 # ----------------------------------------------------------
 aspirateur_mission_verdict:
   name: "Aspirateur — Verdict de mission"

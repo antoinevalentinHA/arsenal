@@ -70,6 +70,7 @@ Cette convention reprend celle du domaine arrosage
 | [`12_identifiants_a_fournir.md`](12_identifiants_a_fournir.md) | Rôles abstraits dont l'identifiant doit être attribué par l'opérateur — aucune valeur proposée |
 | [`13_hors_perimetre_arbitrages_et_questions_ouvertes.md`](13_hors_perimetre_arbitrages_et_questions_ouvertes.md) | Hors périmètre du domaine, arbitrages contractuels explicites, questions ouvertes |
 | [`14_entretien.md`](14_entretien.md) | **Entretien des consommables** — quatre postes, seuil d'échéance, remise à zéro confirmée, allowlist de la primitive irréversible, routage des erreurs |
+| [`15_conduite_et_supervision.md`](15_conduite_et_supervision.md) | **Conduite et supervision de mission** — trois écrivains du verdict et leur disjonction, partition en quatre classes, séquence opposable d'un geste (engagement, émission unique, relecture bornée), sérialisation par le verdict, supervision d'une mission ouverte, réconciliation totale au redémarrage, routage du canal mobile |
 
 ---
 

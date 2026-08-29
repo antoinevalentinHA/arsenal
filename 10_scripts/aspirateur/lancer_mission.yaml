@@ -293,6 +293,60 @@ aspirateur_lancer_mission:
         # d'erreur robot, jamais une indisponibilité — d'où une liste
         # strictement limitée aux deux régimes du contrat.
         indispo: ["unknown", "unavailable"]
+        # Les NEUF valeurs de classe O et O-R (15 §2). Le moteur ne les
+        # ÉCRIT jamais — sept appartiennent au script de conduite, une à
+        # lui-même — il les LIT, et uniquement pour savoir s'il doit se
+        # taire. Cette table est donc une table de LECTURE, et son
+        # unique usage est la garde de l'étape 0 ci-dessous.
+        verdict_ouvert:
+          - "LANCEE/DEMARRAGE_OBSERVE"
+          - "CONDUITE/PAUSE_ENGAGEE"
+          - "CONDUITE/PAUSE_CONFIRMEE"
+          - "CONDUITE/PAUSE_NON_CONFIRMEE"
+          - "CONDUITE/REPRISE_ENGAGEE"
+          - "CONDUITE/REPRISE_CONFIRMEE"
+          - "CONDUITE/REPRISE_NON_CONFIRMEE"
+          - "CONDUITE/ARRET_ENGAGE"
+          - "CONDUITE/RETOUR_ENGAGE"
+
+    # ======================================================
+    # 🛡️ ÉTAPE 0a — MISSION DÉJÀ OUVERTE : SE TAIRE, ET NE RIEN ÉCRIRE
+    # ------------------------------------------------------
+    # AVANT l'étape 0, et c'est tout l'objet de cette garde : l'étape 0
+    # écrit `VALIDATION_EN_COURS` INCONDITIONNELLEMENT. Cette valeur est
+    # de classe H. Écrite par-dessus un verdict de classe O ou O-R, elle
+    # DÉTRUIT la seule mémoire de mission ouverte du domaine — le verdict
+    # lui-même (ASP-INV-87, D-08). Trois conséquences en cascade, toutes
+    # observables : la supervision perd sa porte d'entrée et n'écrira
+    # plus aucune issue ; la projection de cycle perd sa voie
+    # d'extinction et laisse sa notification affichée sans fin ; les
+    # gestes de conduite sont ensuite refusés, la mission étant devenue
+    # invisible alors que le robot roule.
+    #
+    # La garde est donc un ARRÊT SEC, avant toute écriture : le verdict
+    # courant est laissé INTACT, aucune commande n'est émise, aucune
+    # mission externe n'est adoptée, et la mission en cours conserve ses
+    # deux voies de clôture.
+    #
+    # POURQUOI PAS `REFUS/MISSION_DEJA_OUVERTE` ICI. Ce code EXISTE, et
+    # il est écrit plus bas — mais il est lui-même de classe H, et
+    # l'écrire détruirait exactement ce que cette garde protège. Sa place
+    # reste celle qu'il avait : la mission observée sur les TÉMOINS
+    # NATIFS, hors mémoire Arsenal — un robot qui roule sans qu'Arsenal
+    # l'ait ouvert. Ces deux situations sont distinctes, et le restent.
+    #
+    # Le refus est rendu à l'appelant par le motif de l'arrêt — journal
+    # et trace Home Assistant, le canal par lequel une exception du
+    # moteur remonte déjà (ASP-INV-50, ASP-INV-91).
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ states('input_text.aspirateur_mission_verdict')
+                   in verdict_ouvert }}
+          sequence:
+            - stop: "Mission Arsenal deja ouverte : le verdict est de classe O, la memoire de mission est preservee"
 
     # ======================================================
     # 🔄 ÉTAPE 0 — Ouvrir un canal de résultat propre

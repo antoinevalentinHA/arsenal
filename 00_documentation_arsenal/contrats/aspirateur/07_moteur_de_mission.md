@@ -31,6 +31,51 @@ lancement, la qualification des issues et les interdits d'exécution.
    ne possèdent pas d'écrivain propre.
 4. Aucun autre domaine Arsenal n'écrit vers cet appareil.
 
+> **Amendement `L2` — le moteur se tait sur une mission déjà ouverte.**
+> Le moteur ouvre son canal de résultat en écrivant sa valeur de **validation
+> en cours** — la première action de sa séquence, **avant toute validation**
+> (§1). Cette valeur est de **classe H**
+> ([`15`](15_conduite_et_supervision.md) §2). Écrite par-dessus un verdict de
+> classe **O** ou **O-R**, elle **détruit la seule mémoire de mission ouverte
+> du domaine** — le verdict lui-même (`ASP-INV-87`, `D-08`).
+>
+> **La règle, opposable.** Lorsque le verdict courant appartient à la classe O
+> ou O-R, un nouvel appel du moteur **s'arrête avant sa première écriture**.
+> Il n'écrit **rien**, n'émet **aucune commande**, n'adopte **aucune mission
+> externe**, et laisse la mission en cours **conserver ses deux voies de
+> clôture** — la supervision et la projection.
+>
+> **Ce que la règle n'est pas.** Elle n'est **pas** un refus au sens du
+> chapitre [`09`](09_refus_et_diagnostics.md) : aucun code n'est écrit, et
+> `REFUS/MISSION_DEJA_OUVERTE` — lui aussi de classe H — **ne convient pas
+> ici**, puisque l'écrire détruirait exactement ce que la garde protège. Ce
+> code conserve sa place : la mission observée sur les **témoins natifs**, hors
+> mémoire Arsenal, décrite au §5.4. **Les deux situations sont distinctes.**
+>
+> **Ce défaut est antérieur au lot `L2`** — le moteur écrivait déjà ainsi. Le
+> lot `L2` le rend **fonctionnellement visible**, en donnant pour la première
+> fois au verdict de classe O des lecteurs qui en dépendent.
+
+> **Amendement `L2` — les quatre gestes de conduite, et rien d'autre.**
+> L'énumération de `ASP-INV-31` cite nommément, parmi les écritures réservées
+> au moteur, l'**interruption** et le **retour à la base**. Le chapitre
+> [`15`](15_conduite_et_supervision.md) les ouvre — avec la **pause** et la
+> **reprise** — à **un seul** objet runtime supplémentaire, celui de la
+> conduite.
+>
+> **L'amendement est minimal, et son périmètre est fermé :**
+>
+> | Ce qui est ouvert | Ce qui ne l'est pas |
+> |---|---|
+> | Les **quatre** gestes de conduite d'une mission **déjà ouverte**, au **seul** objet runtime de conduite | Le lancement d'une mission, qui reste au moteur seul |
+> | | La garde fermée `ASP-INV-62` sur la primitive de démarrage, **inchangée** |
+> | | Toute autre écriture vers l'appareil — carte, eau, aspiration, commande de mission |
+> | | L'interface, les raccourcis, les projections et les automations, qui ne commandent **jamais** ([`10`](10_raccourcis.md), [`11`](11_frontiere_ui.md)) |
+>
+> **Le domaine compte donc deux objets runtime commandant l'appareil, et deux
+> seulement** : le moteur et la conduite. Un troisième est une non-conformité,
+> et non une extension.
+
 > **`ASP-INV-32` — une mission à la fois.** Le moteur n'ouvre jamais une mission
 > alors qu'une mission est en cours. La concurrence n'est pas gérée par une file
 > d'attente : elle est **refusée** ([`09`](09_refus_et_diagnostics.md),
@@ -328,6 +373,26 @@ qualifie lui-même cette énumération de « riche **incluant** » — elle n'es
 > Cette règle prolonge `ASP-INV-25` et `ASP-INV-45` — **l'absence refuse** — au
 > cas de l'état **présent mais non interprétable**.
 
+> **Amendement `L2` — ce que la classe N autorise, et ce qu'elle n'autorise
+> pas.** `ASP-INV-60` fait refuser un **lancement** sur un état non qualifié,
+> et cette règle est **inchangée**. Elle ne dit **rien** de ce qu'un état de
+> classe N permet de **conclure** sur une mission **déjà ouverte**, et le
+> chapitre [`15`](15_conduite_et_supervision.md) §5.2 y répond : **rien**.
+>
+> **Pourquoi la question se pose.** La classe N n'est **pas** un fourre-tout
+> d'anomalies. Les valeurs qui y tombent recouvrent des états parfaitement
+> **sains** — `emptying_the_bin`, vidage automatique du dock, bref et sans
+> erreur ; `idle`, repos légitime après un arrêt commandé, durable et stable.
+> **Refuser un lancement** sur de tels états est prudent ; **en conclure une
+> interruption de mission** serait faux.
+>
+> **La conséquence, tenue par le chapitre `15`.** Une cessation ne s'établit
+> que sur l'état d'arrêt **attesté** — `idle` — et jamais par négation d'une
+> classe. `idle` reste de classe **N** pour le lancement : il ne devient un
+> état de repos **pour personne**, et ne rejoint **aucune** classe de cette
+> partition. Il est la **postcondition observable d'un geste**, ce qui est une
+> notion distincte.
+
 **Pourquoi `returning_home` et `docking` sont en classe A.** Ce sont des états de
 **mouvement**, pas de repos. Le contrat alarme l'établit pour la même
 machine : côté entité `vacuum`, `returning_home` **et** `docking` sont tous deux
@@ -454,6 +519,15 @@ exposées** par l'appareil.
 > physique** dans l'état courant ([`08`](08_etats_et_observation.md) §4) : un
 > geste sans effet possible n'est **jamais** présenté comme disponible
 > ([`commandabilite.md`](../../architecture/03_doctrines/commandabilite.md) §6.1).
+
+> **Amendement `L2` — « exclusivement par le moteur » se lit « par l'écrivain
+> unique du geste ».** Le chapitre [`15`](15_conduite_et_supervision.md) confie
+> les quatre gestes à **un seul** objet runtime de conduite, qui devient leur
+> écrivain unique. **Ce qui est préservé est ce que cette clause protégeait** :
+> il n'existe **qu'un** chemin de commande par geste, il est **encapsulé**, et
+> il est **qualifié** — garde de sens physique, engagement écrit, émission
+> unique, relecture bornée, verdict. **Ce qui change est le nombre d'objets, pas
+> le nombre de chemins.**
 
 > **`ASP-INV-43` — asymétrie arrêt / lancement.** L'arrêt et le retour à la base
 > sont des **gestes de sécurité** : ils restent encapsulés et qualifiés, mais ne

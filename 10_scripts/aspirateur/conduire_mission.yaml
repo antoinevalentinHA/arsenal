@@ -1,0 +1,572 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Aspirateur — Conduite de mission (écrivain W2, lot runtime L2)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter les QUATRE gestes de conduite d'une mission Arsenal déjà
+#   ouverte — pause, reprise, arrêt, retour à la base — et qualifier
+#   l'issue de chacun. Rôles contractuels `‹conduite_pause›`,
+#   `‹conduite_reprise›`, `‹conduite_arret›`, `‹conduite_retour_base›`.
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             15_conduite_et_supervision.md (§1 writers, §3 séquence,
+#                                            §4 sérialisation)
+#             07_moteur_de_mission.md §7 (conduite), §7.1 (ASP-INV-62)
+#             08_etats_et_observation.md §4 (sens physique)
+#   Cadrage ratifié (D-44) : cadrage_l2_maintenance_ui,
+#             07_MACHINE_L2.md §5.2 (les quatre gestes), §5.5 (garde)
+#
+# ----------------------------------------------------------
+# 🧱 NATURE
+#   ÉCRIVAIN. Second — et dernier — objet runtime du domaine autorisé
+#   à commander l'appareil, sous l'amendement L2 d'ASP-INV-31 et
+#   d'ASP-INV-42 (07 §1, §7). Le lancement reste au moteur seul.
+#
+# ----------------------------------------------------------
+# ✍️ CE QU'IL ÉCRIT — ONZE VALEURS, ET ONZE SEULEMENT
+#   input_text.aspirateur_mission_verdict, sur l'ensemble EXACT :
+#     CONDUITE/PAUSE_ENGAGEE      CONDUITE/PAUSE_CONFIRMEE
+#     CONDUITE/PAUSE_NON_CONFIRMEE
+#     CONDUITE/REPRISE_ENGAGEE    CONDUITE/REPRISE_CONFIRMEE
+#     CONDUITE/REPRISE_NON_CONFIRMEE
+#     CONDUITE/ARRET_ENGAGE       CLOTURE/APRES_ARRET_CONFIRME
+#     CLOTURE/APRES_ARRET_NON_CONFIRME
+#     CONDUITE/RETOUR_ENGAGE      CLOTURE/APRES_RETOUR_NON_CONFIRME
+#   Cet ensemble est DISJOINT de celui du moteur (W1, 18 valeurs) et de
+#   celui de la supervision (W3, 5 valeurs). Confronté par ASP-CI-11 et
+#   ASP-CI-18 : disjonction deux à deux, union égale au vocabulaire.
+#   Ce script N'ÉCRIT JAMAIS la trace d'intention : elle appartient au
+#   moteur, et la conduite ne relance aucune intention.
+#
+# ----------------------------------------------------------
+# 🚪 PORTE D'ENTRÉE — LE VERDICT, ET LUI SEUL (ASP-INV-87)
+#   Une mission Arsenal est ouverte si et seulement si le verdict
+#   appartient à la classe O, sous-classe O-R comprise — les NEUF
+#   valeurs de `verdict_ouvert` ci-dessous.
+#   Aucun témoin natif ne l'établit : ni l'état machine, ni le témoin
+#   de session (ASP-INV-47), ni l'entité `vacuum`. Un robot qui nettoie
+#   sans que le verdict soit en classe O est une mission EXTERNE, et
+#   elle n'est jamais adoptée (D-06, D-R4).
+#
+# ----------------------------------------------------------
+# 🧭 SÉQUENCE D'UN GESTE — QUATRE TEMPS, DANS CET ORDRE
+#   1. garde de sens physique (ASP-INV-48, ASP-INV-62)
+#   2. ÉCRITURE DE L'ENGAGEMENT (ASP-INV-88)
+#   3. émission UNIQUE, service littéral (ASP-INV-89)
+#   4. relecture bornée à 30 s, puis verdict (ASP-INV-90)
+#
+#   POURQUOI L'ENGAGEMENT EST ÉCRIT AVANT LA COMMANDE.
+#   C'est la garde de sérialisation rendue par l'arbitrage A-11, et
+#   elle ne coûte AUCUN helper. Pendant la fenêtre de relecture, le
+#   verdict porte une valeur d'engagement : la supervision W3 la lit et
+#   S'ABSTIENT de conclure à une interruption. Sans cette écriture, la
+#   séquence « l'opérateur arrête → le robot s'immobilise → W3 voit une
+#   interruption » produirait, selon l'ordonnancement, un échec perdu
+#   ou un échec faux (15 §4).
+#
+# ----------------------------------------------------------
+# ⏱️ CONSTANTE TEMPORELLE — UNE SEULE, MUTUALISÉE (ASP-INV-69, A-15)
+#   00:00:30  relecture de la pause, de la reprise, de l'arrêt et de
+#             l'ENGAGEMENT du retour.
+#   Écrite LITTÉRALEMENT ici. Aucune autre temporisation n'existe dans
+#   ce fichier : ni `delay`, ni `wait_for_trigger`, ni `input_number`.
+#   Le domaine reste à deux constantes, et deux seulement — ASP-CI-20
+#   balaie désormais ce fichier.
+#
+#   CE QUE LA FENÊTRE BORNE, ET CE QU'ELLE NE BORNE PAS.
+#   Elle borne l'ATTENTE, jamais l'INTERPRÉTATION. À son expiration, le
+#   script dit que la confirmation manque ; il ne conclut ni au succès,
+#   ni à la panne, ni à l'immobilité (ASP-INV-90).
+#
+#   LE RETOUR EST LE SEUL GESTE À TRAÎNE LONGUE. Sa fenêtre confirme
+#   L'ENTRÉE dans la chaîne de retour, jamais son aboutissement :
+#   borner un trajet physique par une durée est exactement ce que
+#   l'arbitrage A-15 refuse. L'amarrage est ÉVÉNEMENTIEL et revient à
+#   W3, qui seul écrit `CLOTURE/APRES_RETOUR_CONFIRME` (15 §4, règle 4).
+#
+# ----------------------------------------------------------
+# 🛑 UN REFUS DE GESTE N'ÉCRIT RIEN (ASP-INV-91, voie O1 d'A-10)
+#   Geste inconnu, mission non ouverte, ou geste dépourvu de sens
+#   physique : le script s'ARRÊTE avec un motif lisible rendu à
+#   l'appelant — journal et trace Home Assistant, le canal par lequel
+#   une exception du moteur remonte déjà.
+#   AUCUNE valeur de verdict n'est écrite dans ces trois cas. Le
+#   verdict est la seule mémoire de mission ouverte : écrire par-dessus
+#   une valeur de classe O une valeur qui n'en est pas effacerait cette
+#   mémoire pendant que le robot roule, et la supervision cesserait
+#   sans qu'aucune issue explicite soit produite (ASP-INV-49).
+#   Le vocabulaire ne gagne donc AUCUNE valeur de garde : c'est ce qui
+#   explique que W2 compte onze valeurs, et non treize.
+#
+# ----------------------------------------------------------
+# 🔗 ENTITÉS NATIVES — toutes attestées par l'audit du domaine
+#   Commandées : vacuum.roborock_q7_max — vacuum.pause, vacuum.start,
+#                vacuum.stop, vacuum.return_to_base
+#   Lues       : sensor.roborock_q7_max_etat                (autorité
+#                  de l'activité précise — 08 §2)
+#                binary_sensor.roborock_q7_max_nettoyage    (session
+#                  inachevée — 08 §3, condition 2 d'ASP-INV-62)
+#                sensor.roborock_q7_max_erreur_de_l_aspirateur
+#                sensor.roborock_q7_max_dock_erreur_de_dock
+#
+#   AUCUN NOM DE SERVICE, AUCUNE CIBLE N'EST TEMPLATISÉ. Les quatre
+#   commandes sont écrites LITTÉRALEMENT, chacune dans sa branche : un
+#   service calculé traverserait tous les balayages textuels du
+#   checker sans qu'aucune sous-chaîne interdite n'apparaisse (C-6,
+#   ASP-CI-11).
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#   - N'ouvre JAMAIS une mission : le lancement reste au moteur
+#   - N'écrit AUCUN réglage — ni carte, ni eau, ni aspiration, ni mode
+#   - N'émet JAMAIS `vacuum.send_command`, ni la voie zonée
+#   - Ne RÉÉMET JAMAIS : aucun `repeat`, aucun retry, aucune seconde
+#     attente, aucune poursuite au bénéfice du doute (ASP-INV-39)
+#   - Ne conclut JAMAIS l'amarrage d'un retour ordonné : c'est W3
+#   - N'écrit AUCUNE valeur du moteur ni de la supervision
+#   - N'ÉMET AUCUNE NOTIFICATION : le canal mobile appartient au rôle
+#     de supervision (07_MACHINE_L2 §7), et la projection de cycle est
+#     un lecteur pur
+#   - Ne lit AUCUN helper d'intention : la couche U0 n'existe pas
+#   - N'ASSIMILE JAMAIS `unknown` ni `unavailable` à une issue métier
+#     (ASP-INV-45, ASP-INV-93)
+#
+# ----------------------------------------------------------
+# 🎯 LA POSTCONDITION D'ARRÊT EST POSITIVE ET FERMÉE
+#   La confirmation d'arrêt est établie sur `idle`, et sur lui seul —
+#   l'état d'arrêt ATTESTÉ du domaine (15 §3.1). Elle N'EST PLUS déduite
+#   négativement de « ni activité, ni erreur, ni indisponibilité » :
+#   cette règle-là confirmait sur TOUT état de classe N, y compris
+#   `emptying_the_bin`, et concluait donc à l'arrêt pendant un vidage de
+#   dock parfaitement nominal.
+#   Nommer `idle` ici N'ÉTEND AUCUNE PARTITION. `idle` reste de classe N
+#   au sens du contrat 07 §5.0, et refuse toujours un lancement : il est
+#   la postcondition observable de CE geste, pas un état de repos.
+#   `CLOTURE/APRES_ARRET_NON_CONFIRME` reste nécessaire et terminale
+#   (D-10) : la fenêtre peut expirer sans que `idle` soit atteint.
+#
+# ----------------------------------------------------------
+# 🛡️ RELECTURE DU VERDICT AVANT TOUTE CONCLUSION (15 §4, règle 5)
+#   Les huit conclusions des quatre gestes exigent que le verdict porte
+#   ENCORE l'engagement de leur propre geste. Un autre écrivain a pu
+#   conclure pendant la fenêtre de 30 s : W3 qualifie une erreur sans
+#   s'abstenir (portée d'ASP-INV-92), et W3 SEUL conclut l'amarrage d'un
+#   retour ordonné. Sans cette relecture, l'EXPIRATION de W2 écrasait
+#   une conclusion fondée sur une OBSERVATION.
+#   Il n'y a donc PAS de `default:` : le verdict déplacé est la
+#   troisième issue de chaque geste, et elle n'écrit rien.
+#
+# ----------------------------------------------------------
+# ⛔ LIMITE DE LOT, CONSIGNÉE
+#   L'EXCEPTION DE SERVICE est journalisée puis absorbée
+#   (`continue_on_error`), et la séquence poursuit vers sa relecture. Ce
+#   n'est PAS une réémission : il y a toujours exactement UNE émission
+#   par geste (ASP-INV-89), et aucune seconde tentative. Ce que le lot
+#   ne fait pas : distinguer, dans l'issue non confirmée, une commande
+#   qui a levé d'une commande partie sans effet. Les deux produisent la
+#   même valeur — « la confirmation manque » — et c'est tout ce qui est
+#   vrai.
+#
+#   SECOND APPEL CONCURRENT. `mode: single` protège de la concurrence,
+#   et Home Assistant journalise « Already running » puis rend `None`
+#   sans lever ni écrire. Le second appelant voit donc un appel qui
+#   réussit et ne produit rien. C'est le même silence que celui déjà
+#   consigné par le moteur, et il appartient au moteur de scripts.
+#
+# 🏷️ STATUT
+#   Runtime supervisé — domaine aspirateur, lot L2 (writer W2)
+# ==========================================================
+
+aspirateur_conduire_mission:
+  alias: "Aspirateur - Conduire la mission"
+  icon: mdi:robot-vacuum-variant
+  mode: single
+
+  fields:
+    geste:
+      name: Geste
+      description: >-
+        Geste de conduite demandé : pause, reprise, arret, retour_base.
+      required: false
+      example: "pause"
+
+  sequence:
+
+    # ======================================================
+    # 📚 RÉFÉRENTIELS EMBARQUÉS — classes d'état et classes de verdict
+    # ------------------------------------------------------
+    # `activite` et `retour` reprennent LITTÉRALEMENT des sous-ensembles
+    # de la classe A du contrat 07 §5.0, comme le fait le moteur : deux
+    # écrivains du même domaine ne peuvent pas lire deux partitions.
+    #
+    # Les tables `classe_a`, `classe_e_indispo` et `indispo` NE SONT PLUS
+    # embarquées : la postcondition d'arrêt est devenue POSITIVE, plus
+    # aucune étape ne les lit, et une table qu'on n'interroge pas dérive
+    # sans que rien ne le signale.
+    #
+    # `verdict_ouvert` est la porte d'entrée du 15 §2 — les NEUF valeurs
+    # de classe O, sous-classe O-R comprise. `engagements` en est le
+    # sous-ensemble que W3 lit pour s'abstenir (15 §4).
+    # ======================================================
+    - variables:
+        gestes: ["pause", "reprise", "arret", "retour_base"]
+        # Activité réelle : ce qui a un sens à mettre en pause.
+        activite: ["cleaning", "segment_cleaning", "zoned_cleaning"]
+        # Chaîne de retour engagée, côté appareil.
+        retour: ["returning_home", "docking"]
+        # Le SEUL état d'arrêt attesté du domaine (15 §3.1). La
+        # postcondition d'arrêt est POSITIVE et FERMÉE : elle nomme
+        # l'état qu'elle attend, elle ne constate pas une absence.
+        arret_atteste: "idle"
+        # Classe O + O-R — les neuf valeurs (15 §2).
+        verdict_ouvert:
+          - "LANCEE/DEMARRAGE_OBSERVE"
+          - "CONDUITE/PAUSE_ENGAGEE"
+          - "CONDUITE/PAUSE_CONFIRMEE"
+          - "CONDUITE/PAUSE_NON_CONFIRMEE"
+          - "CONDUITE/REPRISE_ENGAGEE"
+          - "CONDUITE/REPRISE_CONFIRMEE"
+          - "CONDUITE/REPRISE_NON_CONFIRMEE"
+          - "CONDUITE/ARRET_ENGAGE"
+          - "CONDUITE/RETOUR_ENGAGE"
+
+    # ======================================================
+    # 🧾 ÉTAPE 1 — Geste connu ? (ASP-INV-91)
+    # ------------------------------------------------------
+    # Le cas HORS VOCABULAIRE est traité SÉPARÉMENT du cas « geste sans
+    # sens physique » : ce n'est pas l'appareil qui s'y oppose, c'est la
+    # demande qui ne désigne rien. Aucun verdict n'est écrit.
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ geste is not defined or geste is none
+                   or (geste | string) not in gestes }}
+          sequence:
+            - stop: "Geste de conduite inconnu : attendu pause, reprise, arret ou retour_base"
+
+    # ======================================================
+    # 🚪 ÉTAPE 2 — Mission Arsenal ouverte ? (ASP-INV-87)
+    # ------------------------------------------------------
+    # Lecture du VERDICT, jamais d'un témoin natif. Hors classe O, le
+    # geste n'a pas d'objet : le script s'arrête SANS RIEN ÉCRIRE, et la
+    # mémoire d'une éventuelle mission reste intacte.
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ states('input_text.aspirateur_mission_verdict')
+                   not in verdict_ouvert }}
+          sequence:
+            - stop: "Aucune mission Arsenal ouverte : le verdict n'est pas de classe O"
+
+    # ======================================================
+    # 🎛️ ÉTAPE 3 — Le geste demandé, et lui seul
+    # ------------------------------------------------------
+    # Une branche par geste. Chaque branche porte SA garde de sens
+    # physique, SON engagement, SON unique émission littérale, SA
+    # relecture de 30 s et SON verdict. Aucun service n'est calculé.
+    # ======================================================
+    - choose:
+
+        # ##################################################
+        # ⏸️ PAUSE — a du sens sur une activité en cours (08 §4)
+        # ##################################################
+        - conditions:
+            - condition: template
+              value_template: "{{ geste == 'pause' }}"
+          sequence:
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: >-
+                        {{ states('sensor.roborock_q7_max_etat')
+                           not in activite }}
+                  sequence:
+                    - stop: "Pause sans objet : le robot ne nettoie pas"
+
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "CONDUITE/PAUSE_ENGAGEE"
+
+            - action: vacuum.pause
+              # L'exception du service est JOURNALISÉE puis absorbée : la
+              # séquence poursuit vers sa relecture. Sans cela, une levée
+              # laisserait le verdict figé sur l'engagement, sans issue et
+              # sans expiration — un engagement permanent, exactement le
+              # silence qu'ASP-INV-49 proscrit. Absorber n'est PAS
+              # réémettre : il n'y a toujours qu'UNE émission (ASP-INV-89).
+              continue_on_error: true
+              target:
+                entity_id: vacuum.roborock_q7_max
+
+            # Postcondition observable : l'état machine passe à `paused`
+            # (07 §5.0, classe A). Le témoin de session n'est JAMAIS une
+            # preuve de mouvement (ASP-INV-47) et n'est pas relu ici.
+            - wait_template: >-
+                {{ is_state('sensor.roborock_q7_max_etat', 'paused') }}
+              timeout: "00:00:30"
+              continue_on_timeout: true
+
+            # 🛡️ RELECTURE DU VERDICT AVANT DE CONCLURE (15 §4, règle 5).
+            # Les DEUX issues exigent que le verdict porte ENCORE
+            # l'engagement de CE geste. Si un autre écrivain a conclu
+            # pendant la fenêtre — une erreur qualifiée par W3, un
+            # amarrage observé — W2 N'ÉCRIT RIEN : il n'écrase pas une
+            # conclusion fondée sur une observation par une conclusion
+            # tirée d'une expiration. L'absence de `default:` EST la
+            # troisième issue, et elle est le silence voulu.
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: >-
+                        {{ states('input_text.aspirateur_mission_verdict')
+                           == 'CONDUITE/PAUSE_ENGAGEE'
+                           and is_state('sensor.roborock_q7_max_etat', 'paused') }}
+                  sequence:
+                    - action: input_text.set_value
+                      target:
+                        entity_id: input_text.aspirateur_mission_verdict
+                      data:
+                        value: "CONDUITE/PAUSE_CONFIRMEE"
+                # Classe O, délibérément : la mission peut rouler encore.
+                # On le DIT, on ne conclut pas — refermer ici effacerait
+                # la mémoire d'une mission ouverte (15 §3.1).
+                - conditions:
+                    - condition: template
+                      value_template: >-
+                        {{ states('input_text.aspirateur_mission_verdict')
+                           == 'CONDUITE/PAUSE_ENGAGEE' }}
+                  sequence:
+                    - action: input_text.set_value
+                      target:
+                        entity_id: input_text.aspirateur_mission_verdict
+                      data:
+                        value: "CONDUITE/PAUSE_NON_CONFIRMEE"
+
+        # ##################################################
+        # ▶️ REPRISE — garde FERMÉE ASP-INV-62, quatre conditions
+        #
+        # C'est la SEULE voie de `vacuum.start` dans tout le domaine, et
+        # la seule occurrence du dépôt hors interdiction. Sur session par
+        # segments inachevée, cette primitive émet une REPRISE ; session
+        # CLOSE, elle déclencherait un nettoyage GLOBAL — toute la carte
+        # au lieu du périmètre demandé (07 §6). La condition 2 n'est donc
+        # pas une précaution : c'est elle qui discrimine.
+        #
+        # La quatrième condition — geste opérateur explicite, jamais une
+        # initiative du système — est STRUCTURELLE : ce script n'est
+        # appelé par aucune automation du domaine, et rien ici ne
+        # s'auto-déclenche. La supervision W3 n'appelle jamais ce script.
+        # ##################################################
+        - conditions:
+            - condition: template
+              value_template: "{{ geste == 'reprise' }}"
+          sequence:
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: >-
+                        {% set err_vac = states('sensor.roborock_q7_max_erreur_de_l_aspirateur') %}
+                        {% set err_dock = states('sensor.roborock_q7_max_dock_erreur_de_dock') %}
+                        {% set session = states('binary_sensor.roborock_q7_max_nettoyage') %}
+                        {{ not (is_state('sensor.roborock_q7_max_etat', 'paused')
+                                and session == 'on'
+                                and err_vac == 'none'
+                                and err_dock == 'ok') }}
+                  sequence:
+                    - stop: "Reprise refusee : garde fermee non satisfaite (pause, session ouverte, aucune erreur)"
+
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "CONDUITE/REPRISE_ENGAGEE"
+
+            - action: vacuum.start
+              # L'exception du service est JOURNALISÉE puis absorbée : la
+              # séquence poursuit vers sa relecture. Sans cela, une levée
+              # laisserait le verdict figé sur l'engagement, sans issue et
+              # sans expiration — un engagement permanent, exactement le
+              # silence qu'ASP-INV-49 proscrit. Absorber n'est PAS
+              # réémettre : il n'y a toujours qu'UNE émission (ASP-INV-89).
+              continue_on_error: true
+              target:
+                entity_id: vacuum.roborock_q7_max
+
+            - wait_template: >-
+                {{ states('sensor.roborock_q7_max_etat') in activite }}
+              timeout: "00:00:30"
+              continue_on_timeout: true
+
+            # 🛡️ Même garde de course que la pause (15 §4, règle 5).
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: >-
+                        {{ states('input_text.aspirateur_mission_verdict')
+                           == 'CONDUITE/REPRISE_ENGAGEE'
+                           and states('sensor.roborock_q7_max_etat') in activite }}
+                  sequence:
+                    - action: input_text.set_value
+                      target:
+                        entity_id: input_text.aspirateur_mission_verdict
+                      data:
+                        value: "CONDUITE/REPRISE_CONFIRMEE"
+                - conditions:
+                    - condition: template
+                      value_template: >-
+                        {{ states('input_text.aspirateur_mission_verdict')
+                           == 'CONDUITE/REPRISE_ENGAGEE' }}
+                  sequence:
+                    - action: input_text.set_value
+                      target:
+                        entity_id: input_text.aspirateur_mission_verdict
+                      data:
+                        value: "CONDUITE/REPRISE_NON_CONFIRMEE"
+
+        # ##################################################
+        # ⏹️ ARRÊT — jamais plus contraint que le lancement (ASP-INV-43)
+        #
+        # AUCUNE garde de sens physique au-delà de « mission ouverte » :
+        # c'est l'asymétrie arrêt / lancement. En cas de doute, on
+        # n'empêche pas l'arrêt.
+        #
+        # La confirmation est établie POSITIVEMENT, sur `idle` — le seul
+        # état d'arrêt ATTESTÉ du domaine (15 §3.1). La règle négative
+        # précédente — « ni activité, ni erreur, ni indisponibilité » —
+        # confirmait sur TOUT état de classe N, `emptying_the_bin`
+        # compris : elle concluait à l'arrêt pendant un vidage de dock.
+        # Nommer `idle` ici N'ÉTEND PAS la partition du contrat 07 §5.0 :
+        # `idle` reste de classe N pour le lancement, et ne devient un
+        # état de repos pour personne. Il est seulement la postcondition
+        # observable de CE geste.
+        # Les DEUX issues sont TERMINALES (classe T) : l'arrêt referme la
+        # mission, confirmé ou non (D-10).
+        # ##################################################
+        - conditions:
+            - condition: template
+              value_template: "{{ geste == 'arret' }}"
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "CONDUITE/ARRET_ENGAGE"
+
+            - action: vacuum.stop
+              # L'exception du service est JOURNALISÉE puis absorbée : la
+              # séquence poursuit vers sa relecture. Sans cela, une levée
+              # laisserait le verdict figé sur l'engagement, sans issue et
+              # sans expiration — un engagement permanent, exactement le
+              # silence qu'ASP-INV-49 proscrit. Absorber n'est PAS
+              # réémettre : il n'y a toujours qu'UNE émission (ASP-INV-89).
+              continue_on_error: true
+              target:
+                entity_id: vacuum.roborock_q7_max
+
+            - wait_template: >-
+                {{ is_state('sensor.roborock_q7_max_etat', arret_atteste) }}
+              timeout: "00:00:30"
+              continue_on_timeout: true
+
+            # 🛡️ Garde de course, et ici elle porte DEUX valeurs
+            #    TERMINALES : sans elle, l'expiration de W2 écraserait
+            #    une clôture déjà écrite par W3 (15 §4, règle 5).
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: >-
+                        {{ states('input_text.aspirateur_mission_verdict')
+                           == 'CONDUITE/ARRET_ENGAGE'
+                           and is_state('sensor.roborock_q7_max_etat',
+                                        arret_atteste) }}
+                  sequence:
+                    - action: input_text.set_value
+                      target:
+                        entity_id: input_text.aspirateur_mission_verdict
+                      data:
+                        value: "CLOTURE/APRES_ARRET_CONFIRME"
+                - conditions:
+                    - condition: template
+                      value_template: >-
+                        {{ states('input_text.aspirateur_mission_verdict')
+                           == 'CONDUITE/ARRET_ENGAGE' }}
+                  sequence:
+                    - action: input_text.set_value
+                      target:
+                        entity_id: input_text.aspirateur_mission_verdict
+                      data:
+                        value: "CLOTURE/APRES_ARRET_NON_CONFIRME"
+
+        # ##################################################
+        # 🏠 RETOUR À LA BASE — le seul geste à traîne longue
+        #
+        # W2 s'en tient à l'ENGAGEMENT. Si la chaîne de retour s'ouvre,
+        # ce fichier N'ÉCRIT PLUS RIEN : le verdict reste
+        # `CONDUITE/RETOUR_ENGAGE`, de classe O-R, et W3 seul conclut à
+        # l'amarrage (15 §4, règle 4). C'est ce qui supprime la seconde
+        # course : il n'y a plus deux candidats au même événement
+        # physique.
+        # ##################################################
+        - conditions:
+            - condition: template
+              value_template: "{{ geste == 'retour_base' }}"
+          sequence:
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: >-
+                        {% set etat = states('sensor.roborock_q7_max_etat') %}
+                        {{ etat in retour or etat == 'charging' }}
+                  sequence:
+                    - stop: "Retour sans objet : le robot est deja a sa base, ou y va deja"
+
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "CONDUITE/RETOUR_ENGAGE"
+
+            - action: vacuum.return_to_base
+              # L'exception du service est JOURNALISÉE puis absorbée : la
+              # séquence poursuit vers sa relecture. Sans cela, une levée
+              # laisserait le verdict figé sur l'engagement, sans issue et
+              # sans expiration — un engagement permanent, exactement le
+              # silence qu'ASP-INV-49 proscrit. Absorber n'est PAS
+              # réémettre : il n'y a toujours qu'UNE émission (ASP-INV-89).
+              continue_on_error: true
+              target:
+                entity_id: vacuum.roborock_q7_max
+
+            # La fenêtre confirme L'ENTRÉE dans la chaîne, jamais son
+            # aboutissement. Confirmée, elle n'écrit RIEN.
+            - wait_template: >-
+                {{ states('sensor.roborock_q7_max_etat') in retour }}
+              timeout: "00:00:30"
+              continue_on_timeout: true
+
+            # 🛡️ Garde de course — C'EST ICI QU'ELLE SE JOUAIT.
+            #    W3 seul conclut l'amarrage ; s'il l'a fait pendant la
+            #    fenêtre, le verdict ne porte plus l'engagement, et W2
+            #    n'écrit RIEN. Sans cette relecture, l'expiration de W2
+            #    écrasait `CLOTURE/APRES_RETOUR_CONFIRME` — une arrivée
+            #    OBSERVÉE — par un défaut d'entrée dans la chaîne.
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: >-
+                        {{ states('input_text.aspirateur_mission_verdict')
+                           == 'CONDUITE/RETOUR_ENGAGE'
+                           and states('sensor.roborock_q7_max_etat')
+                               not in retour }}
+                  sequence:
+                    # Défaut d'ENTRÉE dans la chaîne : issue terminale.
+                    - action: input_text.set_value
+                      target:
+                        entity_id: input_text.aspirateur_mission_verdict
+                      data:
+                        value: "CLOTURE/APRES_RETOUR_NON_CONFIRME"

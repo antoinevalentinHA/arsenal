@@ -1,0 +1,247 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Aspirateur — Projection persistante de mission (lot L2)
+#
+#  ID : 10280000000002
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Automation de PROJECTION D'ÉTAT MÉTIER, et rien d'autre.
+#
+#   Elle projette dans l'UI UNE notification persistante — et une
+#   seule — tant qu'une mission Arsenal est OUVERTE, et l'éteint à
+#   TOUTE issue terminale, sans exception.
+#
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             15_conduite_et_supervision.md §2 (partition en quatre
+#                                               classes, porte d'entrée)
+#             00_documentation_arsenal/contrats/notifications.md
+#   Cadrage ratifié (D-44) : cadrage_l2_maintenance_ui,
+#             08_NOTIFICATIONS.md §1 (canal 1, identifiant de
+#                                     notification `aspirateur_mission`)
+#                                §2 (contraintes de forme T1…T6)
+#                                §3 (cycle de vie, réconciliation)
+#             10_LOTS.md §2 (contenu du lot L2)
+#
+# ----------------------------------------------------------
+# 🧱 NATURE
+#   LECTEUR PUR. Projection d'un état métier courant.
+#   Aucune décision, aucun pilotage, aucune commande, aucune mémoire
+#   d'événement. Elle N'ÉCRIT JAMAIS le verdict : les trois écrivains
+#   sont le moteur, le script de conduite et la supervision
+#   (ASP-INV-86). Cette automation les LIT, et rien de plus.
+#
+# ----------------------------------------------------------
+# ✍️ WRITER UNIQUE
+#   Cette automation est le SEUL writer de la notification persistante
+#   `aspirateur_mission`. Création ET suppression vivent ici, dans le
+#   même fichier et dans le même `choose` : aucun autre objet ne crée,
+#   ne met à jour ni ne supprime cet identifiant.
+#
+# ----------------------------------------------------------
+# 🧮 AUTORITÉ — UNE SEULE, LE VERDICT PERSISTANT (D-08)
+#   input_text.aspirateur_mission_verdict — la SEULE mémoire de mission
+#   ouverte du domaine.
+#
+#   Cette projection NE RECALCULE RIEN et ne lit AUCUN témoin natif :
+#   ni l'état machine, ni le témoin de session, ni l'entité `vacuum`.
+#   Déduire « cycle en cours » d'un témoin natif reviendrait à adopter
+#   une mission qu'Arsenal n'a jamais observé démarrer (D-06, D-R4,
+#   ASP-INV-47, ASP-INV-87).
+#
+#   Le message est rendu par sensor.aspirateur_motif_lisible, qui est
+#   une DÉRIVATION PURE du même verdict — jamais une seconde autorité.
+#   Le graphe reste un arbre : le motif ne relit pas la notification, et
+#   la notification n'écrit aucune entité.
+#
+# ----------------------------------------------------------
+# 🔓 POURQUOI CE FICHIER EXISTE MAINTENANT, ET PAS AU LOT N1
+#   Le lot N1 avait DIFFÉRÉ ce canal, et le checker portait un verrou
+#   nominatif qui en refusait la construction. Le motif était exact :
+#   sur les dix-huit valeurs du vocabulaire L1, la CLASSE TERMINALE
+#   ÉTAIT VIDE. L'autorité de création existait ; celle de SUPPRESSION
+#   n'existait pas, et une projection livrée alors aurait créé une
+#   notification qu'aucun état n'aurait pu éteindre.
+#
+#   Le lot L2 livre les HUIT valeurs de classe terminale — trois
+#   clôtures du script de conduite, cinq valeurs de la supervision. Le
+#   verrou est donc levé PAR LE LOT QUI FOURNIT L'AUTORITÉ MANQUANTE,
+#   sous revue, et pas autrement.
+#
+# ----------------------------------------------------------
+# ⚙️ DÉCLENCHEURS — DEUX, ET DEUX SEULEMENT
+#   • input_text.aspirateur_mission_verdict — TOUT changement. La
+#     projection doit réagir aux écritures des TROIS writers : le
+#     moteur ouvre la mission, la conduite la fait vivre, la
+#     supervision la ferme. S'abonner à un seul les manquerait ;
+#   • input_boolean.systeme_stable → on — réconciliation au
+#     redémarrage : Home Assistant NE RESTAURE PAS les notifications
+#     persistantes, alors que le verdict, lui, EST restauré. Sans cette
+#     re-projection, une mission ouverte deviendrait silencieuse après
+#     un redémarrage.
+#
+#   Le déclencheur de verdict est délibérément NU — ni `to:`, ni
+#   `from:`, ni `attribute:`. Le helper est un `input_text` sans
+#   attribut métier : il ne republie pas de données au rythme d'un
+#   coordinateur, et il ne change qu'à une écriture de writer. La
+#   sur-couverture de `match_all` est donc ici sans conséquence, là où
+#   elle aurait été un défaut sur un capteur natif.
+#
+#   Aucun déclencheur temporel, aucun polling, aucun `homeassistant.start`
+#   nu : le patron de readiness du dépôt est input_boolean.systeme_stable.
+#
+# ----------------------------------------------------------
+# 🔌 MISE EN SERVICE — REDÉMARRAGE ET `automation.reload`
+#   Les deux ne sont PAS équivalents. Un redémarrage complet produit un
+#   FRONT réel sur input_boolean.systeme_stable, et la réconciliation a
+#   lieu. Un simple `automation.reload` n'en produit AUCUN : la
+#   projection attend alors le prochain changement de verdict.
+#   Cette limite N'AUTORISE aucun déclencheur temporel : la réponse est
+#   une procédure de déploiement, pas une troisième source de réveil.
+#
+# ----------------------------------------------------------
+# 🔁 MODE — `restart`
+#   Un geste de conduite écrit son engagement puis son issue en deux
+#   écritures rapprochées : deux déclenchements, dont c'est le DERNIER
+#   qui fait foi. `restart` fait converger sur cet état — c'est le mode
+#   de tous les précédents de projection persistante du dépôt.
+#   `single` abandonnerait le second déclenchement EN SILENCE ;
+#   `queued` rejouerait un rendu déjà périmé.
+#
+# ----------------------------------------------------------
+# 🕳️ CE QUE LE `choose` NE COUVRE PAS, ET POURQUOI
+#   Il n'a PAS de branche `default:`, et c'est délibéré.
+#
+#   Les classes HORS MISSION et le cas HORS VOCABULAIRE ne produisent
+#   AUCUNE action. C'est exactement la ligne 1 de la table de
+#   réconciliation (15 §6) : sur un verdict de classe H, ou sur un
+#   helper non initialisé, la projection ne fait RIEN — ni création, ni
+#   suppression. Un `default:` y ferait tomber l'une des deux.
+#
+#   CONSÉQUENCE ASSUMÉE, ÉCRITE PLUTÔT QUE MASQUÉE. Le contrat fixe
+#   l'extinction « à toute valeur de classe terminale, sans exception »,
+#   et n'en prévoit aucune autre. Si le moteur est appelé alors qu'une
+#   mission est ouverte, il écrit d'abord sa valeur de validation — de
+#   classe H — puis son refus : la mémoire de mission est alors perdue
+#   par le verdict lui-même, et cette projection ne peut plus éteindre
+#   la notification, faute d'issue terminale à venir. Ce défaut est
+#   ANTÉRIEUR à ce lot et lui est extérieur : il tient à ce que le
+#   verdict soit la seule mémoire de mission (D-08). Le corriger
+#   exigerait de rouvrir le vocabulaire ou la séquence du moteur, ce
+#   que ce lot ne fait pas.
+#
+# ----------------------------------------------------------
+# 🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#   - N'écrit JAMAIS le verdict ni la trace d'intention : elle les LIT
+#   - Aucune commande robot, aucun appel `vacuum.*` / `roborock.*`
+#   - AUCUNE pression de bouton, aucune remise à zéro
+#   - N'émet AUCUNE notification mobile : le canal 3 appartient à la
+#     supervision, et lui seul (ASP-INV-95)
+#   - Ne lit AUCUN témoin natif : ni état machine, ni témoin de session
+#   - Ne lit aucun helper d'intention : la couche U0 n'existe pas
+#   - Ne porte AUCUN horodatage, aucun compteur, aucun numéro de
+#     tentative, aucune référence à un fait passé
+#   - Ne mémorise AUCUN acquittement (D-30) : rien n'est stocké, et la
+#     recalculabilité forte reste satisfaite — la notification se
+#     recalcule à partir du SEUL verdict courant
+#
+# ----------------------------------------------------------
+# 🏷️ STATUT
+#   Projection — domaine aspirateur, lot L2
+# ==========================================================
+
+- id: "10280000000002"
+  alias: "Aspirateur - Notification mission en cours"
+  description: >
+    Projette une notification persistante unique tant qu'une mission
+    Arsenal est ouverte, et l'éteint à toute issue terminale. Lecteur pur
+    du verdict de mission.
+  mode: restart
+
+  # ======================================================
+  # ⚙️ Déclencheurs — le verdict, et la réconciliation
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: input_text.aspirateur_mission_verdict
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  # ======================================================
+  # 🔄 Actions — création/mise à jour, ou extinction
+  #
+  # AUCUN `default:` — voir l'en-tête. Les deux branches
+  # sont mutuellement exclusives et NON exhaustives : les
+  # classes hors mission et le cas hors vocabulaire ne
+  # produisent délibérément rien.
+  # ======================================================
+  action:
+
+    - variables:
+        verdict: "{{ states('input_text.aspirateur_mission_verdict') }}"
+        # Classe O + O-R — mission ouverte (15 §2).
+        verdict_ouvert:
+          - "LANCEE/DEMARRAGE_OBSERVE"
+          - "CONDUITE/PAUSE_ENGAGEE"
+          - "CONDUITE/PAUSE_CONFIRMEE"
+          - "CONDUITE/PAUSE_NON_CONFIRMEE"
+          - "CONDUITE/REPRISE_ENGAGEE"
+          - "CONDUITE/REPRISE_CONFIRMEE"
+          - "CONDUITE/REPRISE_NON_CONFIRMEE"
+          - "CONDUITE/ARRET_ENGAGE"
+          - "CONDUITE/RETOUR_ENGAGE"
+        # Classe T — les huit issues terminales. « Sans exception » :
+        # les deux clôtures confirmées, les deux non confirmées, les
+        # deux échecs de supervision, la fin nominale et la clôture
+        # opaque de redémarrage (08_NOTIFICATIONS §3).
+        verdict_terminal:
+          - "CLOTURE/APRES_ARRET_CONFIRME"
+          - "CLOTURE/APRES_ARRET_NON_CONFIRME"
+          - "CLOTURE/APRES_RETOUR_CONFIRME"
+          - "CLOTURE/APRES_RETOUR_NON_CONFIRME"
+          - "CLOTURE/FIN_NOMINALE"
+          - "CLOTURE/ISSUE_OPAQUE_APRES_REDEMARRAGE"
+          - "ECHEC/MISSION_INTERROMPUE"
+          - "ECHEC/ERREUR_EN_MISSION"
+
+    - choose:
+
+        ####################################################
+        # 🤖 Mission ouverte → création ou mise à jour
+        #
+        # L'identifiant de notification est STABLE et FERMÉ :
+        # `persistent_notification.create` REMPLACE à
+        # identifiant identique. L'anti-doublon est donc
+        # structurel, et rien ne peut s'empiler.
+        ####################################################
+        - conditions:
+            - condition: template
+              value_template: "{{ verdict in verdict_ouvert }}"
+          sequence:
+            - service: persistent_notification.create
+              data:
+                notification_id: aspirateur_mission
+                title: "🤖 Aspirateur – Mission en cours"
+                message: >-
+                  {{ states('sensor.aspirateur_motif_lisible') }}
+
+                  Cette notification reste visible tant que la mission est
+                  ouverte, et disparaît à son issue. Une suppression
+                  manuelle persiste jusqu'au prochain changement du verdict
+                  ou jusqu'à une réconciliation de démarrage.
+
+        ####################################################
+        # 🏁 Issue terminale → extinction
+        #
+        # « À toute valeur de classe terminale, sans
+        # exception » : la liste ci-dessus est fermée et
+        # confrontée au vocabulaire par la CI.
+        ####################################################
+        - conditions:
+            - condition: template
+              value_template: "{{ verdict in verdict_terminal }}"
+          sequence:
+            - service: persistent_notification.dismiss
+              data:
+                notification_id: aspirateur_mission
