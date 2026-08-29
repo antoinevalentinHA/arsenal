@@ -1,0 +1,144 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Aspirateur — Appliquer un raccourci (lot U0)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   PRÉREMPLIR la carte et les segments d'un des cinq raccourcis
+#   contractuels, puis s'arrêter là.
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             10_raccourcis.md §1 et §3 (ASP-INV-54 … ASP-INV-57)
+#             02_referentiel_cartes_et_pieces.md §3 (périmètres)
+#   Cadrage ratifié (D-44) : 09_UI.md §3.3 et §3.5.4
+#
+# 🔒 CE QUE CE SCRIPT NE FAIT JAMAIS
+#   - Il n'écrit NI le profil NI les passages (ASP-INV-56) : un
+#     raccourci qui les figerait sans que l'opérateur les ait choisis
+#     violerait l'atomicité de l'intention.
+#   - Il ne LANCE rien. Un raccourci est un gain de gestes, pas un
+#     chemin plus court vers l'appareil : le lancement reste le
+#     script de composition, puis le moteur (ASP-INV-54).
+#   - Il ne commande JAMAIS l'appareil, et n'appelle aucun
+#     `vacuum.*` ni `roborock.*` (ASP-INV-31).
+#   - Il ne compose JAMAIS plusieurs cartes : les cinq raccourcis
+#     sont mono-carte par construction (ASP-INV-55). « Toute la
+#     maison » n'existe pas en V1.
+#   - Il ne DUPLIQUE pas la table des segments du moteur : il porte
+#     les cinq PÉRIMÈTRES du chapitre 02 §3, gardés par `ASP-CI-28`.
+#
+# 🔑 CHAMP FERMÉ `raccourci` — CINQ VALEURS, ET CINQ SEULEMENT
+#   Un seul script paramétré, jamais cinq scripts. Les cinq clés
+#   suivent la forme des champs fermés du domaine — `snake_case`
+#   ASCII, comme le champ `geste` du script de conduite.
+#   Une valeur hors des cinq n'écrit RIEN et s'arrête sur un motif
+#   lisible : créer, modifier ou supprimer un raccourci est un acte
+#   contractuel (ASP-INV-57), pas un ajustement d'interface.
+#
+#   rdc_complet              → RDC complet
+#   entree_escaliers_wc_rdc  → Entrée + Cage d'escaliers + WC RDC
+#   sejour_seul              → Séjour seul
+#   etage_complet            → Étage complet
+#   annexe_complete          → Annexe complète
+#
+# 🔗 ÉCRIT — DEUX FAMILLES DE HELPERS, PAS TROIS
+#   input_select.aspirateur_intention_carte
+#   input_boolean.aspirateur_segment_*
+#
+# 🏷️ STATUT
+#   Couche d'intention — domaine aspirateur, lot U0
+# ==========================================================
+
+aspirateur_appliquer_raccourci:
+  alias: "Aspirateur - Appliquer un raccourci"
+  icon: mdi:robot-vacuum
+  mode: single
+
+  fields:
+    raccourci:
+      name: Raccourci
+      description: >-
+        rdc_complet, entree_escaliers_wc_rdc, sejour_seul,
+        etage_complet, annexe_complete.
+      required: true
+      example: "rdc_complet"
+
+  sequence:
+
+    # ======================================================
+    # 📚 LES CINQ PÉRIMÈTRES — chapitre 02 §3, chapitre 10 §3
+    # ------------------------------------------------------
+    # `carte` porte le LIBELLÉ D'INTERFACE du sélecteur, jamais
+    # l'index du moteur ni l'option technique de l'appareil.
+    # ======================================================
+    - variables:
+        raccourcis:
+          rdc_complet:
+            carte: "Rez-de-chaussée"
+            segments: ["0_16", "0_18", "0_20", "0_21"]
+          entree_escaliers_wc_rdc:
+            carte: "Rez-de-chaussée"
+            segments: ["0_18", "0_21", "0_20"]
+          sejour_seul:
+            carte: "Rez-de-chaussée"
+            segments: ["0_16"]
+          etage_complet:
+            carte: "Étage"
+            segments: ["1_16", "1_17", "1_18", "1_19",
+                       "1_20", "1_21", "1_22", "1_23"]
+          annexe_complete:
+            carte: "Annexe"
+            segments: ["2_16", "2_19"]
+        # Les quatorze booléens — ordre canonique du chapitre 02 §2.
+        tous_les_segments:
+          - "0_16"
+          - "0_18"
+          - "0_20"
+          - "0_21"
+          - "1_16"
+          - "1_17"
+          - "1_18"
+          - "1_19"
+          - "1_20"
+          - "1_21"
+          - "1_22"
+          - "1_23"
+          - "2_16"
+          - "2_19"
+
+    # ======================================================
+    # 🚧 CHAMP FERMÉ — une valeur hors des cinq n'écrit RIEN
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ raccourci not in raccourcis }}"
+          sequence:
+            - stop: "Raccourci inconnu : aucune composition n'a ete ecrite"
+
+    - variables:
+        cible: "{{ raccourcis[raccourci] }}"
+
+    # ======================================================
+    # ✍️ ÉCRITURE — carte, puis segments. Rien d'autre.
+    # ======================================================
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.aspirateur_intention_carte
+      data:
+        option: "{{ cible.carte }}"
+
+    # Les quatorze d'abord à `off` : un raccourci pose une
+    # composition COMPLÈTE, jamais un ajout à une sélection
+    # antérieure qui pourrait relever d'une autre carte.
+    - action: input_boolean.turn_off
+      target:
+        entity_id: >-
+          {{ tous_les_segments
+             | map('regex_replace', '^', 'input_boolean.aspirateur_segment_')
+             | list }}
+
+    - action: input_boolean.turn_on
+      target:
+        entity_id: >-
+          {{ cible.segments
+             | map('regex_replace', '^', 'input_boolean.aspirateur_segment_')
+             | list }}

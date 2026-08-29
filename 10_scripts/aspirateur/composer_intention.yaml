@@ -1,0 +1,154 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Aspirateur — Composer l'intention et lancer (lot U0)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   TRANSPORT de la couche d'intention : photographier les dix-sept
+#   helpers de composition, les traduire, et appeler le moteur commun
+#   avec les QUATRE CHAMPS ENSEMBLE, en un seul appel.
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             05_intention_de_mission.md (ASP-INV-23, atomicité)
+#             11_frontiere_ui.md §1 (le backend décide, l'UI sollicite)
+#   Cadrage ratifié (D-44) : 09_UI.md §3.3 et §3.5.4
+#
+# 🚫 AUCUN `fields:` — ET C'EST UNE DÉCISION
+#   Un `fields:` publierait une SECONDE surface d'appel, concurrente
+#   des helpers, par laquelle une intention pourrait entrer sans
+#   passer par la composition. Ce script est la PHOTOGRAPHIE d'un
+#   état ; l'atomicité reste portée par le moteur seul.
+#
+# 🧩 PÉRIMÈTRE — ce que ce script ne fait pas
+#   - Il ne commande JAMAIS l'appareil : il appelle le moteur, et le
+#     moteur seul commande (ASP-INV-31). Aucun `vacuum.*`, aucun
+#     `roborock.*` n'apparaît ici.
+#   - Il ne VALIDE rien. Le filtrage par carte n'est pas une
+#     revalidation : c'est l'application du sens physique — on ne
+#     transmet pas une case qui n'a pas cours sur la carte choisie.
+#     Le moteur revalide INTÉGRALEMENT, et l'intégrité mono-carte
+#     s'applique sans réserve (ASP-IMC-1). Un lancement multi-carte
+#     reste impossible à émettre.
+#   - Il ne DÉCIDE aucun refus et n'en reformule aucun motif : une
+#     composition vide ou incomplète part telle quelle, et le moteur
+#     écrit le refus lisible qui convient (09 §1).
+#   - Il ne lit ni n'écrit le verdict de mission ni la trace
+#     d'intention : ASP-CI-11 en réserve la mention aux fichiers
+#     nommés du domaine, et balaie celui-ci.
+#
+# 🔤 TRADUCTIONS — trois, et trois seulement
+#   Les trois tables ci-dessous font passer du LIBELLÉ D'INTERFACE à
+#   la valeur attendue par le moteur. Elles ne dupliquent AUCUN
+#   référentiel métier : la table des segments, celle des profils et
+#   celle des cartes vivent dans le moteur (10 §2, 11 §2).
+#   ⚠️ `Étage` est traduit vers l'index `1`. L'espace finale de
+#      `Étage ` appartient au référentiel TECHNIQUE (02 §2.1), que
+#      seul le moteur emploie (ASP-INV-66).
+#
+# 🧾 SECONDE MATÉRIALISATION ASSUMÉE
+#   La liste `composition` associe chaque paire canonique à son
+#   booléen. C'est la seconde copie du référentiel du chapitre 02,
+#   reconnue et non niée, gardée par la confrontation `ASP-CI-28`
+#   (arbitrage A-13).
+#
+# 🔗 APPELLE — UN SEUL OBJET
+#   script.aspirateur_lancer_mission
+#
+# 🏷️ STATUT
+#   Couche d'intention — domaine aspirateur, lot U0
+# ==========================================================
+
+aspirateur_composer_intention:
+  alias: "Aspirateur - Composer l'intention et lancer"
+  icon: mdi:robot-vacuum
+  mode: single
+
+  sequence:
+
+    # ======================================================
+    # 📚 TABLES DE TRADUCTION — interface → moteur
+    # ======================================================
+    - variables:
+        cartes:
+          "Rez-de-chaussée": "0"
+          "Étage": "1"
+          "Annexe": "2"
+        profils:
+          "Aspiration normale": "aspiration_normale"
+          "Aspiration turbo": "aspiration_turbo"
+          "Aspiration maximale": "aspiration_maximale"
+          "Serpillière moyenne": "serpilliere_moyenne"
+          "Serpillière intensive": "serpilliere_intensive"
+        table_passages:
+          "1 passage": "1"
+          "2 passages": "2"
+          "3 passages": "3"
+        # Ordre canonique du chapitre 02 §2 : carte croissante, puis
+        # index croissant. Le même ordre que le référentiel du moteur.
+        composition:
+          - paire: "0_16"
+            helper: input_boolean.aspirateur_segment_0_16
+          - paire: "0_18"
+            helper: input_boolean.aspirateur_segment_0_18
+          - paire: "0_20"
+            helper: input_boolean.aspirateur_segment_0_20
+          - paire: "0_21"
+            helper: input_boolean.aspirateur_segment_0_21
+          - paire: "1_16"
+            helper: input_boolean.aspirateur_segment_1_16
+          - paire: "1_17"
+            helper: input_boolean.aspirateur_segment_1_17
+          - paire: "1_18"
+            helper: input_boolean.aspirateur_segment_1_18
+          - paire: "1_19"
+            helper: input_boolean.aspirateur_segment_1_19
+          - paire: "1_20"
+            helper: input_boolean.aspirateur_segment_1_20
+          - paire: "1_21"
+            helper: input_boolean.aspirateur_segment_1_21
+          - paire: "1_22"
+            helper: input_boolean.aspirateur_segment_1_22
+          - paire: "1_23"
+            helper: input_boolean.aspirateur_segment_1_23
+          - paire: "2_16"
+            helper: input_boolean.aspirateur_segment_2_16
+          - paire: "2_19"
+            helper: input_boolean.aspirateur_segment_2_19
+
+    # ======================================================
+    # 📸 PHOTOGRAPHIE — les quatre champs, pris ensemble
+    # ------------------------------------------------------
+    # Une valeur d'interface non traduisible — sélecteur `unknown`
+    # au premier démarrage, option retirée — donne une CHAÎNE VIDE,
+    # jamais une valeur de repli plausible. Le moteur la refuse et
+    # écrit son motif : c'est lui qui décide, pas ce script.
+    # ======================================================
+    - variables:
+        carte: >-
+          {{ cartes.get(states('input_select.aspirateur_intention_carte'), '') }}
+        profil: >-
+          {{ profils.get(states('input_select.aspirateur_intention_profil'), '') }}
+        passages: >-
+          {{ table_passages.get(
+               states('input_select.aspirateur_intention_passages'), '') }}
+
+    # Les SEULS segments cochés qui appartiennent à la carte
+    # désignée. Sens physique, jamais revalidation.
+    - variables:
+        segments: >-
+          {% set ns = namespace(items=[]) %}
+          {% for s in composition %}
+            {% if carte != '' and s.paire.startswith(carte ~ '_')
+                  and is_state(s.helper, 'on') %}
+              {% set ns.items = ns.items + [s.paire] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items }}
+
+    # ======================================================
+    # 🚀 APPEL ATOMIQUE — les quatre champs, un seul appel
+    # ======================================================
+    - action: script.aspirateur_lancer_mission
+      data:
+        carte: "{{ carte }}"
+        segments: "{{ segments }}"
+        profil: "{{ profil }}"
+        passages: "{{ passages }}"

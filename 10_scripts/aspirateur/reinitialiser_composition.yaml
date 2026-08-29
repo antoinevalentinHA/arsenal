@@ -1,0 +1,75 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Aspirateur — Réinitialiser la composition (lot U0)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Ramener les DIX-SEPT helpers de composition à un état de départ
+#   valide et minimal. SEUL écrivain de la remise à zéro : l'automation
+#   `10280000000004` l'appelle, elle n'écrit pas à sa place.
+#   Cadrage ratifié (D-44) : 09_UI.md §3.3 bis et §3.3 ter,
+#   11_ARBITRAGES_RENDUS.md §4.2 (arbitrage A-12).
+#
+# 🧭 POURQUOI FIXER DES VALEURS PLUTÔT QUE VIDER
+#   Les trois sélecteurs n'ont pas d'état « vide » exploitable, et
+#   ASP-INV-45 interdit de lire une indisponibilité comme une valeur.
+#   Fixer une composition VALIDE ET MINIMALE est le seul état de
+#   départ qui ne fabrique aucune ambiguïté.
+#
+# 📐 VALEURS DE DÉPART — arrêtées par le cadrage, pas choisies ici
+#   Rez-de-chaussée · Aspiration normale · 1 passage · les QUATORZE
+#   segments à `off`.
+#
+# 🔒 CE QUE CE SCRIPT NE FAIT JAMAIS
+#   - Il ne lance RIEN et ne commande JAMAIS l'appareil.
+#   - Il ne lit ni n'écrit le verdict de mission : la lecture du
+#     verdict appartient à l'automation qui l'appelle.
+#   - Il n'écrit AUCUN helper hors des dix-sept de la composition.
+#
+# 🏷️ STATUT
+#   Couche d'intention — domaine aspirateur, lot U0
+# ==========================================================
+
+aspirateur_reinitialiser_composition:
+  alias: "Aspirateur - Réinitialiser la composition"
+  icon: mdi:backup-restore
+  mode: single
+
+  sequence:
+
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.aspirateur_intention_carte
+      data:
+        option: "Rez-de-chaussée"
+
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.aspirateur_intention_profil
+      data:
+        option: "Aspiration normale"
+
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.aspirateur_intention_passages
+      data:
+        option: "1 passage"
+
+    # Les quatorze, nommés un à un : une cible calculée cacherait
+    # l'oubli d'un segment derrière une expression qui se rend.
+    - action: input_boolean.turn_off
+      target:
+        entity_id:
+          - input_boolean.aspirateur_segment_0_16
+          - input_boolean.aspirateur_segment_0_18
+          - input_boolean.aspirateur_segment_0_20
+          - input_boolean.aspirateur_segment_0_21
+          - input_boolean.aspirateur_segment_1_16
+          - input_boolean.aspirateur_segment_1_17
+          - input_boolean.aspirateur_segment_1_18
+          - input_boolean.aspirateur_segment_1_19
+          - input_boolean.aspirateur_segment_1_20
+          - input_boolean.aspirateur_segment_1_21
+          - input_boolean.aspirateur_segment_1_22
+          - input_boolean.aspirateur_segment_1_23
+          - input_boolean.aspirateur_segment_2_16
+          - input_boolean.aspirateur_segment_2_19

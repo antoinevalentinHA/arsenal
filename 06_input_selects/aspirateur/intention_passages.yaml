@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Aspirateur — passages de l'intention
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Porter le NOMBRE DE PASSAGES demandé par l'opérateur.
+#   Rôle contractuel ‹intention_passages›.
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             04_nombre_de_passages.md · 12_identifiants_a_fournir.md §2.1
+#   Cadrage ratifié (D-44) : 09_UI.md §3.5.2
+#
+# 🧩 Nature :
+#   INTENTION opérateur (ASP-INV-16).
+#
+# 🔍 Sémantique des valeurs — et leur traduction :
+#   1 passage → 1 · 2 passages → 2 · 3 passages → 3
+#   Trois valeurs, et trois seulement : la convention ×1 / ×2 / ×3 du
+#   moteur est fermée, et ni 0 ni une valeur hors borne n'existe.
+#
+# ❌ Ne fait PAS :
+#   - Ne commande PAS l'appareil
+#   - Ne porte AUCUN `initial:`
+#
+# 🔗 Écrivains :
+#   - script.aspirateur_reinitialiser_composition
+#   - l'opérateur, depuis la carte Navigation
+#   Un RACCOURCI n'écrit jamais ce helper (ASP-INV-56).
+#
+# 🏷️ Statut :
+#   Couche d'intention — domaine aspirateur, lot U0
+# ==========================================================
+
+aspirateur_intention_passages:
+  name: "Aspirateur — Passages"
+  options:
+    - 1 passage
+    - 2 passages
+    - 3 passages
