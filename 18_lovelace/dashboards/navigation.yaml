@@ -184,11 +184,6 @@ views:
                       icon:
                         - color: "rgb(158, 158, 158)"
 
-                  # Ligne 4, quatrième place — anciennement Santé.
-                  # AUCUNE navigation : il n'existe et il n'existera aucun
-                  # dashboard Aspirateur (décision 1 du cadrage). La carte
-                  # opérationnelle du domaine vit plus bas, dans cette page.
-                  # La couleur vient exclusivement de l'autorité U1.
                   - type: custom:button-card
                     template: bouton_navigation_dynamique
                     variables:
@@ -196,7 +191,8 @@ views:
                     name: Aspirateur
                     icon: mdi:robot-vacuum
                     tap_action:
-                      action: none
+                      action: navigate
+                      navigation_path: /aspirateur-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation
@@ -249,15 +245,6 @@ views:
                 tap_action:
                   action: navigate
                   navigation_path: /system-dashboard
-
-          # ==================================================
-          # 🤖 ASPIRATEUR — CARTE OPÉRATIONNELLE DU DOMAINE
-          # --------------------------------------------------
-          # Aucun dashboard Aspirateur dédié (décision 1 du cadrage) :
-          # la tuile de la grille ci-dessus ne navigue pas, et toute
-          # l'interface du domaine vit ici, dans cette page.
-          # ==================================================
-          - !include ../includes/navigation/aspirateur.yaml
 
           # ==================================================
           # ⚙️ SYSTÈME — OUTILS & ADMINISTRATION

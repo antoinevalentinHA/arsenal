@@ -96,6 +96,13 @@ vmc-dashboard:
   show_in_sidebar: false
   filename: 18_lovelace/dashboards/vmc/principal.yaml
 
+aspirateur-dashboard:
+  mode: yaml
+  title: Aspirateur
+  icon: mdi:robot-vacuum
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/aspirateur/principal.yaml
+
 volets-dashboard:
   mode: yaml
   title: Volets
