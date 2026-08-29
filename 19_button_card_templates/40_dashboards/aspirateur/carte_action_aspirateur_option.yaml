@@ -1,0 +1,85 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI MÉTIER
+#     Aspirateur — segment d'un sélecteur de composition
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 RÔLE
+#     Un SEGMENT d'un sélecteur de composition d'intention. Un tap écrit
+#     l'option portée par `variables.option` dans le sélecteur porté par
+#     `variables.selecteur`. Le segment ACTIF est celui dont l'option est
+#     l'état courant du sélecteur.
+#     Patron repris de `carte_action_deshum_autorite`, généralisé aux trois
+#     sélecteurs du domaine plutôt que dupliqué trois fois.
+#
+# 🧱 NATURE
+#     - Template button-card, spécialisation de carte_base_v2
+#     - UI uniquement : écrit une INTENTION opérateur (ASP-INV-16), jamais
+#       l'état de l'appareil. Ne commande RIEN et ne lance RIEN.
+#
+# 🎨 SÉMANTIQUE (palette de base — ui/couleurs/02_palette.md)
+#     - segment actif    -> 🔵 bleu  rgba(33, 150, 243, 0.2)
+#     - segment inactif  -> ⚪ gris  rgba(158, 158, 158, 0.2)
+#     - sélecteur illisible -> ⚪ gris indispo rgba(158, 158, 158, 0.1)
+#     Le libellé est porté par le `name` ; l'état actif par la couleur ET
+#     la graisse, jamais par la couleur seule.
+#
+# ⚙️ AUCUNE CONFIRMATION — ET C'EST DÉLIBÉRÉ
+#     Composer une intention est réversible et ne touche pas l'appareil.
+#     La confirmation obligatoire porte sur le LANCEMENT, qui est l'action
+#     physique (contrat 11 §3.6).
+#
+# 🔗 DÉPENDANCES
+#     - variables.selecteur : `entity_id` du sélecteur écrit
+#     - variables.option    : l'option exacte écrite, et celle qui rend
+#                             ce segment actif
+#     - service : input_select.select_option
+#
+# 🔗 SATELLITE DE : carte_base_v2
+# ==========================================================
+
+carte_action_aspirateur_option:
+  template: carte_base_v2
+
+  show_state: false
+  show_icon: true
+  show_name: true
+  color_type: card
+
+  tap_action:
+    action: call-service
+    service: input_select.select_option
+    service_data:
+      entity_id: '[[[ return variables.selecteur ]]]'
+      option: '[[[ return variables.option ]]]'
+
+  styles:
+    card:
+      - height: 56px
+      - padding: 6px
+      - background-color: >
+          [[[
+            const s = states[variables.selecteur]
+              ? states[variables.selecteur].state : null;
+            if (s === null || s === 'unknown' || s === 'unavailable')
+              return 'rgba(158, 158, 158, 0.1)';
+            return (s === variables.option)
+              ? 'rgba(33, 150, 243, 0.2)'
+              : 'rgba(158, 158, 158, 0.2)';
+          ]]]
+    icon:
+      - width: 22px
+      - height: 22px
+      - color: '#111'
+    name:
+      - color: '#111'
+      - font-size: 12px
+      - line-height: 1.2
+      - font-weight: >
+          [[[
+            const s = states[variables.selecteur]
+              ? states[variables.selecteur].state : null;
+            return (s === variables.option) ? '700' : '400';
+          ]]]

@@ -1,0 +1,659 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Aspirateur — panneau opérationnel du domaine
+#
+# 🗂️ COUCHE : includes/cartes/aspirateur
+# 🧱 TYPE UI : carte de domaine (état · composition · action)
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Porter l'intégralité de l'interface du domaine : lecture d'état,
+#   composition d'une intention, raccourcis, lancement confirmé,
+#   conduite d'une mission ouverte et lecture de l'entretien.
+#   Cadrage ratifié (D-44) : 09_UI.md §4 (contenu de la carte),
+#   lots U0 et U2.
+#
+# 🧭 OÙ CETTE CARTE VIT, ET POURQUOI
+#   Dans le dashboard Aspirateur dédié, `/aspirateur-dashboard`, et
+#   nulle part ailleurs. Le dashboard Navigation n'en porte que le
+#   RACCOURCI : une petite tuile, ligne 4, colonne 4, colorée par
+#   `sensor.etat_aspirateur_dashboard`. Un menu de navigation ne
+#   porte pas le détail opérationnel d'un domaine.
+#
+# 🧱 FRONTIÈRE BACKEND / UI (contrat 11)
+#   Le backend décide, l'UI rend et sollicite. Concrètement :
+#     - AUCUNE commande brute vers l'appareil. Les seuls objets
+#       appelés sont des scripts du domaine (ASP-INV-31).
+#     - AUCUNE entité native d'action Roborock n'est exposée.
+#     - AUCUNE revalidation : le moteur revalide intégralement, et
+#       l'intégrité mono-carte s'applique sans réserve (ASP-IMC-1).
+#       Le filtrage des pièces par carte n'est pas une validation :
+#       c'est le sens physique — on ne présente pas une case qui n'a
+#       pas cours.
+#     - AUCUN motif reformulé : le motif lisible est restitué tel
+#       qu'il est produit, et NON TRONQUÉ (ASP-INV-50).
+#     - AUCUN libellé issu de l'appareil, AUCUN index de segment nu.
+#     - Le verdict de mission n'est ni lu ni cité ici : `ASP-CI-11`
+#       en réserve la mention aux fichiers nommés du domaine.
+#
+# 🎨 COULEUR
+#   La coloration de la tuile Aspirateur de la grille Navigation vient
+#   exclusivement de `sensor.etat_aspirateur_dashboard`, autorité de
+#   présentation du lot U1. Cette carte n'en produit aucune.
+#
+# 🧩 PATRONS RÉUTILISÉS — AUCUNE FORME NATIVE MASSIVE
+#   `section_header` · `sub_section_header` · `carte_etat_interprete` ·
+#   `carte_attribut_categoriel_interprete` · `socle_status_label_72` ·
+#   `socle_toggle_compact_68` · `carte_action_standard` ·
+#   `carte_action_standard_warning` · `status_72_on_off` ·
+#   `carte_action_aspirateur_option` (segment de sélecteur, patron de
+#   `carte_action_deshum_autorite` généralisé aux trois sélecteurs).
+#   Aucune carte `entities` native, aucun interrupteur natif : les pièces
+#   sont des boutons compacts, actifs en vert et inactifs en gris.
+#   Palette bornée aux valeurs de `ui/couleurs/02_palette.md`.
+#
+# 📱 MOBILE D'ABORD
+#   Grilles à deux ou trois colonnes, hauteurs 56 à 72 px, libellés
+#   jamais tronqués : les cinq raccourcis et les gestes de conduite
+#   occupent toute la largeur, parce que leurs libellés sont longs.
+#
+# 🔗 SCRIPTS APPELÉS — TROIS, ET TROIS SEULEMENT
+#   script.aspirateur_appliquer_raccourci
+#   script.aspirateur_composer_intention
+#   script.aspirateur_reinitialiser_composition
+#   script.aspirateur_conduire_mission     (mission déjà ouverte)
+#
+# 🏷️ STATUT
+#   Interface — domaine aspirateur, lots U0 et U2
+# ==========================================================
+
+type: vertical-stack
+cards:
+
+  - type: custom:button-card
+    template: section_header
+    name: 🤖 Aspirateur
+
+  # ==================================================
+  # 1️⃣ ÉTAT — synthèse du robot et mission en cours
+  # --------------------------------------------------
+  # Les dix états canoniques et « mission ouverte » sont rendus
+  # SÉPARÉMENT : le dixième se superpose aux neuf autres au lieu de
+  # les exclure (ASP-INV-68), et aucune agrégation de confort n'est
+  # faite (ASP-INV-44). L'indisponibilité tombe au gris atténué,
+  # jamais sur un état nominal (ASP-INV-45).
+  # ==================================================
+  - type: grid
+    square: false
+    columns: 2
+    cards:
+      - type: custom:button-card
+        template: carte_etat_interprete
+        entity: sensor.aspirateur_etat_canonique
+        name: État
+        icon: mdi:robot-vacuum
+        variables:
+          libelles:
+            repos_hors_base: Hors base
+            charge: En charge
+            nettoyage_reel: Nettoyage
+            pause: En pause
+            retour_base: Retour base
+            amarrage: Amarrage
+            erreur: Erreur
+            indisponibilite: Indisponible
+            etat_non_qualifie: Non qualifié
+          couleurs:
+            repos_hors_base: rgba(158, 158, 158, 0.2)
+            charge: rgba(76, 175, 80, 0.2)
+            nettoyage_reel: rgba(33, 150, 243, 0.2)
+            pause: rgba(255, 152, 0, 0.2)
+            retour_base: rgba(33, 150, 243, 0.2)
+            amarrage: rgba(33, 150, 243, 0.2)
+            erreur: rgba(244, 67, 54, 0.2)
+            indisponibilite: rgba(158, 158, 158, 0.1)
+            etat_non_qualifie: rgba(158, 158, 158, 0.2)
+
+      - type: custom:button-card
+        template: carte_attribut_categoriel_interprete
+        entity: sensor.aspirateur_etat_canonique
+        name: Mission
+        icon: mdi:play-circle-outline
+        variables:
+          attribut: mission_ouverte
+          libelles:
+            oui: Ouverte
+            non: Aucune
+            indisponible: Indisponible
+          couleurs:
+            oui: rgba(33, 150, 243, 0.2)
+            non: rgba(158, 158, 158, 0.2)
+            indisponible: rgba(158, 158, 158, 0.1)
+
+  # Motif lisible — restitué NON TRONQUÉ, tel que le backend le produit.
+  - type: custom:button-card
+    template: socle_status_label_72
+    entity: sensor.aspirateur_motif_lisible
+    name: Dernier motif
+    icon: mdi:message-text-outline
+    label: |
+      [[[
+        const s = entity ? entity.state : null;
+        if (!s || s === 'unknown' || s === 'unavailable') return '—';
+        return s;
+      ]]]
+    styles:
+      card:
+        - height: auto
+        - min-height: 72px
+        - background-color: rgba(158, 158, 158, 0.2)
+      label:
+        - white-space: normal
+        - line-height: 1.3
+
+  # ==================================================
+  # 2️⃣ COMPOSITION — carte, profil, passages
+  # --------------------------------------------------
+  # Trois sélecteurs segmentés. Un tap écrit l'option ; le segment
+  # actif est bleu et gras. Aucune confirmation : composer est
+  # réversible et ne touche pas l'appareil.
+  # ==================================================
+  - type: custom:button-card
+    template: sub_section_header
+    name: 🧭 Composition
+
+  - type: grid
+    square: false
+    columns: 3
+    cards:
+      - type: custom:button-card
+        template: carte_action_aspirateur_option
+        name: Rez-de-chaussée
+        icon: mdi:home-floor-g
+        variables:
+          selecteur: input_select.aspirateur_intention_carte
+          option: Rez-de-chaussée
+      - type: custom:button-card
+        template: carte_action_aspirateur_option
+        name: Étage
+        icon: mdi:stairs-up
+        variables:
+          selecteur: input_select.aspirateur_intention_carte
+          option: Étage
+      - type: custom:button-card
+        template: carte_action_aspirateur_option
+        name: Annexe
+        icon: mdi:home-outline
+        variables:
+          selecteur: input_select.aspirateur_intention_carte
+          option: Annexe
+
+  # Cinq profils — les libellés du chapitre 03, à l'identique.
+  # Une grille de cinq colonnes tronquerait : deux grilles, 3 puis 2.
+  - type: grid
+    square: false
+    columns: 3
+    cards:
+      - type: custom:button-card
+        template: carte_action_aspirateur_option
+        name: Aspiration normale
+        icon: mdi:fan-speed-1
+        variables:
+          selecteur: input_select.aspirateur_intention_profil
+          option: Aspiration normale
+      - type: custom:button-card
+        template: carte_action_aspirateur_option
+        name: Aspiration turbo
+        icon: mdi:fan-speed-2
+        variables:
+          selecteur: input_select.aspirateur_intention_profil
+          option: Aspiration turbo
+      - type: custom:button-card
+        template: carte_action_aspirateur_option
+        name: Aspiration maximale
+        icon: mdi:fan-speed-3
+        variables:
+          selecteur: input_select.aspirateur_intention_profil
+          option: Aspiration maximale
+
+  - type: grid
+    square: false
+    columns: 2
+    cards:
+      - type: custom:button-card
+        template: carte_action_aspirateur_option
+        name: Serpillière moyenne
+        icon: mdi:water-outline
+        variables:
+          selecteur: input_select.aspirateur_intention_profil
+          option: Serpillière moyenne
+      - type: custom:button-card
+        template: carte_action_aspirateur_option
+        name: Serpillière intensive
+        icon: mdi:water
+        variables:
+          selecteur: input_select.aspirateur_intention_profil
+          option: Serpillière intensive
+
+  - type: grid
+    square: false
+    columns: 3
+    cards:
+      - type: custom:button-card
+        template: carte_action_aspirateur_option
+        name: 1 passage
+        icon: mdi:numeric-1-box-outline
+        variables:
+          selecteur: input_select.aspirateur_intention_passages
+          option: 1 passage
+      - type: custom:button-card
+        template: carte_action_aspirateur_option
+        name: 2 passages
+        icon: mdi:numeric-2-box-outline
+        variables:
+          selecteur: input_select.aspirateur_intention_passages
+          option: 2 passages
+      - type: custom:button-card
+        template: carte_action_aspirateur_option
+        name: 3 passages
+        icon: mdi:numeric-3-box-outline
+        variables:
+          selecteur: input_select.aspirateur_intention_passages
+          option: 3 passages
+
+  # ==================================================
+  # 3️⃣ PIÈCES — les SEULES de la carte désignée
+  # --------------------------------------------------
+  # Deux à huit boutons, jamais quatorze : on ne présente pas une
+  # case qui n'a pas cours. Coché = vert, décoché = gris.
+  # ==================================================
+  - type: custom:button-card
+    template: sub_section_header
+    name: 🧹 Pièces
+
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: input_select.aspirateur_intention_carte
+        state: Rez-de-chaussée
+    card:
+      type: grid
+      square: false
+      columns: 2
+      cards:
+        - type: custom:button-card
+          template: socle_toggle_compact_68
+          entity: input_boolean.aspirateur_segment_0_16
+          name: Séjour
+          icon: mdi:sofa
+        - type: custom:button-card
+          template: socle_toggle_compact_68
+          entity: input_boolean.aspirateur_segment_0_18
+          name: Entrée
+          icon: mdi:door-open
+        - type: custom:button-card
+          template: socle_toggle_compact_68
+          entity: input_boolean.aspirateur_segment_0_20
+          name: WC RDC
+          icon: mdi:toilet
+        - type: custom:button-card
+          template: socle_toggle_compact_68
+          entity: input_boolean.aspirateur_segment_0_21
+          name: Cage d'escaliers
+          icon: mdi:stairs
+
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: input_select.aspirateur_intention_carte
+        state: Étage
+    card:
+      type: grid
+      square: false
+      columns: 2
+      cards:
+        - type: custom:button-card
+          template: socle_toggle_compact_68
+          entity: input_boolean.aspirateur_segment_1_16
+          name: Palier
+          icon: mdi:stairs-up
+        - type: custom:button-card
+          template: socle_toggle_compact_68
+          entity: input_boolean.aspirateur_segment_1_17
+          name: Chambre Parents
+          icon: mdi:bed-king-outline
+        - type: custom:button-card
+          template: socle_toggle_compact_68
+          entity: input_boolean.aspirateur_segment_1_18
+          name: Chambre Enfants
+          icon: mdi:bed-outline
+        - type: custom:button-card
+          template: socle_toggle_compact_68
+          entity: input_boolean.aspirateur_segment_1_19
+          name: Salle de Jeux
+          icon: mdi:teddy-bear
+        - type: custom:button-card
+          template: socle_toggle_compact_68
+          entity: input_boolean.aspirateur_segment_1_20
+          name: Dressing
+          icon: mdi:wardrobe-outline
+        - type: custom:button-card
+          template: socle_toggle_compact_68
+          entity: input_boolean.aspirateur_segment_1_21
+          name: SDB Parents
+          icon: mdi:shower
+        - type: custom:button-card
+          template: socle_toggle_compact_68
+          entity: input_boolean.aspirateur_segment_1_22
+          name: WC Étage
+          icon: mdi:toilet
+        - type: custom:button-card
+          template: socle_toggle_compact_68
+          entity: input_boolean.aspirateur_segment_1_23
+          name: SDB Enfants
+          icon: mdi:shower-head
+
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: input_select.aspirateur_intention_carte
+        state: Annexe
+    card:
+      type: grid
+      square: false
+      columns: 2
+      cards:
+        - type: custom:button-card
+          template: socle_toggle_compact_68
+          entity: input_boolean.aspirateur_segment_2_16
+          name: Salle de bain
+          icon: mdi:shower
+        - type: custom:button-card
+          template: socle_toggle_compact_68
+          entity: input_boolean.aspirateur_segment_2_19
+          name: Chambre
+          icon: mdi:bed-outline
+
+  # ==================================================
+  # 4️⃣ RACCOURCIS — les CINQ du chapitre 10 §3
+  # --------------------------------------------------
+  # Pleine largeur : leurs libellés sont longs, et un raccourci
+  # tronqué ne se lit pas. Un raccourci préremplit carte et
+  # segments, et s'arrête là (ASP-INV-56) — il ne lance rien.
+  # ==================================================
+  - type: custom:button-card
+    template: sub_section_header
+    name: ⚡ Raccourcis
+
+  - type: grid
+    square: false
+    columns: 1
+    cards:
+      - type: custom:button-card
+        template: carte_action_standard
+        entity: script.aspirateur_appliquer_raccourci
+        name: RDC complet
+        icon: mdi:home-floor-g
+        styles:
+          card:
+            - height: 52px
+        variables:
+          confirmation: "Préremplir la composition avec « RDC complet » ?"
+          service: script.aspirateur_appliquer_raccourci
+          data:
+            raccourci: rdc_complet
+
+      - type: custom:button-card
+        template: carte_action_standard
+        entity: script.aspirateur_appliquer_raccourci
+        name: Entrée + Cage d'escaliers + WC RDC
+        icon: mdi:stairs
+        styles:
+          card:
+            - height: 52px
+        variables:
+          confirmation: >-
+            Préremplir la composition avec « Entrée + Cage d'escaliers
+            + WC RDC » ?
+          service: script.aspirateur_appliquer_raccourci
+          data:
+            raccourci: entree_escaliers_wc_rdc
+
+      - type: custom:button-card
+        template: carte_action_standard
+        entity: script.aspirateur_appliquer_raccourci
+        name: Séjour seul
+        icon: mdi:sofa
+        styles:
+          card:
+            - height: 52px
+        variables:
+          confirmation: "Préremplir la composition avec « Séjour seul » ?"
+          service: script.aspirateur_appliquer_raccourci
+          data:
+            raccourci: sejour_seul
+
+      - type: custom:button-card
+        template: carte_action_standard
+        entity: script.aspirateur_appliquer_raccourci
+        name: Étage complet
+        icon: mdi:stairs-up
+        styles:
+          card:
+            - height: 52px
+        variables:
+          confirmation: "Préremplir la composition avec « Étage complet » ?"
+          service: script.aspirateur_appliquer_raccourci
+          data:
+            raccourci: etage_complet
+
+      - type: custom:button-card
+        template: carte_action_standard
+        entity: script.aspirateur_appliquer_raccourci
+        name: Annexe complète
+        icon: mdi:home-outline
+        styles:
+          card:
+            - height: 52px
+        variables:
+          confirmation: "Préremplir la composition avec « Annexe complète » ?"
+          service: script.aspirateur_appliquer_raccourci
+          data:
+            raccourci: annexe_complete
+
+  # ==================================================
+  # 5️⃣ LANCEMENT — action principale, confirmée
+  # --------------------------------------------------
+  # Une mission est une action physique sur un équipement mobile :
+  # jamais un basculement d'un clic (contrat 11 §3.6). Le lancement
+  # porte l'orange de vigilance ; la remise à zéro reste neutre.
+  # ==================================================
+  - type: custom:button-card
+    template: sub_section_header
+    name: 🚀 Lancement
+
+  - type: grid
+    square: false
+    columns: 1
+    cards:
+      - type: custom:button-card
+        template: carte_action_standard_warning
+        entity: script.aspirateur_composer_intention
+        name: Lancer la mission
+        icon: mdi:robot-vacuum
+        variables:
+          confirmation: >-
+            ⚠️ Lancer une mission avec la composition affichée ? Le robot
+            va se mettre en marche.
+          service: script.aspirateur_composer_intention
+
+      - type: custom:button-card
+        template: carte_action_standard
+        entity: script.aspirateur_reinitialiser_composition
+        name: Réinitialiser la composition
+        icon: mdi:backup-restore
+        styles:
+          card:
+            - height: 52px
+        variables:
+          confirmation: "Remettre la composition à son état de départ ?"
+          service: script.aspirateur_reinitialiser_composition
+
+  # ==================================================
+  # 6️⃣ CONDUITE — quatre gestes, masqués hors sens physique
+  # --------------------------------------------------
+  # Les gardes sont celles du script de conduite, lues sur l'ÉTAT
+  # CANONIQUE — jamais sur une combinaison de témoins natifs, que le
+  # contrat 11 interdit à l'UI :
+  #   pause       ← nettoyage réel en cours
+  #   reprise     ← mission en pause
+  #   arrêt       ← mission ouverte, sans autre garde : l'arrêt n'est
+  #                 jamais plus contraint que le lancement (ASP-INV-43)
+  #   retour base ← mission ouverte, et le robot ne rentre pas déjà
+  # Le backend REVALIDE chacune : masquer ici est une commodité, pas
+  # une autorisation.
+  # ==================================================
+  - type: custom:button-card
+    template: sub_section_header
+    name: 🎛️ Conduite
+
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: sensor.aspirateur_etat_canonique
+        state: nettoyage_reel
+    card:
+      type: custom:button-card
+      template: carte_action_standard
+      entity: script.aspirateur_conduire_mission
+      name: Mettre en pause
+      icon: mdi:pause-circle
+      styles:
+        card:
+          - height: 52px
+      variables:
+        confirmation: "Mettre la mission en pause ?"
+        service: script.aspirateur_conduire_mission
+        data:
+          geste: pause
+
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: sensor.aspirateur_etat_canonique
+        state: pause
+    card:
+      type: custom:button-card
+      template: carte_action_standard
+      entity: script.aspirateur_conduire_mission
+      name: Reprendre la mission
+      icon: mdi:play-circle
+      styles:
+        card:
+          - height: 52px
+      variables:
+        confirmation: "Reprendre la mission ?"
+        service: script.aspirateur_conduire_mission
+        data:
+          geste: reprise
+
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: sensor.aspirateur_etat_canonique
+        attribute: mission_ouverte
+        state: oui
+      - condition: state
+        entity: sensor.aspirateur_etat_canonique
+        state_not: retour_base
+      - condition: state
+        entity: sensor.aspirateur_etat_canonique
+        state_not: amarrage
+      - condition: state
+        entity: sensor.aspirateur_etat_canonique
+        state_not: charge
+    card:
+      type: custom:button-card
+      template: carte_action_standard
+      entity: script.aspirateur_conduire_mission
+      name: Renvoyer à la base
+      icon: mdi:home-import-outline
+      styles:
+        card:
+          - height: 52px
+      variables:
+        confirmation: "Renvoyer le robot à sa base ?"
+        service: script.aspirateur_conduire_mission
+        data:
+          geste: retour_base
+
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: sensor.aspirateur_etat_canonique
+        attribute: mission_ouverte
+        state: oui
+    card:
+      type: custom:button-card
+      template: carte_action_standard_warning
+      entity: script.aspirateur_conduire_mission
+      name: Arrêter la mission
+      icon: mdi:stop-circle
+      styles:
+        card:
+          - height: 52px
+      variables:
+        confirmation: "⚠️ Arrêter la mission en cours ?"
+        service: script.aspirateur_conduire_mission
+        data:
+          geste: arret
+
+  # ==================================================
+  # 7️⃣ ENTRETIEN — synthèse compacte, LECTURE SEULE
+  # --------------------------------------------------
+  # Le geste de déclaration vit dans une carte d'action SÉPARÉE :
+  # l'action est physiquement séparée de la lecture, et ce lot ne la
+  # pose pas. Aucun bouton natif n'est exposé ici.
+  # ==================================================
+  - type: custom:button-card
+    template: sub_section_header
+    name: 🧰 Entretien
+
+  - type: grid
+    square: false
+    columns: 2
+    cards:
+      - type: custom:button-card
+        template: status_72_on_off
+        entity: binary_sensor.aspirateur_entretien_requis
+        name: Entretien requis
+        icon: mdi:broom
+
+      - type: custom:button-card
+        template: socle_status_label_72
+        entity: sensor.aspirateur_entretien_du
+        name: Éléments dus
+        icon: mdi:format-list-bulleted
+        label: |
+          [[[
+            const s = entity ? entity.state : null;
+            if (!s || s === 'unknown' || s === 'unavailable') return '—';
+            if (s === 'aucun') return 'Aucun';
+            if (s === 'non_evaluable') return 'Non évaluable';
+            return s;
+          ]]]
+        styles:
+          card:
+            - background-color: |
+                [[[
+                  const s = entity ? entity.state : null;
+                  if (!s || s === 'unknown' || s === 'unavailable')
+                    return 'rgba(158, 158, 158, 0.1)';
+                  if (s === 'aucun') return 'rgba(76, 175, 80, 0.2)';
+                  if (s === 'non_evaluable')
+                    return 'rgba(158, 158, 158, 0.1)';
+                  return 'rgba(244, 67, 54, 0.2)';
+                ]]]
+          label:
+            - white-space: normal
+            - line-height: 1.25

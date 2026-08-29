@@ -1,0 +1,30 @@
+# ==========================================================
+# 🤖 ARSENAL — DASHBOARD : Aspirateur
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter l'interface opérationnelle du domaine Aspirateur :
+#   état, composition d'une intention, raccourcis, lancement
+#   confirmé, conduite d'une mission ouverte, entretien.
+#
+# 🧭 ACCÈS
+#   Tuile « Aspirateur » du dashboard Navigation, ligne 4,
+#   colonne 4 — un raccourci, et rien d'autre.
+#   Badges de retour : Accueil et Navigation.
+#
+# 🧱 SQUELETTE PUR
+#   Aucun template Jinja ici : toute la logique de rendu vit dans
+#   l'include de contenu, comme dans tous les dashboards Arsenal.
+# ==========================================================
+
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+    cards:
+      - !include ../../includes/cartes/aspirateur/panneau_operationnel.yaml

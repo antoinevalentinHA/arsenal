@@ -101,7 +101,7 @@ implémentée.
 |---|---|
 | **D-31** | La carte NAS du dashboard Navigation est **remplacée** par la carte Aspirateur. |
 | **D-32** | L'accès NAS est **déplacé** dans le dashboard Système, avec une carte récapitulative et un raccourci vers le dashboard NAS existant. |
-| **D-33** | **Aucun dashboard Aspirateur dédié.** |
+| **D-33** | Le dashboard **Navigation** ne porte qu'un **raccourci** Aspirateur — une tuile. Le détail opérationnel vit dans un **dashboard Aspirateur dédié**. |
 | **D-34** | **Aucun hub documentaire Aspirateur.** |
 | **D-35** | **Aucune entrée Aspirateur Tier 1** dans la carte des domaines. |
 | **D-36** | La carte Navigation doit permettre **à terme le lancement**, pas seulement la lecture et la conduite. |
