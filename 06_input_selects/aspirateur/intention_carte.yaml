@@ -1,0 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Aspirateur — carte de l'intention
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Porter la CARTE désignée par l'opérateur dans la composition
+#   d'une intention de mission. Rôle contractuel ‹intention_carte›.
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             05_intention_de_mission.md · 12_identifiants_a_fournir.md §2.1
+#   Cadrage ratifié (D-44) : cadrage_l2_maintenance_ui, 09_UI.md §3.5.2
+#
+# 🧩 Nature :
+#   INTENTION opérateur — jamais l'état de l'appareil (ASP-INV-16).
+#
+# 🔍 Sémantique des valeurs — et leur traduction :
+#   Les options affichées sont des libellés d'INTERFACE. Le script de
+#   composition les traduit vers les index du moteur :
+#     Rez-de-chaussée → 0 · Étage → 1 · Annexe → 2
+#
+#   ⚠️ `Étage` s'affiche SANS espace finale. L'espace finale de
+#      `Étage ` appartient au référentiel TECHNIQUE du chapitre 02
+#      §2.1, dont ASP-INV-66 borne l'usage à deux gestes du moteur :
+#      écrire la sélection de carte, et la confirmer. Elle n'est
+#      JAMAIS une valeur d'interface — la traduction est obligatoire,
+#      et non une commodité.
+#
+# ❌ Ne fait PAS :
+#   - Ne commande PAS l'appareil
+#   - Ne valide RIEN : le moteur revalide intégralement (ASP-IMC-1)
+#   - Ne porte AUCUN `initial:` (aucun des dix-sept helpers n'en porte)
+#
+# 🔗 Écrivains :
+#   - script.aspirateur_appliquer_raccourci    (carte d'un raccourci)
+#   - script.aspirateur_reinitialiser_composition
+#   - l'opérateur, depuis la carte Navigation
+#
+# 🏷️ Statut :
+#   Couche d'intention — domaine aspirateur, lot U0
+# ==========================================================
+
+aspirateur_intention_carte:
+  name: "Aspirateur — Carte"
+  options:
+    - Rez-de-chaussée
+    - Étage
+    - Annexe

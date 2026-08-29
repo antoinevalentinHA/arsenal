@@ -184,6 +184,20 @@ views:
                       icon:
                         - color: "rgb(158, 158, 158)"
 
+                  # Ligne 4, quatrième place — anciennement Santé.
+                  # AUCUNE navigation : il n'existe et il n'existera aucun
+                  # dashboard Aspirateur (décision 1 du cadrage). La carte
+                  # opérationnelle du domaine vit plus bas, dans cette page.
+                  # La couleur vient exclusivement de l'autorité U1.
+                  - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_aspirateur_dashboard
+                    name: Aspirateur
+                    icon: mdi:robot-vacuum
+                    tap_action:
+                      action: none
+
                   - type: custom:button-card
                     template: bouton_navigation
                     name: Santé
@@ -216,16 +230,6 @@ views:
                       navigation_path: /imprimerie-dashboard
 
                   - type: custom:button-card
-                    template: bouton_navigation_dynamique
-                    variables:
-                      etat_dashboard: sensor.etat_nas_dashboard
-                    name: NAS
-                    icon: mdi:nas
-                    tap_action:
-                      action: navigate
-                      navigation_path: /nas-dashboard
-
-                  - type: custom:button-card
                     template: bouton_navigation
                     name: Énergie
                     icon: mdi:flash
@@ -245,6 +249,15 @@ views:
                 tap_action:
                   action: navigate
                   navigation_path: /system-dashboard
+
+          # ==================================================
+          # 🤖 ASPIRATEUR — CARTE OPÉRATIONNELLE DU DOMAINE
+          # --------------------------------------------------
+          # Aucun dashboard Aspirateur dédié (décision 1 du cadrage) :
+          # la tuile de la grille ci-dessus ne navigue pas, et toute
+          # l'interface du domaine vit ici, dans cette page.
+          # ==================================================
+          - !include ../includes/navigation/aspirateur.yaml
 
           # ==================================================
           # ⚙️ SYSTÈME — OUTILS & ADMINISTRATION

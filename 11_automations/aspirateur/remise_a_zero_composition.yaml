@@ -1,0 +1,83 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Aspirateur — Remise à zéro de la composition (lot U0)
+# ----------------------------------------------------------
+# 🆔 ID : 10280000000004
+#     Quatrième automation du domaine. Préfixe `1028` — aspirateur,
+#     doctrine `prefixe_domaine_automatisations.md`.
+#
+# 🎯 RÔLE
+#   Déclencher la remise à zéro des dix-sept helpers de composition.
+#   Elle n'ÉCRIT aucun helper : elle appelle le script de remise à
+#   zéro, seul écrivain (A-12, volet 1).
+#   Cadrage ratifié (D-44) : 09_UI.md §3.3 ter ·
+#   11_ARBITRAGES_RENDUS.md §4.2
+#
+# 📣 DEUX DÉCLENCHEURS, ET DEUX SEULEMENT
+#   1. `input_boolean.systeme_stable` → `on`
+#      La voie native `initial:` est fermée par une interdiction dure
+#      de la CI sur les booléens d'entrée : sans cette remise à zéro,
+#      les quatorze segments seraient RESTAURÉS au redémarrage —
+#      exactement l'intention fantôme que l'architecture évite.
+#      C'est le patron de readiness du dépôt, et le seul admis.
+#   2. Le verdict prend la valeur `COMMANDE/ISSUE_NON_ETABLIE`
+#      Cette valeur est écrite par le moteur IMMÉDIATEMENT AVANT
+#      l'émission et APRÈS l'ensemble des refus : la frontière est
+#      donc exacte. **Tout refus est écrit avant, et conserve la
+#      composition** — l'opérateur garde ce qu'il doit corriger.
+#
+# ⚖️ CONSÉQUENCE ASSUMÉE, ÉNONCÉE SANS EMBELLISSEMENT
+#   La valeur étant écrite AVANT l'appel de service, la remise à zéro
+#   se produit aussi lorsque l'émission lève. Ce n'est pas une perte :
+#   la trace d'intention est écrite juste avant par le moteur, et une
+#   exception d'émission n'est pas un refus que l'opérateur doive
+#   corriger — l'intention était bien formée.
+#
+# 🔒 CE QUE CETTE AUTOMATION NE FAIT JAMAIS
+#   - Elle LIT le verdict et ne l'ÉCRIT JAMAIS. L'écrivain reste le
+#     trio W1 / W2 / W3 (ASP-INV-86).
+#   - Elle ne commande JAMAIS l'appareil : aucun `vacuum.*`, aucun
+#     `roborock.*` (ASP-INV-31).
+#   - Elle n'écrit AUCUNE notification persistante : la projection de
+#     cycle est un objet séparé, et un état métier n'a qu'un writer.
+#   - Elle n'écrit AUCUN helper elle-même : le script le fait.
+#
+# 🔗 AUTORITÉ DE LECTURE — FERMÉE, DEUX ENTITÉS
+#   input_boolean.systeme_stable
+#   input_text.aspirateur_mission_verdict
+#
+# 🏷️ STATUT
+#   Couche d'intention — domaine aspirateur, lot U0
+# ==========================================================
+
+- id: "10280000000004"
+  alias: "Aspirateur - Remise a zero de la composition"
+  description: >-
+    Remet la composition d'intention a son etat de depart, au
+    redemarrage et apres une intention effectivement emise.
+
+  # `restart` : les deux declencheurs peuvent se suivre de pres, et
+  # un rejeu de la remise a zero est idempotent. `single` en
+  # abandonnerait un EN SILENCE.
+  mode: restart
+
+  # ======================================================
+  # 🔔 Déclencheurs — deux, et deux seulement
+  # ======================================================
+  trigger:
+    # Readiness : patron du dépôt pour une re-projection après
+    # redémarrage. Sans lui, les quatorze booléens seraient restaurés.
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+    # Frontière EXACTE : écrite après tous les refus, avant l'émission.
+    - platform: state
+      entity_id: input_text.aspirateur_mission_verdict
+      to: "COMMANDE/ISSUE_NON_ETABLIE"
+
+  # ======================================================
+  # 🔄 Action — une seule, et elle n'écrit aucun helper
+  # ======================================================
+  action:
+    - service: script.aspirateur_reinitialiser_composition

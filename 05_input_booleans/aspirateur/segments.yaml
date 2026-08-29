@@ -1,0 +1,91 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN : Aspirateur — segments de l'intention
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Porter la SÉLECTION DE PIÈCES de la composition d'une
+#    intention de mission — un booléen par segment commandable.
+#    Rôle contractuel ‹intention_segments›.
+#    Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#              02_referentiel_cartes_et_pieces.md §2 (table canonique)
+#              12_identifiants_a_fournir.md §2.1
+#    Cadrage ratifié (D-44) : 09_UI.md §3.5.1 et §3.5.3
+#
+# 🧩 Principe :
+#    - QUATORZE booléens, un par segment commandable du référentiel
+#      V1 : quatre pour la carte 0, huit pour la carte 1, deux pour
+#      la carte 2. Un fichier unique — famille homogène.
+#    - Le SUFFIXE est la PAIRE CANONIQUE elle-même, jamais un libellé
+#      Roborock : aucun index nu n'apparaît (ASP-INV-6), et le nom
+#      reste juste si l'appareil est renommé (ASP-INV-67).
+#    - Le NOM AFFICHÉ porte la carte ET le libellé canonique Arsenal :
+#      le chapitre 02 §4 établit qu'un libellé seul n'est pas une
+#      désignation.
+#    - `0_16` s'affiche **Séjour**, jamais `Salon` (ASP-INV-7).
+#
+# 🔒 Invariants :
+#    - INTENTION opérateur, jamais l'état de l'appareil (ASP-INV-16)
+#    - AUCUN `initial:` — la clé est d'interdiction dure côté CI, et
+#      la remise à zéro au redémarrage est portée par l'automation
+#      10280000000004 (A-12)
+#    - Ces booléens ne commandent RIEN et ne valident RIEN : le moteur
+#      revalide intégralement, et l'intégrité mono-carte s'applique
+#      sans réserve (ASP-IMC-1)
+#    - `2_17` (Ext) et `2_18` (Chambre1) sont ABSENTS, et c'est leur
+#      absence qui les rend refusés au motif SEGMENT_INCONNU (QO-1)
+#
+# 🧾 Seconde matérialisation ASSUMÉE :
+#    Ces quatorze clés sont une seconde copie du référentiel du
+#    chapitre 02. Le cadrage ne prétend pas l'éviter : il la reconnaît
+#    et la fait GARDER par une confrontation de CI dédiée, ASP-CI-28,
+#    exactement comme ASP-CI-21 garde celle du moteur (A-13).
+#
+# 🔗 Écrivains :
+#    - script.aspirateur_appliquer_raccourci        (carte + segments)
+#    - script.aspirateur_reinitialiser_composition  (les quatorze à off)
+#    - l'opérateur, depuis la carte Navigation
+#
+# 🏷️ Statut :
+#    Couche d'intention — domaine aspirateur, lot U0
+# ==========================================================
+
+aspirateur_segment_0_16:
+  name: "Aspirateur — RDC — Séjour"
+
+aspirateur_segment_0_18:
+  name: "Aspirateur — RDC — Entrée"
+
+aspirateur_segment_0_20:
+  name: "Aspirateur — RDC — WC RDC"
+
+aspirateur_segment_0_21:
+  name: "Aspirateur — RDC — Cage d'escaliers"
+
+aspirateur_segment_1_16:
+  name: "Aspirateur — Étage — Palier"
+
+aspirateur_segment_1_17:
+  name: "Aspirateur — Étage — Chambre Parents"
+
+aspirateur_segment_1_18:
+  name: "Aspirateur — Étage — Chambre Enfants"
+
+aspirateur_segment_1_19:
+  name: "Aspirateur — Étage — Salle de Jeux"
+
+aspirateur_segment_1_20:
+  name: "Aspirateur — Étage — Dressing"
+
+aspirateur_segment_1_21:
+  name: "Aspirateur — Étage — SDB Parents"
+
+aspirateur_segment_1_22:
+  name: "Aspirateur — Étage — WC Étage"
+
+aspirateur_segment_1_23:
+  name: "Aspirateur — Étage — SDB Enfants"
+
+aspirateur_segment_2_16:
+  name: "Aspirateur — Annexe — Salle de bain"
+
+aspirateur_segment_2_19:
+  name: "Aspirateur — Annexe — Chambre"

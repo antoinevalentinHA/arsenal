@@ -177,6 +177,35 @@ views:
                   action: navigate
                   navigation_path: /diagnostics-rain-bird-dashboard
 
+          # ==================================================
+          # 🗄️ NAS — POINT D'ENTRÉE
+          # --------------------------------------------------
+          # Le lot U2 retire la tuile NAS de la grille Navigation.
+          # Elle était l'UNIQUE lien vers `/nas-dashboard` dans tout
+          # `18_lovelace/` : sans ce raccourci, le dashboard NAS
+          # deviendrait inatteignable — et les contrôles de navigation
+          # vérifient R1 à R5 sans jamais détecter un dashboard orphelin.
+          # L'accès est donc DÉPLACÉ, jamais supprimé, comme la
+          # séquence du cadrage l'exige (09_UI.md §5.2, étape 1).
+          # La carte de synthèse NAS et son capteur de santé neuf
+          # relèvent d'un lot ultérieur : ce raccourci ne les anticipe
+          # pas et n'invente aucun identifiant.
+          # ==================================================
+          - type: grid
+            columns: 1
+            square: false
+            cards:
+              - type: custom:button-card
+                template: bouton_navigation
+                name: NAS
+                icon: mdi:nas
+                tap_action:
+                  action: navigate
+                  navigation_path: /nas-dashboard
+                styles:
+                  icon:
+                    - color: "rgb(158, 158, 158)"
+
           ####################################################
           # ⚠️ AUTOMATISATIONS DÉSACTIVÉES
           ####################################################

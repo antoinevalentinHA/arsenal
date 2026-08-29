@@ -316,11 +316,311 @@ FICHIER_ENTRETIEN = "14_entretien.md"
 FICHIER_ETATS = "08_etats_et_observation.md"
 
 # ═════════════════════════════════════════════════════════════
-# MAINTENANCE — ASP-CI-29 … ASP-CI-33 (lot M0, chapitre 14)
+# COUCHE D'INTENTION — ASP-CI-28 (lot U0, arbitrage A-13)
 #
-# ASP-CI-28 est RESERVE a la confrontation du referentiel embarque de la
-# couche d'intention (arbitrage A-13, lot U0). Il n'est pas libre : il est
-# pris. La numerotation du domaine se lit donc 1..27 + [28 reserve] + 29..33.
+# La reserve est LEVEE : le lot U0 livre les vingt objets, et avec eux la
+# SECONDE MATERIALISATION du referentiel du chapitre 02. Le cadrage ne
+# pretend pas l'eviter — il la reconnait et exige qu'une confrontation la
+# garde, exactement comme ASP-CI-21 garde celle du moteur.
+#
+# Ce que le controle confronte, et rien d'autre : les quatorze booleens,
+# leurs paires canoniques, leur appartenance aux cartes, leurs libelles
+# Arsenal, le chapitre 02 et le referentiel embarque du moteur L1 — plus le
+# MAPPING qui les relie, qui vit dans les scripts de composition et de
+# raccourci. Une copie derivee designe la mauvaise piece : c'est cela, et
+# seulement cela, que le controle rend impossible.
+# ═════════════════════════════════════════════════════════════
+
+FICHIER_U0_SEGMENTS = "05_input_booleans/aspirateur/segments.yaml"
+FICHIER_U0_CARTE = "06_input_selects/aspirateur/intention_carte.yaml"
+FICHIER_U0_PROFIL = "06_input_selects/aspirateur/intention_profil.yaml"
+FICHIER_U0_PASSAGES = "06_input_selects/aspirateur/intention_passages.yaml"
+FICHIER_U0_COMPOSITION = "10_scripts/aspirateur/composer_intention.yaml"
+FICHIER_U0_RACCOURCI = "10_scripts/aspirateur/appliquer_raccourci.yaml"
+FICHIER_U0_REINIT = "10_scripts/aspirateur/reinitialiser_composition.yaml"
+FICHIERS_U0 = (FICHIER_U0_SEGMENTS, FICHIER_U0_CARTE, FICHIER_U0_PROFIL,
+               FICHIER_U0_PASSAGES, FICHIER_U0_COMPOSITION,
+               FICHIER_U0_RACCOURCI, FICHIER_U0_REINIT)
+
+# Le suffixe d'un booleen de segment est la PAIRE CANONIQUE elle-meme
+# (ASP-INV-6) : aucun index nu, aucun libelle Roborock.
+PREFIXE_SEGMENT_U0 = "aspirateur_segment_"
+CLE_U0_SEGMENTS = re.compile(r"^" + PREFIXE_SEGMENT_U0 + r"(\d+_\d+)$")
+
+# Nom de carte tel qu'il apparait dans le NOM AFFICHE des booleens
+# (09_UI.md §3.5.3). Distinct de l'option du selecteur, et c'est voulu.
+CARTE_AFFICHEE_U0 = {"0": "RDC", "1": "Étage", "2": "Annexe"}
+# Options du selecteur de carte -> index du moteur (09_UI.md §3.5.2).
+# `Étage` s'affiche SANS espace finale : l'espace de `Étage ` appartient au
+# referentiel TECHNIQUE, dont ASP-INV-66 borne l'usage au moteur.
+CARTE_OPTION_U0 = {"Rez-de-chaussée": "0", "Étage": "1", "Annexe": "2"}
+PASSAGES_OPTION_U0 = {"1 passage": "1", "2 passages": "2", "3 passages": "3"}
+
+# Les CINQ raccourcis — cles du champ ferme `raccourci` -> nom du perimetre
+# contractuel (02 §3, 10 §3). La cle est une valeur de conception, arretee
+# par l'operateur a la cloture d'`A-5` ; le PERIMETRE, lui, est contractuel,
+# et c'est lui que le controle confronte.
+RACCOURCI_U0 = {
+    "rdc_complet": "RDC complet",
+    "entree_escaliers_wc_rdc": "Entrée + Cage d'escaliers + WC RDC",
+    "sejour_seul": "Séjour seul",
+    "etage_complet": "Étage complet",
+    "annexe_complete": "Annexe complète",
+}
+
+
+def load_runtime_u0() -> dict[str, str]:
+    """Les sept fichiers de la couche d'intention, lus par CHEMIN NOMME."""
+    out: dict[str, str] = {}
+    for rel in FICHIERS_U0:
+        chemin = ROOT / rel
+        if chemin.is_file():
+            out[rel] = chemin.read_text(encoding="utf-8", errors="ignore")
+    return out
+
+
+def _doc_u0(u0: dict[str, str], rel: str):
+    try:
+        return yaml.safe_load(u0.get(rel) or "")
+    except yaml.YAMLError:
+        return None
+
+
+def _variables_u0(doc, cle: str):
+    """La valeur de `cle` dans le premier bloc `variables:` d'un script."""
+    if not isinstance(doc, dict):
+        return None
+    for corps in doc.values():
+        if not isinstance(corps, dict):
+            continue
+        for st in corps.get("sequence") or []:
+            if isinstance(st, dict) and isinstance(st.get("variables"), dict) \
+                    and cle in st["variables"]:
+                return st["variables"][cle]
+    return None
+
+
+def check_referentiel_intention(t02: str, t10: str, corps,
+                                u0: dict[str, str]) -> list[str]:
+    """ASP-CI-28 — la seconde materialisation du referentiel, confrontee.
+
+    Six faces, toutes confrontees et jamais supposees : les quatorze
+    booleens, leurs paires, leurs cartes, leurs libelles, le chapitre 02, et
+    le referentiel embarque du moteur L1. Plus le mapping qui les relie.
+    """
+    errs: list[str] = []
+
+    manquants = [rel for rel in FICHIERS_U0 if rel not in u0]
+    if manquants:
+        return [f"ASP-CI-28 : la couche d'intention est incomplete — "
+                f"{sorted(manquants)} absent(s) du depot."]
+
+    # ── Les trois autorites confrontees ────────────────────────────────────
+    canon = parse_segments(t02)              # chapitre 02 §2
+    if not canon:
+        return ["ASP-CI-28 : table canonique des segments introuvable (02 §2)."]
+    ref = next((v["referentiel"] for v in _bloc_variables(corps)
+                if "referentiel" in v), None)
+    if not isinstance(ref, dict):
+        return ["ASP-CI-28 : referentiel embarque du moteur introuvable — la "
+                "confrontation n'a pas de second terme."]
+    moteur: dict[str, str] = {}
+    for carte, bloc in ref.items():
+        for paire in (bloc.get("segments") or {}):
+            moteur[str(paire)] = str(carte)
+
+    # ── (a) les quatorze booleens : cles, paires, cartes, libelles ─────────
+    doc_seg = _doc_u0(u0, FICHIER_U0_SEGMENTS)
+    if not isinstance(doc_seg, dict) or not doc_seg:
+        return [f"ASP-CI-28 : `{FICHIER_U0_SEGMENTS}` est illisible ou vide."]
+    paires_u0: dict[str, str] = {}
+    for cle, corps_helper in sorted(doc_seg.items()):
+        m = CLE_U0_SEGMENTS.match(str(cle))
+        if not m:
+            errs.append(f"ASP-CI-28 : la cle `{cle}` ne porte pas la forme "
+                        f"`{PREFIXE_SEGMENT_U0}‹paire canonique›` — un index "
+                        "nu ou un libelle Roborock ne designe rien "
+                        "(ASP-INV-6, ASP-INV-67).")
+            continue
+        paire = m.group(1)
+        paires_u0[paire] = str((corps_helper or {}).get("name") or "")
+
+    attendues = set(canon)
+    if set(paires_u0) != attendues:
+        errs.append(f"ASP-CI-28 : les booleens de segment couvrent "
+                    f"{sorted(paires_u0)} — le chapitre 02 §2 en compte "
+                    f"{sorted(attendues)}. Une copie qui derive designe la "
+                    "mauvaise piece.")
+    if set(paires_u0) != set(moteur):
+        errs.append(f"ASP-CI-28 : les booleens de segment couvrent "
+                    f"{sorted(paires_u0)} — le referentiel embarque du moteur "
+                    f"en compte {sorted(moteur)}.")
+
+    for paire, nom in sorted(paires_u0.items()):
+        if paire not in canon or paire not in moteur:
+            continue
+        libelle = canon[paire][0]
+        carte = CARTE_AFFICHEE_U0.get(moteur[paire])
+        if carte is None:
+            errs.append(f"ASP-CI-28 : le segment `{paire}` releve de la carte "
+                        f"`{moteur[paire]}`, sans nom de carte affichable.")
+            continue
+        if paire.split("_", 1)[0] != moteur[paire]:
+            errs.append(f"ASP-CI-28 : la paire `{paire}` annonce la carte "
+                        f"`{paire.split('_', 1)[0]}` et le moteur la range "
+                        f"dans `{moteur[paire]}`.")
+        attendu = f"Aspirateur — {carte} — {libelle}"
+        if nom != attendu:
+            errs.append(f"ASP-CI-28 : `{PREFIXE_SEGMENT_U0}{paire}` affiche "
+                        f"{nom!r} — attendu {attendu!r} : carte ET libelle "
+                        "canonique Arsenal (02 §4, ASP-INV-7).")
+
+    # ── (b) aucun `initial:` sur les dix-sept helpers ──────────────────────
+    for rel in (FICHIER_U0_SEGMENTS, FICHIER_U0_CARTE, FICHIER_U0_PROFIL,
+                FICHIER_U0_PASSAGES):
+        if re.search(r"^[ \t]+initial[ \t]*:", sans_commentaires_yaml(u0[rel]),
+                     re.M):
+            errs.append(f"ASP-CI-28 : `{rel}` porte `initial:` — la remise a "
+                        "zero au demarrage est portee par l'automation "
+                        f"`{AID_U0_COMPOSITION}`, jamais par une cle native "
+                        "(A-12).")
+
+    # ── (c) les trois selecteurs : options exactes ─────────────────────────
+    def options(rel: str, cle: str) -> list[str]:
+        doc = _doc_u0(u0, rel)
+        bloc = (doc or {}).get(cle) or {}
+        return [str(o) for o in (bloc.get("options") or [])]
+
+    opts_carte = options(FICHIER_U0_CARTE, "aspirateur_intention_carte")
+    if opts_carte != list(CARTE_OPTION_U0):
+        errs.append(f"ASP-CI-28 : le selecteur de carte expose {opts_carte} — "
+                    f"attendu {list(CARTE_OPTION_U0)}.")
+    if any(o != o.strip() for o in opts_carte):
+        errs.append("ASP-CI-28 : une option du selecteur de carte porte une "
+                    "espace de bord — l'espace finale de `Étage ` appartient "
+                    "au referentiel TECHNIQUE, borne au moteur (ASP-INV-66).")
+    opts_pass = options(FICHIER_U0_PASSAGES, "aspirateur_intention_passages")
+    if opts_pass != list(PASSAGES_OPTION_U0):
+        errs.append(f"ASP-CI-28 : le selecteur de passages expose {opts_pass} "
+                    f"— attendu {list(PASSAGES_OPTION_U0)}.")
+
+    # Les cinq libelles de profil sont ceux du chapitre 03, pris via la table
+    # de traduction : l'interface n'introduit aucun vocabulaire parallele.
+    opts_profil = options(FICHIER_U0_PROFIL, "aspirateur_intention_profil")
+    doc_comp = _doc_u0(u0, FICHIER_U0_COMPOSITION)
+    table_profils = _variables_u0(doc_comp, "profils")
+    profils_moteur = next((v["profils"] for v in _bloc_variables(corps)
+                           if "profils" in v), None)
+    if not isinstance(table_profils, dict) or not isinstance(profils_moteur, dict):
+        errs.append("ASP-CI-28 : table de traduction des profils introuvable "
+                    "— la concordance interface -> moteur n'est pas etablie.")
+    else:
+        if list(table_profils) != opts_profil:
+            errs.append(f"ASP-CI-28 : la traduction des profils porte "
+                        f"{list(table_profils)} — le selecteur expose "
+                        f"{opts_profil}. Une option non traduisible partirait "
+                        "en valeur vide.")
+        if set(table_profils.values()) != set(profils_moteur):
+            errs.append(f"ASP-CI-28 : la traduction des profils vise "
+                        f"{sorted(set(table_profils.values()))} — le moteur "
+                        f"connait {sorted(profils_moteur)}.")
+
+    # ── (d) la table carte et le mapping paire -> booleen ──────────────────
+    table_cartes = _variables_u0(doc_comp, "cartes")
+    if table_cartes != CARTE_OPTION_U0:
+        errs.append(f"ASP-CI-28 : la traduction des cartes porte "
+                    f"{table_cartes!r} — attendu {CARTE_OPTION_U0!r}.")
+    table_passages = _variables_u0(doc_comp, "table_passages")
+    if table_passages != PASSAGES_OPTION_U0:
+        errs.append(f"ASP-CI-28 : la traduction des passages porte "
+                    f"{table_passages!r} — attendu {PASSAGES_OPTION_U0!r}.")
+
+    ordre_canon = sorted(canon, key=lambda s: (int(s.split("_")[0]),
+                                               int(s.split("_")[1])))
+    composition = _variables_u0(doc_comp, "composition")
+    if not isinstance(composition, list):
+        errs.append(f"ASP-CI-28 : `{FICHIER_U0_COMPOSITION}` ne porte aucune "
+                    "table `composition` — le mapping paire -> booleen est "
+                    "introuvable.")
+    else:
+        vues = [str((s or {}).get("paire")) for s in composition]
+        if vues != ordre_canon:
+            errs.append(f"ASP-CI-28 : la table `composition` porte {vues} — "
+                        f"attendu l'ordre canonique {ordre_canon} (02 §2).")
+        for s in composition:
+            paire = str((s or {}).get("paire"))
+            attendu = f"input_boolean.{PREFIXE_SEGMENT_U0}{paire}"
+            if str((s or {}).get("helper")) != attendu:
+                errs.append(f"ASP-CI-28 : la paire `{paire}` est associee a "
+                            f"`{(s or {}).get('helper')}` — attendu "
+                            f"`{attendu}`.")
+
+    # ── (e) les cinq raccourcis, confrontes aux perimetres contractuels ────
+    doc_rac = _doc_u0(u0, FICHIER_U0_RACCOURCI)
+    raccourcis = _variables_u0(doc_rac, "raccourcis")
+    perimetres: dict[str, tuple[str, list[str]]] = {}
+    for source, label in ((t02, "02 §3"), (t10, "10 §3")):
+        for nom, carte, comp in PERIMETRE.findall(source):
+            perimetres.setdefault(nom.strip(), (carte, SEGMENT_REF.findall(comp)))
+    if not isinstance(raccourcis, dict):
+        errs.append(f"ASP-CI-28 : `{FICHIER_U0_RACCOURCI}` ne porte aucune "
+                    "table `raccourcis` — le champ ferme n'a pas d'enumeration.")
+    else:
+        if set(raccourcis) != set(RACCOURCI_U0):
+            errs.append(f"ASP-CI-28 : le champ ferme expose {sorted(raccourcis)} "
+                        f"— attendu exactement {sorted(RACCOURCI_U0)}. Creer, "
+                        "modifier ou supprimer un raccourci est un acte "
+                        "contractuel (ASP-INV-57).")
+        for cle, nom in sorted(RACCOURCI_U0.items()):
+            bloc = raccourcis.get(cle)
+            if not isinstance(bloc, dict):
+                continue
+            if nom not in perimetres:
+                errs.append(f"ASP-CI-28 : le perimetre « {nom} » du raccourci "
+                            f"`{cle}` est introuvable dans les tables "
+                            "contractuelles (02 §3, 10 §3).")
+                continue
+            carte_attendue, segs_attendus = perimetres[nom]
+            segs = [str(s) for s in (bloc.get("segments") or [])]
+            if sorted(segs) != sorted(segs_attendus):
+                errs.append(f"ASP-CI-28 : le raccourci `{cle}` prerempli "
+                            f"{sorted(segs)} — le perimetre « {nom} » en "
+                            f"compte {sorted(segs_attendus)}.")
+            cartes_vues = {s.split("_", 1)[0] for s in segs}
+            if len(cartes_vues) > 1:
+                errs.append(f"ASP-CI-28 : le raccourci `{cle}` agrege les "
+                            f"cartes {sorted(cartes_vues)} — un raccourci est "
+                            "mono-carte (ASP-INV-55).")
+            option = str(bloc.get("carte") or "")
+            if CARTE_OPTION_U0.get(option) != carte_attendue:
+                errs.append(f"ASP-CI-28 : le raccourci `{cle}` designe la "
+                            f"carte {option!r}, qui ne vaut pas l'index "
+                            f"`{carte_attendue}` du perimetre « {nom} ».")
+            if {"profil", "passages"} & set(bloc):
+                errs.append(f"ASP-CI-28 : le raccourci `{cle}` presume un "
+                            "profil ou un nombre de passages — un raccourci "
+                            "n'en fixe aucun (ASP-INV-56).")
+
+    tous = _variables_u0(doc_rac, "tous_les_segments")
+    if [str(s) for s in (tous or [])] != ordre_canon:
+        errs.append(f"ASP-CI-28 : `{FICHIER_U0_RACCOURCI}` porte "
+                    f"{[str(s) for s in (tous or [])]} comme liste complete — "
+                    f"attendu {ordre_canon}. Une liste incomplete laisserait "
+                    "une case d'une autre carte allumee.")
+
+    # ── (f) la remise a zero eteint les QUATORZE, nommes un a un ───────────
+    eteints = set(re.findall(r"input_boolean\.(" + PREFIXE_SEGMENT_U0
+                             + r"\d+_\d+)",
+                             sans_commentaires_yaml(u0[FICHIER_U0_REINIT])))
+    attendus_eteints = {PREFIXE_SEGMENT_U0 + p for p in canon}
+    if eteints != attendus_eteints:
+        errs.append(f"ASP-CI-28 : la remise a zero nomme {sorted(eteints)} — "
+                    f"attendu les quatorze {sorted(attendus_eteints)}.")
+    return errs
+
+
+# ═════════════════════════════════════════════════════════════
+# MAINTENANCE — ASP-CI-29 … ASP-CI-33 (lot M0, chapitre 14)
 # ═════════════════════════════════════════════════════════════
 
 # Les quatre postes, FIGES ICI. Ils sont CONFRONTES au releve d'attestation,
@@ -511,17 +811,22 @@ AID_N1_MAINTENANCE = "10280000000003"   # projection persistante de maintenance
 # d'entretien. La table nomme chacune AVEC son fichier : un identifiant
 # deplace d'un fichier a l'autre echoue, la ou un simple ensemble d'IDs
 # l'aurait laisse passer.
+# AMENDEMENT U0 — `...04` est ATTRIBUE : `A-5` est clos, et l'automation de
+# remise a zero de la composition existe (A-12). Le dossier porte donc QUATRE
+# automations de natures differentes. `AID_HORS_N1` devient VIDE et reste en
+# place : c'est le point d'accroche d'un futur identifiant differe, et le
+# supprimer ferait disparaitre le mecanisme avec la donnee.
+AID_U0_COMPOSITION = "10280000000004"   # remise a zero de la composition
 AID_N1_AUTORISES = frozenset({"10280000000001", AID_N1_MISSION,
-                              AID_N1_MAINTENANCE})
+                              AID_N1_MAINTENANCE, AID_U0_COMPOSITION})
+RUNTIME_U0_AUTO = DOSSIER_N1 + "/remise_a_zero_composition.yaml"
 FICHIER_DE_L_AID = {
     "10280000000001": "11_automations/aspirateur/supervision_mission.yaml",
     AID_N1_MISSION: "11_automations/aspirateur/notification_mission.yaml",
     AID_N1_MAINTENANCE: RUNTIME_N1,
+    AID_U0_COMPOSITION: RUNTIME_U0_AUTO,
 }
-# Hors perimetre du dossier : `...04`, remise a zero de la composition
-# d'intention (lot U0, bloque par `A-5`). Il n'existe pas, et son apparition
-# ici serait une implementation prematuree.
-AID_HORS_N1 = {"10280000000004": "remise a zero de la composition — lot U0"}
+AID_HORS_N1: dict[str, str] = {}
 # Tout identifiant du domaine, quelle que soit sa valeur. Balaye le TEXTE du
 # dossier, commentaires compris : le parseur YAML ne voit que les automations
 # qu'il sait lire, et un identifiant cite ailleurs — une forme non couverte,
@@ -590,6 +895,8 @@ MODES_N1 = frozenset({"restart"})
 # lire et d'appeler. Un fichier absent de la table est REFUSE : le dossier est
 # ferme, et un quatrieme objet n'y apparait pas en silence.
 SCRIPT_MOBILE = "script.notification_envoyer_avance"
+# Le SEUL objet que l'automation de remise a zero appelle (lot U0).
+SCRIPT_U0_REINIT = "script.aspirateur_reinitialiser_composition"
 CIBLE_MOBILE = "input_text.telephone_parent_1_notify"
 # La projection d'entretien lit ses deux entites d'autorite ; celle de mission
 # lit le verdict et sa derivation lisible ; la supervision lit le verdict, les
@@ -613,6 +920,12 @@ AUTORITE_PAR_FICHIER = {
                    "sensor.roborock_q7_max_dock_erreur_de_dock",
                    "vacuum.roborock_q7_max",
                    READINESS_N1, CIBLE_MOBILE}),
+    # AMENDEMENT U0 — quatrieme nature : la remise a zero de la composition.
+    # Elle LIT le verdict — exception nominative d'ASP-CI-11 ci-dessous — et
+    # le readiness, rien d'autre. Elle n'ecrit aucun helper elle-meme : le
+    # script de remise a zero est le seul ecrivain (A-12).
+    RUNTIME_U0_AUTO: frozenset({"input_text.aspirateur_mission_verdict",
+                                READINESS_N1}),
 }
 SERVICES_PAR_FICHIER = {
     RUNTIME_N1: frozenset({"persistent_notification.create",
@@ -622,6 +935,7 @@ SERVICES_PAR_FICHIER = {
                    "persistent_notification.dismiss"}),
     "11_automations/aspirateur/supervision_mission.yaml":
         frozenset({"input_text.set_value", SCRIPT_MOBILE}),
+    RUNTIME_U0_AUTO: frozenset({SCRIPT_U0_REINIT}),
 }
 # Les deux LECTEURS PURS : ils ne doivent ecrire aucun verdict, ni commander.
 PROJECTIONS_PURES = frozenset({
@@ -3122,7 +3436,12 @@ WRITERS_VERDICT = {
 # LECTEUR nominatif du verdict : la projection persistante de mission, et elle
 # seule. Elle a le droit de MENTIONNER le helper ; elle n'a AUCUN droit
 # d'ecriture — l'ecrivain reste le trio (ASP-INV-31, ASP-INV-86).
-LECTEURS_VERDICT = frozenset({RUNTIME_L2_PROJECTION})
+# AMENDEMENT U0 — l'exception nominative de LECTURE du verdict s'ouvre a un
+# SECOND objet, et a un seul : l'automation de remise a zero de la
+# composition. Elle en a structurellement besoin — la frontiere « apres tous
+# les refus, avant l'emission » n'est lisible que dans le verdict (A-12) —, et
+# l'exception reste NOMINATIVE : elle nomme un fichier, jamais un motif.
+LECTEURS_VERDICT = frozenset({RUNTIME_L2_PROJECTION, RUNTIME_U0_AUTO})
 # Fichiers ou un appel d'appareil est admis. DEUX, et deux seulement.
 COMMANDENT_APPAREIL = frozenset({RUNTIME_MOTEUR, RUNTIME_L2_CONDUITE})
 
@@ -3661,7 +3980,11 @@ def check_ecrivain_unique(moteur_yaml, textes_runtime, yaml_depot) -> list[str]:
     # La projection de mission LIT le verdict ; elle ne l'ecrit JAMAIS.
     for rel in sorted(LECTEURS_VERDICT):
         try:
-            doc = yaml.safe_load(textes_runtime.get(rel) or "")
+            # Le lecteur U0 n'appartient pas aux fichiers runtime L1/L2 : sans
+            # ce repli sur le depot, la preuve « lit mais n'ecrit jamais »
+            # porterait sur un document VIDE, donc sur rien.
+            doc = yaml.safe_load(
+                textes_runtime.get(rel) or yaml_depot.get(rel) or "")
         except yaml.YAMLError:
             continue
         ecrites, _ = _verdicts_du_document(doc)
@@ -5068,6 +5391,7 @@ def run() -> int:
     # N1 : les automations de projection. Le DOSSIER est lu, pas un fichier
     # nomme : c'est ce qui rend detectable un troisieme writer glisse a cote.
     n1 = load_runtime_n1()
+    u0 = load_runtime_u0()
     depot = load_yaml_depot()
 
     controles = (
@@ -5150,8 +5474,10 @@ def run() -> int:
          check_chemins_silencieux(corps.get("sequence") or [])),
         ("ASP-CI-27 écritures préparatoires (allowlist, fraîcheur, ordre)",
          check_ecritures_preparatoires(corps.get("sequence") or [], corps)),
-        # ASP-CI-28 : RÉSERVÉ — confrontation du référentiel embarqué de la
-        # couche d'intention (A-13, lot U0). Non libre, non réutilisable.
+        ("ASP-CI-28 référentiel de la couche d'intention (A-13)",
+         check_referentiel_intention(
+             textes.get("02_referentiel_cartes_et_pieces.md", ""),
+             textes.get("10_raccourcis.md", ""), corps, u0)),
         ("ASP-CI-29 périmètre et entités d'entretien",
          check_perimetre_entretien(textes.get(FICHIER_ENTRETIEN, ""), releve)),
         ("ASP-CI-30 échéance d'entretien et honnêteté",
@@ -5191,7 +5517,8 @@ def run() -> int:
           f"{len(fonctionnel)} fichiers YAML fonctionnels balayés par ASP-CI-31 · "
           f"{len(attestes_audit)} identifiants attestés (audit + relevé) · "
           f"{1 if m1 else 0} fichier runtime M1 (projection d'entretien) · "
-          f"{len(n1)} automation(s) du domaine balayées par ASP-CI-37/39")
+          f"{len(n1)} automation(s) du domaine balayées par ASP-CI-37/39 · "
+          f"{len(u0)} fichier(s) de la couche d'intention balayés par ASP-CI-28")
     if erreurs:
         print("\nAspirateur — écarts contractuels détectés :")
         for e in erreurs:
@@ -5200,11 +5527,11 @@ def run() -> int:
     print("\nOK - domaine Aspirateur : intégrité normative, conduite "
           "runtime, acte contractuel Maintenance, projection "
           "d'entretien, projections persistantes, conduite et supervision "
-          "de mission vérifiées — "
-          f"{len(controles)} lignes affichées pour 38 contrôles logiques, "
+          "de mission, couche d'intention vérifiées — "
+          f"{len(controles)} lignes affichées pour 39 contrôles logiques, "
           "0 écart.")
     print("     décompte : ASP-CI-12/13 et ASP-CI-16/17 partagent chacun une "
-          "ligne ; ASP-CI-28 est RÉSERVÉ au lot U0 et n'est pas exécuté.")
+          "ligne ; ASP-CI-28 est LIVRÉ par le lot U0.")
     return 0
 
 
@@ -7975,8 +8302,11 @@ def selftest() -> None:
     # L2 : controles de RUNTIME DE CONDUITE ET DE SUPERVISION, joues par la
     # batterie de mutations plus bas, sur les fichiers reels.
     controles_l2 = {"check_sequence_conduite", "check_supervision"}
+    # U0 : confrontation de la COUCHE D'INTENTION, jouee par la batterie
+    # ASP-CI-28 plus bas, sur les sept fichiers reels.
+    controles_u0 = {"check_referentiel_intention"}
     manquants = (invoques - normatifs - set(CONTROLES_RUNTIME) - controles_m1
-                 - controles_n1 - controles_l2)
+                 - controles_n1 - controles_l2 - controles_u0)
     assert not manquants, \
         f"m-C bis : `run()` invoque {sorted(manquants)}, absent(s) de la " \
         f"batterie du selftest — c'est exactement le trou qui a laissé " \
@@ -8273,6 +8603,114 @@ def selftest() -> None:
         "**Aucune notification ajoutée**", "**Une notification est émise**"), T08),
         "AUCUNE", "CI-33 notification hors mission")
 
+
+    # ═══════════════════════════════════════════════════════════════════
+    # U0 — ASP-CI-28, joue sur les SEPT FICHIERS REELS de la couche
+    # d'intention. Les mutations portent sur ce qui est livre : une
+    # reecriture de la seconde materialisation fera ECHOUER cette batterie
+    # plutot que passer en silence. C'est tout l'objet d'`A-13`.
+    # ═══════════════════════════════════════════════════════════════════
+
+    U0_0 = load_runtime_u0()
+    T10R = doc0["10_raccourcis.md"]
+
+    def u0_mut(rel: str, vieux: str, neuf: str) -> dict[str, str]:
+        assert vieux in U0_0[rel], f"ancre U0 absente de {rel} : {vieux[:60]}"
+        copie = dict(U0_0)
+        copie[rel] = U0_0[rel].replace(vieux, neuf, 1)
+        return copie
+
+    def ci28(u0):
+        return check_referentiel_intention(t02r, T10R, corps0, u0)
+
+    c.conforme(ci28(U0_0), "CI-28 couche d'intention livree conforme")
+
+    # ---- la couche doit exister en entier ---------------------------------
+    c.viole(ci28({k: v for k, v in U0_0.items() if k != FICHIER_U0_SEGMENTS}),
+            "incomplete", "CI-28 fichier de segments absent")
+
+    # ---- les quatorze booleens : cle, carte, libelle ----------------------
+    c.viole(ci28(u0_mut(FICHIER_U0_SEGMENTS,
+                        "aspirateur_segment_0_16:", "aspirateur_segment_16:")),
+            "paire canonique", "CI-28 index nu")
+    c.viole(ci28(u0_mut(FICHIER_U0_SEGMENTS,
+                        "Aspirateur — RDC — Séjour",
+                        "Aspirateur — RDC — Salon")),
+            "libelle canonique", "CI-28 libelle Roborock restitue")
+    c.viole(ci28(u0_mut(FICHIER_U0_SEGMENTS,
+                        "Aspirateur — Étage — WC Étage",
+                        "Aspirateur — RDC — WC Étage")),
+            "attendu", "CI-28 carte affichee fausse")
+    c.viole(ci28(u0_mut(FICHIER_U0_SEGMENTS,
+                        "aspirateur_segment_1_22:\n"
+                        "  name: \"Aspirateur — Étage — WC Étage\"\n\n", "")),
+            "le chapitre 02 §2 en compte", "CI-28 quatorzieme segment retire")
+    c.viole(ci28(u0_mut(FICHIER_U0_SEGMENTS,
+                        "aspirateur_segment_2_19:",
+                        "aspirateur_segment_2_18:")),
+            "en compte", "CI-28 segment hors referentiel V1")
+
+    # ---- `initial:` reste interdit sur les dix-sept helpers ---------------
+    c.viole(ci28(u0_mut(FICHIER_U0_CARTE,
+                        "  options:", "  initial: Annexe\n  options:")),
+            "initial", "CI-28 cle initiale sur un selecteur")
+
+    # ---- les trois selecteurs ---------------------------------------------
+    # Le scalaire plain de YAML mange l'espace finale : seule une valeur
+    # CITEE peut la porter jusqu'a l'interface. C'est donc la forme citee que
+    # la garde doit attraper — l'autre n'existe pas.
+    c.viole(ci28(u0_mut(FICHIER_U0_CARTE, "    - Étage\n", '    - "Étage "\n')),
+            "espace de bord", "CI-28 espace finale de la carte 1 en interface")
+    c.viole(ci28(u0_mut(FICHIER_U0_PASSAGES,
+                        "    - 3 passages\n", "    - 4 passages\n")),
+            "attendu", "CI-28 quatrieme passage")
+    c.viole(ci28(u0_mut(FICHIER_U0_PROFIL,
+                        "    - Aspiration turbo\n", "    - Turbo\n")),
+            "selecteur expose", "CI-28 vocabulaire de profil parallele")
+
+    # ---- le mapping paire -> booleen --------------------------------------
+    c.viole(ci28(u0_mut(FICHIER_U0_COMPOSITION,
+                        "helper: input_boolean.aspirateur_segment_0_18",
+                        "helper: input_boolean.aspirateur_segment_0_20")),
+            "est associee a", "CI-28 mapping croise")
+    c.viole(ci28(u0_mut(FICHIER_U0_COMPOSITION,
+                        '"Étage": "1"', '"Étage": "2"')),
+            "traduction des cartes", "CI-28 traduction de carte fausse")
+    c.viole(ci28(u0_mut(FICHIER_U0_COMPOSITION,
+                        '"Aspiration turbo": "aspiration_turbo"',
+                        '"Aspiration turbo": "turbo"')),
+            "le moteur connait", "CI-28 cle de profil inconnue du moteur")
+
+    # ---- les cinq raccourcis ----------------------------------------------
+    c.viole(ci28(u0_mut(FICHIER_U0_RACCOURCI,
+                        'sejour_seul:', 'sejour:')),
+            "attendu exactement", "CI-28 sixieme cle de raccourci")
+    c.viole(ci28(u0_mut(FICHIER_U0_RACCOURCI,
+                        'segments: ["2_16", "2_19"]',
+                        'segments: ["2_16"]')),
+            "le perimetre", "CI-28 perimetre ampute")
+    c.viole(ci28(u0_mut(FICHIER_U0_RACCOURCI,
+                        'segments: ["0_16"]',
+                        'segments: ["0_16", "1_16"]')),
+            "mono-carte", "CI-28 raccourci multi-carte")
+    c.viole(ci28(u0_mut(FICHIER_U0_RACCOURCI,
+                        '            carte: "Annexe"',
+                        '            carte: "Étage"')),
+            "ne vaut pas l'index", "CI-28 carte du raccourci incoherente")
+    c.viole(ci28(u0_mut(FICHIER_U0_RACCOURCI,
+                        '            segments: ["0_16"]',
+                        '            profil: "Aspiration turbo"\n'
+                        '            segments: ["0_16"]')),
+            "presume un profil", "CI-28 raccourci qui fige un profil")
+    c.viole(ci28(u0_mut(FICHIER_U0_RACCOURCI,
+                        '          - "2_19"\n', "")),
+            "liste complete", "CI-28 liste d'extinction incomplete")
+
+    # ---- la remise a zero eteint les quatorze -----------------------------
+    c.viole(ci28(u0_mut(FICHIER_U0_REINIT,
+                        "          - input_boolean.aspirateur_segment_2_19\n",
+                        "")),
+            "attendu les quatorze", "CI-28 remise a zero incomplete")
 
     # ═══════════════════════════════════════════════════════════════════
     # M1 — ASP-CI-34 / 35 / 36, joues sur le FICHIER RUNTIME REEL
@@ -8607,9 +9045,14 @@ def selftest() -> None:
                                     f'- id: "{AID_SUPERVISION}"'), DEPOT_0),
             "un identifiant deplace d'un fichier a l'autre",
             "CI-37 identifiant de supervision porte par le fichier d'entretien")
+    # AMENDEMENT U0 — `...04` n'est plus reserve, il est ATTRIBUE a
+    # l'automation de remise a zero. Le porter depuis un autre fichier reste
+    # refuse, mais par la table `{identifiant -> fichier}` : c'est le
+    # deplacement qui est detecte, et non plus l'usage d'un ID interdit.
     c.viole(check_writers_n1(n1_mut(f'- id: "{AID_N1_MAINTENANCE}"',
-                                    '- id: "10280000000004"'), DEPOT_0),
-            "remise a zero de la composition", "CI-37 ID reserve a U0 employe")
+                                    f'- id: "{AID_U0_COMPOSITION}"'), DEPOT_0),
+            "un identifiant deplace d'un fichier a l'autre",
+            "CI-37 ID de remise a zero porte par le fichier d'entretien")
     c.viole(check_writers_n1(n1_mut(f'- id: "{AID_N1_MAINTENANCE}"',
                                     f"- id: {AID_N1_MAINTENANCE}"), DEPOT_0),
             "sans `id:` en CHAINE", "CI-37 identifiant en entier")
@@ -8652,11 +9095,12 @@ def selftest() -> None:
         "CI-37 automation surnumeraire dans le dossier")
 
     # Un identifiant du domaine cite HORS de la cle `id:` — forme que le
-    # parseur YAML ne rattache a aucune automation.
+    # parseur YAML ne rattache a aucune automation. L'ancre est un
+    # identifiant NON ATTRIBUE : `...04` l'est depuis le lot U0.
     c.viole(check_writers_n1(n1_mut(
-        "  mode: restart", "  mode: restart\n  # voir 10280000000004"),
-        DEPOT_0), "10280000000004",
-        "CI-37 identifiant du lot U0 cite en commentaire")
+        "  mode: restart", "  mode: restart\n  # voir 10280000000005"),
+        DEPOT_0), "10280000000005",
+        "CI-37 identifiant non attribue cite en commentaire")
 
     # Identifiant de notification : ferme, stable, non templatise.
     c.viole(check_writers_n1(n1_mut(
@@ -9437,8 +9881,8 @@ def selftest() -> None:
             _degats.append(f"{type(_f).__name__} {_f!r:.30} leve {exc!r}")
     c.conforme(_degats, "C-6 formes invalides absorbees sans traceback")
 
-    print(f"selftest OK — 38 contrôles logiques (ASP-CI-28 réservé, non "
-          f"exécuté), {c.total()} cas "
+    print(f"selftest OK — 39 contrôles logiques (ASP-CI-28 livré par le lot "
+          f"U0), {c.total()} cas "
           f"({c.conformes} conformes, {c.violations} violations).")
 
 

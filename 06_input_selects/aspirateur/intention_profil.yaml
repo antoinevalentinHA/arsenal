@@ -1,0 +1,50 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Aspirateur — profil de l'intention
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Porter le PROFIL métier demandé par l'opérateur.
+#   Rôle contractuel ‹intention_profil›.
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             03_profils_metier.md · 12_identifiants_a_fournir.md §2.1
+#   Cadrage ratifié (D-44) : 09_UI.md §3.5.2
+#
+# 🧩 Nature :
+#   INTENTION opérateur. La sélection n'est JAMAIS recalée sur le
+#   profil courant remonté après mission (ASP-INV-16).
+#
+# 🔍 Sémantique des valeurs :
+#   Les CINQ libellés sont ceux de la table canonique du chapitre 03,
+#   à l'identique : l'interface n'introduit aucun vocabulaire
+#   parallèle. Le script de composition les traduit vers les cinq
+#   clés du moteur, portées par le référentiel embarqué de L1 et
+#   gardées par ASP-CI-21.
+#     Aspiration normale   → aspiration_normale
+#     Aspiration turbo     → aspiration_turbo
+#     Aspiration maximale  → aspiration_maximale
+#     Serpillière moyenne  → serpilliere_moyenne
+#     Serpillière intensive → serpilliere_intensive
+#
+#   `gentle` est exclu du domaine : il n'apparaît nulle part ici.
+#
+# ❌ Ne fait PAS :
+#   - Ne commande PAS l'appareil
+#   - N'embarque AUCUNE table de profils (10 §2, 11 §2)
+#   - Ne porte AUCUN `initial:`
+#
+# 🔗 Écrivains :
+#   - script.aspirateur_reinitialiser_composition
+#   - l'opérateur, depuis la carte Navigation
+#   Un RACCOURCI n'écrit jamais ce helper (ASP-INV-56).
+#
+# 🏷️ Statut :
+#   Couche d'intention — domaine aspirateur, lot U0
+# ==========================================================
+
+aspirateur_intention_profil:
+  name: "Aspirateur — Profil"
+  options:
+    - Aspiration normale
+    - Aspiration turbo
+    - Aspiration maximale
+    - Serpillière moyenne
+    - Serpillière intensive
