@@ -1,0 +1,126 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – Aspirateur
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Fournir un état visuel synthétique destiné au futur bouton
+#     de navigation « Aspirateur » (lecture rapide uniquement,
+#     NAV/HUB). Autorité de PRÉSENTATION du lot U1 : la logique est
+#     produite ici, côté backend ; la carte ne fera que restituer.
+#
+#  🔖 NATURE
+#     projection_ui — dérivation pure, aucune action, aucun pilotage.
+#
+#  ⏳ CONSOMMATEUR — AUCUN À CE LOT, ET C'EST VOULU
+#     La tuile Aspirateur de `navigation.yaml` relève du lot U2 :
+#     U1 n'ajoute ni ne retire aucune tuile. Ce capteur est donc posé
+#     AVANT son consommateur, dans l'ordre que le cadrage impose
+#     (U1 ──► U2). Il ne colore rien tant que la tuile n'existe pas,
+#     et la tuile NAS reste intacte.
+#
+#  🎯 États possibles (priorité décroissante — 05_regles.md) :
+#     - INDISPONIBLE → abstention native : l'état canonique du robot
+#                      est illisible, ou vaut `indisponibilite`
+#     - alert        → entretien dû, ou robot en `erreur`
+#     - normal       → un cycle est en cours (classe A de la partition)
+#     - confort      → nominal ÉTABLI : robot au repos ou en charge
+#                      (classe R) ET aucun entretien dû
+#     - off          → tout le reste : état non qualifié (classe N),
+#                      ou nominal NON établi faute d'entretien lisible
+#
+#  🎨 Couleur (Exception 3 — NAV/HUB) :
+#     alert→🔴  normal→🔵  confort→🟢  off→⚪  indisponible→⚪
+#
+#  🧱 Pourquoi cette priorité, et pas une autre :
+#     - R6 — le gris d'indisponibilité prime sur toute couleur
+#       sémantique : le capteur S'ABSTIENT plutôt que de fabriquer une
+#       valeur. Précédent du dépôt : `etat_clim_dashboard`, seul des
+#       colorants à déclarer `availability:` — et le cadrage retient
+#       explicitement ce précédent, pas celui de `etat_nas_dashboard`
+#       (qui écrase `unknown`/`unavailable` en `off`).
+#     - R1 — le rouge prime sur le bleu : un entretien dû masque le
+#       cycle en cours. Précédent : `etat_imprimerie_dashboard`, où le
+#       défaut de santé prime sur l'activité de l'usine.
+#     - R4 — le vert n'apparaît qu'à anomalie nulle : il est ici exigé
+#       POSITIVEMENT (classe R établie ET témoin d'entretien à `off`).
+#       Un témoin d'entretien indisponible ne donne donc jamais de vert :
+#       il tombe au gris neutre, jamais au nominal (ASP-INV-45).
+#     - Le bleu code une ACTIVITÉ RÉELLE observable, jamais une
+#       existence. Précédents : Imprimerie (régime des presses),
+#       Volets (fermeture pluie en cours).
+#     - Le nominal ne peut être ni `off` ni `standby` : ces deux
+#       valeurs rendent le MÊME gris que l'indisponibilité, et les
+#       employer rabattrait silencieusement l'une sur l'autre.
+#
+#  ⚖️ Le seul point où R1 et R6 se rencontrent, tranché explicitement :
+#     robot inobservable ET entretien dû. R1 voudrait le rouge, R6 le
+#     gris d'indisponibilité. L'abstention l'emporte, comme dans TOUS
+#     les précédents du dépôt (Arrosage, Volets, Climatisation testent
+#     l'indisponibilité AVANT l'alerte) : une tuile de navigation dont
+#     le sujet est inobservable ne doit pas affirmer un état de ce
+#     sujet. Le cas est de surcroît quasi théorique — les compteurs
+#     d'entretien viennent de la même intégration que l'état, et
+#     tombent avec lui.
+#
+#  🧭 Ce que ce capteur N'EST PAS :
+#     - Il ne remplace pas l'exposition distincte des dix états
+#       canoniques (`sensor.aspirateur_etat_canonique`), qui reste
+#       l'autorité du domaine : ASP-INV-44 interdit l'agrégation, et
+#       ce colorant se SUPERPOSE à l'état canonique sans s'y
+#       substituer — comme les dix-huit autres colorants NAV.
+#     - Il ne reproduit pas la partition d'états : il LIT l'attribut
+#       `classe_partition` de l'état canonique, seule autorité de la
+#       classification (07 §5.0). Aucune table dupliquée ici.
+#     - Il ne lit PAS le verdict de mission — `ASP-CI-11` en réserve
+#       la mention aux fichiers nommés, et balaie ce répertoire.
+#       « Mission ouverte » n'est donc pas la source du cycle : c'est
+#       l'état canonique, qui dérive des témoins de l'appareil.
+#     - Il ne commande rien et ne notifie rien.
+#
+#  🔗 Entrées (lecture seule) — DEUX, ET DEUX SEULEMENT :
+#     - sensor.aspirateur_etat_canonique        (état + classe_partition)
+#     - binary_sensor.aspirateur_entretien_requis  (projection M1)
+#
+#  📚 Sources :
+#     - 00_documentation_arsenal/ui/couleurs/03_exceptions.md (Exception 3)
+#     - 00_documentation_arsenal/ui/couleurs/05_regles.md (R1, R4, R5, R6)
+#     - 00_documentation_arsenal/audits/04_chantiers/lovelace/
+#       cadrage_couleurs_icones_navigation.md §2 decies
+#     - 00_documentation_arsenal/audits/02_conception/aspirateur/
+#       cadrage_l2_maintenance_ui/09_UI.md §5.3.2 (D-41, D-42, D-43)
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_aspirateur_dashboard"
+      unique_id: etat_aspirateur_dashboard
+
+      # Abstention native — l'indisponibilité n'est jamais peinte en
+      # état nominal (ASP-INV-45, R6). Deux cas la déclenchent :
+      #   - l'état canonique est illisible (entité absente, unknown,
+      #     unavailable) — la classe de partition est alors nulle ;
+      #   - il vaut `indisponibilite`, la classe E disant que
+      #     l'appareil n'est pas observable.
+      availability: >
+        {% set UNAV = ['unknown', 'unavailable', 'none', 'None', ''] %}
+        {% set etat = states('sensor.aspirateur_etat_canonique') %}
+        {% set classe = state_attr('sensor.aspirateur_etat_canonique',
+                                   'classe_partition') %}
+        {{ etat not in UNAV
+           and etat != 'indisponibilite'
+           and classe in ['R', 'A', 'E', 'N'] }}
+
+      state: >
+        {% set etat = states('sensor.aspirateur_etat_canonique') %}
+        {% set classe = state_attr('sensor.aspirateur_etat_canonique',
+                                   'classe_partition') %}
+        {% set entretien = states('binary_sensor.aspirateur_entretien_requis') %}
+
+        {% if entretien == 'on' or etat == 'erreur' %}
+          alert
+        {% elif classe == 'A' %}
+          normal
+        {% elif classe == 'R' and entretien == 'off' %}
+          confort
+        {% else %}
+          off
+        {% endif %}

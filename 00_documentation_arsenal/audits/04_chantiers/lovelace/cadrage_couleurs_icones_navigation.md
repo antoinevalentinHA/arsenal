@@ -3,6 +3,7 @@
 > **Type :** dossier d'arbitrage Lovelace / UI (non décisionnel). **Document faisant foi** du sujet (pointé par `REGISTRE_CHANTIERS.md`).
 > **ID registre :** `D-NAV-COULEUR`. **Statut : ✅ SOLDÉ (2026-07-19)** — menu ☰ Navigation : 5 tuiles dynamisées (Option C ; Arrosage, Rec. météo, Volets, NAS, Imprimerie — cf. §2 sexies) + 3 neutralisées au gris de base NAV (Option A ; Prises, Santé, Énergie — cf. §2 quinquies). **Section ⚙️ Système : reliquat résorbé — Option A (neutralisation) au gris de base NAV, combinée à une refonte du menu (12 → 6 tuiles), Reboot HA inclus — cf. §2 septies.** Plus aucune couleur d'icône figée hors palette dans `navigation.yaml`. **Chantier clos** (registre ⑤ Clos récents).
 > **Post-solde (2026-07-23) — Arrosage, deux temps :** (1) la tuile suit le **besoin non couvert** plutôt que l'épisode d'action — §2 octies ; (2) après retour terrain, le **besoin couvert** (invisible en gris) reçoit un niveau propre 🟡 via la **formalisation du jaune NAV** dans l'Exception 3 (instancie l'Option B) — §2 nonies. Échelle finale : 🔴 besoin non couvert · 🟡 besoin pris en charge (à savoir) · ⚪ sol suffisant.
+> **Post-solde (2026-08-29) — Aspirateur, lot `U1` :** une **dix-neuvième** autorité de couleur NAV est posée, `sensor.etat_aspirateur_dashboard`, **avant** sa tuile — §2 decies. `navigation.yaml` est inchangé ; la tuile et la sortie de NAS relèvent du lot `U2`.
 > **Règle qui fait foi :** [`ui/couleurs/03_exceptions.md`](../../../ui/couleurs/03_exceptions.md) § *Exception 3 — Couleurs dynamiques d'icône en contexte NAV/HUB*.
 > **Discipline :** aucune modification UI d'une tuile tant que son cas n'est pas tranché (cas par cas) ; co-commit du registre à chaque changement d'état.
 
@@ -227,6 +228,32 @@ Appliqué à l'arrosage : un sol sec en attente de l'arrosage d'aube n'est **pas
 > **Portée de l'Exception 3 étendue.** Le jaune NAV est désormais **disponible pour toute tuile** dont un état latent relève de la vigilance « pris en charge » — pas seulement l'arrosage. Aucune tuile existante n'est migrée d'office ; l'usage reste **cas par cas**, comme le reste du dossier. La hiérarchie globale (`05_regles.md`) est inchangée : 🔴 > 🟠 > 🟡 > 🟢 > 🔵 > ⚪.
 
 **Ce que ça coûte / ce que ça rapporte.** Coût : une entrée de charte + une entrée de whitelist CI + une clé de template + un capteur. Gain : le besoin d'arrosage est **enfin visible** (🟡) sans être traité en alarme, le 🔴 reste réservé au besoin que le système ne couvrira pas, et le gris redevient l'honnête « rien à signaler ». La grammaire du cockpit gagne un cran manquant (vigilance), utile bien au-delà de l'arrosage.
+
+## 2 decies. Aspirateur — *autorité de présentation posée avant la tuile (lot `U1`)*
+
+> **Statut :** **✅ implémenté (backend seul, lot `U1`)** — **Option C (dynamiser)**, instruite à partir des précédents du présent dossier. Artefact : `sensor.etat_aspirateur_dashboard` (`12_template_sensors/system/cartes_dashboard_navigation/aspirateur.yaml`). **`navigation.yaml` n'est pas modifié** : la tuile Aspirateur, la sortie de la tuile NAS et l'ordre de la ligne 5 relèvent du lot `U2`. Le colorant NAS `sensor.etat_nas_dashboard` reste **intact** (arbitrage `A-7`).
+
+**Pourquoi un capteur posé avant son consommateur.** Le cadrage Aspirateur impose la séquence `U1 ──► U2` : `U1` **n'enlève rien** et ne pose aucune tuile ; `U2` échangera NAS contre Aspirateur d'un seul geste. Poser l'autorité de couleur d'abord rend `U2` purement Lovelace, et laisse le lot `U1` **réversible** — supprimer ce fichier ne casse aucun rendu, puisque aucune carte ne le lit encore.
+
+**L'état latent disponible.** Deux autorités backend, toutes deux déjà livrées : `sensor.aspirateur_etat_canonique` (lot `L1` — dix états, plus l'attribut `classe_partition` portant les quatre classes `R`/`A`/`E`/`N` du contrat `07` §5.0) et `binary_sensor.aspirateur_entretien_requis` (lot `M1` — dû / non dû, **indisponible** quand la question n'est pas tranchable). Le **verdict de mission** est hors d'atteinte : `ASP-CI-11` en réserve la mention à des fichiers nommés et balaie `12_template_sensors/` **commentaires compris**. « Mission ouverte » n'est donc pas la source du cycle — c'est l'état canonique, qui dérive des témoins de l'appareil.
+
+**Mapping retenu — échelle de sévérité :**
+
+| État renvoyé | Couleur NAV | Condition |
+|---|---|---|
+| *(abstention)* | ⚪ gris indispo | état canonique illisible, ou valant `indisponibilite` — le capteur **s'abstient** au lieu de fabriquer une valeur |
+| `alert` | 🔴 rouge | entretien dû (`binary_sensor.aspirateur_entretien_requis` à `on`), **ou** robot en `erreur` |
+| `normal` | 🔵 bleu | un cycle est en cours — classe `A` : `nettoyage_reel`, `pause`, `retour_base`, `amarrage` |
+| `confort` | 🟢 vert | nominal **établi** : classe `R` (`charge`, `repos_hors_base`) **ET** témoin d'entretien à `off` |
+| `off` | ⚪ gris (base) | tout le reste : `etat_non_qualifie` (classe `N`), ou nominal **non établi** faute d'entretien lisible |
+
+**Les quatre règles qui fixent cet ordre.** `R6` — l'indisponibilité prime, d'où l'`availability:` ; le précédent est `etat_clim_dashboard`, seul des colorants à s'abstenir, et non `etat_nas_dashboard`, qui écrase `unknown`/`unavailable` en `off`. `R1` — le rouge prime sur le bleu : un entretien dû masque le cycle, comme le défaut de santé masque l'activité de l'usine en §2 sexies. `R4` — le vert n'apparaît qu'à anomalie nulle, exigée ici **positivement** (classe `R` **et** témoin à `off`) : un témoin d'entretien indisponible tombe au gris neutre, **jamais** au vert. Le **bleu** code une activité réelle observable, jamais une existence — même doctrine qu'Imprimerie (§2 sexies) et Volets (§2 ter).
+
+**Pourquoi deux valeurs colorées et pas une.** Le nominal ne peut être ni `off` ni `standby` : `bouton_navigation_dynamique` rend ces deux valeurs **du même gris** que l'indisponibilité, et les employer pour le nominal rabattrait silencieusement l'une sur l'autre. Il faut donc une valeur colorée pour le cycle (`normal`, 🔵) **et** une pour le nominal (`confort`, 🟢). Aucune couleur neuve n'est introduite : les quatre teintes employées sont celles de l'Exception 3, déjà présentes dans `bouton_navigation_dynamique`.
+
+**Le seul point où `R1` et `R6` se rencontrent.** Robot inobservable **et** entretien dû : `R1` voudrait le rouge, `R6` le gris. L'abstention l'emporte, comme dans tous les précédents du dossier — Arrosage, Volets et Climatisation testent l'indisponibilité **avant** l'alerte. Une tuile dont le sujet est inobservable n'affirme rien de ce sujet. Le cas est de surcroît quasi théorique : les compteurs d'entretien viennent de la même intégration que l'état et tombent avec lui.
+
+**Ce que ce colorant ne fait pas.** Il ne se substitue pas à l'exposition distincte des dix états canoniques (`ASP-INV-44` interdit l'agrégation) : il s'y **superpose**, comme les dix-huit autres colorants NAV. Il ne reproduit aucune table de classification — il lit `classe_partition`, autorité unique de la partition. Aucun contrôle `ASP-CI` neuf n'est créé : le lot n'ouvre aucune règle nouvelle.
 
 ## 3. Déclencheur de réveil
 
