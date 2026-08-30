@@ -75,7 +75,7 @@ Dix contrôles, tous adossés à une clause déjà normée par le contrat :
                           ajouté ou retiré échoue, et le lien classe N → refus
                           par défaut → `ETAT_NON_QUALIFIE` est vérifié
                           explicitement (ASP-INV-60).
-  ASP-CI-5  Profils     — cinq profils exactement, `gentle` exclu, valeurs
+  ASP-CI-5  Profils     — six profils exactement, `gentle` exclu, valeurs
                           natives bornées aux énumérations attestées
                           (ASP-INV-10/11).
   ASP-CI-6  Identifiants— tout jeton `<domaine>.<objet>` d'un domaine Home
@@ -355,17 +355,33 @@ CARTE_AFFICHEE_U0 = {"0": "RDC", "1": "Étage", "2": "Annexe"}
 # referentiel TECHNIQUE, dont ASP-INV-66 borne l'usage au moteur.
 CARTE_OPTION_U0 = {"Rez-de-chaussée": "0", "Étage": "1", "Annexe": "2"}
 PASSAGES_OPTION_U0 = {"1 passage": "1", "2 passages": "2", "3 passages": "3"}
+# Options du selecteur de profil -> cle du moteur (03 §1, 09_UI.md §3.5.2).
+# SIX depuis l'exposition du niveau d'aspiration le plus faible : `quiet`
+# etait deja ecrit par les deux profils de serpillere, mais restait
+# inatteignable en aspiration seule.
+PROFIL_OPTION_U0 = {
+    "Aspiration minimale": "aspiration_minimale",
+    "Aspiration normale": "aspiration_normale",
+    "Aspiration turbo": "aspiration_turbo",
+    "Aspiration maximale": "aspiration_maximale",
+    "Serpillière moyenne": "serpilliere_moyenne",
+    "Serpillière intensive": "serpilliere_intensive",
+}
 
-# Les CINQ raccourcis — cles du champ ferme `raccourci` -> nom du perimetre
-# contractuel (02 §3, 10 §3). La cle est une valeur de conception, arretee
-# par l'operateur a la cloture d'`A-5` ; le PERIMETRE, lui, est contractuel,
-# et c'est lui que le controle confronte.
+# Les TROIS raccourcis — cles du champ ferme `raccourci` -> perimetre
+# contractuel (02 §3, 10 §3), profil par defaut et passages par defaut
+# (10 §3.1). La cle est une valeur de conception ; le PERIMETRE et les DEUX
+# REGLAGES sont contractuels, et ce sont eux que le controle confronte.
+#
+# DEUX PERIMETRES, TROIS RACCOURCIS : le perimetre RDC est expose deux fois,
+# une fois en aspiration et une fois en serpillere. Le chapitre 02 §3
+# continue de recenser CINQ perimetres — un perimetre n'est pas un
+# raccourci, et la couverture du referentiel repose sur 02 §3, jamais sur
+# la table des raccourcis.
 RACCOURCI_U0 = {
-    "rdc_complet": "RDC complet",
-    "entree_escaliers_wc_rdc": "Entrée + Cage d'escaliers + WC RDC",
-    "sejour_seul": "Séjour seul",
-    "etage_complet": "Étage complet",
-    "annexe_complete": "Annexe complète",
+    "rdc_aspiration": ("RDC complet", "Aspiration normale", "3 passages"),
+    "rdc_serpilliere": ("RDC complet", "Serpillière moyenne", "3 passages"),
+    "etage_aspiration": ("Étage complet", "Aspiration normale", "3 passages"),
 }
 
 
@@ -571,7 +587,8 @@ def check_referentiel_intention(t02: str, t10: str, corps,
                         f"— attendu exactement {sorted(RACCOURCI_U0)}. Creer, "
                         "modifier ou supprimer un raccourci est un acte "
                         "contractuel (ASP-INV-57).")
-        for cle, nom in sorted(RACCOURCI_U0.items()):
+        for cle, (nom, profil_attendu, passages_attendus) in sorted(
+                RACCOURCI_U0.items()):
             bloc = raccourcis.get(cle)
             if not isinstance(bloc, dict):
                 continue
@@ -596,10 +613,39 @@ def check_referentiel_intention(t02: str, t10: str, corps,
                 errs.append(f"ASP-CI-28 : le raccourci `{cle}` designe la "
                             f"carte {option!r}, qui ne vaut pas l'index "
                             f"`{carte_attendue}` du perimetre « {nom} ».")
-            if {"profil", "passages"} & set(bloc):
-                errs.append(f"ASP-CI-28 : le raccourci `{cle}` presume un "
-                            "profil ou un nombre de passages — un raccourci "
-                            "n'en fixe aucun (ASP-INV-56).")
+            # ── Les DEUX reglages par defaut, confrontes au 10 §3.1 ────
+            # Le second alinea d'ASP-INV-56 les AUTORISE, a trois conditions :
+            # visibles, modifiables avant lancement, jamais appliques
+            # implicitement. Les trois tiennent PAR CONSTRUCTION — ce sont des
+            # options de SELECTEUR D'INTENTION, donc rendues par la composition
+            # et modifiables d'un geste, et ce script ne lance rien (garde
+            # ci-dessous). Ce qui reste a prouver, c'est leur VALEUR : un
+            # raccourci qui proposerait un autre profil que celui du 10 §3.1
+            # serait un raccourci que le contrat ne decrit pas.
+            for champ, attendu, table in (
+                    ("profil", profil_attendu, PROFIL_OPTION_U0),
+                    ("passages", passages_attendus, PASSAGES_OPTION_U0)):
+                valeur = bloc.get(champ)
+                if valeur is None:
+                    errs.append(f"ASP-CI-28 : le raccourci `{cle}` ne propose "
+                                f"aucun `{champ}` — le 10 §3.1 lui en attribue "
+                                f"un : {attendu!r}.")
+                elif str(valeur) != attendu:
+                    errs.append(f"ASP-CI-28 : le raccourci `{cle}` propose "
+                                f"`{champ}: {valeur!r}` — le 10 §3.1 attribue "
+                                f"{attendu!r}.")
+                elif str(valeur) not in table:
+                    errs.append(f"ASP-CI-28 : le raccourci `{cle}` propose "
+                                f"`{champ}: {valeur!r}`, hors des options du "
+                                f"selecteur {sorted(table)}. Un raccourci "
+                                "n'ecrit que des options existantes.")
+            # ── Et RIEN d'autre : la composition, jamais le lancement ──────
+            for champ in sorted(set(bloc) - {"carte", "segments", "profil",
+                                             "passages"}):
+                errs.append(f"ASP-CI-28 : le raccourci `{cle}` porte le champ "
+                            f"`{champ}` — un raccourci compose une intention, "
+                            "et ne porte que carte, segments, profil et "
+                            "passages.")
 
     tous = _variables_u0(doc_rac, "tous_les_segments")
     if [str(s) for s in (tous or [])] != ordre_canon:
@@ -787,6 +833,10 @@ DOSSIERS_FONCTIONNELS = ("blueprints", "esphome", "custom_components",
 #   tools/**/tests/fixtures/ contre-exemples deliberes.
 EXCLUS_YAML = ("00_documentation_arsenal/", ".github/", "scripts/", "tools/",
                "node_modules/", ".venv/")
+# Nombre de profils de la table canonique (03 §1). SIX depuis l'exposition
+# du niveau d'aspiration le plus faible : `quiet` sans eau. Fige ici pour
+# qu'un profil ajoute ou retire en silence echoue, contrat comme moteur.
+NB_PROFILS = 6
 SEUIL_ENTRETIEN_PCT = 10
 CLASSES_ECHEANCE = ("dû", "non dû", "non évaluable")
 
@@ -1580,9 +1630,9 @@ def parse_profils(t03: str) -> list[tuple[str, str, str]]:
 def check_profils(t03: str) -> list[str]:
     errs: list[str] = []
     profils = parse_profils(t03)
-    if len(profils) != 5:
-        errs.append(f"ASP-CI-5 : la table des profils doit en compter 5 "
-                    f"(trouvé {len(profils)}).")
+    if len(profils) != NB_PROFILS:
+        errs.append(f"ASP-CI-5 : la table des profils doit en compter "
+                    f"{NB_PROFILS} (trouvé {len(profils)}).")
     if not profils:
         return errs
     noms = [p[0].strip() for p in profils]
@@ -5546,11 +5596,11 @@ def check_concordance_runtime(corps, textes_runtime, helpers_yaml, t02, t03,
                         f"moteur {sorted(bloc.get('noms') or [])}, contrat "
                         f"{attendus_noms} (06 §3.1, ASP-INV-63).")
 
-    # c) profils : les cinq du contrat, valeurs natives bornées
+    # c) profils : les six du contrat, valeurs natives bornées
     profils = variables.get("profils") or {}
     contrat_profils = parse_profils(t03)
-    if len(profils) != 5 or len(contrat_profils) != 5:
-        errs.append(f"ASP-CI-21 : cinq profils exactement — moteur "
+    if len(profils) != NB_PROFILS or len(contrat_profils) != NB_PROFILS:
+        errs.append(f"ASP-CI-21 : {NB_PROFILS} profils exactement — moteur "
                     f"{len(profils)}, contrat {len(contrat_profils)} "
                     f"(ASP-INV-10).")
     couples_contrat = {(a, e) for _l, a, e in contrat_profils}
@@ -7145,18 +7195,18 @@ def selftest() -> None:
             "incomplète", "CI-4 partition absente")
 
     # ---- ASP-CI-5 --------------------------------------------------------
-    lignes = [("Normale", "balanced", "off"), ("Turbo", "turbo", "off"),
-              ("Max", "max", "off"), ("Moyenne", "quiet", "medium"),
-              ("Intensive", "quiet", "high")]
+    lignes = [("Minimale", "quiet", "off"), ("Normale", "balanced", "off"),
+              ("Turbo", "turbo", "off"), ("Max", "max", "off"),
+              ("Moyenne", "quiet", "medium"), ("Intensive", "quiet", "high")]
 
     def t03(rows):
         corps = "".join(f"| **{n}** | `{f}` | `{e}` |\n" for n, f, e in rows)
         return "## 1. Table canonique\n" + corps + "\n## 2. suite\n"
     c.conforme(check_profils(t03(lignes)), "CI-5 conforme")
-    c.viole(check_profils(t03(lignes[:4])), "compter 5", "CI-5 cardinalité")
-    c.viole(check_profils(t03(lignes[:4] + [("Douce", "gentle", "off")])),
+    c.viole(check_profils(t03(lignes[:5])), "compter 6", "CI-5 cardinalité")
+    c.viole(check_profils(t03(lignes[:5] + [("Douce", "gentle", "off")])),
             "gentle", "CI-5 gentle réintroduit")
-    c.viole(check_profils(t03(lignes[:4] + [("Bizarre", "ultra", "off")])),
+    c.viole(check_profils(t03(lignes[:5] + [("Bizarre", "ultra", "off")])),
             "hors énumération", "CI-5 valeur inventée")
 
     # ---- R3 : blocs clôturés sur ASP-CI-2, ASP-CI-4 et ASP-CI-5 ----------
@@ -9227,27 +9277,43 @@ def selftest() -> None:
                         '"Aspiration turbo": "turbo"')),
             "le moteur connait", "CI-28 cle de profil inconnue du moteur")
 
-    # ---- les cinq raccourcis ----------------------------------------------
+    # ---- les trois raccourcis et leurs deux reglages par defaut -----------
     c.viole(ci28(u0_mut(FICHIER_U0_RACCOURCI,
-                        'sejour_seul:', 'sejour:')),
-            "attendu exactement", "CI-28 sixieme cle de raccourci")
+                        'rdc_serpilliere:', 'rdc_serpillere:')),
+            "attendu exactement", "CI-28 cle de raccourci renommee")
     c.viole(ci28(u0_mut(FICHIER_U0_RACCOURCI,
-                        'segments: ["2_16", "2_19"]',
-                        'segments: ["2_16"]')),
+                        'segments: ["0_16", "0_18", "0_20", "0_21"]',
+                        'segments: ["0_16", "0_18", "0_20"]')),
             "le perimetre", "CI-28 perimetre ampute")
     c.viole(ci28(u0_mut(FICHIER_U0_RACCOURCI,
-                        'segments: ["0_16"]',
-                        'segments: ["0_16", "1_16"]')),
+                        'segments: ["0_16", "0_18", "0_20", "0_21"]',
+                        'segments: ["0_16", "0_18", "0_20", "1_16"]')),
             "mono-carte", "CI-28 raccourci multi-carte")
     c.viole(ci28(u0_mut(FICHIER_U0_RACCOURCI,
-                        '            carte: "Annexe"',
-                        '            carte: "Étage"')),
+                        '            carte: "Étage"',
+                        '            carte: "Annexe"')),
             "ne vaut pas l'index", "CI-28 carte du raccourci incoherente")
+    # Les DEUX reglages sont desormais EXIGES, et confrontes au 10 §3.1.
+    # Les autoriser n'est pas les laisser libres : un raccourci qui propose
+    # autre chose que ce que le contrat lui attribue est refuse.
     c.viole(ci28(u0_mut(FICHIER_U0_RACCOURCI,
-                        '            segments: ["0_16"]',
-                        '            profil: "Aspiration turbo"\n'
-                        '            segments: ["0_16"]')),
-            "presume un profil", "CI-28 raccourci qui fige un profil")
+                        '            profil: "Serpillière moyenne"\n', "")),
+            "ne propose aucun `profil`", "CI-28 reglage par defaut absent")
+    c.viole(ci28(u0_mut(FICHIER_U0_RACCOURCI,
+                        '            profil: "Serpillière moyenne"',
+                        '            profil: "Aspiration turbo"')),
+            "le 10 §3.1 attribue", "CI-28 profil different du contrat")
+    c.viole(ci28(u0_mut(FICHIER_U0_RACCOURCI,
+                        '            passages: "3 passages"',
+                        '            passages: "1 passage"')),
+            "le 10 §3.1 attribue", "CI-28 passages differents du contrat")
+    c.viole(ci28(u0_mut(FICHIER_U0_RACCOURCI,
+                        '            passages: "3 passages"\n'
+                        '          etage_aspiration:',
+                        '            passages: "3 passages"\n'
+                        '            lancer: true\n'
+                        '          etage_aspiration:')),
+            "porte le champ `lancer`", "CI-28 raccourci qui porterait un lancement")
     c.viole(ci28(u0_mut(FICHIER_U0_RACCOURCI,
                         '          - "2_19"\n', "")),
             "liste complete", "CI-28 liste d'extinction incomplete")

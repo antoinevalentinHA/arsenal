@@ -56,37 +56,55 @@ aspirateur_appliquer_raccourci:
     raccourci:
       name: Raccourci
       description: >-
-        rdc_complet, entree_escaliers_wc_rdc, sejour_seul,
-        etage_complet, annexe_complete.
+        rdc_aspiration, rdc_serpilliere, etage_aspiration.
       required: true
-      example: "rdc_complet"
+      example: "rdc_aspiration"
 
   sequence:
 
     # ======================================================
-    # 📚 LES CINQ PÉRIMÈTRES — chapitre 02 §3, chapitre 10 §3
+    # 📚 LES TROIS RACCOURCIS — chapitre 10 §3 et §3.1
     # ------------------------------------------------------
     # `carte` porte le LIBELLÉ D'INTERFACE du sélecteur, jamais
-    # l'index du moteur ni l'option technique de l'appareil.
+    # l'index du moteur ni l'option technique de l'appareil. Il en
+    # va de même de `profil` et `passages` : ce sont les OPTIONS
+    # des sélecteurs, pas les clés du moteur — la traduction reste
+    # le travail du script de composition.
+    #
+    # DEUX PÉRIMÈTRES, TROIS RACCOURCIS. Le périmètre RDC est
+    # exposé deux fois : une fois en aspiration, une fois en
+    # serpillière. Le chapitre 02 §3 continue de recenser les CINQ
+    # périmètres ; ce lot décide seulement lesquels reçoivent un
+    # bouton, et avec quels réglages par défaut.
+    #
+    # POURQUOI `profil` ET `passages` FIGURENT ICI, ET CE QUE CELA
+    # N'AUTORISE PAS. Le second alinéa d'ASP-INV-56 ouvre cette
+    # faculté : un raccourci PEUT proposer un profil et un nombre
+    # de passages PAR DÉFAUT, à condition qu'ils soient visibles,
+    # modifiables avant lancement, et jamais appliqués
+    # implicitement. Les trois conditions sont tenues, et par
+    # construction : ces valeurs sont écrites dans les HELPERS
+    # D'INTENTION, donc rendues par la composition et modifiables
+    # d'un geste ; et ce script NE LANCE RIEN.
     # ======================================================
     - variables:
         raccourcis:
-          rdc_complet:
+          rdc_aspiration:
             carte: "Rez-de-chaussée"
             segments: ["0_16", "0_18", "0_20", "0_21"]
-          entree_escaliers_wc_rdc:
+            profil: "Aspiration normale"
+            passages: "3 passages"
+          rdc_serpilliere:
             carte: "Rez-de-chaussée"
-            segments: ["0_18", "0_21", "0_20"]
-          sejour_seul:
-            carte: "Rez-de-chaussée"
-            segments: ["0_16"]
-          etage_complet:
+            segments: ["0_16", "0_18", "0_20", "0_21"]
+            profil: "Serpillière moyenne"
+            passages: "3 passages"
+          etage_aspiration:
             carte: "Étage"
             segments: ["1_16", "1_17", "1_18", "1_19",
                        "1_20", "1_21", "1_22", "1_23"]
-          annexe_complete:
-            carte: "Annexe"
-            segments: ["2_16", "2_19"]
+            profil: "Aspiration normale"
+            passages: "3 passages"
         # Les quatorze booléens — ordre canonique du chapitre 02 §2.
         tous_les_segments:
           - "0_16"
@@ -105,7 +123,7 @@ aspirateur_appliquer_raccourci:
           - "2_19"
 
     # ======================================================
-    # 🚧 CHAMP FERMÉ — une valeur hors des cinq n'écrit RIEN
+    # 🚧 CHAMP FERMÉ — une valeur hors des trois n'écrit RIEN
     # ======================================================
     - choose:
         - conditions:
@@ -118,7 +136,8 @@ aspirateur_appliquer_raccourci:
         cible: "{{ raccourcis[raccourci] }}"
 
     # ======================================================
-    # ✍️ ÉCRITURE — carte, puis segments. Rien d'autre.
+    # ✍️ ÉCRITURE — carte, segments, puis les deux réglages
+    #    par défaut. Rien d'autre : AUCUN lancement.
     # ======================================================
     - action: input_select.select_option
       target:
@@ -142,3 +161,28 @@ aspirateur_appliquer_raccourci:
           {{ cible.segments
              | map('regex_replace', '^', 'input_boolean.aspirateur_segment_')
              | list }}
+
+    # ======================================================
+    # ⚙️ RÉGLAGES PAR DÉFAUT — proposés, jamais imposés
+    # ------------------------------------------------------
+    # Écrits dans les HELPERS D'INTENTION, donc immédiatement
+    # VISIBLES dans la composition et MODIFIABLES d'un geste. Ce
+    # sont des options de sélecteur, jamais des clés du moteur :
+    # la traduction reste le travail du script de composition.
+    #
+    # Ce que ces deux écritures ne font PAS : elles ne commandent
+    # rien, ne valident rien, et n'engagent aucune mission. Le
+    # bouton de lancement reste l'unique autorité de lancement
+    # (10 §3.1, 11 §3.6).
+    # ======================================================
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.aspirateur_intention_profil
+      data:
+        option: "{{ cible.profil }}"
+
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.aspirateur_intention_passages
+      data:
+        option: "{{ cible.passages }}"

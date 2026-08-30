@@ -47,7 +47,7 @@
 #               demande `["0_18"]`. Interpréter une structure pour une
 #               autre est exactement le genre de complaisance que
 #               `ASP-INV-23` proscrit — d'où le test `is mapping`.
-#   profil    : l'une des CINQ clés de `profils` ci-dessous
+#   profil    : l'une des SIX clés de `profils` ci-dessous
 #   passages  : 1 · 2 · 3
 #
 #   ⚠️ Les quatre champs sont déclarés `required: false` DÉLIBÉRÉMENT.
@@ -210,8 +210,8 @@ aspirateur_lancer_mission:
     profil:
       name: Profil
       description: >-
-        aspiration_normale, aspiration_turbo, aspiration_maximale,
-        serpilliere_moyenne, serpilliere_intensive
+        aspiration_minimale, aspiration_normale, aspiration_turbo,
+        aspiration_maximale, serpilliere_moyenne, serpilliere_intensive
       required: false
       example: "aspiration_normale"
     passages:
@@ -277,6 +277,7 @@ aspirateur_lancer_mission:
               "2_16": {index: 16}
               "2_19": {index: 19}
         profils:
+          aspiration_minimale: {eau: "off", aspiration: "quiet", mode: "vacuum"}
           aspiration_normale: {eau: "off", aspiration: "balanced", mode: "vacuum"}
           aspiration_turbo: {eau: "off", aspiration: "turbo", mode: "vacuum"}
           aspiration_maximale: {eau: "off", aspiration: "max", mode: "vacuum"}
@@ -398,7 +399,7 @@ aspirateur_lancer_mission:
                 entity_id: input_text.aspirateur_mission_verdict
               data:
                 value: "REFUS/PROFIL_INCONNU"
-            - stop: "Refus : profil absent ou hors des cinq profils arretes"
+            - stop: "Refus : profil absent ou hors des six profils arretes"
 
     - choose:
         - conditions:

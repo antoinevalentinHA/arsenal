@@ -364,15 +364,57 @@ cards:
     template: sub_section_header
     name: ⚙️ Paramètres de nettoyage
 
-  # Cinq profils — les libellés du chapitre 03, à l'identique.
-  # Une grille de cinq colonnes tronquerait : deux grilles, 3 puis 2.
+  # Six profils — les libellés du chapitre 03, à l'identique.
+  # Deux grilles : les QUATRE puissances d'aspiration, puis les deux
+  # profils avec eau. Une grille de six colonnes tronquerait.
+  #
+  # ▸ QUATRE COLONNES, SANS LIBELLÉ VISIBLE. À quatre par ligne, un
+  #   libellé comme « Aspiration maximale » ne tient pas sur la largeur
+  #   d'un téléphone : il se tronquerait, ou il pousserait la carte en
+  #   hauteur sur trois lignes de texte. Les quatre segments ne portent
+  #   donc que leur icône — la carte n'a alors plus rien à tronquer, et
+  #   sa hauteur ne dépend plus de la longueur du texte.
+  #
+  # ▸ LE `name` RESTE ÉCRIT. `show_name: false` le masque à l'affichage
+  #   sans le retirer de la configuration : le libellé canonique du
+  #   chapitre 03 demeure lisible dans ce fichier, à l'identique, et
+  #   c'est lui qui documente ce que chaque segment écrit. Ce que ce
+  #   mécanisme NE FOURNIT PAS : button-card ne substitue aucun
+  #   `aria-label` au nom masqué. L'icône porte donc seule le sens à
+  #   l'écran — d'où la progression ci-dessous, et non quatre variantes
+  #   décoratives.
+  #
+  # ▸ ICÔNES — LE SYSTÈME DÉJÀ EN PLACE, ÉTENDU VERS LE BAS. Les trois
+  #   niveaux existants gardent EXACTEMENT leurs icônes
+  #   (`fan-speed-1/2/3`) : rien n'est renuméroté. Le niveau le plus
+  #   faible, qui se place SOUS cette échelle, prend
+  #   `mdi:fan-chevron-down` — déjà employé par les domaines Aération,
+  #   VMC et Climatisation pour « en dessous ». La famille
+  #   `mdi:fan-speed-*` s'arrête à 3 : inventer un `fan-speed-4`
+  #   rendrait une icône vide. La lecture est donc ▼ · 1 · 2 · 3, une
+  #   progression croissante de gauche à droite.
+  #
+  # ▸ ÉTAT SÉLECTIONNÉ. Inchangé et toujours double : fond bleu ET
+  #   graisse du nom — la couleur ne porte jamais seule l'information
+  #   (gabarit `carte_action_aspirateur_option`). Le nom étant masqué
+  #   ici, c'est le fond bleu qui reste le signal visible ; il est net
+  #   et il ne dépend d'aucun texte.
   - type: grid
     square: false
-    columns: 3
+    columns: 4
     cards:
       - type: custom:button-card
         template: carte_action_aspirateur_option
+        name: Aspiration minimale
+        show_name: false
+        icon: mdi:fan-chevron-down
+        variables:
+          selecteur: input_select.aspirateur_intention_profil
+          option: Aspiration minimale
+      - type: custom:button-card
+        template: carte_action_aspirateur_option
         name: Aspiration normale
+        show_name: false
         icon: mdi:fan-speed-1
         variables:
           selecteur: input_select.aspirateur_intention_profil
@@ -380,6 +422,7 @@ cards:
       - type: custom:button-card
         template: carte_action_aspirateur_option
         name: Aspiration turbo
+        show_name: false
         icon: mdi:fan-speed-2
         variables:
           selecteur: input_select.aspirateur_intention_profil
@@ -387,6 +430,7 @@ cards:
       - type: custom:button-card
         template: carte_action_aspirateur_option
         name: Aspiration maximale
+        show_name: false
         icon: mdi:fan-speed-3
         variables:
           selecteur: input_select.aspirateur_intention_profil
@@ -438,51 +482,26 @@ cards:
           option: 3 passages
 
   # ==================================================
-  # ⚡ RACCOURCIS — les CINQ du chapitre 10 §3
+  # ⚡ RACCOURCIS — les TROIS du chapitre 10 §3
   # --------------------------------------------------
-  # Sous-section de la composition : un raccourci PRÉREMPLIT carte et
-  # segments, et s'arrête là (ASP-INV-56) — il ne lance rien.
+  # Sous-section de la composition : un raccourci PRÉREMPLIT la
+  # composition — carte, pièces, profil, passages — et s'arrête là.
+  # IL NE LANCE RIEN : le script appelé n'écrit que des helpers
+  # d'intention, et le bouton de lancement ci-dessous reste l'unique
+  # autorité de lancement (10 §3.1, 11 §3.6).
   #
-  # GÉOMÉTRIE : deux colonnes quand les deux libellés y tiennent, une
-  # seule pour « Entrée + Cage d'escaliers + WC RDC », qui n'y tient
-  # pas. Un raccourci tronqué ne se lit pas ; trois lignes au lieu de
-  # cinq se lisent d'un coup d'œil.
+  # Les réglages proposés sont VISIBLES immédiatement dans les grilles
+  # ci-dessus — les segments bleus s'y déplacent — et MODIFIABLES d'un
+  # geste avant tout lancement. C'est la condition exacte à laquelle le
+  # second alinéa d'ASP-INV-56 ouvre cette faculté.
+  #
+  # GÉOMÉTRIE : une colonne. Les trois libellés portent un périmètre ET
+  # sa nature (« RDC — serpillière complète ») ; à deux par ligne ils se
+  # tronqueraient sur mobile, et un raccourci tronqué ne se lit pas.
   # ==================================================
   - type: custom:button-card
     template: sub_section_header
     name: ⚡ Raccourcis
-
-  - type: grid
-    square: false
-    columns: 2
-    cards:
-      - type: custom:button-card
-        template: carte_action_standard
-        entity: script.aspirateur_appliquer_raccourci
-        name: RDC complet
-        icon: mdi:home-floor-g
-        styles:
-          card:
-            - height: 52px
-        variables:
-          confirmation: "Préremplir la composition avec « RDC complet » ?"
-          service: script.aspirateur_appliquer_raccourci
-          data:
-            raccourci: rdc_complet
-
-      - type: custom:button-card
-        template: carte_action_standard
-        entity: script.aspirateur_appliquer_raccourci
-        name: Séjour seul
-        icon: mdi:sofa
-        styles:
-          card:
-            - height: 52px
-        variables:
-          confirmation: "Préremplir la composition avec « Séjour seul » ?"
-          service: script.aspirateur_appliquer_raccourci
-          data:
-            raccourci: sejour_seul
 
   - type: grid
     square: false
@@ -491,50 +510,50 @@ cards:
       - type: custom:button-card
         template: carte_action_standard
         entity: script.aspirateur_appliquer_raccourci
-        name: Entrée + Cage d'escaliers + WC RDC
-        icon: mdi:stairs
+        name: RDC — aspiration complète
+        icon: mdi:home-floor-g
         styles:
           card:
             - height: 52px
         variables:
           confirmation: >-
-            Préremplir la composition avec « Entrée + Cage d'escaliers
-            + WC RDC » ?
+            Préremplir la composition avec « RDC — aspiration
+            complète » ? Aucune mission ne sera lancée.
           service: script.aspirateur_appliquer_raccourci
           data:
-            raccourci: entree_escaliers_wc_rdc
+            raccourci: rdc_aspiration
 
-  - type: grid
-    square: false
-    columns: 2
-    cards:
       - type: custom:button-card
         template: carte_action_standard
         entity: script.aspirateur_appliquer_raccourci
-        name: Étage complet
+        name: RDC — serpillière complète
+        icon: mdi:water-outline
+        styles:
+          card:
+            - height: 52px
+        variables:
+          confirmation: >-
+            Préremplir la composition avec « RDC — serpillière
+            complète » ? Aucune mission ne sera lancée.
+          service: script.aspirateur_appliquer_raccourci
+          data:
+            raccourci: rdc_serpilliere
+
+      - type: custom:button-card
+        template: carte_action_standard
+        entity: script.aspirateur_appliquer_raccourci
+        name: Étage — aspiration complète
         icon: mdi:stairs-up
         styles:
           card:
             - height: 52px
         variables:
-          confirmation: "Préremplir la composition avec « Étage complet » ?"
+          confirmation: >-
+            Préremplir la composition avec « Étage — aspiration
+            complète » ? Aucune mission ne sera lancée.
           service: script.aspirateur_appliquer_raccourci
           data:
-            raccourci: etage_complet
-
-      - type: custom:button-card
-        template: carte_action_standard
-        entity: script.aspirateur_appliquer_raccourci
-        name: Annexe complète
-        icon: mdi:home-outline
-        styles:
-          card:
-            - height: 52px
-        variables:
-          confirmation: "Préremplir la composition avec « Annexe complète » ?"
-          service: script.aspirateur_appliquer_raccourci
-          data:
-            raccourci: annexe_complete
+            raccourci: etage_aspiration
 
   # ==================================================
   # 3️⃣ LANCEMENT — action principale, confirmée

@@ -13,11 +13,12 @@
 #   profil courant remonté après mission (ASP-INV-16).
 #
 # 🔍 Sémantique des valeurs :
-#   Les CINQ libellés sont ceux de la table canonique du chapitre 03,
+#   Les SIX libellés sont ceux de la table canonique du chapitre 03,
 #   à l'identique : l'interface n'introduit aucun vocabulaire
-#   parallèle. Le script de composition les traduit vers les cinq
+#   parallèle. Le script de composition les traduit vers les six
 #   clés du moteur, portées par le référentiel embarqué de L1 et
 #   gardées par ASP-CI-21.
+#     Aspiration minimale  → aspiration_minimale
 #     Aspiration normale   → aspiration_normale
 #     Aspiration turbo     → aspiration_turbo
 #     Aspiration maximale  → aspiration_maximale
@@ -43,6 +44,7 @@
 aspirateur_intention_profil:
   name: "Aspirateur — Profil"
   options:
+    - Aspiration minimale
     - Aspiration normale
     - Aspiration turbo
     - Aspiration maximale
