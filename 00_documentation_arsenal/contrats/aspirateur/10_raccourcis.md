@@ -52,10 +52,30 @@ Ces raccourcis découlent directement des périmètres prédéfinis
 | Raccourci | Carte | Segments préremplis |
 |---|---|---|
 | **RDC complet** | `0` | `0_16` · `0_18` · `0_20` · `0_21` |
-| **Entrée + Cage d'escaliers + WC RDC** | `0` | `0_18` · `0_21` · `0_20` |
-| **Séjour seul** | `0` | `0_16` |
 | **Étage complet** | `1` | les **huit** segments, `1_22` `WC Étage` incluse |
-| **Annexe complète** | `2` | `2_16` · `2_19` |
+
+**Deux périmètres, trois raccourcis.** Le périmètre RDC est exposé **deux
+fois** : une fois en aspiration, une fois en serpillière. Un périmètre n'est
+pas un raccourci — le chapitre [`02`](02_referentiel_cartes_et_pieces.md) §3 en
+recense **cinq**, et il continue de tous les recenser : ce chapitre décide
+seulement **lesquels reçoivent un bouton**, et **avec quels réglages par
+défaut**.
+
+### 3.1 Réglages par défaut — proposés, jamais imposés
+
+| Raccourci | Périmètre | Profil par défaut | Passages par défaut |
+|---|---|---|---|
+| **RDC — aspiration complète** | RDC complet | Aspiration normale | 3 passages |
+| **RDC — serpillière complète** | RDC complet | Serpillière moyenne | 3 passages |
+| **Étage — aspiration complète** | Étage complet | Aspiration normale | 3 passages |
+
+**Correspondance des réglages avec la table canonique du chapitre
+[`03`](03_profils_metier.md) §1**, sans vocabulaire parallèle :
+
+| Réglage demandé | Profil canonique | Aspiration | Eau |
+|---|---|---|---|
+| aspiration moyenne, aucune eau | **Aspiration normale** | `balanced` | `off` |
+| aspiration la plus faible, eau moyenne | **Serpillière moyenne** | `quiet` | `medium` |
 
 > **`ASP-INV-56` — le raccourci ne présume ni le profil ni les passages.** Un
 > raccourci qui figerait un profil ou un nombre de passages **sans que
@@ -65,6 +85,18 @@ Ces raccourcis découlent directement des périmètres prédéfinis
 > Un raccourci **peut** proposer un profil et un nombre de passages **par
 > défaut** — à condition qu'ils soient **visibles, modifiables avant lancement**,
 > et jamais appliqués implicitement.
+
+**Ce que le §3.1 exerce, et ce qu'il ne change pas.** Les réglages ci-dessus
+sont la **faculté** déjà ouverte par le second alinéa d'`ASP-INV-56`, et rien
+de plus. Ils sont **écrits dans les helpers d'intention**, donc **visibles**
+dans la composition et **modifiables** avant tout lancement ; ils ne sont
+**jamais** appliqués implicitement à une mission. L'atomicité de l'intention
+reste entière : au moment du lancement, les quatre champs sont renseignés et
+**l'opérateur les a sous les yeux**.
+
+> **Un raccourci ne lance rien.** Il écrit une composition, et s'arrête. Le
+> bouton de lancement demeure l'**unique autorité de lancement**, et il exige
+> une confirmation ([`11`](11_frontiere_ui.md) §3.6).
 
 ---
 
