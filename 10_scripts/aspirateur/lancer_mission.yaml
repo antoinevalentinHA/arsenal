@@ -700,9 +700,12 @@ aspirateur_lancer_mission:
 
     # ======================================================
     # 🗺️ ÉTAPE 5 — Demander la sélection de carte (ASP-IMC-1, cond. 2 et 6)
+    #              — SAUF si la carte demandée est déjà la carte active
+    #                attestée (garde d'abstention, 07 §3.2 bis)
     # ------------------------------------------------------
-    # ⏱️ INSTANT DE RÉFÉRENCE PROPRE, capturé JUSTE AVANT l'appel. Trois
-    #    instants distincts — jamais un instant global de début de script :
+    # ⏱️ INSTANT DE RÉFÉRENCE PROPRE, capturé JUSTE AVANT la garde — donc
+    #    AVANT l'appel qu'elle commande, et avant l'abstention qu'elle peut
+    #    décider. Trois instants distincts — jamais un instant global :
     #    chacun borne la fraîcheur exigée de SA confirmation, et un instant
     #    partagé rendrait une publication antérieure à une écriture recevable
     #    pour elle. `now().timestamp()` se rend en FLOAT (`_parse_result`,
@@ -736,15 +739,75 @@ aspirateur_lancer_mission:
     # troncature ne mord que sur les accolades, et
     # `async_prepare_call_from_config` accepte explicitement un `data` qui se
     # rend en dictionnaire (helpers/service.py).
+    #
+    # 🛑 GARDE D'ABSTENTION — POURQUOI L'APPEL N'EST PLUS SYSTÉMATIQUE.
+    #    Le 2026-08-30 à 08:25, l'appel a de nouveau rendu une
+    #    `HomeAssistantError` (`load_multi_map`) ALORS QUE LA CARTE DEMANDÉE
+    #    ÉTAIT DÉJÀ LA CARTE ACTIVE, et la mission a démarré normalement.
+    #    C'est la seconde reproduction du fait déjà consigné au 2026-08-27.
+    #    `continue_on_error` a fait son office — la séquence a poursuivi et la
+    #    postcondition a tranché — mais Home Assistant conserve une entrée de
+    #    niveau ERREUR pour une opération finalement NOMINALE. Une entrée
+    #    ERREUR qui ne correspond à aucune anomalie est un bruit qui use la
+    #    lecture du journal ; elle se supprime À LA SOURCE, en n'émettant pas
+    #    un appel dont le POSTÉTAT EST DÉJÀ ATTEINT.
+    #
+    #    CE QUE LA GARDE EXIGE POUR S'ABSTENIR — les DEUX lectures
+    #    d'ASP-INV-29, et rien de moins : le sélecteur relu vaut EXACTEMENT
+    #    l'option de la carte demandée (comparaison littérale, espace finale
+    #    comprise), ET les pièces exposées contiennent l'intégralité des noms
+    #    du référentiel V1 de cette carte (inclusion, ASP-INV-63). C'est la
+    #    postcondition de l'étape 7, MOINS la fraîcheur.
+    #
+    #    AUCUN FALLBACK, ET AUCUNE INVERSION DE CHARGE DE PREUVE. La condition
+    #    d'abstention est POSITIVE : elle exige une carte active LISIBLE et
+    #    CONCORDANTE. `unknown`, `unavailable`, entité absente, attribut
+    #    `options` absent ou vide, segment manquant, libellé hors référentiel —
+    #    aucun de ces états n'égale l'option demandée ni ne satisfait
+    #    l'inclusion, donc AUCUN ne fait s'abstenir : l'appel est émis, à
+    #    l'identique. Une carte illisible n'est JAMAIS réputée correcte.
+    #
+    #    LA FRAÎCHEUR N'EST PAS TESTÉE ICI, ET C'EST VOULU. La garde décide
+    #    d'un APPEL, jamais d'une confirmation. Une lecture périmée ne peut
+    #    donc produire qu'une abstention, jamais une preuve : l'étape 7
+    #    RÉÉVALUE la postcondition COMPLÈTE — valeur ET publication
+    #    postérieure à `t_carte` — sur les deux entités. Le postétat reste
+    #    exigé sur TOUS les chemins, garde franchie ou non.
+    #
+    #    LA PREUVE RESTE ATTEIGNABLE SANS L'APPEL. `t_carte` est capturé AVANT
+    #    la garde, et c'est l'écriture d'eau de l'étape 6 — jamais la sélection
+    #    de carte — qui provoque le `coordinator.async_refresh()` publiant
+    #    SIMULTANÉMENT carte, pièces, intensité et mode (voir l'étape 6).
+    #    S'abstenir ne retire donc AUCUNE publication à la confirmation : le
+    #    mécanisme de rafraîchissement est intact, et la fenêtre de 30 s aussi.
+    #
+    #    CE QUE LA GARDE N'EST PAS. Ce n'est pas un verdict : elle n'écrit
+    #    rien, ne pose aucun code, ne s'arrête pas. Ce n'est pas un refus :
+    #    elle ne peut que retirer un appel redondant. Et ce n'est pas une
+    #    seconde tentative ni un repli (ASP-INV-51) : elle n'ajoute aucun
+    #    appel, elle en retire au plus un.
+    #    Contrat : 07 §3.2 bis (abstention de l'étape 5), 06 §3 cond. 2.
     # ======================================================
     - variables:
         t_carte: "{{ now().timestamp() }}"
 
-    - action: select.select_option
-      continue_on_error: true
-      target:
-        entity_id: select.roborock_q7_max_carte_selectionnee
-      data: "{{ {'option': ctx_carte.option} }}"
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {% set p = state_attr('sensor.roborock_q7_max_piece_actuelle',
+                                      'options') %}
+                {{ not (states('select.roborock_q7_max_carte_selectionnee')
+                          == ctx_carte.option
+                        and p is not none and p is not string and p is sequence
+                        and (p | count) > 0
+                        and (ctx_carte.noms | reject('in', p) | list | count) == 0) }}
+          sequence:
+            - action: select.select_option
+              continue_on_error: true
+              target:
+                entity_id: select.roborock_q7_max_carte_selectionnee
+              data: "{{ {'option': ctx_carte.option} }}"
 
     # ======================================================
     # 💧 ÉTAPE 6 — Écrire l'intensité d'eau (ASP-INV-14, ASP-INV-34)

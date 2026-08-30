@@ -122,7 +122,7 @@ son échec **refuse la mission** et **arrête la séquence**.
 | **2** | **Valider la cohérence de l'intention** contre le référentiel ([`02`](02_referentiel_cartes_et_pieces.md)) | `SEGMENT_INCONNU` |
 | **3** | **Refuser** une sélection vide, inconnue ou multi-carte | `SELECTION_VIDE`, `SEGMENT_INCONNU`, `SELECTION_MULTI_CARTE` |
 | **4** | **Vérifier l'état de lancement** — état machine dans la classe de repos admissible, erreurs nominales, aucune session ouverte (§5) | `ETAT_NON_QUALIFIE`, `ROBOT_INDISPONIBLE`, `ERREUR_EQUIPEMENT`, `MISSION_DEJA_OUVERTE`, `SESSION_INACHEVEE` |
-| **5** | **Demander la sélection de la carte** de l'intention | *(aucune — §3.2)* |
+| **5** | **Demander la sélection de la carte** de l'intention — **sauf abstention** lorsque cette carte est **déjà la carte active attestée** (§3.2 bis) | *(aucune — §3.2)* |
 | **6** | **Écrire l'intensité d'eau** du profil | *(aucune — §3.2)* |
 | **7** | **Attendre et confirmer le contexte cartographique** — sélecteur relu **et** pièces exposées concordantes ([`06`](06_integrite_mono_carte.md) §3, conditions 2 à 4), **publiées à neuf** (§3.3), sous **30 s** (§3.1) | `CARTE_NON_CONFIRMEE` |
 | **8** | **Confirmer l'intensité** et la **cohérence du mode dérivé** — jamais l'écrire ([`03`](03_profils_metier.md) §3), **publiées à neuf** (§3.3), sous **30 s** (§3.1) | `REGLAGE_NON_CONFIRME` |
@@ -242,6 +242,77 @@ son échec **refuse la mission** et **arrête la séquence**.
 > active**. La séquence s'est arrêtée **sans poser aucun verdict** : le domaine
 > s'est tu, contre `ASP-INV-49` et `ASP-INV-50`. Poser `CARTE_NON_CONFIRMEE`
 > aurait été tout aussi faux — le postétat exigé était satisfait.
+
+### 3.2 bis Abstention de l'étape 5 lorsque son postétat est déjà atteint
+
+> **Ce que le contrat exige de l'étape 5 est un ÉTAT, jamais un appel.**
+> `ASP-INV-71` s'applique dans les deux sens. `ASP-IMC-1` (condition 2) demande
+> que la carte **soit** sélectionnée sur l'appareil. Lorsqu'elle **l'est
+> déjà**, l'appel n'ajoute rien : il ne change aucun état, et son échec comme
+> sa réussite laissent le postétat inchangé.
+>
+> **La règle, opposable.** Le moteur **n'émet pas** la sélection de carte
+> lorsque, **immédiatement avant** l'appel, les **deux** lectures
+> d'`ASP-INV-29` attestent ensemble que la carte demandée est la carte
+> active :
+>
+> 1. le **sélecteur relu** vaut **exactement** l'option de la carte demandée —
+>    comparaison **littérale**, espace finale comprise
+>    ([`02`](02_referentiel_cartes_et_pieces.md) §2.1, `ASP-INV-67`) ;
+> 2. les **pièces exposées** contiennent **l'intégralité** des segments du
+>    référentiel V1 de cette carte — **inclusion**, jamais égalité
+>    ([`06`](06_integrite_mono_carte.md) §3.1, `ASP-INV-63`).
+>
+> **Une seule des deux ne suffit pas**, et rien d'autre ne s'y substitue.
+>
+> **Aucun fallback — la condition est POSITIVE.** Une carte active
+> `unknown`, `unavailable`, absente, hors référentiel, ou dont les pièces sont
+> illisibles, vides ou incomplètes **ne satisfait pas** cette condition :
+> l'appel est alors émis, **à l'identique**. Une carte illisible n'est
+> **jamais** réputée correcte (`ASP-INV-45`, `ASP-INV-51`).
+>
+> **L'abstention ne prouve RIEN, et ne dispense de RIEN.** Elle porte sur un
+> **appel**, jamais sur une confirmation. L'étape **7** reste exigée
+> **inconditionnellement, sur tous les chemins**, avec la **même** fenêtre, la
+> **même** double lecture et la **même** exigence de **publication fraîche**
+> (§3.3, `ASP-INV-72`) : une lecture correcte mais **périmée** peut faire
+> s'abstenir, elle ne peut **jamais** faire émettre. Le moteur ne progresse
+> vers l'émission que si la confirmation **tranche**, garde franchie ou non.
+>
+> **La preuve reste atteignable sans l'appel.** L'instant de référence de la
+> carte est capturé **avant** la garde, et c'est l'**écriture d'eau** de
+> l'étape 6 — jamais la sélection de carte — qui provoque le rafraîchissement
+> publiant **simultanément** carte, pièces, intensité et mode. S'abstenir ne
+> retire donc **aucune** publication à la confirmation.
+>
+> **Ce que l'abstention n'est pas.** Ce n'est **ni un refus** — aucun code
+> n'est posé, aucune séquence n'est arrêtée —, **ni une issue**, **ni une
+> seconde tentative**, **ni un repli** (`ASP-INV-39`, `ASP-INV-51`). Elle ne
+> peut que **retirer** un appel redondant ; elle n'en ajoute aucun, et ne
+> touche à **aucune** autre commande : les étapes **6** et **9** n'ont pas de
+> postétat observable avant leur écriture et **restent inconditionnelles**.
+>
+> **Fait qui la motive, et ce qu'il établit.** Le 2026-08-27, la sélection de
+> carte a levé une erreur de transport **alors que la carte demandée était
+> déjà la carte active** (§3.2). Le 2026-08-30 à 08:25, la **même** erreur
+> (`load_multi_map`) a été journalisée, et **la mission a démarré
+> normalement**.
+>
+> Cette seconde occurrence n'est pas une simple répétition : elle **se
+> qualifie d'elle-même**. L'appel ayant échoué, il n'a **chargé aucune carte** ;
+> la séquence a pourtant franchi l'étape **7**, qui exige le sélecteur **à la
+> valeur exacte** demandée **et** les pièces de cette carte, **publiés à neuf**.
+> La carte demandée était donc **déjà** la carte active — l'appel était un
+> **no-op**.
+>
+> `ASP-INV-71` traite déjà correctement l'**issue** — la confirmation tranche —,
+> mais la plateforme conserve une entrée de **niveau ERREUR** pour une opération
+> **finalement nominale**. Une entrée ERREUR qui ne correspond à aucune anomalie
+> **use la lecture du journal** et contredit `ASP-INV-49` dans son esprit : le
+> domaine dit ce qui est. Elle se supprime **à la source**, en n'émettant pas un
+> appel dont le postétat est déjà atteint.
+
+---
 
 ### 3.3 Publication fraîche — ce qu'une confirmation doit prouver
 
