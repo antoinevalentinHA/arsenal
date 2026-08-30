@@ -2879,10 +2879,17 @@ def check_ecritures_preparatoires(top, corps=None) -> list[str]:
     non par l'adjacence : la séquence V-A apparie délibérément les deux
     premières écritures avant de les confirmer, pour que le rafraîchissement
     provoqué par l'eau publie aussi le contexte cartographique.
+
+    Le CHEMIN NOMINAL inclut la garde d'abstention de la sélection de carte
+    (07 §3.2 bis) : l'écriture qu'elle porte garde le rang du `choose` qui la
+    garde, et la sémantique de cette garde est fermée par
+    `check_garde_abstention`. Les instants, les confirmations et les relectures
+    restent, eux, exigés au PREMIER NIVEAU — une preuve logée dans une branche
+    ne serait pas opposable.
     """
     errs = []
     corps = corps if corps is not None else {"sequence": top}
-    idx_svc, idx_var, idx_wait = {}, {}, {}
+    idx_svc, idx_var, idx_wait, etape_svc = {}, {}, {}, {}
 
     for i, step in enumerate(top):
         if not isinstance(step, dict):
@@ -2895,16 +2902,19 @@ def check_ecritures_preparatoires(top, corps=None) -> list[str]:
             for nom in INSTANTS_PREPARATOIRES:
                 if re.search(rf'\b{nom}\b', step["wait_template"]):
                     idx_wait.setdefault(nom, i)
+
+    for i, step in _nominal(top):
         svc = _service(step)
         if svc:
             for cible in _cibles(step):
                 idx_svc.setdefault((svc, cible), i)
+                etape_svc.setdefault((svc, cible), step)
 
     # (a) allowlist FERMÉE — nulle part ailleurs, à AUCUNE profondeur.
     #     La visite est exhaustive : `repeat`, `if`, `parallel` et toute
     #     séquence imbriquée sont inspectés, et le CHEMIN est cité.
     autorisees = {(s, c) for s, c, _t, _r in ECRITURES_PREPARATOIRES}
-    au_premier_niveau = {id(s) for s in top}
+    au_premier_niveau = {id(s) for _r, s in _nominal(top)}
     for chemin, step in _actions(top):
         if not (isinstance(step, dict) and step.get("continue_on_error")):
             continue
@@ -2924,7 +2934,9 @@ def check_ecritures_preparatoires(top, corps=None) -> list[str]:
                 f"ASP-CI-27 : {chemin} — l'écriture préparatoire `{couple[1]}` "
                 f"est imbriquée dans une structure conditionnelle ou répétée. "
                 f"Les trois écritures appartiennent au CHEMIN NOMINAL, au "
-                f"premier niveau de la séquence (07 §3).")
+                f"premier niveau de la séquence — seule la sélection de carte "
+                f"peut être logée dans une GARDE D'ABSTENTION conforme, et "
+                f"celle-ci n'en est pas une (07 §3, 07 §3.2 bis).")
 
     for svc, cible, instant, refus in ECRITURES_PREPARATOIRES:
         i_svc = idx_svc.get((svc, cible))
@@ -2933,7 +2945,9 @@ def check_ecritures_preparatoires(top, corps=None) -> list[str]:
                         f"`{cible}` introuvable (07 §3).")
             continue
         # (b) l'écriture DOIT absorber l'exception, sinon le moteur se tait.
-        if not top[i_svc].get("continue_on_error"):
+        #     Le drapeau est lu sur l'ÉTAPE elle-même, gardée ou non : la
+        #     garde d'abstention retire l'appel, elle ne le protège pas.
+        if not etape_svc[(svc, cible)].get("continue_on_error"):
             errs.append(
                 f"ASP-CI-27 : sequence/{i_svc} — `{cible}` doit porter "
                 f"`continue_on_error: true` : une exception de transport n'est "
@@ -3101,6 +3115,9 @@ def check_ecritures_preparatoires(top, corps=None) -> list[str]:
             errs.append("ASP-CI-27 : une commande de mission précède la "
                         "confirmation cartographique — violation directe "
                         "d'ASP-IMC-1.")
+
+    # (j) la garde d'abstention, lorsqu'elle existe : forme, silence, rendu.
+    errs += check_garde_abstention(top, corps)
     return errs
 
 
@@ -3715,6 +3732,245 @@ ENTITES_PROBANTES = {
     "t_aspiration": (NATIF_VACUUM,),
 }
 
+# ─────────────────────────────────────────────────────────────
+# GARDE D'ABSTENTION — 07 §3.2 bis
+#
+# UNE seule des trois écritures préparatoires peut être gardée : la sélection
+# de carte. Elle seule possède un postétat OBSERVABLE AVANT l'appel — la carte
+# active attestée par les deux lectures d'ASP-INV-29. L'eau et l'aspiration
+# n'en ont aucun : leur valeur cible ne se distingue pas d'une valeur ancienne
+# sans la publication que l'écriture provoque. Les garder serait un repli.
+#
+# La garde ne dispense de RIEN : la confirmation de l'étape 7 reste au premier
+# niveau, inconditionnelle, et réévalue valeur ET fraîcheur sur les DEUX
+# entités — c'est `check_ecritures_preparatoires` qui l'exige, en n'admettant
+# de confirmation qu'au PREMIER NIVEAU. Une abstention ne vaut donc jamais
+# preuve.
+# ─────────────────────────────────────────────────────────────
+ECRITURE_GARDABLE = (SVC_EAU, NATIF_CARTE)
+
+
+def _action_gardee(step):
+    """L'écriture préparatoire logée dans une GARDE D'ABSTENTION conforme.
+
+    Forme opposable de la garde : un `choose` portant UNE seule option, sans
+    `default:`, dont la séquence ne contient QUE l'écriture du sélecteur de
+    carte. Toute autre imbrication n'est pas une garde — elle reste refusée
+    par l'allowlist d'ASP-CI-27.
+
+    Rend l'étape d'écriture, ou `None`.
+    """
+    if not isinstance(step, dict) or "choose" not in step:
+        return None
+    if step.get("default") is not None:
+        return None
+    anomalies: list[str] = []
+    options = _ensure_list(step.get("choose"), "", anomalies)
+    if anomalies or len(options) != 1 or not isinstance(options[0], dict):
+        return None
+    seq = _ensure_list(options[0].get("sequence"), "", anomalies)
+    if anomalies or len(seq) != 1 or not isinstance(seq[0], dict):
+        return None
+    action = seq[0]
+    if (_service(action), (_cibles(action) or [None])[0]) != ECRITURE_GARDABLE:
+        return None
+    return action
+
+
+def _nominal(top):
+    """Le chemin nominal : couples `(rang de premier niveau, étape exécutée)`.
+
+    Une étape de premier niveau porte son propre rang. L'écriture logée dans
+    la garde d'abstention porte le rang du `choose` qui la garde : elle
+    APPARTIENT au chemin nominal — la garde ne détourne pas la séquence vers
+    une autre issue, elle retire au plus un appel dont le postétat est déjà
+    atteint. L'ordre de la séquence V-A reste donc décidable, ce qu'une
+    branche ordinaire ne permettrait pas.
+    """
+    out = []
+    for i, step in enumerate(top):
+        out.append((i, step))
+        gardee = _action_gardee(step)
+        if gardee is not None:
+            out.append((i, gardee))
+    return out
+
+
+def cas_garde_abstention(ctx):
+    """Les cas joués sur la garde, ENGENDRÉS depuis le référentiel du moteur.
+
+    Le booléen attendu est celui de la CONDITION de la garde : `True` =
+    l'appel est émis, `False` = le moteur s'abstient. La table fait foi, pas
+    le gabarit.
+
+    Aucune fraîcheur n'est jouée ici, et c'est délibéré : la garde décide d'un
+    APPEL, jamais d'une confirmation. Une lecture périmée ne peut donc produire
+    qu'une abstention — que l'étape 7 refusera si la publication n'est pas
+    postérieure à `t_carte`.
+    """
+    option, noms = ctx["ctx_carte"]["option"], ctx["ctx_carte"]["noms"]
+    carte_ok = {"state": option, "lr": 120.0}
+    piece_ok = {"state": noms[0], "attrs": {"options": list(noms)}, "lr": 120.0}
+    return (
+        ("carte demandée DÉJÀ active, pièces concordantes", False,
+         {NATIF_CARTE: carte_ok, NATIF_PIECE: piece_ok}),
+        ("carte active DIFFÉRENTE", True,
+         {NATIF_CARTE: dict(carte_ok, state=option + "-AUTRE"),
+          NATIF_PIECE: piece_ok}),
+        ("carte active `unknown`", True,
+         {NATIF_CARTE: dict(carte_ok, state="unknown"), NATIF_PIECE: piece_ok}),
+        ("carte active `unavailable`", True,
+         {NATIF_CARTE: dict(carte_ok, state="unavailable"),
+          NATIF_PIECE: piece_ok}),
+        ("entité carte ABSENTE", True, {NATIF_PIECE: piece_ok}),
+        ("entité PIÈCES ABSENTE", True, {NATIF_CARTE: carte_ok}),
+        ("attribut `options` ABSENT", True,
+         {NATIF_CARTE: carte_ok,
+          NATIF_PIECE: {"state": noms[0], "lr": 120.0, "attrs": {}}}),
+        ("pièces exposées VIDES", True,
+         {NATIF_CARTE: carte_ok,
+          NATIF_PIECE: {"state": noms[0], "lr": 120.0,
+                        "attrs": {"options": []}}}),
+        ("un segment du référentiel MANQUE", True,
+         {NATIF_CARTE: carte_ok,
+          NATIF_PIECE: {"state": noms[0], "lr": 120.0,
+                        "attrs": {"options": list(noms[:-1])}}}),
+        ("aucune publication du tout", True, {}),
+    )
+
+
+def check_garde_abstention(top, corps=None) -> list[str]:
+    """ASP-CI-27 — la garde d'abstention de la sélection de carte (07 §3.2 bis).
+
+    L'écriture NUE, au premier niveau, reste conforme : ce contrôle ne
+    s'applique qu'à la forme gardée, et il en ferme la sémantique.
+
+    Que la confirmation de l'étape 7, elle, reste au premier niveau et hors
+    garde est déjà exigé par `check_ecritures_preparatoires` : `t_carte` n'y
+    est borné que par un `wait_template` de PREMIER NIVEAU, faute de quoi
+    « aucune confirmation ne borne `t_carte` ». Ce contrôle-ci n'y revient pas.
+
+      (i)   la garde est UNIQUE, ne porte qu'UNE branche, aucun `default:`, et
+            son unique étape est l'écriture gardée — rien d'autre ne s'y loge ;
+      (ii)  la garde n'écrit AUCUN verdict et ne porte AUCUN `stop:` — une
+            abstention n'est ni un refus ni une preuve ;
+      (iii) la garde n'invoque NI `t_carte` NI `last_reported` : elle décide
+            d'un appel, pas d'une confirmation, et emprunter la fraîcheur
+            ferait passer une garde pour une postcondition ;
+      (iv)  RENDUE sur les deux contextes du référentiel, elle s'abstient
+            EXACTEMENT lorsque la carte active est lisible et concordante, et
+            émet l'appel dans tous les autres cas — `unknown`, `unavailable`,
+            entité absente, pièces illisibles ou incomplètes comprises.
+    """
+    errs: list[str] = []
+    # Tout `choose` de premier niveau qui PORTE l'écriture de carte prétend
+    # être la garde : sa conformité est examinée ici, jamais présumée.
+    porteurs = [(i, s) for i, s in enumerate(top)
+                if isinstance(s, dict) and "choose" in s
+                and any((_service(a), (_cibles(a) or [None])[0])
+                        == ECRITURE_GARDABLE for _ch, a in _actions([s]))]
+    if not porteurs:
+        return errs
+    if len(porteurs) != 1:
+        errs.append(
+            f"ASP-CI-27 : {len(porteurs)} structures conditionnelles portent "
+            f"la sélection de carte — la garde d'abstention est UNIQUE "
+            f"(07 §3.2 bis).")
+        return errs
+    rang, garde = porteurs[0]
+
+    # (ii) une abstention n'écrit rien et n'arrête rien.
+    ecrits, _anos = _verdicts_du_document(garde)
+    if ecrits:
+        errs.append(
+            f"ASP-CI-27 : la garde d'abstention (sequence/{rang}) écrit "
+            f"{sorted(ecrits)}. S'abstenir d'un appel redondant n'est NI un "
+            f"refus NI une issue : la garde ne pose aucun verdict, et seule la "
+            f"confirmation de l'étape 7 tranche (07 §3.2, ASP-INV-71).")
+    if any("stop" in s for s in _aplatir([garde]) if isinstance(s, dict)):
+        errs.append(
+            f"ASP-CI-27 : la garde d'abstention (sequence/{rang}) porte un "
+            f"`stop:` — elle arrêterait la séquence sans verdict, exactement "
+            f"le chemin muet qu'ASP-CI-26 proscrit (ASP-INV-49).")
+
+    # (i) forme fermée : une branche, aucun `default:`, une seule étape.
+    if _action_gardee(garde) is None:
+        anomalies: list[str] = []
+        options = _ensure_list(garde.get("choose"), "", anomalies)
+        errs.append(
+            f"ASP-CI-27 : la garde d'abstention (sequence/{rang}) n'a pas la "
+            f"forme fermée exigée — UNE branche "
+            f"(trouvé {len(options)}), aucun `default:` "
+            f"(trouvé {garde.get('default') is not None}), et pour unique "
+            f"étape l'écriture du sélecteur de carte. Toute autre forme "
+            f"détourne le chemin nominal au lieu de retirer un appel "
+            f"redondant (07 §3.2 bis).")
+        return errs
+
+    cond = _texte_conditions(garde)
+    if not cond.strip():
+        errs.append(
+            f"ASP-CI-27 : la garde d'abstention (sequence/{rang}) ne porte "
+            f"aucune condition — l'appel serait retiré inconditionnellement.")
+        return errs
+
+    # (iii) la garde n'emprunte pas la preuve de la confirmation.
+    for emprunt, pourquoi in (
+            ("t_carte", "l'instant de référence ne borne QUE la confirmation ; "
+                        "aucune publication ne lui est postérieure au moment "
+                        "où la garde s'évalue"),
+            ("last_reported", "la fraîcheur est la preuve de l'étape 7 ; "
+                              "l'emprunter ici ferait passer une décision "
+                              "d'appel pour une postcondition")):
+        if re.search(rf'\b{emprunt}\b', cond):
+            errs.append(
+                f"ASP-CI-27 : la garde d'abstention invoque `{emprunt}` — "
+                f"{pourquoi} (ASP-INV-72).")
+
+    # (iv) RENDUE, sur les deux contextes, cas par cas.
+    contextes = contextes_postcondition(corps or {"sequence": top}) or []
+    if len(contextes) < 2:
+        errs.append(
+            "ASP-CI-27 : moins de DEUX contextes de rendu pour la garde "
+            "d'abstention — une garde validée sur un seul couple carte/profil "
+            "ne distingue pas une expression d'un littéral substitué.")
+    for ctx in contextes:
+        for libelle, appel_attendu, etats in cas_garde_abstention(ctx):
+            try:
+                obtenu = rendu_ha(cond, etats=etats, horloge=T0_SIM,
+                                  **{k: v for k, v in ctx.items()
+                                     if k != "nom"})
+            except Exception as exc:                     # noqa: BLE001
+                errs.append(
+                    f"ASP-CI-27 : la garde d'abstention LÈVE au rendu "
+                    f"[{ctx['nom']}] — « {libelle} » ({type(exc).__name__}: "
+                    f"{exc}). Une condition qui lève arrête la séquence sans "
+                    f"verdict.")
+                continue
+            if not isinstance(obtenu, bool):
+                errs.append(
+                    f"ASP-CI-27 : la garde d'abstention se rend en "
+                    f"{type(obtenu).__name__} ({obtenu!r}) [{ctx['nom']}] — "
+                    f"« {libelle} ». Une condition doit être BOOLÉENNE.")
+                continue
+            if obtenu is not appel_attendu:
+                errs.append(
+                    f"ASP-CI-27 : la garde d'abstention [{ctx['nom']}] — "
+                    f"« {libelle} » : attendu "
+                    + ("l'APPEL" if appel_attendu else "l'ABSTENTION")
+                    + ", obtenu "
+                    + ("l'APPEL" if obtenu else "l'ABSTENTION")
+                    + ". "
+                    + ("Le moteur ne s'abstient QUE sur une carte active "
+                       "LISIBLE et CONCORDANTE : `unknown`, `unavailable`, "
+                       "une entité absente ou des pièces incomplètes ne "
+                       "valent JAMAIS carte correcte (ASP-INV-45, "
+                       "ASP-INV-51)." if appel_attendu else
+                       "La carte demandée EST déjà la carte active attestée : "
+                       "l'appel est un no-op qui journalise une ERREUR pour "
+                       "une opération nominale (07 §3.2 bis)."))
+    return errs
+
 
 def _domaine(svc: str | None) -> str:
     return svc.split(".", 1)[0] if svc else ""
@@ -3756,7 +4012,9 @@ def check_chemins_silencieux(top) -> list[str]:
          honnête (émission).
     """
     errs = [f"ASP-CI-26 : {a}" for a in _anomalies_de_forme(top)]
-    for i, step in enumerate(top):
+    # Le chemin nominal, garde d'abstention comprise : une écriture gardée
+    # reste un appel vers l'appareil, et doit se conformer comme les autres.
+    for i, step in _nominal(top):
         if not isinstance(step, dict):
             continue
         svc = _service(step)
@@ -4253,7 +4511,10 @@ def check_ordre_sequence(corps_sequence) -> list[str]:
         return [ch for ch, s in _actions(top) if pred(s)]
 
     def _au_premier_niveau(pred):
-        return [i for i, s in enumerate(top) if pred(s)]
+        # Le chemin nominal, garde d'abstention comprise (07 §3.2 bis) :
+        # l'écriture qu'elle porte garde le rang du `choose` qui la garde,
+        # et reste donc ordonnable face aux trois autres actions.
+        return [i for i, s in _nominal(top) if pred(s)]
 
     roles = (
         ("carte", lambda s: _service(s) == SVC_EAU and NATIF_CARTE in _cibles(s)),
@@ -7547,8 +7808,8 @@ def selftest() -> None:
 
     # ---- ASP-CI-22 : le défaut de TRONCATURE, réintroduit -----------------
     scalaire = mot_txt(
-        '      data: "{{ {\'option\': ctx_carte.option} }}"',
-        '      data:\n        option: "{{ ctx_carte.option }}"')
+        '              data: "{{ {\'option\': ctx_carte.option} }}"',
+        '              data:\n                option: "{{ ctx_carte.option }}"')
     m_sc = yaml.safe_load(scalaire[RUNTIME_MOTEUR])[ID_MOTEUR]
     c.viole(check_rendus_moteur(m_sc, _aplatir(m_sc["sequence"]), t02r_2),
             "GABARIT rendu en bloc",
@@ -7727,7 +7988,10 @@ def selftest() -> None:
     # `VALIDATION_EN_COURS`. C'est l'état observé en production le 2026-08-27.
     for svc, cible, _t, _r in ECRITURES_PREPARATOIRES:
         m = copy.deepcopy(mot0)
-        for st in m[ID_MOTEUR]["sequence"]:
+        # La visite emprunte le CHEMIN NOMINAL : la sélection de carte peut
+        # être logée dans sa garde d'abstention (07 §3.2 bis), et une
+        # mutation qui ne l'atteindrait pas ne prouverait plus rien.
+        for _rang, st in _nominal(m[ID_MOTEUR]["sequence"]):
             if isinstance(st, dict) and _service(st) == svc and cible in _cibles(st):
                 st.pop("continue_on_error", None)
         c.viole(check_chemins_silencieux(m[ID_MOTEUR]["sequence"]),
@@ -7758,7 +8022,7 @@ def selftest() -> None:
     # d'un `stop:`. Le lire comme verdict courant était le faux vert d'une
     # première version de ce contrôle.
     m_br = copy.deepcopy(mot0)
-    for st in m_br[ID_MOTEUR]["sequence"]:
+    for _rang, st in _nominal(m_br[ID_MOTEUR]["sequence"]):
         if isinstance(st, dict) and _service(st) == SVC_EAU and NATIF_CARTE in _cibles(st):
             st.pop("continue_on_error", None)
     assert any("VALIDATION_EN_COURS" in e
@@ -7782,7 +8046,12 @@ def selftest() -> None:
                   and instant in s["wait_template"])
 
     def _i_svc(seq, svc, cible):
-        return _i(seq, lambda s: _service(s) == svc and cible in _cibles(s))
+        # Rang sur le CHEMIN NOMINAL : la sélection de carte peut être logée
+        # dans sa garde d'abstention, et porte alors le rang du `choose`
+        # qui la garde (07 §3.2 bis).
+        return next(r for r, s in _nominal(seq)
+                    if isinstance(s, dict) and _service(s) == svc
+                    and cible in _cibles(s))
 
     # (1) confirmation carte replacée AVANT l'écriture d'eau : le
     #     rafraîchissement qui la rend probante n'a alors pas encore eu lieu.
@@ -7923,6 +8192,125 @@ def selftest() -> None:
             f"mutation de fraîcheur inopérante sur {instant}"
         c.viole(_postcondition_rendue(instant, sans), "doit REFUSER",
                 f"CI-27 fraîcheur retirée — {instant}")
+
+    # ---- G : LA GARDE D'ABSTENTION de la sélection de carte (07 §3.2 bis) --
+    # Cinq propriétés, et cinq seulement, sont ici opposables :
+    #   1. carte demandée == carte active LISIBLE et concordante -> AUCUN appel
+    #   2. carte active DIFFÉRENTE                               -> UN appel
+    #   3. carte active `unknown`                                -> UN appel
+    #   4. carte active `unavailable`                            -> UN appel
+    #   5. la postcondition carte + pièces reste exigée sur TOUS les chemins.
+    c.conforme(check_garde_abstention(seq0, corps0), "CI-27/G garde conforme")
+
+    def _i_garde(seq):
+        return next(i for i, s in enumerate(seq) if _action_gardee(s) is not None)
+
+    def _cond_garde(seq, gabarit):
+        seq[_i_garde(seq)]["choose"][0]["conditions"] = [
+            {"condition": "template", "value_template": gabarit}]
+
+    GARDE_REELLE = _texte_conditions(seq0[_i_garde(seq0)])
+
+    # G1 — l'illisible réputé correct : `unknown` et `unavailable` admis comme
+    #      carte active. C'est le fallback qu'ASP-INV-45 proscrit — le moteur
+    #      s'abstiendrait sur une carte qu'il ne sait PAS être la bonne.
+    def _g_illisible(seq):
+        _cond_garde(seq, GARDE_REELLE.replace(
+            f"states('{NATIF_CARTE}')\n          == ctx_carte.option",
+            f"states('{NATIF_CARTE}')\n          in [ctx_carte.option, 'unknown', 'unavailable']"))
+    errs_g1 = mut27(_g_illisible)
+    assert any("`unknown`" in e and "attendu l'APPEL" in e for e in errs_g1), errs_g1
+    assert any("`unavailable`" in e and "attendu l'APPEL" in e for e in errs_g1), errs_g1
+    c.viole(errs_g1, "attendu l'APPEL",
+            "CI-27/G1 garde admettant une carte active illisible")
+
+    # G2 — la seconde lecture d'ASP-INV-29 retirée : le sélecteur seul dit ce
+    #      qui a été DEMANDÉ, jamais ce qui a été CHARGÉ. Une carte dont les
+    #      pièces manquent ferait s'abstenir.
+    def _g_sans_pieces(seq):
+        _cond_garde(seq, f"{{{{ states('{NATIF_CARTE}') != ctx_carte.option }}}}")
+    errs_g2 = mut27(_g_sans_pieces)
+    assert any("MANQUE" in e and "attendu l'APPEL" in e for e in errs_g2), errs_g2
+    c.viole(errs_g2, "attendu l'APPEL",
+            "CI-27/G2 garde sans la lecture des pièces exposées")
+
+    # G3 — la garde qui s'abstient TOUJOURS : plus aucune sélection de carte.
+    def _g_toujours(seq):
+        _cond_garde(seq, "{{ false }}")
+    c.viole(mut27(_g_toujours), "attendu l'APPEL",
+            "CI-27/G3 garde s'abstenant inconditionnellement")
+
+    # G4 — la garde qui ne s'abstient JAMAIS : l'appel redondant revient, et
+    #      avec lui l'entrée ERREUR pour une opération nominale.
+    def _g_jamais(seq):
+        _cond_garde(seq, "{{ true }}")
+    c.viole(mut27(_g_jamais), "attendu l'ABSTENTION",
+            "CI-27/G4 garde n'écartant jamais l'appel redondant")
+
+    # G5 — la garde qui EMPRUNTE la preuve de la confirmation. Aucune
+    #      publication n'est postérieure à `t_carte` quand elle s'évalue :
+    #      la garde s'abstiendrait toujours, et la fraîcheur perdrait son sens.
+    for emprunt, ajout in (
+            ("t_carte", " and 0 > t_carte"),
+            ("last_reported",
+             f" and as_timestamp(states.{NATIF_CARTE}.last_reported, 0) > 0")):
+        def _g_emprunt(seq, a=ajout):
+            _cond_garde(seq, GARDE_REELLE.replace(
+                "== 0) }}", "== 0" + a + ") }}"))
+        c.viole(mut27(_g_emprunt), f"invoque `{emprunt}`",
+                f"CI-27/G5 garde empruntant `{emprunt}`")
+
+    # G6 — la garde qui POSE un verdict, et celle qui ARRÊTE la séquence :
+    #      une abstention n'est ni un refus ni une issue.
+    def _g_ecrit(seq):
+        seq[_i_garde(seq)]["choose"][0]["sequence"].append(
+            {"action": "input_text.set_value",
+             "target": {"entity_id": ID_VERDICT},
+             "data": {"value": "REFUS/CARTE_NON_CONFIRMEE"}})
+    c.viole(mut27(_g_ecrit), "écrit", "CI-27/G6 garde d'abstention posant un verdict")
+
+    def _g_stop(seq):
+        seq[_i_garde(seq)]["choose"][0]["sequence"].append({"stop": "abstention"})
+    c.viole(mut27(_g_stop), "porte un `stop:`",
+            "CI-27/G6 bis garde d'abstention arrêtant la séquence")
+
+    # G7 — forme non fermée : une seconde branche, puis un `default:`.
+    def _g_deux_branches(seq):
+        g = seq[_i_garde(seq)]
+        g["choose"].append({"conditions": [{"condition": "template",
+                                            "value_template": "{{ true }}"}],
+                            "sequence": [{"stop": "autre"}]})
+    c.viole(mut27(_g_deux_branches), "forme fermée exigée",
+            "CI-27/G7 garde à deux branches")
+
+    def _g_default(seq):
+        seq[_i_garde(seq)]["default"] = [{"stop": "autre"}]
+    c.viole(mut27(_g_default), "forme fermée exigée",
+            "CI-27/G7 bis garde portant un `default:`")
+
+    # G8 — LA PROPRIÉTÉ 5, opposable : la confirmation carte + pièces rendue
+    #      CONDITIONNELLE. Elle cesserait d'être exigée sur tous les chemins,
+    #      et le chemin d'abstention émettrait sans postétat. La garde retire
+    #      un appel ; elle ne retire JAMAIS la preuve.
+    def _g_postcondition_conditionnelle(seq):
+        i_w = _i_wait(seq, "t_carte")
+        w, ch = seq.pop(i_w), seq.pop(i_w)
+        seq.insert(i_w, {"choose": [{
+            "conditions": [{"condition": "template",
+                            "value_template": "{{ true }}"}],
+            "sequence": [w, ch]}]})
+    c.viole(mut27(_g_postcondition_conditionnelle),
+            "aucune confirmation ne borne",
+            "CI-27/G8 confirmation carte + pièces rendue conditionnelle")
+
+    # G8 bis — la même preuve, prise par l'autre bout : la confirmation logée
+    #          DANS la garde. Le contrôle refuse, quel que soit le chemin.
+    def _g_postcondition_gardee(seq):
+        i_w = _i_wait(seq, "t_carte")
+        w, ch = seq.pop(i_w), seq.pop(i_w)
+        seq[_i_garde(seq)]["choose"][0]["sequence"] += [w, ch]
+    c.viole(mut27(_g_postcondition_gardee), "forme fermée exigée",
+            "CI-27/G8 bis postcondition cartographique logée dans la garde")
 
     # ---- R1 : la visite doit être EXHAUSTIVE ------------------------------
     # Seize mutations passaient au vert tant que le parcours ne descendait que
