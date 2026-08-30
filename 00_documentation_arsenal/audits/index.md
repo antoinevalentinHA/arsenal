@@ -182,6 +182,9 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 
 ## Contre-expertises
 
+### Aspirateur
+- [aspirateur/contre_expertise_domaine_aspirateur.md](02_contre_expertises/aspirateur/contre_expertise_domaine_aspirateur.md)  _(contre-expertise **indépendante** du domaine au SHA `31afb9fde567aa46e62a81d75fc1d3874f556011` — **NON ARBITRÉE**, non opposable ; backend jugé intégré et conforme sous réserves, cohérence documentaire et commandabilité opérateur **non établies**, clôture probatoire **non établie** ; 9 questions terrain et 8 questions d'arbitrage laissées ouvertes)_
+
 ### ECS
 - [ecs/contre_expertise_watchdog_ecs.md](02_contre_expertises/ecs/contre_expertise_watchdog_ecs.md)  _(ECS-WD-1 INFIRMÉ comme violation ; doctrine watchdog = filet de sûreté terminal — tranché par arbitrage)_
 - [ecs/contre_expertise_auto_ajustement_consigne_souhaitee.md](02_contre_expertises/ecs/contre_expertise_auto_ajustement_consigne_souhaitee.md)  _(contre-audit adversarial — idée jugée **prématurée et partiellement en rupture** (frontière offset-only `11` §2.2 ; asymétrie « disponibilité » `11` §6.1) ; **écartée en l'état** ; tempère l'audit d'opportunité associé)_
