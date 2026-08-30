@@ -495,9 +495,25 @@ cards:
   # geste avant tout lancement. C'est la condition exacte à laquelle le
   # second alinéa d'ASP-INV-56 ouvre cette faculté.
   #
-  # GÉOMÉTRIE : une colonne. Les trois libellés portent un périmètre ET
-  # sa nature (« RDC — serpillière complète ») ; à deux par ligne ils se
-  # tronqueraient sur mobile, et un raccourci tronqué ne se lit pas.
+  # GÉOMÉTRIE — DEUX RANGÉES, ET POURQUOI CELLE-LÀ.
+  #   Rangée 1, DEUX colonnes : les deux raccourcis du RDC. Ils
+  #   partagent le MÊME périmètre et ne diffèrent que par la nature du
+  #   nettoyage — les apparier est la lecture juste, pas un choix
+  #   décoratif.
+  #   Rangée 2, PLEINE LARGEUR : l'Étage, qui est un autre périmètre.
+  #
+  #   HAUTEUR NATIVE, ET C'EST LA CLÉ. Ces cartes ne forcent AUCUNE
+  #   hauteur : elles gardent les 72px de `carte_base_v2`. À deux
+  #   colonnes sur un téléphone, une cellule offre ~152px de texte utile
+  #   quand « RDC — serpillière complète » en demande ~176 : le libellé
+  #   passe donc sur DEUX lignes, et deux lignes de 13px ne tiennent pas
+  #   sous une icône de 26px dans une carte de 52px. C'est exactement ce
+  #   qu'une hauteur forcée à 52px produirait — un texte tronqué ou
+  #   débordant. La hauteur du socle, elle, les accueille.
+  #
+  #   Le compte y est aussi : deux rangées de 72px font 152px là où
+  #   trois rangées de 52px en faisaient 172. Moins haut, et deux fois
+  #   moins de lignes à parcourir.
   # ==================================================
   - type: custom:button-card
     template: sub_section_header
@@ -505,16 +521,13 @@ cards:
 
   - type: grid
     square: false
-    columns: 1
+    columns: 2
     cards:
       - type: custom:button-card
         template: carte_action_standard
         entity: script.aspirateur_appliquer_raccourci
         name: RDC — aspiration complète
         icon: mdi:home-floor-g
-        styles:
-          card:
-            - height: 52px
         variables:
           confirmation: >-
             Préremplir la composition avec « RDC — aspiration
@@ -528,9 +541,6 @@ cards:
         entity: script.aspirateur_appliquer_raccourci
         name: RDC — serpillière complète
         icon: mdi:water-outline
-        styles:
-          card:
-            - height: 52px
         variables:
           confirmation: >-
             Préremplir la composition avec « RDC — serpillière
@@ -539,14 +549,15 @@ cards:
           data:
             raccourci: rdc_serpilliere
 
+  - type: grid
+    square: false
+    columns: 1
+    cards:
       - type: custom:button-card
         template: carte_action_standard
         entity: script.aspirateur_appliquer_raccourci
         name: Étage — aspiration complète
         icon: mdi:stairs-up
-        styles:
-          card:
-            - height: 52px
         variables:
           confirmation: >-
             Préremplir la composition avec « Étage — aspiration
