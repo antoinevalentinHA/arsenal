@@ -1,0 +1,112 @@
+# ==========================================================
+# 🧰 ARSENAL — CARTE (INCLUDE)
+#     Aspirateur — Entretien, déclaration opérateur
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter le GESTE : déclarer qu'un poste d'entretien a été
+#   réalisé, et demander la remise à zéro de son compteur.
+#
+#   L'action est PHYSIQUEMENT SÉPARÉE de la lecture (contrat 11
+#   §3.5) : cette carte ne restitue aucun état, et la carte de
+#   lecture ne déclenche rien.
+#
+# 🚦 CE QUE L'UI FAIT, ET NE FAIT PAS
+#   Elle SOLLICITE, elle n'exécute pas (contrat 11 §1).
+#   Chaque bouton appelle `script.aspirateur_declarer_entretien`
+#   avec la valeur du champ fermé, et RIEN D'AUTRE.
+#
+#   Aucune entité `button.roborock_*` n'est nommée ici, et aucun
+#   `button.press` n'est appelé : l'appel direct depuis un fichier
+#   Lovelace est interdit sans exception (ASP-INV-81), et gardé
+#   mécaniquement par ASP-CI-7 et ASP-CI-31.
+#
+#   Aucune décision métier : la carte ne calcule aucun seuil, ne
+#   masque aucun bouton et ne présume d'aucune échéance. C'est le
+#   script qui garde — mesure numérique, compteur strictement sous
+#   son plafond — et qui refuse le cas échéant.
+#
+# ⚠️ CONFIRMATION — OBLIGATOIRE, ET EXPLICITE
+#   Le geste est IRRÉVERSIBLE : aucune primitive de restauration
+#   n'existe. Chaque libellé nomme le poste et dit, sans jargon, ce
+#   que l'action déclare et ce qu'elle remet à zéro.
+#
+#   Le libellé ne présente JAMAIS la pression comme l'entretien
+#   lui-même : l'entretien est un geste physique, déjà accompli par
+#   l'opérateur ; l'action ne fait que le DÉCLARER au système.
+# ==========================================================
+
+type: vertical-stack
+cards:
+
+  - type: custom:button-card
+    template: section_header
+    name: 🛠️ Déclarer un entretien réalisé
+
+  - type: grid
+    square: false
+    columns: 2
+    cards:
+
+      - type: custom:button-card
+        template: carte_action_standard_warning
+        entity: script.aspirateur_declarer_entretien
+        name: Filtre
+        icon: mdi:air-filter
+        styles:
+          card:
+            - height: 64px
+        variables:
+          confirmation: >-
+            Filtre : confirmez-vous avoir nettoyé ou remplacé le filtre ?
+            Son compteur d'usure repartira de zéro.
+          service: script.aspirateur_declarer_entretien
+          data:
+            poste: filtre
+
+      - type: custom:button-card
+        template: carte_action_standard_warning
+        entity: script.aspirateur_declarer_entretien
+        name: Brosse principale
+        icon: mdi:broom
+        styles:
+          card:
+            - height: 64px
+        variables:
+          confirmation: >-
+            Brosse principale : confirmez-vous avoir nettoyé ou remplacé la
+            brosse principale ? Son compteur d'usure repartira de zéro.
+          service: script.aspirateur_declarer_entretien
+          data:
+            poste: brosse_principale
+
+      - type: custom:button-card
+        template: carte_action_standard_warning
+        entity: script.aspirateur_declarer_entretien
+        name: Brosse latérale
+        icon: mdi:broom
+        styles:
+          card:
+            - height: 64px
+        variables:
+          confirmation: >-
+            Brosse latérale : confirmez-vous avoir nettoyé ou remplacé la
+            brosse latérale ? Son compteur d'usure repartira de zéro.
+          service: script.aspirateur_declarer_entretien
+          data:
+            poste: brosse_laterale
+
+      - type: custom:button-card
+        template: carte_action_standard_warning
+        entity: script.aspirateur_declarer_entretien
+        name: Nettoyage des capteurs
+        icon: mdi:radar
+        styles:
+          card:
+            - height: 64px
+        variables:
+          confirmation: >-
+            Capteurs : confirmez-vous avoir nettoyé les capteurs du robot ?
+            Leur compteur d'usure repartira de zéro.
+          service: script.aspirateur_declarer_entretien
+          data:
+            poste: nettoyage_capteurs

@@ -72,6 +72,17 @@ Les rôles sont notés `‹…›`, convention du domaine
 > non-conformité, au même titre qu'un motif de refus hors catalogue
 > (`ASP-INV-52`).
 
+### 2.4 Maintenance
+
+| Rôle | Ce qu'il porte |
+|---|---|
+| `‹declaration_entretien›` | Le script de déclaration d'entretien : l'**unique** appelant autorisé de la primitive irréversible ([`14`](14_entretien.md) §4, `ASP-INV-81`) |
+| `‹issue_remise_a_zero›` | Le verdict de la **dernière déclaration achevée** — restitution diagnostique, jamais une autorité ([`14`](14_entretien.md) §7) |
+
+> Ces deux rôles sont **instanciés au lot `M2`**. Leurs identifiants ont été
+> **attribués par l'opérateur**, conformément à `ASP-INV-58` : ce contrat n'en
+> a proposé aucun, et n'en propose toujours aucun.
+
 ---
 
 ## 3. Ce qui n'est **pas** à fournir

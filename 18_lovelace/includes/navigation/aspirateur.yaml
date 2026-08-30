@@ -1,11 +1,12 @@
 # ==========================================================
 # 🧠 ARSENAL — BANDEAU DE NAVIGATION (INCLUDE)
-#     Aspirateur — les deux écrans du domaine
+#     Aspirateur — les trois écrans du domaine
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Relier les deux écrans métier de l'Aspirateur, et eux seuls :
-#     - Aperçu → `/aspirateur-dashboard`       (panneau opérationnel)
-#     - Carte  → `/aspirateur-carte-dashboard` (carte du robot)
+#   Relier les trois écrans métier de l'Aspirateur, et eux seuls :
+#     - Aperçu    → `/aspirateur-dashboard`           (panneau opérationnel)
+#     - Carte     → `/aspirateur-carte-dashboard`     (carte du robot)
+#     - Entretien → `/aspirateur-entretien-dashboard` (postes et déclaration)
 #
 # 🧭 PATRON — CELUI DU DOMAINE VOITURE, SANS VARIANTE
 #   `18_lovelace/includes/navigation/voiture.yaml` : une `layout-card`
@@ -13,9 +14,9 @@
 #   surcharge d'instance du `navigation_path`, couleur d'icône posée
 #   par bouton. La grille de Voiture porte quatre écrans
 #   (`1fr repeat(4, 50px) 1fr`, colonnes 2 à 5) ; celle-ci en porte
-#   DEUX — même forme, deux colonnes au lieu de quatre.
+#   TROIS — même forme, trois colonnes au lieu de quatre.
 #
-#   Le bandeau est inclus EN TÊTE des deux dashboards, à l'identique :
+#   Le bandeau est inclus EN TÊTE des trois dashboards, à l'identique :
 #   la navigation est réciproque, et l'écran courant reste cliquable —
 #   c'est le comportement de Voiture, et rien ne le distingue ici.
 #
@@ -29,12 +30,15 @@
 #   Les mêmes rôles que Voiture, les mêmes teintes : bleu `#1565C0`
 #   pour l'aperçu du domaine, orange `#E65100` pour l'écran
 #   cartographique — Voiture peint sa Position de cet orange-là.
+#   Le violet `#6A1B9A` de l'écran d'entretien est une teinte ATTRIBUÉE
+#   au lot M2 : aucune des deux teintes déjà employées par le domaine
+#   n'est réutilisée, et Voiture n'en porte aucune équivalente.
 # ==========================================================
 
 type: custom:layout-card
 layout_type: custom:grid-layout
 layout:
-  grid-template-columns: 1fr repeat(2, 50px) 1fr
+  grid-template-columns: 1fr repeat(3, 50px) 1fr
   justify-items: center
   align-items: center
 cards:
@@ -64,3 +68,16 @@ cards:
     styles:
       icon:
         - color: '#E65100'
+
+  - type: custom:button-card
+    view_layout:
+      grid-column: 4
+    template: bouton_navigation_badge_carre
+    name: Entretien
+    icon: mdi:tools
+    tap_action:
+      action: navigate
+      navigation_path: /aspirateur-entretien-dashboard
+    styles:
+      icon:
+        - color: '#6A1B9A'

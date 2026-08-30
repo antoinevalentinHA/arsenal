@@ -256,6 +256,26 @@ irréversible et allowlist · `ASP-CI-32` séquence de remise à zéro ·
 
 ### 6.1 Verrou transitoire — portée exacte
 
+> ### ✅ Verrou levé au lot `M2` — et par ce qui le remplace
+>
+> **Le lot `M2` est livré.** L'allowlist nomme désormais un fichier, et un
+> seul : `10_scripts/aspirateur/declarer_entretien.yaml`.
+>
+> **Le desserrage n'est pas une modification de constante.** Il est
+> **conditionné** : l'état du visiteur récursif **dérive d'un essai réel** —
+> le parseur est confronté aux **six formes adverses** énumérées plus bas, et
+> n'est déclaré complet que s'il les rattrape toutes. Une régression du
+> parseur rabaisse le drapeau, et le verrou **se referme de lui-même** sur une
+> allowlist devenue non vide. Le contrôle `ASP-CI-31` le prouve dans son
+> auto-test, dans les deux sens.
+>
+> **Une autorisation dormante est refusée** : une allowlist qui nommerait un
+> fichier inexistant échoue, plutôt que de couvrir par avance le jour où ce
+> fichier apparaîtrait.
+>
+> Le texte ci-dessous **reste normatif** : il énonce ce que le desserrage
+> exigeait, et ce que `M2` a effectivement livré.
+
 > **`ASP-INV-85` — aucun desserrage prématuré.** L'allowlist de pression est
 > **vide** en `M0`, et elle doit le rester. **Toute allowlist non vide lève une
 > erreur de CI explicite** tant que le **verrou transitoire** reste actif.
@@ -298,6 +318,21 @@ les **alias YAML**, le ciblage par `device_id`, et l'`entity_id` **templatisé**
 > son implémentation réelle**, et non d'un booléen déclaratif comme celui que
 > `M0` emploie faute de mieux.
 
+**Livré au lot `M2`, obligation par obligation.**
+
+| # | Obligation | Ce que `M2` livre |
+|---|---|---|
+| 1 | Parsing YAML réel | Le document est **chargé**, jamais lu à l'expression régulière |
+| 2 | Visite récursive | Mappings et listes, en profondeur, clés comprises |
+| 3 | Fichier hôte unique | `10_scripts/aspirateur/declarer_entretien.yaml`, nommément |
+| 4 | Les quatre boutons exacts | Confrontés à la table fermée du §1 |
+| 5 | Interdiction du ciblage par `device_id` | Étendue à `area_id`, `label_id` et `floor_id` |
+| 6 | Interdiction de l'entité templatisée | Refusée sur le slot `entity_id` |
+| 7 | Une pression unique, sans boucle ni retry | `mode: single`, quatre branches, aucune répétition |
+
+**Les six formes sont des cas d'essai, pas des exemples.** Le drapeau du
+visiteur vaut vrai **si et seulement si** les six sont rattrapées.
+
 ### 6.2 Ce que ces gardes ne prouvent pas
 
 | Limite | Portée exacte |
@@ -336,6 +371,47 @@ les **alias YAML**, le ciblage par `device_id`, et l'`entity_id` **templatisé**
 >
 > **C'est ce périmètre qui ferme le trou décrit au §4** — et pas un périmètre
 > plus large qu'on affirmerait sans le balayer.
+
+---
+
+## 7. Restitution de l'issue — l'objet que `M2` crée
+
+> **Ce chapitre ne créait aucun objet** (préambule). Le lot `M2` en crée
+> **un**, et un seul : le porteur de l'issue terminale du §3, étape 4.
+
+| Rôle | Ce qu'il porte |
+|---|---|
+| `‹issue_remise_a_zero›` | Le verdict de la **dernière déclaration achevée** : le poste concerné, et son issue |
+
+> **Aucun identifiant n'est proposé ici**, pas plus pour ce rôle que pour les
+> autres : l'invariant `ASP-INV-58` s'applique sans réserve. Son
+> identifiant est **attribué par l'opérateur** au lot `M2` et inventorié au
+> chapitre [`12`](12_identifiants_a_fournir.md) §2.4.
+
+**Vocabulaire fermé, deux issues terminales par poste.** Le rôle porte, pour
+chaque poste du périmètre, l'une des **deux issues** du §3 — celle qui
+constate la confirmation, et celle qui constate qu'elle manque — et il nomme
+le **poste concerné**. L'ensemble est **fermé**, **énuméré au runtime** et
+**mécaniquement confronté**, comme l'exige `ASP-INV-70` pour le verdict de
+mission. Ce chapitre n'en énumère aucune valeur.
+
+> **Ce verdict ne décide rien**, et l'unicité d'écrivain posée par
+> `ASP-INV-86` n'en fait pas une autorité. Il n'est lu ni par la
+> projection du lot `M1`, ni par celle du lot `N1`. Il ne participe à aucune
+> décision qu'un poste est dû, n'acquitte aucune notification, n'autorise ni
+> n'interdit aucune remise à zéro, et **ne remplace jamais la relecture du
+> compteur**. Il décrit une **exécution passée** ; l'état d'entretien reste
+> produit par `M1`, et par lui seul, depuis les compteurs natifs.
+
+**Aucune réconciliation au démarrage.** Ce rôle ne prétend pas représenter
+l'état courant : un verdict restauré après redémarrage décrit toujours la
+dernière déclaration achevée, ce qu'il est. Aucune automation n'est créée, et
+aucun identifiant d'automation n'est requis par ce lot.
+
+**Un refus n'écrit rien.** Les trois gardes d'entrée — poste hors périmètre,
+mesure non évaluable, compteur déjà à son plafond — s'arrêtent **avant toute
+pression**, donc avant toute exécution : le verdict conserve la dernière
+déclaration réellement achevée.
 
 ---
 

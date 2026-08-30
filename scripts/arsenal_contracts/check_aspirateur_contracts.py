@@ -660,15 +660,116 @@ HORS_MAINTENANCE = frozenset({
     "button.roborock_q7_max_nettoyage_complet",
 })
 
-# ── F4/F8 : VERROU TRANSITOIRE. L'allowlist est vide en M0, et elle doit le
-# rester : le visiteur YAML recursif complet n'existe pas encore. Le desserrer
-# avant M2 exposerait la seule primitive irreversible du domaine derriere un
-# parseur qui ne couvre ni le flow mapping, ni `tap_action: call-service`, ni
-# le scalaire replie, ni les alias YAML, ni le ciblage par `device_id`, ni
-# l'entite templatisee. Toute allowlist non vide leve donc une ERREUR, avant
-# toute analyse permissive.
-ALLOWLIST_PRESSION: frozenset[str] = frozenset()
-VISITEUR_YAML_RECURSIF = False   # M2 le passera a True, avec le parseur
+# ── LOT M2 : LE VERROU EST LEVE, ET PAR CE QUI LE REMPLACE.
+# L'allowlist n'est plus vide : elle nomme le fichier UNIQUE du lot M2, celui
+# que le contrat 14 §4 designe comme seul appelant autorise (ASP-INV-81).
+# Le desserrage n'est PAS une modification de constante : il est conditionne
+# au visiteur YAML recursif ci-dessous, dont l'etat DERIVE d'un essai reel.
+ALLOWLIST_PRESSION: frozenset[str] = frozenset({
+    "10_scripts/aspirateur/declarer_entretien.yaml"})
+
+# Toute mention d'un bouton d'entretien, ou l'un des quatre boutons nommes.
+# Declare ICI, et non plus bas : le visiteur recursif le consomme des le
+# calcul de `VISITEUR_YAML_RECURSIF`, en tete de module.
+BOUTON_ENTRETIEN_RE = re.compile(
+    r"button\.roborock_q7_max_reinitialiser_le_consommable_[a-z_]+")
+
+# Les six formes que le detecteur de M0 ne couvrait pas, et que le visiteur
+# doit rattraper. Ce ne sont pas des exemples : ce sont les CAS D'ESSAI dont
+# le succes conditionne le desserrage de l'allowlist.
+FORMES_ADVERSES_PRESSION = (
+    # 1 — flow mapping
+    ('a:\n  - {action: button.press, target: {entity_id: '
+     'button.roborock_q7_max_reinitialiser_le_consommable_du_capteur}}\n'),
+    # 2 — `tap_action: call-service` (forme Lovelace)
+    ('a:\n  tap_action:\n    action: call-service\n'
+     '    service: button.press\n    service_data:\n      entity_id: '
+     'button.roborock_q7_max_reinitialiser_le_consommable_du_capteur\n'),
+    # 3 — scalaire replie
+    ('a:\n  - action: button.press\n    target:\n      entity_id: >-\n'
+     '        button.roborock_q7_max_reinitialiser_le_consommable_du_capteur\n'),
+    # 4 — alias YAML
+    ('cible: &c '
+     'button.roborock_q7_max_reinitialiser_le_consommable_du_capteur\n'
+     'a:\n  - action: button.press\n    target:\n      entity_id: *c\n'),
+    # 5 — ciblage par device_id, la pression restant nommee ailleurs
+    ('a:\n  - action: button.press\n    target:\n      device_id: abc123\n'
+     '    # button.roborock_q7_max_reinitialiser_le_consommable_du_capteur\n'
+     'b: button.roborock_q7_max_reinitialiser_le_consommable_du_capteur\n'),
+    # 6 — entity_id templatise, la cible reelle etant illisible
+    ('a:\n  - action: button.press\n    target:\n      entity_id: '
+     '"{{ cible }}"\n'
+     'b: button.roborock_q7_max_reinitialiser_le_consommable_du_capteur\n'),
+)
+
+
+def _noeuds_yaml(noeud):
+    """Visite RECURSIVE de tout mapping et de toute liste, en profondeur.
+
+    Rend chaque noeud rencontre — le document lui-meme compris. Les alias
+    YAML sont resolus par `yaml.safe_load` en amont : l'ancre et son alias
+    designent le meme objet Python, et il est donc visite.
+    """
+    yield noeud
+    if isinstance(noeud, dict):
+        for v in noeud.values():
+            yield from _noeuds_yaml(v)
+    elif isinstance(noeud, list):
+        for v in noeud:
+            yield from _noeuds_yaml(v)
+
+
+def _chaines_yaml(noeud):
+    """Toute chaine du document, cles comprises."""
+    for n in _noeuds_yaml(noeud):
+        if isinstance(n, str):
+            yield n
+        elif isinstance(n, dict):
+            for k in n:
+                if isinstance(k, str):
+                    yield k
+
+
+def pressions_entretien(txt: str) -> set[str]:
+    """Les boutons d'entretien nommes par un document YAML, quelle qu'en soit
+    la forme.
+
+    Le balayage est STRUCTUREL : le document est charge, puis visite
+    recursivement. Il rattrape donc le flow mapping, le scalaire replie et
+    l'alias — trois formes qu'une expression reguliere sur le texte manque.
+
+    Il retombe sur un balayage TEXTUEL du document prive de ses commentaires
+    lorsque le YAML est illisible : un fichier qu'on ne sait pas charger ne
+    doit pas devenir un angle mort.
+    """
+    trouves: set[str] = set()
+    try:
+        doc = yaml.safe_load(txt)
+    except yaml.YAMLError:
+        doc = None
+    if doc is not None:
+        for s in _chaines_yaml(doc):
+            trouves |= set(BOUTON_ENTRETIEN_RE.findall(s))
+    if not trouves:
+        trouves |= set(BOUTON_ENTRETIEN_RE.findall(sans_commentaires_yaml(txt)))
+    return trouves
+
+
+def _visiteur_est_complet() -> bool:
+    """L'etat du visiteur DERIVE de son implementation reelle.
+
+    Le contrat 14 §6.1 l'exige explicitement : « l'etat du visiteur devra
+    deriver de son implementation reelle, et non d'un booleen declaratif
+    comme celui que M0 employe faute de mieux ».
+
+    Le visiteur n'est donc declare complet que s'il rattrape LES SIX formes
+    adverses. Une regression du parseur rabaisse le drapeau, et l'allowlist
+    non vide leve alors le verrou d'elle-meme.
+    """
+    return all(pressions_entretien(f) for f in FORMES_ADVERSES_PRESSION)
+
+
+VISITEUR_YAML_RECURSIF = _visiteur_est_complet()
 
 # ── F2 : perimetre YAML FONCTIONNEL, explicite et justifie.
 # INCLUS — configuration Home Assistant reellement chargee :
@@ -1005,9 +1106,9 @@ NOTIFICATION_M1 = ("persistent_notification", "notify.", "notify:")
 PRESS_SERVICE = re.compile(
     r"^[^\S\n]*(?:-[^\S\n]*)?(?:service|action|perform_action)"
     r"[^\S\n]*:[^\S\n]*[\"']?(button\.press)", re.M)
-# Toute mention d'un bouton d'entretien, ou l'un des quatre boutons nommes.
-BOUTON_ENTRETIEN_RE = re.compile(
-    r"button\.roborock_q7_max_reinitialiser_le_consommable_[a-z_]+")
+# `BOUTON_ENTRETIEN_RE` est declare PLUS HAUT, avec le visiteur recursif du
+# lot M2 qui le consomme des le calcul de `VISITEUR_YAML_RECURSIF`. Une seule
+# definition : deux expressions pour la meme famille deriveraient.
 # Repetitions interdites autour d'une pression.
 REPETITION = re.compile(r"^[^\S\n]*(?:-[^\S\n]*)?(repeat|until|while|count)"
                         r"[^\S\n]*:", re.M)
@@ -5619,6 +5720,22 @@ def load_yaml_depot() -> dict[str, str]:
     return out
 
 
+def dashboards_declares() -> dict:
+    """Les cles de `18_lovelace/dashboards.yaml`, chargees.
+
+    ASP-CI-42 en a besoin pour prouver qu'un `navigation_path` cible une cle
+    REELLE : un bandeau qui mene a une cle absente produit un ecran
+    inatteignable, et aucune garde du domaine ne le verrait.
+    """
+    p = ROOT / "18_lovelace" / "dashboards.yaml"
+    if not p.is_file():
+        return {}
+    try:
+        return yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError:
+        return {}
+
+
 def run() -> int:
     bruts = load_domain()
     if not bruts:
@@ -5761,6 +5878,13 @@ def run() -> int:
         ("ASP-CI-38 projection persistante rendue sur les huit scénarios",
          check_projection_n1_rendue(n1, m1)),
         ("ASP-CI-39 interdits du lot N1", check_interdits_n1(n1)),
+        # ── Lot M2 — la declaration d'entretien ────────────────────────
+        ("ASP-CI-40 déclaration d'entretien (forme, champ fermé, branches)",
+         check_declaration_entretien(depot)),
+        ("ASP-CI-41 séquence de déclaration rendue (capture, transition, issues)",
+         check_sequence_entretien(depot)),
+        ("ASP-CI-42 écran d'entretien (appel exclusif du script backend)",
+         check_ui_entretien(lovelace, dashboards_declares())),
     )
 
     erreurs: list[str] = []
@@ -5789,7 +5913,7 @@ def run() -> int:
           "runtime, acte contractuel Maintenance, projection "
           "d'entretien, projections persistantes, conduite et supervision "
           "de mission, couche d'intention vérifiées — "
-          f"{len(controles)} lignes affichées pour 39 contrôles logiques, "
+          f"{len(controles)} lignes affichées pour 42 contrôles logiques, "
           "0 écart.")
     print("     décompte : ASP-CI-12/13 et ASP-CI-16/17 partagent chacun une "
           "ligne ; ASP-CI-28 est LIVRÉ par le lot U0.")
@@ -6035,17 +6159,30 @@ def check_primitive_irreversible(t14: str, fonctionnel: dict[str, str],
                     f"{len(interdits)} ligne(s) — au moins cinq sont exigées.")
 
     # ── F2 : balayage du perimetre fonctionnel explicite ──────────────────
+    # Le balayage est desormais STRUCTUREL (lot M2) : `pressions_entretien`
+    # charge le document et le visite recursivement, la ou M0 lisait le texte
+    # a la regex. Les six formes adverses sont rattrapees, et l'etat du
+    # visiteur derive de cet essai (voir `_visiteur_est_complet`).
     for source, ensemble in (("configuration fonctionnelle", fonctionnel),
                              ("Lovelace", lovelace)):
         for rel, txt in sorted(ensemble.items()):
-            nu = sans_commentaires_yaml(txt)
-            boutons = set(BOUTON_ENTRETIEN_RE.findall(nu))
+            boutons = pressions_entretien(txt)
             if not boutons:
                 continue
             if rel not in ALLOWLIST_PRESSION:
                 errs.append(f"ASP-CI-31 : {rel} ({source}) mentionne "
                             f"{', '.join('`' + b + '`' for b in sorted(boutons))} "
                             "— hors allowlist nominative (ASP-INV-81).")
+
+    # ── L'allowlist ne nomme QUE des fichiers qui existent ────────────────
+    # Une allowlist qui autorise un fichier absent est une autorisation
+    # dormante : elle passerait tous les controles, et couvrirait le jour ou
+    # ce fichier apparaitrait.
+    for rel in sorted(ALLOWLIST_PRESSION):
+        if not (ROOT / rel).is_file():
+            errs.append(f"ASP-CI-31 : l'allowlist nominative autorise `{rel}`, "
+                        "qui n'existe pas. Une autorisation sans fichier est "
+                        "une autorisation dormante (ASP-INV-81).")
     return errs
 
 
@@ -8693,8 +8830,12 @@ def selftest() -> None:
     # U0 : confrontation de la COUCHE D'INTENTION, jouee par la batterie
     # ASP-CI-28 plus bas, sur les sept fichiers reels.
     controles_u0 = {"check_referentiel_intention"}
+    # M2 : controles de la DECLARATION D'ENTRETIEN, joues par la batterie
+    # ASP-CI-40 … ASP-CI-42 plus bas, sur les fichiers reels du lot.
+    controles_m2 = {"check_declaration_entretien", "check_sequence_entretien",
+                    "check_ui_entretien"}
     manquants = (invoques - normatifs - set(CONTROLES_RUNTIME) - controles_m1
-                 - controles_n1 - controles_l2 - controles_u0)
+                 - controles_n1 - controles_l2 - controles_u0 - controles_m2)
     assert not manquants, \
         f"m-C bis : `run()` invoque {sorted(manquants)}, absent(s) de la " \
         f"batterie du selftest — c'est exactement le trou qui a laissé " \
@@ -8916,20 +9057,37 @@ def selftest() -> None:
         T14, {"11_automations/z.yaml": f"# {_bt0} en commentaire\n"}, {}),
         "CI-31 mention en commentaire ignorée")
 
-    # ---- F4/F8 : verrou transitoire --------------------------------------
-    global ALLOWLIST_PRESSION
-    _sauv = ALLOWLIST_PRESSION
+    # ---- F4/F8 : le verrou, DESSERRE PAR CE QUI LE REMPLACE ---------------
+    # Le lot M2 leve le verrou en livrant le visiteur recursif. Le verrou
+    # n'est pas SUPPRIME : il reste arme, et il se REFERME de lui-meme si le
+    # visiteur regresse. C'est ce que les deux cas ci-dessous prouvent — le
+    # desserrage n'est pas une modification de constante, c'est une
+    # conditionnalite.
+    global ALLOWLIST_PRESSION, VISITEUR_YAML_RECURSIF
+    _sauv_allow, _sauv_vis = ALLOWLIST_PRESSION, VISITEUR_YAML_RECURSIF
     try:
-        ALLOWLIST_PRESSION = frozenset({"10_scripts/aspirateur/declarer.yaml"})
+        # (a) Visiteur regresse + allowlist non vide -> le verrou se referme.
+        VISITEUR_YAML_RECURSIF = False
         _verrou = check_primitive_irreversible(T14, {}, {})
-        c.viole(_verrou, "VERROU M0", "F4/CI-31 allowlist non vide refusée")
+        c.viole(_verrou, "VERROU M0",
+                "F4/CI-31 verrou refermé si le visiteur régresse")
         assert len(_verrou) == 1, \
             "F4 : le verrou doit court-circuiter TOUTE autre analyse"
         c.conformes += 1
+        # (b) Visiteur complet + allowlist vide -> analyse normale.
+        VISITEUR_YAML_RECURSIF = True
+        ALLOWLIST_PRESSION = frozenset()
+        c.conforme(check_primitive_irreversible(T14, {}, {}),
+                   "F4/CI-31 allowlist vide : analyse normale")
+        # (c) Autorisation DORMANTE : un fichier autorise qui n'existe pas.
+        ALLOWLIST_PRESSION = frozenset({"10_scripts/aspirateur/fantome.yaml"})
+        c.viole(check_primitive_irreversible(T14, {}, {}),
+                "autorisation dormante",
+                "F4/CI-31 allowlist nommant un fichier absent")
     finally:
-        ALLOWLIST_PRESSION = _sauv
+        ALLOWLIST_PRESSION, VISITEUR_YAML_RECURSIF = _sauv_allow, _sauv_vis
     c.conforme(check_primitive_irreversible(T14, {}, {}),
-               "F4/CI-31 allowlist vide : analyse normale")
+               "F4/CI-31 état livré : allowlist M2, visiteur complet")
 
     # ---- ASP-CI-32 : séquence de remise à zéro ---------------------------
     c.conforme(check_remise_a_zero(T14), "CI-32 chapitre reel")
@@ -10269,7 +10427,128 @@ def selftest() -> None:
             _degats.append(f"{type(_f).__name__} {_f!r:.30} leve {exc!r}")
     c.conforme(_degats, "C-6 formes invalides absorbees sans traceback")
 
-    print(f"selftest OK — 39 contrôles logiques (ASP-CI-28 livré par le lot "
+    # ═════════════════════════════════════════════════════════════
+    # MAINTENANCE — lot M2 : ASP-CI-40 … ASP-CI-42
+    #
+    # Joues sur les FICHIERS REELS, puis sur leurs mutants. Un controle qui
+    # ne refuse rien ne prouve rien : chaque mutation ci-dessous retire une
+    # garantie precise, et doit etre rattrapee.
+    # ═════════════════════════════════════════════════════════════
+    _m2 = (ROOT / RUNTIME_M2).read_text(encoding="utf-8") \
+        if (ROOT / RUNTIME_M2).is_file() else ""
+    _depot_m2 = {RUNTIME_M2: _m2}
+    _lov_m2 = {rel: (ROOT / rel).read_text(encoding="utf-8")
+               for rel in UI_M2 + (NAV_ASPIRATEUR,)
+               if (ROOT / rel).is_file()}
+    _dash_m2 = dashboards_declares()
+
+    # ---- ASP-CI-40 : la forme du fichier M2 ------------------------------
+    c.conforme(check_declaration_entretien(_depot_m2), "CI-40 fichier reel")
+    c.viole(check_declaration_entretien({}), "introuvable",
+            "CI-40 fichier M2 absent")
+    c.viole(check_declaration_entretien(
+        {RUNTIME_M2: _m2.replace("mode: single", "mode: restart")}),
+        "mode: single", "CI-40 mode non single refuse")
+    c.viole(check_declaration_entretien(
+        {RUNTIME_M2: _m2.replace('- "nettoyage_capteurs"', '- "bac_a_poussiere"')}),
+        "vocabulaire ferme", "CI-40 cinquieme poste refuse")
+    c.viole(check_declaration_entretien(
+        {RUNTIME_M2: _m2.replace(
+            "entity_id: button.roborock_q7_max_reinitialiser_le_consommable_du_capteur",
+            "device_id: 0123456789abcdef")}),
+        "device_id", "CI-40 ciblage par device_id refuse")
+    c.viole(check_declaration_entretien(
+        {RUNTIME_M2: _m2.replace(
+            "entity_id: button.roborock_q7_max_reinitialiser_le_consommable_du_capteur",
+            'entity_id: "{{ cible }}"')}),
+        "templatise", "CI-40 entity_id templatise refuse")
+    c.viole(check_declaration_entretien(
+        {RUNTIME_M2: _m2.replace(
+            "            - action: button.press\n"
+            "              continue_on_error: true\n"
+            "              target:\n"
+            "                entity_id: button.roborock_q7_max_reinitialiser_le_consommable_du_capteur\n",
+            "")}),
+        "appel(s) `button.press`", "CI-40 quatrieme branche retiree")
+    c.viole(check_declaration_entretien(
+        {RUNTIME_M2: _m2.replace("- action: button.press",
+                                 "- action: vacuum.start", 1)}),
+        "hors des services admis", "CI-40 commande robot refusee")
+
+    # ---- ASP-CI-41 : la sequence rendue ----------------------------------
+    c.conforme(check_sequence_entretien(_depot_m2), "CI-41 sequence reelle")
+    c.viole(check_sequence_entretien(
+        {RUNTIME_M2: _m2.replace('timeout: "00:00:30"', 'timeout: "00:02:00"')}),
+        "fenetre de relecture", "CI-41 fenetre hors constante refusee")
+    c.viole(check_sequence_entretien(
+        {RUNTIME_M2: _m2.replace("continue_on_timeout: true",
+                                 "continue_on_timeout: false")}),
+        "continue_on_timeout", "CI-41 expiration silencieuse refusee")
+    c.viole(check_sequence_entretien(
+        {RUNTIME_M2: _m2.replace(
+            "{{ v | is_number and (v | float) > (restant_avant | float) }}\n"
+            "      timeout:",
+            "{{ v | is_number and (v | float) == (plafond | float) }}\n"
+            "      timeout:")}),
+        "etat statique interdit", "CI-41 postcondition statique refusee")
+    c.viole(check_sequence_entretien(
+        {RUNTIME_M2: _m2.replace(
+            "REMISE_A_ZERO_NON_CONFIRMEE", "REMISE_A_ZERO_CONFIRMEE")}),
+        "issues terminales", "CI-41 issue non confirmee manquante")
+    c.viole(check_sequence_entretien(
+        {RUNTIME_M2: _m2.replace(
+            "{{ (restant_avant | float) >= (plafond | float) }}",
+            "{{ false }}")}),
+        "STRICTEMENT INFERIEUR", "CI-41 garde d'objet retiree")
+    c.viole(check_sequence_entretien(
+        {RUNTIME_M2: _m2.replace(
+            "value: \"ENTRETIEN/{{ poste | upper }}/REMISE_A_ZERO_CONFIRMEE\"",
+            "value: \"ENTRETIEN/{{ poste | upper }}/REMISE_A_ZERO_CONFIRMEE\"\n"
+            "            - action: persistent_notification.dismiss\n"
+            "              data:\n"
+            "                notification_id: aspirateur_entretien")}),
+        "notification", "CI-41 acquittement de notification refuse")
+
+    # ---- ASP-CI-42 : l'ecran d'entretien ---------------------------------
+    c.conforme(check_ui_entretien(_lov_m2, _dash_m2), "CI-42 ecran reel")
+    _rel_act = "18_lovelace/includes/cartes/aspirateur/entretien_action.yaml"
+    c.viole(check_ui_entretien(
+        {**_lov_m2, _rel_act: _lov_m2[_rel_act].replace(
+            "service: script.aspirateur_declarer_entretien",
+            "service: button.press", 1)}, _dash_m2),
+        "button.press", "CI-42 pression directe en Lovelace refusee")
+    c.viole(check_ui_entretien(
+        {**_lov_m2, _rel_act: _lov_m2[_rel_act].replace(
+            "poste: filtre",
+            "poste: bac_a_poussiere", 1)}, _dash_m2),
+        "vocabulaire ferme", "CI-42 poste hors vocabulaire refuse")
+    c.viole(check_ui_entretien(
+        {**_lov_m2, _rel_act: re.sub(
+            r"          confirmation: >-\n(?:            .*\n)+", "",
+            _lov_m2[_rel_act], count=1)}, _dash_m2),
+        "confirmation", "CI-42 geste sans confirmation refuse")
+    c.viole(check_ui_entretien(
+        {**_lov_m2, NAV_ASPIRATEUR: _lov_m2[NAV_ASPIRATEUR].replace(
+            "navigation_path: /aspirateur-entretien-dashboard",
+            "navigation_path: /aspirateur-dashboard")}, _dash_m2),
+        "cul-de-sac", "CI-42 ecran inatteignable refuse")
+    c.viole(check_ui_entretien(_lov_m2, {}),
+            "dashboards.yaml", "CI-42 cle de dashboard absente refusee")
+    c.viole(check_ui_entretien({k: v for k, v in _lov_m2.items()
+                                if k != _rel_act}, _dash_m2),
+            "introuvable", "CI-42 carte d'action absente refusee")
+
+    # ---- Le VISITEUR RECURSIF, et les six formes adverses ----------------
+    for _i, _forme in enumerate(FORMES_ADVERSES_PRESSION, 1):
+        assert pressions_entretien(_forme), \
+            f"visiteur M2 : la forme adverse {_i} n'est pas rattrapee — le " \
+            f"desserrage de l'allowlist reposerait sur un parseur incomplet."
+    c.conformes += 1
+    assert VISITEUR_YAML_RECURSIF, \
+        "visiteur M2 : le drapeau doit DERIVER de l'essai des six formes."
+    c.conformes += 1
+
+    print(f"selftest OK — 42 contrôles logiques (ASP-CI-28 livré par le lot "
           f"U0), {c.total()} cas "
           f"({c.conformes} conformes, {c.violations} violations).")
 
@@ -11175,6 +11454,462 @@ def check_interdits_n1(n1: dict[str, str]) -> list[str]:
             errs.append(f"ASP-CI-39 : `{rel}` lit `{eid}` — hors de son "
                         f"autorite fermee {sorted(AUTORITE_PAR_FICHIER[rel])}. "
                         "Toute autre entite serait une seconde autorite.")
+    return errs
+
+
+# ═════════════════════════════════════════════════════════════
+# MAINTENANCE — lot M2, DECLARATION D'ENTRETIEN (ASP-CI-40 … ASP-CI-42)
+#
+# M2 livre la SEULE primitive irreversible du domaine. Les trois controles
+# ci-dessous ne relisent pas le contrat pour se donner raison : ils confrontent
+# le fichier REEL a la sequence normative du chapitre 14 §3, a l'allowlist du
+# §4 et aux sept obligations du §6.1.
+#
+# Les identifiants sont ATTRIBUES PAR L'OPERATEUR au lot M2 (ASP-INV-58 : le
+# contrat n'en propose aucun). Figes ici : un renommage silencieux echoue.
+# ═════════════════════════════════════════════════════════════
+
+RUNTIME_M2 = "10_scripts/aspirateur/declarer_entretien.yaml"
+ID_M2 = "aspirateur_declarer_entretien"
+SERVICE_M2 = "script.aspirateur_declarer_entretien"
+HELPERS_M2 = "04_input_texts/aspirateur/entretien.yaml"
+ID_VERDICT_ENTRETIEN = "input_text.aspirateur_entretien_verdict"
+
+# Le champ FERME, et sa cible litterale. L'ordre suit le contrat 14 §1.
+CHAMP_M2 = "poste"
+POSTES_M2 = {
+    "filtre": ("Filtre",
+               "button.roborock_q7_max_reinitialiser_le_consommable_du_filtre_a_air"),
+    "brosse_principale": (
+        "Brosse principale",
+        "button.roborock_q7_max_reinitialiser_le_consommable_de_la_brosse_principale"),
+    "brosse_laterale": (
+        "Brosse latérale",
+        "button.roborock_q7_max_reinitialiser_le_consommable_de_la_brosse_laterale"),
+    "nettoyage_capteurs": (
+        "Nettoyage des capteurs",
+        "button.roborock_q7_max_reinitialiser_le_consommable_du_capteur"),
+}
+
+# Les deux issues terminales, transcrites du contrat 14 §3 et d'ASP-INV-80.
+ISSUES_M2 = ("REMISE_A_ZERO_CONFIRMEE", "REMISE_A_ZERO_NON_CONFIRMEE")
+
+# Ciblages indirects : le contrat les refuse SANS EXCEPTION (ASP-INV-81).
+CIBLAGE_INDIRECT = ("device_id", "area_id", "label_id", "floor_id")
+
+# L'ecran d'entretien : trois fichiers Lovelace, et trois seulement.
+UI_M2 = (
+    "18_lovelace/dashboards/aspirateur/entretien.yaml",
+    "18_lovelace/includes/cartes/aspirateur/entretien.yaml",
+    "18_lovelace/includes/cartes/aspirateur/entretien_action.yaml",
+)
+NAV_ASPIRATEUR = "18_lovelace/includes/navigation/aspirateur.yaml"
+CLE_DASHBOARD_M2 = "aspirateur-entretien-dashboard"
+
+
+def _appels_de_service(noeud):
+    """Tout appel de service du document, sous ses trois cles et ses deux
+    formes de ciblage. Visite RECURSIVE, jamais textuelle."""
+    for n in _noeuds_yaml(noeud):
+        if not isinstance(n, dict):
+            continue
+        for cle in ("service", "action", "perform_action"):
+            svc = n.get(cle)
+            if isinstance(svc, str):
+                yield svc, n
+
+
+def check_declaration_entretien(depot: dict[str, str]) -> list[str]:
+    """ASP-CI-40 — le fichier M2 : forme, champ ferme, branches litterales.
+
+    Confronte les sept obligations du chapitre 14 §6.1 au fichier reel :
+    fichier hote unique, quatre boutons exacts et eux seuls, interdiction du
+    ciblage indirect, interdiction de l'entite templatisee, pression unique.
+    """
+    errs: list[str] = []
+    txt = depot.get(RUNTIME_M2)
+    if txt is None:
+        return [f"ASP-CI-40 : le fichier du lot M2 est introuvable — "
+                f"`{RUNTIME_M2}`. L'allowlist nominative le designe."]
+    try:
+        doc = yaml.safe_load(txt) or {}
+    except yaml.YAMLError as exc:
+        return [f"ASP-CI-40 : `{RUNTIME_M2}` est illisible en YAML : {exc}."]
+    if not isinstance(doc, dict) or list(doc) != [ID_M2]:
+        return [f"ASP-CI-40 : `{RUNTIME_M2}` doit declarer EXACTEMENT le "
+                f"script `{ID_M2}` — trouve {sorted(doc) if isinstance(doc, dict) else type(doc)}."]
+    corps = doc[ID_M2] or {}
+
+    # ── Obligation 7 : une pression unique, sans boucle ni retry ──────────
+    if corps.get("mode") != "single":
+        errs.append(f"ASP-CI-40 : `{ID_M2}` doit porter `mode: single` — "
+                    f"trouve {corps.get('mode')!r}. Un autre mode rouvrirait "
+                    "la voie a une pression pendant qu'une autre est en vol.")
+    nu = sans_commentaires_yaml(txt)
+    if REPETITION.search(nu):
+        errs.append(f"ASP-CI-40 : `{RUNTIME_M2}` porte une repetition — "
+                    "aucun `repeat`, aucun retry, aucune seconde pression, "
+                    "quelle que soit l'issue (ASP-INV-78).")
+
+    # ── Le champ FERME, et ses quatre valeurs ─────────────────────────────
+    champs = corps.get("fields") or {}
+    if set(champs) != {CHAMP_M2}:
+        errs.append(f"ASP-CI-40 : le script expose {sorted(champs)} — un seul "
+                    f"champ est admis, `{CHAMP_M2}` : une declaration porte "
+                    "sur UN poste (14 §3, etape 1).")
+    vocab = _vocabulaire_ferme(corps)
+    if vocab != set(POSTES_M2):
+        errs.append(f"ASP-CI-40 : le vocabulaire ferme du champ vaut "
+                    f"{sorted(vocab)} ; attendu {sorted(POSTES_M2)}. Un champ "
+                    "ferme ne s'ecrit pas sans son enumeration, et le "
+                    "perimetre est ferme a quatre postes (ASP-INV-73).")
+
+    # ── Obligation 6 : aucune entite templatisee, aucun service templatise ─
+    errs += refus_slots_templatises("ASP-CI-40", RUNTIME_M2, nu)
+
+    # ── Obligations 4 et 5 : les quatre boutons exacts, cibles en clair ───
+    presses: list[tuple[str, dict]] = [
+        (svc, n) for svc, n in _appels_de_service(doc) if svc == "button.press"]
+    if len(presses) != len(POSTES_M2):
+        errs.append(f"ASP-CI-40 : le script porte {len(presses)} appel(s) "
+                    f"`button.press` ; il en faut exactement {len(POSTES_M2)} "
+                    "— une branche litterale par poste, et une seule pression "
+                    "par execution (ASP-INV-78).")
+    cibles: set[str] = set()
+    for _, n in presses:
+        cible = n.get("target") or {}
+        for indirect in CIBLAGE_INDIRECT:
+            if (isinstance(cible, dict) and indirect in cible) or indirect in n:
+                errs.append(f"ASP-CI-40 : une pression cible par `{indirect}` "
+                            "— le ciblage indirect est refuse sans exception "
+                            "(ASP-INV-81).")
+        eid = cible.get("entity_id") if isinstance(cible, dict) else None
+        if eid is None:
+            eid = n.get("entity_id")
+        if not isinstance(eid, str):
+            errs.append("ASP-CI-40 : une pression ne porte pas d'`entity_id` "
+                        "scalaire litteral — une liste ou une absence de cible "
+                        "rend la garde textuelle aveugle.")
+            continue
+        if "{{" in eid or "{%" in eid:
+            errs.append(f"ASP-CI-40 : une pression porte un `entity_id` "
+                        f"templatise {eid!r} — interdit (14 §6.1, obligation 6).")
+            continue
+        cibles.add(eid.strip())
+    attendues = {b for _, b in POSTES_M2.values()}
+    if cibles != attendues:
+        errs.append(f"ASP-CI-40 : les boutons presses sont {sorted(cibles)} ; "
+                    f"attendus exactement les quatre du perimetre ferme "
+                    f"{sorted(attendues)} (ASP-INV-73, ASP-INV-81).")
+
+    # ── ASP-INV-82 : ce lot n'ouvre RIEN d'autre ──────────────────────────
+    admis = {"button.press", "input_text.set_value"}
+    for svc, _ in _appels_de_service(doc):
+        if svc not in admis:
+            errs.append(f"ASP-CI-40 : le script appelle `{svc}` — hors des "
+                        f"services admis {sorted(admis)}. Ce chapitre "
+                        "n'autorise aucune ecriture vers l'appareil au-dela de "
+                        "`button.press` sur les quatre boutons (ASP-INV-82).")
+
+    # ── La SECONDE MATERIALISATION du referentiel, confrontee a M1 ────────
+    m1 = (ROOT / RUNTIME_M1).read_text(encoding="utf-8", errors="ignore") \
+        if (ROOT / RUNTIME_M1).is_file() else ""
+    for valeur, (libelle, _) in sorted(POSTES_M2.items()):
+        if f'"{libelle}"' not in m1 and f"'{libelle}'" not in m1 \
+                and f"nom: {libelle}" not in m1:
+            errs.append(f"ASP-CI-40 : le libelle {libelle!r} n'apparait pas "
+                        f"dans le perimetre de M1 (`{RUNTIME_M1}`) — la table "
+                        "de traduction du lot M2 est une SECONDE copie du "
+                        "referentiel : elle doit lui rester conforme (A-13).")
+        if libelle not in txt:
+            errs.append(f"ASP-CI-40 : le script ne nomme pas le libelle "
+                        f"{libelle!r} — sans lui, la mesure du poste "
+                        f"{valeur!r} ne peut pas etre retrouvee sur "
+                        "l'autorite M1.")
+    return errs
+
+
+def _vocabulaire_ferme(corps: dict) -> set[str]:
+    """Les valeurs du champ ferme, telles que le script les ENUMERE.
+
+    Lues sur le bloc `variables:` de la sequence — la source unique — et non
+    sur la description du champ, qui n'est qu'un texte d'aide.
+    """
+    for etape in _aplatir(corps.get("sequence")):
+        if not isinstance(etape, dict):
+            continue
+        var = etape.get("variables") or {}
+        valeurs = var.get("postes")
+        if isinstance(valeurs, list) and valeurs:
+            return {str(v) for v in valeurs}
+    return set()
+
+
+def check_sequence_entretien(depot: dict[str, str]) -> list[str]:
+    """ASP-CI-41 — la sequence RENDUE : capture, gardes, transition, issues.
+
+    Le controle porte sur le COMPORTEMENT, pas sur la presence de mots :
+    l'ordre des etapes est verifie sur la sequence chargee, et la
+    postcondition est confrontee au piege qu'elle doit eviter.
+    """
+    errs: list[str] = []
+    txt = depot.get(RUNTIME_M2)
+    if txt is None:
+        return [f"ASP-CI-41 : `{RUNTIME_M2}` introuvable."]
+    try:
+        doc = yaml.safe_load(txt) or {}
+    except yaml.YAMLError:
+        return [f"ASP-CI-41 : `{RUNTIME_M2}` illisible en YAML."]
+    corps = (doc.get(ID_M2) or {}) if isinstance(doc, dict) else {}
+    sequence = corps.get("sequence") or []
+    if not isinstance(sequence, list):
+        return ["ASP-CI-41 : la sequence du script M2 n'est pas une liste."]
+
+    def _rang_pression() -> int:
+        for i, etape in enumerate(sequence):
+            if any(svc == "button.press"
+                   for svc, _ in _appels_de_service(etape)):
+                return i
+        return -1
+
+    def _rang_capture() -> int:
+        for i, etape in enumerate(sequence):
+            if isinstance(etape, dict) and "restant_avant" in (
+                    etape.get("variables") or {}):
+                return i
+        return -1
+
+    def _rang_attente() -> int:
+        for i, etape in enumerate(sequence):
+            if isinstance(etape, dict) and "wait_template" in etape:
+                return i
+        return -1
+
+    r_capture, r_pression, r_attente = (
+        _rang_capture(), _rang_pression(), _rang_attente())
+
+    # ── Q2, garde 1 : la mesure est CAPTUREE avant toute pression ─────────
+    if r_capture < 0:
+        errs.append("ASP-CI-41 : aucune capture de la mesure avant la "
+                    "pression — la variable `restant_avant` est absente. Sans "
+                    "valeur de reference, la confirmation ne peut etre qu'un "
+                    "etat statique, donc fausse (ASP-INV-79).")
+    elif r_pression >= 0 and r_capture > r_pression:
+        errs.append("ASP-CI-41 : la mesure est capturee APRES la pression — "
+                    "l'ordre est normatif : on n'observe pas avant d'emettre, "
+                    "et on ne capture pas apres avoir agi (14 §3).")
+
+    # ── L'ordre normatif : emission, PUIS relecture ───────────────────────
+    if r_pression < 0:
+        errs.append("ASP-CI-41 : aucune pression dans la sequence.")
+    if r_attente < 0:
+        errs.append("ASP-CI-41 : aucune relecture bornee — une confirmation "
+                    "non bornee n'est pas une confirmation (14 §3, etape 3).")
+    elif r_pression >= 0 and r_attente < r_pression:
+        errs.append("ASP-CI-41 : la relecture precede l'emission — l'ordre est "
+                    "normatif (14 §3).")
+
+    # ── Q2, garde 2 : la remise a zero doit avoir un OBJET ────────────────
+    nu = sans_commentaires_yaml(txt)
+    if not re.search(r"restant_avant[^\n]*\|\s*float[^\n]*\)\s*>=\s*\(?\s*plafond",
+                     nu) and ">= (plafond | float)" not in nu:
+        errs.append("ASP-CI-41 : aucune garde ne refuse la pression lorsque le "
+                    "restant n'est pas STRICTEMENT INFERIEUR au plafond. Un "
+                    "compteur deja au plafond n'a rien a solder, et sa "
+                    "confirmation serait vide de sens (Q2, garde 2).")
+
+    # ── Q2, garde 3 : la postcondition est une TRANSITION ─────────────────
+    attente = ""
+    if r_attente >= 0:
+        attente = str(sequence[r_attente].get("wait_template") or "")
+    if "restant_avant" not in attente:
+        errs.append("ASP-CI-41 : la relecture ne compare pas a la valeur "
+                    "capturee avant la pression. Une postcondition ecrite "
+                    "comme un ETAT est deja vraie sur un compteur au plafond : "
+                    "elle produirait une confirmation FAUSSE (ASP-INV-79).")
+    if re.search(r"==\s*\(?\s*plafond", attente) or "== plafond" in attente:
+        errs.append("ASP-CI-41 : la relecture teste `== plafond` — c'est "
+                    "exactement l'etat statique interdit. La preuve "
+                    "contractuelle est une TRANSITION observee (14 §3).")
+    if r_attente >= 0:
+        fen = str(sequence[r_attente].get("timeout") or "")
+        if fen not in ("00:00:30", 30, "30"):
+            errs.append(f"ASP-CI-41 : la fenetre de relecture vaut {fen!r} — "
+                        f"le contrat fixe {FENETRE_CONFIRMATION_S} s, et le "
+                        "domaine ne compte que deux constantes temporelles "
+                        "(ASP-INV-69, portee etendue).")
+        if sequence[r_attente].get("continue_on_timeout") is not True:
+            errs.append("ASP-CI-41 : la relecture n'est pas `continue_on_timeout: "
+                        "true` — a l'expiration, la sequence DOIT poursuivre "
+                        "vers son issue terminale, jamais s'interrompre en "
+                        "silence (ASP-INV-80).")
+
+    # ── L'etat du bouton n'est JAMAIS une preuve (ASP-INV-79) ─────────────
+    for jeton in ("last_changed", "last_updated", "states('button.",
+                  'states("button.', "is_state('button."):
+        if jeton in nu:
+            errs.append(f"ASP-CI-41 : le script lit `{jeton}` — l'horodatage "
+                        "et l'etat du bouton attestent la PRESSION, jamais son "
+                        "EFFET. Les employer serait une confirmation fausse "
+                        "(ASP-INV-79).")
+
+    # ── Les DEUX issues terminales, et elles seules ───────────────────────
+    ecrites: set[str] = set()
+    for svc, n in _appels_de_service(doc):
+        if svc != "input_text.set_value":
+            continue
+        cible = n.get("target") or {}
+        eid = cible.get("entity_id") if isinstance(cible, dict) else None
+        if eid != ID_VERDICT_ENTRETIEN:
+            errs.append(f"ASP-CI-41 : le script ecrit `{eid}` — le seul helper "
+                        f"qu'il ecrit est `{ID_VERDICT_ENTRETIEN}`.")
+            continue
+        val = str((n.get("data") or {}).get("value") or "")
+        for issue in ISSUES_M2:
+            if issue in val:
+                ecrites.add(issue)
+    if ecrites != set(ISSUES_M2):
+        errs.append(f"ASP-CI-41 : les issues terminales ecrites sont "
+                    f"{sorted(ecrites)} ; les DEUX sont exigees "
+                    f"{sorted(ISSUES_M2)}. Une pression a eu lieu : elle doit "
+                    "produire une issue, confirmee ou non (14 §3, etape 4).")
+
+    # ── Aucune conclusion de panne, aucun acquittement ────────────────────
+    for jeton, quoi in (("persistent_notification", "une notification"),
+                        ("notify.", "un envoi mobile"),
+                        ("panne", "une conclusion de panne"),
+                        ("echec materiel", "une conclusion d'echec materiel"),
+                        ("échec matériel", "une conclusion d'echec materiel")):
+        if jeton in nu.lower():
+            errs.append(f"ASP-CI-41 : le script porte {quoi} (`{jeton}`) — "
+                        "l'absence de confirmation ne prouve rien, et hors "
+                        "mission le domaine n'ajoute aucune notification "
+                        "(ASP-INV-80, ASP-INV-84).")
+    return errs
+
+
+class _LoaderHA(yaml.SafeLoader):
+    """Chargeur tolerant aux tags Home Assistant.
+
+    Un squelette de dashboard porte `!include`, `!include_dir_merge_named` et
+    parfois `!secret` : `yaml.safe_load` les refuse. Les neutraliser laisse la
+    STRUCTURE lisible, ce qui suffit — le contenu inclus est lu par ailleurs,
+    fichier par fichier. Ne pas les neutraliser rendrait tout squelette
+    illisible, donc invisible a la garde.
+    """
+
+
+_LoaderHA.add_multi_constructor(
+    "", lambda loader, suffixe, noeud: None)
+
+
+def charge_ha(txt: str):
+    """Charge un YAML Home Assistant, tags neutralises. `None` si illisible."""
+    try:
+        return yaml.load(txt, Loader=_LoaderHA)
+    except yaml.YAMLError:
+        return None
+
+
+def check_ui_entretien(lovelace: dict[str, str],
+                       dashboards: dict) -> list[str]:
+    """ASP-CI-42 — l'ecran d'entretien : appel exclusif du script backend.
+
+    L'UI SOLLICITE, elle n'execute pas. Ce controle prouve qu'elle ne nomme
+    aucune entite native de pression, qu'elle n'appelle que le script du lot
+    M2, et que chaque geste porte une confirmation.
+    """
+    errs: list[str] = []
+    for rel in UI_M2:
+        if rel not in lovelace:
+            errs.append(f"ASP-CI-42 : `{rel}` est introuvable — l'ecran "
+                        "d'entretien compte trois fichiers, et trois seulement.")
+    presents = {rel: lovelace[rel] for rel in UI_M2 if rel in lovelace}
+
+    for rel, txt in sorted(presents.items()):
+        # Aucune entite native de pression, meme citee.
+        if pressions_entretien(txt) or BOUTON_ENTRETIEN_RE.search(txt):
+            errs.append(f"ASP-CI-42 : `{rel}` nomme un bouton natif de remise "
+                        "a zero — l'appel direct depuis Lovelace est interdit "
+                        "sans exception, et l'UI n'a pas a le connaitre "
+                        "(ASP-INV-81).")
+        doc = charge_ha(txt)
+        if doc is None and txt.strip():
+            errs.append(f"ASP-CI-42 : `{rel}` illisible en YAML.")
+            continue
+        for svc, _ in _appels_de_service(doc):
+            if svc == "button.press":
+                errs.append(f"ASP-CI-42 : `{rel}` appelle `button.press` — "
+                            "interdit sans exception depuis un fichier "
+                            "Lovelace (ASP-INV-81).")
+
+    # ── La carte d'action : quatre gestes, quatre confirmations ───────────
+    rel_action = "18_lovelace/includes/cartes/aspirateur/entretien_action.yaml"
+    if rel_action in presents:
+        doc = charge_ha(presents[rel_action]) or {}
+        gestes = [n for n in _noeuds_yaml(doc)
+                  if isinstance(n, dict)
+                  and isinstance(n.get("variables"), dict)
+                  and "service" in n["variables"]]
+        if len(gestes) != len(POSTES_M2):
+            errs.append(f"ASP-CI-42 : la carte d'action porte {len(gestes)} "
+                        f"geste(s) ; il en faut {len(POSTES_M2)}, un par poste "
+                        "du perimetre ferme.")
+        vus: set[str] = set()
+        for g in gestes:
+            v = g["variables"]
+            if v.get("service") != SERVICE_M2:
+                errs.append(f"ASP-CI-42 : un geste appelle {v.get('service')!r} "
+                            f"— l'UI n'appelle QUE `{SERVICE_M2}` (contrat 11 "
+                            "§1 : elle sollicite, elle n'execute pas).")
+            if not str(v.get("confirmation") or "").strip():
+                errs.append("ASP-CI-42 : un geste ne porte aucune "
+                            "confirmation — la remise a zero est irreversible, "
+                            "elle n'est jamais un basculement d'un clic "
+                            "(contrat 11 §3.6).")
+            valeur = (v.get("data") or {}).get(CHAMP_M2)
+            if valeur not in POSTES_M2:
+                errs.append(f"ASP-CI-42 : un geste passe `{CHAMP_M2}: "
+                            f"{valeur!r}` — hors du vocabulaire ferme "
+                            f"{sorted(POSTES_M2)}.")
+            else:
+                vus.add(valeur)
+                libelle = POSTES_M2[valeur][0].split()[0].lower()
+                if libelle[:5] not in str(v.get("confirmation")).lower():
+                    errs.append(f"ASP-CI-42 : la confirmation du poste "
+                                f"{valeur!r} ne le nomme pas — un libelle qui "
+                                "ne dit pas sur quoi il porte n'est pas une "
+                                "confirmation.")
+        if vus and vus != set(POSTES_M2):
+            errs.append(f"ASP-CI-42 : les gestes couvrent {sorted(vus)} ; les "
+                        f"quatre postes sont exiges {sorted(POSTES_M2)}.")
+
+    # ── La navigation : trois destinations, cles existantes ───────────────
+    nav = lovelace.get(NAV_ASPIRATEUR)
+    if nav is None:
+        errs.append(f"ASP-CI-42 : bandeau de navigation introuvable — "
+                    f"`{NAV_ASPIRATEUR}`.")
+    else:
+        doc = charge_ha(nav) or {}
+        chemins = [n["tap_action"]["navigation_path"]
+                   for n in _noeuds_yaml(doc)
+                   if isinstance(n, dict)
+                   and isinstance(n.get("tap_action"), dict)
+                   and "navigation_path" in n["tap_action"]]
+        if f"/{CLE_DASHBOARD_M2}" not in chemins:
+            errs.append(f"ASP-CI-42 : le bandeau ne mene pas a "
+                        f"`/{CLE_DASHBOARD_M2}` — l'ecran serait un "
+                        "cul-de-sac inatteignable.")
+        if len(chemins) != 3:
+            errs.append(f"ASP-CI-42 : le bandeau porte {len(chemins)} "
+                        "destination(s) ; le domaine en compte trois.")
+        if len(set(chemins)) != len(chemins):
+            errs.append("ASP-CI-42 : le bandeau porte une destination en "
+                        "double.")
+    if CLE_DASHBOARD_M2 not in (dashboards or {}):
+        errs.append(f"ASP-CI-42 : `{CLE_DASHBOARD_M2}` n'est pas declaree dans "
+                    "`18_lovelace/dashboards.yaml` — un `navigation_path` doit "
+                    "cibler une cle existante (R-LL-NAV-1 R1).")
     return errs
 
 
