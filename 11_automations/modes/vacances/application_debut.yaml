@@ -118,5 +118,4 @@
       data:
         notification_id: contexte_vacances
         title: "✈️ Vacances – Contexte actif"
-        message: >
-          Le mode Vacances est actif.
+        message: "État : mesures de contexte appliquées."

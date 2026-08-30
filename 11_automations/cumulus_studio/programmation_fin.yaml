@@ -121,7 +121,7 @@
         titre: "💧 ECS Petite Maison – Fin séjour"
         message: >
           Chauffe coupée à {{ now().strftime('%H:%M') }}.  
-          Passage en **mode absence** exécuté via script local.  
+          Passage en **mode absence** exécuté.  
 
           **Programmation automatiquement désactivée.**  
           **Plage programmée :**  

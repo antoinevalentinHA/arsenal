@@ -175,6 +175,23 @@
 #     la recalculabilité forte reste satisfaite
 #
 # ----------------------------------------------------------
+# 🧾 CE QUE LE MESSAGE NE DIT PLUS, ET OÙ CELA VIT DÉSORMAIS
+#   Le message opérateur ne porte QUE la liste des postes dus. Deux
+#   garanties, qu'il énonçait jusqu'ici, sont RÉELLES et restent dues
+#   — mais ailleurs, conformément au contrat notifications.md,
+#   § « Frontière opérateur / mécanique interne » :
+#
+#   • AUCUNE REMISE À ZÉRO AUTOMATIQUE (ASP-INV-77). Elle est déjà
+#     énoncée plus haut, et le contrat 14_entretien.md §3 en fait foi.
+#
+#   • SUPPRESSION MANUELLE. Les trois déclencheurs ci-dessus étant les
+#     seuls réveils de cette projection, une suppression manuelle tient
+#     jusqu'au prochain changement de `postes_dus`, au prochain
+#     changement du témoin, ou au prochain redémarrage. Une simple
+#     évolution des compteurs ne recrée rien. Le comportement est
+#     inchangé : seule sa restitution à l'opérateur l'est.
+#
+# ----------------------------------------------------------
 # 🏷️ STATUT
 #   Projection — domaine aspirateur, lot N1
 # ==========================================================
@@ -242,19 +259,14 @@
               data:
                 notification_id: aspirateur_entretien
                 title: "🧰 Aspirateur – Entretien requis"
+                # Le message ne porte QUE le fait utile : les postes dus.
+                # Les garanties de cycle de vie restent écrites ci-dessus,
+                # à destination de qui lit le fichier — pas de qui
+                # déverrouille son téléphone (contrat notifications.md,
+                # § « Frontière opérateur / mécanique interne »).
                 message: >
                   **Postes dus :** {{ state_attr('sensor.aspirateur_entretien_du',
                   'postes_dus') | join(', ') }}
-
-                  La remise à zéro d'un poste est un geste opérateur
-                  explicite : elle n'est jamais déclenchée par cette
-                  projection.
-
-                  Cette notification reste visible tant qu'un poste
-                  reste dû. Une suppression manuelle persiste jusqu'au
-                  prochain changement de la liste des postes dus, ou
-                  jusqu'à une réconciliation de démarrage : une simple
-                  évolution des compteurs ne la recrée pas.
 
         ####################################################
         # ✅ Aucun poste dû, projection COMPLÈTE → disqualification

@@ -80,5 +80,4 @@
       data:
         notification_id: projection_vacances
         title: "✈️ Maison – Mode Vacances"
-        message: >
-          Le contexte global Vacances est actif.
+        message: "Mode maison : Vacances."

@@ -98,8 +98,6 @@
                   Aucune nouvelle reprise automatique n'est programmée
                   dans l'état courant. Vérifier l'état de l'intégration et
                   de l'équipement avant une nouvelle tentative.
-                  Cette notification disparaîtra d'elle-même dès que
-                  l'échec sera purgé.
 
         # --------------------------------------------------
         # ÉCHEC DISPARU — retrait propre

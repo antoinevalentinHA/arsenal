@@ -96,12 +96,8 @@
                 notification_id: mode_babysitting_actif
                 title: "👀 Mode Babysitting actif"
                 message: >
-                  Le mode *Babysitting* est actuellement actif.
-
-                  Tant que ce mode est présent :
-                  • les présences enfants sont forcées,
-                  • les décisions de sécurité et chauffage
-                    sont adaptées à ce contexte.
+                  • Présences enfants forcées
+                  • Décisions de sécurité et de chauffage adaptées
 
         ####################################################
         # 🔓 Sortie du mode Babysitting → disqualification

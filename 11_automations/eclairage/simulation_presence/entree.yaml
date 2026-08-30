@@ -116,8 +116,7 @@
               data:
                 title: "💡 Simulation de présence – Entrée"
                 message: >
-                  L’éclairage de l’entrée est allumé
-                  dans le cadre de la simulation de présence.
+                  L’éclairage de l’entrée est allumé.
                 notification_id: "simulation_presence_entree"
 
         # --------------------------------------------------

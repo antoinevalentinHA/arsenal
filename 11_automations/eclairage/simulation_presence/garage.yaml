@@ -140,8 +140,7 @@
               data:
                 title: "💡 Simulation de présence – Garage"
                 message: >
-                  L’éclairage du garage est allumé
-                  dans le cadre de la simulation de présence.
+                  L’éclairage du garage est allumé.
                 notification_id: "simulation_presence_garage"
 
         # --------------------------------------------------

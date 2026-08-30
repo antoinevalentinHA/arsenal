@@ -77,7 +77,7 @@
                 notification_id: "vmc_non_conformite_decision"
                 title: "💨 VMC – Non conforme"
                 message: >
-                  La VMC n'est pas conforme à la décision métier courante.
+                  La VMC ne suit pas la décision courante.
 
                   Décision attendue :
                   {{ state_attr('binary_sensor.vmc_conformite_decision', 'decision_attendue') }}

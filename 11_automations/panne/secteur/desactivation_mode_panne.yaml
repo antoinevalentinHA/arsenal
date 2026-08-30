@@ -163,7 +163,6 @@
         titre: "✅ Courant rétabli"
         message: >
           Alimentation rétablie à {{ now().strftime('%H:%M') }}.
-          L’épisode de panne secteur est clôturé.
           Le signal chauffage de sécurisation est levé
           et l’ECS réinitialisée à sa valeur de sécurité (10 °C).
         extra:

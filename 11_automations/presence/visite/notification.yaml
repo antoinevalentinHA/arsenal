@@ -55,11 +55,8 @@
                 notification_id: visiteur_etat
                 title: "🔐 Mode Visiteur actif"
                 message: >
-                  Le mode *Visiteur* est actuellement actif.
-
-                  Tant que cette notification est visible :
-                  • l’alarme est adaptée,
-                  • la présence visiteur est forcée,
+                  • Alarme adaptée au mode Visiteur
+                  • Présence visiteur forcée
 
         # 🔴 État OFF → disqualification
       default:

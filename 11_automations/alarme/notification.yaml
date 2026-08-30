@@ -65,8 +65,7 @@
             - action: persistent_notification.create
               data:
                 title: "🔒 Alarme activée"
-                message: >
-                  L’alarme est activée.
+                message: "État : activée."
                 notification_id: "alarme_etat"
 
         # ✅ Suppression lors du désarmement

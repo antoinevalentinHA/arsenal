@@ -51,11 +51,9 @@
                 notification_id: "chauffage_pre_confort_vacances"
                 title: "🔥 Chauffage – Pré-confort fin Vacances"
                 message: >
-                  Anticipation thermique active avant retour utilisateur.
+                  Chauffe anticipée avant le retour.
 
-                  • Régime : Vacances maintenu
-                  • Autorisation simulée : comfort
-                  • Décision toujours souveraine
+                  • Régime Vacances maintenu
 
         # --------------------------------------------------
         # 📴 Extinction notification (fin pré-confort)
