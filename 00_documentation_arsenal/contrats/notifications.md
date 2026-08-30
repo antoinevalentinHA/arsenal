@@ -539,9 +539,96 @@ Le corps du message :
 - peut contenir des **actions suggérées**,
 - ne doit jamais définir l’identité de la notification.
 
-Exemples normatifs :
+---
+
+### 🧑‍🔧 Frontière opérateur / mécanique interne
+
+Une notification est une **interface opérateur**.
+
+Elle n’est ni une documentation d’architecture, ni un diagnostic,
+ni une justification contractuelle.
+
+#### ✅ Ce que le message expose
+
+1. le **fait** ou l’**état** utile,
+2. son **objet concret** — l’équipement, la pièce, le poste, la valeur,
+3. l’**action attendue**, lorsqu’une action humaine est nécessaire,
+4. le cas échéant, une **conséquence directement utile à la décision**.
+
+#### ⛔ Ce que le message n’expose jamais
+
+- l’**architecture interne** d’Arsenal — projection, autorité, lecteur pur,
+  writer unique, couche, lot, chantier, arbitrage,
+- les règles de **déduplication**, d’identifiant ou d’unicité,
+- les règles de **persistance**, de suppression manuelle ou de **recréation**,
+- les mécanismes de **réconciliation** au démarrage,
+- les **détails d’implémentation** — nom de script, de service, de fichier,
+  ou d’entité technique non lisible par l’opérateur,
+- les **justifications contractuelles ou doctrinales**
+  (« le contrat impose… », « décision toujours souveraine »,
+  « ce signalement n’agit pas »),
+- une **paraphrase de son propre titre** sans apport d’information.
+
+👉 Ces garanties **restent dues**, mais ailleurs : contrat, en-tête de
+fichier, commentaire de code, attribut technique, vue de diagnostic.
+**Jamais le message opérateur.**
+
+#### 📏 Corps minimal — jamais vide
+
+Le corps d’une notification **n’est jamais vide**.
+
+Un corps vide est **techniquement toléré** par Home Assistant, mais il produit
+une notification **sémantiquement incomplète** et **dépendante d’un
+comportement implicite de la plateforme**. Il est **interdit**.
+
+Lorsque le **titre énonce déjà le fait**, le corps prend une **forme compacte
+et explicite** — état, objet, cause ou action :
+
+> `État : activée.` · `Programme : Confort.` · `Mode maison : Vacances.`
+
+Trois règles encadrent cette forme :
+
+- **Un léger chevauchement avec le titre est acceptable**, et préférable à un
+  corps vide artificiel.
+- **Aucune information métier n’est inventée** pour remplir le corps. À défaut
+  de complément factuel disponible dans l’autorité que l’automation lit déjà,
+  la forme compacte suffit.
+- La longue paraphrase du titre reste **interdite** : c’est elle que la forme
+  compacte remplace.
+
+#### 🚧 Bornes de la simplification
+
+Une réécriture rédactionnelle ne doit **jamais** faire disparaître :
+
+- une **gravité** ou une urgence réelle,
+- une **échéance**,
+- une **cause utile** au diagnostic humain,
+- une **action requise**,
+- une **donnée dynamique utile** — liste, valeur, cible, motif.
+
+👉 Entre concision et perte d’information, **l’information l’emporte**.
+
+Cette règle est **rédactionnelle**. Elle ne modifie ni la nature
+informationnelle d’une notification, ni son canal, ni son cycle de vie,
+ni son identité.
+
+---
+
+### 🧾 Exemples normatifs
 
 **Notification persistante**
+
+| Titre | Corps |
+|---|---|
+| `🧰 Aspirateur – Entretien requis` | `Postes dus : Nettoyage des capteurs` |
+| `🔒 Alarme activée` | `État : activée.` |
+| `⚠️ Coupure secteur – Mode panne actif` | `Chauffage confort : neutralisé — régime réduit maintenu` |
+
+**Notification mobile**
+
+| Titre | Corps |
+|---|---|
+| `🔋 Rain Bird – Batterie critique` | `Le contrôleur Rain Bird est à 8 %. Remplacement des piles à prioriser.` |
 
 ---
 

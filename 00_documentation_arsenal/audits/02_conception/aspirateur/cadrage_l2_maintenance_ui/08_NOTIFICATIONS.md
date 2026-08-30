@@ -165,8 +165,18 @@ projection ne se réveille qu'au franchissement d'un seuil, aucune évaluation
 n'a lieu tant qu'aucun seuil ne bouge. **Le délai peut donc se compter en
 semaines.**
 
-**Le message doit le dire**, pour que ce comportement soit compris plutôt que
-subi.
+> ### ⚠ Passage caduc — conservé pour l'historique, annoté
+>
+> > **Le message doit le dire**, pour que ce comportement soit compris plutôt
+> > que subi.
+>
+> **Falsifié par le contrat opposable.** `contrats/notifications.md`,
+> § « Frontière opérateur / mécanique interne », interdit désormais qu'un
+> message opérateur expose les règles de persistance, de suppression manuelle
+> ou de recréation. Le comportement décrit ci-dessus est **inchangé** ; seule
+> sa **restitution** l'est : il vit maintenant dans l'en-tête de
+> `11_automations/aspirateur/notification_entretien.yaml` et dans le présent
+> cadrage, plus dans le corps de la notification.
 
 > **Correction V2.** La V1 promettait une re-projection « à la prochaine
 > évaluation », ce que ses propres déclencheurs contredisaient. La conception
