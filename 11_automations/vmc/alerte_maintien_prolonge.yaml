@@ -118,18 +118,14 @@
                 notification_id: "vmc_maintien_prolonge"
                 title: "💨 VMC – Besoin maintenu sans mesure"
                 message: >
-                  Un besoin d'extraction est maintenu depuis plus de deux heures
-                  sans mesure exploitable ni frontière calculable.
+                  Extraction maintenue depuis plus de deux heures sans mesure
+                  exploitable.
 
                   {% for c in concernees %}
                   - {{ c }}
                   {% endfor %}
 
-                  Le contrat impose ce maintien : une mesure inexploitable ne
-                  vaut jamais libération. La VMC peut donc rester en haute
-                  vitesse tant que la situation dure.
-
-                  Ce signalement n'agit pas : il rend la situation visible.
+                  La VMC peut rester en haute vitesse tant que la situation dure.
 
         # ==================================================
         # 🟩 SITUATION DISPARUE

@@ -72,8 +72,7 @@ arrosage_rain_bird_stop_supervise:
             cible: input_text.telephone_parent_1_notify
             titre: "💧 Arrosage – Stop Rain Bird impossible"
             message: >-
-              Stop Rain Bird impossible : le pont est indisponible
-              (binary_sensor.rain_bird_pont_donnees_disponibles n'est pas 'on').
+              Stop Rain Bird impossible : le pont est indisponible.
               Aucune commande native n'a été envoyée.
         - stop: "Refus : pont Rain Bird indisponible"
 

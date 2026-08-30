@@ -168,4 +168,3 @@
                   Fin prévue : {{ states('input_datetime.arrosage_session_fin_prevue') }}.
                   Switch station 1 après stop : {{ states(station_switch) }}.
                   Verdict posé : {{ states('input_text.arrosage_session_verdict') }}.
-                  Rappel : dead-man natif NON qualifié (protocole Lot C non exécuté).

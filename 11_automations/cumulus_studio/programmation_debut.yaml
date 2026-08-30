@@ -111,7 +111,7 @@
         titre: "💧 ECS Petite Maison – Début séjour"
         message: >
           Chauffe programmée lancée à {{ now().strftime('%H:%M') }}.  
-          Passage en mode Éco en cours via script fiabilisé.
+          Passage en mode Éco en cours.
 
           **Plage programmée :**  
           {{ states('input_datetime.debut_ecs_petite_maison_programmee') }} → {{ states('input_datetime.fin_ecs_petite_maison_programmee') }}

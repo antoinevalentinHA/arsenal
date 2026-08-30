@@ -59,8 +59,7 @@
               data:
                 notification_id: clim_mode_actif
                 title: "🔥 Clim – Mode Heat"
-                message: >
-                  La climatisation est actuellement en mode Heat.
+                message: "État : chauffage en cours."
 
         - conditions:
             - condition: template
@@ -70,8 +69,7 @@
               data:
                 notification_id: clim_mode_actif
                 title: "❄️ Clim – Mode Cool"
-                message: >
-                  La climatisation est actuellement en mode Cool.
+                message: "État : refroidissement en cours."
 
         - conditions:
             - condition: template
@@ -81,8 +79,7 @@
               data:
                 notification_id: clim_mode_actif
                 title: "💧 Clim – Mode Dry"
-                message: >
-                  La climatisation est actuellement en mode Dry.
+                message: "État : déshumidification en cours."
 
       default:
         - service: persistent_notification.dismiss

@@ -69,8 +69,7 @@
               data:
                 notification_id: lave_vaisselle_cycle
                 title: "🍽️ Lave-vaisselle – Cycle en cours"
-                message: >
-                  Le lave-vaisselle est actuellement en fonctionnement.
+                message: "État : lavage en cours."
       default:
         - action: persistent_notification.dismiss
           data:

@@ -63,8 +63,7 @@
               data:
                 notification_id: chauffage_mode_confort
                 title: "🔥 Chauffage – Mode Confort"
-                message: >
-                  Le chauffage est actuellement en mode Confort.
+                message: "Programme : Confort."
 
       default:
         # Hors Confort → disqualification explicite

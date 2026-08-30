@@ -65,8 +65,7 @@
               data:
                 notification_id: bouclage_ecs_actif
                 title: "🔁 Bouclage ECS actif"
-                message: >
-                  Le bouclage ECS est actuellement actif.
+                message: "État : actif."
 
       # --------------------------------------------------
       # 🔴 Bouclage inactif

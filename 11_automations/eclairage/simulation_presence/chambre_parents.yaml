@@ -116,8 +116,7 @@
               data:
                 title: "💡 Simulation de présence – Parents"
                 message: >
-                  La lampe de la chambre des parents est allumée
-                  dans le cadre de la simulation de présence.
+                  La lampe de la chambre des parents est allumée.
                 notification_id: "simulation_presence_parents"
 
         # --------------------------------------------------

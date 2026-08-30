@@ -99,14 +99,9 @@
                 notification_id: mode_panne_secteur
                 title: "⚠️ Coupure secteur – Mode panne actif"
                 message: >
-                  Coupure d’alimentation secteur en cours.
-
                   **Chauffage confort :** {{ 'activé (besoin thermique + présence + SOC)'
                   if is_state('input_boolean.mode_confort_chauffage', 'on')
                   else 'neutralisé — régime réduit maintenu' }}
-
-                  Cette notification reste visible tant que
-                  la panne secteur est active.
 
       # --------------------------------------------------
       # 🟩 Panne levée → disqualification

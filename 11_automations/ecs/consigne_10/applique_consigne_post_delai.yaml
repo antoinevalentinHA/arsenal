@@ -103,7 +103,7 @@
         cible: input_text.telephone_parent_1_notify
         titre: "🚨 ECS – Consigne non appliquée"
         message: >
-          À {{ now().strftime('%H:%M') }}, après deux tentatives via script exécutif boiler bridge,
+          À {{ now().strftime('%H:%M') }}, après deux tentatives,
           la consigne ECS de sécurité n'a pas été confirmée à {{ retour_temp }} °C.
           Résultat ACK : {{ states('sensor.boiler_ack_dhw_set_setpoint_status') }}.
 
