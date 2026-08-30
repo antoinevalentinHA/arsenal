@@ -51,12 +51,15 @@
 #   La coloration de la tuile Navigation vient exclusivement de
 #   `sensor.etat_aspirateur_dashboard` : cette carte n'en produit aucune.
 #
-# 🧩 HIÉRARCHIE — QUATRE SECTIONS, DEUX SOUS-SECTIONS
+# 🧩 HIÉRARCHIE — QUATRE SECTIONS, QUATRE SOUS-SECTIONS
 #   Sections (`section_header`)      : Composition · Lancement ·
 #                                      Conduite · Entretien
-#   Sous-sections (`sub_section_header`) : Pièces · Paramètres de
-#                                      nettoyage · Raccourcis, toutes
-#                                      trois DANS la composition
+#   Sous-sections (`sub_section_header`) : Pièces · Profil de nettoyage ·
+#                                      Passages · Raccourcis, toutes
+#                                      quatre DANS la composition
+#   Profil et Passages écrivent DEUX sélecteurs distincts : ils ont donc
+#   deux en-têtes, et non un titre commun qui les ferait lire comme un
+#   seul réglage.
 #   Le bloc d'état ouvre la page sans en-tête : il n'est pas une section,
 #   c'est la lecture d'entrée. Aucun en-tête ne répète le titre du
 #   dashboard, que la barre porte déjà.
@@ -349,64 +352,59 @@ cards:
               icon: mdi:bed-outline
 
   # ==================================================
-  # ⚙️ PARAMÈTRES DE NETTOYAGE — profil et passages
+  # ⚙️ PROFIL DE NETTOYAGE — un choix parmi six
   # --------------------------------------------------
-  # Sous-section SŒUR de Pièces, et c'est tout l'objet de cet en-tête :
-  # sans lui, les cinq profils et les trois passages tombaient sous le
-  # titre « Pièces » et paraissaient lui appartenir. Les pièces disent
-  # OÙ, ces réglages disent COMMENT — deux questions distinctes, deux
-  # en-têtes.
+  # Sous-section SŒUR de Pièces : les pièces disent OÙ, le profil dit
+  # COMMENT. Elle ne se masque JAMAIS — le profil ne dépend d'aucune
+  # carte.
   #
-  # Contrairement à Pièces, cette sous-section ne se masque JAMAIS :
-  # profil et passages ne dépendent d'aucune carte.
+  # ▸ UNE SEULE GRILLE, ET C'EST TOUT LE PROPOS. Les six profils du
+  #   chapitre 03 sont six SEGMENTS D'UN MÊME SÉLECTEUR
+  #   (`input_select.aspirateur_intention_profil`) : un seul peut être
+  #   actif à la fois. Les répartir sur deux grilles — les quatre
+  #   puissances d'un côté, les deux profils avec eau de l'autre — les
+  #   faisait lire comme DEUX réglages indépendants. Un profil
+  #   « Serpillière » actif laissait alors les quatre ventilateurs
+  #   éteints, et donnait à voir une aspiration non choisie. Elle
+  #   l'est pourtant : le chapitre 03 fixe `quiet` pour les deux
+  #   profils avec eau, et c'est le profil qui la porte. Une liste
+  #   unique montre ce que le contrat dit déjà.
+  #
+  # ▸ ORDRE DU CHAPITRE 03, À L'IDENTIQUE — de gauche à droite puis de
+  #   haut en bas. Les deux profils avec eau ferment la liste, comme
+  #   dans le tableau du contrat.
+  #
+  # ▸ DEUX COLONNES, LIBELLÉS VISIBLES. À quatre colonnes un libellé
+  #   comme « Aspiration maximale » ne tenait pas : il fallait le
+  #   masquer, et l'icône restait alors SEULE à porter le sens —
+  #   button-card ne substitue aucun `aria-label` à un nom masqué. À
+  #   deux colonnes une cellule offre ~152px utiles quand le plus long
+  #   des six libellés en demande ~130 à 12px : tous tiennent sur une
+  #   ligne. Ce n'est pas une prédiction : les deux profils avec eau
+  #   étaient DÉJÀ rendus dans cette géométrie exacte et s'y
+  #   affichaient en entier. Les quatre autres les rejoignent.
+  #
+  # ▸ ICÔNES — INCHANGÉES ET NON RENUMÉROTÉES. `fan-chevron-down` ·
+  #   `fan-speed-1` · `-2` · `-3` pour la progression d'aspiration,
+  #   `water-outline` · `water` pour l'eau. Le libellé redevient
+  #   simplement lisible à côté.
+  #
+  # ▸ ÉTAT SÉLECTIONNÉ. Double, comme toujours : fond bleu ET graisse
+  #   du nom (gabarit `carte_action_aspirateur_option`). Le nom
+  #   redevenant visible, les DEUX signaux jouent de nouveau — la
+  #   couleur ne porte plus seule l'information.
   # ==================================================
   - type: custom:button-card
     template: sub_section_header
-    name: ⚙️ Paramètres de nettoyage
+    name: ⚙️ Profil de nettoyage
 
-  # Six profils — les libellés du chapitre 03, à l'identique.
-  # Deux grilles : les QUATRE puissances d'aspiration, puis les deux
-  # profils avec eau. Une grille de six colonnes tronquerait.
-  #
-  # ▸ QUATRE COLONNES, SANS LIBELLÉ VISIBLE. À quatre par ligne, un
-  #   libellé comme « Aspiration maximale » ne tient pas sur la largeur
-  #   d'un téléphone : il se tronquerait, ou il pousserait la carte en
-  #   hauteur sur trois lignes de texte. Les quatre segments ne portent
-  #   donc que leur icône — la carte n'a alors plus rien à tronquer, et
-  #   sa hauteur ne dépend plus de la longueur du texte.
-  #
-  # ▸ LE `name` RESTE ÉCRIT. `show_name: false` le masque à l'affichage
-  #   sans le retirer de la configuration : le libellé canonique du
-  #   chapitre 03 demeure lisible dans ce fichier, à l'identique, et
-  #   c'est lui qui documente ce que chaque segment écrit. Ce que ce
-  #   mécanisme NE FOURNIT PAS : button-card ne substitue aucun
-  #   `aria-label` au nom masqué. L'icône porte donc seule le sens à
-  #   l'écran — d'où la progression ci-dessous, et non quatre variantes
-  #   décoratives.
-  #
-  # ▸ ICÔNES — LE SYSTÈME DÉJÀ EN PLACE, ÉTENDU VERS LE BAS. Les trois
-  #   niveaux existants gardent EXACTEMENT leurs icônes
-  #   (`fan-speed-1/2/3`) : rien n'est renuméroté. Le niveau le plus
-  #   faible, qui se place SOUS cette échelle, prend
-  #   `mdi:fan-chevron-down` — déjà employé par les domaines Aération,
-  #   VMC et Climatisation pour « en dessous ». La famille
-  #   `mdi:fan-speed-*` s'arrête à 3 : inventer un `fan-speed-4`
-  #   rendrait une icône vide. La lecture est donc ▼ · 1 · 2 · 3, une
-  #   progression croissante de gauche à droite.
-  #
-  # ▸ ÉTAT SÉLECTIONNÉ. Inchangé et toujours double : fond bleu ET
-  #   graisse du nom — la couleur ne porte jamais seule l'information
-  #   (gabarit `carte_action_aspirateur_option`). Le nom étant masqué
-  #   ici, c'est le fond bleu qui reste le signal visible ; il est net
-  #   et il ne dépend d'aucun texte.
   - type: grid
     square: false
-    columns: 4
+    columns: 2
     cards:
       - type: custom:button-card
         template: carte_action_aspirateur_option
         name: Aspiration minimale
-        show_name: false
         icon: mdi:fan-chevron-down
         variables:
           selecteur: input_select.aspirateur_intention_profil
@@ -414,7 +412,6 @@ cards:
       - type: custom:button-card
         template: carte_action_aspirateur_option
         name: Aspiration normale
-        show_name: false
         icon: mdi:fan-speed-1
         variables:
           selecteur: input_select.aspirateur_intention_profil
@@ -422,7 +419,6 @@ cards:
       - type: custom:button-card
         template: carte_action_aspirateur_option
         name: Aspiration turbo
-        show_name: false
         icon: mdi:fan-speed-2
         variables:
           selecteur: input_select.aspirateur_intention_profil
@@ -430,16 +426,10 @@ cards:
       - type: custom:button-card
         template: carte_action_aspirateur_option
         name: Aspiration maximale
-        show_name: false
         icon: mdi:fan-speed-3
         variables:
           selecteur: input_select.aspirateur_intention_profil
           option: Aspiration maximale
-
-  - type: grid
-    square: false
-    columns: 2
-    cards:
       - type: custom:button-card
         template: carte_action_aspirateur_option
         name: Serpillière moyenne
@@ -454,6 +444,24 @@ cards:
         variables:
           selecteur: input_select.aspirateur_intention_profil
           option: Serpillière intensive
+
+  # ==================================================
+  # 🔁 PASSAGES — l'autre réglage, et il est séparé
+  # --------------------------------------------------
+  # Son propre en-tête, parce que ce n'est pas le même choix : le
+  # profil dit COMMENT on nettoie, les passages COMBIEN DE FOIS on
+  # repasse. Sous un titre commun, les trois passages s'alignaient à la
+  # suite des profils et pouvaient se lire comme la fin de la même
+  # liste, alors qu'ils écrivent un AUTRE sélecteur
+  # (`input_select.aspirateur_intention_passages`) et se combinent
+  # librement avec n'importe quel profil.
+  #
+  # Elle ne se masque JAMAIS non plus : les passages ne dépendent
+  # d'aucune carte.
+  # ==================================================
+  - type: custom:button-card
+    template: sub_section_header
+    name: 🔁 Passages
 
   - type: grid
     square: false
