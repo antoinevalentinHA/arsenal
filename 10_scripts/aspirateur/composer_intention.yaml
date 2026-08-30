@@ -72,6 +72,7 @@ aspirateur_composer_intention:
           "Étage": "1"
           "Annexe": "2"
         profils:
+          "Aspiration minimale": "aspiration_minimale"
           "Aspiration normale": "aspiration_normale"
           "Aspiration turbo": "aspiration_turbo"
           "Aspiration maximale": "aspiration_maximale"

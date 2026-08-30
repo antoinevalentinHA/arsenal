@@ -12,13 +12,27 @@ d'écriture qui les réalisent, et le traitement de leurs prérequis matériels.
 
 | Profil métier | Aspiration | Intensité d'eau | Mode de nettoyage *(dérivé, jamais écrit)* | Prérequis matériel |
 |---|---|---|---|---|
+| **Aspiration minimale** | `quiet` | `off` | `vacuum` | — |
 | **Aspiration normale** | `balanced` | `off` | `vacuum` | — |
 | **Aspiration turbo** | `turbo` | `off` | `vacuum` | — |
 | **Aspiration maximale** | `max` | `off` | `vacuum` | — |
 | **Serpillière moyenne** | `quiet` | `medium` | `vac_and_mop` | serpillière posée |
 | **Serpillière intensive** | `quiet` | `high` | `vac_and_mop` | serpillière posée |
 
-**Cinq profils, et cinq seulement.**
+**Six profils, et six seulement.**
+
+> **Amendement — exposition du niveau d'aspiration le plus faible.** La table
+> comptait cinq profils : `quiet` n'y était atteignable **qu'avec de l'eau**,
+> par les deux profils de serpillière. L'aspiration la plus douce était donc
+> **inaccessible en aspiration seule**, alors que la valeur `quiet` est
+> **déjà** celle que le domaine écrit, et qu'aucune contrainte matérielle ne
+> s'y oppose : les deux réglages sont **disjoints** (§3), et régler l'eau à
+> `off` ne touche pas l'aspiration.
+>
+> **Aucune valeur nouvelle n'est introduite.** `quiet` appartient au socle de
+> puissance attesté, et il est déjà transmis à l'appareil par les deux profils
+> de serpillière. Le profil ajouté n'est **qu'une combinaison neuve de deux
+> valeurs existantes** — la plus faible des quatre puissances, sans eau.
 
 > **`ASP-INV-10`** — Un profil demandé qui n'appartient pas à cette table est
 > **refusé** au motif `PROFIL_INCONNU`. Il n'est jamais rapproché du profil « le
