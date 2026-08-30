@@ -1,0 +1,38 @@
+# ==========================================================
+# 🧰 ARSENAL — DASHBOARD : Aspirateur — Entretien
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter le TROISIÈME écran du domaine Aspirateur : les quatre
+#   postes d'entretien, et le geste par lequel l'opérateur déclare
+#   qu'il en a réalisé un.
+#
+#   Le premier écran, `/aspirateur-dashboard`, porte le panneau
+#   opérationnel — il conserve sa synthèse d'entretien en LECTURE
+#   SEULE. Le second, `/aspirateur-carte-dashboard`, porte les
+#   cartes du robot.
+#
+# 🧭 ACCÈS
+#   Bandeau de navigation du domaine — patron Voiture — inclus en
+#   tête de la vue : Aperçu ⇄ Carte ⇄ Entretien. Badges de retour :
+#   Accueil et Navigation, comme sur les trois écrans.
+#
+# 🧱 SQUELETTE PUR
+#   Aucun template Jinja ici : le contenu vit dans les deux includes
+#   de carte, comme dans tous les dashboards Arsenal. La lecture et
+#   l'action sont deux includes SÉPARÉS, parce que ce sont deux
+#   natures séparées (contrat 11 §3.5).
+# ==========================================================
+
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges: !include ../../includes/badges/base.yaml
+
+    cards:
+      - type: vertical-stack
+        cards:
+          - !include ../../includes/navigation/aspirateur.yaml
+
+          - !include ../../includes/cartes/aspirateur/entretien.yaml
+
+          - !include ../../includes/cartes/aspirateur/entretien_action.yaml

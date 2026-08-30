@@ -1,0 +1,77 @@
+# ==========================================================
+# 🧰 ARSENAL — INPUT_TEXT
+#     Aspirateur — Verdict d'entretien (lot M2)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter le verdict de la DERNIÈRE DÉCLARATION D'ENTRETIEN
+#   ACHEVÉE : quel poste, et quelle issue terminale.
+#
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             14_entretien.md §3 (ASP-INV-77 … ASP-INV-80)
+#                              §7 (restitution de l'issue)
+#             12_identifiants_a_fournir.md §2.4
+#
+# ----------------------------------------------------------
+# 🧱 NATURE — RESTITUTION DIAGNOSTIQUE, ET RIEN D'AUTRE
+#   Ce helper est une TRACE. Il ne décide rien, n'autorise rien,
+#   n'interdit rien et ne prouve rien de l'état courant de
+#   l'appareil.
+#
+#   Il ne représente PAS l'état d'entretien : celui-ci est produit,
+#   et produit SEULEMENT, par la projection du lot M1
+#   (`sensor.aspirateur_entretien_du` et son témoin binaire), à
+#   partir des compteurs natifs. Lire ce verdict pour savoir si un
+#   poste est dû serait lire une mémoire d'événement là où le
+#   domaine exige un recalcul depuis l'état courant.
+#
+# ----------------------------------------------------------
+# 🚫 CE QUE CE HELPER NE FAIT JAMAIS
+#   - Il n'est LU par aucun objet du lot M1
+#   - Il n'est LU par aucun objet du lot N1
+#   - Il ne participe à AUCUNE décision qu'un poste est dû
+#   - Il n'acquitte AUCUNE notification (D-30 : aucun acquittement
+#     n'est mémorisé, et la recalculabilité forte reste satisfaite)
+#   - Il n'autorise ni n'interdit AUCUNE remise à zéro
+#   - Il ne remplace JAMAIS la relecture du compteur : la seule
+#     preuve d'une remise à zéro est la remontée du compteur
+#     (ASP-INV-79)
+#
+#   Son unique écrivain est le script du lot M2,
+#   `10_scripts/aspirateur/declarer_entretien.yaml`.
+#   Son unique lecteur est l'écran Entretien, en affichage.
+#
+# ----------------------------------------------------------
+# 🔤 VOCABULAIRE — FERMÉ, DEUX ISSUES TERMINALES PAR POSTE
+#   Forme : ENTRETIEN/‹POSTE›/‹ISSUE›
+#
+#   ‹POSTE›  — la valeur du champ fermé, en capitales :
+#              FILTRE · BROSSE_PRINCIPALE · BROSSE_LATERALE
+#              NETTOYAGE_CAPTEURS
+#   ‹ISSUE›  — REMISE_A_ZERO_CONFIRMEE
+#              REMISE_A_ZERO_NON_CONFIRMEE
+#
+#   Les deux issues transcrivent LITTÉRALEMENT celles du contrat
+#   (§3, étape 4 : « Confirmée, ou terminale non confirmée » ;
+#   ASP-INV-80 : « remise à zéro non confirmée »). Aucune synonymie
+#   concurrente n'est introduite, et aucune troisième valeur
+#   n'existe : un refus AVANT la pression n'écrit rien, car aucune
+#   déclaration n'a été exécutée.
+#
+# 📏 CAPACITÉ
+#   Valeur la plus longue :
+#   ENTRETIEN/NETTOYAGE_CAPTEURS/REMISE_A_ZERO_NON_CONFIRMEE
+#   soit 55 caractères. `max: 255` laisse 200 caractères de marge.
+#
+# ----------------------------------------------------------
+# 🏷️ STATUT
+#   Restitution — domaine aspirateur, lot M2
+# ==========================================================
+
+aspirateur_entretien_verdict:
+  name: "Aspirateur - Verdict entretien"
+  # PAS de clé `initial` (doctrine restauration_etat_helpers) :
+  # premier boot = unknown, traité comme « aucune déclaration tracée ».
+  # Aucune réconciliation au démarrage n'existe, et c'est voulu : ce
+  # helper décrit une exécution passée, jamais l'état courant.
+  max: 255
+  icon: mdi:tools

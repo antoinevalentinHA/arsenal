@@ -1,0 +1,204 @@
+# ==========================================================
+# 🧰 ARSENAL — CARTE (INCLUDE)
+#     Aspirateur — Entretien, lecture des quatre postes
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Restituer, en LECTURE SEULE, les quatre postes d'entretien du
+#   périmètre fermé, et le verdict de la dernière déclaration
+#   achevée. Aucune action ici : le geste vit dans la carte
+#   `entretien_action.yaml`, physiquement séparée.
+#
+# 📡 SOURCE — UNE SEULE
+#   `sensor.aspirateur_entretien_du`, attribut `postes` :
+#   libellé Arsenal, classe contractuelle (`du` / `non_du` /
+#   `non_evaluable`), restant et plafond en heures.
+#   Et `input_text.aspirateur_entretien_verdict` pour la trace.
+#
+# 🧱 CE QUE CETTE CARTE NE FAIT PAS
+#   - Ne recalcule AUCUN seuil : la classe vient de M1, telle quelle
+#   - Ne lit AUCUN compteur natif Roborock
+#   - Ne nomme AUCUNE entité `button.*` : l'UI n'en connaît aucune
+#   - Ne décide rien — elle observe (contrat 11 §1)
+#
+# 🎨 TROIS RENDUS, JAMAIS DEUX
+#   dû            → rouge      rgba(244, 67, 54, 0.2)
+#   non dû        → gris neutre rgba(158, 158, 158, 0.2)
+#   non évaluable → gris atténué rgba(158, 158, 158, 0.1)
+#   `unknown` et `unavailable` se rendent comme NON ÉVALUABLES : une
+#   indisponibilité n'est jamais rabattue sur un nominal
+#   (ASP-INV-45, ASP-INV-74).
+#   Aucun vert : un entretien non dû n'est pas une réussite.
+# ==========================================================
+
+type: vertical-stack
+cards:
+
+  - type: custom:button-card
+    template: section_header
+    name: 🧰 Postes d'entretien
+
+  # ==================================================
+  # Les quatre postes du périmètre fermé, dans l'ordre
+  # du contrat 14 §1. Quatre cartes, deux colonnes.
+  # ==================================================
+  - type: grid
+    square: false
+    columns: 2
+    cards:
+
+      - type: custom:button-card
+        template: socle_status_label_72
+        entity: sensor.aspirateur_entretien_du
+        name: Filtre
+        icon: mdi:air-filter
+        label: |
+          [[[
+            const p = (entity && entity.attributes.postes || [])
+              .find(x => x.poste === 'Filtre');
+            if (!p || p.classe === 'non_evaluable') return 'Non évaluable';
+            if (p.restant_h === null || p.plafond_h === null) return 'Non évaluable';
+            return (p.classe === 'du' ? 'Dû — ' : '')
+              + p.restant_h.toFixed(1) + ' h / ' + p.plafond_h + ' h';
+          ]]]
+        styles:
+          card:
+            - background-color: |
+                [[[
+                  const p = (entity && entity.attributes.postes || [])
+                    .find(x => x.poste === 'Filtre');
+                  if (!p || p.classe === 'non_evaluable')
+                    return 'rgba(158, 158, 158, 0.1)';
+                  if (p.classe === 'du') return 'rgba(244, 67, 54, 0.2)';
+                  return 'rgba(158, 158, 158, 0.2)';
+                ]]]
+
+      - type: custom:button-card
+        template: socle_status_label_72
+        entity: sensor.aspirateur_entretien_du
+        name: Brosse principale
+        icon: mdi:broom
+        label: |
+          [[[
+            const p = (entity && entity.attributes.postes || [])
+              .find(x => x.poste === 'Brosse principale');
+            if (!p || p.classe === 'non_evaluable') return 'Non évaluable';
+            if (p.restant_h === null || p.plafond_h === null) return 'Non évaluable';
+            return (p.classe === 'du' ? 'Dû — ' : '')
+              + p.restant_h.toFixed(1) + ' h / ' + p.plafond_h + ' h';
+          ]]]
+        styles:
+          card:
+            - background-color: |
+                [[[
+                  const p = (entity && entity.attributes.postes || [])
+                    .find(x => x.poste === 'Brosse principale');
+                  if (!p || p.classe === 'non_evaluable')
+                    return 'rgba(158, 158, 158, 0.1)';
+                  if (p.classe === 'du') return 'rgba(244, 67, 54, 0.2)';
+                  return 'rgba(158, 158, 158, 0.2)';
+                ]]]
+
+      - type: custom:button-card
+        template: socle_status_label_72
+        entity: sensor.aspirateur_entretien_du
+        name: Brosse latérale
+        icon: mdi:broom
+        label: |
+          [[[
+            const p = (entity && entity.attributes.postes || [])
+              .find(x => x.poste === 'Brosse latérale');
+            if (!p || p.classe === 'non_evaluable') return 'Non évaluable';
+            if (p.restant_h === null || p.plafond_h === null) return 'Non évaluable';
+            return (p.classe === 'du' ? 'Dû — ' : '')
+              + p.restant_h.toFixed(1) + ' h / ' + p.plafond_h + ' h';
+          ]]]
+        styles:
+          card:
+            - background-color: |
+                [[[
+                  const p = (entity && entity.attributes.postes || [])
+                    .find(x => x.poste === 'Brosse latérale');
+                  if (!p || p.classe === 'non_evaluable')
+                    return 'rgba(158, 158, 158, 0.1)';
+                  if (p.classe === 'du') return 'rgba(244, 67, 54, 0.2)';
+                  return 'rgba(158, 158, 158, 0.2)';
+                ]]]
+
+      - type: custom:button-card
+        template: socle_status_label_72
+        entity: sensor.aspirateur_entretien_du
+        name: Nettoyage des capteurs
+        icon: mdi:radar
+        label: |
+          [[[
+            const p = (entity && entity.attributes.postes || [])
+              .find(x => x.poste === 'Nettoyage des capteurs');
+            if (!p || p.classe === 'non_evaluable') return 'Non évaluable';
+            if (p.restant_h === null || p.plafond_h === null) return 'Non évaluable';
+            return (p.classe === 'du' ? 'Dû — ' : '')
+              + p.restant_h.toFixed(1) + ' h / ' + p.plafond_h + ' h';
+          ]]]
+        styles:
+          card:
+            - background-color: |
+                [[[
+                  const p = (entity && entity.attributes.postes || [])
+                    .find(x => x.poste === 'Nettoyage des capteurs');
+                  if (!p || p.classe === 'non_evaluable')
+                    return 'rgba(158, 158, 158, 0.1)';
+                  if (p.classe === 'du') return 'rgba(244, 67, 54, 0.2)';
+                  return 'rgba(158, 158, 158, 0.2)';
+                ]]]
+
+  # ==================================================
+  # Verdict de la DERNIÈRE DÉCLARATION ACHEVÉE.
+  # Ce n'est pas l'état courant du robot, et le libellé
+  # le dit. Gris atténué tant qu'aucune déclaration n'a
+  # eu lieu : l'absence de trace n'est pas un nominal.
+  # ==================================================
+  - type: custom:button-card
+    template: section_header
+    name: 🧾 Dernière déclaration
+
+  - type: grid
+    square: false
+    columns: 1
+    cards:
+      - type: custom:button-card
+        template: socle_status_label_72
+        entity: input_text.aspirateur_entretien_verdict
+        name: Verdict de la dernière déclaration
+        icon: mdi:clipboard-check-outline
+        label: |
+          [[[
+            const s = entity ? entity.state : null;
+            if (!s || s === 'unknown' || s === 'unavailable' || s === '')
+              return 'Aucune déclaration enregistrée';
+            const p = s.split('/');
+            if (p.length !== 3) return s;
+            const postes = {
+              'FILTRE': 'Filtre',
+              'BROSSE_PRINCIPALE': 'Brosse principale',
+              'BROSSE_LATERALE': 'Brosse latérale',
+              'NETTOYAGE_CAPTEURS': 'Nettoyage des capteurs'
+            };
+            const issues = {
+              'REMISE_A_ZERO_CONFIRMEE': 'compteur remis à zéro, confirmé',
+              'REMISE_A_ZERO_NON_CONFIRMEE': 'remise à zéro non confirmée'
+            };
+            return (postes[p[1]] || p[1]) + ' — ' + (issues[p[2]] || p[2]);
+          ]]]
+        styles:
+          card:
+            - background-color: |
+                [[[
+                  const s = entity ? entity.state : null;
+                  if (!s || s === 'unknown' || s === 'unavailable' || s === '')
+                    return 'rgba(158, 158, 158, 0.1)';
+                  if (s.endsWith('REMISE_A_ZERO_NON_CONFIRMEE'))
+                    return 'rgba(255, 152, 0, 0.2)';
+                  return 'rgba(158, 158, 158, 0.2)';
+                ]]]
+          label:
+            - white-space: normal
+            - line-height: 1.25

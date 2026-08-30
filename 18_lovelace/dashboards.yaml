@@ -113,6 +113,15 @@ aspirateur-carte-dashboard:
   show_in_sidebar: false
   filename: 18_lovelace/dashboards/aspirateur/carte.yaml
 
+# Troisieme ecran du domaine Aspirateur : les quatre postes d'entretien et le
+# geste de declaration. Frere des deux precedents, meme patron Voiture.
+aspirateur-entretien-dashboard:
+  mode: yaml
+  title: Entretien
+  icon: mdi:tools
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/aspirateur/entretien.yaml
+
 volets-dashboard:
   mode: yaml
   title: Volets

@@ -1,0 +1,378 @@
+# ==========================================================
+# 🧰 ARSENAL — SCRIPT
+#     Aspirateur — Déclarer un entretien (lot M2)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter la SEULE primitive irréversible du périmètre
+#   Maintenance : la remise à zéro d'un poste d'entretien.
+#
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             14_entretien.md §1 (périmètre fermé, ASP-INV-73)
+#                              §3 (séquence, ASP-INV-77 … ASP-INV-80)
+#                              §4 (autorité, ASP-INV-81, ASP-INV-82)
+#                              §6.1 (les sept obligations du lot M2)
+#                              §7 (restitution de l'issue)
+#   Cadrage ratifié (D-44) : cadrage_l2_maintenance_ui,
+#             06_ENTITES_ENTRETIEN.md §5 et §6 (deux niveaux de
+#                                     confirmation, fenêtre)
+#             11_ARBITRAGES_RENDUS.md §2.2 (A-2), §2.4 (A-14)
+#
+# ----------------------------------------------------------
+# 🔒 AUTORITÉ EXCLUSIVE — ALLOWLIST NOMINATIVE
+#   Ce fichier est le SEUL du dépôt autorisé à presser les quatre
+#   boutons de remise à zéro (ASP-INV-81). L'autorisation est
+#   NOMINATIVE — ce chemin, et lui seul — et FERMÉE : tout autre
+#   appelant est une non-conformité, gardée par `ASP-CI-31` dont le
+#   visiteur YAML récursif balaie l'intégralité du périmètre
+#   fonctionnel, Lovelace compris.
+#
+#   Le geste est IRRÉVERSIBLE : aucune primitive de restauration
+#   n'existe. Ce qui est remis à zéro ne se défait pas.
+#
+# ----------------------------------------------------------
+# 🧮 AUTORITÉ DE MESURE — UNE SEULE, CELLE DU LOT M1
+#   `sensor.aspirateur_entretien_du`, attribut `postes` :
+#   il porte, par poste, le libellé Arsenal, le restant en heures
+#   et le plafond en heures.
+#
+#   Ce script NE LIT AUCUN COMPTEUR NATIF et NE REDÉCLARE AUCUN
+#   PLAFOND. Le périmètre fermé, les quatre plafonds et le seuil
+#   unique vivent dans le SEUL bloc `variables:` du lot M1. En
+#   recopier un ici créerait une seconde autorité, et deux
+#   autorités divergent tôt ou tard.
+#
+#   La table `libelles` ci-dessous est la SECONDE MATÉRIALISATION
+#   assumée du référentiel — elle traduit la valeur du champ fermé
+#   en libellé Arsenal. Elle n'est pas niée : elle est CONFRONTÉE
+#   au périmètre de M1 par `ASP-CI-40`, comme `ASP-CI-28` confronte
+#   celle de la couche d'intention (arbitrage A-13).
+#
+# ----------------------------------------------------------
+# 🧾 SÉQUENCE NORMATIVE — QUATRE ÉTAPES, DANS CET ORDRE
+#   1. Déclaration opérateur — explicite, portant sur UN poste
+#   2. Émission — UNE SEULE pression sur le bouton EXACT du poste
+#   3. Relecture — observation de la postcondition, 30 s au plus
+#   4. Issue — confirmée, ou terminale non confirmée
+#
+#   L'ordre est normatif : on n'observe pas avant d'émettre.
+#
+# ----------------------------------------------------------
+# 🎯 LA POSTCONDITION EST UNE TRANSITION, JAMAIS UN ÉTAT
+#   Le contrat fixe la postcondition : « la REMONTÉE du compteur
+#   restant à son plafond ». Le mot désigne un MOUVEMENT.
+#
+#   L'écrire comme un état — « le compteur vaut le plafond » —
+#   serait un piège : la condition est DÉJÀ VRAIE sur un poste
+#   fraîchement remis à zéro. Une attente ainsi formulée
+#   retournerait vrai IMMÉDIATEMENT, et produirait une confirmation
+#   FAUSSE — précisément ce qu'ASP-INV-79 proscrit : « une pression
+#   n'est pas une confirmation ».
+#
+#   Deux gardes ferment les deux faces, et elles sont cumulatives :
+#
+#   • AVANT la pression, la mesure est CAPTURÉE. Si elle n'est pas
+#     numérique, aucune pression n'est émise : on ne presse pas un
+#     bouton dont on ne pourra pas lire la postcondition.
+#   • AVANT la pression, la remise à zéro doit avoir un OBJET : le
+#     restant doit être STRICTEMENT INFÉRIEUR au plafond. Un
+#     compteur déjà au plafond n'a rien à solder, et sa
+#     confirmation serait vide de sens.
+#   • APRÈS la pression, la confirmation exige une valeur numérique
+#     ultérieure STRICTEMENT SUPÉRIEURE à la valeur capturée.
+#
+#   L'état du bouton et son horodatage ne sont JAMAIS lus : ils
+#   attestent la pression, jamais son effet (ASP-INV-79).
+#
+# ----------------------------------------------------------
+# ⏱️ FENÊTRE DE RELECTURE — 30 s, ET CE QU'ELLE NE BORNE PAS
+#   Elle appartient aux DEUX constantes temporelles du domaine, et
+#   n'en ajoute aucune (ASP-INV-69, portée étendue au périmètre
+#   Maintenance).
+#
+#   Elle borne l'ATTENTE, jamais l'INTERPRÉTATION. Le bouton natif
+#   ne force aucun rafraîchissement d'entité : le délai réel de
+#   propagation vers le capteur n'a AUCUNE BORNE SUPÉRIEURE
+#   DÉMONTRABLE. Une fenêtre expirée sur une remise à zéro RÉUSSIE
+#   est donc possible, et le contrat l'assume.
+#
+#   À l'expiration (ASP-INV-80) :
+#     1. l'issue est TERMINALE — « remise à zéro non confirmée » ;
+#     2. le poste RESTE DÛ — et c'est M1, seul, qui en décide ;
+#     3. AUCUNE nouvelle pression n'est émise ;
+#     4. le système NE CONCLUT À AUCUNE PANNE MATÉRIELLE.
+#
+#   Une nouvelle tentative exige une vérification opérateur, puis un
+#   nouveau geste manuel. Elle n'est jamais automatique.
+#
+# ----------------------------------------------------------
+# 🔁 MODE — `single`, et pourquoi
+#   Une seconde déclaration concurrente est refusée par le moteur de
+#   scripts : Home Assistant journalise « Already running » et rend
+#   `None` sans lever ni écrire. Le second appelant voit donc un
+#   appel qui réussit et ne produit RIEN — et surtout, aucune
+#   seconde pression n'est émise.
+#
+#   `restart` serait ici une faute grave : il abandonnerait la
+#   relecture en cours et rouvrirait la voie à une pression pendant
+#   qu'une autre est en vol. `queued` et `parallel` de même.
+#
+# ----------------------------------------------------------
+# 🤫 CE QU'UN REFUS ÉCRIT — RIEN, ET C'EST VOULU
+#   Les trois gardes d'entrée — poste inconnu, mesure non
+#   évaluable, compteur déjà au plafond — s'arrêtent SANS RIEN
+#   ÉCRIRE. Le verdict conserve alors la dernière déclaration
+#   réellement ACHEVÉE, ce qu'il prétend être.
+#
+#   C'est le comportement du script de conduite du lot L2 devant un
+#   geste sans objet, et c'est le même motif : n'écrire un verdict
+#   que lorsqu'une séquence a été exécutée. Les deux causes de refus
+#   sont par ailleurs VISIBLES sur l'écran Entretien — un poste non
+#   évaluable s'y rend comme tel, un compteur au plafond s'y lit.
+#
+# ----------------------------------------------------------
+# 🚫 CE QUE CE SCRIPT NE FAIT PAS
+#   - AUCUN `repeat`, AUCUN retry, AUCUNE seconde pression, quelle
+#     que soit l'issue (ASP-INV-78)
+#   - AUCUN ciblage par `device_id`, `area_id` ou `label_id`
+#   - AUCUN `entity_id` templatisé, AUCUN nom de service templatisé
+#   - AUCUNE commande robot : ni `vacuum.*`, ni `roborock.*`
+#     (ASP-INV-82 — ce chapitre n'ouvre rien d'autre que `button.press`
+#     sur les quatre boutons nommés)
+#   - AUCUNE lecture ni écriture du verdict de mission, ni de la
+#     trace d'intention : le périmètre Maintenance est cloisonné
+#     du périmètre Mission (ASP-INV-83)
+#   - AUCUNE notification, ni mobile ni persistante : hors mission,
+#     le domaine n'ajoute rien (ASP-INV-84)
+#   - AUCUN acquittement de la notification d'entretien : elle se
+#     résout seule, quand M1 constate qu'aucun poste n'est plus dû
+#   - AUCUNE conclusion de panne matérielle
+#
+# ----------------------------------------------------------
+# 🏷️ ÉTIQUETTE — `script:execution`
+#   Finalité : appliquer nominalement une action sur un équipement,
+#   dans le cadre du flux prévu (02_etiquettes/scripts.md §4.1).
+#   L'écriture du verdict ne le reclasse pas : « Script qui
+#   consolide un état ET envoie une commande → si le découpage est
+#   impossible, `script:execution` — l'effet externe prime pour la
+#   traçabilité » (§4.2). Le découpage serait ici impossible sans
+#   séparer la pression de sa propre relecture.
+#
+#   L'étiquette s'applique dans le registre d'entités de Home
+#   Assistant, non versionné : c'est un geste opérateur.
+#
+# ----------------------------------------------------------
+# 🏷️ STATUT
+#   Runtime supervisé — domaine aspirateur, lot M2
+# ==========================================================
+
+aspirateur_declarer_entretien:
+  alias: "Aspirateur - Déclarer un entretien"
+  icon: mdi:tools
+  mode: single
+
+  fields:
+    poste:
+      name: Poste
+      description: >-
+        Poste d'entretien déclaré : filtre, brosse_principale,
+        brosse_laterale, nettoyage_capteurs.
+      required: true
+      example: "filtre"
+
+  sequence:
+
+    # ======================================================
+    # 📚 RÉFÉRENTIEL EMBARQUÉ — le champ fermé, et sa traduction
+    # ------------------------------------------------------
+    # `postes` est le vocabulaire FERMÉ du champ. `libelles` traduit
+    # chaque valeur en libellé Arsenal — celui que M1 emploie, et le
+    # seul par lequel la mesure se retrouve dans l'attribut `postes`
+    # de l'autorité. Les deux tables sont confrontées au périmètre de
+    # M1 par ASP-CI-40.
+    # ======================================================
+    - variables:
+        postes:
+          - "filtre"
+          - "brosse_principale"
+          - "brosse_laterale"
+          - "nettoyage_capteurs"
+        libelles:
+          filtre: "Filtre"
+          brosse_principale: "Brosse principale"
+          brosse_laterale: "Brosse latérale"
+          nettoyage_capteurs: "Nettoyage des capteurs"
+
+    # ======================================================
+    # 🧾 ÉTAPE 1 — Poste connu ? (déclaration opérateur)
+    # ------------------------------------------------------
+    # Hors vocabulaire, la demande ne désigne rien. Aucune pression,
+    # aucun verdict : le refus est antérieur à toute exécution.
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ poste is not defined or poste is none
+                   or (poste | string) not in postes }}
+          sequence:
+            - stop: >-
+                Poste d'entretien inconnu : attendu filtre,
+                brosse_principale, brosse_laterale ou nettoyage_capteurs
+
+    # ======================================================
+    # 📏 CAPTURE — la mesure AVANT toute pression
+    # ------------------------------------------------------
+    # Lue sur l'autorité M1, et sur elle seule. Un poste absent de
+    # l'attribut, ou dont le restant vaut `none`, rend une valeur non
+    # numérique : aucun repli, aucune valeur par défaut.
+    # ======================================================
+    - variables:
+        libelle: "{{ libelles[poste] }}"
+        restant_avant: >-
+          {{ (state_attr('sensor.aspirateur_entretien_du', 'postes') or [])
+             | selectattr('poste', 'equalto', libelles[poste])
+             | map(attribute='restant_h') | list | first }}
+        plafond: >-
+          {{ (state_attr('sensor.aspirateur_entretien_du', 'postes') or [])
+             | selectattr('poste', 'equalto', libelles[poste])
+             | map(attribute='plafond_h') | list | first }}
+
+    # ======================================================
+    # 🕳️ ÉTAPE 2a — La mesure doit être NUMÉRIQUE (ASP-INV-74)
+    # ------------------------------------------------------
+    # `unknown`, `unavailable`, l'absence d'entité et toute valeur non
+    # numérique interdisent la pression. On ne presse pas un bouton
+    # dont on ne pourra pas lire la postcondition.
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ not (restant_avant | is_number)
+                   or not (plafond | is_number) }}
+          sequence:
+            - stop: >-
+                Mesure d'entretien non évaluable : aucune pression n'est émise
+
+    # ======================================================
+    # 🎯 ÉTAPE 2b — La remise à zéro doit avoir un OBJET
+    # ------------------------------------------------------
+    # Un compteur déjà au plafond n'a rien à solder, et la transition
+    # attendue ne pourrait pas se produire : la confirmation serait
+    # structurellement fausse. Le refus est antérieur à la pression.
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ (restant_avant | float) >= (plafond | float) }}
+          sequence:
+            - stop: >-
+                Compteur déjà au plafond : la remise à zéro serait sans objet
+
+    # ======================================================
+    # 🔘 ÉTAPE 3 — L'UNIQUE PRESSION, LITTÉRALE
+    # ------------------------------------------------------
+    # Une branche par poste. Chaque branche porte SON `entity_id`
+    # écrit EN CLAIR : aucun ciblage indirect, aucun gabarit.
+    #
+    # `continue_on_error` JOURNALISE puis absorbe l'exception de
+    # service, et la séquence poursuit vers sa relecture. Sans cela,
+    # une levée abandonnerait la séquence sans écrire aucune issue —
+    # un silence sur une déclaration engagée. Absorber N'EST PAS
+    # réémettre : il y a toujours exactement UNE pression
+    # (ASP-INV-78), et la relecture reste seule juge.
+    #
+    # Le `choose` n'a PAS de `default:` : les quatre branches
+    # couvrent exactement le vocabulaire fermé, et l'étape 1 a déjà
+    # écarté tout le reste.
+    # ======================================================
+    - choose:
+
+        - conditions:
+            - condition: template
+              value_template: "{{ poste == 'filtre' }}"
+          sequence:
+            - action: button.press
+              continue_on_error: true
+              target:
+                entity_id: button.roborock_q7_max_reinitialiser_le_consommable_du_filtre_a_air
+
+        - conditions:
+            - condition: template
+              value_template: "{{ poste == 'brosse_principale' }}"
+          sequence:
+            - action: button.press
+              continue_on_error: true
+              target:
+                entity_id: button.roborock_q7_max_reinitialiser_le_consommable_de_la_brosse_principale
+
+        - conditions:
+            - condition: template
+              value_template: "{{ poste == 'brosse_laterale' }}"
+          sequence:
+            - action: button.press
+              continue_on_error: true
+              target:
+                entity_id: button.roborock_q7_max_reinitialiser_le_consommable_de_la_brosse_laterale
+
+        - conditions:
+            - condition: template
+              value_template: "{{ poste == 'nettoyage_capteurs' }}"
+          sequence:
+            - action: button.press
+              continue_on_error: true
+              target:
+                entity_id: button.roborock_q7_max_reinitialiser_le_consommable_du_capteur
+
+    # ======================================================
+    # 👁️ ÉTAPE 4 — RELECTURE BORNÉE : une TRANSITION
+    # ------------------------------------------------------
+    # La condition compare à la valeur CAPTURÉE avant la pression.
+    # Elle ne peut donc pas être vraie d'avance, et elle ne teste
+    # jamais `restant == plafond`.
+    # ======================================================
+    - wait_template: >-
+        {% set v = (state_attr('sensor.aspirateur_entretien_du', 'postes') or [])
+                   | selectattr('poste', 'equalto', libelle)
+                   | map(attribute='restant_h') | list | first %}
+        {{ v | is_number and (v | float) > (restant_avant | float) }}
+      timeout: "00:00:30"
+      continue_on_timeout: true
+
+    # ======================================================
+    # 🏁 ÉTAPE 5 — ISSUE TERMINALE, ET RIEN D'AUTRE
+    # ------------------------------------------------------
+    # Deux issues, exhaustives et mutuellement exclusives — la
+    # pression a eu lieu, elle DOIT produire une issue. C'est
+    # pourquoi un `default:` est ici LÉGITIME, là où les projections
+    # du domaine s'en interdisent un : ce helper n'a qu'UN écrivain,
+    # aucun autre objet ne peut conclure à sa place, et un silence
+    # laisserait la déclaration sans issue.
+    #
+    # L'issue non confirmée ne conclut À RIEN sur l'appareil : ni
+    # panne, ni rejet, ni absence d'effet. Elle dit que la
+    # confirmation manque, et rend la main. Le poste reste régi par
+    # M1 et par la valeur réellement remontée ensuite.
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {% set v = (state_attr('sensor.aspirateur_entretien_du', 'postes') or [])
+                           | selectattr('poste', 'equalto', libelle)
+                           | map(attribute='restant_h') | list | first %}
+                {{ v | is_number and (v | float) > (restant_avant | float) }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_entretien_verdict
+              data:
+                value: "ENTRETIEN/{{ poste | upper }}/REMISE_A_ZERO_CONFIRMEE"
+
+      default:
+        - action: input_text.set_value
+          target:
+            entity_id: input_text.aspirateur_entretien_verdict
+          data:
+            value: "ENTRETIEN/{{ poste | upper }}/REMISE_A_ZERO_NON_CONFIRMEE"
