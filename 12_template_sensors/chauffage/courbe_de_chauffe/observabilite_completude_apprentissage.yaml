@@ -49,9 +49,11 @@
         {% endif %}
       attributes:
         seuil_fraicheur_h: "26"
-        age_heures: >
-          {% set ts = state_attr('input_datetime.chauffage_courbe_dernier_cycle', 'timestamp') %}
-          {{ '?' if ts is none else ((now().timestamp() - ts) / 3600) | round(1) }}
+        # `age_heures` retiré (C43, réduction du churn recorder) : recalculé en
+        # continu, il produisait 7 481 lignes recorder pour 49 changements d'état.
+        # Aucune exigence documentaire, aucun consommateur. L'âge reste dérivable
+        # de `dernier_cycle` (ancre stable, conservée ci-dessous) et de l'horodatage
+        # de la ligne ; `seuil_fraicheur_h` conserve la règle des 26 h.
         dernier_cycle: >
           {{ states('input_datetime.chauffage_courbe_dernier_cycle') }}
 

@@ -77,8 +77,12 @@
               maintenu_hysteresis
             {% endif %}
           {% endif %}
-        mediane: >
-          {{ states('sensor.jardin_humidite_sol_mediane') }}
+        # `mediane` retiré (C43, réduction du churn recorder) : recopie suivant la
+        # source en continu, 4 524 lignes recorder pour 138 changements d'état.
+        # L'entité source `sensor.jardin_humidite_sol_mediane` — celle que vise
+        # `contrats/arrosage/17_decision_v1.md` §102 — est elle-même historisée :
+        # l'attribut n'était qu'une duplication. `seuil` et `hysteresis` restent
+        # exposés, la décision étant relisible en croisant les deux historiques.
         seuil: >
           {{ states('input_number.arrosage_seuil_humidite_declenchement') | float(30) }}
         hysteresis: >

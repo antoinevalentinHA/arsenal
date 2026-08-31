@@ -42,6 +42,12 @@
           {% set ts = as_timestamp(states('input_datetime.clim_debut_absence'), default=0) | int(0) %}
           {% set duree_h = states('input_number.clim_duree_absence_longue') | float(14) %}
           {{ (ts + (duree_h * 3600) | int) | timestamp_local if ts > 0 else 'aucune' }}
+        # Granularité publiée : 1 décimale (0,1 h = 6 min). Volontaire — C43,
+        # réduction du churn recorder : l'arrondi à 2 décimales produisait une
+        # écriture par minute pour une information nulle. N'affecte QUE la valeur
+        # publiée ; l'état ci-dessus se recalcule depuis l'ancre et le helper, sans
+        # jamais lire cet attribut. Précision compatible avec le protocole C20 §4
+        # et le runbook S7/S8 (relevé de E, helper `step: 1`).
         duree_ecoulee_h: >
           {% set ts = as_timestamp(states('input_datetime.clim_debut_absence'), default=0) | int(0) %}
-          {{ (((as_timestamp(now()) | int(0)) - ts) / 3600) | round(2) if ts > 0 else 0 }}
+          {{ (((as_timestamp(now()) | int(0)) - ts) / 3600) | round(1) if ts > 0 else 0 }}

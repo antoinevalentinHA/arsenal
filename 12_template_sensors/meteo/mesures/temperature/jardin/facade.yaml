@@ -93,13 +93,11 @@
             abstention
           {% endif %}
 
-        age_memoire_s: >
-          {% set ts = states('input_datetime.temperature_jardin_etat_publie_ts') %}
-          {% if ts in ['unknown', 'unavailable', ''] %}
-            {{ none }}
-          {% else %}
-            {{ (as_timestamp(now()) - as_timestamp(ts)) | int(0) }}
-          {% endif %}
+        # `age_memoire_s` retiré ici (C43, réduction du churn recorder) : recalculé
+        # chaque minute, il produisait 50 429 lignes recorder pour 0 changement
+        # d'état. L'attribut reste exposé par `sensor.temperature_jardin_statut`
+        # (ci-dessous), qui n'est pas historisé et porte l'exigence documentaire
+        # (audit météo §215, plan d'action §132/§145).
 
         cible_robuste: "{{ states('sensor.temperature_jardin_cible_robuste') }}"
         etat_publie: "{{ states('input_number.temperature_jardin_etat_publie') }}"
