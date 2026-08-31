@@ -139,8 +139,11 @@
             aucune
           {% endif %}
 
-        age_memoire_minutes: >
-          {{ states('sensor.humidite_relative_jardin_age_memoire_minutes') }}
+        # `age_memoire_minutes` retiré ici (C43, réduction du churn recorder) :
+        # recopie suivant la source à la minute, 46 404 lignes recorder pour
+        # 0 changement d'état. L'entité canonique
+        # `sensor.humidite_relative_jardin_age_memoire_minutes` — celle que vise
+        # `contrats/meteo/fallback.md` §102 — reste inchangée et non historisée.
 
         cible_robuste: >
           {{ states('sensor.humidite_relative_jardin_cible_robuste_instantanee') }}

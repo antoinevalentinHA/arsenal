@@ -111,14 +111,10 @@
           {{ (core | map('states') | select('in', indispo) | list | length) == 0 }}
         pont_disponible: >
           {{ is_state('binary_sensor.rain_bird_pont_donnees_disponibles', 'on') }}
-        uptime_age_secondes: >
-          {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
-          {% set up = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_uptime' %}
-          {% set up_st = states(up) %}
-          {% if up_st is none or up_st in indispo %}
-            inconnu
-          {% else %}
-            {{ (now() - states[up].last_reported).total_seconds() | int }}
-          {% endif %}
+        # `uptime_age_secondes` retiré (C43, réduction du churn recorder) :
+        # recalculé chaque minute, il produisait 45 300 lignes recorder pour
+        # 85 changements d'état. Aucune exigence documentaire, aucun consommateur.
+        # `source_horloge` et `seuil_secondes` ci-dessous conservent la traçabilité
+        # de la règle ; l'âge reste dérivable de `last_reported` de la source.
         source_horloge: "bridge_uptime.last_reported"
         seuil_secondes: "10800"

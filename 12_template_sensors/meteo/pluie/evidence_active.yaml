@@ -102,13 +102,10 @@
           {% set ok = s is not none and s.state not in ['unknown','unavailable','none'] %}
           {% set age = (now() - s.last_changed).total_seconds() if ok else 999999 %}
           {{ ok and s.state == 'on' and age <= 600 }}
-        snzb_age_s: >
-          {% set s = states.binary_sensor.zigbee_pluie_water_leak %}
-          {% if s is not none and s.state not in ['unknown','unavailable','none'] %}
-            {{ (now() - s.last_changed).total_seconds() | int }}
-          {% else %}
-            unavailable
-          {% endif %}
+        # `snzb_age_s` retiré (C43, réduction du churn recorder) : recalculé chaque
+        # minute, il produisait 44 815 lignes recorder pour 137 changements d'état.
+        # Aucune exigence documentaire, aucun consommateur. La fraîcheur reste
+        # portée par `snzb_rain` ci-dessus (seuil 600 s) et par `source_maintien`.
         source_maintien: >
           {% set n = states('sensor.pluviometre_precipitation') %}
           {% set n_rain = n not in ['unknown','unavailable','none',''] and (n | float(0)) > 0 %}

@@ -102,9 +102,22 @@
       attributes:
         modele: "Hargreaves-Samani (FAO-56) — température seule"
         tmean_source: "sensor.temperature_exterieure_moyenne_jour (moyenne glissante 24 h)"
-        tmean_c: "{{ states('sensor.temperature_exterieure_moyenne_jour') }}"
-        tmin_c: "{{ states('sensor.temperature_min_jour_courant_jardin') }}"
-        tmax_c: "{{ states('sensor.temperature_max_jour_courant_jardin') }}"
+        # Granularité publiée : 1 décimale (0,1 °C). Volontaire — C43, réduction du
+        # churn recorder : la recopie brute suivait la source à la minute et
+        # produisait une écriture pour une information nulle. N'affecte QUE la
+        # valeur publiée — l'état ET₀ et l'`availability` ci-dessus relisent les
+        # sources indépendamment, en pleine précision. Garde `is_number` : une
+        # source non numérique (`unavailable`/`unknown`) est restituée telle quelle,
+        # jamais convertie en 0.
+        tmean_c: >
+          {% set v = states('sensor.temperature_exterieure_moyenne_jour') %}
+          {{ (v | float) | round(1) if is_number(v) else v }}
+        tmin_c: >
+          {% set v = states('sensor.temperature_min_jour_courant_jardin') %}
+          {{ (v | float) | round(1) if is_number(v) else v }}
+        tmax_c: >
+          {% set v = states('sensor.temperature_max_jour_courant_jardin') %}
+          {{ (v | float) | round(1) if is_number(v) else v }}
         ra_mm_jour: >
           {% set lat = state_attr('zone.maison_securite', 'latitude') %}
           {% if is_number(lat) %}
