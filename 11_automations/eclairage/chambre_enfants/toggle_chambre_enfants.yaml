@@ -1,0 +1,76 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chambre Enfants – Interface bouton physique (MQTT)
+#
+#  ID : 10070000000036
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d'interface utilisateur matérielle.
+#
+#     Elle traduit un appui simple sur le bouton mural
+#     Zigbee de la Chambre Enfants en une bascule de la
+#     prise qui alimente la lampe de la pièce.
+#
+#     Cette automation ne prend AUCUNE décision métier :
+#     elle traduit un geste utilisateur en une action.
+#
+#  🧩 PRINCIPE
+#
+#     - Écoute directe du message MQTT brut publié par
+#       Zigbee2MQTT sur le topic RACINE du bouton
+#     - Filtrage minimal : appui simple uniquement
+#     - Bascule immédiate de la prise
+#
+#  🧠 SOURCE D'ÉVÉNEMENT
+#
+#     zigbee2mqtt/bouton_chambre_enfants
+#
+#     → topic RACINE exclusivement. Zigbee2MQTT publie le
+#       même geste DEUX fois : en JSON sur le topic racine
+#       et en texte brut sur <topic>/action. Un abonnement
+#       élargi (« /# ») déclencherait donc deux fois par
+#       appui — constat d'observation, 2026-09-01.
+#
+#  🖱️ GESTES ÉMIS PAR CE MATÉRIEL (Aqara WXKG11LM)
+#
+#     - single           : appui simple → EXPLOITÉ ici
+#     - hold / release   : appui long   → non exploité
+#
+#  📦 ACTION DÉCLENCHÉE
+#
+#     switch.prise_lampe_chambre_enfants (toggle)
+#
+#     → la prise reste l'autorité physique de la lampe ;
+#       le bouton n'exprime qu'une intention utilisateur.
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne gère AUCUN état logique
+#     - N'introduit AUCUNE temporisation ni extinction auto
+#     - N'exploite NI le double appui NI l'appui long
+#     - N'émet AUCUNE notification
+#     - Ne dépend d'AUCUN helper
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Interface physique pure :
+#     geste utilisateur ≠ état ≠ décision.
+# ==========================================================
+
+- id: "10070000000036"
+  alias: "Éclairage - Chambre Enfants - Bouton physique"
+  mode: single
+
+  trigger:
+    # 🖱️ Appui simple
+    - platform: mqtt
+      topic: "zigbee2mqtt/bouton_chambre_enfants"
+      value_template: "{{ (value_json | default({}, true)).get('action', '') }}"
+      payload: "single"
+
+  action:
+    - alias: "Basculer la lampe de la Chambre Enfants"
+      action: switch.toggle
+      target:
+        entity_id: switch.prise_lampe_chambre_enfants

@@ -66,7 +66,7 @@ devices:
   '0xa4c138e56ee153be':
     friendly_name: prise_lampe_parents
   '0xa4c1384ee54413c5':
-    friendly_name: prise_chambre_enfants
+    friendly_name: prise_lampe_chambre_enfants
   '0xa4c1386bff87702b':
     friendly_name: prise_onduleur
   '0xa4c13808ef16a223':
@@ -165,6 +165,8 @@ devices:
     friendly_name: vmc
   '0x00158d008c68ad6c':
     friendly_name: bouton_entree
+  '0x00158d008c8ba3d5':
+    friendly_name: bouton_chambre_enfants
   '0x7c3e823561e90000':
     friendly_name: '0x7c3e823561e90000'
   '0x7c3e82d726940000':

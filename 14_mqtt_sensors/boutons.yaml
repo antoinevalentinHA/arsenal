@@ -22,6 +22,7 @@
 #   bouton_garage_1_action
 #   bouton_garage_2_action
 #   bouton_entree_action
+#   bouton_chambre_enfants_action
 #
 # 📋 TRANSPORT
 #   state_topic          :
@@ -30,6 +31,7 @@
 #     - zigbee2mqtt/bouton_garage_1
 #     - zigbee2mqtt/bouton_garage_2
 #     - zigbee2mqtt/bouton_entree
+#     - zigbee2mqtt/bouton_chambre_enfants
 #   namespace            : zigbee2mqtt/...
 #   json_attributes      : non
 #   structure JSON       : { "action": "<event>", ... }
@@ -79,5 +81,11 @@
 - name: "bouton_entree_action"
   unique_id: bouton_entree_action
   state_topic: "zigbee2mqtt/bouton_entree"
+  value_template: "{{ (value_json | default({}, true)).get('action', '') }}"
+  icon: mdi:gesture-tap-button
+
+- name: "bouton_chambre_enfants_action"
+  unique_id: bouton_chambre_enfants_action
+  state_topic: "zigbee2mqtt/bouton_chambre_enfants"
   value_template: "{{ (value_json | default({}, true)).get('action', '') }}"
   icon: mdi:gesture-tap-button

@@ -46,6 +46,10 @@ sensor.bouton_entree_linkquality:
   friendly_name: "Bouton Entrée"
   icon: mdi:gesture-tap-button
 
+sensor.bouton_chambre_enfants_linkquality:
+  friendly_name: "Bouton Chambre Enfants"
+  icon: mdi:gesture-tap-button
+
 ############################################################
 # 🪟 OUVERTURES (FENÊTRES / PORTES)
 ############################################################
@@ -232,6 +236,10 @@ sensor.prise_deshumidificateur_linkquality:
 
 sensor.prise_jardin_linkquality:
   friendly_name: "Prise jardin"
+  icon: mdi:power-socket-fr
+
+sensor.prise_lampe_chambre_enfants_linkquality:
+  friendly_name: "Lampe chambre Enfants"
   icon: mdi:power-socket-fr
 
 sensor.prise_lampe_parents_linkquality:

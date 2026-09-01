@@ -46,6 +46,10 @@ sensor.bouton_entree_battery:
   friendly_name: "Bouton Entrée"
   icon: mdi:gesture-tap-button
 
+sensor.bouton_chambre_enfants_battery:
+  friendly_name: "Bouton Chambre Enfants"
+  icon: mdi:gesture-tap-button
+
 ############################################################
 # 🔘 BOTS SWITCHBOT
 ############################################################

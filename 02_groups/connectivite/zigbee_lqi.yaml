@@ -30,6 +30,7 @@
 zigbee_linkquality_all:
   name: "Zigbee — Tous liens radio"
   entities:
+    - sensor.bouton_chambre_enfants_linkquality
     - sensor.bouton_cuisine_linkquality
     - sensor.bouton_garage_1_linkquality
     - sensor.bouton_garage_2_linkquality
@@ -81,6 +82,7 @@ zigbee_linkquality_all:
     - sensor.prise_salle_de_jeux_linkquality
     - sensor.prise_deshumidificateur_linkquality
     - sensor.prise_jardin_linkquality
+    - sensor.prise_lampe_chambre_enfants_linkquality
     - sensor.prise_lampe_parents_linkquality
     - sensor.prise_lampe_sejour_linkquality
     - sensor.prise_lave_vaisselle_linkquality

@@ -78,14 +78,15 @@ views:
 
           - !include ../../includes/section_headers/lumieres.yaml
 
+          # Lampes d'habitation
           - type: grid
-            columns: 2
+            columns: 3
             square: false
             cards:
               - type: custom:button-card
                 template: prise_secteur_template
                 entity: switch.prise_lampe_sejour
-                name: Lumière Séjour
+                name: Séjour
                 icon: mdi:lamp
                 tap_action:
                   action: toggle
@@ -95,19 +96,8 @@ views:
 
               - type: custom:button-card
                 template: prise_secteur_template
-                entity: switch.prise_sejour_baies_vitrees
-                name: Lumière Sapin
-                icon: mdi:pine-tree
-                tap_action:
-                  action: toggle
-                  confirmation:
-                    text: Basculer l'état de la prise ?
-                  entity: switch.prise_sejour_baies_vitrees
-
-              - type: custom:button-card
-                template: prise_secteur_template
                 entity: switch.prise_lampe_parents
-                name: Lampe chambre Parents
+                name: Chambre Parents
                 icon: mdi:lamp
                 tap_action:
                   action: toggle
@@ -117,8 +107,35 @@ views:
 
               - type: custom:button-card
                 template: prise_secteur_template
+                entity: switch.prise_lampe_chambre_enfants
+                name: Chambre Enfants
+                icon: mdi:lamp
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_lampe_chambre_enfants
+
+          # Usages ponctuels / extérieur
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: prise_secteur_template
+                entity: switch.prise_sejour_baies_vitrees
+                name: Sapin
+                icon: mdi:pine-tree
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_sejour_baies_vitrees
+
+              - type: custom:button-card
+                template: prise_secteur_template
                 entity: switch.prise_jardin
-                name: Eclairage Jardin
+                name: Jardin
                 icon: mdi:tree
                 tap_action:
                   action: toggle
