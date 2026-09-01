@@ -147,6 +147,9 @@
 
 ## Arbitrages
 
+### Aspirateur
+- [aspirateur/arbitrage_mission_arsenal_ouverte_et_session_robot_active.md](02_arbitrages/aspirateur/arbitrage_mission_arsenal_ouverte_et_session_robot_active.md)  _(**ARBITRAGE HUMAIN RENDU** sur `Q1` — Arsenal distingue contractuellement une **« mission Arsenal ouverte »**, établie **exclusivement par le verdict de classe O**, d'une **« session robot active »**, observée **exclusivement par le témoin natif Roborock** ; le témoin natif n'autorise, n'ouvre ni ne clôt une mission Arsenal, et le verdict ne prétend pas décrire à lui seul l'activité physique instantanée du robot ; leur **divergence est légitime** — session active sans mission ouverte (mission externe), mission ouverte avec témoin natif `off` (retour, clôture) — et l'UI doit les restituer sous **libellés distincts** en employant **l'autorité adaptée à chaque usage** ; **`Q2` reste ouverte** — mécanisme autorisé de projection vers l'interface et évolution éventuelle d'`ASP-CI-11`, de son allowlist ou de la projection canonique, **non préjugés** ; **aucun correctif, aucun chantier, aucun contrat, runtime, checker, registre ou changelog modifié** ; `AUD-ASP-01`, `CC-01` et `RC-02` **non clos** par la seule consignation)_
+
 ### ECS
 - [ecs/arbitrage_watchdog_ecs.md](02_arbitrages/ecs/arbitrage_watchdog_ecs.md)  _(ARBITRAGE RENDU — doctrine (a) « le watchdog borne le verrou » ; runtime = référence ; (b) rejetée ; ECS-WD-1 clos, ECS-WD-2 comportement assumé)_
 
