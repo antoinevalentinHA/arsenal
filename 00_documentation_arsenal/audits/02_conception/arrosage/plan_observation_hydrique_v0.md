@@ -402,6 +402,36 @@ diagnostique non actionnable (v0.5)** lorsque **ces conditions sont atteintes**
 
 ---
 
+### 4 bis. Statut des critères au 2026-08-31 — issue retenue (chantier C44)
+
+Confrontation du journal T04→T08 à la checklist ci-dessus, **arbitrage propriétaire rendu** :
+
+| Condition | État | Fondement |
+|---|---|---|
+| plusieurs cycles de tarissement, régimes variés | **acquise** | T08 — 10 phases franches ≥ 36 h, VPD 1,0→4,0 kPa, r = −0,74 |
+| au moins un épisode chaud | **acquise** | T04 — journée à ET₀ ≈ 6 mm/j |
+| pluie significative + réponse sol | **sans objet** | La pluie est exclue **par construction** de toutes les analyses T05→T08 |
+| comportement du Point 2 | **sans objet** | Les sondes individuelles sont **hors Recorder** (T06) : preuve non productible |
+| fenêtres de fraîcheur | **partielle** | Disponibilité du parc établie ; durée frais/stale du contrat 14 §6 non établie |
+| corrélation pluie ↔ réaction sol | **sans objet** | Même cause que la pluie ci-dessus |
+| absence de recommandation runtime en v0 | **acquise** | Frontière tenue : le canal d'observation n'a rien émis |
+
+> **Issue retenue : le plan v0 est DÉPASSÉ par C11 P4.** Il visait à décider s'il fallait passer à
+> une recommandation ; la recommandation de durée est **livrée** (contrat 19, validée §12). Les trois
+> conditions marquées *sans objet* sont **requalifiées non bloquantes** au titre de `R-VERROU-1` de
+> [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md) — une preuve
+> non productible ne peut être bloquante qu'après création du moyen de preuve.
+>
+> **Décision explicite : ne PAS historiser les six sondes de sol, ne PAS ajouter d'entrée pluie** dans
+> le seul but de solder cette checklist. Ce serait la seule option qui *augmente* le Recorder pour
+> clore un plan devenu sans objet.
+>
+> Les entités du canal réservoir sol sont désormais classées par C44 : la médiane, les points frais et
+> le seuil de déclenchement en **observabilité permanente** (entrées de la décision V1) ; minimum,
+> hétérogénéité et état qualitatif en **microscope borné au 2026-10-31**.
+
+---
+
 ## 5. Hors périmètre (rappel)
 
 - ❌ aucun seuil, aucune calibration, aucune correction du Point 2 ;

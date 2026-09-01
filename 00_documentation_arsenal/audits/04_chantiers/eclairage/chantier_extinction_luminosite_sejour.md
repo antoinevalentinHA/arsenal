@@ -252,6 +252,37 @@ plein jour, **absence de ré-allumage** sous 5 min ; **repli** = helper à `0`. 
 - **Absence d'hystérésis** — assumée (cf. §2 bis) ; à ré-examiner **seulement**
   si un battement réel est observé au seuil.
 
+> **Constat factuel (2026-08-31, chantier C44) — la clause de réexamen du §2 bis est déclenchée.**
+> Mesure hors ligne sur `arsenal-runtime/analyses/` (base `recorder_20260831.db`, 31 j), autorité
+> **reconstruite** à partir de la courbe lux au seuil de 50 lx — `binary_sensor.sejour_extinction_luminosite_autorisee`
+> n'étant pas historisé :
+>
+> - **949 fronts montants** (`off → on`) sur 31 jours ; **médiane 29 par jour**, max 70 ;
+> - **50 %** des fronts montants surviennent à **moins d'une minute** du front descendant précédent,
+>   **76 %** à moins de cinq minutes — c'est du rebond au seuil, pas une variation d'ambiance ;
+> - **109 fronts montants** tombent dans une heure où la lampe consommait. Ce nombre est un
+>   **majorant d'opportunités**, en aucun cas un décompte d'extinctions prouvées : la seule
+>   résolution disponible sur la lampe est **horaire** ;
+> - `binary_sensor.sejour_extinction_luminosite_autorisee` est employé comme **DÉCLENCHEUR**
+>   (`trigger: state … to: "on"`) dans [`11_automations/eclairage/sejour/off_luminosite.yaml`](../../../../11_automations/eclairage/sejour/off_luminosite.yaml),
+>   et non uniquement lu en condition. L'argument *fail-safe* du §2 bis couvre le sens **descendant** ;
+>   il ne couvre pas le sens **montant**, qui est un front déclencheur.
+>
+> **À instruire dans un chantier fonctionnel séparé** : hystérésis sur l'autorité, temporisation du
+> trigger (`for:`), ou combinaison des deux. **Aucun seuil, trigger, template ou runtime d'éclairage
+> n'est modifié** par le lot documentaire C44.
+>
+> **Découplage à ne pas confondre.** Le battement de l'autorité et la collecte lux sont couplés
+> **fonctionnellement**, pas **probatoirement** : une hystérésis sur l'autorité ne modifie ni le
+> capteur lux brut ni ses long-term statistics, et **ne compromet donc pas l'analyse hivernale hors
+> ligne**. Il ne doit pas être écrit que le battement « fausse la calibration » — cela demanderait une
+> démonstration supplémentaire, non produite à ce jour.
+>
+> **Microscope lux** — régularisé par C44 : preuve attendue = **≥ 5 cycles jour/nuit de météo variée**
+> dans la période la plus sombre ; fenêtre d'enregistrement continu **2026-12-01 → 2027-01-31**
+> (encadre le solstice) ; **échéance opposable 2027-02-07**. Les LTS horaires n'étant pas purgées,
+> la calibration s'analysera **après** le retrait, hors ligne.
+
 ---
 
 ## 7. Traçabilité
