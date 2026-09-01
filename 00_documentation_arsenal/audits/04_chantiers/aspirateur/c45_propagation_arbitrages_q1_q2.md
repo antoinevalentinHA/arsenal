@@ -5,10 +5,10 @@
 | **Chantier** | Propager dans les contrats, la CI, le runtime et l'interface la sémantique tranchée par les arbitrages `Q1` et `Q2` : deux notions distinctes — **mission Arsenal ouverte** (autorité : verdict de classe `O`) et **session robot active** (autorité : témoin natif Roborock) —, une **projection métier dédiée** en lecteur pur nominatif sous `ASP-CI-11`, la **migration atomique** de l'attribut ambigu `mission_ouverte`, et les **règles d'offre** des gestes de conduite. |
 | **Domaine** | Aspirateur. |
 | **Nature** | **Propagation gouvernée d'un arbitrage rendu.** Ce n'est **pas** une exploration architecturale : les options ont été examinées et tranchées en `Q2` §4, et ce chantier n'en rouvre aucune. |
-| **Statut** | **Ouvert (2026-09-01) — ouverture documentaire seule.** Aucun lot exécuté. Aucun contrat, checker, runtime, Lovelace ni changelog modifié par le présent acte. |
+| **Statut** | **Ouvert — Lot 1 exécuté (2026-09-01).** La rectification documentaire `D1` est **produite, datée, classée et indexée** ([`rectification_cardinal_allowlist_asp_ci_11.md`](../../02_arbitrages/aspirateur/rectification_cardinal_allowlist_asp_ci_11.md)), conformément au véhicule décidé au §4.1 : **aucune source historique n'a été réécrite** — `Q1`, `Q2`, l'audit, la contre-expertise et la confrontation sont **inchangés**. **Lots 2 à 7 non exécutés.** **Aucun contrat, checker, runtime, Lovelace ni changelog modifié à ce jour.** |
 | **Priorité** | **P2** — aucun risque de sûreté établi ; le backend refuse déjà correctement. L'enjeu est la **cohérence de l'offre à l'opérateur** et la levée de la cause structurelle de `RC-02`. |
 | **Ouvert le** | 2026-09-01. |
-| **Prochain jalon** | **Exécution du Lot 1** (régularisation documentaire préalable). Les **deux décisions humaines préalables sont rendues** le 2026-09-01 (§4.1 et §4.2) : le lot est **exécutable en l'état**, sans arbitrage résiduel. |
+| **Prochain jalon** | **Lot 2 — propagation contractuelle** (§5.2). Le **Lot 1 est exécuté** ; la dette `D2` reste portée par le Lot 2 (§4.2). **Aucun code avant la ratification du Lot 2** — contrainte d'ordre de `Q1` §4.4 et `Q2` §10. |
 | **Registre** | Chantier **C45** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 | **Autorités amont** | [`arbitrage_mission_arsenal_ouverte_et_session_robot_active.md`](../../02_arbitrages/aspirateur/arbitrage_mission_arsenal_ouverte_et_session_robot_active.md) (`Q1`) · [`arbitrage_projection_mission_arsenal_ouverte_vers_interface.md`](../../02_arbitrages/aspirateur/arbitrage_projection_mission_arsenal_ouverte_vers_interface.md) (`Q2` et décision subsidiaire sur les gestes). |
 | **Constats couverts** | `AUD-ASP-01`, `CC-01`, `RC-02` — **un seul noyau causal** (confrontation §10 et §11), jamais additionnés comme trois écarts. `AUD-ASP-04` — **dette contractuelle locale**, distincte de ce noyau — est **rattaché au Lot 2** par décision rendue (§4.2). |
@@ -252,9 +252,17 @@ décision est acquise et le véhicule n'est plus une option ouverte.**
 | **Traçabilité** | **Conserve** le texte erroné **et** sa correction — l'écart reste lisible, il n'est pas effacé. |
 
 > **Moment d'exécution — opposable.** La rectification est produite **dans le Lot 1 de `C45`**, et
-> **jamais dans la passe d'ouverture du chantier**. Au présent acte, **le document de rectification
-> n'existe pas encore**, et **aucune écriture n'est faite** dans `Q1`, `Q2`, la confrontation ni les
-> rapports historiques.
+> **jamais dans la passe d'ouverture du chantier**. À la passe d'ouverture, **le document de
+> rectification n'existait pas encore**, et **aucune écriture n'a été faite** dans `Q1`, `Q2`, la
+> confrontation ni les rapports historiques.
+
+> **✅ Exécuté au Lot 1 — 2026-09-01.** La rectification existe :
+> [`rectification_cardinal_allowlist_asp_ci_11.md`](../../02_arbitrages/aspirateur/rectification_cardinal_allowlist_asp_ci_11.md),
+> classée dans `02_arbitrages/aspirateur/` aux côtés de `Q1` et `Q2`, **datée**, **limitée** au
+> cardinal « huit » → « neuf », **citant `Q2` §3 fait 7**, et **conservant** le texte erroné à côté
+> de sa correction. Elle **ne rend aucun arbitrage**. `Q1`, `Q2` et les trois rapports historiques
+> sont **prouvés inchangés**. **La décision ci-dessus n'est ni amendée ni rouverte par ce constat
+> d'exécution.**
 
 ### 4.2 D2 — en-tête périmé de `11_automations/aspirateur/notification_mission.yaml`
 
@@ -306,7 +314,14 @@ pas modifié** par le présent acte : sa correction appartient au **Lot 2**, ite
 `L`, `N` et `U` sont celles du cadrage ratifié `D-44`, et en ouvrir une nouvelle serait **attribuer un
 identifiant** que ni `Q1` ni `Q2` n'ont décidé.
 
-### 5.1 Lot 1 — Régularisation documentaire préalable
+### 5.1 Lot 1 — Régularisation documentaire préalable — **EXÉCUTÉ (2026-09-01)**
+
+> **État : exécuté.** Items **1.1**, **1.2** et **1.3** faits. La rectification `D1` est
+> [`rectification_cardinal_allowlist_asp_ci_11.md`](../../02_arbitrages/aspirateur/rectification_cardinal_allowlist_asp_ci_11.md),
+> indexée en section *Arbitrages / Aspirateur* de [`index.md`](../../index.md), la ligne `C45`
+> du [`registre`](../../REGISTRE_CHANTIERS.md) étant mise à jour **au même commit**. **Aucun
+> arbitrage rendu, aucun identifiant attribué, aucune source historique réécrite, et ni
+> `notification_mission.yaml`, ni contrat, ni checker, ni runtime, ni Lovelace touché.**
 
 | Item | Contenu |
 |---|---|
