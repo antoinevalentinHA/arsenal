@@ -145,7 +145,7 @@ Concernés : **`boiler-bridge`** (bus MQTT contractuel avec ACK transactionnel) 
 
 | Dépôt | Type | Domaine Arsenal | Patron | Méthode d'intégration | Criticité |
 |---|---|---|---|---|---|
-| `bluetti-bt-lib` | Bibliothèque Python | `energie_chaudiere` | A | `requirements` du manifeste `bluetti_bt` → wheel de release GitHub | Moyenne (diagnostic) |
+| `bluetti-bt-lib` | Bibliothèque Python | `energie_chaudiere` | A | `requirements` du manifeste `bluetti_bt` → distribution PyPI amont | Moyenne (diagnostic) |
 | `hassio-bluetti-bt` | Intégration HA | `energie_chaudiere` | A | *Vendored* `custom_components/bluetti_bt/` (BLE local) | Moyenne (diagnostic) |
 | `ha_airstage` | Intégration HA | `climatisation` | A | *Vendored* `custom_components/fujitsu_airstage/` (LAN) | Élevée |
 | `ha-linky` | Add-on Supervisor | `energie` | B | Add-on Docker → statistiques long-terme (WebSocket) | Faible (reporting) |
@@ -168,11 +168,11 @@ Arsenal le consomme**. Elle ne redéfinit ni le protocole, ni l'API du satellite
 | Champ | Valeur |
 |---|---|
 | **Objectif** | Communication Bluetooth (BLE) avec les stations d'énergie Bluetti : scan, détection de modèle, lecture (SOC, puissances, tensions), écriture de commandes. |
-| **Propriétaire** | `antoinevalentinHA` — **fork de `Patrick762/bluetti-bt-lib`** (cœur dérivé de `warhammerkid/bluetti_mqtt`). |
+| **Propriétaire** | `Patrick762` (cœur dérivé de `warhammerkid/bluetti_mqtt`). Un fork `antoinevalentinHA` existe et sert de base aux contributions amont, mais **n'est plus dans la chaîne runtime** : Arsenal consomme la distribution PyPI de l'amont. |
 | **Type** | Bibliothèque Python (wheel / sdist installable). |
 | **Domaine Arsenal** | `energie_chaudiere` (Bluetti AC180 — alimentation tampon de la chaîne thermique). |
-| **Méthode d'intégration** | Consommée **indirectement** : le manifeste de `bluetti_bt` la déclare en `requirements` via l'URL d'un wheel de release GitHub. HA l'installe (pip) au montage de l'intégration. |
-| **Stratégie de version** | Épinglage **exact** dans le manifeste : `v1.2.0` (`bluetti_bt_lib-1.2.0-py3-none-any.whl`). Version dérivée à la construction (`LIB_VERSION`). |
+| **Méthode d'intégration** | Consommée **indirectement** : le manifeste de `bluetti_bt` la déclare en `requirements` sous forme de spécificateur PyPI. HA ne l'installe que si la version présente ne satisfait pas le spécificateur (`homeassistant/util/package.py`, `is_installed()`). |
+| **Stratégie de version** | Épinglage **exact** dans le manifeste : `bluetti-bt-lib==0.1.8`, depuis PyPI. Une référence directe par URL a été employée jusqu'au 2026-09-01 ; elle forçait une réinstallation depuis GitHub à **chaque démarrage** de Home Assistant, `is_installed()` renvoyant toujours `False` pour une exigence porteuse d'URL (cf. constat n°6). |
 | **Dépendances** | `bleak`, `bleak-retry-connector`, `cryptography`, `crcmod`, `async-timeout`, `pyasn1`. |
 | **Interfaces exposées** | API Python (communication device) + points d'entrée CLI (`bluetti-scan`, `bluetti-detect`, `bluetti-read`, …). Tables de support par modèle (30+). |
 | **Contrats importants** | Aucun contrat Arsenal interne ; la sémantique métier des mesures est fixée côté Arsenal par [`contrats/bluetti.md`](../contrats/bluetti.md). |
@@ -187,7 +187,7 @@ Arsenal le consomme**. Elle ne redéfinit ni le protocole, ni l'API du satellite
 | **Type** | Intégration Home Assistant (custom component, HACS), domaine `bluetti_bt`. |
 | **Domaine Arsenal** | `energie_chaudiere`. |
 | **Méthode d'intégration** | *Vendored* dans Arsenal sous `custom_components/bluetti_bt/` (chemin runtime). `config_flow`, `iot_class: local_polling`, `dependencies: bluetooth_adapters`, appariement BLE par préfixes de nom (`AC1*`…`PBOX*`). |
-| **Stratégie de version** | `version` du manifeste = `0.2.3` (indépendante de la lib). Épingle `bluetti-bt-lib` en `v1.2.0`. |
+| **Stratégie de version** | `version` du manifeste = `0.2.4` (indépendante de la lib). Épingle `bluetti-bt-lib` en `==0.1.8` (PyPI). |
 | **Dépendances** | `bluetti-bt-lib` (satellite) ; pile Bluetooth de HA. |
 | **Interfaces exposées** | Entités `sensor.bluetti_*` / `binary_sensor.bluetti_*` (SOC, tensions entrée/sortie, puissances, etc.). |
 | **Contrats importants** | Côté Arsenal : [`contrats/bluetti.md`](../contrats/bluetti.md) (§2 fixe les 3 capteurs primaires décisionnels, les états dérivés, la synthèse santé, la politique de notification). L'intégration **produit les capteurs sources** ; Arsenal produit **tout le reste**. |
@@ -336,25 +336,34 @@ Arsenal le consomme**. Elle ne redéfinit ni le protocole, ni l'API du satellite
    incidence documentaire côté Arsenal, la vérité protocolaire restant le bus
    MQTT décrit dans `outils_externes/boiler_pi/`.*
 
-6. **Le manifeste `bluetti_bt` échoue à la validation hassfest.** Le contrôle
-   `[REQUIREMENTS]` rejette la référence directe PEP 508
-   `bluetti-bt-lib @ https://…/bluetti_bt_lib-<version>-py3-none-any.whl`, au
-   motif qu'elle « contient une espace ». C'est la conséquence directe de la
-   stratégie d'épinglage décrite en §4.1 : le fork ne publie pas sur PyPI — le
-   nom du projet appartient à l'amont — et épingle donc l'URL d'un asset de
-   release GitHub, là où l'amont déclare `bluetti-bt-lib==0.1.7`, forme
-   standard qui passe le contrôle. `fujitsu_airstage` n'est pas concerné
-   (`pyairstage>=2.4.1,<3`) : `bluetti_bt` est le seul composant vendorisé à
-   employer cette forme. *Sans incidence runtime* — la référence directe est du
-   PEP 508 valide, `pip` l'installe, et la chaîne fonctionne en production
-   depuis juillet 2026 ; le constat porte sur la **conformité outillage**, pas
-   sur la disponibilité. Y remédier supposerait de publier le fork sous un nom
-   PyPI distinct, soit un changement de modèle de release — hors de portée
-   d'une correction documentaire. Relevé le 2026-09-01 à l'activation des
-   GitHub Actions du fork, restées `disabled_fork` depuis sa création : l'échec
-   préexistait sans être observable. Le workflow *HACS Action* échoue lui aussi,
-   pour des causes distinctes et sans rapport avec Arsenal (dépôt sans topics,
-   absence d'assets de marque).
+6. ~~**Le manifeste `bluetti_bt` échoue à la validation hassfest.**~~ **Résolu
+   le 2026-09-01.** Le contrôle `[REQUIREMENTS]` rejetait la référence directe
+   PEP 508 du manifeste au motif qu'elle « contient une espace ». Le constat a
+   été soldé en supprimant sa cause plutôt qu'en contournant le contrôle :
+   l'épinglage passe désormais par un spécificateur PyPI (cf. §4.1), et le fork
+   de la lib sort de la chaîne runtime.
+
+   L'instruction du constat a mis au jour un défaut plus lourd que celui
+   signalé. `is_installed()` renvoyant toujours `False` pour une exigence
+   porteuse d'URL — « we cannot verify versions, so let the package manager
+   handle it » — Home Assistant réinstallait la bibliothèque depuis GitHub à
+   **chaque démarrage**, le cache du gestionnaire ne vivant que le temps du
+   processus. Une indisponibilité de GitHub à cet instant levait
+   `RequirementsNotFound` et empêchait le chargement de l'intégration. Les
+   planchers de version que portait le fork n'étaient qu'un palliatif de cette
+   résolution par boot ; ils disparaissent avec elle.
+
+   Le fork conserve les gardes `BleakError` autour des écritures du handshake
+   chiffré, proposées en amont (PR #81) et non encore fusionnées : elles ne
+   sont plus chargées en production. Sans elles, une écriture qui échoue expire
+   et réessaie comme auparavant — ce qui est perdu est une ligne de journal
+   claire, pas un comportement de reprise. Numérotation conservée conformément
+   à la règle de §6.
+
+   Le workflow *HACS Action* échouait également, pour deux causes distinctes et
+   sans rapport avec Arsenal — dépôt sans topics et issues désactivées —
+   corrigées le 2026-09-01 dans les réglages du dépôt. L'absence d'assets de
+   marque n'était qu'un avertissement, HACS retombant sur le dépôt `brands`.
 
 ---
 
