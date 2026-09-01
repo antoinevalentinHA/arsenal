@@ -206,6 +206,42 @@ Déclencheurs de réévaluation :
 
 ---
 
+## Instrumentation temporaire de chantier (« microscope »)
+
+Une entité peut être historisée **pour produire une preuve**, et non pour une utilité durable. Cette inclusion est un **microscope** : elle est légitime, et elle est **temporaire par nature**.
+
+> **Un microscope sans date de sortie n'est pas une observation temporaire : c'est une observation permanente qui n'a pas dit son nom.**
+
+### Les six champs obligatoires
+
+Tout bloc de microscope porte les six champs suivants. Aucun n'est facultatif ; un bloc incomplet est **non conforme**.
+
+| Champ | Règle | Rejeté si |
+|---|---|---|
+| **Ajouté** | Date ISO **et** référence de commit ou de PR | `à confirmer`, vide, date sans source vérifiable |
+| **Autorité** | Chemin d'un document **existant** — contrat, chantier inscrit au `REGISTRE_CHANTIERS.md`, ou rapport d'audit. Si un chantier est cité, son ID doit exister | ID inexistant, lot non ordonnancé, renvoi circulaire |
+| **Preuve attendue** | Énoncé **falsifiable** : ce qui doit être observé pour clore. Doit satisfaire `R-VERROU-1` de [`solvabilite_probatoire.md`](../03_doctrines/solvabilite_probatoire.md) — preuve productible **et** conservable | « mieux comprendre », « caler », « observer le comportement » |
+| **Échéance opposable** | Une **date ISO**, ou un **événement objectivement datable** (« clôture de la saison de chauffe 2026-2027 »). Jamais l'événement que l'observation conditionne elle-même | « à la clôture du chantier », « plus tard », « après quelques cycles » |
+| **Action de sortie** | Exactement l'une de : `RETRAIT` · `REQUALIFICATION PERMANENTE` · `TRANSFORMATION` (agrégat, cf. [`fiche_decision.md`](fiche_decision.md) §Transformer) | Absente, ou « rejouer la procédure » sans issue nommée |
+| **Si échéance dépassée** | Règle explicite. Par défaut : **réévaluation propriétaire obligatoire ; reconduction interdite sans nouvelle échéance datée** | Silence |
+
+### Règles d'application
+
+- **Aucune reconduction tacite.** Une échéance dépassée sans acte rend le bloc **non conforme**, jamais « prolongé ».
+- **L'échéance ne peut pas être circulaire.** Conditionner la sortie d'un microscope à la clôture du chantier que ce microscope alimente crée une réserve perpétuelle, **interdite par `R-QUALIF-3`** (« une réserve sans critère de levée — ni date, ni seuil de sortie, ni propriétaire — est interdite : elle est perpétuelle par construction »).
+- **Le coût n'est pas un critère.** Un faible volume ne justifie aucun maintien ; un volume élevé ne justifie aucun retrait. Seuls comptent l'utilité de relecture et l'échéance.
+- **Sortir du régime microscope ≠ sortir du Recorder.** Une entité devenue nécessaire à la relecture d'une décision **active** doit être **requalifiée en observabilité permanente**, avec son motif métier écrit. Le retrait n'est qu'une des trois issues.
+
+### Révision assumée du choix de juin 2026
+
+Le gabarit initial, proposé en Annexe A de [`audit_recorder_instrumentation_temporaire.md`](../../audits/01_rapports/architecture/audit_recorder_instrumentation_temporaire.md), demandait explicitement (§8-S1) *« une condition de réévaluation — pas de date de retrait couperet »*. Ce choix était défendable quand les chantiers concernés étaient récents.
+
+**L'expérience l'a réfuté.** Au 2026-08-31, onze blocs sur quatorze portaient `Réévaluer : à la clôture du chantier`, sans date ni propriétaire, pour une ancienneté de 57 à 65 jours ; aucun n'avait été réexaminé. L'absence de date couperet n'a pas produit de la souplesse, elle a produit une **reconduction tacite**, contraire à `R-QUALIF-3`.
+
+La présente section **remplace** ce gabarit. L'échéance opposable devient obligatoire ; elle reste satisfaite par un **événement datable**, ce qui préserve l'intention d'origine — ne pas retirer une observation utile au milieu d'un chantier — sans en conserver l'effet de dérive.
+
+---
+
 ## Principe de filtrage
 
 **Allowlist stricte** : tout est exclu par défaut. Inclusion explicite uniquement, justification obligatoire.

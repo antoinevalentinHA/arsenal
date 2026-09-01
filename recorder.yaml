@@ -346,19 +346,45 @@ include:
     # fenêtres de fraîcheur, comportement du Point 2) — cf. contrats/arrosage
     # 13/14/15 et audits/02_conception/arrosage/plan_observation_hydrique_v0.
     # Observation / diagnostic uniquement — aucune recommandation, aucune action.
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
-    # Chantier   : Arrosage — plan d'observation hydrique v0, canal réservoir sol (contrats/arrosage 13/14/15)
-    # Ajouté     : à confirmer
-    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
-    #              (rester en observabilité permanente OU retirer le microscope).
-    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
+    # ✅ OBSERVABILITÉ PERMANENTE — entrées de la décision d'arrosage V1
+    # Autorité   : contrats/arrosage/15_canal_reservoir_sol.md · 17_decision_v1.md §102/§103/§138
+    # Motif      : la médiane EST l'entrée comparée au seuil (`mediane < seuil`) ; les
+    #              points frais portent le gate d'exploitabilité (< 2 points ⇒ abstention) ;
+    #              le seuil est le paramètre de comparaison. Sans ces trois grandeurs,
+    #              une décision d'arrosage n'est pas relisible a posteriori.
+    # ⚠️ Couplage C43 : la justification A6 de C43 — retrait de l'attribut `mediane`
+    #              de binary_sensor.arrosage_besoin_sol — repose sur le fait que
+    #              sensor.jardin_humidite_sol_mediane est lui-même historisé. Retirer
+    #              cette entité invaliderait rétroactivement ce retrait.
+    # Ex-microscope : ajouté 2026-06-27 (737c60a0, PR #103), requalifié C44 le 2026-08-31.
     - sensor.jardin_humidite_sol_mediane
+    #
+    # ⏳ MICROSCOPE — observation exploratoire de dispersion (2 entités ci-dessous)
+    # Ajouté       : 2026-06-27 (737c60a0, PR #103)
+    # Autorité     : audits/02_conception/arrosage/plan_observation_hydrique_v0.md §4
+    # Preuve       : caractérisation du point sec et de la dispersion inter-sondes ;
+    #                statut d'entrée du « gate point sec » évoqué en T05, à confirmer.
+    # Échéance     : 2026-10-31 — opposable (fin de saison d'arrosage)
+    # Sortie       : RETRAIT si le statut d'entrée n'est pas établi ;
+    #                REQUALIFICATION PERMANENTE s'il l'est.
+    # Dépassement  : réévaluation propriétaire obligatoire, aucune reconduction tacite.
     - sensor.jardin_humidite_sol_minimum
     - sensor.jardin_humidite_sol_heterogeneite
+    #
+    # ✅ OBSERVABILITÉ PERMANENTE (suite) — gate d'exploitabilité de la médiane
     - sensor.jardin_humidite_sol_points_frais
+    #
+    # ⏳ MICROSCOPE (suite du bloc ci-dessus) — état qualitatif exploratoire
+    # Les six champs sont ceux du bloc MICROSCOPE de ce même canal : ajouté 2026-06-27
+    # (737c60a0, PR #103) · autorité plan_observation_hydrique_v0.md §4 · preuve = statut
+    # exploratoire à confirmer · échéance 2026-10-31 opposable · sortie RETRAIT ou
+    # REQUALIFICATION · dépassement = réévaluation obligatoire, aucune reconduction tacite.
     - sensor.jardin_reservoir_sol_etat
-    # Seuil de déclenchement V1 : historisé pour tracer la ligne de référence
-    # sur le graphe humidité sol (dashboard arrosage). Réglage durable, pas une action.
+    #
+    # ✅ OBSERVABILITÉ PERMANENTE — paramètre de la décision V1 (contrat 17 §138)
+    # Ajouté     : 2026-06-28, commit distinct « graphe humidité du sol au dashboard » —
+    #              motif d'origine UI ; requalifié C44 sur son rôle réel de seuil comparé.
+    # Motif      : sans le seuil historisé, le franchissement n'est pas rejouable.
     - input_number.arrosage_seuil_humidite_declenchement
 
     # =====================================================
@@ -371,12 +397,17 @@ include:
     # audits/02_conception/arrosage/plan_observation_hydrique_v0.
     # Observation / diagnostic uniquement — aucune recommandation, aucune
     # action ; aucune logique métier ne lit cet historique (§Indépendance).
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
-    # Chantier   : Arrosage — plan d'observation hydrique v0, canal demande climatique (contrat arrosage 16)
-    # Ajouté     : VPD #215, 2026-07-01 (ET₀ / état : même chantier)
-    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
-    #              (rester en observabilité permanente OU retirer le microscope).
-    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
+    # ✅ OBSERVABILITÉ PERMANENTE — entrées du moteur climatique de C11
+    # Autorité   : contrats/arrosage/16_canal_demande_climatique.md · 19_modulation_duree.md
+    # Motif      : ET₀ et VPD déterminent `climat_statut = demande_forte` (ET₀ ≥ 6,0 OU
+    #              VPD ≥ 2,3), qui commande l'allongement de durée. L'état du canal
+    #              explique les `abstention_climat`. Ce ne sont plus des grandeurs
+    #              d'observation : ce sont des entrées de décision.
+    # Ex-microscope : ajouté 2026-07-01 (9fecb78f, PR #215) — les TROIS entités dans le
+    #              même commit, contrairement à la mention antérieure qui ne datait que le VPD.
+    # Note       : l'audit d'instrumentation temporaire de juin 2026 (§8-S3) désignait le VPD
+    #              « candidat n°1 au retrait post-chantier ». La mesure du 2026-08-31 a
+    #              renversé ce verdict — c'est l'application de son propre §S5.
     #
     # RECORDER — Population B
     # Rôle      : ET₀ de référence journalière (Hargreaves-Samani, contrat 16 §2)
@@ -417,12 +448,12 @@ include:
     # Entités existantes, lecture seule, faible volume. Aucun seuil ni logique
     # modifié. Les helpers de réglage (hystérésis / intervalle / fenêtre) sont
     # volontairement EXCLUS (variation rare, faible valeur d'historisation).
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
-    # Chantier   : Arrosage — observabilité chaîne décisionnelle V1 (besoin → intention → effectif)
-    # Ajouté     : à confirmer
-    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
-    #              (rester en observabilité permanente OU retirer le microscope).
-    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
+    # ✅ OBSERVABILITÉ PERMANENTE — chaîne décisionnelle d'arrosage
+    # Autorité   : contrats/arrosage/17_decision_v1.md
+    # Motif      : même patron que les blocs clim et chauffage « observabilité de chaîne
+    #              décisionnelle », qui sont permanents. Le classement temporaire de ce
+    #              bloc était une incohérence de traitement entre domaines.
+    # Ex-microscope : ajouté 2026-06-28 (f54a4b47, PR #134), requalifié C44 le 2026-08-31.
     - binary_sensor.arrosage_besoin_sol
     - binary_sensor.arrosage_intention
     - sensor.arrosage_dernier_effectif
@@ -447,12 +478,12 @@ include:
     #      BASE que la future modulation bornée fera varier — son historisation
     #      est donc directement utile à l'observation. Lecture seule ; aucune
     #      logique métier ne lit cet historique (invariant d'indépendance).
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
-    # Chantier   : Arrosage — durée de base appliquée, prérequis futur chantier « durée variable » (C11, prérequis P1)
-    # Ajouté     : #218, 2026-07-01
-    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
-    #              (rester en observabilité permanente OU retirer le microscope).
-    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
+    # ✅ OBSERVABILITÉ PERMANENTE — référence de la modulation de durée
+    # Autorité   : contrats/arrosage/19_modulation_duree.md
+    # Motif      : c'est la BASE contre laquelle la modulation C11 mesure ses réductions
+    #              et allongements. Sans elle, `duree_applicable` n'est pas interprétable.
+    # Ex-microscope : ajouté 2026-07-01 (PR #218). La mention « futur chantier » était
+    #              obsolète : C11 est actif et sa modulation est livrée depuis 2026-07-29.
     - input_number.arrosage_rainbird_station_1_duree_minutes
 
     # =====================================================
@@ -467,16 +498,30 @@ include:
     # Observation / diagnostic uniquement — aucune logique métier ne lit
     # cet historique. Écritures rares (quelques-unes par session, ≤ 1/j
     # en nominal V1) : volume négligeable.
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
-    # Chantier   : Arrosage — audit exécutions longues, Lot B (observabilité session)
-    # Ajouté     : Lot B, 2026-07-05
-    # Réévaluer  : à la clôture du chantier de refonte (Lots C-G) — rejouer la
-    #              procédure de classification (rester en observabilité
-    #              permanente OU retirer le microscope).
-    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
+    # ✅ OBSERVABILITÉ PERMANENTE — minimum de relecture d'une session d'arrosage
+    # Autorité   : audits/01_rapports/arrosage/audit_arrosage_executions_longues_rain_bird.md §7-§8
+    # Motif      : état, ouverture, verdict, début et fin réelle constituent le minimum
+    #              permettant de relire APRÈS COUP une session (nominale, interrompue,
+    #              anomalie) — objet même de l'audit. La durée figée est de surcroît
+    #              consommée par C11 (contrat 19).
+    # Ex-microscope : ajouté 2026-07-05 (PR #277), requalifié C44 le 2026-08-31.
+    # ⚠️ Découplage : la sortie était conditionnée à « la clôture du chantier de refonte
+    #              (Lots C-G) ». Ces lots sont un PLAN INTERNE à l'audit §8, jamais promus :
+    #              ni ligne de registre, ni document de chantier. Conditionner une sortie
+    #              à un travail non ordonnancé est une réserve perpétuelle, interdite par
+    #              R-QUALIF-3. Le Lot B est soldé et se suffit.
     - binary_sensor.arrosage_session_en_cours
     - sensor.arrosage_session_etat
     - input_datetime.arrosage_session_debut
+    #
+    # ⏳ MICROSCOPE — seule entité réellement exploratoire du bloc
+    # Ajouté       : 2026-07-05 (PR #277)
+    # Autorité     : audit exécutions longues §7-§8
+    # Preuve       : néant — la valeur est DÉRIVABLE exactement (début + durée figée),
+    #                toutes deux historisées ci-dessus.
+    # Échéance     : 2026-10-31 — opposable
+    # Sortie       : RETRAIT
+    # Dépassement  : réévaluation propriétaire obligatoire, aucune reconduction tacite.
     - input_datetime.arrosage_session_fin_prevue
     - input_datetime.arrosage_session_fin_observee
     - input_number.arrosage_session_duree_minutes
@@ -508,14 +553,21 @@ include:
     # Logbook   : acceptable — décision à quelques MAJ/h (médiane/base/contrôle) ;
     #             booléen et motif de session à changements rares.
     # NB : lecture seule ; aucune logique métier ne lit cet HISTORIQUE recorder.
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
-    # Chantier   : C11 P4 — modulation bornée de durée, validation runtime du branchement (L2/L4)
-    # Ajouté     : 2026-07-29 (L3)
-    # Réévaluer  : à la validation runtime (L4) — RÉÉVALUATION propriétaire
-    #              OBLIGATOIRE : maintien motivé · retrait · modification de la
-    #              stratégie de preuve. Aucun maintien silencieux au-delà.
-    # Retrait    : dès preuves runtime acquises (réduction, retour base, cohérence,
-    #              non-altération) ET P4 clôturé.
+    # ✅ OBSERVABILITÉ PERMANENTE — trace de la décision de durée
+    # Autorité   : contrats/arrosage/19_modulation_duree.md §12
+    # Motif      : aucune de ces trois entités n'est purement probatoire. La décision de
+    #              durée, son motif figé consommé par le Run et son interrupteur
+    #              d'activation SONT la trace vivante de la décision : sans elles, on ne
+    #              peut pas relire pourquoi un arrosage a duré ce qu'il a duré.
+    # Ex-microscope : ajouté 2026-07-29 (L3), requalifié C44 le 2026-08-31.
+    # Réserve structurelle P4 (mesurée le 2026-08-31, base recorder_20260831.db) :
+    #              trois des quatre preuves §12 sont acquises. La quatrième — motif
+    #              d'allongement CONSOMMÉ par un Run réel — n'est pas solvable au
+    #              déclenchement de 05:30 : `climat_statut = demande_forte` n'apparaît
+    #              jamais avant 12 h (158 occurrences, 0 sur 69 points de décision à 05 h)
+    #              et les 16 arrosages réels sont tous à 05:30-05:56. Qualifiée NON
+    #              BLOQUANTE au titre de R-VERROU-1 (preuve non productible en
+    #              observation naturelle). Clôture de P4 proposée sur cette base — cf. C44.
     - input_boolean.arrosage_modulation_duree_actif
     - sensor.arrosage_modulation_duree_applicable
     - input_text.arrosage_session_modulation_motif
@@ -571,7 +623,16 @@ include:
     # Cardinalité : finie et énumérable (2 binaires, 1 verdict énuméré, 1 horodatage,
     #               1 réglage numérique borné).
     # Fréquence   : très faible, largement en deçà du seuil de 5 changements/heure.
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # ✅ OBSERVABILITÉ PERMANENTE — minimum de relecture de la politique COOL
+    # Autorité   : contrats/climatisation/15_absence_vacances_veto_cool.md
+    # Motif      : le verdict COOL, le veto composite et sa cause, l'ancre horodatée et
+    #              la durée réglable sont le minimum sans lequel une décision d'extinction
+    #              n'est plus relisible ni recalculable. Ils restent historisés au-delà
+    #              de la clôture de C20.
+    # Ex-microscope (partiel) : ajouté 2026-07-19 (T0), requalifié C44 le 2026-08-31.
+    # Le seul reste TEMPORAIRE du bloc est signalé plus bas.
+    #
+    # ⏳ MICROSCOPE (portée résiduelle du Lot 5) — cf. entité signalée ci-dessous
     # Chantier   : C20 — Politique d'absence COOL (Lot 5, validation terrain)
     # Objet      : rendre exerçables les scénarios S1–S11 du protocole, dont la trace
     #              §4 exige explicitement l'Historique. Les événements set_datetime /
@@ -579,16 +640,24 @@ include:
     #              ils datent une écriture, ils ne restituent ni une valeur avant/après
     #              ni un attribut.
     # Ajouté     : 2026-07-19 (T0)
-    # Réévaluer  : 2026-11-16 (T0 + 120 j) — RÉÉVALUATION propriétaire OBLIGATOIRE,
-    #              PAS une suppression automatique : maintien motivé · retrait ·
+    # Autorité   : audits/04_chantiers/climatisation/protocole_validation_terrain_absence_cool.md §4
+    #              et contrats/climatisation/15_absence_vacances_veto_cool.md
+    # Preuve     : scénarios S7/S8 du protocole §4 — modification du helper de durée
+    #              PENDANT une absence active (baisse puis hausse). 9/12 scénarios sont
+    #              PASS ; S7/S8 exigent un geste opérateur qu'aucun historique passif ne
+    #              produira (durée constante à 14.0 sur trois passes successives).
+    # Dépassement : réévaluation propriétaire obligatoire — maintien motivé · retrait ·
     #              modification de la stratégie de preuve · autorisation d'un test
-    #              provoqué. Aucun maintien silencieux au-delà. Rejouer la procédure
-    #              de classification (observabilité permanente OU retrait du microscope).
-    # Retrait    : dès trace §4 complète ET chantier C20 clôturé
+    #              provoqué. Aucune reconduction tacite au-delà du 2026-11-16.
+    # Sortie     : RETRAIT de la seule binary_sensor.clim_extinction_absence_prolongee_autorisee
+    #              dès trace §4 complète ET C20 clôturé. Les quatre autres entités du bloc
+    #              sont requalifiées PERMANENTES (ci-dessus) et ne sont pas concernées.
+    # Échéance   : 2026-11-16 — opposable ; aucune reconduction tacite au-delà.
     # Rappel     : purge_keep_days = 30 j. Tout scénario observé doit être consigné
     #              dans la trace §4 sous 30 j ; au-delà, la preuve relève d'une analyse
     #              hors ligne sur sauvegarde (canal probatoire, dépôt d'audit runtime).
     - binary_sensor.clim_veto_absence_vacances
+    # ⏳ TEMPORAIRE — preuve S1-S11 ; état redérivable de l'ancre et de la durée
     - binary_sensor.clim_extinction_absence_prolongee_autorisee
     - input_datetime.clim_debut_absence
     - input_number.clim_duree_absence_longue
@@ -596,23 +665,34 @@ include:
     # ---- Intensité du besoin de froid (couche perception, contrat 13) ----
     # Observationnel : caler les bandes et vérifier l'effet nuit (C2) avant
     # tout câblage. Lecture seule, aucun pilotage.
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
-    # Chantier   : Clim — perception besoin de froid (contrat 13), calage des bandes avant câblage (C2)
-    # Ajouté     : à confirmer
-    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
-    #              (rester en observabilité permanente OU retirer le microscope).
-    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
+    # ✅ OBSERVABILITÉ PERMANENTE — perception alimentant une décision câblée
+    # Autorité   : contrats/climatisation/13_intensite_besoin_froid.md (perception)
+    #              et 14_recommandation_ventilation.md §42/§92 (résolution câblée)
+    # Motif      : `clim_intensite_besoin_froid_niveau` est le MOTEUR de la recommandation
+    #              de ventilation, désormais câblée ; `clim_intensite_besoin_froid` en est
+    #              la source numérique amont (x). La clause « calés empiriquement avant
+    #              tout câblage » du contrat 13 §31-32 est SOLDÉE : le câblage a eu lieu.
+    # Ex-microscope : ajouté 2026-06-23 (a05c3d22), requalifié C44 le 2026-08-31.
+    # ⚠️ Correction : la mention « (C2) » renvoyait à un chantier INEXISTANT au registre.
+    #              Supprimée ; les autorités réelles sont les deux contrats ci-dessus.
     - sensor.clim_intensite_besoin_froid
     - sensor.clim_intensite_besoin_froid_niveau
     # ---- Recommandation diagnostique ventilation (contrat 14) ----
     # Observationnel : observer ce que ferait une logique automatique
     # future (besoin → vitesse). Lecture seule, aucun pilotage.
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
-    # Chantier   : Clim — recommandation diagnostique ventilation (contrat 14), logique automatique future
-    # Ajouté     : à confirmer
-    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
-    #              (rester en observabilité permanente OU retirer le microscope).
-    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
+    # ✅ OBSERVABILITÉ PERMANENTE — l'entité PILOTE
+    # Autorité   : contrats/climatisation/14_recommandation_ventilation.md (v2.0)
+    # Motif      : le contrat 14 v2.0 acte que « la résolution est désormais câblée ».
+    #              11_automations/climatisation/ventilation/application_mode.yaml SE
+    #              DÉCLENCHE sur cette entité (trigger state) et LIT son attribut
+    #              `mode_technique` pour commander la ventilation. Historiser une entité
+    #              qui commande est requis pour relire une exécution.
+    # Ex-microscope : ajouté 2026-06-23 (c2a18748), requalifié C44 le 2026-08-31.
+    # ⚠️ Correction : les mentions « logique automatique future » et « aucun pilotage »
+    #              étaient devenues FACTUELLEMENT FAUSSES au câblage. Retirées.
+    # Réserve    : redondance partielle avec sensor.clim_ventilation_diagnostic
+    #              (permanent), qui expose déjà `recommande` / `recommande_technique`
+    #              en attributs — à instruire hors de ce lot documentaire.
     - sensor.clim_fan_mode_recommande
     # ---- Diagnostic ventilation (synthèse conformité réel/recommandé) ----
     # Observabilité dashboard : verdict + cause d'écart. Lecture seule.
@@ -659,16 +739,28 @@ include:
     #             + LTS horaire conservée.
     # Critère d'acceptabilité logbook confirmé : oui
     # Validé le : 2026-07-19
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # ⏳ MICROSCOPE — instrumentation temporaire de chantier
     # Chantier   : C22 — Éclairage séjour, extinction sur luminosité réelle (validation terrain §5)
+    # Autorité   : audits/04_chantiers/eclairage/chantier_extinction_luminosite_sejour.md §5
     # Objet      : rendre exerçables les deux questions ouvertes du §5 (fidélité
     #              du proxy garage ; calibration du seuil) qui exigent l'historique lux.
     # Ajouté     : 2026-07-19 (T0) — activation effective au reload recorder / redémarrage HA
-    # Réévaluer  : à la calibration du seuil (après quelques cycles jour/nuit) —
-    #              RÉÉVALUATION propriétaire OBLIGATOIRE, PAS une suppression
-    #              automatique : rejouer la procédure de classification
-    #              (observabilité permanente OU retrait du microscope).
-    # Retrait    : dès seuil calibré ET chantier C22 clôturé.
+    # Preuve     : courbe lux hivernale — au moins 5 cycles jour/nuit de météo variée
+    #              (claire ET couverte) dans la période la plus sombre, pour statuer si
+    #              le seuil de 50 lx est franchi en hiver et où se situe le recouvrement
+    #              aube ↔ midi couvert. L'étalon de suffisance est celui du chantier
+    #              lui-même (§5ter : 5 cycles variés jugés défendables, 1 seul insuffisant).
+    # Fenêtre    : enregistrement continu 2026-12-01 → 2027-01-31 (encadre le solstice
+    #              du 21/12). Les LTS horaires n'étant PAS purgées, l'analyse de
+    #              calibration peut être conduite APRÈS le retrait, hors ligne.
+    # Échéance   : 2027-02-07 — opposable
+    # Sortie     : RETRAIT dès seuil statué ET C22 clôturé ; si 50 lx n'est jamais
+    #              franchi en hiver, acter « seuil actif l'été » et retirer.
+    # Dépassement : réévaluation propriétaire obligatoire, aucune reconduction tacite.
+    # Note       : ce bloc est le poste le plus lourd du recorder (~9 % de la base) et
+    #              son churn est quasi nul — c'est du signal réel, non compressible.
+    #              Conformément au contrat §Instrumentation temporaire, ce volume n'est
+    #              NI un motif de retrait, NI un motif de maintien.
     - sensor.luminosite_garage_illuminance
 
     # =====================================================
@@ -978,12 +1070,20 @@ include:
     #   reconstitution de l'incident a dû passer par la table `events` SQLite,
     #   faute d'historisation des termes de décision. Concrétise la phase P3
     #   (Persistance) du plan d'action observabilité — contrat 76.
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # ⏳ MICROSCOPE — instrumentation temporaire de chantier
     # Chantier   : Chauffage — auto-ajustement courbe, phase P3 (persistance des termes de décision), contrat 76 — origine incident D-CRIT-1 (16/06/2026)
-    # Ajouté     : à confirmer
-    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
-    #              (rester en observabilité permanente OU retirer le microscope).
-    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
+    # Ajouté     : 2026-06-17 (c86b92f8)
+    # Autorité   : chantier C5 — audits/04_chantiers/chauffage/ch_observabilite_auto_ajustement_courbe.md
+    #              (« Ouvert — P1-P7 réalisées ; P8-P9 restantes ») ; contrat
+    #              contrats/chauffage/76_observabilite_auto_ajustement_courbe.md §11
+    # Preuve     : les six points de validation du contrat 76 §11, dont le n°5 —
+    #              « exposer la trajectoire confirmée de la courbe sur au moins un
+    #              CYCLE SAISONNIER ». Ces entités sont le substrat de cette validation :
+    #              les retirer avant P8 rendrait P8 impossible.
+    # Échéance   : 2027-04-30 — opposable (clôture de la saison de chauffe 2026-2027,
+    #              premier moment où le critère « cycle saisonnier » est atteignable)
+    # Sortie     : REQUALIFICATION PERMANENTE ou RETRAIT, à statuer après P8 puis P9.
+    # Dépassement : réévaluation propriétaire obligatoire, aucune reconduction tacite.
     #
     # RECORDER — Population B (registre de décision, faible fréquence)
     # Principe : on historise les ENTRÉES de garde et le RÉSULTAT appliqué.
@@ -1028,12 +1128,20 @@ include:
     #   Étanchéité (INV-2) : sorties d'observabilité pures, jamais relues
     #     par la décision. Écrites par l'automation consommatrice
     #     `chauffage_observabilite_courbe_completude_apprentissage`.
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # ⏳ MICROSCOPE — instrumentation temporaire de chantier
     # Chantier   : Chauffage — auto-ajustement courbe, phase P4 (complétude & statut apprenant), contrat 76 §4/§8
     # Ajouté     : #227, 2026-07-02
-    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
-    #              (rester en observabilité permanente OU retirer le microscope).
-    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
+    # Autorité   : chantier C5 — audits/04_chantiers/chauffage/ch_observabilite_auto_ajustement_courbe.md
+    #              (« Ouvert — P1-P7 réalisées ; P8-P9 restantes ») ; contrat
+    #              contrats/chauffage/76_observabilite_auto_ajustement_courbe.md §11
+    # Preuve     : les six points de validation du contrat 76 §11, dont le n°5 —
+    #              « exposer la trajectoire confirmée de la courbe sur au moins un
+    #              CYCLE SAISONNIER ». Ces entités sont le substrat de cette validation :
+    #              les retirer avant P8 rendrait P8 impossible.
+    # Échéance   : 2027-04-30 — opposable (clôture de la saison de chauffe 2026-2027,
+    #              premier moment où le critère « cycle saisonnier » est atteignable)
+    # Sortie     : REQUALIFICATION PERMANENTE ou RETRAIT, à statuer après P8 puis P9.
+    # Dépassement : réévaluation propriétaire obligatoire, aucune reconduction tacite.
     #
     # Marqueur du dernier cycle évalué — socle de la complétude (§8)
     - input_datetime.chauffage_courbe_dernier_cycle
@@ -1068,12 +1176,20 @@ include:
     #     décision (garde `check_chauffage_courbe_etancheite_contracts.py`). Les
     #     grandeurs intermédiaires perdables (dernier_sens_*, refus_consecutifs)
     #     ne sont volontairement PAS historisées (CR-8).
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # ⏳ MICROSCOPE — instrumentation temporaire de chantier
     # Chantier   : Chauffage — auto-ajustement courbe, phase P5 (dérivation diagnostic), contrat 76 §3 Q6/Q8
     # Ajouté     : #236, 2026-07-02
-    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
-    #              (rester en observabilité permanente OU retirer le microscope).
-    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
+    # Autorité   : chantier C5 — audits/04_chantiers/chauffage/ch_observabilite_auto_ajustement_courbe.md
+    #              (« Ouvert — P1-P7 réalisées ; P8-P9 restantes ») ; contrat
+    #              contrats/chauffage/76_observabilite_auto_ajustement_courbe.md §11
+    # Preuve     : les six points de validation du contrat 76 §11, dont le n°5 —
+    #              « exposer la trajectoire confirmée de la courbe sur au moins un
+    #              CYCLE SAISONNIER ». Ces entités sont le substrat de cette validation :
+    #              les retirer avant P8 rendrait P8 impossible.
+    # Échéance   : 2027-04-30 — opposable (clôture de la saison de chauffe 2026-2027,
+    #              premier moment où le critère « cycle saisonnier » est atteignable)
+    # Sortie     : REQUALIFICATION PERMANENTE ou RETRAIT, à statuer après P8 puis P9.
+    # Dépassement : réévaluation propriétaire obligatoire, aucune reconduction tacite.
     #
     # Dérive nette confirmée pente / parallèle sur fenêtre saison (Q6, INV-6)
     - sensor.chauffage_courbe_derive_pente
@@ -1104,12 +1220,20 @@ include:
     #     liste fermée étendue). Les métriques de régulation restent RÉFÉRENCÉES
     #     EN PLACE (déjà historisées) ; les tendances intermédiaires
     #     (abs_ecart_*, err_delta/niveau_*) ne sont PAS historisées (CR-3/CR-8).
-    # ⏳ GOUVERNANCE TEMPORELLE — instrumentation de chantier (microscope)
+    # ⏳ MICROSCOPE — instrumentation temporaire de chantier
     # Chantier   : Chauffage — auto-ajustement courbe, phase P6 (effet / fenêtre régime), contrat 76 §3 Q5
     # Ajouté     : #237, 2026-07-02
-    # Réévaluer  : à la clôture du chantier — rejouer la procédure de classification
-    #              (rester en observabilité permanente OU retirer le microscope).
-    # Ne pas retirer tant que le chantier est actif (valeur diagnostique prioritaire).
+    # Autorité   : chantier C5 — audits/04_chantiers/chauffage/ch_observabilite_auto_ajustement_courbe.md
+    #              (« Ouvert — P1-P7 réalisées ; P8-P9 restantes ») ; contrat
+    #              contrats/chauffage/76_observabilite_auto_ajustement_courbe.md §11
+    # Preuve     : les six points de validation du contrat 76 §11, dont le n°5 —
+    #              « exposer la trajectoire confirmée de la courbe sur au moins un
+    #              CYCLE SAISONNIER ». Ces entités sont le substrat de cette validation :
+    #              les retirer avant P8 rendrait P8 impossible.
+    # Échéance   : 2027-04-30 — opposable (clôture de la saison de chauffe 2026-2027,
+    #              premier moment où le critère « cycle saisonnier » est atteignable)
+    # Sortie     : REQUALIFICATION PERMANENTE ou RETRAIT, à statuer après P8 puis P9.
+    # Dépassement : réévaluation propriétaire obligatoire, aucune reconduction tacite.
     #
     # Effet borné par régime (Q5, INV-4) — corrélation de fenêtre, jamais causal
     - sensor.chauffage_courbe_effet_pente

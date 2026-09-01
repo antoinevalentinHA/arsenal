@@ -207,6 +207,19 @@ l'arrosage sur les idiomes maison, pas d'inventer.
 11. **Delta humidité post-session** : purement **informatif** (jamais une
     preuve, jamais une condition) — prolonge l'échelle de preuve graduée.
 
+> **Note de gouvernance (2026-08-31, chantier C44) — découplage du Lot B.**
+> L'observabilité de session livrée par le **Lot B** était historisée sous une sortie Recorder
+> conditionnée à « la clôture du chantier de refonte (Lots C-G) ». Or les **Lots C-G de ce §8 n'ont
+> jamais été promus** : ils n'ont ni ligne au [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md),
+> ni document de chantier. Conditionner une sortie à un travail non ordonnancé constitue une réserve
+> perpétuelle, **interdite par `R-QUALIF-3`**.
+> **Le Lot B est soldé et se suffit** : sa sortie Recorder est désormais **découplée** des Lots C-G.
+> Six de ses sept entités sont requalifiées en **observabilité permanente** (état, session en cours,
+> verdict, début, fin observée, durée figée) — elles constituent le minimum de relecture d'une session.
+> Seule `input_datetime.arrosage_session_fin_prevue` reste un microscope, **échéance opposable
+> 2026-10-31**, car exactement dérivable de `début + durée figée`.
+> Ce §8 conserve toute sa valeur de plan ; il ne conditionne simplement plus une sortie Recorder.
+
 ## 8. Plan de refonte par lots
 
 | Lot | Objectif | Périmètre probable | Risque | Prérequis | Tests attendus |
