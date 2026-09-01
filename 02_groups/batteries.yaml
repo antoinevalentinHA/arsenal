@@ -44,6 +44,7 @@ batteries:
     - sensor.netatmo_homekit_jardin_no_batterie
     - sensor.bobst_102_exterieur_so_batterie
     - sensor.komori_exterieur_no_batterie
+    - sensor.bouton_chambre_enfants_battery
     - sensor.bouton_cuisine_battery
     - sensor.bouton_garage_1_battery
     - sensor.bouton_garage_2_battery

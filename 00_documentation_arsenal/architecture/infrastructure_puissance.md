@@ -43,6 +43,7 @@ Alimentées directement par le secteur, **sans secours UPS ni Bluetti**. Pendant
 | `switch.prise_lampe_sejour` | Lumière séjour | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
 | `switch.prise_sejour_baies_vitrees` | Lumière (baies vitrées) | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
 | `switch.prise_lampe_parents` | Lampe chambre parents | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
+| `switch.prise_lampe_chambre_enfants` | Lampe chambre Enfants | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
 | `switch.prise_jardin` | Éclairage jardin | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
 | `switch.prise_refrigerateur` | Réfrigérateur | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
 | `switch.prise_lave_vaisselle` | Lave-vaisselle | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
