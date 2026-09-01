@@ -336,6 +336,26 @@ Arsenal le consomme**. Elle ne redéfinit ni le protocole, ni l'API du satellite
    incidence documentaire côté Arsenal, la vérité protocolaire restant le bus
    MQTT décrit dans `outils_externes/boiler_pi/`.*
 
+6. **Le manifeste `bluetti_bt` échoue à la validation hassfest.** Le contrôle
+   `[REQUIREMENTS]` rejette la référence directe PEP 508
+   `bluetti-bt-lib @ https://…/bluetti_bt_lib-<version>-py3-none-any.whl`, au
+   motif qu'elle « contient une espace ». C'est la conséquence directe de la
+   stratégie d'épinglage décrite en §4.1 : le fork ne publie pas sur PyPI — le
+   nom du projet appartient à l'amont — et épingle donc l'URL d'un asset de
+   release GitHub, là où l'amont déclare `bluetti-bt-lib==0.1.7`, forme
+   standard qui passe le contrôle. `fujitsu_airstage` n'est pas concerné
+   (`pyairstage>=2.4.1,<3`) : `bluetti_bt` est le seul composant vendorisé à
+   employer cette forme. *Sans incidence runtime* — la référence directe est du
+   PEP 508 valide, `pip` l'installe, et la chaîne fonctionne en production
+   depuis juillet 2026 ; le constat porte sur la **conformité outillage**, pas
+   sur la disponibilité. Y remédier supposerait de publier le fork sous un nom
+   PyPI distinct, soit un changement de modèle de release — hors de portée
+   d'une correction documentaire. Relevé le 2026-09-01 à l'activation des
+   GitHub Actions du fork, restées `disabled_fork` depuis sa création : l'échec
+   préexistait sans être observable. Le workflow *HACS Action* échoue lui aussi,
+   pour des causes distinctes et sans rapport avec Arsenal (dépôt sans topics,
+   absence d'assets de marque).
+
 ---
 
 ## 7. Renvois
