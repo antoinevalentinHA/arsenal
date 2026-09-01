@@ -13,6 +13,15 @@
 #   - clés réseau Zigbee: GENERATE (générées au premier démarrage)
 # Le bloc devices/groups documente le parc réel : les friendly_name sont
 # la source des IDs Home Assistant et ne doivent pas être modifiés.
+#
+# Le sens d'autorité est unique : le terrain fait foi, le miroir le suit.
+# On ne renomme JAMAIS un appareil Zigbee2MQTT pour le faire coïncider avec
+# ce fichier. Le nom porté ici est le friendly_name réel publié par
+# zigbee2mqtt/bridge/devices ; l'IEEE est la clé d'identité physique.
+# Ce nom de transport est indépendant du nom de l'appareil côté Home
+# Assistant et des entity_id : leurs divergences sont normales et ne
+# constituent pas un écart à corriger.
+# Dernière réconciliation terrain : 2026-09-01 — 70 appareils confrontés.
 # =====================================================================
 version: 5
 mqtt:
@@ -74,9 +83,9 @@ devices:
   '0x00158d008b319385':
     friendly_name: contact_garage_1
   '0x00158d008b3335e4':
-    friendly_name: contact_sejour_1
+    friendly_name: capteur_fenetre_sejour_1
   '0x00158d008b3d6672':
-    friendly_name: contact_sejour_4
+    friendly_name: capteur_fenetre_sejour_4
   '0x00158d000587d91a':
     friendly_name: contact_chambre_parents_milieu_1
   '0x00158d0009ce23cd':
@@ -124,9 +133,9 @@ devices:
   '0xa4c138c2e05f38ce':
     friendly_name: prise_chambre_enfants_2
   '0x00158d008b32f9a2':
-    friendly_name: contact_sejour_3_1
+    friendly_name: capteur_fenetre_sejour_3_1
   '0x00158d008b318515':
-    friendly_name: contact_sejour_2
+    friendly_name: capteur_fenetre_sejour_2
   '0x00158d008b61822c':
     friendly_name: contact_chambre_parents_gauche_1
   '0x00158d008b7e73ef':
@@ -140,7 +149,7 @@ devices:
   '0xb43522fffec95a3b':
     friendly_name: meteo_zigbee_sdb_parents
   '0xc4d8c8fffe4b2efe':
-    friendly_name: contact_sejour_3_2
+    friendly_name: capteur_fenetre_sejour_3_2
   '0xc4d8c8fffe4b2eec':
     friendly_name: contact_garage_2
   '0xc09b9efffeac2afe':
@@ -168,13 +177,17 @@ devices:
   '0x00158d008c8ba3d5':
     friendly_name: bouton_chambre_enfants
   '0x7c3e823561e90000':
-    friendly_name: '0x7c3e823561e90000'
+    friendly_name: Sol jardin zone 1
   '0x7c3e82d726940000':
-    friendly_name: '0x7c3e82d726940000'
+    friendly_name: Sol jardin zone 2
   '0x7c3e82d6a6ee0000':
-    friendly_name: '0x7c3e82d6a6ee0000'
+    friendly_name: Sol jardin zone 3
+  '0x7c3e82d72c710000':
+    friendly_name: Sol jardin zone 4
+  '0x7c3e82d6a6480000':
+    friendly_name: Sol jardin zone 5
+  '0x7c3e82d6c9440000':
+    friendly_name: Sol jardin zone 6
 groups:
   '1':
     friendly_name: Prises
-  '2':
-    friendly_name: Météo
