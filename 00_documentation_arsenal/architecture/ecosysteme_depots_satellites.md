@@ -172,7 +172,7 @@ Arsenal le consomme**. Elle ne redéfinit ni le protocole, ni l'API du satellite
 | **Type** | Bibliothèque Python (wheel / sdist installable). |
 | **Domaine Arsenal** | `energie_chaudiere` (Bluetti AC180 — alimentation tampon de la chaîne thermique). |
 | **Méthode d'intégration** | Consommée **indirectement** : le manifeste de `bluetti_bt` la déclare en `requirements` via l'URL d'un wheel de release GitHub. HA l'installe (pip) au montage de l'intégration. |
-| **Stratégie de version** | Épinglage **exact** dans le manifeste : `v1.1.0` (`bluetti_bt_lib-1.1.0-py3-none-any.whl`). Version dérivée à la construction (`LIB_VERSION`). |
+| **Stratégie de version** | Épinglage **exact** dans le manifeste : `v1.2.0` (`bluetti_bt_lib-1.2.0-py3-none-any.whl`). Version dérivée à la construction (`LIB_VERSION`). |
 | **Dépendances** | `bleak`, `bleak-retry-connector`, `cryptography`, `crcmod`, `async-timeout`, `pyasn1`. |
 | **Interfaces exposées** | API Python (communication device) + points d'entrée CLI (`bluetti-scan`, `bluetti-detect`, `bluetti-read`, …). Tables de support par modèle (30+). |
 | **Contrats importants** | Aucun contrat Arsenal interne ; la sémantique métier des mesures est fixée côté Arsenal par [`contrats/bluetti.md`](../contrats/bluetti.md). |
@@ -187,7 +187,7 @@ Arsenal le consomme**. Elle ne redéfinit ni le protocole, ni l'API du satellite
 | **Type** | Intégration Home Assistant (custom component, HACS), domaine `bluetti_bt`. |
 | **Domaine Arsenal** | `energie_chaudiere`. |
 | **Méthode d'intégration** | *Vendored* dans Arsenal sous `custom_components/bluetti_bt/` (chemin runtime). `config_flow`, `iot_class: local_polling`, `dependencies: bluetooth_adapters`, appariement BLE par préfixes de nom (`AC1*`…`PBOX*`). |
-| **Stratégie de version** | `version` du manifeste = `0.2.2` (indépendante de la lib). Épingle `bluetti-bt-lib` en `v1.1.0`. |
+| **Stratégie de version** | `version` du manifeste = `0.2.3` (indépendante de la lib). Épingle `bluetti-bt-lib` en `v1.2.0`. |
 | **Dépendances** | `bluetti-bt-lib` (satellite) ; pile Bluetooth de HA. |
 | **Interfaces exposées** | Entités `sensor.bluetti_*` / `binary_sensor.bluetti_*` (SOC, tensions entrée/sortie, puissances, etc.). |
 | **Contrats importants** | Côté Arsenal : [`contrats/bluetti.md`](../contrats/bluetti.md) (§2 fixe les 3 capteurs primaires décisionnels, les états dérivés, la synthèse santé, la politique de notification). L'intégration **produit les capteurs sources** ; Arsenal produit **tout le reste**. |
@@ -317,10 +317,12 @@ Arsenal le consomme**. Elle ne redéfinit ni le protocole, ni l'API du satellite
 
 3. ~~**Dérive de version de la lib Bluetti.**~~ **Résolu le 2026-08-01.** Le
    constat portait sur un manifeste épinglé en `v1.0.0` alors qu'une `v1.0.1`
-   existait côté lib. Les deux forks ont depuis été resynchronisés sur leur
-   amont : lib en `v1.1.0`, intégration en `0.2.2`, épinglage et copie
-   vendorisée alignés. Numérotation conservée pour ne pas casser les renvois
-   existants.
+   existait côté lib. Les deux forks ont été resynchronisés sur leur amont à
+   cette date, et le sont restés depuis. L'épinglage **courant** n'est
+   volontairement pas répété ici : il est porté par les fiches §4.1 et §4.2,
+   seule source à jour — un constat daté qui recopie une version la voit
+   périmer au bump suivant, et la résolution redevient elle-même une dérive.
+   Numérotation conservée pour ne pas casser les renvois existants.
 
 4. **Origine d'image firmware Rain Bird « à clarifier ».** Le relevé
    [`arrosage/08`](../contrats/arrosage/08_inventaire_pont_runtime.md) §2 signale
