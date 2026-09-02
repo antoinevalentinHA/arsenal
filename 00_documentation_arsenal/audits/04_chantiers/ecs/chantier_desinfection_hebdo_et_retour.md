@@ -4,7 +4,7 @@
 >
 > ⚠️ **Preuve terrain : NON ACQUISE.** La clôture #667 invoquait une preuve « acquise par exploitation en production, fonctionnement nominal constaté sur la durée ». Cette affirmation est **factuellement fausse** : le runtime du Lot 2 a été mergé à 08:53, le complément bouclage à 09:25 et la clôture prononcée à 09:43 — **18 minutes** après le dernier commit runtime, sur une chaîne qui ne se déclenche que sur `Vacances → Normal` au terme d'un timer d'absence de 6 jours. **Aucune tentative de désinfection de retour n'a pu s'exécuter avant la clôture.** Le défaut bloquant du §10.14 est passé précisément par ce trou. Renoncer à une campagne de validation terrain reste une décision légitime de la propriété ; l'inscrire comme « preuve acquise » ne l'est pas. Le critère « preuves runtime » du §9 est **rouvert**.
 > **Constats sources :** `ECS-DESINF-VAC-1` / `ECS-DESINF-VAC-2` (audit mergé PR #662)
-> **Code registre :** *ECS-DESINF-VAC* (numéro `Cxx` à attribuer par le propriétaire au registre)
+> **Code registre :** **`C46`** (attribué au registre — prochain numéro disponible après `C45`) · mnémonique historique `ECS-DESINF-VAC`, conservée pour les constats `ECS-DESINF-VAC-1` / `-2`
 > **Domaine :** `ecs` (secondairement `vacances`, en **consommation** seulement)
 > **Chemin :** `00_documentation_arsenal/audits/04_chantiers/ecs/chantier_desinfection_hebdo_et_retour.md`
 > **État du dépôt :** `origin/main` = `6068926` (runtime **identique** à celui analysé par le contrat candidat V2 — `git diff` vide)
