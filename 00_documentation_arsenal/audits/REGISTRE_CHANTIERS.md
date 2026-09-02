@@ -8,7 +8,10 @@
 
 1. **Co-commit obligatoire.** Tout changement d'état d'un chantier (ouverture, patch runtime, clôture, requalification) met à jour ce registre **dans le même commit** — même discipline que le changelog.
 2. **La source prime.** En cas de divergence registre ↔ document source, la source fait foi et le registre est corrigé. Le registre **ne crée aucune doctrine**.
-3. **Boucle CI fermée.** Le contrôle [`check_registre_chantiers.py`](../../scripts/arsenal_contracts/check_registre_chantiers.py) vérifie que chaque lien de ce registre pointe vers un fichier existant (non bloquant).
+3. **Boucle CI fermée — bloquante.** Le contrôle [`check_registre_chantiers.py`](../../scripts/arsenal_contracts/check_registre_chantiers.py) vérifie deux invariants et **sort en code 1** (échec CI) si l'un cède :
+   - **REG-1** — chaque lien relatif de ce registre pointe vers un fichier existant ;
+   - **REG-2** — **aucune ligne d'un tableau à colonne `ID` ne porte un identifiant non attribué** (`Cxx`, `Cnn`, `à attribuer`, `TBD`, `??`, cellule vide). Un chantier sans identifiant n'est ni citable, ni ordonnable, ni suivable : le placeholder est refusé à l'entrée, pas régularisé plus tard.
+   REG-2 **ne prescrit aucune forme** d'identifiant et n'en attribue aucun : la règle d'attribution — **prochain numéro disponible** (max des codes existants + 1, sans recyclage de trou) — reste humaine. La CI refuse l'absence d'attribution, elle ne choisit pas le numéro. *(L'étiquette « non bloquant » portée jusqu'ici était fausse : le checker sortait déjà en code 1 — divergence signalée au §5.6 du registre de couverture, ici tranchée.)*
 
 ## Cycle de vie
 
