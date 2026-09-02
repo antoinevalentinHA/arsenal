@@ -175,7 +175,7 @@ sur un fichier voisin ou une intuition.** Selon ce qu'on modifie, lire d'abord :
 | Doc métier / contrats | [`contrats/index.md`](contrats/index.md) | `docs_ci_contract_counts` |
 | Changelog / release | [`architecture/03_doctrines/redaction_changelog.md`](architecture/03_doctrines/redaction_changelog.md) | `docs_ci_changelog_index` |
 | Navigation documentaire | [`navigation/README.md`](navigation/README.md) — règles R1–R8 | `docs_ci_navigation_leaf_pages` |
-| Registre des chantiers | [`REGISTRE_CHANTIERS.md`](audits/REGISTRE_CHANTIERS.md) — gouvernance, co-commit | `check_registre_chantiers` |
+| Registre des chantiers | [`REGISTRE_CHANTIERS.md`](audits/REGISTRE_CHANTIERS.md) — gouvernance, co-commit, identifiants attribués | `check_registre_chantiers` (REG-1 liens, REG-2 identifiants) |
 | Checkers CI | [`../.github/workflows/docs.yml`](../.github/workflows/docs.yml) + `scripts/arsenal_contracts/` | `check_arsenal_self_contracts` (self-test) |
 
 > Pointeur, non normatif : la table **route** vers les documents propriétaires, qui
