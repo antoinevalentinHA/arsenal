@@ -5,10 +5,10 @@
 | **Chantier** | Propager dans les contrats, la CI, le runtime et l'interface la sémantique tranchée par les arbitrages `Q1` et `Q2` : deux notions distinctes — **mission Arsenal ouverte** (autorité : verdict de classe `O`) et **session robot active** (autorité : témoin natif Roborock) —, une **projection métier dédiée** en lecteur pur nominatif sous `ASP-CI-11`, la **migration atomique** de l'attribut ambigu `mission_ouverte`, et les **règles d'offre** des gestes de conduite. |
 | **Domaine** | Aspirateur. |
 | **Nature** | **Propagation gouvernée d'un arbitrage rendu.** Ce n'est **pas** une exploration architecturale : les options ont été examinées et tranchées en `Q2` §4, et ce chantier n'en rouvre aucune. |
-| **Statut** | **Ouvert — Lot 1 exécuté (2026-09-01).** La rectification documentaire `D1` est **produite, datée, classée et indexée** ([`rectification_cardinal_allowlist_asp_ci_11.md`](../../02_arbitrages/aspirateur/rectification_cardinal_allowlist_asp_ci_11.md)), conformément au véhicule décidé au §4.1 : **aucune source historique n'a été réécrite** — `Q1`, `Q2`, l'audit, la contre-expertise et la confrontation sont **inchangés**. **Lots 2 à 7 non exécutés.** **Aucun contrat, checker, runtime, Lovelace ni changelog modifié à ce jour.** |
+| **Statut** | **Ouvert — Lots 1 et 2 exécutés (Lot 1 : 2026-09-01 · Lot 2 : 2026-09-02).** Le **Lot 2 est exécuté** : les chapitres `08`, `11`, `12` et `15` portent la sémantique de `Q1` et `Q2`, **`ASP-INV-96`**, **`ASP-INV-97`** et **`ASP-INV-98`** sont déclarés, et la dette `D2` est soldée **en commentaire seul**. **Checker Aspirateur vert et inchangé.** **Lots 3 à 7 non exécutés.** Rappel du Lot 1 : **Ouvert — Lot 1 exécuté (2026-09-01).** La rectification documentaire `D1` est **produite, datée, classée et indexée** ([`rectification_cardinal_allowlist_asp_ci_11.md`](../../02_arbitrages/aspirateur/rectification_cardinal_allowlist_asp_ci_11.md)), conformément au véhicule décidé au §4.1 : **aucune source historique n'a été réécrite** — `Q1`, `Q2`, l'audit, la contre-expertise et la confrontation sont **inchangés**. **Lots 2 à 7 non exécutés.** **Aucun contrat, checker, runtime, Lovelace ni changelog modifié à ce jour.** |
 | **Priorité** | **P2** — aucun risque de sûreté établi ; le backend refuse déjà correctement. L'enjeu est la **cohérence de l'offre à l'opérateur** et la levée de la cause structurelle de `RC-02`. |
 | **Ouvert le** | 2026-09-01. |
-| **Prochain jalon** | **Lot 2 — propagation contractuelle** (§5.2). Le **Lot 1 est exécuté** ; la dette `D2` reste portée par le Lot 2 (§4.2). **Aucun code avant la ratification du Lot 2** — contrainte d'ordre de `Q1` §4.4 et `Q2` §10. |
+| **Prochain jalon** | **Lot 3 — extension CI** (§5.3). Les **Lots 1 et 2 sont exécutés** ; la dette `D2` est **soldée** au Lot 2 item 2.11. Le Lot 3 garde ce que le Lot 2 vient d'écrire — `ASP-INV-96`, `ASP-INV-97`, `ASP-INV-98` — et son item 3.5 porte désormais sur **quatre** représentations non gardées (§3.2 rectifié). |
 | **Registre** | Chantier **C45** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 | **Autorités amont** | [`arbitrage_mission_arsenal_ouverte_et_session_robot_active.md`](../../02_arbitrages/aspirateur/arbitrage_mission_arsenal_ouverte_et_session_robot_active.md) (`Q1`) · [`arbitrage_projection_mission_arsenal_ouverte_vers_interface.md`](../../02_arbitrages/aspirateur/arbitrage_projection_mission_arsenal_ouverte_vers_interface.md) (`Q2` et décision subsidiaire sur les gestes). |
 | **Constats couverts** | `AUD-ASP-01`, `CC-01`, `RC-02` — **un seul noyau causal** (confrontation §10 et §11), jamais additionnés comme trois écarts. `AUD-ASP-04` — **dette contractuelle locale**, distincte de ce noyau — est **rattaché au Lot 2** par décision rendue (§4.2). |
@@ -119,26 +119,53 @@ s'inscrit dans ce précédent et ne crée pas de mécanisme nouveau.
 
 ### 3.2 Listes locales de valeurs de classe — recensement exhaustif
 
-**Quatre** listes `verdict_ouvert`, portant chacune les **neuf** valeurs de classe `O`/`O-R`, et
-**une** liste `verdict_terminal` portant la classe `T` :
+> **⚠️ Recensement RECTIFIÉ au Lot 2 — cinq entrées portées à SEPT.** La version d'ouverture de ce
+> chantier dénombrait **cinq** représentations, établies par recherche de la clé littérale
+> `verdict_ouvert` / `verdict_terminal`. Ce dénombrement était **incomplet**, et il l'était pour la
+> raison que la version d'ouverture énonçait elle-même : *« une liste de classe portée sous un autre
+> nom de clé ne serait pas capturée par cette recherche »*. **Deux telles représentations existent.**
+> Le texte erroné est conservé au §3.2 bis, à côté de sa correction. Véhicule décidé le 2026-09-02
+> (`H-6`) : rectification **sur place**, ce document étant **vivant** et non scellé sur un SHA — à la
+> différence de `Q1`, `Q2` et des trois rapports historiques, qui restent **intacts**.
 
-| Fichier | Clé | Valeurs | Confrontée à égalité exacte ? | Contrôle |
-|---|---|---|---|---|
-| `10_scripts/aspirateur/lancer_mission.yaml` | `verdict_ouvert` | 9 | **Oui** | `ASP-CI-16` |
-| `11_automations/aspirateur/notification_mission.yaml` | `verdict_ouvert` | 9 | **Oui** | `ASP-CI-37` |
-| `11_automations/aspirateur/notification_mission.yaml` | `verdict_terminal` | classe `T` | **Oui** | `ASP-CI-37` |
-| `10_scripts/aspirateur/conduire_mission.yaml` | `verdict_ouvert` | 9 | **NON** | — |
-| `11_automations/aspirateur/supervision_mission.yaml` | `verdict_ouvert` | 9 | **NON** | `ASP-CI-18` ne teste que la **présence** de la clé dans une condition, jamais le **contenu** de la liste |
+**Sept** représentations runtime embarquent une classe du verdict, ou un **sous-ensemble
+contractuellement nommé** de classe. **Quatre** ne sont pas confrontées à égalité exacte :
 
-> **Constat d'entrée.** Les quatre listes `verdict_ouvert` sont aujourd'hui **matériellement
-> identiques**. Ce n'est pas une garantie : c'est un état, et deux d'entre elles peuvent dériver sans
-> qu'aucun contrôle ne le voie. C'est exactement l'exigence 5 de `Q2` §7.2.
+| # | Fichier | Clé | Contenu | Confrontée à égalité exacte ? | Contrôle |
+|---|---|---|---|---|---|
+| 1 | `10_scripts/aspirateur/lancer_mission.yaml` | `verdict_ouvert` | 9 valeurs, classe `O`/`O-R` | **Oui** | `ASP-CI-16` |
+| 2 | `11_automations/aspirateur/notification_mission.yaml` | `verdict_ouvert` | 9 valeurs | **Oui** | `ASP-CI-37` |
+| 3 | `11_automations/aspirateur/notification_mission.yaml` | `verdict_terminal` | 8 valeurs, classe `T` | **Oui** | `ASP-CI-37` |
+| 4 | `10_scripts/aspirateur/conduire_mission.yaml` | `verdict_ouvert` | 9 valeurs | **NON** | **aucun** — la clé n'est lue par aucun contrôle de contenu |
+| 5 | `11_automations/aspirateur/supervision_mission.yaml` | `verdict_ouvert` | 9 valeurs | **NON** | `ASP-CI-18` ne teste que la **présence** de la clé dans une condition, jamais le **contenu** |
+| 6 | `11_automations/aspirateur/supervision_mission.yaml` | **`engagements`** | 4 valeurs — **sous-ensemble strict de la classe `O`**, les engagements de W2 | **NON** | `ASP-CI-18` teste la seule **présence** de la clé. La constante `ENGAGEMENTS_W2` **existe** au checker, mais **n'est jamais confrontée** à la représentation runtime |
+| 7 | `11_automations/aspirateur/notification_mission.yaml` | **`phrases`** (clés du mapping) | 9 clés — **exactement la classe `O`** | **NON** | **aucun** |
 
-> **Portée du recensement.** Il est établi par recherche de la clé littérale dans l'ensemble des
-> `*.yaml` du dépôt, et recoupé avec le fait 11 de `Q2` §3, qui aboutit au même compte. Une liste de
-> classe portée sous un **autre nom de clé** ne serait pas capturée par cette recherche : le Lot 3
-> doit donc établir sa couverture **par le périmètre nominatif du checker**, non par une recherche
-> textuelle.
+> **Constat d'entrée, inchangé quant au fond.** Les sept représentations sont aujourd'hui
+> **matériellement exactes** — vérifié par exécution au HEAD. Ce n'est pas une garantie : c'est un
+> état, et **quatre** d'entre elles peuvent dériver sans qu'aucun contrôle ne le voie. C'est
+> exactement l'exigence 5 de `Q2` §7.2, désormais portée au contrat par **`ASP-INV-98`**
+> ([`15`](../../../contrats/aspirateur/15_conduite_et_supervision.md) §2).
+
+> **Portée du recensement, corrigée.** Il n'est plus établi par recherche d'une clé littérale — c'est
+> précisément ce qui avait manqué les entrées 6 et 7 — mais par **lecture des variables déclarées**
+> dans les fichiers du **périmètre nominatif du checker**, puis confrontation de chaque énumération au
+> vocabulaire canonique. `ASP-INV-98` rend la règle **indifférente au nom de la clé** : elle suit
+> l'**énumération**, jamais l'étiquette qui l'héberge.
+
+### 3.2 bis Texte erroné du recensement, conservé
+
+**Traçabilité de la rectification `H-6`** — l'écart reste lisible, il n'est pas effacé. Version
+d'ouverture, au commit `28dc746` :
+
+> **Quatre** listes `verdict_ouvert`, portant chacune les **neuf** valeurs de classe `O`/`O-R`, et
+> **une** liste `verdict_terminal` portant la classe `T` […] Une liste de classe portée sous un
+> **autre nom de clé** ne serait pas capturée par cette recherche.
+
+**Nature de l'écart : dénombrement incomplet, et rien d'autre.** Aucun raisonnement de `C45` ne
+dépendait du nombre : l'exigence invoquée est celle de `Q2` §7.2, qui porte sur **toute** liste, et
+non sur un cardinal. Les lots, leurs dépendances et leurs conditions d'arrêt sont **inchangés** ; seul
+le **périmètre du Lot 3 item 3.5** s'en trouve élargi, de deux représentations à quatre.
 
 ### 3.3 Producteur et lecteurs de l'attribut ambigu `mission_ouverte`
 
@@ -331,14 +358,58 @@ identifiant** que ni `Q1` ni `Q2` n'ont décidé.
 | **Ne fait pas** | Ne touche **ni** `notification_mission.yaml` — dette **D2** portée par le **Lot 2** (§4.2) —, **ni** aucun contrat, **ni** aucun checker, **ni** aucun runtime, **ni** Lovelace. |
 | **Preuve** | Le document de rectification existe, est daté, est classé et est indexé ; le cardinal **neuf** est exact partout où il est affirmé hors documents scellés ; **`git diff` vide** sur `Q1`, `Q2`, l'audit, la contre-expertise et la confrontation ; gates documentaires vertes. |
 
-### 5.2 Lot 2 — Propagation contractuelle
+### 5.2 Lot 2 — Propagation contractuelle — **EXÉCUTÉ (2026-09-02)**
 
 **Aucun code avant ratification de ce lot.** C'est la contrainte d'ordre de `Q1` §4.4 et `Q2` §10.
+
+> **État : exécuté.** Items **2.1** à **2.9** faits dans les chapitres `08`, `11`, `12` et `15` ;
+> item **2.10** déclaré **sans objet** (décision `H-7`) ; item **2.11** — dette `D2` — fait **après**
+> eux, **dans la même séquence normative**, **en commentaire seul**. **Aucun identifiant technique
+> n'est écrit dans les contrats** (`ASP-INV-58`) : la projection y est désignée par le **rôle**
+> `‹projection_mission_arsenal_ouverte›`. **Checker Aspirateur vert et inchangé**, **aucun Lovelace
+> touché**, **aucune ligne exécutable de runtime touchée**, **aucun changelog créé**.
+
+#### Décisions humaines rendues — préalables au lot (2026-09-02)
+
+Huit décisions ont été rendues par le propriétaire d'Arsenal avant exécution. **Aucune n'est un
+arbitrage nouveau** : elles tranchent des points que `Q1` et `Q2` avaient explicitement laissés hors
+arbitrage, ou que ce chantier avait laissés ouverts.
+
+| Réf. | Objet | Décision |
+|---|---|---|
+| `H-1` | Identifiant de la projection métier | **Attribué.** N'est **pas** écrit au contrat — employé au Lot 4 |
+| `H-2` | Nouveau nom de l'attribut de session | **Attribué.** N'est **pas** écrit au contrat — employé au Lot 5 |
+| `H-3` | **Rang du renommage du code technique** | **Lot 5** — voir l'encadré ci-dessous |
+| `H-4` | Invariants nouveaux | **`ASP-INV-96`** (ch. `08`), **`ASP-INV-97`** et **`ASP-INV-98`** (ch. `15`). L'interdiction faite à Lovelace reste une **ligne du tableau des interdits** du ch. `11`, sans invariant |
+| `H-5` | Périmètre de l'exigence 5 de `Q2` §7.2 | **Couvre** les représentations portées sous un autre nom de clé, et les **sous-ensembles contractuellement nommés** — d'où la rédaction d'`ASP-INV-98` |
+| `H-6` | Véhicule de rectification du §3.2 | **Sur place, au Lot 2**, ce document étant vivant. Texte erroné **conservé** au §3.2 bis |
+| `H-7` | Registre de couverture (item 2.10) | **Sans objet** : le lot ne crée ni checker, ni workflow, ni chapitre |
+| `H-8` | Vocabulaire de valeurs de l'attribut | **Conservé tel quel.** Seul le **nom** change, au Lot 5 |
+
+> **⚠️ `H-3` — contradiction interne du présent chantier, tranchée.** L'item **2.2** plaçait le
+> renommage du **code technique** au Lot 2 ; l'item **5.2** plaçait les contrats `08`, `11` et `12`
+> dans le **mouvement atomique du Lot 5**. Les deux ne pouvaient être vrais ensemble.
+>
+> **Fait établi par exécution.** Le contrôle `ASP-CI-9` lit le chapitre `08` §1 et confronte les codes
+> qu'il y trouve à une **constante figée du checker**. Renommer le code dans le contrat **sans**
+> toucher le checker rend `ASP-CI-9` **rouge** — deux écarts : code attendu absent, code inconnu
+> ajouté. Or le Lot 2 exige un checker **vert et inchangé**, et le Lot 3 vient **après**.
+>
+> **Décision rendue : le code technique bascule au Lot 5**, avec la constante du checker et les quatre
+> sites Lovelace, **en un seul mouvement**. Le Lot 2 aligne le **libellé contractuel** et la
+> **sémantique**, ce qui laisse `ASP-CI-9` vert — vérifié.
+>
+> **L'item 2.2 est lu en conséquence**, et l'item 5.2 prime sur lui. `Q2` §7.1.5 est **respecté** :
+> « le nom contractuel et le nom technique changent **ensemble**, en une seule fois » impose
+> l'**atomicité** du mouvement, non son rang. L'état transitoire — libellé aligné, code encore
+> ancien — est **écrit au contrat** ([`08`](../../../contrats/aspirateur/08_etats_et_observation.md)
+> §1.3), et il n'ouvre **aucune** coexistence de deux noms : il n'y a toujours qu'**un seul** code
+> pour cet état.
 
 | Item | Contenu |
 |---|---|
 | **2.1** | Inscrire au vocabulaire canonique les **deux notions sous deux noms distincts** — mission Arsenal ouverte / session robot active — et **leurs autorités respectives**. |
-| **2.2** | Amender [`08`](../../../contrats/aspirateur/08_etats_et_observation.md) §1 : le dixième état est **renommé** — nom contractuel et nom technique changent **ensemble**, en une seule fois (`Q2` §7.1.5). `ASP-INV-68` réécrit sous le nom retenu. |
+| **2.2** | Amender [`08`](../../../contrats/aspirateur/08_etats_et_observation.md) §1 : le dixième état est **renommé**. **Décision `H-3`** — le **libellé contractuel** et la sémantique sont alignés **ici** ; le **code technique** bascule au **Lot 5**, avec la constante du checker et les quatre sites Lovelace, **en un seul mouvement** (`Q2` §7.1.5 : l'atomicité porte sur le mouvement, non sur son rang). `ASP-INV-68` réécrit sous le libellé retenu, sa proposition de **totalité sur la partition** restant intacte. **✅ Fait** — §1 table, §1.1, §1.2, §1.3. |
 | **2.3** | Reconnaître au contrat la **projection métier dédiée** : source **exclusive** (classe `O`, `O-R` comprise), **statut de lecteur pur** sans droit d'écriture, **disponibilité et régime d'indisponibilité** explicites (`ASP-INV-45`), et **fraîcheur** — définis **contractuellement avant tout code**. |
 | **2.4** | Porter au contrat l'**exception nominative** à `ASP-CI-11` : elle **nomme un fichier**, jamais un motif, une famille ni un répertoire. |
 | **2.5** | Rendre opposable, au chapitre [`11`](../../../contrats/aspirateur/11_frontiere_ui.md), l'**interdiction faite à Lovelace de lire directement le helper de verdict** : l'UI consomme la projection. Aligner le §3 du même chapitre sur le nouveau nom. |
@@ -362,7 +433,7 @@ identifiant** que ni `Q1` ni `Q2` n'ont décidé.
 | **3.2** | **Nominativité préservée** — refuser toute autorisation par motif, famille ou répertoire. |
 | **3.3** | **Aucune lecture directe par Lovelace** : l'interdiction faite aux arbres Lovelace de mentionner le helper doit rester **mécaniquement** garantie **après** l'ajout de l'exception. C'est une **non-régression**, à prouver dans les deux sens. |
 | **3.4** | **Source exclusive** : prouver que la projection ne fait intervenir **aucun** témoin natif — ni état machine, ni témoin de session, ni entité `vacuum`. |
-| **3.5** | **Égalité exacte des listes de classe.** Étendre le patron `ASP-CI-37` aux **deux listes non gardées** — script de conduite et supervision (§3.2). Le recensement doit être établi **par le périmètre nominatif du checker**, non par recherche textuelle, afin de capturer une liste portée sous un autre nom de clé. |
+| **3.5** | **Égalité exacte des représentations de classe** — désormais opposable par **`ASP-INV-98`** ([`15`](../../../contrats/aspirateur/15_conduite_et_supervision.md) §2). Étendre le patron `ASP-CI-37` aux **QUATRE représentations non gardées** du §3.2 rectifié : `verdict_ouvert` du script de conduite · `verdict_ouvert` de la supervision · **`engagements`** de la supervision, sous-ensemble nommé de la classe `O` · **clés de `phrases`** de la projection, énumération exacte de la classe `O`. Le recensement s'établit **par lecture des variables déclarées** dans le périmètre nominatif du checker, **jamais** par recherche d'une clé littérale — c'est précisément ce qui avait manqué les deux dernières. |
 | **3.6** | **Indisponibilité non rabattue** : refuser une projection faisant valoir `false` à `unknown`, `unavailable` ou à une valeur hors vocabulaire. |
 | **3.7** | **Détection de tout reliquat** de l'ancien nom d'attribut — contrat, runtime, interface, checker — et présence du nouveau **partout** où l'ancien était. Contrôle actif en permanence, pas seulement au moment de la bascule. |
 | **3.8** | **Offre des gestes** confrontée à la règle du §2.3, y compris l'**indépendance d'Arrêt** à l'égard du témoin natif. |
@@ -389,7 +460,7 @@ coexistence des deux noms n'est admise, fût-elle transitoire**.
 | Item | Contenu |
 |---|---|
 | **5.1** | Remplacer le nom chez le **producteur** — `12_template_sensors/aspirateur/etat_canonique.yaml`. |
-| **5.2** | Remplacer le nom chez **tous les lecteurs** recensés au §3.3 et §3.4, **dans le même mouvement** : contrats `08`, `11`, `12` ; checker ; les quatre sites Lovelace. |
+| **5.2** | Remplacer le nom chez **tous les lecteurs** recensés au §3.3 et §3.4, **dans le même mouvement** : contrats `08`, `11`, `12` ; checker — **constantes de vocabulaire et d'état orthogonal**, que `ASP-CI-9` et `ASP-CI-23` lisent ; les quatre sites Lovelace. **Décision `H-3`** : le **code technique** du chapitre `08` §1, laissé inchangé par le Lot 2, bascule **ici**. La clause d'état transitoire du chapitre `08` §1.3 est **retirée par ce lot**, l'écart qu'elle décrit cessant d'exister. |
 | **5.3** | **Aucune compatibilité silencieuse permanente** : ni alias, ni double exposition, ni repli sur l'ancien nom. |
 | **Ne fait pas** | Ne modifie **pas la dérivation** de l'attribut : il continue de dériver du **seul témoin natif**. Seul son **nom** change — le nom devient exact, la sémantique était déjà celle-là. |
 | **Preuve** | Recherche d'absence de l'ancien nom sur **tout** le dépôt gouverné, rendant zéro occurrence ; contrôle 3.7 vert ; aucun commit intermédiaire où les deux noms coexistent. |
