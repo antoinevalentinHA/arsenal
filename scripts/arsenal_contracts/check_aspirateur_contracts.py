@@ -10858,6 +10858,35 @@ def selftest() -> None:
         rt0, {**_dep0, _ui: _dep0[_ui] + _note}, _dom),
         "CI-44 commentaire dans le panneau reste vert")
 
+    # ---- R1 : un EMPLOI qui n'est ni une cle ni un slot ------------------
+    # Une lecture Jinja de l'attribut : l'analyse de FORME ne la voit pas —
+    # ce n'est ni une cle d'attribut, ni un slot de restitution —, et seul
+    # le TOTAL, commentaires neutralises, la rattrape. Les deux cas sont
+    # joues sur les deux fichiers geles, car l'angle mort etait le meme.
+    _jinja = (f"\n      lecture: \"{{{{ state_attr('sensor.{ID_ETAT_CANON}',"
+              f" '{ETAT_ORTHOGONAL}') }}}}\"\n")
+    c.viole(check_ancien_code_transitoire(
+        _mut(rt0, RUNTIME_ETAT, "      attributes:\n",
+             _jinja + "      attributes:\n"),
+        _mut(_dep0, RUNTIME_ETAT, "      attributes:\n",
+             _jinja + "      attributes:\n"), _dom),
+        "occurrence(s) techniques",
+        "CI-44 lecture Jinja de l'attribut chez le producteur")
+    # La carte est inseree DANS la pile du panneau, a l'indentation reelle :
+    # une mutation qui casserait le YAML rendrait rouge par illisibilite, et
+    # ne prouverait rien du comptage qu'elle est censee eprouver.
+    _carte = (f"  - type: markdown\n    content: \"{{{{ state_attr("
+              f"'sensor.{ID_ETAT_CANON}', '{ETAT_ORTHOGONAL}') }}}}\"\n")
+    _ui_carte = _mut(_dep0, _ui, "  - type: grid\n",
+                     _carte + "  - type: grid\n")
+    assert yaml.safe_load(_ui_carte[_ui]) is not None, \
+        "R1 : la mutation de carte doit rester un YAML valide"
+    _errs_carte = check_ancien_code_transitoire(rt0, _ui_carte, _dom)
+    assert not any("illisible" in e for e in _errs_carte), \
+        f"R1 : le rouge doit venir du COMPTAGE, pas d'un parse — {_errs_carte}"
+    c.viole(_errs_carte, "occurrence(s) techniques",
+            "CI-44 carte markdown lisant l'attribut dans le panneau")
+
     # Un CINQUIEME site de restitution : l'allowlist en gele quatre.
     _site = ("            - condition: state\n"
              "              entity: sensor.aspirateur_etat_canonique\n"
@@ -10917,6 +10946,17 @@ def selftest() -> None:
                      + "\nLa **session robot active** n'etablit pas la\n"
                      + "**mission Arsenal ouverte**.\n"}),
         "CI-44 formulation metier au chapitre 15 reste verte")
+
+    # R2 — la CIBLE d'un lien est un chemin, pas du texte contractuel. Le
+    # fichier d'arbitrage `Q1` porte le code de remplacement dans son NOM :
+    # un chapitre doit pouvoir renvoyer a la note qui fonde la regle.
+    _lien = ("\nVoir [`Q1`](../../audits/02_arbitrages/aspirateur/"
+             "arbitrage_mission_arsenal_ouverte_et"
+             "_session_robot_active.md).\n")
+    assert CODE_SESSION_LOT5 in _lien, "R2 : le lien doit porter le token"
+    c.conforme(check_ancien_code_transitoire(
+        rt0, _dep0, {**_dom, _F15: _dom[_F15] + _lien}),
+        "CI-44 lien Markdown vers Q1 au chapitre 15 reste vert")
 
     # ---- ASP-CI-45 : le runtime livre passe -----------------------------
     c.conforme(check_offre_gestes(rt0, _lov0),
@@ -12606,12 +12646,22 @@ FICHIER_UI_MISSION = ("18_lovelace/includes/cartes/aspirateur/"
 # pas un nom : elle GELE une population. Tout emploi supplementaire, tout
 # emploi deplace vers un autre fichier, est un ecart.
 #
-# Le cardinal est celui de l'analyse STRUCTUREE — cles d'attribut chez le
-# producteur, slots de restitution dans l'arbre Lovelace —, jamais celui
-# d'un recomptage textuel : ces deux fichiers sont donc EXCLUS du balayage
-# textuel du depot. Sans cette exclusion, un commentaire ajoute a cote d'une
-# cle ferait varier un cardinal qui ne compte que des emplois techniques, et
-# le controle refuserait une ligne de prose comme si elle repandait le code.
+# Le cardinal vaut DEUX FOIS, et les deux lectures sont necessaires.
+#
+#   · en FORME — l'analyse STRUCTUREE compte les cles d'attribut chez le
+#     producteur et les slots de restitution dans l'arbre Lovelace. Elle
+#     seule fait autorite sur CE QUE SONT ces emplois ;
+#   · en NOMBRE — le meme cardinal borne le total des occurrences du code
+#     dans le fichier, COMMENTAIRES NEUTRALISES. C'est ce qui rattrape un
+#     emploi technique qui ne serait ni une cle ni un slot : un
+#     `state_attr(..., '<code>')` en Jinja, une carte markdown qui lit
+#     l'attribut. La forme ne le verrait pas ; le total, si.
+#
+# Les commentaires sont neutralises AVANT ce comptage, et c'est tout ce qui
+# separe cette regle d'un recomptage brut : une MENTION ne repand rien, un
+# EMPLOI si. Un recomptage brut refuserait une ligne de prose ecrite dans le
+# fichier meme qui porte le code — y compris la note de migration que le lot
+# 5 aura toutes les raisons d'y laisser.
 #
 # Elle est SUPPRIMEE au lot 5, dans le commit meme de la migration, et
 # remplacee par la recherche d'absence a zero occurrence.
@@ -12652,6 +12702,15 @@ ANCRE_CLAUSE_TRANSITOIRE = "Migration atomique du nom du dixième état"
 # n'empeche qu'un commentaire l'y mentionne demain sans rien repandre. Un
 # recomptage textuel confondrait les deux et refuserait la ligne de prose.
 CLES_ATTRIBUT_UI = ("attribute", "attribut")
+
+# La CIBLE d'un lien Markdown est un CHEMIN, jamais du texte contractuel.
+# Or le fichier d'arbitrage `Q1` porte dans son NOM le code de remplacement,
+# et les chapitres ont toutes les raisons de le citer : sans neutralisation,
+# un renvoi legitime vers l'arbitrage qui FONDE la regle la declencherait.
+# Seule la cible est neutralisee — le libelle du lien et le reste de la
+# ligne restent lus, de sorte qu'un emploi technique glisse dans le texte
+# d'un lien reste refuse.
+CIBLE_LIEN_MD = re.compile(r"\]\([^)]*\)")
 
 
 def _valeurs_de_slot(noeud, cles):
@@ -12698,7 +12757,11 @@ def check_ancien_code_transitoire(textes_runtime, yaml_depot,
     d'attribution du chantier et du registre. Une recherche de chaine brute
     sur tout le depot serait rouge des sa livraison, sur l'arbitrage meme qui
     la fonde. Elle ne porte donc que sur le YAML de configuration et sur les
-    chapitres du contrat, ou ce token n'a aucune raison d'etre.
+    chapitres du contrat, ou ce token n'a aucune raison d'etre — et, dans ces
+    chapitres, les CIBLES de liens Markdown sont neutralisees d'abord : un
+    renvoi vers l'arbitrage `Q1` cite son NOM DE FICHIER, pas un code, et il
+    serait absurde qu'un chapitre ne puisse plus renvoyer a la note qui fonde
+    la regle. Le LIBELLE du lien, lui, reste lu.
     """
     errs: list[str] = []
     ancien = ETAT_ORTHOGONAL
@@ -12756,13 +12819,31 @@ def check_ancien_code_transitoire(textes_runtime, yaml_depot,
                     "sur un code substitué au lot 5. L'anticiper produirait "
                     "une lecture d'un attribut qui n'existe pas encore.")
 
-    # ── (c) le reste du dépôt gouverné : AUCUNE autre occurrence ──────────
+    # ── (c) le TOTAL des deux fichiers gelés, commentaires neutralisés ────
     #
-    # Les deux fichiers de l'allowlist sont EXCLUS de ce balayage : leur
-    # cardinal est établi plus haut, par analyse structurée, sur les seuls
-    # emplois TECHNIQUES. Les recompter ici, textuellement, ferait varier ce
-    # cardinal au gré des commentaires — et refuserait une ligne de prose
-    # comme si elle répandait le code.
+    # L'analyse structurée ci-dessus dit ce que SONT les emplois ; elle ne
+    # dit pas s'il en existe d'AUTRES. Un `state_attr(…, '<code>')` en Jinja,
+    # une carte markdown qui lit l'attribut, ne sont ni une clé ni un slot :
+    # la forme ne les voit pas. Le TOTAL, lui, les voit.
+    #
+    # Les commentaires sont neutralisés avant ce comptage — c'est tout ce qui
+    # sépare cette règle d'un recomptage brut. Une MENTION ne répand rien ;
+    # un EMPLOI, si.
+    for rel, attendu in sorted(ALLOWLIST_ANCIEN_CODE.items()):
+        txt = yaml_depot.get(rel)
+        if txt is None:
+            continue
+        vus = sans_commentaires_yaml(txt).count(ancien)
+        if vus != attendu:
+            errs.append(
+                f"ASP-CI-44 : `{rel}` porte {vus} occurrence(s) techniques de "
+                f"`{ancien}` — l'allowlist transitoire en gèle exactement "
+                f"{attendu}, commentaires neutralisés. Un emploi qui n'est ni "
+                "une clé ni un slot — une lecture Jinja de l'attribut, une "
+                "carte qui le restitue — répand le code que le lot 5 doit "
+                "faire disparaître, et l'analyse de forme ne le verrait pas.")
+
+    # ── (d) le reste du dépôt gouverné : AUCUNE autre occurrence ──────────
     for rel, txt in sorted(yaml_depot.items()):
         if rel not in ALLOWLIST_ANCIEN_CODE and ancien in txt:
             errs.append(
@@ -12778,7 +12859,7 @@ def check_ancien_code_transitoire(textes_runtime, yaml_depot,
                 "(ASP-INV-52 par analogie : le renommage est un acte "
                 "contractuel).")
 
-    # ── (d) le MODULE lui-même — troisième porteur, item 5.2 du chantier ──
+    # ── (e) le MODULE lui-même — troisième porteur, item 5.2 du chantier ──
     try:
         source = Path(__file__).read_text(encoding="utf-8")
     except OSError as exc:                                # pragma: no cover
@@ -12794,7 +12875,7 @@ def check_ancien_code_transitoire(textes_runtime, yaml_depot,
                 "commentaires et les deux messages d'ASP-CI-23. Un contrôle "
                 "qui répandrait lui-même le code qu'il gèle serait sans "
                 "autorité.")
-    # ── (e) les CONTRATS du domaine — le 08 gèle, les autres refusent ────
+    # ── (f) les CONTRATS du domaine — le 08 gèle, les autres refusent ────
     #
     # Le chapitre 08 est le seul où le token technique historique reste
     # admis, et à un cardinal exact. Partout ailleurs il est REFUSÉ : le lot
@@ -12805,7 +12886,8 @@ def check_ancien_code_transitoire(textes_runtime, yaml_depot,
     # —, jamais sur la formulation métier, qui s'écrit avec des espaces. Un
     # chapitre qui parle de « session robot active » ou de « mission Arsenal
     # ouverte » reste libre : c'est précisément ce qu'il doit employer.
-    t08 = textes.get(FICHIER_CONTRAT_TRANSITOIRE, "")
+    t08 = CIBLE_LIEN_MD.sub(
+        "]()", textes.get(FICHIER_CONTRAT_TRANSITOIRE, ""))
     if not t08:
         errs.append(f"ASP-CI-44 : `{FICHIER_CONTRAT_TRANSITOIRE}` "
                     "introuvable — le code contractuel ne peut pas être gelé "
@@ -12825,7 +12907,8 @@ def check_ancien_code_transitoire(textes_runtime, yaml_depot,
                 "L'écart entre le libellé et le code est ÉCRIT, non subi : "
                 "l'effacer sans avoir migré le rendrait silencieux. Sa "
                 "suppression appartient au lot 5, avec la migration.")
-    for rel, txt in sorted(textes.items()):
+    for rel, brut in sorted(textes.items()):
+        txt = CIBLE_LIEN_MD.sub("]()", brut)
         if rel != FICHIER_CONTRAT_TRANSITOIRE and ancien in txt:
             errs.append(
                 f"ASP-CI-44 : le chapitre `{rel}` emploie le token technique "
