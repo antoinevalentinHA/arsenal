@@ -138,17 +138,27 @@
 #   helper non initialisé, la projection ne fait RIEN — ni création, ni
 #   suppression. Un `default:` y ferait tomber l'une des deux.
 #
-#   CONSÉQUENCE ASSUMÉE, ÉCRITE PLUTÔT QUE MASQUÉE. Le contrat fixe
-#   l'extinction « à toute valeur de classe terminale, sans exception »,
-#   et n'en prévoit aucune autre. Si le moteur est appelé alors qu'une
-#   mission est ouverte, il écrit d'abord sa valeur de validation — de
-#   classe H — puis son refus : la mémoire de mission est alors perdue
-#   par le verdict lui-même, et cette projection ne peut plus éteindre
-#   la notification, faute d'issue terminale à venir. Ce défaut est
-#   ANTÉRIEUR à ce lot et lui est extérieur : il tient à ce que le
-#   verdict soit la seule mémoire de mission (D-08). Le corriger
-#   exigerait de rouvrir le vocabulaire ou la séquence du moteur, ce
-#   que ce lot ne fait pas.
+#   PORTÉE DE L'EXTINCTION, ÉCRITE PLUTÔT QUE SUPPOSÉE. Le contrat fixe
+#   l'extinction « à toute valeur de classe terminale, sans exception ».
+#   Le scénario qui menaçait cette extinction — le moteur appelé sur une
+#   mission déjà ouverte, écrasant le verdict de classe O par sa valeur
+#   de validation de classe H, et privant cette projection de toute
+#   issue terminale à venir — est REFERMÉ à la source : l'ÉTAPE 0a du
+#   moteur s'arrête SEC sur un verdict de classe O, AVANT toute
+#   écriture, et laisse le verdict courant intact (15 §2, D-08).
+#   ASP-CI-16 rend la propriété OPPOSABLE : la table des neuf valeurs
+#   est confrontée à égalité exacte, la garde est exigée au premier
+#   niveau, elle ne doit rien écrire, et son rang doit précéder toute
+#   écriture du verdict.
+#
+#   CE QUI EST GARANTI, ET RIEN DE PLUS. La garantie porte sur la voie
+#   du MOTEUR, seul écrivain du domaine dont l'ensemble de valeurs
+#   contienne la classe H : les deux autres écrivains — conduite et
+#   supervision — n'écrivent aucune valeur de cette classe, et la
+#   disjonction des trois ensembles est vérifiée (ASP-INV-86,
+#   ASP-CI-11). Aucune promesse n'est faite au-delà : cette projection
+#   demeure un LECTEUR PUR, elle n'observe que le verdict, et elle ne
+#   corrige aucune écriture qu'elle n'a pas faite.
 #
 # ----------------------------------------------------------
 # 🚫 CE QUE CETTE AUTOMATION NE FAIT PAS

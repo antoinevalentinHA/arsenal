@@ -112,6 +112,18 @@ seule, qui dit si une mission Arsenal est ouverte.
 > qui roule sans qu'Arsenal l'ait ouvert. **Les deux situations sont
 > distinctes, et le restent.**
 
+> **La notion duale, et son autorité.** À la **mission Arsenal ouverte** répond la
+> **session robot active** — l'activité de l'appareil, observée **exclusivement**
+> par le témoin natif Roborock ([`08`](08_etats_et_observation.md) §1.1 et §3).
+> Les deux notions sont **distinctes**, leurs autorités **exclusives** et **non
+> substituables**, et leur **divergence est légitime** : elle ne constitue pas une
+> incohérence à résorber. Aucune ne subordonne l'autre, et aucune ne se déduit de
+> l'autre (`ASP-INV-47`).
+>
+> **Cette dualité ne relâche pas `ASP-INV-87` — elle le borne.** Il dit ce
+> qui établit une **mission Arsenal** ; il n'a jamais prétendu décrire l'activité
+> physique du robot, et il ne le fait pas davantage aujourd'hui.
+
 **Ce qui n'ouvre rien**, et c'est explicite : l'acceptation d'une commande — une
 acceptation n'est jamais un démarrage (`ASP-INV-38`) —, l'issue non établie, la
 validation en cours, la transition non observée, et les treize refus. Toutes
@@ -121,6 +133,31 @@ sont de **classe H**.
 > initialisé au premier démarrage, ou une valeur qui n'appartient pas au
 > vocabulaire, n'est **ni O, ni T, ni H**. Il est traité **séparément**, et
 > toujours par l'abstention (§5).
+
+> **`ASP-INV-98` — toute représentation d'une classe se confronte à égalité
+> exacte.** Toute **représentation runtime** embarquant une **classe** du verdict
+> — ou un **sous-ensemble contractuellement nommé** de cette classe — est
+> **confrontée à égalité exacte** à l'ensemble canonique fermé correspondant.
+>
+> **Ce que « représentation » couvre.** Une liste de valeurs, mais aussi toute
+> autre forme qui **énumère** ces valeurs — les **clés d'une table** indexée par
+> elles, par exemple. La forme ne fait pas la règle : l'**énumération** la fait.
+>
+> **Ce que « sous-ensemble contractuellement nommé » couvre.** Les **quatre
+> valeurs d'engagement** de W2 en sont un : elles forment un sous-ensemble strict
+> de la classe `O`, ce chapitre les nomme (§4, `ASP-INV-92`), et une
+> représentation amputée ou enrichie de ce sous-ensemble produirait la même
+> dérive silencieuse qu'une classe recopiée à la main.
+>
+> **Le nom sous lequel la représentation est portée est indifférent.** La règle
+> suit l'**énumération**, jamais la clé qui l'héberge : une représentation écrite
+> sous un nom quelconque n'échappe pas à la confrontation.
+>
+> **Pourquoi cette règle existe.** Ces ensembles sont **fermés**, et ils vivent en
+> deux endroits : le vocabulaire canonique, et chaque représentation qui
+> l'embarque. Deux copies qui ne sont pas confrontées **divergent**. Une classe
+> amputée d'une valeur laisse alors passer exactement les cas qu'elle devait
+> retenir — **et elle le fait en silence**, ce que `ASP-INV-49` proscrit.
 
 ---
 
@@ -171,10 +208,10 @@ garde de sens physique → écriture de l'engagement → émission UNIQUE
 
 | Geste | Garde de sens physique ([`08`](08_etats_et_observation.md) §4) | Engagement | Confirmé | Non confirmé |
 |---|---|---|---|---|
-| **Pause** | Mission ouverte **et** activité en cours | `CONDUITE/PAUSE_ENGAGEE` — **O** | `CONDUITE/PAUSE_CONFIRMEE` — **O** | `CONDUITE/PAUSE_NON_CONFIRMEE` — **O** |
-| **Reprise** | Garde fermée `ASP-INV-62`, **quatre conditions** — état de pause · session réellement ouverte · aucune erreur ni indisponibilité · geste opérateur explicite — **plus** mission ouverte (`D-07`) | `CONDUITE/REPRISE_ENGAGEE` — **O** | `CONDUITE/REPRISE_CONFIRMEE` — **O** | `CONDUITE/REPRISE_NON_CONFIRMEE` — **O** |
-| **Arrêt** | Mission ouverte ; **jamais plus contraint que le lancement** (`ASP-INV-43`) | `CONDUITE/ARRET_ENGAGE` — **O** | `CLOTURE/APRES_ARRET_CONFIRME` — **T** — postcondition **`idle`** | `CLOTURE/APRES_ARRET_NON_CONFIRME` — **T** |
-| **Retour à la base** | Mission ouverte **et** le robot n'y est pas déjà, et n'y va pas déjà | `CONDUITE/RETOUR_ENGAGE` — **O-R** | **W2 ne conclut pas** — l'amarrage revient à W3 (§4, §5) | `CLOTURE/APRES_RETOUR_NON_CONFIRME` — **T** |
+| **Pause** | Mission **Arsenal** ouverte **et** activité en cours | `CONDUITE/PAUSE_ENGAGEE` — **O** | `CONDUITE/PAUSE_CONFIRMEE` — **O** | `CONDUITE/PAUSE_NON_CONFIRMEE` — **O** |
+| **Reprise** | Garde fermée `ASP-INV-62`, **quatre conditions** — état de pause · session réellement ouverte · aucune erreur ni indisponibilité · geste opérateur explicite — **plus** mission **Arsenal** ouverte (`D-07`) | `CONDUITE/REPRISE_ENGAGEE` — **O** | `CONDUITE/REPRISE_CONFIRMEE` — **O** | `CONDUITE/REPRISE_NON_CONFIRMEE` — **O** |
+| **Arrêt** | Mission **Arsenal** ouverte ; **jamais plus contraint que le lancement** (`ASP-INV-43`) — offre **indépendante du témoin natif de session** (§3.3) | `CONDUITE/ARRET_ENGAGE` — **O** | `CLOTURE/APRES_ARRET_CONFIRME` — **T** — postcondition **`idle`** | `CLOTURE/APRES_ARRET_NON_CONFIRME` — **T** |
+| **Retour à la base** | Mission **Arsenal** ouverte **et** le robot n'y est pas déjà, et n'y va pas déjà — trois exclusions de **sens physique** (§3.3) | `CONDUITE/RETOUR_ENGAGE` — **O-R** | **W2 ne conclut pas** — l'amarrage revient à W3 (§4, §5) | `CLOTURE/APRES_RETOUR_NON_CONFIRME` — **T** |
 
 > **Les deux issues non confirmées de pause et de reprise restent de classe
 > O.** La mission peut rouler encore : le système le **dit**, il ne **conclut**
@@ -230,6 +267,58 @@ garde de sens physique → écriture de l'engagement → émission UNIQUE
 >
 > **Aucune valeur de garde n'entre au vocabulaire.** Le refus vit dans la
 > réponse au caller, et nulle part ailleurs : ni helper, ni canal nouveau.
+
+### 3.3 Offre des gestes de conduite Arsenal
+
+> **`ASP-INV-97` — l'offre d'un geste de conduite Arsenal se règle sur le
+> verdict, et sur lui seul.** Un **geste de conduite Arsenal** — un geste par
+> lequel Arsenal agit sur **sa propre** mission — n'est **proposé à l'opérateur
+> que tant que le verdict appartient à la classe `O`**, sous-classe `O-R`
+> comprise.
+>
+> **Arrêt** est proposé **pendant toute la classe `O`**, **sans dépendre du
+> témoin natif de session**. Son offre ne se règle **pas** sur l'activité
+> physique observée : c'est la conséquence directe d'`ASP-INV-43` — l'arrêt n'est
+> jamais plus contraint que le lancement.
+>
+> **Retour à la base** est proposé pendant la classe `O`, **sauf** lorsque le
+> robot est **déjà en retour**, **amarré** ou **en charge**. Ces trois exclusions
+> sont de **sens physique** (`ASP-INV-48`) — le geste n'aurait rien à ordonner —
+> et **non** d'autorité. Les deux conditions se **cumulent** : l'autorité ouvre
+> l'offre, le sens physique la restreint.
+>
+> **Dès que le verdict quitte la classe `O`**, Arrêt et Retour à la base **ne
+> sont plus proposés**, **même si le robot reste physiquement actif**. Arsenal a
+> clos ou abandonné sa responsabilité : il cesse de proposer d'agir sur une
+> mission qu'il ne tient plus.
+>
+> **Une mission externe n'expose aucun geste de conduite Arsenal.** C'est une
+> **propriété voulue**, écrite comme telle, et **non** l'effet de bord d'une
+> condition d'affichage : une activité qu'Arsenal n'a jamais ouverte n'est jamais
+> adoptée (`ASP-INV-87`), donc jamais conduite.
+>
+> **Ce que cet invariant ne crée pas.** Aucune capacité de **pilotage physique
+> hors mission Arsenal** — mission externe, ou état post-terminal. Une telle
+> capacité serait **distincte** et exigerait un **contrat propre**. Elle n'est
+> pas créée ici, et son absence n'est pas un oubli.
+
+> **Aucun geste présenté puis refusé.** La **condition d'affichage** d'un geste et
+> la **garde d'acceptation** du backend portent sur la **même autorité**, et
+> **coïncident**. Un geste proposé que le backend refuserait n'est pas un
+> inconfort d'interface : c'est une **non-conformité**
+> ([`08`](08_etats_et_observation.md) §4,
+> [`commandabilite.md`](../../architecture/03_doctrines/commandabilite.md) §6.1).
+>
+> **L'interface reçoit cette autorité par la projection métier** (`ASP-INV-96`),
+> **jamais** en lisant le verdict ([`11`](11_frontiere_ui.md) §2). C'est
+> précisément ce qui rend la coïncidence atteignable : sans projection, l'affichage
+> et la garde lisaient deux prédicats différents.
+
+> **Pause et Reprise ne sont pas modifiées par cet invariant.** Leurs conditions
+> restent **exactement** celles du §3.1. `ASP-INV-97` fixe l'**autorité** de
+> l'offre — la classe `O` —, condition que ces deux gestes satisfaisaient déjà par
+> leur garde de mission ouverte ; il ne touche **ni** leur garde de sens physique,
+> **ni** leur séquence, **ni** la garde fermée d'`ASP-INV-62`.
 
 ---
 
@@ -430,6 +519,13 @@ supprimé.
 | Déduire « mission en cours » d'un témoin natif | `ASP-INV-47`, `ASP-INV-87` |
 | Écrire une clôture **nominale** faute d'observation | `ASP-INV-94`, `D-R1` |
 | Un envoi mobile hors mission | `ASP-INV-95`, `ASP-INV-84` |
+| **Offrir un geste de conduite Arsenal hors de la classe `O`** | `ASP-INV-97`, `ASP-INV-87` |
+| **Conditionner l'offre d'Arrêt au témoin natif de session** | `ASP-INV-97`, `ASP-INV-43`, `ASP-INV-47` |
+| **Exposer un geste de conduite Arsenal sur une mission externe ou post-terminale** | `ASP-INV-97`, `ASP-INV-87` |
+| Créer un **pilotage physique hors mission Arsenal** sans contrat propre | `ASP-INV-97` — capacité distincte, non créée ici |
+| **Présenter un geste que la garde d'acceptation refuserait** | `ASP-INV-97`, `ASP-INV-50`, `ASP-INV-91` |
+| **Lire directement le helper de verdict depuis un arbre Lovelace** | `ASP-INV-96`, [`11`](11_frontiere_ui.md) §2 |
+| **Embarquer une classe, ou un sous-ensemble nommé, sans confrontation à égalité exacte** | `ASP-INV-98` |
 
 ---
 

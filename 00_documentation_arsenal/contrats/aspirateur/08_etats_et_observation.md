@@ -14,7 +14,7 @@ Le domaine distingue **dix** situations, qui ne se confondent jamais :
 
 | État canonique | Code | Ce qu'il signifie |
 |---|---|---|
-| **Mission ouverte** | `mission_ouverte` | Une session de nettoyage est **ouverte** — donc reprenable. **Ne dit rien** du mouvement du robot. |
+| **Session robot active** | `mission_ouverte` | Une **session de nettoyage** du robot n'est pas terminée — donc reprenable. Observation du **témoin natif Roborock**, autorité exclusive de l'activité physique (§1.1). **Ne dit rien** du mouvement du robot, ni de la **mission Arsenal ouverte**. Son **code technique porte encore l'ancien nom** : sa substitution est atomique (§1.3). |
 | **Nettoyage réel** | `nettoyage_reel` | Le robot **nettoie effectivement**. |
 | **Pause** | `pause` | La mission est ouverte et **suspendue**. |
 | **Erreur** | `erreur` | Le robot **ou le dock** signale une condition d'erreur. |
@@ -60,11 +60,15 @@ l'extension du vocabulaire est un acte contractuel).
 > d'équipement (`ERREUR_EQUIPEMENT`) — les confondre produirait un diagnostic
 > faux (`ASP-INV-60`).
 >
-> **Mission ouverte est orthogonal.** Le dixième état — **Mission ouverte** — ne
-> dérive **pas** de l'état machine mais du **témoin de session** (§3). Il se
-> superpose aux neuf autres au lieu de les exclure : une mission peut être
-> ouverte pendant un nettoyage réel comme pendant un repos hors base. Il est
-> donc **exposé séparément**, jamais fondu dans la valeur d'état.
+> **La session robot active est orthogonale.** Le dixième état — **Session robot
+> active** — ne dérive **pas** de l'état machine mais du **témoin natif de
+> session** (§3). Il se superpose aux neuf autres au lieu de les exclure : une
+> session peut être ouverte pendant un nettoyage réel comme pendant un repos
+> hors base. Il est donc **exposé séparément**, jamais fondu dans la valeur
+> d'état.
+>
+> **Il ne dit rien de la mission Arsenal ouverte** — notion distincte, d'autorité
+> distincte (§1.1). Aucune des deux ne se déduit de l'autre.
 >
 > **Pourquoi cette totalité est écrite.** Sans elle, `charger_disconnected` —
 > l'état de repos le **plus courant** après un transport du robot, et un
@@ -78,12 +82,119 @@ l'extension du vocabulaire est un acte contractuel).
 > nominal, ni la dernière valeur connue**. Ils sont **restitués comme
 > indisponibilité**, jamais masqués.
 
+### 1.1 Mission Arsenal ouverte et session robot active
+
+Le domaine porte **deux notions distinctes**. Elles ne se confondent jamais, et
+aucune ne se déduit de l'autre.
+
+| Notion | Ce qu'elle décrit | Autorité **exclusive** |
+|---|---|---|
+| **Mission Arsenal ouverte** | Une **responsabilité métier d'Arsenal** encore ouverte | Le **verdict de mission**, par son appartenance à la classe `O`, sous-classe `O-R` comprise ([`15`](15_conduite_et_supervision.md) §2, `ASP-INV-87`) |
+| **Session robot active** | L'**activité de l'appareil** : une session de nettoyage non terminée | Le **témoin natif Roborock** (§3, `ASP-INV-47`) |
+
+**Ce que chaque autorité ne fait pas.**
+
+- Le **témoin natif** décrit l'activité physique du robot. Il **n'autorise pas**,
+  **n'ouvre pas** et **ne clôt pas** une mission Arsenal (`ASP-INV-47`,
+  `ASP-INV-87`).
+- Le **verdict** décrit la responsabilité métier d'Arsenal. Il **ne prétend pas**
+  décrire à lui seul l'activité physique instantanée du robot.
+
+> **La divergence des deux notions est légitime, et cesse d'être un défaut.**
+> Les deux peuvent **coexister et diverger sans incohérence** :
+>
+> - une **session robot active sans mission Arsenal ouverte** — typiquement une
+>   mission lancée hors d'Arsenal, que le domaine n'adopte jamais
+>   (`ASP-INV-87`) ;
+> - une **mission Arsenal ouverte alors que le témoin natif vaut `off`** —
+>   typiquement pendant un retour au dock, où le témoin est sous-inclusif (§3).
+>
+> **Aucune clause du domaine ne lit plus cette coexistence comme une incohérence
+> à résorber.** Les deux notions sont restituées sous des **libellés distincts**,
+> et chaque usage emploie **l'autorité qui lui correspond**
+> ([`11`](11_frontiere_ui.md) §2 et §3).
+
+### 1.2 Projection de la mission Arsenal ouverte vers l'interface
+
+> **`ASP-INV-96` — source exclusive, lecture pure, indisponibilité rendue.** La
+> mission Arsenal ouverte est portée vers l'interface par une **projection
+> métier dédiée** — rôle `‹projection_mission_arsenal_ouverte›`
+> ([`12`](12_identifiants_a_fournir.md) §2.3) —, et par elle seule.
+>
+> **Source exclusive.** Elle dérive de la **seule** appartenance du verdict à la
+> classe `O`, sous-classe `O-R` comprise. **Aucun témoin natif** — état machine,
+> témoin de session, entité `vacuum` — n'intervient dans son calcul, ni ne s'y
+> substitue (`ASP-INV-47`, `ASP-INV-87`).
+>
+> **Lecture pure.** Elle **lit** le verdict et ne l'**écrit jamais**. Elle ne
+> devient pas un quatrième écrivain : l'écriture reste au trio des écrivains
+> (`ASP-INV-86`). Son autorisation de lecture est **nominative** — elle nomme un
+> fichier, jamais un motif, une famille ni un répertoire.
+>
+> **Trois régimes, dont le troisième est explicite.** Mission Arsenal ouverte ·
+> aucune mission Arsenal ouverte · **impossibilité de conclure**. **Dans cette
+> projection**, `unknown`, `unavailable` et toute valeur **hors vocabulaire** ne
+> valent **jamais** « aucune mission Arsenal » : ils y sont rendus comme
+> **indisponibilité** (`ASP-INV-45`). Le cas n'est pas théorique — le helper de
+> verdict ne porte **aucune valeur initiale**, et vaut donc `unknown` au premier
+> démarrage ; et le hors-vocabulaire est **extérieur à la partition** en quatre
+> classes ([`15`](15_conduite_et_supervision.md) §2).
+>
+> **La borne est celle du RENDU, et elle ne gouverne qu'elle.** Cette règle dit ce
+> que la projection **restitue** à l'interface. Elle ne dit **rien** de ce qu'un
+> objet backend a le droit de conclure pour son propre compte. En particulier, la
+> **garde d'entrée du moteur** ne s'arrête que sur un verdict **de classe `O`** et
+> **poursuit** sur toute autre valeur, `unknown` compris
+> ([`15`](15_conduite_et_supervision.md) §2) : ce n'est **pas** un rabattement de
+> l'indisponibilité sur « aucune mission », car cette garde ne **rend** rien à
+> l'opérateur — elle décide seulement de ne pas se taire. **Ne pas restituer une
+> indisponibilité comme une absence de mission**, et **ne pas ouvrir une mission
+> sur une valeur indéterminée**, sont deux exigences **distinctes** qui ne se
+> contredisent pas. Ce comportement interne reste **légitime et inchangé**.
+>
+> **Aucun identifiant n'est proposé ici** (`ASP-INV-58`) : ce chapitre décrit un
+> **rôle**, dont l'identifiant est attribué par l'opérateur au lot
+> d'implémentation.
+
+**L'interface ne recalcule pas cette appartenance.** Elle consomme la projection ;
+elle ne lit jamais directement le verdict, et n'en teste jamais la classe
+([`11`](11_frontiere_ui.md) §2).
+
+### 1.3 Migration atomique du nom du dixième état
+
+Le code technique du dixième état est aujourd'hui `mission_ouverte`. **Ce nom est
+contractuellement ambigu** : il désigne la **session robot active**, alors que son
+libellé annonçait une mission. Sa substitution est **due**, et elle obéit à trois
+règles.
+
+1. **Le nom contractuel et le nom technique changent ensemble**, en une seule
+   fois.
+2. **Remplacement, jamais duplication.** L'attribut est **renommé** ; aucun second
+   attribut n'est créé, aucun alias, aucune double exposition, aucun repli sur
+   l'ancien nom.
+3. **Aucune coexistence des deux noms n'est admise, fût-elle transitoire.**
+   Producteur, contrats, vérification mécanique et interface basculent dans le
+   **même mouvement**.
+
+> **État transitoire, assumé et borné.** Le présent acte aligne le **libellé**
+> contractuel et la sémantique ; il **ne substitue pas** le code technique, dont
+> la bascule appartient au mouvement atomique ci-dessus. Jusque-là, le libellé dit
+> « session robot active » et le code dit encore `mission_ouverte`. Cet écart est
+> **écrit**, non subi, et il n'ouvre **aucune** coexistence de deux noms : il n'y
+> a toujours qu'**un seul** code pour cet état, et le vocabulaire reste clos à dix
+> codes (`ASP-INV-44`).
+>
+> **Ce que le renommage ne change pas.** La **dérivation** reste celle du seul
+> témoin natif de session, et le **vocabulaire de valeurs rendu** est **conservé
+> tel quel**. Le nom devient exact ; la sémantique était déjà celle-là.
+
 ---
 
 ## 2. Autorité des témoins
 
 | Question | Témoin faisant autorité | Statut |
 |---|---|---|
+| **Une mission Arsenal est-elle ouverte ?** | Le **verdict de mission** — appartenance à la classe `O`, `O-R` comprise | **Autorité exclusive** ([`15`](15_conduite_et_supervision.md) §2, `ASP-INV-87`). **Aucun témoin natif ne l'établit** |
 | **Le robot bouge-t-il ?** | L'**état du `vacuum`** — `cleaning`, `returning` | **Autorité** ([`01`](01_finalite_et_perimetre.md) §7) |
 | **Quelle activité précise ?** | `sensor.roborock_q7_max_etat` — énumération **non exhaustive** : `charger_disconnected`, `cleaning`, `segment_cleaning`, `zoned_cleaning`, `paused`, `returning_home`, `docking`, `charging`, `error`, `device_offline`… | **Autorité** pour l'activité et la garde anti-double-lancement. Ses valeurs sont **partitionnées en quatre classes fermées** par [`07`](07_moteur_de_mission.md) §5.0 |
 | **Une session est-elle inachevée ?** | `binary_sensor.roborock_q7_max_nettoyage` | Autorité **de sa seule sémantique** — voir §3 |
@@ -170,13 +281,19 @@ mutuellement exclusives**. Ils ne se recouvrent jamais.
 >
 > - **pause** n'a de sens que sur une activité en cours ;
 > - **reprise** n'a de sens que depuis une pause, session ouverte — c'est la garde de `ASP-INV-62` ([`07`](07_moteur_de_mission.md) §7.1) ;
-> - **arrêt** n'a de sens que sur une mission ouverte ;
+> - **arrêt** n'a de sens que sur une **mission Arsenal ouverte** ;
 > - **retour à la base** n'a de sens que si le robot n'y est pas déjà, et n'y va
 >   pas déjà.
 >
 > Hors de ces conditions, le geste n'est **pas présenté comme disponible**
 > ([`commandabilite.md`](../../architecture/03_doctrines/commandabilite.md) §6.1)
 > — il n'est pas non plus « proposé puis ignoré ».
+>
+> **Le sens physique n'est pas l'autorité.** Cet invariant borne ce qu'un geste
+> aurait à **ordonner** ; il ne dit pas **sur quelle autorité** son offre se
+> règle. Cette seconde question relève d'`ASP-INV-97`
+> ([`15`](15_conduite_et_supervision.md) §3.3), et les deux conditions se
+> **cumulent**.
 
 **Capacités réellement exposées.** Les gestes de conduite retenus sont ceux que
 l'appareil déclare supporter et que l'audit a relevés comme tels. Le domaine

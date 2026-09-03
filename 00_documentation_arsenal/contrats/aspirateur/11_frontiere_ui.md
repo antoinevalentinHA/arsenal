@@ -45,6 +45,9 @@ chapitre l'instancie pour le domaine sans la redéfinir.
 | **Présenter comme disponible un geste sans sens physique**, ou un profil dont le prérequis matériel est absent | `ASP-INV-13`, `ASP-INV-48` ; [`commandabilite.md`](../../architecture/03_doctrines/commandabilite.md) §6.1 |
 | **Recaler la sélection de profil sur le profil courant remonté après mission** | `ASP-INV-16` |
 | **Masquer une indisponibilité** derrière un état nominal ou une dernière valeur connue | `ASP-INV-45` |
+| **Lire directement le helper de verdict de mission** | L'UI **consomme la projection métier** (`ASP-INV-96`) ; elle ne recalcule ni ne teste la classe du verdict. Cette interdiction est **mécaniquement** garantie, et son ouverture nominative à un lecteur pur ne la relâche pas |
+| **Restituer sous un même libellé la mission Arsenal ouverte et la session robot active** | Deux notions, deux autorités, deux rendus ([`08`](08_etats_et_observation.md) §1.1, `ASP-INV-44`) |
+| **Adosser la navigation du domaine au verdict** ou à la projection métier | La tuile de navigation restitue une **présence physique** ; elle reste adossée à l'**activité physique** du robot (§3 bis) |
 
 ---
 
@@ -56,14 +59,41 @@ chapitre l'instancie pour le domaine sans la redéfinir.
    sélection de profil et de passages (`ASP-INV-16`).
 3. **Restituer les états canoniques distinctement** — les **dix** du
    chapitre [`08`](08_etats_et_observation.md), sans agrégation de confort
-   (`ASP-INV-44`). **Mission ouverte** se superpose aux neuf autres et se rend
-   **séparément**, jamais fondu dans la valeur d'état (`ASP-INV-68`).
+   (`ASP-INV-44`). La **session robot active** se superpose aux neuf autres et se
+   rend **séparément**, jamais fondue dans la valeur d'état (`ASP-INV-68`).
 4. **Restituer les motifs de refus et d'échec** tels que produits, de façon
    lisible et non tronquée (`ASP-INV-50`).
 5. **Isoler l'action de la lecture** — les cartes d'action sont physiquement
    séparées des cartes d'état, conformément à la doctrine UI transverse.
 6. **Confirmer explicitement** le lancement d'une mission : c'est une action
    physique sur un équipement mobile, jamais un basculement d'un clic.
+7. **Employer l'autorité adaptée à chaque usage** — l'**autorité métier** pour ce
+   qui relève de la responsabilité d'Arsenal, l'**autorité native** pour ce qui
+   relève de l'activité physique du robot
+   ([`08`](08_etats_et_observation.md) §1.1). Les deux peuvent **légitimement
+   diverger**, et l'interface ne résorbe pas cette divergence : elle la **rend**.
+8. **Restituer les deux notions sous des libellés distincts** — ce qui est rendu
+   comme **mission Arsenal** ne porte jamais le libellé de ce qui est rendu comme
+   **session robot**. La mission Arsenal se lit sur la **projection métier**
+   (`ASP-INV-96`) ; la session robot se lit sur l'attribut orthogonal du
+   chapitre [`08`](08_etats_et_observation.md) §1.
+
+---
+
+## 3 bis. Navigation — adossée à l'activité physique
+
+La tuile du domaine dans la navigation Arsenal restitue une **présence physique**.
+Sa coloration reste adossée à l'**activité physique du robot** — état canonique et
+classe de partition —, **jamais** au verdict ni à la projection métier.
+
+**C'est une décision, pas un état de fait à faire évoluer.** Y substituer la
+responsabilité métier changerait la réalité que la couleur donne à lire : un robot
+physiquement actif sur une mission externe cesserait d'être signalé, et une mission
+Arsenal ouverte robot immobile serait peinte comme une activité. Les deux seraient
+faux.
+
+**L'abstention est conservée** : lorsque l'état du domaine est inobservable, le
+colorant **s'abstient** plutôt que de peindre un nominal (`ASP-INV-45`).
 
 ---
 

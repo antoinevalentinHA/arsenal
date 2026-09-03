@@ -50,7 +50,8 @@ Les rôles sont notés `‹…›`, convention du domaine
 |---|---|
 | `‹verdict_de_mission›` | Le résultat de la validation : autorisée, ou refusée avec son code ([`09`](09_refus_et_diagnostics.md)) |
 | `‹motif_lisible›` | La justification humaine alignée sur le code de refus ou d'échec |
-| `‹etat_canonique›` | L'état du domaine parmi les **dix** du chapitre [`08`](08_etats_et_observation.md), `‹mission_ouverte›` étant rendu séparément (`ASP-INV-68`) |
+| `‹etat_canonique›` | L'état du domaine parmi les **dix** du chapitre [`08`](08_etats_et_observation.md), la **session robot active** étant rendue séparément (`ASP-INV-68`, [`08`](08_etats_et_observation.md) §1.1) |
+| `‹projection_mission_arsenal_ouverte›` | L'appartenance du verdict à la classe `O`, sous-classe `O-R` comprise, **projetée vers l'interface**. **Lecteur pur** — lit le verdict, ne l'écrit jamais. **Source exclusive**, aucun témoin natif. Rend son indisponibilité explicitement (`ASP-INV-96`) |
 | `‹derniere_intention_lancee›` | La trace de l'intention effectivement émise — jamais relue depuis l'appareil (`ASP-INV-15`) |
 
 > **`ASP-INV-70` — vocabulaire de cycle de vie du verdict, fermé et distinct.**
@@ -71,6 +72,21 @@ Les rôles sont notés `‹…›`, convention du domaine
 > **mécaniquement confronté** : une valeur écrite hors de cet ensemble est une
 > non-conformité, au même titre qu'un motif de refus hors catalogue
 > (`ASP-INV-52`).
+
+> **La projection de mission n'a pas d'identifiant ici non plus.**
+> `ASP-INV-58` s'applique à `‹projection_mission_arsenal_ouverte›` **sans
+> réserve** : ce contrat ne propose ni `entity_id`, ni `unique_id`, ni nom
+> affiché, ni nom de fichier. Il décrit un **rôle** ; son identifiant est
+> **attribué par l'opérateur** au lot d'implémentation, et son statut de lecteur
+> pur est déjà opposable par `ASP-INV-96`
+> ([`08`](08_etats_et_observation.md) §1.2).
+
+> **L'autorisation de lecture du verdict ouverte à ce rôle est NOMINATIVE.**
+> Elle **nomme un fichier**, jamais un motif, une famille ni un répertoire. C'est
+> la propriété qui donne à cette autorisation sa valeur de contrôle : une
+> autorisation par motif cesserait d'être vérifiable fichier par fichier. Le
+> précédent est **déjà constitué** — d'autres lecteurs purs du verdict sont
+> autorisés de la même façon, et prouvés ne jamais l'écrire (`ASP-INV-86`).
 
 ### 2.4 Maintenance
 
