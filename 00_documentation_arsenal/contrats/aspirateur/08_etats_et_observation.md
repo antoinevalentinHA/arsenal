@@ -132,13 +132,25 @@ aucune ne se déduit de l'autre.
 > fichier, jamais un motif, une famille ni un répertoire.
 >
 > **Trois régimes, dont le troisième est explicite.** Mission Arsenal ouverte ·
-> aucune mission Arsenal ouverte · **impossibilité de conclure**. `unknown`,
-> `unavailable` et toute valeur **hors vocabulaire** ne valent **jamais**
-> « aucune mission Arsenal » : ils sont rendus comme **indisponibilité**
-> (`ASP-INV-45`). Le cas n'est pas théorique — le helper de verdict ne porte
-> **aucune valeur initiale**, et vaut donc `unknown` au premier démarrage ; et le
-> hors-vocabulaire est **extérieur à la partition** en quatre classes
-> ([`15`](15_conduite_et_supervision.md) §2).
+> aucune mission Arsenal ouverte · **impossibilité de conclure**. **Dans cette
+> projection**, `unknown`, `unavailable` et toute valeur **hors vocabulaire** ne
+> valent **jamais** « aucune mission Arsenal » : ils y sont rendus comme
+> **indisponibilité** (`ASP-INV-45`). Le cas n'est pas théorique — le helper de
+> verdict ne porte **aucune valeur initiale**, et vaut donc `unknown` au premier
+> démarrage ; et le hors-vocabulaire est **extérieur à la partition** en quatre
+> classes ([`15`](15_conduite_et_supervision.md) §2).
+>
+> **La borne est celle du RENDU, et elle ne gouverne qu'elle.** Cette règle dit ce
+> que la projection **restitue** à l'interface. Elle ne dit **rien** de ce qu'un
+> objet backend a le droit de conclure pour son propre compte. En particulier, la
+> **garde d'entrée du moteur** ne s'arrête que sur un verdict **de classe `O`** et
+> **poursuit** sur toute autre valeur, `unknown` compris
+> ([`15`](15_conduite_et_supervision.md) §2) : ce n'est **pas** un rabattement de
+> l'indisponibilité sur « aucune mission », car cette garde ne **rend** rien à
+> l'opérateur — elle décide seulement de ne pas se taire. **Ne pas restituer une
+> indisponibilité comme une absence de mission**, et **ne pas ouvrir une mission
+> sur une valeur indéterminée**, sont deux exigences **distinctes** qui ne se
+> contredisent pas. Ce comportement interne reste **légitime et inchangé**.
 >
 > **Aucun identifiant n'est proposé ici** (`ASP-INV-58`) : ce chapitre décrit un
 > **rôle**, dont l'identifiant est attribué par l'opérateur au lot
