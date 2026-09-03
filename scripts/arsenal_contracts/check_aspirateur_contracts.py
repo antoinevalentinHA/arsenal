@@ -273,15 +273,25 @@ exécute les arbitrages `Q1` et `Q2` :
                           chapitre 08. Refus de toute occurrence technique
                           supplémentaire ou déplacée, et refus du code de
                           REMPLACEMENT tant que le mouvement atomique du lot 5
-                          n'a pas eu lieu. La détection est STRUCTURÉE — clé
-                          d'attribut, slot Lovelace, constante de module —
-                          car le code de remplacement figure DÉJÀ au dépôt
-                          dans le seul nom du fichier d'arbitrage `Q1` : une
-                          recherche de chaîne brute serait rouge dès sa
-                          livraison. Ce contrôle a une MORT PROGRAMMÉE : le
-                          lot 5 supprime l'allowlist et lui substitue, dans le
-                          même mouvement, la règle permanente de ZÉRO
-                          occurrence (08 §1.3).
+                          n'a pas eu lieu. Le cardinal des deux fichiers gelés
+                          est lu DEUX FOIS : en FORME, par analyse structurée
+                          des clés d'attribut du producteur et des slots de
+                          restitution de l'arbre Lovelace ; en NOMBRE, par
+                          recomptage du fichier une fois NEUTRALISÉS les
+                          commentaires YAML — pleine ligne comme fin de ligne.
+                          La première dit ce que les emplois SONT, la seconde
+                          rattrape ceux qui ne sont ni clé ni slot : une
+                          lecture Jinja de l'attribut, une carte qui le
+                          restitue. Dans les CONTRATS, les destinations de
+                          liens Markdown sont neutralisées d'abord — un
+                          chapitre doit pouvoir renvoyer à l'arbitrage `Q1`,
+                          dont le NOM DE FICHIER porte le code de
+                          remplacement. Les mentions documentaires hors
+                          contrats et hors ce module ne sont PAS des emplois
+                          techniques et ne sont pas balayées. Ce contrôle a
+                          une MORT PROGRAMMÉE : le lot 5 supprime l'allowlist
+                          et lui substitue, dans le même mouvement, la règle
+                          permanente de ZÉRO occurrence (08 §1.3).
   ASP-CI-45 Offre gestes — l'offre d'un geste de conduite Arsenal se règle sur
                           le verdict, et sur lui seul : la garde de classe `O`
                           PRÉCÈDE le dispatch et n'écrit rien ; l'ARRÊT ne
@@ -10858,6 +10868,60 @@ def selftest() -> None:
         rt0, {**_dep0, _ui: _dep0[_ui] + _note}, _dom),
         "CI-44 commentaire dans le panneau reste vert")
 
+    # ---- N1 : le COMMENTAIRE, sous ses trois formes ---------------------
+    # Le helper est eprouve d'abord SEUL, sur des lignes construites : c'est
+    # la seule facon de separer ce qu'il neutralise de ce que le controle en
+    # fait ensuite. Puis les memes formes sont jouees sur les fichiers REELS.
+    for _ligne, _att, _quoi in (
+            (f"# {ETAT_ORTHOGONAL}", 0, "commentaire pleine ligne"),
+            (f"    # {ETAT_ORTHOGONAL} indente", 0, "commentaire indente"),
+            (f"attributes:  # {ETAT_ORTHOGONAL}, retire au lot 5", 0,
+             "commentaire de fin de ligne, aucun emploi avant"),
+            (f"      attribute: {ETAT_ORTHOGONAL}  # explicatif", 1,
+             "EMPLOI avant le marqueur, commentaire apres"),
+            (f'  c: "texte # {ETAT_ORTHOGONAL} en chaine"', 1,
+             "marqueur DANS une chaine quotee"),
+            (f'  couleur: "#ffffff"  # {ETAT_ORTHOGONAL}', 0,
+             "marqueur colle a un mot, puis vrai commentaire")):
+        _n = sans_commentaires_ligne(_ligne).count(ETAT_ORTHOGONAL)
+        assert _n == _att, f"N1 : {_quoi} — compte {_n}, attendu {_att}"
+        c.conformes += 1
+
+    # Les memes formes, sur les fichiers geles : le controle reste VERT.
+    for _rel, _forme, _quoi in (
+            (RUNTIME_ETAT, f"\n# note : {ETAT_ORTHOGONAL} bascule au lot 5\n",
+             "commentaire pleine ligne chez le producteur"),
+            (RUNTIME_ETAT, f"\n    # {ETAT_ORTHOGONAL} — indente\n",
+             "commentaire indente chez le producteur"),
+            (_ui, f"\n# note : {ETAT_ORTHOGONAL} bascule au lot 5\n",
+             "commentaire pleine ligne dans le panneau")):
+        c.conforme(check_ancien_code_transitoire(
+            rt0 if _rel == _ui else {**rt0, _rel: rt0[_rel] + _forme},
+            {**_dep0, _rel: _dep0[_rel] + _forme}, _dom),
+            f"CI-44 {_quoi} reste vert")
+
+    # Un commentaire de FIN DE LIGNE, greffe sur une ligne qui ne porte aucun
+    # emploi : le total ne doit pas bouger.
+    _fin = _mut(_dep0, RUNTIME_ETAT, "      attributes:\n",
+                f"      attributes:  # {ETAT_ORTHOGONAL}, migre au lot 5\n")
+    assert yaml.safe_load(_fin[RUNTIME_ETAT]) is not None, \
+        "N1 : la mutation de commentaire doit rester un YAML valide"
+    c.conforme(check_ancien_code_transitoire(
+        {**rt0, RUNTIME_ETAT: _fin[RUNTIME_ETAT]}, _fin, _dom),
+        "CI-44 commentaire de fin de ligne reste vert")
+
+    # L'EMPLOI reste compte quand un commentaire le suit sur la meme ligne :
+    # la neutralisation coupe APRES le marqueur, jamais avant.
+    _avant = _mut(_dep0, _ui,
+                  f"              attribute: {ETAT_ORTHOGONAL}\n",
+                  f"              attribute: {ETAT_ORTHOGONAL}\n"
+                  f"              attribute: {ETAT_ORTHOGONAL}  # note\n")
+    _errs_avant = check_ancien_code_transitoire(rt0, _avant, _dom)
+    assert not any("illisible" in e for e in _errs_avant), \
+        f"N1 : le rouge doit venir du COMPTAGE, pas d'un parse — {_errs_avant}"
+    c.viole(_errs_avant, "occurrence(s) techniques",
+            "CI-44 emploi suivi d'un commentaire reste compte")
+
     # ---- R1 : un EMPLOI qui n'est ni une cle ni un slot ------------------
     # Une lecture Jinja de l'attribut : l'analyse de FORME ne la voit pas —
     # ce n'est ni une cle d'attribut, ni un slot de restitution —, et seul
@@ -12713,6 +12777,46 @@ CLES_ATTRIBUT_UI = ("attribute", "attribut")
 CIBLE_LIEN_MD = re.compile(r"\]\([^)]*\)")
 
 
+def sans_commentaires_ligne(texte: str) -> str:
+    """Neutralise les commentaires YAML, PLEINE LIGNE ET FIN DE LIGNE.
+
+    `sans_commentaires_yaml` ne coupe que les lignes ENTIEREMENT commentees.
+    Une note posee a droite d'une valeur — `attribute: <code>  # a migrer` —
+    lui echappe, et un comptage textuel la prendrait pour un emploi.
+
+    Deux precautions, et elles suffisent aux formes que ces fichiers portent.
+
+      · un `#` n'ouvre un commentaire QUE s'il est en debut de ligne ou
+        precede d'une espace : `#` colle a un mot appartient au mot, comme
+        dans une couleur `#ffffff` ou une ancre ;
+      · un `#` situe DANS une chaine quotee n'ouvre rien du tout. L'etat de
+        citation est suivi caractere par caractere — un `split("#")` naif
+        amputerait ici une valeur legitime.
+
+    Ce n'est pas un parseur YAML, et cela ne pretend pas l'etre : les blocs
+    litteraux `|` et `>` ne sont pas suivis, de sorte qu'un `#` precede d'une
+    espace y serait coupe a tort. Aucun des deux fichiers geles n'en porte,
+    et la coupure irait dans le sens du REFUS de compter — elle ne peut pas
+    laisser passer un emploi, seulement en manquer un dans une forme absente
+    du depot. La limite est ecrite plutot que passee sous silence.
+    """
+    out = []
+    for ligne in sans_commentaires_yaml(texte).splitlines():
+        quote = None
+        coupe = None
+        for i, ch in enumerate(ligne):
+            if quote:
+                if ch == quote:
+                    quote = None
+            elif ch in "\"'":
+                quote = ch
+            elif ch == "#" and (i == 0 or ligne[i - 1] in " \t"):
+                coupe = i
+                break
+        out.append(ligne if coupe is None else ligne[:coupe])
+    return "\n".join(out)
+
+
 def _valeurs_de_slot(noeud, cles):
     """Les valeurs des slots dont la CLE appartient a `cles`."""
     if isinstance(noeud, dict):
@@ -12745,23 +12849,38 @@ def check_ancien_code_transitoire(textes_runtime, yaml_depot,
     migration a deja eu lieu. C'est ce que fait l'allowlist : elle ne tolere
     pas un nom, elle interdit qu'il se REPANDE.
 
-    La detection est STRUCTUREE la ou une recherche textuelle confondrait un
-    EMPLOI TECHNIQUE avec une simple mention : chez le producteur et dans
-    l'arbre Lovelace, seuls comptent les cles d'attribut et les slots de
-    restitution, et un commentaire qui nommerait le code ne repand rien.
-    Ces deux fichiers sont donc exclus du balayage textuel du depot.
+    CE QUE LE CONTROLE LIT, EXACTEMENT.
 
-    Elle est STRUCTUREE aussi pour le code de REMPLACEMENT, et il le faut :
-    ce token figure DEJA dix-sept fois au depot — dans le nom du fichier
-    d'arbitrage `Q1`, dans les liens qui le citent, et dans les mentions
-    d'attribution du chantier et du registre. Une recherche de chaine brute
-    sur tout le depot serait rouge des sa livraison, sur l'arbitrage meme qui
-    la fonde. Elle ne porte donc que sur le YAML de configuration et sur les
-    chapitres du contrat, ou ce token n'a aucune raison d'etre — et, dans ces
-    chapitres, les CIBLES de liens Markdown sont neutralisees d'abord : un
-    renvoi vers l'arbitrage `Q1` cite son NOM DE FICHIER, pas un code, et il
-    serait absurde qu'un chapitre ne puisse plus renvoyer a la note qui fonde
-    la regle. Le LIBELLE du lien, lui, reste lu.
+    Sur les DEUX FICHIERS GELES — le producteur et l'arbre Lovelace —, deux
+    lectures se completent, et aucune ne remplace l'autre :
+
+      · en FORME, l'analyse STRUCTUREE compte les cles declarees sous un bloc
+        `attributes:` et les valeurs des slots d'attribut. Elle seule fait
+        autorite sur CE QUE SONT ces emplois ;
+      · en NOMBRE, le meme cardinal borne le total des occurrences du code
+        dans le fichier, une fois NEUTRALISES les commentaires YAML — pleine
+        ligne comme fin de ligne. C'est ce qui rattrape un emploi qui n'est ni
+        cle ni slot : un `state_attr(..., '<code>')` en Jinja, une carte
+        markdown qui restitue l'attribut. La forme ne le verrait pas.
+
+    La neutralisation des commentaires est tout ce qui separe cette seconde
+    lecture d'un recomptage brut : une MENTION ne repand rien, un EMPLOI si.
+
+    SUR LES CONTRATS, la recherche porte sur le TOKEN technique — celui qui
+    s'ecrit avec des soulignes —, jamais sur la formulation metier, qui
+    s'ecrit avec des espaces et reste libre partout. Les DESTINATIONS de
+    liens Markdown y sont neutralisees d'abord : un renvoi vers l'arbitrage
+    `Q1` cite son NOM DE FICHIER, pas un code, et il serait absurde qu'un
+    chapitre ne puisse plus renvoyer a la note qui fonde la regle. Le LIBELLE
+    du lien, lui, reste lu. Le futur code technique y est refuse pendant tout
+    le regime transitoire.
+
+    CE QUI N'EST PAS BALAYE, et ce n'est pas un oubli. Les mentions
+    documentaires — arbitrages, audits, chantier, registres, index — ne sont
+    PAS des emplois techniques : elles nomment une decision, elles ne creent
+    ni cle, ni slot, ni lecture. Le perimetre se borne donc au YAML de
+    configuration, aux chapitres du contrat et a ce module. Un balayage plus
+    large serait rouge des sa livraison, sur l'arbitrage meme qui le fonde.
     """
     errs: list[str] = []
     ancien = ETAT_ORTHOGONAL
@@ -12833,7 +12952,7 @@ def check_ancien_code_transitoire(textes_runtime, yaml_depot,
         txt = yaml_depot.get(rel)
         if txt is None:
             continue
-        vus = sans_commentaires_yaml(txt).count(ancien)
+        vus = sans_commentaires_ligne(txt).count(ancien)
         if vus != attendu:
             errs.append(
                 f"ASP-CI-44 : `{rel}` porte {vus} occurrence(s) techniques de "
