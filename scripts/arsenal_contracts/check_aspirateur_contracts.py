@@ -277,16 +277,18 @@ exécute les arbitrages `Q1` et `Q2` :
                           est lu DEUX FOIS : en FORME, par analyse structurée
                           des clés d'attribut du producteur et des slots de
                           restitution de l'arbre Lovelace ; en NOMBRE, par
-                          recomptage du fichier une fois NEUTRALISÉS les
-                          commentaires YAML — pleine ligne comme fin de ligne.
-                          La première dit ce que les emplois SONT, la seconde
-                          rattrape ceux qui ne sont ni clé ni slot : une
-                          lecture Jinja de l'attribut, une carte qui le
-                          restitue. Dans les CONTRATS, les destinations de
-                          liens Markdown sont neutralisées d'abord — un
-                          chapitre doit pouvoir renvoyer à l'arbitrage `Q1`,
-                          dont le NOM DE FICHIER porte le code de
-                          remplacement. Les mentions documentaires hors
+                          recomptage du fichier une fois neutralisées les
+                          lignes ENTIÈREMENT commentées. La première dit ce que
+                          les emplois SONT, la seconde rattrape ceux qui ne
+                          sont ni clé ni slot : une lecture Jinja de
+                          l'attribut, une carte qui le restitue. RESTRICTION
+                          ASSUMÉE — un commentaire de FIN DE LIGNE n'est pas
+                          distingué d'un emploi et rend le contrôle ROUGE ;
+                          voir la docstring du contrôle. Dans les CONTRATS,
+                          les destinations de liens Markdown sont neutralisées
+                          d'abord — un chapitre doit pouvoir renvoyer à
+                          l'arbitrage `Q1`, dont le NOM DE FICHIER porte le
+                          code de remplacement. Les mentions documentaires hors
                           contrats et hors ce module ne sont PAS des emplois
                           techniques et ne sont pas balayées. Ce contrôle a
                           une MORT PROGRAMMÉE : le lot 5 supprime l'allowlist
@@ -10868,26 +10870,11 @@ def selftest() -> None:
         rt0, {**_dep0, _ui: _dep0[_ui] + _note}, _dom),
         "CI-44 commentaire dans le panneau reste vert")
 
-    # ---- N1 : le COMMENTAIRE, sous ses trois formes ---------------------
-    # Le helper est eprouve d'abord SEUL, sur des lignes construites : c'est
-    # la seule facon de separer ce qu'il neutralise de ce que le controle en
-    # fait ensuite. Puis les memes formes sont jouees sur les fichiers REELS.
-    for _ligne, _att, _quoi in (
-            (f"# {ETAT_ORTHOGONAL}", 0, "commentaire pleine ligne"),
-            (f"    # {ETAT_ORTHOGONAL} indente", 0, "commentaire indente"),
-            (f"attributes:  # {ETAT_ORTHOGONAL}, retire au lot 5", 0,
-             "commentaire de fin de ligne, aucun emploi avant"),
-            (f"      attribute: {ETAT_ORTHOGONAL}  # explicatif", 1,
-             "EMPLOI avant le marqueur, commentaire apres"),
-            (f'  c: "texte # {ETAT_ORTHOGONAL} en chaine"', 1,
-             "marqueur DANS une chaine quotee"),
-            (f'  couleur: "#ffffff"  # {ETAT_ORTHOGONAL}', 0,
-             "marqueur colle a un mot, puis vrai commentaire")):
-        _n = sans_commentaires_ligne(_ligne).count(ETAT_ORTHOGONAL)
-        assert _n == _att, f"N1 : {_quoi} — compte {_n}, attendu {_att}"
-        c.conformes += 1
-
-    # Les memes formes, sur les fichiers geles : le controle reste VERT.
+    # ---- Le COMMENTAIRE PLEINE LIGNE, et la RESTRICTION assumee ---------
+    # Ce qui est neutralise : la ligne ENTIEREMENT commentee, indentee ou
+    # non. Ce qui ne l'est pas : le commentaire de FIN DE LIGNE, qui compte
+    # donc comme un emploi et rend le controle ROUGE. C'est une restriction
+    # VOLONTAIRE, et le cas est joue ici pour qu'elle reste visible.
     for _rel, _forme, _quoi in (
             (RUNTIME_ETAT, f"\n# note : {ETAT_ORTHOGONAL} bascule au lot 5\n",
              "commentaire pleine ligne chez le producteur"),
@@ -10900,27 +10887,35 @@ def selftest() -> None:
             {**_dep0, _rel: _dep0[_rel] + _forme}, _dom),
             f"CI-44 {_quoi} reste vert")
 
-    # Un commentaire de FIN DE LIGNE, greffe sur une ligne qui ne porte aucun
-    # emploi : le total ne doit pas bouger.
+    # La RESTRICTION, jouee et non passee sous silence : un commentaire de
+    # FIN DE LIGNE est compte comme un emploi, et le controle est ROUGE. Le
+    # distinguer demanderait de suivre l'etat de citation, les blocs plies et
+    # les echappements — un mini-parseur YAML dont la moindre lacune
+    # produirait un FAUX VERT sur un emploi reel. Le regime transitoire
+    # prefere le faux rouge : les deux fichiers geles n'ont, jusqu'au lot 5,
+    # qu'a s'abstenir de cette forme.
     _fin = _mut(_dep0, RUNTIME_ETAT, "      attributes:\n",
                 f"      attributes:  # {ETAT_ORTHOGONAL}, migre au lot 5\n")
     assert yaml.safe_load(_fin[RUNTIME_ETAT]) is not None, \
-        "N1 : la mutation de commentaire doit rester un YAML valide"
-    c.conforme(check_ancien_code_transitoire(
-        {**rt0, RUNTIME_ETAT: _fin[RUNTIME_ETAT]}, _fin, _dom),
-        "CI-44 commentaire de fin de ligne reste vert")
+        "la mutation de commentaire doit rester un YAML valide"
+    _errs_fin = check_ancien_code_transitoire(
+        {**rt0, RUNTIME_ETAT: _fin[RUNTIME_ETAT]}, _fin, _dom)
+    assert not any("illisible" in e for e in _errs_fin), \
+        f"le rouge doit venir du COMPTAGE, pas d'un parse — {_errs_fin}"
+    c.viole(_errs_fin, "occurrence(s) techniques",
+            "CI-44 commentaire de fin de ligne — faux rouge ASSUME")
 
-    # L'EMPLOI reste compte quand un commentaire le suit sur la meme ligne :
-    # la neutralisation coupe APRES le marqueur, jamais avant.
-    _avant = _mut(_dep0, _ui,
-                  f"              attribute: {ETAT_ORTHOGONAL}\n",
-                  f"              attribute: {ETAT_ORTHOGONAL}\n"
-                  f"              attribute: {ETAT_ORTHOGONAL}  # note\n")
-    _errs_avant = check_ancien_code_transitoire(rt0, _avant, _dom)
-    assert not any("illisible" in e for e in _errs_avant), \
-        f"N1 : le rouge doit venir du COMPTAGE, pas d'un parse — {_errs_avant}"
-    c.viole(_errs_avant, "occurrence(s) techniques",
-            "CI-44 emploi suivi d'un commentaire reste compte")
+    # Les deux formes que le regime de surete rattrape, et qu'un helper de
+    # coupure aurait manquees : un emploi apres un `#` LITTERAL dans un bloc
+    # plie, et un emploi dans une chaine multiligne a guillemet echappe.
+    _bloc = ("      note: >\n"
+             f"        libre # {ETAT_ORTHOGONAL} dans un bloc plie\n")
+    _errs_bloc = check_ancien_code_transitoire(
+        rt0, _mut(_dep0, RUNTIME_ETAT, "      attributes:\n",
+                  _bloc + "      attributes:\n"), _dom)
+    assert not any("illisible" in e for e in _errs_bloc), _errs_bloc
+    c.viole(_errs_bloc, "occurrence(s) techniques",
+            "CI-44 emploi apres un # litteral dans un bloc plie")
 
     # ---- R1 : un EMPLOI qui n'est ni une cle ni un slot ------------------
     # Une lecture Jinja de l'attribut : l'analyse de FORME ne la voit pas —
@@ -12777,46 +12772,6 @@ CLES_ATTRIBUT_UI = ("attribute", "attribut")
 CIBLE_LIEN_MD = re.compile(r"\]\([^)]*\)")
 
 
-def sans_commentaires_ligne(texte: str) -> str:
-    """Neutralise les commentaires YAML, PLEINE LIGNE ET FIN DE LIGNE.
-
-    `sans_commentaires_yaml` ne coupe que les lignes ENTIEREMENT commentees.
-    Une note posee a droite d'une valeur — `attribute: <code>  # a migrer` —
-    lui echappe, et un comptage textuel la prendrait pour un emploi.
-
-    Deux precautions, et elles suffisent aux formes que ces fichiers portent.
-
-      · un `#` n'ouvre un commentaire QUE s'il est en debut de ligne ou
-        precede d'une espace : `#` colle a un mot appartient au mot, comme
-        dans une couleur `#ffffff` ou une ancre ;
-      · un `#` situe DANS une chaine quotee n'ouvre rien du tout. L'etat de
-        citation est suivi caractere par caractere — un `split("#")` naif
-        amputerait ici une valeur legitime.
-
-    Ce n'est pas un parseur YAML, et cela ne pretend pas l'etre : les blocs
-    litteraux `|` et `>` ne sont pas suivis, de sorte qu'un `#` precede d'une
-    espace y serait coupe a tort. Aucun des deux fichiers geles n'en porte,
-    et la coupure irait dans le sens du REFUS de compter — elle ne peut pas
-    laisser passer un emploi, seulement en manquer un dans une forme absente
-    du depot. La limite est ecrite plutot que passee sous silence.
-    """
-    out = []
-    for ligne in sans_commentaires_yaml(texte).splitlines():
-        quote = None
-        coupe = None
-        for i, ch in enumerate(ligne):
-            if quote:
-                if ch == quote:
-                    quote = None
-            elif ch in "\"'":
-                quote = ch
-            elif ch == "#" and (i == 0 or ligne[i - 1] in " \t"):
-                coupe = i
-                break
-        out.append(ligne if coupe is None else ligne[:coupe])
-    return "\n".join(out)
-
-
 def _valeurs_de_slot(noeud, cles):
     """Les valeurs des slots dont la CLE appartient a `cles`."""
     if isinstance(noeud, dict):
@@ -12858,13 +12813,34 @@ def check_ancien_code_transitoire(textes_runtime, yaml_depot,
         `attributes:` et les valeurs des slots d'attribut. Elle seule fait
         autorite sur CE QUE SONT ces emplois ;
       · en NOMBRE, le meme cardinal borne le total des occurrences du code
-        dans le fichier, une fois NEUTRALISES les commentaires YAML — pleine
-        ligne comme fin de ligne. C'est ce qui rattrape un emploi qui n'est ni
-        cle ni slot : un `state_attr(..., '<code>')` en Jinja, une carte
-        markdown qui restitue l'attribut. La forme ne le verrait pas.
+        dans le fichier, une fois neutralisees les lignes ENTIEREMENT
+        commentees. C'est ce qui rattrape un emploi qui n'est ni cle ni
+        slot : un `state_attr(..., '<code>')` en Jinja, une carte markdown
+        qui restitue l'attribut. La forme ne le verrait pas.
 
-    La neutralisation des commentaires est tout ce qui separe cette seconde
-    lecture d'un recomptage brut : une MENTION ne repand rien, un EMPLOI si.
+    RESTRICTION ASSUMEE, ET C'EST UNE DECISION.
+
+    Seules les lignes ENTIEREMENT commentees sont neutralisees. Un
+    commentaire de FIN DE LIGNE — `attributes:  # <code>, migre au lot 5` —
+    n'est PAS distingue d'un emploi technique : il compte, et le controle
+    devient ROUGE. C'est un FAUX ROUGE, et il est accepte.
+
+    Le distinguer demanderait de suivre l'etat de citation, les blocs plies
+    et litteraux, les echappements — un mini-parseur YAML. La moindre lacune
+    d'un tel parseur ne produirait pas un faux rouge de plus : elle
+    produirait un FAUX VERT sur un emploi REEL. Un `#` litteral dans un bloc
+    plie, ou dans une chaine multiligne, suffirait a faire disparaitre du
+    comptage tout ce qui le suit. Ce module ne developpe donc AUCUN parseur
+    supplementaire, et ce controle prefere echouer du cote sur.
+
+    La contrepartie est explicite et bornee dans le temps : jusqu'a la
+    suppression d'ASP-CI-44 au lot 5, les deux fichiers geles ne doivent pas
+    introduire de commentaire de fin de ligne contenant le code historique.
+    La note de migration s'ecrit sur sa propre ligne.
+
+    Ce module ne pretend couvrir correctement ni les blocs YAML plies ou
+    litteraux, ni les chaines multilignes, ni les guillemets echappes. Il
+    n'en a pas besoin : il les COMPTE, et c'est le sens de la restriction.
 
     SUR LES CONTRATS, la recherche porte sur le TOKEN technique — celui qui
     s'ecrit avec des soulignes —, jamais sur la formulation metier, qui
@@ -12952,7 +12928,7 @@ def check_ancien_code_transitoire(textes_runtime, yaml_depot,
         txt = yaml_depot.get(rel)
         if txt is None:
             continue
-        vus = sans_commentaires_ligne(txt).count(ancien)
+        vus = sans_commentaires_yaml(txt).count(ancien)
         if vus != attendu:
             errs.append(
                 f"ASP-CI-44 : `{rel}` porte {vus} occurrence(s) techniques de "
