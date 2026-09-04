@@ -311,7 +311,7 @@ views:
                   # (onglets States / Template / YAML sur la même page)
                   - type: custom:button-card
                     template: bouton_navigation
-                    name: Outils Dev
+                    name: Outils
                     icon: mdi:tools
                     styles:
                       icon:
