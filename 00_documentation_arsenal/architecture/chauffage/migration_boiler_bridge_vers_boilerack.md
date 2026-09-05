@@ -4,8 +4,8 @@
 
 | Champ | Valeur |
 |---|---|
-| **Version** | v7 |
-| **Statut** | Cadrage — normatif pour le Lot 1 ; **§12, §13 et §14 consignent trois épreuves terrain** |
+| **Version** | v8 |
+| **Statut** | Cadrage — normatif pour le Lot 1 ; **§12 à §15 consignent quatre épreuves terrain ; §16 prononce la clôture fonctionnelle** |
 | **Portée** | Recâblage des consommateurs Home Assistant du bus MQTT chaudière |
 | **Complète** | `interface_ha_boiler_bridge.md` — qu'il **ne remplace pas encore** |
 
@@ -22,10 +22,13 @@
 > | **§10.5** budget de confirmation / attente | **CONFRONTÉE seulement** — la réserve quantitative est **MAINTENUE** |
 > | **§10.6** préfixe déployé | **valeur observée et corroborée** — l'exigence de revérification est **MAINTENUE** |
 >
-> Une seule réserve du §11 est levée, la troisième, et **pour les seuls rôles
-> éprouvés**. Le §13 consigne l'épreuve A-6 sur `heating_setpoint`, le §14
-> l'épreuve A-7 sur `heating_curve_shift`.
-> **`heating_curve_slope` demeure le SEUL rôle non éprouvé en écriture.**
+> La troisième réserve du §11 est levée, **et pour les QUATRE rôles** : §12 A-5
+> `dhw_setpoint`, §13 A-6 `heating_setpoint`, §14 A-7 `heating_curve_shift`,
+> §15 A-8 `heating_curve_slope`.
+>
+> **Aucun rôle ne demeure non éprouvé en écriture.** Le §16 prononce la
+> **clôture fonctionnelle** de la migration — et énumère, sans complaisance, ce
+> que ces quatre preuves **n'établissent pas**.
 
 ---
 
@@ -378,12 +381,12 @@ ping et par la synthèse de connectivité, aux côtés d'entités ping homogène
 2. **La limite de reconnexion de Boilerack n'est pas corrigée** par ce chantier :
    elle est **contournée** par le garde. La corriger relèverait de Boilerack.
 3. ~~**Aucune capacité de production n'est revendiquée** : ce document fige un
-   contrat, il ne l'éprouve pas.~~ — **LEVÉE pour TROIS rôles sur quatre** :
+   contrat, il ne l'éprouve pas.~~ — **LEVÉE, pour les QUATRE rôles sur quatre** :
    `dhw_setpoint` par A-5 (§12), `heating_setpoint` par A-6 (§13),
-   `heating_curve_shift` par A-7 (§14). La chaîne Arsenal → Boilerack →
-   chaudière est éprouvée de bout en bout, écriture réelle comprise, par **deux
-   chemins d'appel distincts** — l'appel direct et l'appel dérivé.
-   **`heating_curve_slope` demeure le SEUL rôle NON ÉPROUVÉ en écriture.**
+   `heating_curve_shift` par A-7 (§14), `heating_curve_slope` par A-8 (§15).
+   La chaîne Arsenal → Boilerack → chaudière est éprouvée de bout en bout,
+   écriture réelle comprise, par **deux chemins d'appel distincts** — l'appel
+   direct et l'appel dérivé. **Voir §16 pour la portée exacte de cette levée.**
 
 ---
 
@@ -538,7 +541,8 @@ créer aucune demande de chauffe.
   écriture** *à la date de A-6*. Ce sont des grandeurs de **calibration**, que le
   contrat de retry classe explicitement **non retryables** : leur épreuve
   appellera des précautions propres, et ne se déduit pas de A-6.
-  `heating_curve_shift` l'a été depuis, par A-7 : voir §14.
+  Tous deux l'ont été depuis : `heating_curve_shift` par A-7 (§14),
+  `heating_curve_slope` par A-8 (§15).
 - Le **comportement en refus** reste non éprouvé, pour aucun rôle.
 - La **marge** entre budget de confirmation et attente : deux échantillons de
   plus, toujours pas une caractérisation.
@@ -642,7 +646,8 @@ l'affirme donc pas comme un fait.
 
 ### 14.5 Ce que A-7 n'établit pas
 
-- **`heating_curve_slope` demeure le SEUL rôle NON ÉPROUVÉ en écriture.** Sa
+- **`heating_curve_slope` demeure le SEUL rôle NON ÉPROUVÉ en écriture** *à la
+  date de A-7* ; il l'a été depuis, par A-8 : voir §15. Sa
   forme diffère : c'est le seul rôle **à virgule**. Relevé en **source primaire**,
   par énumération du profil de production du code **réellement installé** :
   type flottant, bornes `[0.2 ; 3.5]`, pas `0.1`, tolérance de confirmation
@@ -653,3 +658,130 @@ l'affirme donc pas comme un fait.
 - La **boucle d'auto-ajustement** de la courbe, qui écrit ce même paramètre à
   10:00 chaque jour sous conditions, **n'a pas été exercée** : l'épreuve a été
   conduite hors de sa fenêtre, délibérément.
+
+---
+
+## 15. Épreuve terrain A-8 — `heating_curve_slope`, le rôle flottant
+
+> **Une exécution unique, autorisée nommément, sur le seul rôle
+> `heating_curve_slope`.** Le dernier des quatre, et le seul **à virgule**.
+
+### 15.1 Ce qui rendait ce rôle différent
+
+C'est le **seul rôle FLOTTANT** de la surface d'écriture. Relevé en source
+primaire sur le profil de production du code **réellement installé** : type
+flottant, bornes `[0.2 ; 3.5]`, pas `0.1`, tolérance de confirmation `1e-09`.
+Les trois autres rôles sont entiers, de tolérance nulle.
+
+Deux conséquences, l'une écartée avant l'essai, l'autre assumée :
+
+**Le contrôle de pas côté Arsenal ne ressemble pas à celui des rôles entiers.**
+Il procède par multiplication flottante — le genre d'expression qui échoue sur
+des valeurs comme `0.3 × 10`. **Exercé sur les 34 valeurs du domaine avant
+l'essai : 34 acceptées, 0 refusée.** Côté amont, la validation de grille de
+l'écrivain souverain — indice de grille le plus proche puis comparaison robuste
+à `1e-9`, sans modulo naïf — en refuse **0 sur 34** également, exercée sur le
+code installé. **Les deux validations concordent sur tout le domaine : le piège
+était plausible, il n'était pas réel.**
+
+**La confirmation à `1e-09` sur un flottant, en revanche, restait un risque
+assumé.** Une campagne amont antérieure avait mesuré qu'elle suffit pour la
+valeur `1.9` ; **`1.7` n'avait jamais été confirmée en vol.**
+
+### 15.2 Ce qui a été exécuté
+
+| # | Geste | Constat |
+|---|---|---|
+| 0 | valeur initiale | **1.8** |
+| 1 | `input_number.chauffage_pente_consigne` **1.8 → 1.7** | **modification native** |
+| 2 | déclenchement | **chemin natif Arsenal** |
+| 3 | émission | `role = heating_curve_slope`, `value = 1.7` |
+| 4 | acquittement | **`applied`** corrélé |
+| 5 | relecture chaudière | **1.7** |
+| 6 | restauration **1.7 → 1.8** | **même chemin natif** |
+| 7 | corrélation | **nouveau `request_id`, distinct du premier** |
+| 8 | acquittement | **`applied`** corrélé |
+| 9 | relecture finale | **1.8** — état initial rétabli exactement |
+| 10 | état terminal | helper **vide**, garde **`on`** |
+
+**Aucun retry manuel. Aucun MQTT manuel. Aucun appel direct du script.**
+
+**Sur l'innocuité, le même partage qu'en A-7.** *Démontré* : extérieur à 26,2 °C
+et **brûleur à l'arrêt**, relevés avant le geste — aucune demande de chauffe
+n'existait, l'effet réel était nul dans les deux sens. *Non démontré* : qu'une
+pente abaissée réduise la température de départ. C'est le comportement *attendu*
+d'une pente de courbe, mais **Arsenal ne détient aucune source primaire
+l'établissant** — il appartient à la régulation de la chaudière.
+
+### 15.3 Ce que A-8 établit
+
+1. Le rôle **`heating_curve_slope`** est écrit et confirmé de bout en bout,
+   **depuis Arsenal**.
+2. **Une valeur décimale non entière franchit la chaîne entière** — PRECHECK à
+   contrôle de pas flottant, transport, validation de grille amont, écriture,
+   **confirmation à `1e-09`**, relecture.
+3. La tolérance de `1e-09` **suffit pour `1.7`** : mesuré, non supposé — et le
+   domaine décimal confirmé en vol s'élargit d'un point.
+4. **Deux `request_id` distincts** pour deux émissions, sur un rôle où aucun
+   retry ne peut brouiller la lecture.
+
+---
+
+## 16. Clôture fonctionnelle de la migration — et ce qu'elle ne dit pas
+
+> **Les quatre rôles d'écriture sont éprouvés en production.** La migration
+> Arsenal → Boilerack est **fonctionnellement close**.
+
+### 16.1 Ce qui est établi, rôle par rôle
+
+| Rôle | Épreuve | Chemin d'appel | Filet |
+|---|---|---|---|
+| `dhw_setpoint` | **A-5** §12 | direct — script appelé avec une valeur | garde métier ECS |
+| `heating_setpoint` | **A-6** §13 | dérivé — paramètre modifié, automatisation émet | retry contractuel |
+| `heating_curve_shift` | **A-7** §14 | dérivé | **aucun** |
+| `heating_curve_slope` | **A-8** §15 | dérivé | **aucun** |
+
+**Les deux chemins d'appel de l'architecture sont éprouvés.** Lecture,
+commande, acquittement, garde composée par rôle, helper transactionnel,
+restauration : tous exercés en conditions réelles.
+
+### 16.2 Ce que ces quatre preuves N'ÉTABLISSENT PAS
+
+**Ce paragraphe est la contrepartie de la clôture. Il n'est pas une formalité.**
+
+1. **Aucun comportement en REFUS n'a été éprouvé, sur aucun rôle.** Ni hors
+   bornes, ni hors pas, ni expiration, ni rôle non inscriptible. Les refus de
+   PRECHECK — trois à cinq selon le rôle — n'ont jamais été déclenchés. **La chaîne est
+   éprouvée en succès seulement.**
+2. **La marge entre budget de confirmation et attente n'est pas caractérisée.**
+   Huit émissions au total ne font pas une distribution.
+3. **Le régime `confort` du chauffage n'a pas été exercé** — seul `reduite` l'a
+   été. Même chemin, même écrivain, mais non éprouvé.
+4. **La boucle d'auto-ajustement de la courbe n'a pas été exercée** : les
+   épreuves ont été conduites hors de sa fenêtre, délibérément.
+5. **Aucune épreuve n'a porté sur la perte de disponibilité en cours de
+   transaction**, ni sur le retour de commandabilité après une coupure.
+6. **La divergence TTL 30 s / attente 20 s au contrat contre 15 s / 15 s au
+   runtime demeure ouverte** — antérieure à la migration, jamais tranchée.
+
+### 16.3 Réserves conservées, hors périmètre de la migration
+
+- **Deux cartes d'interface** citent des entités retirées par le Lot 1 —
+  conséquence assumée de l'exclusion de l'UI ;
+- **quatre fichiers de transaction** portent en commentaire le nom d'un topic de
+  commande disparu ;
+- **huit `default_entity_id`** du domaine boiler sont écrits sans domaine ;
+- **le message retenu historique** sur l'ancienne surface de commande subsiste,
+  inerte tant que le pont reste arrêté ;
+- **le superviseur sonde `vcontrold`**, non l'écrivain souverain : une panne de
+  ce dernier n'est pas détectée par cette sonde. Limite hors dépôt ;
+- **la prose de deux documents descriptifs** décrit encore la surface historique.
+
+### 16.4 Ce que « clôture fonctionnelle » veut dire ici
+
+**Elle veut dire que la migration est faite, et éprouvée pour ce qu'elle
+transporte : la lecture, la commande, l'acquittement et la garde.**
+
+Elle **ne veut pas dire** que le domaine est exempt de dettes, ni que le
+comportement en échec est connu, ni qu'aucune campagne ne reste utile. Les six
+points du §16.2 et les six réserves du §16.3 sont **ouverts, et le restent**.
