@@ -4,10 +4,26 @@
 
 | Champ | Valeur |
 |---|---|
-| **Version** | v4 |
-| **Statut** | Cadrage — normatif pour le Lot 1, **aucun code** |
+| **Version** | v5 |
+| **Statut** | Cadrage — normatif pour le Lot 1 ; **§12 consigne une épreuve terrain** |
 | **Portée** | Recâblage des consommateurs Home Assistant du bus MQTT chaudière |
 | **Complète** | `interface_ha_boiler_bridge.md` — qu'il **ne remplace pas encore** |
+
+> **AMENDÉ — le Lot 1 est intégré et la chaîne d'écriture est éprouvée.**
+> Le cadrage demeure inchangé : aucun contrat, aucun mapping, aucune décision
+> n'est révisé. Le §12 consigne l'épreuve terrain A-5, sur le seul rôle
+> `dhw_setpoint`.
+>
+> **Ce que le terrain change au §10, sans amalgame :**
+>
+> | | Portée exacte |
+> |---|---|
+> | **§10.3** helper transactionnel | **LEVÉE** |
+> | **§10.5** budget de confirmation / attente | **CONFRONTÉE seulement** — la réserve quantitative est **MAINTENUE** |
+> | **§10.6** préfixe déployé | **valeur observée et corroborée** — l'exigence de revérification est **MAINTENUE** |
+>
+> Une seule réserve du §11 est levée, la troisième, et **pour le seul rôle
+> éprouvé**. **Les trois autres rôles demeurent non éprouvés en écriture.**
 
 ---
 
@@ -336,14 +352,20 @@ ping et par la synthèse de connectivité, aux côtés d'entités ping homogène
 
 1. **La cible ICMP exacte** de `binary_sensor.boiler_bridge` — définie hors YAML.
 2. **Les seuils d'âge** des conditions 1 et 2 du garde.
-3. **L'état résiduel** du helper transactionnel `input_text.boiler_req_*` —
-   second garde du `PRECHECK`, non lisible depuis le dépôt.
+3. ~~**L'état résiduel** du helper transactionnel `input_text.boiler_req_*`~~ —
+   **LEVÉE par A-5** : le `PRECHECK` a été franchi, le helper ancré puis libéré,
+   sur **trois exécutions consécutives** du script. Voir §12.
 4. **Le sort du message retenu** historique sur la surface de commande : le pont
    étant arrêté, il ne déclenche rien ; le traiter serait une décision propre.
-5. **Le budget de confirmation `5,0 s` contre l'attente `15 s`** — jamais
-   confrontés en régime réel.
+5. ~~**Le budget de confirmation `5,0 s` contre l'attente `15 s`** — jamais
+   confrontés en régime réel.~~ — **CONFRONTÉS par A-5**, et sans conflit :
+   l'acquittement terminal est parvenu dans la fenêtre d'attente. **Un seul
+   échantillon ne caractérise pas la marge** : la réserve quantitative demeure.
+   Voir §12.
 6. **La valeur de `read_surface.prefix` au moment d'agir** — fait de
-   configuration, à revérifier, jamais à supposer.
+   configuration, à revérifier, jamais à supposer. Relevée en source primaire
+   avant le Lot 1 : `boilerack`. **L'exigence de revérification demeure** — elle
+   vaut pour chaque mutation, non une fois pour toutes.
 
 ---
 
@@ -353,5 +375,90 @@ ping et par la synthèse de connectivité, aux côtés d'entités ping homogène
    valeur plausible et fausse. C'est le principal risque du Lot 1.
 2. **La limite de reconnexion de Boilerack n'est pas corrigée** par ce chantier :
    elle est **contournée** par le garde. La corriger relèverait de Boilerack.
-3. **Aucune capacité de production n'est revendiquée** : ce document fige un
-   contrat, il ne l'éprouve pas.
+3. ~~**Aucune capacité de production n'est revendiquée** : ce document fige un
+   contrat, il ne l'éprouve pas.~~ — **LEVÉE par A-5, pour le seul rôle
+   `dhw_setpoint`.** La chaîne Arsenal → Boilerack → chaudière est éprouvée de
+   bout en bout, écriture réelle comprise. **Les trois autres rôles demeurent
+   non éprouvés en écriture.** Voir §12.
+
+---
+
+## 12. Épreuve terrain A-5 — la chaîne d'écriture, de bout en bout
+
+> **Une exécution unique, autorisée nommément, sur le seul rôle `dhw_setpoint`.**
+> Elle éprouve ce que les Lots 0 à 1-TER n'avaient que contractualisé.
+
+### 12.1 Ce qui a été exécuté
+
+**TROIS exécutions du script exécutif, non deux** — l'aller, puis les deux
+tentatives du garde. Le garde appelle en effet le script une première fois,
+patiente dix secondes, puis le rappelle si l'incohérence persiste.
+
+| # | Origine | Valeur émise | Constat |
+|---|---|---|---|
+| **1** | épreuve A-5, aller | **11** | acquittement **`applied`**, corrélé au bon `request_id` ; consigne **11 observée** sur la chaudière, relecture télémétrique à l'appui |
+| **2** | garde hors cycle, tentative 1 | **10** | le garde a détecté la consigne hors cycle et réimposé 10 **par le même script exécutif** |
+| **3** | garde hors cycle, tentative 2 | **10** | second appel du garde, après sa temporisation de dix secondes |
+| — | — | — | **retour télémétrique à 10 confirmé** |
+
+**La restauration n'a demandé aucun geste manuel.** Le garde métier a refermé la
+boucle de lui-même — c'est un résultat en soi : la chaîne d'écriture est
+opérante, et le dispositif de correction hors cycle l'est aussi.
+
+**Une seule écriture était autorisée ; trois ont eu lieu.** Les deux suivantes
+sont le fait du garde, non de l'opérateur : c'est son comportement nominal, et
+il est consigné ici pour que le compte soit exact.
+
+**Valeur choisie sans effet de confort** : le ballon était très au-dessus de la
+consigne, aucune demande de chauffe n'a été créée par le pas de +1 °C.
+
+### 12.2 Ce que cette épreuve établit
+
+1. La chaîne **Arsenal → `boilerack/command` → chaudière → `boilerack/ack/<role>`
+   → Arsenal** fonctionne de bout en bout, écriture réelle comprise.
+2. Le **payload à six champs**, `role` compris, est accepté par la surface amont.
+3. La **corrélation stricte sur `request_id`** conclut correctement.
+4. Le **`PRECHECK`** — garde composée et helper vide — laisse passer une
+   transaction légitime, et le helper est libéré en fin de transaction.
+5. Le **garde métier hors cycle** agit sur la nouvelle surface sans retouche.
+
+### 12.3 Une alerte levée, et pourquoi elle était fausse
+
+Une réutilisation apparente du `request_id` entre l'aller et la seconde tentative
+du garde a été signalée, puis **écartée** : il s'agissait d'une **mauvaise
+corrélation lors d'une lecture tardive du capteur d'acquittement**.
+
+**Le mécanisme mérite d'être consigné, car il se reproduira.**
+
+`boilerack/ack/<role>` est publié en **QoS 1 et NON retenu**. Ce n'est pas une
+supposition : le fait est lu en **source primaire** dans le code de l'écrivain
+souverain — `core/engine.py`, constantes `_ACK_QOS = 1` et
+`_ACK_RETAIN = False`, employées à l'appel de publication de la même unité — et
+**corroboré sur le code réellement installé**, où les deux constantes portent ces
+valeurs.
+
+Un topic non retenu ne délivre rien à la souscription : l'entité
+`sensor.boiler_ack_*_raw` conserve donc en mémoire le dernier acquittement reçu
+jusqu'à l'arrivée du suivant. Toute lecture faite dans cet intervalle — trace,
+notification, gabarit — affiche l'identifiant de la transaction **précédente**,
+alors que la commande émise en porte un autre.
+
+> **Règle de lecture, à retenir** : pour établir l'identifiant d'une émission, la
+> source est le **payload publié**, jamais l'état d'une entité dérivée de
+> l'acquittement.
+
+Le corpus l'anticipait déjà — `retry_transactionnel/etat.yaml` exige
+explicitement `ack2_request_id != attempt1_id`, « ce n'est pas un résidu T1 ».
+
+**Aucune collision réelle. Aucun correctif n'est requis, et le générateur
+d'identifiant n'est pas mis en cause.**
+
+### 12.4 Ce que A-5 n'établit pas
+
+- Les **trois autres rôles** en écriture — `heating_setpoint`,
+  `heating_curve_shift`, `heating_curve_slope` — demeurent **non éprouvés**.
+- Le **comportement en refus** : aucune commande n'a été rejetée sur bornes, sur
+  pas ou sur expiration.
+- La **marge** entre budget de confirmation et attente : un seul échantillon.
+- La divergence **TTL 30 s / attente 20 s au contrat contre 15 s / 15 s au
+  runtime** reste ouverte, et A-5 ne la tranche pas.
