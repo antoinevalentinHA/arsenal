@@ -4,9 +4,23 @@
 
 | Champ | Valeur |
 |---|---|
-| **Version** | v1 |
+| **Version** | v2 |
 | **Statut** | Normatif |
 | **Portée** | Implémentation Home Assistant du bus MQTT chaudière |
+
+> **AMENDÉ — surface de service portée sur Boilerack.**
+>
+> Le pont historique n'est plus l'écrivain souverain. **La surface de service
+> migre sur la racine configurée**, `<prefix>/bridge/…`, et **quatre topics
+> disparaissent faute d'équivalent** — §3.1 et §3.5.
+>
+> **Le statut normatif du présent contrat est CONSERVÉ.** La surface cible, son
+> mapping complet et ses renoncements sont décrits par
+> [`migration_boiler_bridge_vers_boilerack.md`](migration_boiler_bridge_vers_boilerack.md),
+> auquel ce contrat renvoie sans s'y subordonner.
+>
+> **`guard/*` n'est pas concerné** : cette surface demeure publiée par le
+> superviseur, vivante et inchangée.
 
 ---
 
@@ -63,13 +77,26 @@ L'intégration HA est structurée en **5 blocs strictement séparés**.
 
 Mapping direct MQTT → HA, sans transformation.
 
-| Topic |
-|---|
-| `boiler/bridge/online` |
-| `boiler/bridge/version` |
-| `boiler/bridge/vcontrold_status` |
-| `boiler/bridge/optolink_status` |
-| `boiler/bridge/heartbeat` |
+**Racine** : `<prefix>`, valeur configurée côté Boilerack. Elle vaut
+actuellement `boilerack`, **à revérifier avant toute mutation** : un changement
+de cette racine déplacerait **les trois surfaces ensemble** — lecture, commande
+et acquittements.
+
+| Topic | Statut |
+|---|---|
+| `<prefix>/bridge/online` | **conservé** |
+| `<prefix>/bridge/heartbeat` | **conservé** |
+| ~~`boiler/bridge/version`~~ | **SANS ÉQUIVALENT — RETIRÉ** |
+| ~~`boiler/bridge/vcontrold_status`~~ | **SANS ÉQUIVALENT — RETIRÉ** |
+| ~~`boiler/bridge/optolink_status`~~ | **SANS ÉQUIVALENT — RETIRÉ** |
+
+> **Les trois topics retirés n'ont pas de correspondant sur la surface cible.**
+> `vcontrold_status` et `optolink_status` ne sont **pas remplacés un pour un** :
+> la nouvelle surface qualifie **la chaîne de lecture** par `chain.status` et
+> `chain.cause`, exposés dans `<prefix>/bridge/telemetry_status`. **La
+> granularité change de nature**, et prétendre l'inverse serait faux.
+>
+> **Aucune entité de remplacement n'est créée pour `version`.**
 
 ---
 
@@ -169,15 +196,17 @@ status == applied
 
 ### 3.5 Erreurs
 
-Le bridge publie sur `boiler/error/last`.
+> **SANS ÉQUIVALENT — RETIRÉ.** `boiler/error/last` n'existe pas sur la surface
+> cible : le contrat de lecture de Boilerack l'exclut de son périmètre.
+>
+> **Le diagnostic par erreur ponctuelle est remplacé, sans être reproduit**, par
+> deux sources de nature différente : `last_result` **par mesure**, dans
+> `<prefix>/bridge/telemetry_status`, et le champ `reason` porté par les
+> acquittements **rejetés**. **Il n'existe plus de topic d'erreur global.**
 
-HA extrait :
-
-- `reason`
-- `domain`
-- `action`
-- `request_id`
-- `ts`
+**Périmé — conservé pour mémoire.** Le pont historique publiait sur
+`boiler/error/last`, dont HA extrayait `reason`, `domain`, `action`,
+`request_id` et `ts`.
 
 HA qualifie ensuite : erreur récente (< 24 h).
 

@@ -352,8 +352,8 @@ externe:
     couche: externe
     niveau: n/a
     statut: externe
-    contrat: "30_decision_centrale.md (garde G2) ; domaine boiler"
-    note: "Capacité d'exécution. Domaine boiler. Garde G2 pré-exécution."
+    contrat: "30_decision_centrale.md (garde G2) ; 30_decision_centrale__amendement_garde_execution.md ; domaine boiler"
+    note: "Capacité d'exécution. Domaine boiler. Garde G2 pré-exécution. Condition NÉCESSAIRE mais NON SUFFISANTE : la garde est composée par rôle (online, fraîcheur de telemetry_status, chain.status ok, measurements[rôle].fresh)."
 
   - entity_id: binary_sensor.presence_famille_unifiee
     registre: externe
