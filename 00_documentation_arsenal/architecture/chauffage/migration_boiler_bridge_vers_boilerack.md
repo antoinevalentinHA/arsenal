@@ -4,8 +4,8 @@
 
 | Champ | Valeur |
 |---|---|
-| **Version** | v5 |
-| **Statut** | Cadrage — normatif pour le Lot 1 ; **§12 consigne une épreuve terrain** |
+| **Version** | v6 |
+| **Statut** | Cadrage — normatif pour le Lot 1 ; **§12 et §13 consignent deux épreuves terrain** |
 | **Portée** | Recâblage des consommateurs Home Assistant du bus MQTT chaudière |
 | **Complète** | `interface_ha_boiler_bridge.md` — qu'il **ne remplace pas encore** |
 
@@ -22,8 +22,10 @@
 > | **§10.5** budget de confirmation / attente | **CONFRONTÉE seulement** — la réserve quantitative est **MAINTENUE** |
 > | **§10.6** préfixe déployé | **valeur observée et corroborée** — l'exigence de revérification est **MAINTENUE** |
 >
-> Une seule réserve du §11 est levée, la troisième, et **pour le seul rôle
-> éprouvé**. **Les trois autres rôles demeurent non éprouvés en écriture.**
+> Une seule réserve du §11 est levée, la troisième, et **pour les seuls rôles
+> éprouvés**. Le §13 consigne l'épreuve A-6, sur `heating_setpoint`.
+> **`heating_curve_shift` et `heating_curve_slope` demeurent non éprouvés en
+> écriture.**
 
 ---
 
@@ -376,10 +378,12 @@ ping et par la synthèse de connectivité, aux côtés d'entités ping homogène
 2. **La limite de reconnexion de Boilerack n'est pas corrigée** par ce chantier :
    elle est **contournée** par le garde. La corriger relèverait de Boilerack.
 3. ~~**Aucune capacité de production n'est revendiquée** : ce document fige un
-   contrat, il ne l'éprouve pas.~~ — **LEVÉE par A-5, pour le seul rôle
-   `dhw_setpoint`.** La chaîne Arsenal → Boilerack → chaudière est éprouvée de
-   bout en bout, écriture réelle comprise. **Les trois autres rôles demeurent
-   non éprouvés en écriture.** Voir §12.
+   contrat, il ne l'éprouve pas.~~ — **LEVÉE pour DEUX rôles sur quatre** :
+   `dhw_setpoint` par A-5 (§12), `heating_setpoint` par A-6 (§13). La chaîne
+   Arsenal → Boilerack → chaudière est éprouvée de bout en bout, écriture réelle
+   comprise, par **deux chemins d'appel distincts**.
+   **`heating_curve_shift` et `heating_curve_slope` demeurent NON ÉPROUVÉS en
+   écriture.**
 
 ---
 
@@ -456,9 +460,85 @@ d'identifiant n'est pas mis en cause.**
 ### 12.4 Ce que A-5 n'établit pas
 
 - Les **trois autres rôles** en écriture — `heating_setpoint`,
-  `heating_curve_shift`, `heating_curve_slope` — demeurent **non éprouvés**.
+  `heating_curve_shift`, `heating_curve_slope` — demeurent **non éprouvés** *à la
+  date de A-5*. `heating_setpoint` l'a été depuis, par A-6 : voir §13.
 - Le **comportement en refus** : aucune commande n'a été rejetée sur bornes, sur
   pas ou sur expiration.
 - La **marge** entre budget de confirmation et attente : un seul échantillon.
 - La divergence **TTL 30 s / attente 20 s au contrat contre 15 s / 15 s au
   runtime** reste ouverte, et A-5 ne la tranche pas.
+
+---
+
+## 13. Épreuve terrain A-6 — `heating_setpoint`, par le chemin natif
+
+> **Une exécution unique, autorisée nommément, sur le seul rôle
+> `heating_setpoint`.** Elle éprouve un **chemin d'appel différent de celui de
+> A-5**, et c'est là son intérêt principal.
+
+### 13.1 Pourquoi A-6 n'a pas la forme de A-5
+
+`script.chauffage_appliquer_consigne` **n'accepte aucune valeur numérique** : ses
+seules entrées sont un régime — `confort` ou `reduite` — et une raison. La valeur
+émise est **dérivée** de `input_number.chauffage_consigne_confort` ou
+`…_reduite` selon le régime en vigueur.
+
+Il n'existait donc **aucun geste équivalent à celui de A-5**. Trois voies, dont
+deux fermées : publier à la main aurait contourné la garde composée, le helper et
+l'écrivain unique ; basculer de régime aurait été une décision métier à effet de
+confort. **La seule voie conforme était de modifier le paramètre du régime
+actif** et de laisser l'architecture faire le reste.
+
+`automation.chauffage_modification_consigne` se déclenche en effet sur tout
+changement de ces deux `input_number` et, **si l'input touché correspond au
+régime en vigueur**, appelle l'écrivain unique de lui-même.
+
+> **A-6 n'a donc pas commandé : elle a modifié un paramètre métier et observé
+> l'architecture émettre.** C'est un acte de nature différente de A-5, et il faut
+> le dire ainsi.
+
+### 13.2 Ce qui a été exécuté
+
+| # | Geste | Constat |
+|---|---|---|
+| 0 | régime en vigueur relevé | **`reduite`**, valeur initiale **15** |
+| 1 | `input_number.chauffage_consigne_reduite` **15 → 16** | **modification native**, aucun appel direct du script |
+| 2 | déclenchement | **automatisation native déclenchée**, écrivain unique appelé par elle |
+| 3 | émission | payload `role = heating_setpoint`, `value = 16` |
+| 4 | acquittement | **`applied`**, corrélé |
+| 5 | relecture chaudière | **16** |
+| 6 | restauration **16 → 15** | **par le même chemin**, aucun raccourci |
+| 7 | acquittement | **`applied`**, corrélé |
+| 8 | relecture finale | **15** — état initial rétabli |
+| 9 | état terminal | helper **vide**, application **au repos**, garde **`on`** |
+
+**Aucun MQTT manuel. Aucun appel direct du script exécutif.** L'essai a emprunté
+exactement le chemin que la production emprunte.
+
+**Sans effet de confort** : la consigne est une température de pièce visée.
+Extérieur au-dessus de 27 °C, brûleur à l'arrêt — passer de 15 à 16 ne pouvait
+créer aucune demande de chauffe.
+
+### 13.3 Ce que A-6 établit, et que A-5 n'établissait pas
+
+1. Le rôle **`heating_setpoint`** est écrit et confirmé de bout en bout.
+2. Le **chemin d'appel indirect** fonctionne : un paramètre métier change,
+   l'automatisation décide d'appliquer, l'écrivain unique émet. **A-5 avait
+   éprouvé l'appel direct ; A-6 éprouve l'appel dérivé.**
+3. **La restauration a emprunté le même chemin**, sans intervention hors
+   architecture — et sans qu'un garde métier ait eu à corriger, contrairement à
+   A-5.
+4. Le **verrou d'application** et la **garde composée par rôle** ont laissé
+   passer deux transactions légitimes et sont revenus au repos.
+
+### 13.4 Ce que A-6 n'établit pas
+
+- **`heating_curve_shift` et `heating_curve_slope` demeurent NON ÉPROUVÉS en
+  écriture.** Ce sont des grandeurs de **calibration**, que le contrat de retry
+  classe explicitement **non retryables** : leur épreuve appellera des
+  précautions propres, et ne se déduit pas de A-6.
+- Le **comportement en refus** reste non éprouvé, pour aucun rôle.
+- La **marge** entre budget de confirmation et attente : deux échantillons de
+  plus, toujours pas une caractérisation.
+- L'essai a porté sur le régime **`reduite`**. Le régime `confort` emprunte le
+  même chemin et le même écrivain, mais **n'a pas été exercé**.
