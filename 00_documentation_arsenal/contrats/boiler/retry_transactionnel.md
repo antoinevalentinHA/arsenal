@@ -1,13 +1,26 @@
 # ARSENAL — Contrat de retry transactionnel · Boiler Bridge
 
 **Composant :** `arsenal-ha`
-**Version :** v1.0
-**Scope :** Politique de retry pour les commandes MQTT transactionnelles vers `arsenal-boiler-bridge`
-**Dernière mise à jour :** 2026-03-27
+**Version :** v1.1
+**Scope :** Politique de retry pour les commandes MQTT transactionnelles vers l'écrivain souverain
+**Dernière mise à jour :** 2026-09-05
 **Dépendances :**
-- `arsenal-boiler-bridge` v0.5
-- `CONTRAT_SCRIPT_EXECUTIF` v1.3
-- `Contrat MQTT ACK HA` v1.3
+- ~~`arsenal-boiler-bridge` v0.5~~ — **n'est plus l'écrivain souverain**
+- `CONTRAT_SCRIPT_EXECUTIF` v1.4
+- `Contrat MQTT ACK HA` v1.4
+
+> ### AMENDÉ — désignation des commandes par rôle
+>
+> **Un seul point est amendé : la colonne « Topic » des tableaux §2.1 et §2.2.**
+> La surface cible n'expose **qu'un topic de commande**, et c'est le champ `role`
+> du payload qui discrimine.
+>
+> **La politique de retry elle-même est INTÉGRALEMENT CONSERVÉE** : le partage
+> retryable / non retryable, les conditions d'éligibilité du §3, les
+> interdictions absolues, la temporisation du §5, le plafond de tentatives du §4.
+> **Rien de tout cela ne dépendait du topic.**
+>
+> Référence : [`../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`](../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md)
 
 ---
 
@@ -24,19 +37,30 @@ Le retry ne rejoue jamais un payload historique. Il relance la décision du mome
 
 ### 2.1 Commandes retryables automatiquement
 
-| Commande | Topic | Justification |
-|----------|-------|---------------|
-| Consigne ECS | `boiler/command/dhw/set_setpoint` | Consigne opérationnelle — un timeout peut pénaliser le confort |
-| Consigne chauffage | `boiler/command/heating/set_temperature` | Consigne opérationnelle — impact immédiat sur le confort |
+| Commande | Topic | `role` | Justification |
+|----------|-------|--------|---------------|
+| Consigne ECS | `<prefix>/command` | `dhw_setpoint` | Consigne opérationnelle — un timeout peut pénaliser le confort |
+| Consigne chauffage | `<prefix>/command` | `heating_setpoint` | Consigne opérationnelle — impact immédiat sur le confort |
 
 ### 2.2 Commandes non retryables automatiquement
 
-| Commande | Topic | Justification |
-|----------|-------|---------------|
-| Pente courbe | `boiler/command/heating/set_curve_slope` | Calibration lente — échec visible, reprise explicite préférée |
-| Parallèle courbe | `boiler/command/heating/set_curve_shift` | Calibration lente — idem |
+| Commande | Topic | `role` | Justification |
+|----------|-------|--------|---------------|
+| Pente courbe | `<prefix>/command` | `heating_curve_slope` | Calibration lente — échec visible, reprise explicite préférée |
+| Parallèle courbe | `<prefix>/command` | `heating_curve_shift` | Calibration lente — idem |
 
 > Pour les commandes de calibration, un échec doit produire un diagnostic lisible et une reprise explicite. Un retry automatique masquerait l'échec et brouillerait l'interprétation du cycle de calibration.
+
+> **Le topic ne distingue plus les quatre commandes : `role` le fait.**
+> ~~`boiler/command/dhw/set_setpoint`~~, ~~`.../heating/set_temperature`~~,
+> ~~`.../heating/set_curve_slope`~~, ~~`.../heating/set_curve_shift`~~ —
+> **PÉRIMÉS**, sans équivalent un pour un.
+>
+> **Conséquence directe sur ce contrat : le périmètre retryable ne peut plus se
+> lire sur le topic.** Une automatisation de retry qui filtrerait par topic
+> **ne discriminerait plus rien** et rendrait retryable une commande de
+> calibration — violation frontale du §2.2. **Le filtre porte désormais sur
+> `role`, et sur lui seul.**
 
 ---
 
