@@ -44,7 +44,7 @@
 #     - input_text.ecs_target_temp_session
 #     - sensor.boiler_ack_dhw_set_setpoint_request_id
 #     - sensor.boiler_ack_dhw_set_setpoint_status
-#     - binary_sensor.boiler_bridge_online
+#     - binary_sensor.boiler_commandable_dhw_setpoint
 #     - timer.ecs_retry (duration: 30s en config)
 # ==========================================================
 
@@ -162,15 +162,19 @@
                   ECS retry arme — type={{ timeout_kind }},
                   attempt1_id={{ attempt1_id }},
                   target={{ target_temp_int }}°C,
-                  bridge={{ states('binary_sensor.boiler_bridge_online') }}
+                  commandable={{ states('binary_sensor.boiler_commandable_dhw_setpoint') }}
 
             - choose:
                 - conditions:
+                    # Capacite de commander CE ROLE, non le seul `online`.
+                    # Absente, aucun timer n'est arme : reprise.yaml prend
+                    # le relais au retour de la commandabilite. L'autorite
+                    # composee est celle du Lot 1 ; rien n'est duplique ici.
                     - condition: state
-                      entity_id: binary_sensor.boiler_bridge_online
+                      entity_id: binary_sensor.boiler_commandable_dhw_setpoint
                       state: "on"
                   sequence:
                     - service: timer.start
                       target:
                         entity_id: timer.ecs_retry
-              # Si bridge offline : pas de timer — reprise_online.yaml prend le relais
+              # Si le role n'est pas commandable : pas de timer — reprise.yaml prend le relais

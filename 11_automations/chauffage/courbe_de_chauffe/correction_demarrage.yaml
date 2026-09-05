@@ -50,10 +50,15 @@
       entity_id: input_boolean.systeme_stable
       to: "on"
 
-  condition:
-    - condition: state
-      entity_id: binary_sensor.boiler_bridge_online
-      state: "on"
+  # Aucune garde GLOBALE : cette automatisation applique DEUX roles dans la
+  # meme execution — pente et parallele —, et un gate unique ne saurait les
+  # representer. Chaque branche de l'action porte donc la garde du role que
+  # SON script commande. Les deux branches restent independantes, comme
+  # auparavant : un role indisponible n'empeche pas l'autre.
+  #
+  # Les gardes lisent l'autorite composee creee par le Lot 1
+  # (binary_sensor.boiler_commandable_<role>) ; elles n'en dupliquent pas
+  # la logique.
 
   action:
     - variables:
@@ -70,6 +75,9 @@
         - conditions:
             - condition: template
               value_template: "{{ pente_disponible }}"
+            - condition: state
+              entity_id: binary_sensor.boiler_commandable_heating_curve_slope
+              state: "on"
           sequence:
             - service: script.chauffage_appliquer_pente
 
@@ -77,5 +85,8 @@
         - conditions:
             - condition: template
               value_template: "{{ parallele_disponible }}"
+            - condition: state
+              entity_id: binary_sensor.boiler_commandable_heating_curve_shift
+              state: "on"
           sequence:
             - service: script.chauffage_appliquer_parallele

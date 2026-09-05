@@ -23,7 +23,7 @@
 #     - timer.chauffage_retry
 #     - input_boolean.chauffage_retry_pending
 #     - input_number.chauffage_retry_count
-#     - binary_sensor.boiler_bridge_online
+#     - binary_sensor.boiler_commandable_heating_setpoint
 #     - input_select.chauffage_mode_session
 #     - input_text.chauffage_retry_attempt2_id
 #       (vidé ici avant invocation, écrit par etat_retry au cleanup)
@@ -54,8 +54,12 @@
       entity_id: input_number.chauffage_retry_count
       below: 1
 
+    # Garde d'execution : la capacite de commander CE ROLE, non le seul
+    # `online`. L'autorite est binary_sensor.boiler_commandable_heating_setpoint :
+    # la composition (online, fraicheur de telemetry_status, chain.status,
+    # fraicheur de la mesure) y vit, et n'est PAS dupliquee ici.
     - condition: state
-      entity_id: binary_sensor.boiler_bridge_online
+      entity_id: binary_sensor.boiler_commandable_heating_setpoint
       state: "on"
 
     - condition: template
@@ -68,7 +72,7 @@
         level: warning
         message: >
           Chauffage retry declenche — tentative=2,
-          bridge={{ states('binary_sensor.boiler_bridge_online') }},
+          commandable={{ states('binary_sensor.boiler_commandable_heating_setpoint') }},
           attempt1_id={{ states('input_text.chauffage_retry_attempt1_id') }}
 
     # Mise à false AVANT l'invocation du script

@@ -96,10 +96,25 @@
 #         desired_mode == prog_actuel → STOP
 #         Zéro appel inutile. (non contournable)
 #
-#   G2 — Bridge online [GARDE D'EXÉCUTION PURE]
-#         binary_sensor.boiler_bridge_online != on → STOP
+#   G2 — Capacité d'exécution [GARDE D'EXÉCUTION PURE, COMPOSÉE]
+#         binary_sensor.boiler_commandable_heating_setpoint != on → STOP
 #         Évalué après décision métier complète.
 #         (non contournable)
+#
+#         La garde est COMPOSÉE et qualifiée PAR RÔLE. `online` est
+#         NÉCESSAIRE mais JAMAIS SUFFISANT : l'écrivain souverain
+#         n'implémente aucune politique de reconnexion, et son retenu
+#         peut demeurer `offline` alors que le service est vivant.
+#         Quatre conditions : online, fraîcheur de telemetry_status
+#         (3 × période), chain.status == ok, et la fraîcheur de la
+#         mesure du rôle commandé.
+#
+#         Le rôle qualifiant est `heating_setpoint` : la chaîne
+#         descendante — événement chauffage_execution_requise →
+#         automation.chauffage_application → script exécutif —
+#         commande cette grandeur, et elle seule.
+#
+#         Réf : contrats/chauffage/30_decision_centrale__amendement_garde_execution.md §2
 #
 # ----------------------------------------------------------
 # 🔒 ANTI-REBOND GÉOLOCALISATION
@@ -318,13 +333,14 @@ chauffage_decision_centrale:
       value_template: "{{ desired_mode != prog_actuel }}"
 
     # ------------------------------------------------------
-    # Garde d'exécution : capacité boiler (non contournable)
-    # La décision métier est déjà produite à ce stade.
-    # Ce garde conditionne uniquement l'exécution descendante.
+    # Garde d'exécution : capacité boiler POUR LE RÔLE heating_setpoint.
+    # Composée, non contournable. La décision métier est déjà produite à ce
+    # stade : ce garde conditionne uniquement l'exécution descendante.
+    # Une décision valide peut donc être produite et NON exécutée.
     # ------------------------------------------------------
-    - alias: "Guard boiler bridge online"
+    - alias: "Guard capacite d execution boiler (composee, par role)"
       condition: state
-      entity_id: binary_sensor.boiler_bridge_online
+      entity_id: binary_sensor.boiler_commandable_heating_setpoint
       state: "on"
 
     # ------------------------------------------------------

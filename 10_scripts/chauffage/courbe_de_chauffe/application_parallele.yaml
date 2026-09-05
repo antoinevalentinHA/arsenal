@@ -13,7 +13,9 @@
 #
 #     Ce script constitue une FRONTIERE D’EXECUTION locale
 #     pour la commande :
-#       boiler/command/heating/set_curve_shift
+#       topic boilerack/command, role heating_curve_shift
+#       (topic UNIQUE pour toute l installation ; c est le champ
+#        role du payload qui identifie la commande)
 #
 # ----------------------------------------------------------
 #
@@ -73,7 +75,11 @@
 #
 # ⚠️ PRECONDITIONS
 #
-#     - binary_sensor.boiler_bridge_online == on
+#     - binary_sensor.boiler_commandable_heating_curve_shift == on
+#       GARDE COMPOSEE : online NECESSAIRE mais NON SUFFISANT.
+#       Quatre conditions : online, fraicheur de telemetry_status
+#       (3 x periode), chain.status == ok, et measurements[role].fresh.
+#       Ref : contrats/chauffage/30_decision_centrale__amendement_garde_execution.md
 #     - input_number.chauffage_parallele_consigne disponible
 #     - valeur numerique
 #     - valeur dans les bornes physiques [-13 ; 40]
@@ -126,7 +132,8 @@
 #     - sensor.boiler_ack_heating_set_curve_shift_status
 #     - sensor.boiler_ack_heating_set_curve_shift_request_id
 #     - sensor.boiler_ack_heating_set_curve_shift_reason
-#     - binary_sensor.boiler_bridge_online
+#     - binary_sensor.boiler_commandable_heating_curve_shift
+#     - binary_sensor.boiler_bridge_online   (lu en diagnostic de timeout)
 #
 # ----------------------------------------------------------
 #
@@ -170,9 +177,9 @@ chauffage_appliquer_parallele:
         - conditions:
             - condition: template
               value_template: >
-                {{ states('binary_sensor.boiler_bridge_online') != 'on' }}
+                {{ not is_state('binary_sensor.boiler_commandable_heating_curve_shift', 'on') }}
           sequence:
-            - stop: "Bridge offline — aborted"
+            - stop: "Capacite d execution indisponible pour le role heating_curve_shift — aborted"
 
         - conditions:
             - condition: template
@@ -232,7 +239,7 @@ chauffage_appliquer_parallele:
     # ======================================================
     - service: mqtt.publish
       data:
-        topic: "boiler/command/heating/set_curve_shift"
+        topic: "boilerack/command"
         qos: 1
         retain: false
         payload: >-
@@ -241,6 +248,7 @@ chauffage_appliquer_parallele:
             "ts": "{{ boiler_ts }}",
             "expires_at": "{{ boiler_expires_at }}",
             "source": "arsenal",
+            "role": "heating_curve_shift",
             "value": {{ boiler_parallele_cible | round(0) | int }}
           }
 

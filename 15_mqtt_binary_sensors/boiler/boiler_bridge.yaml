@@ -20,8 +20,8 @@
 #   boiler_bridge_online
 #
 # 📋 TRANSPORT
-#   state_topic  : boiler/bridge/online
-#   namespace    : boiler/bridge/...
+#   state_topic  : boilerack/bridge/online
+#   namespace    : boilerack/bridge/...
 #   payload_on   : online
 #   payload_off  : offline
 #   device_class : connectivity
@@ -49,7 +49,7 @@
 - name: "Boiler bridge online"
   unique_id: boiler_bridge_online
   default_entity_id: boiler_bridge_online
-  state_topic: "boiler/bridge/online"
+  state_topic: "boilerack/bridge/online"
   payload_on: "online"
   payload_off: "offline"
   device_class: connectivity

@@ -191,19 +191,42 @@ def test_reset_verrou_present():
 def test_bridge_ecrit_request_id_avant_mqtt():
     """
     Vérifie que appliquer_consigne_bridge référence boiler_req_dhw_set_setpoint
-    (helper de corrélation) et le topic MQTT de commande.
+    (helper de corrélation) et publie la commande ECS.
     Garantie contractuelle : le request_id est écrit avant publication.
+
+    ORACLE AMENDÉ. L'ancien contrôle exigeait le littéral
+    `boiler/command/dhw/set_setpoint`. Ce topic n'existe plus : la surface cible
+    expose UN SEUL topic de commande pour toute l'installation, et c'est le
+    champ `role` du payload qui identifie la consigne ECS.
+
+    Deux exigences remplacent donc le littéral :
+      - le script publie sur un topic se terminant par `/command` ;
+      - le payload porte `"role": "dhw_setpoint"`.
+
+    La racine n'est délibérément PAS épinglée ici : elle est une valeur de
+    CONFIGURATION côté écrivain souverain, et la CI n'a pas à en faire autorité.
+    Le contrôle porte sur ce qui est contractuel — le suffixe et le rôle.
+
+    Réf : contrats/boiler/script_executif.md §7.3 (v1.4),
+          contrats/ecs/application_consigne.md (V1.1)
     """
     content = read(BRIDGE_SCRIPT)
+    corps = strip_comments(content)
     check(
-        "boiler_req_dhw_set_setpoint" in strip_comments(content),
+        "boiler_req_dhw_set_setpoint" in corps,
         "T07 — appliquer_consigne_bridge ne référence pas boiler_req_dhw_set_setpoint",
     )
     check(
-        "boiler/command/dhw/set_setpoint" in content,
-        "T07 — appliquer_consigne_bridge ne référence pas le topic MQTT canonique",
+        re.search(r'topic:\s*"[^"]*/command"', corps) is not None,
+        "T07 — appliquer_consigne_bridge ne publie pas sur un topic de commande "
+        "se terminant par /command",
     )
-    ok("T07 — bridge référence request_id et topic MQTT (§application_consigne)")
+    check(
+        re.search(r'"role"\s*:\s*"dhw_setpoint"', corps) is not None,
+        "T07 — appliquer_consigne_bridge ne porte pas le rôle dhw_setpoint "
+        "dans le payload de commande",
+    )
+    ok("T07 — bridge référence request_id, topic de commande et rôle (§application_consigne)")
 
 
 # ---------------------------------------------------------------------------

@@ -355,6 +355,45 @@ externe:
     contrat: "30_decision_centrale.md (garde G2) ; 30_decision_centrale__amendement_garde_execution.md ; domaine boiler"
     note: "Capacité d'exécution. Domaine boiler. Garde G2 pré-exécution. Condition NÉCESSAIRE mais NON SUFFISANTE : la garde est composée par rôle (online, fraîcheur de telemetry_status, chain.status ok, measurements[rôle].fresh)."
 
+  # --------------------------------------------------------
+  # GARDE D'EXÉCUTION COMPOSÉE — une entité par rôle commandable.
+  # Décisionnelles au sens D-REG-1 : elles conditionnent, seules et de
+  # façon non contournable, l'exécution descendante. Dérivées de
+  # sensor.boiler_telemetry_status et de binary_sensor.boiler_bridge_online.
+  # --------------------------------------------------------
+
+  - entity_id: binary_sensor.boiler_commandable_dhw_setpoint
+    registre: externe
+    couche: externe
+    niveau: n/a
+    statut: externe
+    contrat: "30_decision_centrale__amendement_garde_execution.md §2 ; contrats/boiler/script_executif.md §4.1 (v1.4) ; domaine boiler"
+    note: "Consigne ECS. Garde COMPOSÉE de quatre conditions : online, fraîcheur de telemetry_status (3 × période), chain.status == ok, et measurements[dhw_setpoint].fresh. `fresh` est LU de la surface amont, jamais recalculé."
+
+  - entity_id: binary_sensor.boiler_commandable_heating_setpoint
+    registre: externe
+    couche: externe
+    niveau: n/a
+    statut: externe
+    contrat: "30_decision_centrale__amendement_garde_execution.md §2 ; contrats/boiler/script_executif.md §4.1 (v1.4) ; domaine boiler"
+    note: "Consigne chauffage. Rôle qualifiant de la garde G2 de la décision centrale. Garde COMPOSÉE de quatre conditions : online, fraîcheur de telemetry_status (3 × période), chain.status == ok, et measurements[heating_setpoint].fresh. `fresh` est LU de la surface amont, jamais recalculé."
+
+  - entity_id: binary_sensor.boiler_commandable_heating_curve_shift
+    registre: externe
+    couche: externe
+    niveau: n/a
+    statut: externe
+    contrat: "30_decision_centrale__amendement_garde_execution.md §2 ; contrats/boiler/script_executif.md §4.1 (v1.4) ; domaine boiler"
+    note: "Parallèle de courbe. Calibration. Garde COMPOSÉE de quatre conditions : online, fraîcheur de telemetry_status (3 × période), chain.status == ok, et measurements[heating_curve_shift].fresh. `fresh` est LU de la surface amont, jamais recalculé."
+
+  - entity_id: binary_sensor.boiler_commandable_heating_curve_slope
+    registre: externe
+    couche: externe
+    niveau: n/a
+    statut: externe
+    contrat: "30_decision_centrale__amendement_garde_execution.md §2 ; contrats/boiler/script_executif.md §4.1 (v1.4) ; domaine boiler"
+    note: "Pente de courbe. Calibration. Garde COMPOSÉE de quatre conditions : online, fraîcheur de telemetry_status (3 × période), chain.status == ok, et measurements[heating_curve_slope].fresh. `fresh` est LU de la surface amont, jamais recalculé."
+
   - entity_id: binary_sensor.presence_famille_unifiee
     registre: externe
     couche: externe
