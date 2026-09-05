@@ -20,6 +20,11 @@ cards:
     template: section_header
     name: 🔗 Bridge
 
+  # La surface amont ne distingue plus « démon » et « liaison optique » :
+  # elle qualifie LA CHAÎNE de lecture par `chain.status`, projeté en state
+  # de sensor.boiler_telemetry_status (ok | degraded | unavailable).
+  # Une seule carte remplace donc Optolink et vcontrold — pas deux.
+  # Réf : 12_template_sensors/boiler/sante.yaml § note architecturale
   - type: horizontal-stack
     cards:
       - type: custom:button-card
@@ -34,13 +39,32 @@ cards:
 
       - type: custom:button-card
         template: boiler_status_infra_positive
-        entity: sensor.boiler_optolink_status
-        name: Optolink
+        entity: sensor.boiler_telemetry_status
+        name: Chaîne
 
-      - type: custom:button-card
-        template: boiler_status_infra_positive
-        entity: sensor.boiler_vcontrold_status
-        name: vcontrold
+  # La cause n'est publiée QUE lorsque la chaîne n'est pas saine :
+  # `chain.cause` vaut null si et seulement si `chain.status` vaut `ok`,
+  # projeté ici en `none`. Afficher en permanence une carte vide, ou une
+  # carte redondante avec le statut ci-dessus, n'apporterait rien : le bloc
+  # n'apparaît donc que porteur d'une cause exploitable.
+  # Vocabulaire public : daemon_unreachable | unsupported_command | timeout
+  #                      | unusable_output | transport_error
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: sensor.boiler_chain_cause
+        state_not: "none"
+      - condition: state
+        entity: sensor.boiler_chain_cause
+        state_not: unknown
+      - condition: state
+        entity: sensor.boiler_chain_cause
+        state_not: unavailable
+    card:
+      type: custom:button-card
+      template: boiler_diagnostic_error
+      entity: sensor.boiler_chain_cause
+      name: Cause chaîne
 
   # ==========================================================
   # 🧠 SECTION — ACTIVITE SYSTEME
@@ -49,17 +73,13 @@ cards:
     template: section_header
     name: 📡 Activité
 
-  - type: horizontal-stack
-    cards:
-      - type: custom:button-card
-        template: boiler_info_timestamp
-        entity: sensor.boiler_bridge_heartbeat_timestamp
-        name: Heartbeat
-
-      - type: custom:button-card
-        template: socle_info_72
-        entity: sensor.boiler_bridge_version
-        name: Version
+  # Aucune version n'est exposée par Boilerack : la carte Version du bridge
+  # a été retirée faute de source. Celle du guard, plus bas, est produite
+  # localement et demeure.
+  - type: custom:button-card
+    template: boiler_info_timestamp
+    entity: sensor.boiler_bridge_heartbeat_timestamp
+    name: Heartbeat
 
   # ==========================================================
   # 🧠 SECTION — COMBUSTION
