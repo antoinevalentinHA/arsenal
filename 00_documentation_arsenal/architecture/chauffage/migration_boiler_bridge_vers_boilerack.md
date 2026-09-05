@@ -1,0 +1,357 @@
+# ARSENAL — Cadrage de migration Boiler Bridge → Boilerack
+
+## Lot 0 — contrat avant code
+
+| Champ | Valeur |
+|---|---|
+| **Version** | v4 |
+| **Statut** | Cadrage — normatif pour le Lot 1, **aucun code** |
+| **Portée** | Recâblage des consommateurs Home Assistant du bus MQTT chaudière |
+| **Complète** | `interface_ha_boiler_bridge.md` — qu'il **ne remplace pas encore** |
+
+---
+
+## 1. Objet, et ce que ce document n'est pas
+
+Le pont historique est **arrêté et désactivé** ; **Boilerack** est l'écrivain
+souverain côté chaudière. Les consommateurs Home Assistant, eux, sont **toujours
+câblés sur l'arbre `boiler/`**, dont les topics sont **retenus** : ils affichent
+donc des valeurs figées, et le garde de commandabilité refuse toute émission.
+
+**Ce document fige le contrat de migration.** Il ne modifie **aucun** capteur,
+script, garde, tableau de bord ni CI.
+
+> **Boilerack est une SOURCE DE VÉRITÉ EXTERNE, et rien d'autre.** Le présent
+> chantier est un chantier **consommateur**, il siège dans Arsenal, et son
+> cadrage aussi. Aucune décision Arsenal n'est prise ailleurs, et aucune
+> obligation n'est créée pour Boilerack.
+
+---
+
+## 2. Préfixes et topics — **ce que le code garantit, et ce que la config décide**
+
+### 2.1 La distinction, et pourquoi elle n'est pas cosmétique
+
+Boilerack **ne fixe pas** son préfixe de lecture : il le **configure**.
+
+| | Valeur | Nature |
+|---|---|---|
+| **Défaut du CODE** | **`boiler`** | contractuel, dans `ReadSurfaceConfig` — **le même arbre que le pont historique** |
+| **Racine unique** | `read_surface.prefix` | **une seule racine, pour les TROIS surfaces** |
+| **Lecture** | `<racine>/telemetry/…`, `<racine>/bridge/…` | dérivée de la racine |
+| **Commande** | `<racine>/command` | **dérivée de la racine, au runtime** |
+| **Acquittements** | `<racine>/ack/<role>` | **dérivée de la racine, au runtime** |
+
+### 2.2 La chaîne d'appel réelle — **et c'est elle qui fait autorité**
+
+**Dans le runtime réellement composé, `read_surface.prefix` dérive les TROIS
+surfaces** : la lecture, `<prefix>/command`, et `<prefix>/ack/<role>`.
+
+**Chaîne suivie de bout en bout, du point d'entrée au topic injecté :**
+
+```
+load_config                      charge read_surface.prefix
+      |                          et REFUSE command_topic / ack_topic_prefix
+      v                          comme cles utilisateur
+build_runtime                    applique la fabrique transactionnelle
+      v
+_composer_transaction            rend la fermeture qui construira la surface
+      v
+_config_mqtt_transactionnelle    racine = config.read_surface.prefix
+      |                          command_topic     = <racine>/command
+      |                          ack_topic_prefix  = <racine>/ack
+      v
+build_transaction_surface        lit command_topic et ack_topic_prefix
+                                 sur le MqttConfig DERIVE qu'il recoit
+```
+
+**Exercé sur le code installé, chaîne complète, client factice, sans réseau :**
+
+```
+prefix = boiler     ->  TransactionSurface.command_topic = boiler/command
+                        moteur ack prefix                = boiler/ack
+prefix = boilerack  ->  TransactionSurface.command_topic = boilerack/command
+                        moteur ack prefix                = boilerack/ack
+prefix = autre      ->  autre/command   ·   autre/ack
+```
+
+> **UN CHANGEMENT DE `read_surface.prefix` DÉPLACE LES TROIS SURFACES ENSEMBLE.**
+> Lecture, commande et acquittements partent **d'un bloc**. Il n'existe **aucun
+> réglage indépendant** de la commande ou des ACK.
+
+### 2.3 Défauts structurels ≠ valeurs injectées au runtime
+
+| | Valeur | Portée |
+|---|---|---|
+| **Défauts structurels de `MqttConfig`** | `boilerack/command`, `boilerack/ack` | **jamais atteignables par la configuration** : le chargeur **refuse** ces deux clés, *« hors surface utilisateur »*. Ils servent à bâtir une configuration de test sans composition |
+| **Valeurs injectées au runtime** | `<prefix>/command`, `<prefix>/ack` | produites par **`_config_mqtt_transactionnelle`**, et **remplaçant systématiquement** les défauts ci-dessus avant que la surface ne soit construite |
+
+> **Les deux coïncident AUJOURD'HUI**, parce que la configuration déployée porte
+> `prefix = "boilerack"` : le défaut structurel vaut `boilerack/command`, et la
+> dérivation aussi. **Aucune observation en production ne peut donc les
+> départager** — seule une racine différente les sépare, et c'est ce qui a été
+> exercé.
+>
+> **Lire les défauts structurels comme des topics fixes serait une erreur de
+> niveau**, et elle serait invisible tant que le préfixe ne bouge pas.
+
+> **La précondition « préfixe » N'EST donc PAS levée par le dépôt Boilerack.**
+> Elle ne peut l'être que par la configuration de l'instance visée.
+
+### 2.4 Fait terrain — l'instance déployée
+
+| | |
+|---|---|
+| **Source** | fichier de configuration déployé sur la machine, section `[read_surface]` |
+| **Valeur** | `prefix = "boilerack"` |
+| **Corroboration 1** | topics composés par le **service installé** : `boilerack/telemetry/…`, `boilerack/bridge/online`, `boilerack/bridge/telemetry_status`, `boilerack/bridge/heartbeat`, `boilerack/command`, `boilerack/ack` |
+| **Corroboration 2** | **treize topics observés en direct** sur le courtier, tous sous `boilerack/` |
+| **Commentaire d'origine** | *« préfixe DISTINCT de celui du pont historique »* |
+
+> **C'est un fait de configuration déployée, à une date donnée — pas une vérité
+> du code.** Le Lot 1 doit le **revérifier au moment d'agir**, et non le tenir
+> d'ici. **Un changement de cette clé déplacerait les trois surfaces à la fois**,
+> et un recâblage Arsenal figé sur `boilerack/` deviendrait muet **sans aucun
+> message d'erreur** : les topics existeraient toujours, simplement ailleurs.
+
+**Valeurs retenues pour la suite du présent cadrage**, sous cette réserve :
+lecture `boilerack/telemetry/…`, commande **`boilerack/command`**,
+acquittements **`boilerack/ack/<role>`**.
+
+### 2.5 Arbitrage d'audit — la question est close
+
+Une divergence a opposé deux lectures : **A**, la racine de lecture dérive la
+commande et les ACK ; **B**, lecture et transaction seraient deux autorités
+indépendantes, la commande restant sur les défauts structurels.
+
+**Elle a été tranchée en lecture seule**, par **suivi complet de la chaîne
+d'appel** du point d'entrée jusqu'au topic injecté, puis par **exercice de la
+fabrique transactionnelle** sur le code installé, avec un client factice.
+**Les huit fichiers de la chaîne sont byte-identiques entre le dépôt et
+l'installation** — la même réponse vaut donc des deux côtés.
+
+> **`A` est ÉTABLI. `B` est écarté.** **Aucune ambiguïté résiduelle ne subsiste**,
+> et le présent document ne doit pas en réintroduire.
+
+---
+
+## 3. `chain.status`, `chain.cause`, `last_result` — trois notions, jamais mêlées
+
+Publiées dans `<racine>/bridge/telemetry_status`, retenu.
+
+| Notion | Portée | Valeurs |
+|---|---|---|
+| **`chain.status`** | **synthèse de la chaîne de lecture** | **`ok`** · **`degraded`** · **`unavailable`** — **trois états, pas davantage** |
+| **`chain.cause`** | **cause transport détaillée**, quand applicable | `daemon_unreachable` · `unsupported_command` · `timeout` · `unusable_output` · `transport_error` — **`null` si et seulement si `status` vaut `ok`** |
+| **`last_result`** | **par mesure**, indépendant de la synthèse | **le MÊME vocabulaire public**, plus `ok` : `ok` · `daemon_unreachable` · `unsupported_command` · `timeout` · `unusable_output` · `transport_error` |
+
+> **Aucune des trois ne se substitue aux autres.** `chain.status` dit *à quel
+> point* la chaîne va ; `chain.cause` dit *pourquoi* ; `last_result` dit *ce
+> qu'a donné la dernière tentative d'une mesure précise*. Les confondre
+> produirait un diagnostic faux.
+
+### 3.1 Le vocabulaire publié est une PROJECTION, jamais l'état interne
+
+`chain.cause` et `last_result` passent tous deux par la **même projection
+publique**. L'état interne `unknown_command` y est projeté en
+**`unsupported_command`**.
+
+> **`unknown_command` n'apparaît JAMAIS sur le fil.** C'est un état interne du
+> transport, et rien d'autre.
+>
+> **Le contrat Arsenal MUST matcher la projection publique, jamais les états
+> internes.** Un gabarit comparant à `unknown_command` ne s'apparierait à aucune
+> valeur émise, et échouerait en silence — sans erreur, sans trace, sans jamais
+> se déclencher.
+
+Chaque mesure porte en outre `age_s`, `fresh`, `has_value`, `last_success`.
+**`fresh` est normatif** : `age_s ≤ fresh_max`, borne incluse, avec
+`fresh_max = 3 × période`.
+
+---
+
+## 4. Mapping de lecture — **ce qui existe réellement côté Arsenal**
+
+### 4.1 Les huit entités à re-sourcer
+
+**Établi par relevé exhaustif des `state_topic` des capteurs MQTT du domaine.**
+
+| Topic consommé aujourd'hui | Topic Boilerack |
+|---|---|
+| `boiler/telemetry/temperatures/supply` | `boilerack/telemetry/temperatures/supply` |
+| `boiler/telemetry/temperatures/dhw` | `boilerack/telemetry/temperatures/dhw` |
+| `boiler/telemetry/dhw/setpoint` | `boilerack/telemetry/dhw/setpoint` |
+| `boiler/telemetry/heating/setpoint` | `boilerack/telemetry/heating/setpoint` |
+| `boiler/telemetry/heating/curve/slope` | `boilerack/telemetry/heating/curve/slope` |
+| `boiler/telemetry/heating/curve/shift` | `boilerack/telemetry/heating/curve/shift` |
+| `boiler/telemetry/burner/modulation` | `boilerack/telemetry/burner/modulation` |
+| **`boiler/telemetry/burner/state`** | **`boilerack/telemetry/burner/state`** — **change de forme, §4.3** |
+
+**Plus deux topics de service** : `boiler/bridge/online` → `boilerack/bridge/online`
+et `boiler/bridge/heartbeat` → `boilerack/bridge/heartbeat`
+(**QoS 0, NON retenu**, période 30 s).
+
+### 4.2 Disponibles chez Boilerack, **sans entité Arsenal**
+
+| Topic Boilerack | Statut |
+|---|---|
+| `boilerack/telemetry/temperatures/outdoor` | **aucune entité Arsenal ne le consomme** |
+| `boilerack/telemetry/heating/reduced_reference` | **aucune entité Arsenal ne le consomme** |
+
+> **Leur création éventuelle est un ARBITRAGE ULTÉRIEUR, pas du recâblage.**
+> Le Lot 1 **ne les crée pas**. Créer une entité qui n'existait pas serait
+> ajouter une capacité sous couvert de migration.
+
+### 4.3 La seule différence de forme à traiter
+
+| | Pont historique | Boilerack |
+|---|---|---|
+| `burner/state` | chaîne **`on` / `off`** | **scalaire `0.0` / non-nul** — projection binaire de la modulation |
+
+Les valeurs numériques passent par ailleurs de `10.000000` à la **forme courte**
+`10.0`. **Aucune autre différence de forme n'est connue.**
+
+### 4.4 Ce qui n'est PAS un manque
+
+`comfort_temperature`, `reduced_temperature`, `program` sont publiés par le pont
+historique et **absents de Boilerack** — mais **aucune entité Arsenal vivante ne
+les consomme**, relevé exhaustif à l'appui.
+
+> **Ce n'est donc ni une perte, ni une inconnue.** Le noter comme tel serait
+> inventer un problème.
+
+---
+
+## 5. Nommage — substitution en place
+
+| Règle | Motif |
+|---|---|
+| **Aucun capteur double**, même transitoire | deux capteurs vivants pour une même grandeur créeraient une ambiguïté d'autorité |
+| **Les `entity_id` sont CONSERVÉS**, seul le `state_topic` change | ils sont référencés par les scripts, les groupes, les synthèses et l'UI |
+| **Aucun renommage cosmétique** | `boiler_*` nomme le **domaine**, pas le service. Un renommage est un lot séparé, ultérieur, optionnel |
+| **Les entités sans équivalent sont RETIRÉES** | un capteur pointant un topic mort garde sa **dernière valeur retenue** et ment en silence |
+
+> **Le dernier point est le principal risque du chantier.** Les topics `boiler/…`
+> sont retenus : un capteur oublié n'affichera pas « indisponible », mais **une
+> valeur plausible et fausse**.
+
+---
+
+## 6. Renoncements — et un faux renoncement
+
+| | Entité Arsenal existante | Décision |
+|---|---|---|
+| **`bridge/version`** | oui | **RENONCÉ** — Boilerack n'en publie pas. Entité retirée |
+| **`bridge/vcontrold_status`** | oui | **RENONCÉS comme couple.** Remplacés par `chain.status` + `chain.cause`. **La granularité change de nature** : on ne distingue plus « démon » et « liaison optique », on qualifie **la chaîne**, avec sa cause |
+| **`bridge/optolink_status`** | oui | idem |
+| **`error/last`** | oui | **RENONCÉ** — hors périmètre de la surface Boilerack. Remplacé par `last_result` **par mesure** et par le `reason` des ACK rejetés |
+| **`ts` natif dans l'ACK** | — | **RENONCÉ.** L'ACK Boilerack est déterministe et sans horloge. Corrélation sur le **seul `request_id`** ; l'horodatage est celui de la réception Arsenal |
+| **`guard/*`** | oui, quatre entités | **CE N'EST PAS UN RENONCEMENT.** Le superviseur publie toujours `boiler/guard/status`, `last_action`, `last_run`, `version` — **surface vivante, inchangée, observée en `v1.2`**. Elle n'appartient pas à Boilerack. **Rien à faire, et surtout rien à retirer.** |
+
+---
+
+## 7. Garde de commandabilité
+
+### 7.1 Pourquoi `online` ne suffit pas
+
+Le code de Boilerack l'énonce lui-même : **aucune politique de reconnexion n'est
+implémentée**. Après une déconnexion inattendue, le testament fait passer le
+retenu `bridge/online` à `offline` ; **si la bibliothèque se reconnecte seule, le
+composant ne le voit pas**, et le retenu **restera `offline` alors que le service
+est vivant**, jusqu'au prochain démarrage.
+
+> **Un garde fondé sur `online` seul produirait un refus DURABLE sur un service
+> parfaitement vivant.** Faux négatif permanent, pas incident.
+
+### 7.2 Composition proposée — **quatre conditions, toutes contractuelles**
+
+**Commandable si et seulement si :**
+
+| # | Condition | Signal |
+|---|---|---|
+| **1** | `<racine>/bridge/online` vaut `online` | **nécessaire, jamais suffisant** — un `offline` franc reste un refus légitime |
+| **2** | `telemetry_status.ts` récent au regard de l'heure Arsenal | le topic est **retenu** : sans ce contrôle, un instantané figé passerait pour vivant |
+| **3** | `telemetry_status.chain.status == "ok"` | ni `degraded`, ni `unavailable` |
+| **4** | `telemetry_status.measurements[<role>].fresh == true` | **booléen normatif**, rien à inventer |
+
+Le **heartbeat** — non retenu, 30 s — est un second signal de vivacité utilisable
+en appui de la condition 2.
+
+> **Les seuils d'âge des conditions 1 et 2 ne sont PAS fixés ici.** Le contrat
+> donne la période et l'instant, **pas une tolérance**. **Le Lot 1 les décidera
+> explicitement, et les écrira comme des décisions**, jamais comme des évidences.
+
+### 7.3 Ce que le garde ne fait pas
+
+Il **autorise l'émission**, il **ne conclut pas la transaction**. **Seul `applied`
+corrélé au même `request_id` vaut succès.** À confronter : **budget de
+confirmation Boilerack `5,0 s`** contre **attente Arsenal `15 s`** — jamais
+confrontés en régime réel.
+
+---
+
+## 8. `binary_sensor.boiler_bridge` — **conservé**
+
+**Ce n'est pas un capteur MQTT.** Il n'est défini dans **aucun YAML** : entité de
+l'intégration `ping`, créée par l'interface, référencée par les deux groupes de
+ping et par la synthèse de connectivité, aux côtés d'entités ping homogènes.
+
+> **Il mesure la joignabilité ICMP de la machine**, laquelle n'a pas changé et
+> héberge toujours Boilerack. **Indépendant du transport MQTT**, donc indifférent
+> au recâblage. **Ni renommé, ni déplacé, ni retiré.**
+>
+> **Réserve** : sa cible exacte n'est pas vérifiable depuis le dépôt.
+
+---
+
+## 9. Périmètre du Lot 1 — minimal
+
+**DANS le périmètre :**
+
+1. **re-sourcer les huit entités de télémétrie réellement existantes**, plus
+   `bridge/online` et `bridge/heartbeat`, en **conservant les `entity_id`** ;
+2. **adapter `burner/state`** à sa forme scalaire, et les valeurs numériques
+   courtes ;
+3. **introduire `telemetry_status`** — sans équivalent legacy — et **le garde du
+   §7**, seuils inclus et **écrits comme décisions** ;
+4. **retirer** les entités sans équivalent : `bridge/version`,
+   `bridge/vcontrold_status`, `bridge/optolink_status`, `error/last` ;
+5. **commande et acquittements : SEULEMENT si le cadrage Arsenal l'autorise
+   explicitement.** À défaut, le Lot 1 s'arrête à la lecture et au garde.
+
+**HORS périmètre, et à ne pas anticiper :**
+
+- **créer `outdoor` ou `reduced_reference`** — arbitrage ultérieur ;
+- les **retries** transactionnels ;
+- l'**interface** et les tableaux de bord ;
+- la **CI** ;
+- **Boilerack**, en quoi que ce soit ;
+- tout **renommage** d'entité ;
+- le **superviseur** et sa surface `guard/*` ;
+- le **message retenu** historique sur la surface de commande.
+
+---
+
+## 10. Inconnues restantes
+
+1. **La cible ICMP exacte** de `binary_sensor.boiler_bridge` — définie hors YAML.
+2. **Les seuils d'âge** des conditions 1 et 2 du garde.
+3. **L'état résiduel** du helper transactionnel `input_text.boiler_req_*` —
+   second garde du `PRECHECK`, non lisible depuis le dépôt.
+4. **Le sort du message retenu** historique sur la surface de commande : le pont
+   étant arrêté, il ne déclenche rien ; le traiter serait une décision propre.
+5. **Le budget de confirmation `5,0 s` contre l'attente `15 s`** — jamais
+   confrontés en régime réel.
+6. **La valeur de `read_surface.prefix` au moment d'agir** — fait de
+   configuration, à revérifier, jamais à supposer.
+
+---
+
+## 11. Réserves conservées
+
+1. **Les topics legacy sont RETENUS.** Toute entité non traitée conservera une
+   valeur plausible et fausse. C'est le principal risque du Lot 1.
+2. **La limite de reconnexion de Boilerack n'est pas corrigée** par ce chantier :
+   elle est **contournée** par le garde. La corriger relèverait de Boilerack.
+3. **Aucune capacité de production n'est revendiquée** : ce document fige un
+   contrat, il ne l'éprouve pas.
