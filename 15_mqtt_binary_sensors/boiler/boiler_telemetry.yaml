@@ -19,10 +19,10 @@
 #   boiler_burner_on
 #
 # 📋 TRANSPORT
-#   state_topic  : boiler/telemetry/burner/state
-#   namespace    : boiler/telemetry/...
-#   payload_on   : on
-#   payload_off  : off
+#   state_topic  : boilerack/telemetry/burner/state
+#   namespace    : boilerack/telemetry/...
+#   payload_on   : ON   (projete : valeur non nulle)
+#   payload_off  : OFF  (projete : valeur nulle)
 #   device_class : running
 #
 # 🔗 DÉPENDANCES
@@ -30,7 +30,7 @@
 #   Réf : 03_namespace_canonique.md §3.2
 #
 # 🚫 INTERDITS
-#   - Introduire un template Jinja
+#   - Introduire une logique metier dans le gabarit de projection
 #   - Introduire une logique métier
 #   - Recalculer ou dériver un état localement
 #   - Constituer une autorité décisionnelle
@@ -44,8 +44,14 @@
 - name: "Boiler burner on"
   unique_id: boiler_burner_on
   default_entity_id: boiler_burner_on
-  state_topic: "boiler/telemetry/burner/state"
-  payload_on: "on"
-  payload_off: "off"
+  state_topic: "boilerack/telemetry/burner/state"
+  # La surface amont publie un SCALAIRE NUMERIQUE, jamais "on" / "off" :
+  # projection binaire de la modulation, 0.0 ou non nul. Sans ce gabarit, le
+  # capteur ne s'apparierait JAMAIS et resterait fige sur sa derniere valeur
+  # retenue -- une valeur plausible et fausse, sans aucun signal.
+  # Projection stricte : 0 == off, toute valeur non nulle == on.
+  value_template: "{{ 'ON' if (value | float(0)) != 0 else 'OFF' }}"
+  payload_on: "ON"
+  payload_off: "OFF"
   device_class: running
   icon: mdi:fire

@@ -55,7 +55,15 @@
       to: ~
 
   # ======================================================
-  # 🧿 Condition — entrée exploitable et bridge disponible
+  # 🧿 Condition — entrée exploitable et rôle commandable
+  # ------------------------------------------------------
+  # Le role commande est determine par le declencheur, exactement comme
+  # l'action ci-dessous choisit le script : pente -> heating_curve_slope,
+  # parallele -> heating_curve_shift.
+  #
+  # La garde LIT l'autorite composee creee par le Lot 1
+  # (binary_sensor.boiler_commandable_<role>) ; elle n'en duplique pas la
+  # logique. `online` seul ne suffit plus, et n'apparait plus ici.
   # ======================================================
   condition:
     - condition: template
@@ -63,7 +71,12 @@
         {{
           trigger.to_state is not none
           and trigger.to_state.state not in ['unknown', 'unavailable', 'none', '']
-          and is_state('binary_sensor.boiler_bridge_online', 'on')
+          and is_state(
+                'binary_sensor.boiler_commandable_' ~ (
+                  'heating_curve_slope'
+                  if trigger.entity_id == 'input_number.chauffage_pente_consigne'
+                  else 'heating_curve_shift'
+                ), 'on')
         }}
 
   # ======================================================

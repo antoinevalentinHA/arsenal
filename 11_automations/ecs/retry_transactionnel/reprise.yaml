@@ -22,21 +22,25 @@
 #     declenchement.yaml au moment de l'invocation effective).
 #
 #  📦 DEPENDANCES
-#     - binary_sensor.boiler_bridge_online
+#     - binary_sensor.boiler_commandable_dhw_setpoint
 #     - input_boolean.ecs_retry_pending
 #     - input_text.ecs_retry_attempt1_id
 #     - timer.ecs_retry (duration: 30s en config)
 # ==========================================================
 
 - id: "10250000000029"
-  alias: "ECS — Reprise retry après retour bridge"
+  alias: "ECS — Reprise retry après retour de commandabilité"
   description: >
-    Demarre le timer de retry ECS apres retour online du bridge.
+    Demarre le timer de retry ECS apres retour de la commandabilite du role dhw_setpoint.
   mode: single
 
   trigger:
+    # Re-declenchement sur le RETOUR DE COMMANDABILITE du role, non sur
+    # le seul retour `online` : `online` peut revenir alors que la chaine
+    # de lecture reste degradee ou la mesure perimee, et le retry
+    # echouerait aussitot. L'autorite composee est celle du Lot 1.
     - platform: state
-      entity_id: binary_sensor.boiler_bridge_online
+      entity_id: binary_sensor.boiler_commandable_dhw_setpoint
       to: "on"
 
   condition:
@@ -53,7 +57,7 @@
         {{ states('input_text.ecs_retry_attempt1_id') | trim != '' }}
 
     # Ne pas armer si le timer est déjà actif
-    # (bridge était déjà online au moment de l'armement)
+    # (le role etait deja commandable au moment de l'armement)
     - condition: template
       value_template: >
         {{ states('timer.ecs_retry') not in ['active'] }}

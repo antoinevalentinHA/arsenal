@@ -1,11 +1,10 @@
 # ==========================================================
 # 🧠 ARSENAL — MQTT SENSOR
-#     Boiler / Bridge — Santé passerelle Optolink / vcontrold
+#     Boiler / Bridge — Santé de la chaîne de lecture
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Exposer en transport passif les états de santé et
-#   informations publiés par la passerelle chaudière
-#   (bridge Optolink / vcontrold).
+#   Exposer en transport passif les états de santé publiés
+#   par l'écrivain souverain sur sa surface de service.
 #
 # 🧩 PÉRIMÈTRE
 #   - Transport passif de données MQTT uniquement
@@ -17,27 +16,26 @@
 #   etat_brut_externe | heartbeat_technique
 #
 # 🆔 UNIQUE_ID
-#   boiler_bridge_version
-#   boiler_vcontrold_status
-#   boiler_optolink_status
 #   boiler_bridge_heartbeat_raw
+#   boiler_telemetry_status
 #
 # 📋 TRANSPORT
 #   state_topic          :
-#     - boiler/bridge/version
-#     - boiler/bridge/vcontrold_status
-#     - boiler/bridge/optolink_status
-#     - boiler/bridge/heartbeat
-#   namespace            : boiler/bridge/...
-#   json_attributes      : non
-#   structure JSON       : sans objet (états textuels scalaires)
-#   valeurs attendues    :
-#     - vcontrold_status : running | stopped | error
-#     - optolink_status  : connected | disconnected | error
+#     - boilerack/bridge/heartbeat
+#     - boilerack/bridge/telemetry_status
+#   namespace            : boilerack/bridge/...
+#   json_attributes      : oui, sur telemetry_status uniquement
+#   structure JSON       :
+#     - heartbeat        : {"ts": "<RFC 3339 UTC>"} — aucun autre champ
+#     - telemetry_status : {"schema", "ts", "chain", "measurements"}
+#                          chain       = {"status", "cause"}
+#                          measurements = { <role> : { has_value, fresh,
+#                                           last_success, age_s, last_result } }
 #
 # 🔗 DÉPENDANCES
-#   Lit : passerelle Optolink / vcontrold via broker MQTT
-#   Réf : 03_namespace_canonique.md §3.1, 15_sante_passerelle.md
+#   Lit : écrivain souverain via broker MQTT
+#   Réf : 03_namespace_canonique.md §3.1,
+#         architecture/chauffage/interface_ha_boiler_bridge.md §3.1
 #
 # 🚫 INTERDITS
 #   - Introduire une logique métier
@@ -45,32 +43,39 @@
 #   - Constituer une autorité décisionnelle
 #   - Remplacer une couche template dédiée
 #   - Laisser une structure JSON non documentée
+#   - Publier l'instantané complet comme state HA (voir ci-dessous)
 #
 # 🏷️ STATUT
 #   Transport — Arsenal v14.x
+#
+# ⚠️ SURFACES RETIRÉES — SANS ÉQUIVALENT
+#   boiler/bridge/version, boiler/bridge/vcontrold_status et
+#   boiler/bridge/optolink_status n'ont AUCUN correspondant sur la surface
+#   cible. Les trois entités sont RETIRÉES, et non remplacées une pour une :
+#   la nouvelle surface qualifie LA CHAÎNE de lecture par chain.status et
+#   chain.cause. La granularité change de nature — on ne distingue plus
+#   « démon » et « liaison optique ».
+#   Réf : interface_ha_boiler_bridge.md §3.1
 # ==========================================================
-
-- name: "Boiler bridge version"
-  unique_id: boiler_bridge_version
-  default_entity_id: boiler_bridge_version
-  state_topic: "boiler/bridge/version"
-  icon: mdi:tag-outline
-
-- name: "Boiler vcontrold status"
-  unique_id: boiler_vcontrold_status
-  default_entity_id: boiler_vcontrold_status
-  state_topic: "boiler/bridge/vcontrold_status"
-  icon: mdi:cog-outline
-  # Valeurs attendues : running | stopped | error
-
-- name: "Boiler optolink status"
-  unique_id: boiler_optolink_status
-  default_entity_id: boiler_optolink_status
-  state_topic: "boiler/bridge/optolink_status"
-  icon: mdi:serial-port
-  # Valeurs attendues : connected | disconnected | error
 
 - name: "Boiler bridge heartbeat raw"
   unique_id: boiler_bridge_heartbeat_raw
-  state_topic: "boiler/bridge/heartbeat"
+  state_topic: "boilerack/bridge/heartbeat"
   icon: mdi:code-json
+  # QoS 0, NON retenu, période 30 s : le battement peut être perdu sans que
+  # rien ne soit en panne. Il n'atteste QUE de l'activité du processus.
+
+- name: "Boiler telemetry status"
+  unique_id: boiler_telemetry_status
+  default_entity_id: boiler_telemetry_status
+  state_topic: "boilerack/bridge/telemetry_status"
+  # L'instantané complet pèse ~1 300 octets, mesuré sur le terrain, contre une
+  # limite de 255 caractères pour un state Home Assistant. Le publier tel quel
+  # mettrait le capteur en erreur et rendrait la garde composée inopérante.
+  # Le state ne porte donc que la projection COURTE de chain.status ; la
+  # structure complète vit dans les attributs.
+  value_template: "{{ value_json.chain.status | default('unknown') }}"
+  json_attributes_topic: "boilerack/bridge/telemetry_status"
+  icon: mdi:link-variant
+  # Valeurs attendues du state : ok | degraded | unavailable
+  # Attributs exposés : schema, ts, chain, measurements

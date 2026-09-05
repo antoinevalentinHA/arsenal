@@ -23,7 +23,7 @@
 #     - timer.ecs_retry
 #     - input_boolean.ecs_retry_pending
 #     - input_number.ecs_retry_count
-#     - binary_sensor.boiler_bridge_online
+#     - binary_sensor.boiler_commandable_dhw_setpoint
 #     - input_text.ecs_target_temp_session
 #     - input_text.ecs_retry_attempt2_id
 #       (vidé ici avant invocation, écrit par etat_retry au cleanup)
@@ -54,8 +54,12 @@
       entity_id: input_number.ecs_retry_count
       below: 1
 
+    # Garde d'execution : la capacite de commander CE ROLE, non le seul
+    # `online`. L'autorite est binary_sensor.boiler_commandable_dhw_setpoint :
+    # la composition (online, fraicheur de telemetry_status, chain.status,
+    # fraicheur de la mesure) y vit, et n'est PAS dupliquee ici.
     - condition: state
-      entity_id: binary_sensor.boiler_bridge_online
+      entity_id: binary_sensor.boiler_commandable_dhw_setpoint
       state: "on"
 
     # Vérification valeur session toujours valide au moment du déclenchement
@@ -73,7 +77,7 @@
         level: warning
         message: >
           ECS retry declenche — tentative=2,
-          bridge={{ states('binary_sensor.boiler_bridge_online') }},
+          commandable={{ states('binary_sensor.boiler_commandable_dhw_setpoint') }},
           target={{ states('input_text.ecs_target_temp_session') }}°C,
           attempt1_id={{ states('input_text.ecs_retry_attempt1_id') }}
 

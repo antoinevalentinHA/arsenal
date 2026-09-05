@@ -148,14 +148,23 @@
       id: "chauffage_autorisation_cible"
 
     # ======================================================
-    # 🔒 CONVERGENCE TECHNIQUE — BOILER BRIDGE
+    # 🔒 CONVERGENCE TECHNIQUE — CAPACITE D EXECUTION BOILER
     # ======================================================
 
+    # Re-declenchement sur le retour de la CAPACITE D EXECUTION du role
+    # commande par la chaine descendante — heating_setpoint —, non sur le
+    # seul retour `online`.
+    #
+    # Ce n'est PAS un gate parallele : c'est le meme signal que la garde G2
+    # du script de decision centrale. L'automatisation re-evalue quand la
+    # commandabilite revient ; c'est G2, et elle seule, qui autorise ou
+    # refuse l'execution descendante. Aucune logique composee n'est
+    # dupliquee ici.
     - platform: state
-      entity_id: binary_sensor.boiler_bridge_online
+      entity_id: binary_sensor.boiler_commandable_heating_setpoint
       from: "off"
       to: "on"
-      id: "boiler_bridge_online"
+      id: "boiler_commandable_heating_setpoint"
 
     # ======================================================
     # 🔁 FIN ANTI-REBOND GEOLOCALISATION

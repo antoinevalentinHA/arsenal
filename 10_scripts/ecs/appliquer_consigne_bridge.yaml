@@ -13,7 +13,9 @@
 #
 #     Ce script constitue une FRONTIERE D’EXECUTION locale
 #     pour la commande :
-#       boiler/command/dhw/set_setpoint
+#       topic boilerack/command, role dhw_setpoint
+#       (topic UNIQUE pour toute l installation ; c est le champ
+#        role du payload qui identifie la commande)
 #
 # ----------------------------------------------------------
 #
@@ -74,7 +76,11 @@
 #
 # ⚠️ PRECONDITIONS
 #
-#     - binary_sensor.boiler_bridge_online == on
+#     - binary_sensor.boiler_commandable_dhw_setpoint == on
+#       GARDE COMPOSEE : online NECESSAIRE mais NON SUFFISANT.
+#       Quatre conditions : online, fraicheur de telemetry_status
+#       (3 x periode), chain.status == ok, et measurements[role].fresh.
+#       Ref : contrats/chauffage/30_decision_centrale__amendement_garde_execution.md
 #     - input_text.boiler_req_dhw_set_setpoint vide
 #     - target_temp numerique
 #     - target_temp dans les bornes physiques [10 ; 60]
@@ -139,7 +145,8 @@
 #     - sensor.boiler_ack_dhw_set_setpoint_status
 #     - sensor.boiler_ack_dhw_set_setpoint_request_id
 #     - sensor.boiler_ack_dhw_set_setpoint_reason
-#     - binary_sensor.boiler_bridge_online
+#     - binary_sensor.boiler_commandable_dhw_setpoint
+#     - binary_sensor.boiler_bridge_online   (lu en diagnostic de timeout)
 #
 # ----------------------------------------------------------
 #
@@ -184,9 +191,9 @@ ecs_appliquer_consigne_bridge:
         - conditions:
             - condition: template
               value_template: >
-                {{ states('binary_sensor.boiler_bridge_online') != 'on' }}
+                {{ not is_state('binary_sensor.boiler_commandable_dhw_setpoint', 'on') }}
           sequence:
-            - stop: "Bridge offline — aborted"
+            - stop: "Capacite d execution indisponible pour le role dhw_setpoint — aborted"
 
         - conditions:
             - condition: template
@@ -264,7 +271,7 @@ ecs_appliquer_consigne_bridge:
     # ======================================================
     - service: mqtt.publish
       data:
-        topic: "boiler/command/dhw/set_setpoint"
+        topic: "boilerack/command"
         qos: 1
         retain: false
         payload: >-
@@ -273,6 +280,7 @@ ecs_appliquer_consigne_bridge:
             "ts": "{{ boiler_ts }}",
             "expires_at": "{{ boiler_expires_at }}",
             "source": "arsenal",
+            "role": "dhw_setpoint",
             "value": {{ effective_target_temp | int }}
           }
 

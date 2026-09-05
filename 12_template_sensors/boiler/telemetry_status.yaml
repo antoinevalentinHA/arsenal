@@ -1,0 +1,226 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Boiler / Telemetry status — Garde d'exécution composée
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Dériver de l'instantané `boilerack/bridge/telemetry_status`
+#   la CAPACITÉ D'EXÉCUTION, qualifiée PAR RÔLE.
+#
+# 🧩 PÉRIMÈTRE
+#   - Dérivation locale uniquement
+#   - Aucune décision métier
+#   - Aucune écriture
+#   - Aucune publication MQTT
+#
+# 🔖 NATURE
+#   garde_execution | sante_derivee
+#
+# 🆔 UNIQUE_ID
+#   boiler_chain_cause
+#   boiler_telemetry_status_age
+#   boiler_commandable_dhw_setpoint
+#   boiler_commandable_heating_setpoint
+#   boiler_commandable_heating_curve_shift
+#   boiler_commandable_heating_curve_slope
+#
+# 📥 ENTITÉS SOURCE
+#   - sensor.boiler_telemetry_status          (state = chain.status,
+#                                              attributs = schema, ts,
+#                                              chain, measurements)
+#   - binary_sensor.boiler_bridge_online
+#
+# ----------------------------------------------------------
+# 🔒 LA GARDE EST COMPOSÉE, ET QUALIFIÉE PAR RÔLE
+#
+#   La disponibilité du système d'exécution POUR UN RÔLE DONNÉ est établie
+#   si, et seulement si, les QUATRE conditions suivantes sont réunies :
+#
+#     1. `bridge/online` vaut `online`
+#        → NÉCESSAIRE, JAMAIS SUFFISANTE
+#     2. l'instantané porte un `ts` d'âge INFÉRIEUR OU ÉGAL au seuil
+#        → vivacité de la publication
+#     3. `chain.status` vaut `ok` — ni `degraded`, ni `unavailable`
+#        → santé de la chaîne de lecture
+#     4. `measurements[<rôle>].fresh` vaut VRAI
+#        → fraîcheur de la grandeur commandée
+#
+#   Pourquoi `online` ne suffit pas : l'écrivain souverain N'IMPLÉMENTE
+#   AUCUNE POLITIQUE DE RECONNEXION. Après une déconnexion inattendue, le
+#   testament fait passer le retenu à `offline` ; si la bibliothèque se
+#   reconnecte seule, le composant ne le voit pas, et le retenu RESTE
+#   `offline` alors que le service est vivant. Une garde fondée sur ce seul
+#   signal produirait un refus DURABLE sur un système disponible.
+#
+#   La condition 4 est INDIVIDUELLE, et c'est délibéré : une chaîne saine
+#   n'autorise pas à commander un rôle dont la mesure est périmée.
+#
+#   `fresh` est une valeur NORMATIVE DE LA SURFACE AMONT, définie comme
+#   `age_s ≤ 3 × période` de la mesure. Arsenal la LIT, il ne la recalcule
+#   pas.
+#
+#   Réf : contrats/chauffage/30_decision_centrale__amendement_garde_execution.md §2
+#
+# ----------------------------------------------------------
+# ⏱️ LE SEUIL — DÉCISION NORMATIVE, PAS DÉDUCTION
+#
+#   La surface amont publie une période et un instant ; elle ne publie
+#   AUCUNE tolérance. Le seuil est donc une DÉCISION D'ARSENAL.
+#
+#   Il s'écrit en MULTIPLE DE PÉRIODE, jamais en secondes en dur : la
+#   période est configurable côté amont, et figer `90` rendrait la garde
+#   fausse au premier réglage. Un changement de période se répercute ici
+#   par la seule modification de `periode_instantane_s`.
+#
+#   Pourquoi TROIS périodes et pas deux : le battement est publié en QoS 0
+#   et n'est pas retenu — il peut donc être perdu sans que rien ne soit en
+#   panne. Deux périodes ne toléreraient qu'une seule perte, et un unique
+#   message égaré bloquerait toute exécution descendante. Trois en tolèrent
+#   deux consécutives.
+#
+#   Ce seuil NE REMPLACE PAS le seuil de dégradation de 60 s porté par
+#   binary_sensor.boiler_bridge_degraded. Les deux coexistent et ne mesurent
+#   pas la même chose : 60 s qualifie une DÉGRADATION, signal de diagnostic ;
+#   le seuil ci-dessous qualifie une INCAPACITÉ À COMMANDER, garde bloquante.
+#   Une garde doit être PLUS TOLÉRANTE qu'un diagnostic.
+#
+#   Réf : amendement §3.1, §3.2, §3.3
+#
+# ----------------------------------------------------------
+# 🗣️ VOCABULAIRE — MATCHER LA PROJECTION PUBLIQUE
+#
+#   `chain.status` vaut `ok`, `degraded` ou `unavailable` : trois états,
+#   pas davantage.
+#
+#   `chain.cause` et `last_result` partagent un même vocabulaire public :
+#   daemon_unreachable, unsupported_command, timeout, unusable_output,
+#   transport_error. `chain.cause` vaut null SI ET SEULEMENT SI le statut
+#   vaut `ok`.
+#
+#   `unknown_command` est un état INTERNE de la surface amont et
+#   N'APPARAÎT JAMAIS SUR LE FIL. Comparer à cette valeur ne s'apparierait
+#   à rien et échouerait EN SILENCE.
+#
+#   Réf : amendement §4
+#
+# 🚫 INTERDITS
+#   - Recalculer `fresh` localement
+#   - Figer le seuil en secondes
+#   - Comparer à `unknown_command`
+#   - Participer à la décision métier
+#
+# 🏷️ STATUT
+#   Garde d'exécution — Arsenal v14.x
+# ==========================================================
+
+- sensor:
+    - name: "Boiler chain cause"
+      unique_id: boiler_chain_cause
+      icon: mdi:alert-decagram-outline
+      state: >
+        {% set chain = state_attr('sensor.boiler_telemetry_status', 'chain') %}
+        {% if chain is not mapping %}
+          unknown
+        {% else %}
+          {{ chain.get('cause') if chain.get('cause') is not none else 'none' }}
+        {% endif %}
+
+    - name: "Boiler telemetry status age"
+      unique_id: boiler_telemetry_status_age
+      unit_of_measurement: "s"
+      state_class: measurement
+      icon: mdi:timer-outline
+      state: >
+        {% set ts = state_attr('sensor.boiler_telemetry_status', 'ts') %}
+        {% set moment = as_datetime(ts) if ts is not none else none %}
+        {% if moment is none %}
+          unknown
+        {% else %}
+          {{ (now() - moment).total_seconds() | round(0) | int }}
+        {% endif %}
+
+- binary_sensor:
+    # ======================================================
+    # CAPACITÉ D'EXÉCUTION — UNE ENTITÉ PAR RÔLE COMMANDABLE
+    # ======================================================
+
+    - name: "Boiler commandable dhw setpoint"
+      unique_id: boiler_commandable_dhw_setpoint
+      device_class: running
+      icon: mdi:water-boiler
+      state: >
+        {# Période d'instantané DÉPLOYÉE, relevée sur le terrain. #}
+        {% set periode_instantane_s = 30 %}
+        {# Facteur CHOISI, motivé par l'amendement §3.2. #}
+        {% set facteur = 3 %}
+        {% set seuil_s = facteur * periode_instantane_s %}
+        {% set role = 'dhw_setpoint' %}
+        {% set online = is_state('binary_sensor.boiler_bridge_online', 'on') %}
+        {% set ts = state_attr('sensor.boiler_telemetry_status', 'ts') %}
+        {% set moment = as_datetime(ts) if ts is not none else none %}
+        {% set vivace = moment is not none
+                        and (now() - moment).total_seconds() <= seuil_s %}
+        {% set chaine_ok = is_state('sensor.boiler_telemetry_status', 'ok') %}
+        {% set mesures = state_attr('sensor.boiler_telemetry_status', 'measurements') %}
+        {% set frais = mesures is mapping
+                       and mesures.get(role, {}).get('fresh', false) %}
+        {{ online and vivace and chaine_ok and frais }}
+
+    - name: "Boiler commandable heating setpoint"
+      unique_id: boiler_commandable_heating_setpoint
+      device_class: running
+      icon: mdi:thermometer-high
+      state: >
+        {% set periode_instantane_s = 30 %}
+        {% set facteur = 3 %}
+        {% set seuil_s = facteur * periode_instantane_s %}
+        {% set role = 'heating_setpoint' %}
+        {% set online = is_state('binary_sensor.boiler_bridge_online', 'on') %}
+        {% set ts = state_attr('sensor.boiler_telemetry_status', 'ts') %}
+        {% set moment = as_datetime(ts) if ts is not none else none %}
+        {% set vivace = moment is not none
+                        and (now() - moment).total_seconds() <= seuil_s %}
+        {% set chaine_ok = is_state('sensor.boiler_telemetry_status', 'ok') %}
+        {% set mesures = state_attr('sensor.boiler_telemetry_status', 'measurements') %}
+        {% set frais = mesures is mapping
+                       and mesures.get(role, {}).get('fresh', false) %}
+        {{ online and vivace and chaine_ok and frais }}
+
+    - name: "Boiler commandable heating curve shift"
+      unique_id: boiler_commandable_heating_curve_shift
+      device_class: running
+      icon: mdi:chart-line-variant
+      state: >
+        {% set periode_instantane_s = 30 %}
+        {% set facteur = 3 %}
+        {% set seuil_s = facteur * periode_instantane_s %}
+        {% set role = 'heating_curve_shift' %}
+        {% set online = is_state('binary_sensor.boiler_bridge_online', 'on') %}
+        {% set ts = state_attr('sensor.boiler_telemetry_status', 'ts') %}
+        {% set moment = as_datetime(ts) if ts is not none else none %}
+        {% set vivace = moment is not none
+                        and (now() - moment).total_seconds() <= seuil_s %}
+        {% set chaine_ok = is_state('sensor.boiler_telemetry_status', 'ok') %}
+        {% set mesures = state_attr('sensor.boiler_telemetry_status', 'measurements') %}
+        {% set frais = mesures is mapping
+                       and mesures.get(role, {}).get('fresh', false) %}
+        {{ online and vivace and chaine_ok and frais }}
+
+    - name: "Boiler commandable heating curve slope"
+      unique_id: boiler_commandable_heating_curve_slope
+      device_class: running
+      icon: mdi:chart-line
+      state: >
+        {% set periode_instantane_s = 30 %}
+        {% set facteur = 3 %}
+        {% set seuil_s = facteur * periode_instantane_s %}
+        {% set role = 'heating_curve_slope' %}
+        {% set online = is_state('binary_sensor.boiler_bridge_online', 'on') %}
+        {% set ts = state_attr('sensor.boiler_telemetry_status', 'ts') %}
+        {% set moment = as_datetime(ts) if ts is not none else none %}
+        {% set vivace = moment is not none
+                        and (now() - moment).total_seconds() <= seuil_s %}
+        {% set chaine_ok = is_state('sensor.boiler_telemetry_status', 'ok') %}
+        {% set mesures = state_attr('sensor.boiler_telemetry_status', 'measurements') %}
+        {% set frais = mesures is mapping
+                       and mesures.get(role, {}).get('fresh', false) %}
+        {{ online and vivace and chaine_ok and frais }}

@@ -18,14 +18,10 @@
 #   - reason absent → 'none' (champ facultatif sauf pour rejected)
 #
 # 📥 ENTITES SOURCE
-#   - sensor.boiler_ack_heating_set_program_raw
-#   - sensor.boiler_ack_heating_set_comfort_temperature_raw
-#   - sensor.boiler_ack_heating_set_reduced_temperature_raw
+#   - sensor.boiler_ack_heating_set_temperature_raw
 #   - sensor.boiler_ack_heating_set_curve_slope_raw
 #   - sensor.boiler_ack_heating_set_curve_shift_raw
 #   - sensor.boiler_ack_dhw_set_setpoint_raw
-#   - sensor.boiler_ack_dhw_oneshot_charge_raw
-#   - sensor.boiler_error_last_raw
 #
 # ⚠️ IMPORTANT
 #   - Couche strictement diagnostique légère
@@ -157,80 +153,16 @@
       icon: mdi:message-alert-outline
 
     # ======================================================
-    # ERROR — LAST
+    # ERROR — LAST : SURFACE RETIRÉE, SANS ÉQUIVALENT
+    # ------------------------------------------------------
+    # boiler/error/last n'existe pas sur la surface cible. Les six gabarits
+    # qui en dérivaient — reason, domain, action, request_id, ts, summary —
+    # sont RETIRÉS.
+    #
+    # Le diagnostic par erreur ponctuelle est REMPLACÉ SANS ÊTRE REPRODUIT :
+    #   - last_result PAR MESURE, dans les attributs de
+    #     sensor.boiler_telemetry_status ;
+    #   - le champ reason porté par les acquittements REJETÉS, ci-dessus.
+    # Il n'existe plus de topic d'erreur global.
+    # Réf : interface_ha_boiler_bridge.md §3.5
     # ======================================================
-
-    - name: "Boiler error last reason"
-      unique_id: boiler_error_last_reason
-      state: >
-        {% set raw = states('sensor.boiler_error_last_raw') %}
-        {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
-          {% set payload = raw | from_json %}
-          {{ payload.reason if payload.reason is defined and payload.reason is not none else 'none' }}
-        {% else %}
-          unknown
-        {% endif %}
-      icon: mdi:alert-circle-outline
-
-    - name: "Boiler error last domain"
-      unique_id: boiler_error_last_domain
-      state: >
-        {% set raw = states('sensor.boiler_error_last_raw') %}
-        {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
-          {% set payload = raw | from_json %}
-          {{ payload.domain if payload.domain is defined and payload.domain is not none else 'none' }}
-        {% else %}
-          unknown
-        {% endif %}
-      icon: mdi:shape-outline
-
-    - name: "Boiler error last action"
-      unique_id: boiler_error_last_action
-      state: >
-        {% set raw = states('sensor.boiler_error_last_raw') %}
-        {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
-          {% set payload = raw | from_json %}
-          {{ payload.action if payload.action is defined and payload.action is not none else 'none' }}
-        {% else %}
-          unknown
-        {% endif %}
-      icon: mdi:play-circle-outline
-
-    - name: "Boiler error last request id"
-      unique_id: boiler_error_last_request_id
-      state: >
-        {% set raw = states('sensor.boiler_error_last_raw') %}
-        {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
-          {% set payload = raw | from_json %}
-          {{ payload.request_id if payload.request_id is defined and payload.request_id is not none else 'none' }}
-        {% else %}
-          unknown
-        {% endif %}
-      icon: mdi:identifier
-
-    - name: "Boiler error last ts"
-      unique_id: boiler_error_last_ts
-      state: >
-        {% set raw = states('sensor.boiler_error_last_raw') %}
-        {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
-          {% set payload = raw | from_json %}
-          {{ payload.ts if payload.ts is defined and payload.ts is not none else 'none' }}
-        {% else %}
-          unknown
-        {% endif %}
-      icon: mdi:clock-outline
-
-    - name: "Boiler error last summary"
-      unique_id: boiler_error_last_summary
-      state: >
-        {% set raw = states('sensor.boiler_error_last_raw') %}
-        {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
-          {% set payload = raw | from_json %}
-          {% set domain = payload.domain if payload.domain is defined and payload.domain is not none else 'unknown' %}
-          {% set action = payload.action if payload.action is defined and payload.action is not none else 'unknown' %}
-          {% set reason = payload.reason if payload.reason is defined and payload.reason is not none else 'unknown' %}
-          {{ domain ~ ' / ' ~ action ~ ' / ' ~ reason }}
-        {% else %}
-          unknown
-        {% endif %}
-      icon: mdi:text-box-outline

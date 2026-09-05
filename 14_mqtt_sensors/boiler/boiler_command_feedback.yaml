@@ -4,8 +4,8 @@
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #   Exposer en transport passif les payloads bruts du bus
-#   de commande chaudière : acquittements d'exécution et
-#   dernière erreur publiée par la passerelle.
+#   de commande chaudière : les acquittements d'exécution
+#   publiés par l'écrivain souverain.
 #
 # 🧩 PÉRIMÈTRE
 #   - Transport passif de données MQTT uniquement
@@ -21,16 +21,14 @@
 #   boiler_ack_heating_set_curve_slope_raw
 #   boiler_ack_heating_set_curve_shift_raw
 #   boiler_ack_dhw_set_setpoint_raw
-#   boiler_error_last_raw
 #
 # 📋 TRANSPORT
 #   state_topic          :
-#     - boiler/ack/heating/set_temperature
-#     - boiler/ack/heating/set_curve_slope
-#     - boiler/ack/heating/set_curve_shift
-#     - boiler/ack/dhw/set_setpoint
-#     - boiler/error/last
-#   namespace            : boiler/ack/... | boiler/error/...
+#     - boilerack/ack/heating_setpoint
+#     - boilerack/ack/heating_curve_slope
+#     - boilerack/ack/heating_curve_shift
+#     - boilerack/ack/dhw_setpoint
+#   namespace            : boilerack/ack/<role>
 #   qos                  : 1
 #   json_attributes      : non (payload JSON conservé brut comme état)
 #   structure JSON       : non extraite ici — interprétation
@@ -51,34 +49,50 @@
 #
 # 🏷️ STATUT
 #   Transport — Arsenal v14.x
+#
+# ⚠️ FORME DE L'ARBRE — un segment unique par rôle
+#   L'arbre d'acquittement ne s'imbrique plus en <domaine>/<action> : il expose
+#   un SEGMENT UNIQUE PAR RÔLE, boilerack/ack/<role>. Les unique_id sont
+#   CONSERVÉS et gardent la forme <domaine>_<action> — ils nomment la famille
+#   transactionnelle Arsenal, non le topic.
+#   Réf : contrats/boiler/consommation_ack.md §2 (v1.1)
+#
+# ⚠️ SURFACE RETIRÉE — SANS ÉQUIVALENT
+#   boiler/error/last n'existe pas sur la surface cible : le contrat de lecture
+#   de l'écrivain souverain l'exclut de son périmètre. Le diagnostic par erreur
+#   ponctuelle est REMPLACÉ SANS ÊTRE REPRODUIT, par deux sources de nature
+#   différente : last_result PAR MESURE, dans bridge/telemetry_status, et le
+#   champ reason porté par les acquittements REJETÉS. Il n'existe plus de topic
+#   d'erreur global.
+#   Réf : interface_ha_boiler_bridge.md §3.5
+#
+# ⚠️ CHAMP DISPARU — ts
+#   L'acquittement est déterministe et SANS HORLOGE : {request_id, status},
+#   plus reason et reason_class sur le seul cas rejected. La corrélation repose
+#   sur le SEUL request_id.
+#   Réf : contrats/boiler/consommation_ack.md §4 (v1.1)
 # ==========================================================
 
 - name: "Boiler ack heating set temperature raw"
   unique_id: boiler_ack_heating_set_temperature_raw
-  state_topic: "boiler/ack/heating/set_temperature"
+  state_topic: "boilerack/ack/heating_setpoint"
   qos: 1
   icon: mdi:message-processing-outline
 
 - name: "Boiler ack heating set curve slope raw"
   unique_id: boiler_ack_heating_set_curve_slope_raw
-  state_topic: "boiler/ack/heating/set_curve_slope"
+  state_topic: "boilerack/ack/heating_curve_slope"
   qos: 1
   icon: mdi:message-processing-outline
 
 - name: "Boiler ack heating set curve shift raw"
   unique_id: boiler_ack_heating_set_curve_shift_raw
-  state_topic: "boiler/ack/heating/set_curve_shift"
+  state_topic: "boilerack/ack/heating_curve_shift"
   qos: 1
   icon: mdi:message-processing-outline
 
 - name: "Boiler ack dhw set setpoint raw"
   unique_id: boiler_ack_dhw_set_setpoint_raw
-  state_topic: "boiler/ack/dhw/set_setpoint"
+  state_topic: "boilerack/ack/dhw_setpoint"
   qos: 1
   icon: mdi:message-processing-outline
-
-- name: "Boiler error last raw"
-  unique_id: boiler_error_last_raw
-  state_topic: "boiler/error/last"
-  qos: 1
-  icon: mdi:alert-circle-outline

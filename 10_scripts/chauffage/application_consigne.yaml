@@ -66,7 +66,11 @@
 #
 # ⚠️ PRECONDITIONS
 #
-#     - boiler_bridge_online == on
+#     - binary_sensor.boiler_commandable_heating_setpoint == on
+#       GARDE COMPOSEE : online NECESSAIRE mais NON SUFFISANT.
+#       Quatre conditions : online, fraicheur de telemetry_status
+#       (3 x periode), chain.status == ok, et measurements[role].fresh.
+#       Ref : contrats/chauffage/30_decision_centrale__amendement_garde_execution.md
 #     - consigne valide : confort / reduite
 #     - consigne numerique disponible
 #
@@ -128,7 +132,8 @@
 #     - sensor.boiler_ack_heating_set_temperature_status
 #     - sensor.boiler_ack_heating_set_temperature_request_id
 #     - sensor.boiler_ack_heating_set_temperature_reason
-#     - binary_sensor.boiler_bridge_online
+#     - binary_sensor.boiler_commandable_heating_setpoint
+#     - binary_sensor.boiler_bridge_online   (lu en diagnostic de timeout)
 #
 # ----------------------------------------------------------
 #
@@ -198,9 +203,9 @@ chauffage_appliquer_consigne:
         - conditions:
             - condition: template
               value_template: >
-                {{ states('binary_sensor.boiler_bridge_online') != 'on' }}
+                {{ not is_state('binary_sensor.boiler_commandable_heating_setpoint', 'on') }}
           sequence:
-            - stop: "Bridge offline — aborted"
+            - stop: "Capacite d execution indisponible pour le role heating_setpoint — aborted"
 
         - conditions:
             - condition: template
@@ -248,7 +253,7 @@ chauffage_appliquer_consigne:
     # PUBLICATION MQTT
     - service: mqtt.publish
       data:
-        topic: "boiler/command/heating/set_temperature"
+        topic: "boilerack/command"
         qos: 1
         retain: false
         payload: >-
@@ -257,6 +262,7 @@ chauffage_appliquer_consigne:
             "ts": "{{ boiler_ts }}",
             "expires_at": "{{ boiler_expires_at }}",
             "source": "arsenal",
+            "role": "heating_setpoint",
             "value": {{ boiler_temperature_cible_raw | float | round(0) | int }}
           }
 

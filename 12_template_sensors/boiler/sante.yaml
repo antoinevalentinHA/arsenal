@@ -5,8 +5,7 @@
 #
 # 🎯 RÔLE
 #     Produire un état synthétique unique de santé du
-#     sous-système Boiler Bridge pour usage UI
-#     et supervision.
+#     sous-système Boiler pour usage UI et supervision.
 #
 # 🧱 PRINCIPE
 #     Priorité descendante :
@@ -15,17 +14,38 @@
 #       3. degraded
 #       4. ok
 #
-# 🔒 NOTE ARCHITECTURALE
-#     Le flag `binary_sensor.boiler_bridge_degraded`
-#     constitue une synthèse amont.
+#     Le vocabulaire de sortie est INCHANGÉ : les consommateurs
+#     aval (UI, synthèses système) le lisent tel quel.
 #
-#     Les contrôles locaux sur `sensor.boiler_optolink_status`
-#     et `sensor.boiler_vcontrold_status` jouent un rôle
-#     de filet de sécurité supplémentaire côté Home Assistant.
+# 🔒 NOTE ARCHITECTURALE — LA GRANULARITÉ A CHANGÉ DE NATURE
+#     Les contrôles locaux sur `sensor.boiler_optolink_status` et
+#     `sensor.boiler_vcontrold_status` ont DISPARU : ces deux
+#     entités n'ont aucun correspondant sur la surface cible et
+#     ont été retirées.
+#
+#     Elles ne sont PAS remplacées une pour une. La surface cible
+#     qualifie LA CHAÎNE de lecture par `chain.status`, exposé en
+#     state de `sensor.boiler_telemetry_status`, et par
+#     `chain.cause`. On ne distingue plus « démon » et « liaison
+#     optique » : on qualifie la chaîne, avec sa cause.
+#     Prétendre l'inverse serait faux.
+#
+#     `binary_sensor.boiler_bridge_degraded` — seuil de 60 s sur
+#     le battement — est CONSERVÉ tel quel et demeure une synthèse
+#     amont de ce capteur.
+#
+#     Réf : interface_ha_boiler_bridge.md §3.1,
+#           amendement garde d'exécution §4
+#
+# 🗣️ VOCABULAIRE
+#     `chain.status` vaut `ok`, `degraded` ou `unavailable` :
+#     trois états, pas davantage. Tout autre valeur — y compris
+#     l'indisponibilité de la source — est traitée comme inconnue.
 #
 # ⚠️ CONTRAINTE
 #     Ce capteur est un résumé de santé.
-#     Il ne remplace pas le diagnostic détaillé.
+#     Il ne remplace pas le diagnostic détaillé, ni la garde
+#     d'exécution, qui est composée et qualifiée PAR RÔLE.
 #
 # ==========================================================
 
@@ -35,21 +55,17 @@
       state: >
         {% set online_raw = states('binary_sensor.boiler_bridge_online') %}
         {% set degraded_raw = states('binary_sensor.boiler_bridge_degraded') %}
-        {% set optolink = states('sensor.boiler_optolink_status') | lower %}
-        {% set vcontrold = states('sensor.boiler_vcontrold_status') | lower %}
-        {% set indisponible = ['unknown', 'unavailable'] %}
-        {% set etats_ok = ['ok', 'connected', 'ready', 'running'] %}
+        {% set chain = states('sensor.boiler_telemetry_status') | lower %}
+        {% set indisponible = ['unknown', 'unavailable', 'none', ''] %}
 
         {% if online_raw in indisponible
               or degraded_raw in indisponible
-              or optolink in indisponible
-              or vcontrold in indisponible %}
+              or chain in indisponible %}
           unknown
         {% elif online_raw == 'off' %}
           down
         {% elif degraded_raw == 'on'
-              or optolink not in etats_ok
-              or vcontrold not in etats_ok %}
+              or chain != 'ok' %}
           degraded
         {% else %}
           ok
@@ -57,5 +73,5 @@
       attributes:
         online: "{{ states('binary_sensor.boiler_bridge_online') }}"
         degraded_flag: "{{ states('binary_sensor.boiler_bridge_degraded') }}"
-        optolink_status: "{{ states('sensor.boiler_optolink_status') }}"
-        vcontrold_status: "{{ states('sensor.boiler_vcontrold_status') }}"
+        chain_status: "{{ states('sensor.boiler_telemetry_status') }}"
+        chain_cause: "{{ states('sensor.boiler_chain_cause') }}"
