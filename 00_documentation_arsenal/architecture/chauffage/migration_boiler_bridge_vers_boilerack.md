@@ -4,8 +4,8 @@
 
 | Champ | Valeur |
 |---|---|
-| **Version** | v6 |
-| **Statut** | Cadrage — normatif pour le Lot 1 ; **§12 et §13 consignent deux épreuves terrain** |
+| **Version** | v7 |
+| **Statut** | Cadrage — normatif pour le Lot 1 ; **§12, §13 et §14 consignent trois épreuves terrain** |
 | **Portée** | Recâblage des consommateurs Home Assistant du bus MQTT chaudière |
 | **Complète** | `interface_ha_boiler_bridge.md` — qu'il **ne remplace pas encore** |
 
@@ -23,9 +23,9 @@
 > | **§10.6** préfixe déployé | **valeur observée et corroborée** — l'exigence de revérification est **MAINTENUE** |
 >
 > Une seule réserve du §11 est levée, la troisième, et **pour les seuls rôles
-> éprouvés**. Le §13 consigne l'épreuve A-6, sur `heating_setpoint`.
-> **`heating_curve_shift` et `heating_curve_slope` demeurent non éprouvés en
-> écriture.**
+> éprouvés**. Le §13 consigne l'épreuve A-6 sur `heating_setpoint`, le §14
+> l'épreuve A-7 sur `heating_curve_shift`.
+> **`heating_curve_slope` demeure le SEUL rôle non éprouvé en écriture.**
 
 ---
 
@@ -378,12 +378,12 @@ ping et par la synthèse de connectivité, aux côtés d'entités ping homogène
 2. **La limite de reconnexion de Boilerack n'est pas corrigée** par ce chantier :
    elle est **contournée** par le garde. La corriger relèverait de Boilerack.
 3. ~~**Aucune capacité de production n'est revendiquée** : ce document fige un
-   contrat, il ne l'éprouve pas.~~ — **LEVÉE pour DEUX rôles sur quatre** :
-   `dhw_setpoint` par A-5 (§12), `heating_setpoint` par A-6 (§13). La chaîne
-   Arsenal → Boilerack → chaudière est éprouvée de bout en bout, écriture réelle
-   comprise, par **deux chemins d'appel distincts**.
-   **`heating_curve_shift` et `heating_curve_slope` demeurent NON ÉPROUVÉS en
-   écriture.**
+   contrat, il ne l'éprouve pas.~~ — **LEVÉE pour TROIS rôles sur quatre** :
+   `dhw_setpoint` par A-5 (§12), `heating_setpoint` par A-6 (§13),
+   `heating_curve_shift` par A-7 (§14). La chaîne Arsenal → Boilerack →
+   chaudière est éprouvée de bout en bout, écriture réelle comprise, par **deux
+   chemins d'appel distincts** — l'appel direct et l'appel dérivé.
+   **`heating_curve_slope` demeure le SEUL rôle NON ÉPROUVÉ en écriture.**
 
 ---
 
@@ -461,7 +461,8 @@ d'identifiant n'est pas mis en cause.**
 
 - Les **trois autres rôles** en écriture — `heating_setpoint`,
   `heating_curve_shift`, `heating_curve_slope` — demeurent **non éprouvés** *à la
-  date de A-5*. `heating_setpoint` l'a été depuis, par A-6 : voir §13.
+  date de A-5*. `heating_setpoint` l'a été depuis, par A-6 (§13), et
+  `heating_curve_shift` par A-7 (§14).
 - Le **comportement en refus** : aucune commande n'a été rejetée sur bornes, sur
   pas ou sur expiration.
 - La **marge** entre budget de confirmation et attente : un seul échantillon.
@@ -534,11 +535,121 @@ créer aucune demande de chauffe.
 ### 13.4 Ce que A-6 n'établit pas
 
 - **`heating_curve_shift` et `heating_curve_slope` demeurent NON ÉPROUVÉS en
-  écriture.** Ce sont des grandeurs de **calibration**, que le contrat de retry
-  classe explicitement **non retryables** : leur épreuve appellera des
-  précautions propres, et ne se déduit pas de A-6.
+  écriture** *à la date de A-6*. Ce sont des grandeurs de **calibration**, que le
+  contrat de retry classe explicitement **non retryables** : leur épreuve
+  appellera des précautions propres, et ne se déduit pas de A-6.
+  `heating_curve_shift` l'a été depuis, par A-7 : voir §14.
 - Le **comportement en refus** reste non éprouvé, pour aucun rôle.
 - La **marge** entre budget de confirmation et attente : deux échantillons de
   plus, toujours pas une caractérisation.
 - L'essai a porté sur le régime **`reduite`**. Le régime `confort` emprunte le
   même chemin et le même écrivain, mais **n'a pas été exercé**.
+
+---
+
+## 14. Épreuve terrain A-7 — `heating_curve_shift`, sans filet
+
+> **Une exécution unique, autorisée nommément, sur le seul rôle
+> `heating_curve_shift`.** Première épreuve d'une grandeur de **calibration**,
+> et **première conduite sans aucun filet de rattrapage**.
+
+### 14.1 Ce qui distingue A-7 des deux épreuves précédentes
+
+`heating_curve_shift` est classé **NON RETRYABLE** par le contrat de retry, §2.2.
+En substance, et sans citer mot pour mot : ce contrat range les commandes de
+courbe parmi les calibrations lentes, pour lesquelles il préfère un échec visible
+et une reprise explicite à un retry automatique, celui-ci masquant l'échec et
+brouillant l'interprétation du cycle de calibration.
+[`../../contrats/boiler/retry_transactionnel.md`](../../contrats/boiler/retry_transactionnel.md) §2.2
+
+**Conséquence assumée avant d'agir** : en cas de `timeout` ou de `rejected`,
+**rien ne relance**. Et **aucun garde ne restaure** : `correction_demarrage` ne
+se déclenche qu'au retour de `systeme_stable`, jamais en continu.
+
+| Épreuve | Filet disponible |
+|---|---|
+| **A-5** `dhw_setpoint` | le garde ECS hors cycle a **restauré de lui-même** |
+| **A-6** `heating_setpoint` | retry contractuel disponible ; restauration délibérée |
+| **A-7** `heating_curve_shift` | **AUCUN.** Ni retry, ni garde |
+
+**La restauration a donc été opérée manuellement — par le même chemin natif**,
+c'est-à-dire en reportant le paramètre à sa valeur initiale et en laissant
+l'architecture émettre. **Manuelle quant à la décision, native quant au chemin :
+aucun raccourci n'a été pris.**
+
+### 14.2 Le chemin, identique à A-6 dans sa forme
+
+`script.chauffage_appliquer_parallele` **n'accepte aucun argument** : il lit
+`input_number.chauffage_parallele_consigne`, et rien d'autre. Le geste ne pouvait
+donc être qu'une modification du paramètre, `automation` d'application décidant
+d'émettre — même structure qu'en A-6.
+
+Son PRECHECK est toutefois **plus strict que celui d'ECS**. Il compte
+**exactement cinq refus**, et les voici :
+
+| # | Refus |
+|---|---|
+| 1 | **garde composée** absente — `boiler_commandable_heating_curve_shift ≠ on` |
+| 2 | **valeur indisponible** — `unknown`, `unavailable` ou vide |
+| 3 | **valeur non numérique** |
+| 4 | **hors bornes** `[-13 ; 40]` |
+| 5 | **valeur non entière** |
+
+**L'ancrage du helper et sa vérification post-écriture ne sont PAS des refus du
+PRECHECK** : ce sont des étapes ultérieures, qui suivent la séquence des cinq.
+
+### 14.3 Ce qui a été exécuté
+
+| # | Geste | Constat |
+|---|---|---|
+| 0 | valeur initiale relevée | **2**, concordante entre HA et télémétrie |
+| 1 | `input_number.chauffage_parallele_consigne` **2 → 1** | **modification native** |
+| 2 | déclenchement | **chemin natif**, écrivain appelé par l'automatisation |
+| 3 | émission | `role = heating_curve_shift`, `value = 1` |
+| 4 | acquittement | **`applied`** corrélé |
+| 5 | relecture chaudière | **1** |
+| 6 | restauration **1 → 2** | **par le même chemin natif** |
+| 7 | corrélation | **nouveau `request_id`, distinct du premier** |
+| 8 | acquittement | **`applied`** corrélé |
+| 9 | relecture finale | **2** — état initial rétabli exactement |
+| 10 | état terminal | helper **vide**, garde **`on`** |
+
+**Aucun retry manuel. Aucun MQTT manuel. Aucun appel direct du script.**
+
+**Sens de la variation choisi vers le bas.** Ce qui est **démontré** tient en une
+phrase : extérieur au-dessus de 26 °C et **brûleur à l'arrêt**, relevés sur le
+courtier avant le geste, **aucune demande de chauffe n'existait — l'effet réel
+était donc nul dans les deux sens.** C'est là-dessus, et là-dessus seul, que
+repose l'innocuité de l'essai.
+
+Le choix du sens descendant relève d'une **précaution**, non d'une démonstration :
+un décalage de courbe est *attendu* agir comme un décalage de la température de
+départ calculée, mais **Arsenal ne dispose d'aucune source primaire établissant
+ce comportement** — il appartient à la régulation de la chaudière. Ce document ne
+l'affirme donc pas comme un fait.
+
+### 14.4 Ce que A-7 établit
+
+1. Le rôle **`heating_curve_shift`** est écrit et confirmé de bout en bout.
+2. Le **PRECHECK à cinq refus** — garde composée, disponibilité, caractère
+   numérique, bornes, caractère entier — laisse passer une valeur légitime, et le
+   helper est ancré puis libéré.
+3. **Deux `request_id` distincts** pour deux émissions : l'invariant de
+   corrélation est vérifié sur pièce, sur un rôle où aucun retry ne peut brouiller
+   la lecture.
+4. Une transaction **sans filet** se conduit et se referme proprement, à la seule
+   condition que l'opérateur assume la restauration.
+
+### 14.5 Ce que A-7 n'établit pas
+
+- **`heating_curve_slope` demeure le SEUL rôle NON ÉPROUVÉ en écriture.** Sa
+  forme diffère : c'est le seul rôle **à virgule**. Relevé en **source primaire**,
+  par énumération du profil de production du code **réellement installé** :
+  type flottant, bornes `[0.2 ; 3.5]`, pas `0.1`, tolérance de confirmation
+  `1e-09` — les trois autres rôles étant entiers, de tolérance nulle.
+  **Rien de A-7 ne s'y transpose mécaniquement.**
+- Le **comportement en refus** reste non éprouvé, pour aucun rôle — y compris les
+  cinq refus du PRECHECK, qu'aucune épreuve n'a exercés.
+- La **boucle d'auto-ajustement** de la courbe, qui écrit ce même paramètre à
+  10:00 chaque jour sous conditions, **n'a pas été exercée** : l'épreuve a été
+  conduite hors de sa fenêtre, délibérément.
