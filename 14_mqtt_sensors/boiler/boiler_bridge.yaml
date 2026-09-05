@@ -17,7 +17,7 @@
 #
 # 🆔 UNIQUE_ID
 #   boiler_bridge_heartbeat_raw
-#   boiler_telemetry_status
+#   boiler_telemetry_status  (entity_id derive du name, sans surcharge)
 #
 # 📋 TRANSPORT
 #   state_topic          :
@@ -67,7 +67,10 @@
 
 - name: "Boiler telemetry status"
   unique_id: boiler_telemetry_status
-  default_entity_id: boiler_telemetry_status
+  # PAS de default_entity_id : cette cle attend un entity_id COMPLET, avec son
+  # domaine. La valeur sans domaine posee ici auparavant a produit
+  # sensor.unnamed_device. On laisse donc Home Assistant deriver l'identifiant
+  # depuis `name` : sensor.boiler_telemetry_status.
   state_topic: "boilerack/bridge/telemetry_status"
   # L'instantané complet pèse ~1 300 octets, mesuré sur le terrain, contre une
   # limite de 255 caractères pour un state Home Assistant. Le publier tel quel
