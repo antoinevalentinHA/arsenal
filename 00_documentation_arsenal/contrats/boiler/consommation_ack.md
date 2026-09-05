@@ -1,10 +1,25 @@
 # Contrat HA — Consommation ACK (générique)
 
 **Domaine** : Arsenal / Interface MQTT chaudière
-**Version** : v1.0
-**Date** : 25/03/2026
+**Version** : v1.1
+**Date** : 2026-09-05
 **Statut** : normatif
 **Portée** : couche observation Home Assistant — consommation des ACK MQTT
+
+> ### AMENDÉ — arbre d'acquittement porté sur l'écrivain souverain
+>
+> **Le statut normatif du présent contrat est CONSERVÉ.** Deux points sont
+> amendés, et deux seulement :
+>
+> 1. **§2** — l'arbre d'ACK passe de `domaine/action` imbriqué à **un segment
+>    unique par rôle** ;
+> 2. **§4** — le champ `ts` **disparaît du payload d'ACK**.
+>
+> **Les invariants du §9 demeurent inchangés**, ainsi que les §5 à §8 : la
+> corrélation, la conclusion, la sémantique du résultat et les interdictions
+> d'usage sont reprises intactes. **Aucun `entity_id` n'est touché.**
+>
+> Référence : [`../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`](../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md)
 
 ---
 
@@ -29,9 +44,23 @@ Les ACK sont exposés via des entités MQTT de type `*_raw`.
 
 Exemple :
 
-| Entité                                    | Topic            |
-| ----------------------------------------- | ---------------- |
-| `sensor.boiler_ack_<domain>_<action>_raw` | `boiler/ack/...` |
+| Entité                                    | Topic                  |
+| ----------------------------------------- | ---------------------- |
+| `sensor.boiler_ack_<domain>_<action>_raw` | `<prefix>/ack/<role>`  |
+
+**`<prefix>` est la racine configurée côté écrivain souverain**, et elle vaut
+`boilerack` au dernier relevé — **à revérifier avant toute mutation**. Un
+changement de cette racine déplacerait **les trois surfaces ensemble** : lecture,
+commande et acquittements.
+
+> **L'arbre d'ACK a changé de forme.** Il ne s'imbrique plus en
+> ~~`boiler/ack/<domain>/<action>`~~ : il expose **un segment unique par rôle**,
+> `<prefix>/ack/<role>`, avec `role` parmi `dhw_setpoint`, `heating_setpoint`,
+> `heating_curve_shift`, `heating_curve_slope`.
+>
+> **Les `entity_id` sont CONSERVÉS.** Le nom d'entité continue de porter la
+> forme `<domain>_<action>` — il nomme la famille transactionnelle Arsenal, non
+> le topic. Renommer serait un lot distinct, et il n'a pas lieu ici.
 
 Règle :
 
@@ -67,12 +96,25 @@ Un helper non vidé constitue un **contexte transactionnel corrompu**.
 
 À partir du sensor `*_raw`, les champs suivants sont extraits :
 
-| Champ        | Sensor dérivé  | Valeur par défaut |
-| ------------ | -------------- | ----------------- |
-| `request_id` | `*_request_id` | `unknown`         |
-| `status`     | `*_status`     | `unknown`         |
-| `reason`     | `*_reason`     | `none`            |
-| `ts`         | `*_ts`         | `unknown`         |
+| Champ          | Sensor dérivé  | Valeur par défaut |
+| -------------- | -------------- | ----------------- |
+| `request_id`   | `*_request_id` | `unknown`         |
+| `status`       | `*_status`     | `unknown`         |
+| `reason`       | `*_reason`     | `none`            |
+| ~~`ts`~~       | `*_ts`         | **SANS ÉQUIVALENT — voir ci-dessous** |
+
+> **L'ACK de l'écrivain souverain ne porte AUCUN horodatage.** Il est
+> déterministe et sans horloge : `{request_id, status}`, plus `reason` et
+> `reason_class` **sur le seul cas `rejected`**.
+>
+> **Conséquence, énoncée sans détour** : `sensor.*_ts` **subsiste mais ne portera
+> plus jamais de valeur**. Il vaudra `unknown` en permanence. **L'entité n'est
+> pas retirée** — la retirer relèverait d'un lot de runtime, et celui-ci n'en
+> est pas un.
+>
+> **La corrélation ne s'en trouve pas affaiblie** : elle repose sur le seul
+> `request_id`, et le §5 est inchangé. L'horodatage exploitable est celui de la
+> **réception côté Home Assistant**, jamais un champ du payload.
 
 Règle commune :
 

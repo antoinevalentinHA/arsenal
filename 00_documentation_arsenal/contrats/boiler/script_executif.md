@@ -1,12 +1,28 @@
 # ARSENAL — Contrat d'exécution transactionnelle · Script exécutif MQTT — Boiler Bridge
 
 **Composant :** `arsenal-ha`
-**Version :** v1.3
-**Scope :** Script exécutif Home Assistant publiant une commande MQTT transactionnelle vers `arsenal-boiler-bridge`
-**Dernière mise à jour :** 2026-03-27
+**Version :** v1.4
+**Scope :** Script exécutif Home Assistant publiant une commande MQTT transactionnelle vers l'écrivain souverain
+**Dernière mise à jour :** 2026-09-05
 **Dépendances :**
-- `arsenal-boiler-bridge` v0.5
+- ~~`arsenal-boiler-bridge` v0.5~~ — **n'est plus l'écrivain souverain**
 - Contrat HA de consommation ACK v1.2
+
+> ### AMENDÉ — surface de commande portée sur l'écrivain souverain
+>
+> **Le statut normatif du présent contrat est CONSERVÉ.** Deux points sont
+> amendés, et deux seulement :
+>
+> 1. **§3** — `role` devient une **entrée contractuelle obligatoire** ;
+> 2. **§7.3** — le payload passe de **cinq à SIX champs**, et le jeu de champs
+>    devient **exactement clos**.
+>
+> **Tous les invariants transactionnels demeurent inchangés** : ordre d'émission,
+> corrélation stricte sur `request_id`, `applied` seul succès, `accepted` jamais
+> terminal, vérification post-écriture du helper, nouveau `request_id` à chaque
+> retry. **Aucun `entity_id` n'est touché.**
+>
+> Référence : [`../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`](../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md)
 
 ---
 
@@ -48,10 +64,17 @@ Le script reçoit **obligatoirement** :
 |-----------|-------------|
 | `topic_command` | Topic MQTT de publication de la commande |
 | `topic_ack` | Topic MQTT d'écoute de l'ACK |
+| `role` | **Rôle commandé.** Discrimine la commande sur un topic de commande unique, et constitue le dernier segment du topic d'ACK |
 | `value` | Valeur à appliquer, déjà validée par la couche amont |
 | `request_helper` | Helper de corrélation dédié à cette transaction |
 | `timeout_local` | Délai d'attente local (voir §3.1) |
 | `source` | Identifiant de la source émettrice, non vide |
+
+> **`role` est une entrée obligatoire, et il l'est pour deux raisons distinctes.**
+> La surface cible n'expose **qu'un seul topic de commande** : sans `role`, une
+> commande n'est plus identifiable. Et le topic d'ACK s'en déduit —
+> `<prefix>/ack/<role>` —, de sorte que `topic_ack` et `role` doivent rester
+> cohérents entre eux. **Une incohérence rendrait le script muet sans erreur.**
 
 Le script peut recevoir **facultativement** : metadata métier, `reason_helper`, `status_helper`, `result_target`.
 
@@ -71,7 +94,7 @@ Le script ne peut démarrer que si toutes les conditions suivantes sont vraies.
 ### 4.1 Bridge disponible
 
 ```
-boiler/bridge/online == "online"
+<prefix>/bridge/online == "online"
 ```
 
 au moment du départ de la transaction, conformément au contrat HA.
@@ -96,7 +119,7 @@ Aucune seconde instance du même script ne doit manipuler le même `request_help
 
 ### 4.5 Synchronisation temporelle (NTP)
 
-Home Assistant et `arsenal-boiler-bridge` doivent être synchronisés sur une source NTP commune.
+Home Assistant et **l'écrivain souverain** doivent être synchronisés sur une source NTP commune.
 
 **Dérive maximale tolérée : 2 secondes.**
 
@@ -187,22 +210,36 @@ Le script génère un `request_id` UUID v4 unique, l'écrit immédiatement dans 
 
 ### 7.3 Publication
 
-Le script publie sur `topic_command` un payload conforme au contrat bridge :
+Le script publie sur `topic_command` un payload conforme au contrat de l'écrivain
+souverain. **`topic_command` est unique pour toute l'installation** : il n'existe
+plus un topic par commande, et c'est `role` qui discrimine.
 
 ```json
 {
-  "request_id": "<uuid-v4>",
+  "request_id": "<uuid-v4-canonique-minuscule>",
   "ts": "<ISO8601-UTC>",
   "expires_at": "<ISO8601-UTC>",
   "source": "<source>",
+  "role": "<role>",
   "value": "<value>"
 }
 ```
 
-En JSON UTF-8 compact, conforme au format bridge.
+En JSON UTF-8 compact.
 
 - QoS = 1 (au minimum)
 - retain = false
+
+> **Le jeu de champs est EXACTEMENT CLOS : ces six-là, ni plus, ni moins.**
+> Un champ manquant **et** un champ surnuméraire produisent l'un comme l'autre un
+> rejet `invalid_payload`. Ajouter une métadonnée métier au payload — même
+> inoffensive en apparence — **rendrait toute commande invalide**.
+>
+> ~~Payload à cinq champs, sans `role`~~ — **PÉRIMÉ**. La forme antérieure
+> omettait `role` ; sur la surface cible, elle est rejetée systématiquement.
+>
+> `ts` et `expires_at` DOIVENT être *timezone-aware* : le suffixe `Z` satisfait
+> cette exigence. Une date sans fuseau est refusée.
 
 ### 7.4 Attente
 
@@ -276,7 +313,7 @@ Sinon : ACK ignoré strictement.
 
 ## 10. Rupture de session bridge
 
-Si `boiler/bridge/online` passe à `offline` pendant `pending` :
+Si `<prefix>/bridge/online` passe à `offline` pendant `pending` :
 
 - la transaction est immédiatement considérée comme interrompue,
 - le script conclut en `timeout` fonctionnel,

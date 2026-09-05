@@ -1,4 +1,18 @@
-# CONTRAT : `boiler_guard_ha_exposition` v1.0
+# CONTRAT : `boiler_guard_ha_exposition` v1.1
+
+> ### AMENDÉ — frontière d'autorité, colonne « Topics » du §2
+>
+> **Un seul point est amendé, et il ne concerne PAS le guard.** La ligne
+> « Mission boiler » désigne des topics qui ont migré vers la racine configurée
+> de l'écrivain souverain.
+>
+> **La surface `boiler/guard/...` est INCHANGÉE, vivante, et n'appartient pas à
+> l'écrivain souverain.** Le superviseur continue de la publier, sous le contrat
+> [`../../outils_externes/boiler_pi/guard.md`](../../outils_externes/boiler_pi/guard.md)
+> en `v1.1`. **Rien n'y est retiré, rien n'y est ajouté**, et les §3 à §6 du présent
+> contrat sont repris intacts, y compris l'invariant absolu ci-dessous.
+>
+> Référence : [`../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`](../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md)
 
 ## 1. Objet
 
@@ -10,10 +24,22 @@ Définir l'interface d'observation du Boiler Guard dans Home Assistant. Ce contr
 
 | Domaine | Responsable | Topics |
 |---|---|---|
-| Mission boiler (chauffage/ECS) | Bridge | `boiler/bridge/...`, `boiler/command/...` |
+| Mission boiler (chauffage/ECS) | Écrivain souverain | `<prefix>/bridge/...`, `<prefix>/command`, `<prefix>/ack/<role>` |
 | Résilience infra | Guard | `boiler/guard/...` |
 
 **Invariant absolu** : aucune donnée publiée sous `boiler/guard/...` n'est nécessaire ni utilisée dans l'exécution métier du chauffage ou de l'ECS.
+
+> **Les deux racines diffèrent désormais, et ce n'est pas un accident.** Le guard
+> publie sous `boiler/guard/...` ; l'écrivain souverain publie sous `<prefix>/`.
+> **La séparation des deux autorités est ainsi lisible sur le fil lui-même.**
+>
+> ~~`boiler/bridge/...`, `boiler/command/...`~~ — **PÉRIMÉS** pour la ligne
+> « Mission boiler ».
+>
+> **Réserve conservée, hors lot.** Le superviseur sonde `vcontrold`, non
+> l'écrivain souverain : une panne de ce dernier n'est pas détectée par cette
+> sonde. **C'est une limite du superviseur, qui vit hors de ce dépôt.** Elle est
+> consignée ici, et **non traitée par ce lot**.
 
 ---
 

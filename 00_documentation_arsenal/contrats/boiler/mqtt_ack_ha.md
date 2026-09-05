@@ -1,10 +1,31 @@
 # ARSENAL — Contrat MQTT · Consommation ACK — Home Assistant
 
 **Composant :** `arsenal-ha`
-**Version :** v1.3
-**Scope :** Consommation des ACK transactionnels du boiler bridge
-**Dernière mise à jour :** 2026-03-27
-**Dépendance :** `arsenal-boiler-bridge` v0.5
+**Version :** v1.4
+**Scope :** Consommation des ACK transactionnels de l'écrivain souverain
+**Dernière mise à jour :** 2026-09-05
+**Dépendance :** ~~`arsenal-boiler-bridge` v0.5~~ — **n'est plus l'écrivain souverain**
+
+> ### AMENDÉ — re-enracinement du signal de disponibilité
+>
+> **Le statut normatif du présent contrat est CONSERVÉ, et aucune de ses règles
+> n'est modifiée.** Seul le **littéral du topic** de disponibilité change :
+> ~~`boiler/bridge/online`~~ devient **`<prefix>/bridge/online`**, aux §4.4, §7
+> et §13.
+>
+> **C'est un re-enracinement, pas un changement de sémantique.** Le signal est le
+> même — testament MQTT retenu —, l'entité qui le porte est la même, et la règle
+> qu'il fonde survit intacte : un ACK reçu hors ligne demeure sans valeur.
+>
+> **Une réserve, et elle compte.** L'écrivain souverain **n'implémente aucune
+> politique de reconnexion** : le retenu peut demeurer `offline` alors que le
+> service est vivant. **La règle du §13 en devient plus stricte qu'auparavant.**
+> C'est la garde composée de
+> [`../chauffage/30_decision_centrale__amendement_garde_execution.md`](../chauffage/30_decision_centrale__amendement_garde_execution.md)
+> qui traite ce cas, **en amont de l'exécution** ; le présent contrat n'a pas à
+> l'assouplir, et ne l'assouplit pas.
+>
+> Référence : [`../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`](../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md)
 
 ---
 
@@ -119,13 +140,34 @@ Aucune écriture mémoire métier.
 
 > `invalid_type`, `invalid_value_out_of_range` et `invalid_step` signalent **invariablement un bug de pipeline Arsenal amont**. Ils ne doivent jamais apparaître en production nominale. Leur occurrence exige une investigation de la couche décision émettrice — un retry ne résoudrait pas la cause.
 
+**Complément — quatre raisons supplémentaires sur la surface cible.** Les six
+ci-dessus subsistent toutes ; **la table n'était pas fausse, elle est devenue
+incomplète.**
+
+| `reason` | Origine | Diagnostic Arsenal |
+|----------|---------|--------------------|
+| `unsupported_role` | Le `role` visé n'offre aucune surface d'écriture : absent du profil, ou présent en **lecture seule** | **Bug de câblage Arsenal** — le payload est pourtant bien formé. À ne pas confondre avec `invalid_payload` |
+| `unsupported_command` | La commande d'écriture déclarée par le profil n'est pas reconnue par le transport réellement installé | Profil / configuration / compatibilité — **non imputable à Arsenal** |
+| `invalid_value_non_finite` | Valeur numériquement typée mais **non finie** (`NaN`, `±Inf`) | Bug amont — distinct d'`invalid_type`, qui vise « pas un nombre du tout » |
+| `queue_full` | Capacité d'admission saturée | Charge — **non imputable à la valeur** |
+
+> **`unsupported_role` est la conséquence directe de l'introduction de `role`**
+> comme champ de payload (voir `script_executif` §7.3) : un rôle erroné ou non
+> inscriptible produit désormais un rejet que la table antérieure ne savait pas
+> nommer. **Les trois autres ont été relevées dans le même mouvement** ; les
+> taire aurait laissé une table que l'on croirait close alors qu'elle ne l'est
+> pas — et un consommateur les traiterait comme des valeurs inconnues.
+>
+> **`reason_class`** — `permanent`, `temporal` ou `transient` — accompagne le
+> `reason` et **n'est présent que sur les acquittements `rejected`**.
+
 ### 4.4 `timeout`
 
 Actions obligatoires :
 
 - Sortie de `pending`
 - Nettoyage du `request_id`
-- Lire l'état de `boiler/bridge/online` au moment de la clôture
+- Lire l'état de `<prefix>/bridge/online` au moment de la clôture
 - Déclenchement éventuel d'un retry contrôlé (§8) — selon l'état bridge
 
 **Distinction normative :**
@@ -155,11 +197,11 @@ Si un ACK arrive ensuite : **ignoré** — la transaction est déjà clôturée.
 
 ### 5.3 Synchronisation temporelle (NTP)
 
-Home Assistant et `arsenal-boiler-bridge` doivent être synchronisés sur une source NTP commune.
+Home Assistant et **l'écrivain souverain** doivent être synchronisés sur une source NTP commune.
 
 **Dérive maximale tolérée : 2 secondes.**
 
-> Sans cette garantie, les champs `ts` et `expires_at` des payloads de commande peuvent être évalués de façon incohérente côté bridge, produisant des rejets `expired` erronés (`reason: expired`) indétectables sans diagnostic explicite. Cette exigence est une précondition d'infrastructure — NTP actif sur HA et sur le Pi.
+> Sans cette garantie, les champs `ts` et `expires_at` des payloads de commande peuvent être évalués de façon incohérente côté écrivain, produisant des rejets `expired` erronés (`reason: expired`) indétectables sans diagnostic explicite. Cette exigence est une précondition d'infrastructure — NTP actif sur HA et sur le Pi.
 
 ---
 
@@ -180,7 +222,7 @@ Un ACK est considéré tardif si aucun `request_id` actif ne correspond, ou en c
 
 **Comportement : ACK ignoré.**
 
-> **Règle ACK hors ligne :** un ACK ne doit être considéré valide que si `boiler/bridge/online == "online"` au moment de sa réception. Tout ACK reçu alors que le bridge est considéré `offline` — ou dont le statut en ligne est inconnu — doit être ignoré. Cette règle prévient les validations incohérentes liées aux ACK émis avant un reboot ou une déconnexion non détectée.
+> **Règle ACK hors ligne :** un ACK ne doit être considéré valide que si `<prefix>/bridge/online == "online"` au moment de sa réception. Tout ACK reçu alors que le bridge est considéré `offline` — ou dont le statut en ligne est inconnu — doit être ignoré. Cette règle prévient les validations incohérentes liées aux ACK émis avant un reboot ou une déconnexion non détectée.
 
 > **Règle ACK dupliqué :** MQTT QoS 1 ne garantit pas l'unicité de la livraison. Un ACK reçu après la consommation d'un premier ACK pour le même `request_id` est considéré comme redondant. **Comportement : ignoré strictement.** Cette règle ferme les cas de duplication MQTT, replay réseau, et reconnexion avec messages en attente.
 
@@ -277,10 +319,10 @@ Tout autre cas : **non exécuté**.
 
 ## 13. Dépendance au statut bridge
 
-> Un ACK ne peut être exploité que si `boiler/bridge/online == "online"` au moment de sa réception.
+> Un ACK ne peut être exploité que si `<prefix>/bridge/online == "online"` au moment de sa réception.
 
 Conséquences opérationnelles :
 
-- Si `boiler/bridge/online` passe à `offline` alors qu'une transaction est en cours (`pending`), celle-ci doit être immédiatement considérée comme interrompue — équivalent fonctionnel d'un `timeout`.
+- Si `<prefix>/bridge/online` passe à `offline` alors qu'une transaction est en cours (`pending`), celle-ci doit être immédiatement considérée comme interrompue — équivalent fonctionnel d'un `timeout`.
 - Toute transaction démarrée sans confirmation préalable que `online == "online"` est invalide.
 - Au retour du bridge en ligne (`online → online`), aucun ACK résiduel provenant de la session précédente ne doit être exploité — le nettoyage transactionnel (§6) doit avoir été appliqué.

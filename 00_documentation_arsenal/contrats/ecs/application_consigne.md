@@ -1,8 +1,22 @@
 # Contrat — `10_scripts/ecs/appliquer_consigne_bridge.yaml`
 
 **Arsenal** | Domaine : ECS | Couche : Exécution  
-**Version** : V1.0 | **Statut** : Validé  
-**Auteur** : Arsenal Architecture | **Date** : 2026-03-19
+**Version** : V1.1 | **Statut** : Validé  
+**Auteur** : Arsenal Architecture | **Date** : 2026-09-05
+
+> ### AMENDÉ — surface de commande portée sur l'écrivain souverain
+>
+> **Le statut du présent contrat est CONSERVÉ.** Deux points sont amendés :
+> le **topic de commande** et le **jeu de champs publié** — voir « Ressources
+> internes » et « Garanties ».
+>
+> **Tout le reste est repris intact** : rôle strictement exécutif, entrée unique
+> `target_temp`, helper de corrélation, attente d'une conclusion ACK parmi
+> `applied` / `rejected` / `timeout`, contrat de sortie, non-garanties,
+> hypothèses d'exécution, dette documentaire V1. **Aucun `entity_id` n'est
+> touché.**
+>
+> Référence : [`../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`](../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md)
 
 ---
 
@@ -39,10 +53,23 @@ sont réservés pour une version ultérieure si le besoin se confirme.
 | Rôle                  | Identifiant                                  |
 |-----------------------|----------------------------------------------|
 | Helper de corrélation | `input_text.boiler_req_dhw_set_setpoint`     |
-| Topic MQTT commande   | `boiler/command/dhw/set_setpoint`            |
+| Topic MQTT commande   | `<prefix>/command`                           |
+| `role` publié         | `dhw_setpoint`                               |
+| Topic MQTT ACK        | `<prefix>/ack/dhw_setpoint`                  |
 | Capteur ACK           | `sensor.boiler_ack_dhw_set_setpoint_result`  |
 
 Ces ressources sont fixes en V1. Ce script n'est pas un framework générique.
+
+> **Le topic de commande n'est plus propre à l'ECS.** ~~`boiler/command/dhw/set_setpoint`~~
+> est **PÉRIMÉ** : la surface cible expose **un topic de commande unique pour
+> toute l'installation**, et c'est `role` qui identifie la consigne ECS.
+>
+> **`<prefix>` est la racine configurée côté écrivain souverain**, `boilerack` au
+> dernier relevé, **à revérifier avant toute mutation**.
+>
+> **Les deux `entity_id` ci-dessus sont CONSERVÉS**, et ils portent toujours la
+> forme `dhw_set_setpoint` : ils nomment la famille transactionnelle Arsenal, non
+> le topic.
 
 ---
 
@@ -53,6 +80,16 @@ Ces ressources sont fixes en V1. Ce script n'est pas un framework générique.
 | TTL commande  | 30 s   | Durée de validité du message MQTT        |
 | Attente ACK   | 20 s   | Délai maximum avant décision de timeout  |
 
+> **RÉSERVE CONSERVÉE — HORS LOT.** Le script applique aujourd'hui **15 s** de
+> TTL et **15 s** d'attente ACK, non 30 s et 20 s. **Le contrat et le runtime
+> divergent déjà**, et cette divergence est **antérieure** au portage de la
+> surface : elle ne lui doit rien et n'en découle pas.
+>
+> **Elle est consignée ici, et délibérément NON corrigée.** La trancher — aligner
+> le contrat sur le runtime, ou l'inverse — est une décision propre, qui suppose
+> de confronter le TTL au budget de confirmation de l'écrivain souverain. **Ce
+> lot ne la prend pas.**
+
 ---
 
 ## Garanties
@@ -60,7 +97,10 @@ Ces ressources sont fixes en V1. Ce script n'est pas un framework générique.
 - reçoit `target_temp` comme seul paramètre d'entrée
 - génère un `request_id` UUID à chaque exécution
 - écrit le `request_id` dans `input_text.boiler_req_dhw_set_setpoint` **avant** publication
-- publie sur `boiler/command/dhw/set_setpoint` avec les champs `ts` et `expires_at`
+- publie sur `<prefix>/command` un payload de **six champs exactement** :
+  `request_id`, `ts`, `expires_at`, `source`, `role`, `value` — le jeu est
+  **clos**, un champ manquant comme un champ surnuméraire produisant un rejet
+  `invalid_payload`
 - utilise un TTL fixe de **30 s** et une fenêtre d'attente ACK de **20 s**
 - attend une conclusion ACK parmi : `applied` / `rejected` / `timeout`
 - tente le nettoyage du helper de requête en fin d'exécution, dans le flux nominal du script
