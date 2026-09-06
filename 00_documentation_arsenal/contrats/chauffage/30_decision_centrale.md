@@ -133,15 +133,22 @@ Aucune action métier n'est produite si : programme inconnu, autorisation = `neu
 
 > Une autorisation sans besoin produit une abstention stricte.
 
-La disponibilité du bridge (`binary_sensor.boiler_bridge_online`) constitue un garde-fou d'exécution distinct, évalué après la décision métier. Voir §7.
+La disponibilité du système d'exécution constitue un garde-fou d'exécution distinct, évalué après la décision métier. Voir §7. `binary_sensor.boiler_bridge_online` en reste une composante nécessaire, mais non suffisante à elle seule.
 
 ---
 
 ## 7. Garde d'exécution — Disponibilité du système
 
-La disponibilité du système d'exécution est une condition préalable à toute exécution descendante. Elle est évaluée via `binary_sensor.boiler_bridge_online`.
+La disponibilité du système d'exécution est une condition préalable à toute exécution descendante.
 
-Règles :
+**Amendée (C48).** Cette garde est **composée et qualifiée par rôle** — elle
+n'est plus réductible à un signal unique. `binary_sensor.boiler_bridge_online`
+en reste une composante **nécessaire, jamais suffisante seule** : la
+définition opposable des quatre conditions et de leurs seuils est portée par
+[`30_decision_centrale__amendement_garde_execution.md`](30_decision_centrale__amendement_garde_execution.md)
+§2–§3, qui prévaut sur toute lecture littérale du présent paragraphe.
+
+Règles (inchangées) :
 
 - cette garde ne participe pas à la décision métier,
 - elle conditionne uniquement la capacité d'exécution,
@@ -162,7 +169,7 @@ START
   ├─ G3  Programme unknown ET pas override ? → STOP
   ├─ G4  desired_mode == neutre ? → STOP
   ├─ G5  desired_mode == prog_actuel ? → STOP
-  ├─ G2  Bridge offline ? → STOP
+  ├─ G2  Garde d'exécution composée KO ? → STOP
   │
   └─ EXÉCUTION
        → script.chauffage_appliquer_consigne (consigne, raison)
@@ -179,7 +186,7 @@ START
 | G3 | Programme unknown | Oui |
 | G4 | `desired_mode == neutre` | Non |
 | G5 | `desired_mode == prog_actuel` | Non |
-| G2 | Bridge offline | Non |
+| G2 | Capacité d'exécution composée KO (garde par rôle — [amendement](30_decision_centrale__amendement_garde_execution.md) ; `boiler_bridge_online` nécessaire, non suffisant) | Non |
 
 ---
 

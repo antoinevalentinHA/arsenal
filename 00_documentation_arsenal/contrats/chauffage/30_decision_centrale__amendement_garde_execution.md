@@ -182,5 +182,25 @@ interface ou CI** · **ne renomme aucune entité** · **n'en crée aucune** ·
    éprouvés en régime réel**, et une observation ultérieure pourra les rouvrir.
 2. **La limite de reconnexion de la surface amont n'est pas corrigée** par cet
    amendement : elle est **contournée**. La corriger relèverait de l'amont.
-3. **La garde composée n'a pas encore d'implémentation.** Elle est normative ;
-   elle n'est pas en service.
+3. ~~**La garde composée n'a pas encore d'implémentation.** Elle est normative ;
+   elle n'est pas en service.~~ — **LEVÉE (C48, 2026-09-06).** La garde
+   composée du §2 est implémentée et en service :
+   `12_template_sensors/boiler/telemetry_status.yaml` dérive les quatre
+   entités `binary_sensor.boiler_commandable_<rôle>` sur les quatre conditions
+   exactes du §2, et les quatre scripts exécutifs concernés
+   (`10_scripts/ecs/appliquer_consigne_bridge.yaml`,
+   `10_scripts/chauffage/application_consigne.yaml`,
+   `10_scripts/chauffage/courbe_de_chauffe/application_parallele.yaml`,
+   `10_scripts/chauffage/courbe_de_chauffe/application_pente.yaml`)
+   préconditionnent l'émission sur ce composé —
+   `binary_sensor.boiler_bridge_online` n'y apparaît plus qu'en lecture
+   diagnostique de timeout. **Norme et implémentation sont désormais
+   alignées** : la garde est en service, et non plus seulement normative.
+   Les épreuves terrain de la migration Boiler Bridge → Boilerack (A-5 à A-8,
+   [`migration_boiler_bridge_vers_boilerack.md`](../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md)
+   §16) ont validé le **chemin d'autorisation** — une commande légitime,
+   garde composée établie, aboutit bien à une écriture confirmée. **Restent
+   explicitement non éprouvés** : le comportement en **refus** (garde non
+   établie bloquant réellement une émission), le **retour de commandabilité**
+   après une coupure/reconnexion, et les **seuils du §3** en régime réel
+   (réserve 1, inchangée) — cf. migration doc §16.2, points 1 et 5.
