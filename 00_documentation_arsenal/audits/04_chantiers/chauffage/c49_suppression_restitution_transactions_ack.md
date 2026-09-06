@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Supprimer la section UI `🔁 Transactions` du corps Boiler partagé et les **12 projections ACK legacy** (`*_ts`, `*_correlation`, `*_result`) devenues sans consommateur, en préservant intégralement le runtime transactionnel réellement exploité (`*_raw`, `*_status`, `*_request_id`, `*_reason`, helpers de requête, commandabilité par rôle). |
 | **Domaine** | Chauffage / boiler — la surface ACK est partagée avec l'ECS (rôle `dhw_setpoint`). Rangé sous `chauffage/`, comme le socle transactionnel et la migration Boilerack. |
-| **Statut** | **Ouvert — Lots 1 (contrat), 2 (UI) et 3 (runtime, patch dépôt) LIVRÉS le 2026-09-06 ; A-4 traité. Activation runtime du Lot 3 en attente d'un GO opérateur (rechargement). Lots 4 et 5 non exécutés.** |
+| **Statut** | **Ouvert — Lots 1 (contrat), 2 (UI), 3 (runtime) et 4 (validation terrain) LIVRÉS le 2026-09-06 ; A-1, A-2, A-3 et A-4 tranchés. Reste le Lot 5 — clôture documentaire.** |
 | **Priorité** | P2 — aucun risque fonctionnel courant ; la section incriminée est en lecture seule et n'entre dans aucune boucle de décision. Enjeu de véracité de restitution et de dette runtime morte. |
 | **Ouvert le** | 2026-09-06. |
 | **Registre** | Chantier **C49** — ① Actifs, cf. [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
@@ -226,7 +226,7 @@ runtime la source de vérité, contre la doctrine « contrat avant runtime ».
   [`README.md`](../../../../19_button_card_templates/40_dashboards/boiler/README.md).
 - **Ne pas toucher** à `boiler_info_timestamp` (Heartbeat + Dernière erreur).
 
-### Lot 3 — Runtime legacy — **PATCH LIVRÉ 2026-09-06, activation en attente de GO**
+### Lot 3 — Runtime legacy — **LIVRÉ 2026-09-06, activation terrain confirmée**
 
 > **Réalisé** : les 12 projections retirées des 4 `boiler_ack_*_transaction.yaml` ;
 > chaque fichier ne déclare plus que `*_request_id`, dont le corps est inchangé
@@ -237,8 +237,9 @@ runtime la source de vérité, contre la doctrine « contrat avant runtime ».
 > sont intouchés, de même que les 4 scripts exécutifs et les 4 automatisations
 > de retry. T03 reste vert.
 >
-> **Non réalisé, et hors pouvoir de cette session** : le rechargement qui rend
-> le retrait effectif côté Home Assistant — voir §6 ci-dessous et A-3.
+> **Activation** : le rechargement qui rend le retrait effectif côté Home
+> Assistant a été fait au Lot 4, sous GO opérateur, et son effet est observé —
+> voir la preuve terrain du Lot 4 et A-3 (§5).
 
 > **Préalable A-4 : LEVÉ (2026-09-06).** T03 est ancré sur les scripts
 > exécutifs et reste vert après retrait des 3 projections legacy — vérifié par
@@ -253,21 +254,59 @@ runtime la source de vérité, contre la doctrine « contrat avant runtime ».
   cohérence (il annonce « extraction request_id / ts », « corrélation » et
   « conclusion exploitable par les scripts »).
 
-### Lot 4 — Validation
+### Lot 4 — Validation — **LIVRÉ 2026-09-06, PREUVE TERRAIN ACQUISE**
 
-- Checkers documentaires et de domaine applicables (dont
-  `check_registre_chantiers`, `check_ecs_securite` — dont le test T08 ne
-  recherche que le préfixe `boiler_ack_dhw_set_setpoint` et reste donc vert —,
-  `check_lovelace_includes_contracts`,
-  `check_19_button_card_templates_contracts`).
-- Rechargement Home Assistant approprié **uniquement si nécessaire**, sans
-  redémarrage gratuit.
-- **Absence d'entités orphelines attendue** : 12 entités disparaissent du
-  registre HA ; leur retrait du registre d'entités est un geste opérateur
-  attendu, pas une anomalie.
-- Dashboards Boiler propres — aucune entité indisponible, aucune carte vide.
-- **Runtime transactionnel inchangé** : preuve que les 4 exécuteurs et les 4
-  automatisations de retry sont mot pour mot identiques.
+> **Verdict terrain : GO.** Aucun incident. Le retrait des 12 projections est
+> effectif sur l'instance, sans effet fonctionnel d'aucune sorte.
+
+**Geste effectué — un seul, ciblé.** *Outils de développement → YAML →
+« Entités basées sur modèle »*, le **2026-09-06 à ≈ 13:33:25 locale
+(≈ 11:33:25 UTC)**. **Aucun redémarrage**, aucun rechargement global, aucun
+rechargement d'automatisations ni de scripts.
+
+**Préconditions vérifiées avant le geste** : aucune transaction en vol — les 4
+`input_text.boiler_req_<role>` vides —, dashboard Boiler stable, état des 24
+entités relevé.
+
+#### Preuve avant reload
+
+| Objet | Constat |
+|---|---|
+| 12 projections legacy | **encore fournies** (définitions retirées du dépôt, instance pas encore rechargée — la divergence attendue) |
+| `*_raw`, `*_status`, `*_reason`, `*_request_id` | présentes et cohérentes |
+| 4 × `binary_sensor.boiler_commandable_<role>` | **`on`** |
+| 4 × `input_text.boiler_req_<role>` | **vides** — aucune transaction active |
+| Dashboard Boiler | propre, section `Transactions` absente (Lot 2) |
+
+#### Preuve après reload
+
+| Objet | Constat terrain |
+|---|---|
+| **12/12 projections legacy** | **`unavailable`, attribut `restored: true`** — Home Assistant indique explicitement qu'elles **ne sont plus fournies par l'intégration `template`** |
+| `*_raw`, `*_status`, `*_reason`, `*_request_id` | **inchangées**, vivantes et cohérentes |
+| 4 × `binary_sensor.boiler_commandable_<role>` | **`on`** — 4/4, gardes intactes |
+| 4 × `input_text.boiler_req_<role>` | **toujours vides** |
+| Automatisations de retry | **aucune déclenchée** |
+| Commande chaudière | **aucune observée** |
+| Dashboard Boiler | **propre** — pas de carte vide, pas d'`Inconnu` hérité, pas d'erreur de rendu ; Heartbeat et « Dernière erreur » corrects |
+| Exception / erreur HA | **aucune** |
+
+**L'attente posée au Lot 3 est confirmée par l'observation**, et elle l'est
+dans sa forme exacte : les entrées de registre **survivent** en `restored`,
+elles ne disparaissent pas. C'est le comportement nominal de Home Assistant
+pour une entité à `unique_id` dont l'intégration cesse la fourniture.
+
+**Le point de sûreté annoncé se vérifie** : le rechargement n'a déclenché
+aucune commande chaudière ni aucun retry. Les 4 automatisations de retry sont
+armées sur les helpers `input_text.boiler_req_<role>`, que le rechargement des
+templates ne détruit pas ; `*_request_id` n'est lu qu'en condition, jamais en
+déclencheur.
+
+**Checkers** : verts au Lot 3 (#788) — `contracts` 87/87 en CI, dont T03 et son
+`--selftest`, plus `doctrine`, `validate` (chargement de la configuration HA) et
+`docs-lint`.
+
+**Aucune entrée du registre d'entités n'a été supprimée** — voir A-3 (§5).
 
 ### Lot 5 — Clôture documentaire
 
@@ -306,55 +345,40 @@ Ouverts, non tranchés par cette ouverture :
   clause « aucune autre carte ne doit redéfinir cette sémantique » reste
   opposable à toute restitution future. `19_button_card_templates/40_dashboards/boiler/README.md`
   réaligné en conséquence (famille D marquée retirée, taxonomie et arbre).
-- **A-3 — Retrait des 12 entités du registre HA (Lot 4). INSTRUIT le
-  2026-09-06 — geste opérateur défini, non exécuté.** Le patch du Lot 3 retire
-  les définitions YAML ; il ne retire rien du **registre d'entités** de Home
-  Assistant. Comportement attendu, en deux temps :
+- **A-3 — Retrait des 12 entités du registre HA. TRANCHÉ le 2026-09-06, sur
+  preuve terrain : purge du registre = FACULTATIVE.**
 
-  1. **Tant qu'aucun rechargement n'a lieu**, les 12 entités restent *fournies*
-     et gardent leur dernière valeur. Le dépôt et l'instance divergent — c'est
-     l'état à l'issue de cette livraison.
-  2. **Après rechargement** — **comportement ATTENDU, non encore observé** —
-     l'intégration `template` devrait cesser de les fournir. Portant chacune un
-     `unique_id`, elles ont une entrée au registre : cette entrée **devrait
-     survivre** et l'entité apparaître **`restored`** (indisponible, signalée
-     « plus fournie par l'intégration »). Ce serait le **comportement nominal**,
-     pas une anomalie ; aucune automatisation, aucun script, aucune carte ne
-     les lit (recensement exhaustif, §1.4 et Lot 3).
+  **Constat observé après le rechargement ciblé** (Lot 4) : les 12 entités sont
+  **`unavailable` avec l'attribut `restored: true`**, Home Assistant indiquant
+  explicitement qu'elles ne sont plus fournies par l'intégration `template`.
+  Les entrées de registre **survivent** — elles ne disparaissent pas. C'est le
+  comportement nominal pour une entité à `unique_id` dont l'intégration cesse
+  la fourniture, et **l'attente posée au Lot 3 est confirmée dans sa forme
+  exacte**.
 
-     > **Aucune observation terrain à ce jour.** Le rechargement n'a pas été
-     > effectué : cette section énonce une **attente à vérifier**, jamais un
-     > constat. La preuve terrain est due après merge, sous GO opérateur.
+  > **Correction d'une formulation antérieure.** La roadmap du Lot 4 annonçait
+  > « 12 entités disparaissent du registre HA ». **C'est faux, et le terrain le
+  > démontre** : elles y demeurent, à l'état `restored`. Seule la *fourniture*
+  > cesse. La phrase est corrigée au Lot 4.
 
-  **Geste opérateur, à faire dans cet ordre :**
+  **Verdict : FACULTATIVE.** Motifs :
 
-  - **(a) Rechargement.** *Outils de développement → YAML → « Entités
-    template »*. **Un redémarrage n'est pas requis.** À faire **hors
-    transaction en vol** (ni cycle ECS, ni application de consigne ou de courbe
-    en cours) : au rechargement, chaque entité template est détruite puis
-    recréée et passe transitoirement par `unknown` (cf.
-    [`audit_reload_flap_templates_chaines.md`](../../01_rapports/transverses/audit_reload_flap_templates_chaines.md)).
-    **Le flap ne peut déclencher aucune commande chaudière** : les quatre
-    automatisations de retry sont armées sur `input_text.boiler_req_<role>`, un
-    **helper**, que le rechargement des templates ne détruit pas ;
-    `sensor.boiler_ack_<role>_request_id` n'est lu qu'en condition, jamais en
-    déclencheur. Le seul effet possible est qu'un `wait_template` en vol
-    n'aboutisse pas et conclue en *timeout local HA* — **direction de
-    défaillance sûre** : `unknown` ne peut jamais égaler un `request_id`, donc
-    aucun faux `applied`.
-  - **(b) Constat — c'est ici que la preuve terrain se fait.** Vérifier que
-    les 12 entités sont bien passées `restored`, et que les 4
-    `sensor.boiler_ack_<role>_request_id` restent vivantes et corrélables, de
-    même que `*_status`, `*_reason`, `*_raw`. Consigner le résultat observé
-    dans le Lot 4 — y compris s'il dément l'attente du point 2.
-  - **(c) Purge du registre — facultative, opérateur seul.** *Paramètres →
-    Appareils et services → Entités*, filtrer sur `boiler_ack_`, sélectionner
-    les entités `restored`, **Supprimer**. Purement cosmétique : une entrée
-    `restored` n'a ni état, ni consommateur, ni effet. **Aucune session
-    d'agent ne doit l'exécuter.**
+  - **aucune dépendance fonctionnelle** — recensement exhaustif au Lot 3 :
+    zéro consommateur, runtime comme UI ; le terrain le confirme (aucun retry,
+    aucune commande, dashboard propre, gardes `on`) ;
+  - **aucun effet runtime à les laisser** — une entrée `restored` n'a ni état
+    exploitable, ni consommateur, ni déclencheur ;
+  - **Home Assistant propose la suppression** dans *Paramètres → Appareils et
+    services → Entités* : le geste est disponible, non requis ;
+  - **les supprimer ne serait qu'un nettoyage cosmétique** — lisibilité du
+    registre, rien d'autre.
 
-  **Interdiction maintenue** : aucun rechargement, aucun redémarrage et aucune
-  suppression au registre sans GO explicite de l'opérateur.
+  **La purge n'est PAS une condition** : ni du GO terrain, déjà prononcé, ni de
+  la clôture fonctionnelle de C49. Elle reste à la seule main de l'opérateur,
+  à tout moment, sans échéance opposable.
+
+  **État à ce jour : aucune entrée supprimée.** Aucune session d'agent ne doit
+  l'exécuter.
 - **A-4 — `check_boiler_transactionnel_contracts.py` T03 (Lot 3). TRAITÉ le
   2026-09-06 — le Lot 3 n'est plus bloqué.** Constat d'origine, vérifié par
   simulation avant correction : Le test T03 vérifie que
@@ -422,7 +446,11 @@ Le chantier est déclarable clos quand :
    introduit ;
 10. les 7 invariants du §3 sont vérifiés — en particulier INV-C49-6, prouvé par
     l'absence de diff sur les 4 exécuteurs et les 4 automatisations de retry ;
-11. les checkers du Lot 4 sont verts ;
+11. les checkers du Lot 4 sont verts — **fait** (87/87 en CI, #788) ;
+11 bis. la **preuve terrain** du retrait est acquise : les 12 projections ne
+    sont plus fournies, les familles conservées et les 4 gardes sont
+    intactes, aucun retry ni commande chaudière déclenchés — **fait**
+    (Lot 4, 2026-09-06) ;
 12. le sort du template `boiler_decision_ack` est tranché et écrit (A-2) — **fait** ;
 13. la traçabilité repose sur le registre et les commits/PR, **sans changelog
     fabriqué** (§8).
