@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Supprimer la section UI `🔁 Transactions` du corps Boiler partagé et les **12 projections ACK legacy** (`*_ts`, `*_correlation`, `*_result`) devenues sans consommateur, en préservant intégralement le runtime transactionnel réellement exploité (`*_raw`, `*_status`, `*_request_id`, `*_reason`, helpers de requête, commandabilité par rôle). |
 | **Domaine** | Chauffage / boiler — la surface ACK est partagée avec l'ECS (rôle `dhw_setpoint`). Rangé sous `chauffage/`, comme le socle transactionnel et la migration Boilerack. |
-| **Statut** | **Ouvert — Lots 1 (contrat) et 2 (UI) LIVRÉS ; A-4 TRAITÉ le 2026-09-06, Lot 3 DÉBLOQUÉ. Lots 3 à 5 non exécutés.** |
+| **Statut** | **Ouvert — Lots 1 (contrat), 2 (UI) et 3 (runtime, patch dépôt) LIVRÉS le 2026-09-06 ; A-4 traité. Activation runtime du Lot 3 en attente d'un GO opérateur (rechargement). Lots 4 et 5 non exécutés.** |
 | **Priorité** | P2 — aucun risque fonctionnel courant ; la section incriminée est en lecture seule et n'entre dans aucune boucle de décision. Enjeu de véracité de restitution et de dette runtime morte. |
 | **Ouvert le** | 2026-09-06. |
 | **Registre** | Chantier **C49** — ① Actifs, cf. [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
@@ -226,11 +226,23 @@ runtime la source de vérité, contre la doctrine « contrat avant runtime ».
   [`README.md`](../../../../19_button_card_templates/40_dashboards/boiler/README.md).
 - **Ne pas toucher** à `boiler_info_timestamp` (Heartbeat + Dernière erreur).
 
-### Lot 3 — Runtime legacy
+### Lot 3 — Runtime legacy — **PATCH LIVRÉ 2026-09-06, activation en attente de GO**
 
-> **Préalable A-4 : LEVÉ (2026-09-06).** T03 est désormais ancré sur les
-> scripts exécutifs et reste vert après retrait des 3 projections legacy —
-> vérifié par simulation (§5, A-4). Le Lot 3 est exécutable.
+> **Réalisé** : les 12 projections retirées des 4 `boiler_ack_*_transaction.yaml` ;
+> chaque fichier ne déclare plus que `*_request_id`, dont le corps est inchangé
+> — le diff n'ajoute **aucune ligne de logique**, uniquement des suppressions et
+> la réécriture des en-têtes devenus faux. `*_status` / `*_reason`
+> (`boiler_command_feedback.yaml`), `*_raw` (`14_mqtt_sensors/`), les helpers
+> `input_text.boiler_req_*` et les gardes `binary_sensor.boiler_commandable_*`
+> sont intouchés, de même que les 4 scripts exécutifs et les 4 automatisations
+> de retry. T03 reste vert.
+>
+> **Non réalisé, et hors pouvoir de cette session** : le rechargement qui rend
+> le retrait effectif côté Home Assistant — voir §6 ci-dessous et A-3.
+
+> **Préalable A-4 : LEVÉ (2026-09-06).** T03 est ancré sur les scripts
+> exécutifs et reste vert après retrait des 3 projections legacy — vérifié par
+> simulation avant le patch, puis confirmé sur le patch réel.
 
 - Retirer les 12 projections mortes des 4 fichiers
   `12_template_sensors/boiler/boiler_ack_*_transaction.yaml`.
@@ -294,8 +306,55 @@ Ouverts, non tranchés par cette ouverture :
   clause « aucune autre carte ne doit redéfinir cette sémantique » reste
   opposable à toute restitution future. `19_button_card_templates/40_dashboards/boiler/README.md`
   réaligné en conséquence (famille D marquée retirée, taxonomie et arbre).
-- **A-3 — Retrait des 12 entités du registre HA (Lot 4).** Geste opérateur sur
-  l'instance, non versionnable ; à planifier, pas à supposer fait.
+- **A-3 — Retrait des 12 entités du registre HA (Lot 4). INSTRUIT le
+  2026-09-06 — geste opérateur défini, non exécuté.** Le patch du Lot 3 retire
+  les définitions YAML ; il ne retire rien du **registre d'entités** de Home
+  Assistant. Comportement attendu, en deux temps :
+
+  1. **Tant qu'aucun rechargement n'a lieu**, les 12 entités restent *fournies*
+     et gardent leur dernière valeur. Le dépôt et l'instance divergent — c'est
+     l'état à l'issue de cette livraison.
+  2. **Après rechargement** — **comportement ATTENDU, non encore observé** —
+     l'intégration `template` devrait cesser de les fournir. Portant chacune un
+     `unique_id`, elles ont une entrée au registre : cette entrée **devrait
+     survivre** et l'entité apparaître **`restored`** (indisponible, signalée
+     « plus fournie par l'intégration »). Ce serait le **comportement nominal**,
+     pas une anomalie ; aucune automatisation, aucun script, aucune carte ne
+     les lit (recensement exhaustif, §1.4 et Lot 3).
+
+     > **Aucune observation terrain à ce jour.** Le rechargement n'a pas été
+     > effectué : cette section énonce une **attente à vérifier**, jamais un
+     > constat. La preuve terrain est due après merge, sous GO opérateur.
+
+  **Geste opérateur, à faire dans cet ordre :**
+
+  - **(a) Rechargement.** *Outils de développement → YAML → « Entités
+    template »*. **Un redémarrage n'est pas requis.** À faire **hors
+    transaction en vol** (ni cycle ECS, ni application de consigne ou de courbe
+    en cours) : au rechargement, chaque entité template est détruite puis
+    recréée et passe transitoirement par `unknown` (cf.
+    [`audit_reload_flap_templates_chaines.md`](../../01_rapports/transverses/audit_reload_flap_templates_chaines.md)).
+    **Le flap ne peut déclencher aucune commande chaudière** : les quatre
+    automatisations de retry sont armées sur `input_text.boiler_req_<role>`, un
+    **helper**, que le rechargement des templates ne détruit pas ;
+    `sensor.boiler_ack_<role>_request_id` n'est lu qu'en condition, jamais en
+    déclencheur. Le seul effet possible est qu'un `wait_template` en vol
+    n'aboutisse pas et conclue en *timeout local HA* — **direction de
+    défaillance sûre** : `unknown` ne peut jamais égaler un `request_id`, donc
+    aucun faux `applied`.
+  - **(b) Constat — c'est ici que la preuve terrain se fait.** Vérifier que
+    les 12 entités sont bien passées `restored`, et que les 4
+    `sensor.boiler_ack_<role>_request_id` restent vivantes et corrélables, de
+    même que `*_status`, `*_reason`, `*_raw`. Consigner le résultat observé
+    dans le Lot 4 — y compris s'il dément l'attente du point 2.
+  - **(c) Purge du registre — facultative, opérateur seul.** *Paramètres →
+    Appareils et services → Entités*, filtrer sur `boiler_ack_`, sélectionner
+    les entités `restored`, **Supprimer**. Purement cosmétique : une entrée
+    `restored` n'a ni état, ni consommateur, ni effet. **Aucune session
+    d'agent ne doit l'exécuter.**
+
+  **Interdiction maintenue** : aucun rechargement, aucun redémarrage et aucune
+  suppression au registre sans GO explicite de l'opérateur.
 - **A-4 — `check_boiler_transactionnel_contracts.py` T03 (Lot 3). TRAITÉ le
   2026-09-06 — le Lot 3 n'est plus bloqué.** Constat d'origine, vérifié par
   simulation avant correction : Le test T03 vérifie que
