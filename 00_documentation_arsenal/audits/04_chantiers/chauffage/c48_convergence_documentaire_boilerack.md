@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Gouverner et clore documentairement la migration Boiler Bridge → Boilerack, techniquement terminée et validée terrain. Aligner la documentation Arsenal sur l'état réel de production, référencer (sans les exécuter) les correctifs documentaires dus côté dépôt public Boilerack, et parquer explicitement les dettes guard hors périmètre. |
 | **Domaine** | Chauffage / boiler — déborde vers ECS (rôle `dhw_setpoint`) et vers la couche transverse « écosystème des dépôts satellites ». Rangé sous `chauffage/`, comme la migration elle-même (`architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`). |
-| **Statut** | **Ouvert (2026-09-06) — ouverture documentaire. Aucun lot exécuté.** |
+| **Statut** | **Ouvert (2026-09-06) — 6/13 lots Axe A livrés (A1, A2, A3, A4, A5, A6 : #782, #783). Restent A7–A11 ; A12/A13 déjà satisfaits à l'ouverture. Voir §9.** |
 | **Priorité** | P2 — aucun risque fonctionnel ; le runtime est stabilisé et validé terrain. Enjeu de gouvernance et de cohérence documentaire uniquement. |
 | **Ouvert le** | 2026-09-06. |
 | **Registre** | Chantier **C48** — ① Actifs, cf. [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
@@ -125,12 +125,12 @@ finie, lot par lot :
 
 | Lot | Fichier(s) | Contradiction / manque | Correction minimale attendue | Dépendances | Critère de clôture du lot |
 |---|---|---|---|---|---|
-| **A1** | `contrats/chauffage/30_decision_centrale__amendement_garde_execution.md` §6.3 | Affirme que la garde composée « n'a pas encore d'implémentation […] elle n'est pas en service » — faux au terrain | Réviser §6.3 pour constater le passage en service ; ne pas réécrire les seuils/décisions normatives des §2/§3 | — | §6.3 reflète l'état terrain, reste du document inchangé |
-| **A2** | `contrats/chauffage/30_decision_centrale.md` §7 | Référence un signal unique `binary_sensor.boiler_bridge_online`, non absorbé par l'amendement | Aligner la référence de signal sur la garde composée par rôle, sans dupliquer le contenu normatif de l'amendement | A1 | §7 ne contredit plus son propre amendement |
-| **A3** | `architecture/ecosysteme_depots_satellites.md` (tableau §1, fiche §4.6, tableau de synthèse §3) | Ignore Boilerack ; décrit `boiler-bridge` comme seul satellite actif du domaine boiler | Ajouter Boilerack comme satellite gouverné actif ; requalifier `boiler-bridge` comme satellite historique désactivé (sans supprimer sa fiche) | — | Le document nomme Boilerack comme écrivain souverain actif ; `boiler-bridge` reste tracé comme historique |
-| **A4** | `outils_externes/boiler_pi/{README,architecture,guard,mqtt,workflow}.md` | Zone la plus obsolète (audit 2.2) : décrit `arsenal-boiler-bridge`/vcontrold comme service actif | Basculer la posture en « historique, désactivé » ; pointer vers Boilerack et son dépôt ; documenter le guard v1.3 et sa cible par défaut | A3 | Aucun de ces documents ne décrit `boiler-bridge` comme actif |
-| **A5** | `navigation/domaines/boiler.md`, `navigation/domaines/chauffage.md` | Le hub boiler pointe le bus MQTT chaudière vers `boiler-bridge` comme producteur vivant | Réorienter le renvoi producteur vers Boilerack ; conserver `interface_ha_boiler_bridge.md` comme contrat d'adaptation HA existant | A3, A4 | Les hubs orientent vers Boilerack comme source de vérité |
-| **A6** | `contrats/boiler/{README,socle_transactionnel,mqtt_ack_ha,script_executif,retry_transactionnel,guard_exposition_ha,consommation_ack}.md` | Corpus HA-side rédigé à l'époque du pont historique | Revue de cohérence : nommer Boilerack comme écrivain amont là où le texte présume `boiler_bridge` actif ; invariants transactionnels déjà éprouvés (ACK, `request_id`) non retouchés | A3 | Le corpus `contrats/boiler/` ne présume plus `boiler_bridge` actif |
+| **A1** | `contrats/chauffage/30_decision_centrale__amendement_garde_execution.md` §6.3 | Affirme que la garde composée « n'a pas encore d'implémentation […] elle n'est pas en service » — faux au terrain | Réviser §6.3 pour constater le passage en service ; ne pas réécrire les seuils/décisions normatives des §2/§3 | — | §6.3 reflète l'état terrain, reste du document inchangé — **LIVRÉ (#783, 2026-09-06)** |
+| **A2** | `contrats/chauffage/30_decision_centrale.md` §7 | Référence un signal unique `binary_sensor.boiler_bridge_online`, non absorbé par l'amendement | Aligner la référence de signal sur la garde composée par rôle, sans dupliquer le contenu normatif de l'amendement | A1 | §7 ne contredit plus son propre amendement — **LIVRÉ (#783, 2026-09-06)** |
+| **A3** | `architecture/ecosysteme_depots_satellites.md` (tableau §1, fiche §4.6, tableau de synthèse §3) | Ignore Boilerack ; décrit `boiler-bridge` comme seul satellite actif du domaine boiler | Ajouter Boilerack comme satellite gouverné actif ; requalifier `boiler-bridge` comme satellite historique désactivé (sans supprimer sa fiche) | — | Le document nomme Boilerack comme écrivain souverain actif ; `boiler-bridge` reste tracé comme historique — **LIVRÉ (#782, 2026-09-06)** |
+| **A4** | `outils_externes/boiler_pi/{README,architecture,guard,mqtt,workflow}.md` | Zone la plus obsolète (audit 2.2) : décrit `arsenal-boiler-bridge`/vcontrold comme service actif | Basculer la posture en « historique, désactivé » ; pointer vers Boilerack et son dépôt ; documenter le guard v1.3 et sa cible par défaut | A3 | Aucun de ces documents ne décrit `boiler-bridge` comme actif — **LIVRÉ (#782, 2026-09-06)** |
+| **A5** | `navigation/domaines/boiler.md`, `navigation/domaines/chauffage.md` | Le hub boiler pointe le bus MQTT chaudière vers `boiler-bridge` comme producteur vivant | Réorienter le renvoi producteur vers Boilerack ; conserver `interface_ha_boiler_bridge.md` comme contrat d'adaptation HA existant | A3, A4 | Les hubs orientent vers Boilerack comme source de vérité — **LIVRÉ (#782, 2026-09-06)** |
+| **A6** | `contrats/boiler/{README,socle_transactionnel,mqtt_ack_ha,script_executif,retry_transactionnel,guard_exposition_ha,consommation_ack}.md` | Corpus HA-side rédigé à l'époque du pont historique | Revue de cohérence : nommer Boilerack comme écrivain amont là où le texte présume `boiler_bridge` actif ; invariants transactionnels déjà éprouvés (ACK, `request_id`) non retouchés | A3 | Le corpus `contrats/boiler/` ne présume plus `boiler_bridge` actif — **LIVRÉ (#783, 2026-09-06)** |
 | **A7** | `schemas_ascii/regulation_thermique.md` | Schéma ASCII de pipeline probablement daté au pont historique | Mettre à jour le pipeline visuel (bridge → Boilerack), sans changer la sémantique du schéma | A3 | Le schéma reflète le pipeline réel |
 | **A8** | `architecture/03_doctrines/commandabilite.md`, `architecture/volets.md`, `contrats/chauffage/20_triggers_decisionnels.md`, `contrats/chauffage/20_triggers_decisionnels__amendement.md`, `contrats/ecs/application_consigne.md` | Mentions résiduelles de `boiler_bridge` non vérifiées une par une | Vérification ligne à ligne ; correction uniquement si le texte affirme `boiler_bridge` actif | A3 | Chaque fichier vérifié ; correction ou constat « sans objet » consigné |
 | **A9** | `contrats/ping_lan_synthese.md` | Référence probable à `binary_sensor.boiler_bridge` (ping ICMP) | **Vérification seule** — cette entité est explicitement conservée par le cadrage de migration (§8) ; a priori aucune correction | — | Constat explicite « entité conservée, aucune correction » |
@@ -139,10 +139,11 @@ finie, lot par lot :
 | **A12** | `REGISTRE_CHANTIERS.md` | Migration technique close mais non gouvernée | Ligne C48 ajoutée en ① Actifs | — | **Fait à l'ouverture — cf. §5** |
 | **A13** | Changelog | Doctrine interdit la fabrication d'un changelog hors dépôt de diffs par l'opérateur | **Aucune action changelog dans ce chantier** — cf. §7 | — | Constat explicite consigné : traçabilité par commit/PR + ligne registre |
 
-**Ordre d'exécution proposé pour les lots futurs** (hors périmètre de cette
-ouverture) : A3 → A4 / A5 (dépendent de la requalification du satellite) →
-A1 / A2 (contrat) → A6 / A7 / A8 / A9 / A10 (vérifications ciblées) → A11
-(rattachement).
+**Ordre d'exécution initialement proposé** (hors périmètre de l'ouverture) :
+A3 → A4 / A5 (dépendent de la requalification du satellite) → A1 / A2
+(contrat) → A6 / A7 / A8 / A9 / A10 (vérifications ciblées) → A11
+(rattachement). **Suivi (§9)** : A3, A4, A5, A1, A2 et A6 sont livrés dans cet
+ordre. **Ordre proposé pour les lots restants** : A7 → A8 → A9 → A10 → A11.
 
 ### Axe B — Boilerack (dépôt externe public)
 
@@ -249,7 +250,73 @@ Le chantier est déclarable clos quand :
 
 ---
 
-## 9. Renvois
+## 9. Journal des lots livrés
+
+> **Note de rattrapage.** La règle de gouvernance n°1 (§7) impose la mise à
+> jour de statut de ce document au même commit que chaque lot livré. Les PR
+> #782 et #783 ne l'ont pas fait. Le présent §9 et les mises à jour de
+> statut/tableau ci-dessus corrigent cet oubli, à la ligne du registre
+> mise à jour au même commit — sans réécrire l'historique des PR déjà
+> mergées.
+
+### Lots A3 / A4 / A5 — livrés (#782, 2026-09-06)
+
+- **A3** — `architecture/ecosysteme_depots_satellites.md` : Boilerack ajouté
+  comme satellite gouverné actif (fiche §4.6, « écrivain souverain actif »),
+  `boiler-bridge` requalifié historique (fiche renumérotée §4.7, service
+  `disabled`/`inactive`) ; le **guard de supervision externe reste hébergé
+  par le dépôt `boiler-bridge`, préservé comme composant actif (v1.3)** —
+  la requalification ne porte que sur le rôle d'écrivain, pas sur le guard.
+- **A4** — les 5 documents `outils_externes/boiler_pi/{README,architecture,
+  guard,mqtt,workflow}.md` basculent en posture historique pour le service
+  de pont. `guard.md` documente désormais explicitement la **version
+  normative v1.1 du document** distincte de la **version terrain déployée
+  v1.3**, et la **cible par défaut `boilerack.service`** (historiquement
+  `boiler_bridge.service`). `workflow.md` ajoute une mise en garde : le
+  rollback est une opération explicite, pas un chemin de déploiement normal.
+- **A5** — `navigation/domaines/boiler.md` nomme Boilerack écrivain souverain
+  actif et `boiler-bridge` historique. `navigation/domaines/chauffage.md`
+  audité, aucune contradiction trouvée, non modifié.
+
+Aucun ID/entité renommé, aucun contrat technique touché, aucun runtime,
+aucun changelog.
+
+### Lots A1 / A2 / A6 — livrés (#783, 2026-09-06)
+
+- **A1** — `30_decision_centrale__amendement_garde_execution.md` §6.3 : la
+  réserve « garde composée pas en service » est barrée et levée, avec preuve
+  terrain (`12_template_sensors/boiler/telemetry_status.yaml` dérive les
+  quatre `binary_sensor.boiler_commandable_<rôle>` sur les quatre conditions
+  exactes du §2 ; les 4 scripts exécutifs concernés préconditionnent
+  l'émission sur ce composé). §§2/3 (seuils, décisions normatives) non
+  réécrits.
+- **A2** — `30_decision_centrale.md` (§6, §7, §8 diagramme, §9 table) :
+  les 4 occurrences internes réconciliées avec l'amendement, sans dupliquer
+  sa définition normative.
+- **A6** — `contrats/boiler/{README,socle_transactionnel,script_executif}.md`
+  alignés sur Boilerack écrivain souverain et sur la garde composée
+  réellement consommée par les scripts exécutifs (précondition de
+  commandabilité, pas seulement `bridge_online`). `mqtt_ack_ha.md`,
+  `retry_transactionnel.md`, `guard_exposition_ha.md` et
+  `consommation_ack.md` étaient déjà amendés (C48 ouverture) — zéro diff.
+
+Vérifié contre le runtime réel (template sensors, scripts exécutifs,
+`decision_centrale.yaml`) avant correction. Aucun ID/entité renommé, aucun
+seuil normatif réécrit, aucun invariant transactionnel touché, aucun
+runtime modifié.
+
+### Restent à livrer : A7, A8, A9, A10, A11
+
+Non exécutés à ce jour. Vérification rapide de contrôle (ce commit) :
+`schemas_ascii/regulation_thermique.md` (A7) contient toujours, ligne 59,
+`script.chauffage_appliquer_consigne -> protocole local (boiler bridge)` —
+confirme que ce lot reste dû, sans le traiter (hors périmètre de la présente
+mise à jour de gouvernance, qui ne porte que sur le rattrapage de statut des
+lots déjà livrés).
+
+---
+
+## 10. Renvois
 
 - Migration (normatif amont) :
   [`architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`](../../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md)
