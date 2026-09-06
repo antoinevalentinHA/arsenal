@@ -28,7 +28,7 @@
 
 ## 1. Rôle
 
-Ce script constitue la frontière exécutive canonique entre Home Assistant et le boiler bridge.
+Ce script constitue la frontière exécutive canonique entre Home Assistant et l'écrivain souverain.
 
 Il a pour unique responsabilité de :
 
@@ -91,13 +91,28 @@ Le script peut recevoir **facultativement** : metadata métier, `reason_helper`,
 
 Le script ne peut démarrer que si toutes les conditions suivantes sont vraies.
 
-### 4.1 Bridge disponible
+### 4.1 Capacité d'exécution établie (garde composée par rôle)
+
+**Corrigé (C48).** La précondition réellement consommée par les scripts
+exécutifs du domaine avant toute émission n'est pas le seul signal
+`<prefix>/bridge/online`, mais la **garde d'exécution composée et qualifiée
+par rôle** : `binary_sensor.boiler_commandable_<rôle> == "on"`.
 
 ```
-<prefix>/bridge/online == "online"
+<prefix>/bridge/online == "online"        # composante nécessaire
+ET fraîcheur de l'instantané telemetry_status
+ET chain.status == "ok"
+ET fraîcheur de la mesure du rôle commandé
 ```
 
-au moment du départ de la transaction, conformément au contrat HA.
+au moment du départ de la transaction. Ces quatre conditions sont définies de
+façon opposable par
+[`30_decision_centrale__amendement_garde_execution.md`](../chauffage/30_decision_centrale__amendement_garde_execution.md)
+§2 — le présent contrat n'en duplique pas la définition, il en consomme le
+résultat composé. **`<prefix>/bridge/online` seul reste nécessaire, jamais
+suffisant** : l'écrivain souverain n'implémente aucune politique de
+reconnexion, et son retenu peut demeurer `offline` alors que le service est
+vivant (même amendement §1).
 
 ### 4.2 Aucune transaction résiduelle
 
@@ -194,7 +209,7 @@ idle → precheck → armed → published → pending → timeout → cleanup �
 
 ### 7.1 Précheck
 
-Le script vérifie `online == "online"`, l'absence de transaction résiduelle, et la cohérence minimale des paramètres.
+Le script vérifie la garde composée par rôle du §4.1 (`online` compris, jamais seul), l'absence de transaction résiduelle, et la cohérence minimale des paramètres.
 
 Si échec : statut `aborted`, aucune publication, nettoyage, sortie.
 
@@ -428,7 +443,9 @@ Aucune journalisation verbeuse pas-à-pas n'est conforme.
 - Réutiliser un `request_id`
 - Laisser un `request_helper` sale
 - Déclencher un retry dans une boucle non bornée
-- Lancer le script alors que `online ≠ "online"`
+- Lancer le script alors que la garde composée du rôle commandé
+  (`binary_sensor.boiler_commandable_<rôle>`, §4.1) n'est pas établie —
+  `online == "online"` seul ne suffit pas à autoriser l'émission
 - Consommer un ACK sans corrélation stricte
 
 ---

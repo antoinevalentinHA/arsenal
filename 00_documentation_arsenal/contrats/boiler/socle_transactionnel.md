@@ -4,7 +4,18 @@
 **Domaine :** Boiler / Transactions MQTT
 **Couche :** Exécution / Frontière bridge
 **Portée :** Transversale (ECS, chauffage, pente, parallèle)
-**Date :** 2026-03-26
+**Date :** 2026-03-26 (voir note de convergence C48 ci-dessous)
+
+> ### Note de convergence (C48, 2026-09-06) — écrivain souverain porté sur Boilerack
+>
+> **Le statut normatif de ce contrat est CONSERVÉ.** Aucun invariant
+> transactionnel (`request_id`, corrélation, ACK, idempotence, rejet,
+> timeout) n'est modifié. Seul le **§5 est corrigé** : la condition de
+> validité qu'il pose ne correspond plus à la précondition réellement
+> consommée par les scripts exécutifs — voir §5 ci-dessous et l'amendement
+> [`30_decision_centrale__amendement_garde_execution.md`](../chauffage/30_decision_centrale__amendement_garde_execution.md).
+>
+> Référence : [`../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`](../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md)
 
 ---
 
@@ -65,7 +76,16 @@ L'ordre suivant est obligatoire, sans exception :
 
 ### 5. Session bridge (invariant de validité)
 
-Une transaction n'est considérée valide que si `binary_sensor.boiler_bridge_online == on`. Ce signal fait partie intégrante de la validité transactionnelle.
+~~Une transaction n'est considérée valide que si `binary_sensor.boiler_bridge_online == on`.~~
+**CORRIGÉ (C48).** `binary_sensor.boiler_bridge_online` fait partie intégrante
+de la validité transactionnelle, mais **il ne la constitue pas seul** : la
+précondition réellement consommée par les scripts exécutifs avant toute
+émission est la **garde d'exécution composée par rôle**
+(`binary_sensor.boiler_commandable_<rôle>` — online **et** fraîcheur de
+l'instantané **et** `chain.status == ok` **et** fraîcheur de la mesure du
+rôle commandé), définie par
+[`30_decision_centrale__amendement_garde_execution.md`](../chauffage/30_decision_centrale__amendement_garde_execution.md)
+§2. `online` seul demeure nécessaire, jamais suffisant.
 
 ---
 
@@ -120,7 +140,9 @@ Le système actuel présente les caractéristiques suivantes, constituant une de
 - Résultat souvent dérivé de sensors globaux
 - Absence de retour transactionnel natif du bridge
 - Hétérogénéité des niveaux de complétude
-- Intégration partielle du signal `bridge_online`
+- ~~Intégration partielle du signal `bridge_online`~~ — **RÉSOLU (C48).** La
+  garde composée par rôle (§5) intègre `bridge_online` avec trois autres
+  conditions, consommée par les quatre scripts exécutifs du domaine
 
 ---
 
@@ -132,7 +154,7 @@ Le système actuel présente les caractéristiques suivantes, constituant une de
 | Séparation des couches | ✔ Conforme |
 | Définition du succès | ✔ Conforme |
 | Robustesse nominale | ✔ Conforme |
-| Intégration session bridge | ⚠ Partielle |
+| Intégration session bridge | ✔ Conforme — garde composée par rôle (§5, C48) |
 | Encapsulation résultat | ⚠ Variable |
 
 ---
