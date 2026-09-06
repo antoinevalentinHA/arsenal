@@ -162,14 +162,22 @@ ACK MQTT (JSON)
    ↓
 sensor.*_raw
    ↓
-sensor.*_status / reason
+sensor.*_status / *_reason / *_request_id
    ↓
-sensor.*_request_id / ts
-   ↓
-corrélation
-   ↓
-sensor.*_result
+corrélation + conclusion          (scripts exécutifs)
 ```
+
+> **La corrélation et la conclusion sont évaluées dans les scripts exécutifs**,
+> par lecture conjointe de `sensor.*_status` et de `sensor.*_request_id`. Elles
+> ne transitent par aucune entité intermédiaire.
+>
+> **Périmé — conservé pour mémoire.** La chaîne passait auparavant par
+> ~~`sensor.*_ts`~~, ~~`sensor.*_correlation`~~ et ~~`sensor.*_result`~~. Ces
+> trois projections sont **legacy supprimables** — aucune n'a de consommateur,
+> et l'ACK de l'écrivain souverain ne porte plus de `ts`. Voir
+> [`contrats/boiler/consommation_ack.md`](../../contrats/boiler/consommation_ack.md)
+> §11 et le chantier
+> [`C49`](../../audits/04_chantiers/chauffage/c49_suppression_restitution_transactions_ack.md).
 
 #### Règle de succès (normative)
 
@@ -219,7 +227,8 @@ HA qualifie ensuite : erreur récente (< 24 h).
 | MQTT | Vérité protocolaire |
 | Sensors raw | Transport |
 | Templates diagnostic | Extraction |
-| Templates transaction | Corrélation |
+| Templates transaction | Extraction du `request_id` |
+| Scripts exécutifs | **Corrélation et conclusion** |
 | Arsenal | Décision métier |
 | UI | Affichage |
 

@@ -16,6 +16,18 @@
 > et [`architecture/ecosysteme_depots_satellites.md`](../../architecture/ecosysteme_depots_satellites.md)
 > §4.6.
 
+> **⚠️ Interface ACK consommée (C49, 2026-09-06).** L'interface transactionnelle
+> canonique côté Home Assistant est la conjonction `sensor.boiler_ack_<role>_status`
+> **ET** `sensor.boiler_ack_<role>_request_id` — jamais l'un des deux isolé.
+> Surface conservée : `*_raw`, `*_status`, `*_request_id`, `*_reason`,
+> `input_text.boiler_req_<role>`, `binary_sensor.boiler_commandable_<role>`.
+> Requalifiées **legacy supprimables** et encore présentes en runtime à ce jour :
+> `*_ts`, `*_correlation`, `*_result` — aucune n'a de consommateur, et l'ACK de
+> l'écrivain souverain ne porte plus de `ts`. Table normative :
+> [`consommation_ack.md`](consommation_ack.md) §11. Retrait runtime : Lot 3 du
+> chantier
+> [`C49`](../../audits/04_chantiers/chauffage/c49_suppression_restitution_transactions_ack.md).
+
 ---
 
 ## Contenu et localisation
@@ -25,6 +37,7 @@
 | `mqtt.md` | `outils_externes/boiler_pi/` | v0.4.3 | Contrat bridge MQTT — topics, payloads, pipeline ACK |
 | `socle_transactionnel.md` | `contrats/boiler/` | — | Contrat métier — socle transactionnel unifié |
 | `mqtt_ack_ha.md` | `contrats/boiler/` | v1.2 | Contrat consommation ACK côté Home Assistant |
+| `consommation_ack.md` | `contrats/boiler/` | v1.2 | Contrat de consommation ACK — projections HA dérivées d'un ACK |
 | `script_executif.md` | `contrats/boiler/` | v1.1 | Contrat script exécutif transactionnel |
 
 ---
