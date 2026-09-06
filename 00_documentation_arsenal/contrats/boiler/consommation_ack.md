@@ -331,8 +331,9 @@ Ce contrat ne couvre pas :
 
 ## 11. Projections — surface conservée et legacy supprimable (v1.2)
 
-Table normative de la surface d'entités dérivée d'un ACK. Elle **autorise** le
-retrait des projections legacy ; elle ne l'exécute pas.
+Table normative de la surface d'entités dérivée d'un ACK. Elle **qualifie** le
+statut contractuel de chaque projection. Le retrait des projections legacy
+qu'elle rendait licite **a depuis été exécuté** — voir sous la table.
 
 | Projection | Statut contractuel | Motif |
 | ---------- | ------------------ | ----- |
@@ -346,10 +347,17 @@ retrait des projections legacy ; elle ne l'exécute pas.
 | ~~`sensor.*_correlation`~~ | **LEGACY SUPPRIMABLE** | la règle de corrélation est portée par les scripts (§5) |
 | ~~`sensor.*_result`~~ | **LEGACY SUPPRIMABLE** | la conclusion est dérivée en ligne par les scripts (§6) |
 
-**Condition unique du retrait** : qu'aucun consommateur ne subsiste. Elle est
-vérifiée à la date du présent amendement pour `*_correlation` et `*_result`
-(aucun consommateur) ; pour `*_ts`, le seul lecteur est la section Lovelace
-`Transactions`, dont le retrait est le Lot 2 de C49 et **précède** le Lot 3.
+**Condition unique du retrait** : qu'aucun consommateur ne subsiste. Elle a
+été vérifiée pour les trois familles avant leur retrait — `*_correlation` et
+`*_result` n'avaient aucun consommateur ; le seul lecteur de `*_ts` était la
+section Lovelace `Transactions`, **supprimée au préalable** (C49, Lot 2).
+
+**Les trois familles legacy ont été retirées du runtime** par C49 (Lot 3) : les
+quatre fichiers `12_template_sensors/boiler/boiler_ack_*_transaction.yaml` ne
+déclarent plus que `*_request_id`. Le retrait a été **validé terrain le
+2026-09-06**. Les entrées correspondantes du registre d'entités Home Assistant
+subsistent à l'état `restored` ; leur purge est facultative et sans effet
+runtime.
 
 > **Le retrait ne touche à aucun invariant du §9**, qui demeure intégralement
 > opposable. Une suppression qui affaiblirait l'un d'eux serait non conforme,
