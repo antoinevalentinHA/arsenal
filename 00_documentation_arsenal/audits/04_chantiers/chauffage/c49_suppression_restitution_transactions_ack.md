@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Supprimer la section UI `🔁 Transactions` du corps Boiler partagé et les **12 projections ACK legacy** (`*_ts`, `*_correlation`, `*_result`) devenues sans consommateur, en préservant intégralement le runtime transactionnel réellement exploité (`*_raw`, `*_status`, `*_request_id`, `*_reason`, helpers de requête, commandabilité par rôle). |
 | **Domaine** | Chauffage / boiler — la surface ACK est partagée avec l'ECS (rôle `dhw_setpoint`). Rangé sous `chauffage/`, comme le socle transactionnel et la migration Boilerack. |
-| **Statut** | **Ouvert (2026-09-06) — ouverture documentaire. Aucun lot exécuté.** |
+| **Statut** | **Ouvert — Lot 1 (documentation / contrat) LIVRÉ le 2026-09-06. Lots 2 à 5 non exécutés.** |
 | **Priorité** | P2 — aucun risque fonctionnel courant ; la section incriminée est en lecture seule et n'entre dans aucune boucle de décision. Enjeu de véracité de restitution et de dette runtime morte. |
 | **Ouvert le** | 2026-09-06. |
 | **Registre** | Chantier **C49** — ① Actifs, cf. [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
@@ -178,7 +178,14 @@ runtime. Retirer une projection avant d'avoir retiré son lecteur produirait une
 entité indisponible en dashboard ; amender le contrat après coup ferait du
 runtime la source de vérité, contre la doctrine « contrat avant runtime ».
 
-### Lot 1 — Documentation / contrat *(préalable obligatoire)*
+### Lot 1 — Documentation / contrat *(préalable obligatoire)* — **LIVRÉ 2026-09-06**
+
+> **Réalisé** : 1a, 1b, 1c (A-1 tranché, §5 supra), 1f, 1g amendés ;
+> `contrats/boiler/README.md` doté d'un bloc de statut d'interface.
+> **Zéro diff assumé** sur 1d (`mqtt_ack_ha.md` : contrat purement protocolaire,
+> il ne nomme aucune projection) et sur le hub `navigation/domaines/boiler.md`
+> (aucune mention de la section Transactions ni d'une projection).
+> Aucun runtime, aucune UI, aucun checker touché.
 
 | # | Action | Fichier |
 |---|---|---|
@@ -211,6 +218,10 @@ runtime la source de vérité, contre la doctrine « contrat avant runtime ».
 - **Ne pas toucher** à `boiler_info_timestamp` (Heartbeat + Dernière erreur).
 
 ### Lot 3 — Runtime legacy
+
+> **Préalable bloquant : arbitrage A-4** (§5) — le test T03 de
+> `check_boiler_transactionnel_contracts.py` ancre la corrélation dans la couche
+> template. Le Lot 3 ne peut pas être exécuté avant qu'il soit tranché.
 
 - Retirer les 12 projections mortes des 4 fichiers
   `12_template_sensors/boiler/boiler_ack_*_transaction.yaml`.
@@ -248,16 +259,38 @@ Mise à jour du présent document et de la ligne de registre au même commit
 
 Ouverts, non tranchés par cette ouverture :
 
-- **A-1 — Formulation du §8 de `consommation_ack.md` (Lot 1c).** Deux options :
-  (i) réécrire la séquence sur `*_status` ∧ corrélation, en supprimant
-  l'interdiction contradictoire ; (ii) conserver l'interdiction et **recréer**
-  un consommateur de `*_result` dans les scripts. L'option (ii) contredirait la
-  décision §2 et alourdirait quatre exécuteurs éprouvés en production pour un
-  gain nul — **elle est déconseillée, mais reste la décision du propriétaire**.
+- **A-1 — Formulation du §8 de `consommation_ack.md` (Lot 1c). TRANCHÉ le
+  2026-09-06 : option (i), `*_result` est LEGACY SUPPRIMABLE.** Preuves
+  opposables : (a) les 4 exécuteurs concluent tous sur `*_status` ∧
+  (`*_request_id` == `request_id` courant), aucun ne lit `*_result` ; (b)
+  `retry_transactionnel.md` §5.1 **normait déjà** `sensor.boiler_ack_*_status ==
+  'timeout'` ET `request_id` corrélé — un contrat boiler frère codifiait donc
+  l'interface réelle avant cet arbitrage ; (c) la dernière phrase du §8 v1.1
+  admettait déjà l'équivalence ; (d) `*_result` **perd** une information que les
+  scripts portent : il agrège sous `pending` l'absence d'ACK et l'ACK d'une
+  transaction antérieure, là où les scripts distinguent l'ACK `timeout` corrélé
+  du timeout local HA. L'option (ii) — recréer un consommateur — aurait donc
+  dégradé la finesse de diagnostic pour un gain de sûreté nul. **Amendé en
+  v1.2 ; aucun consommateur `*_result` créé.**
 - **A-2 — Sort du template `boiler_decision_ack` (Lot 2).** Supprimé avec son
   unique consommateur, ou conservé au socle UI comme brique disponible.
 - **A-3 — Retrait des 12 entités du registre HA (Lot 4).** Geste opérateur sur
   l'instance, non versionnable ; à planifier, pas à supposer fait.
+- **A-4 — `check_boiler_transactionnel_contracts.py` T03 (Lot 3). NOUVEAU,
+  démontré au Lot 1 — préalable bloquant du Lot 3.** Le test T03 vérifie que
+  chaque `boiler_ack_*_transaction.yaml` **contient** la chaîne
+  `boiler_req_<cmd>`, au motif « corrélation transactionnelle absente ». Il
+  place donc la corrélation dans la **couche template**, alors que le §5 amendé
+  (v1.2) la situe dans les **scripts exécutifs** — où elle est réellement
+  évaluée. Aujourd'hui la chaîne apparaît 4 fois par fichier : 1 commentaire
+  d'en-tête, `*_correlation`, l'état de `*_result` et son attribut
+  `request_id_en_cours`. **Après le Lot 3, il n'en reste que le commentaire
+  d'en-tête** : T03 passerait **vacuement**, sur un commentaire — et virerait au
+  **rouge** si l'en-tête est remis en cohérence comme le Lot 3 le prévoit.
+  **Le checker encode l'ancienne doctrine ; il n'a pas été modifié.** Arbitrage
+  requis avant le Lot 3 : réécrire T03 pour l'ancrer sur les scripts exécutifs
+  (où la garantie vit), ou le retirer au profit d'un test équivalent. Aucune
+  option n'est prise ici.
 
 ---
 

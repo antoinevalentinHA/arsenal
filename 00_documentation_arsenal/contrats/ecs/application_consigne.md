@@ -1,8 +1,8 @@
 # Contrat — `10_scripts/ecs/appliquer_consigne_bridge.yaml`
 
 **Arsenal** | Domaine : ECS | Couche : Exécution  
-**Version** : V1.1 | **Statut** : Validé  
-**Auteur** : Arsenal Architecture | **Date** : 2026-09-05
+**Version** : V1.2 | **Statut** : Validé  
+**Auteur** : Arsenal Architecture | **Date** : 2026-09-06
 
 > ### AMENDÉ — surface de commande portée sur l'écrivain souverain
 >
@@ -17,6 +17,31 @@
 > touché.**
 >
 > Référence : [`../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`](../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md)
+
+> ### AMENDÉ (V1.2) — désignation de l'interface ACK réellement consommée
+>
+> **Le statut du présent contrat est CONSERVÉ. Le script n'est pas modifié —
+> pas une ligne.** Ce qui change est la **désignation** de l'interface ACK, que
+> ce contrat décrivait de façon inexacte.
+>
+> Le contrat désignait `sensor.boiler_ack_dhw_set_setpoint_result` comme capteur
+> ACK de référence, comme résultat lisible et comme contrat de sortie. **Le
+> script ne l'a jamais lu.** Il conclut, depuis sa mise en service, sur
+> `sensor.boiler_ack_dhw_set_setpoint_status` **conjugué** à
+> `sensor.boiler_ack_dhw_set_setpoint_request_id` — dans son `wait_template`
+> comme dans chacune de ses branches de conclusion.
+>
+> Les trois désignations sont donc corrigées vers l'interface réelle, désormais
+> canonique au contrat souverain
+> ([`../boiler/consommation_ack.md`](../boiler/consommation_ack.md) §8, v1.2).
+> `*_result` y est requalifié **legacy supprimable** : le laisser ici ferait
+> pointer ce contrat vers une entité destinée au retrait (C49, Lot 3).
+>
+> **Aucune garantie n'est ajoutée ni retirée**, aucun paramètre temporel n'est
+> touché, aucune non-garantie n'est levée — la réserve TTL/attente ACK et la
+> dette documentaire V1 restent en l'état.
+>
+> Référence : [`C49`](../../audits/04_chantiers/chauffage/c49_suppression_restitution_transactions_ack.md)
 
 ---
 
@@ -56,7 +81,9 @@ sont réservés pour une version ultérieure si le besoin se confirme.
 | Topic MQTT commande   | `<prefix>/command`                           |
 | `role` publié         | `dhw_setpoint`                               |
 | Topic MQTT ACK        | `<prefix>/ack/dhw_setpoint`                  |
-| Capteur ACK           | `sensor.boiler_ack_dhw_set_setpoint_result`  |
+| Statut ACK            | `sensor.boiler_ack_dhw_set_setpoint_status`  |
+| Corrélation ACK       | `sensor.boiler_ack_dhw_set_setpoint_request_id` |
+| Motif de rejet        | `sensor.boiler_ack_dhw_set_setpoint_reason`  |
 
 Ces ressources sont fixes en V1. Ce script n'est pas un framework générique.
 
@@ -104,7 +131,9 @@ Ces ressources sont fixes en V1. Ce script n'est pas un framework générique.
 - utilise un TTL fixe de **30 s** et une fenêtre d'attente ACK de **20 s**
 - attend une conclusion ACK parmi : `applied` / `rejected` / `timeout`
 - tente le nettoyage du helper de requête en fin d'exécution, dans le flux nominal du script
-- laisse le résultat lisible via `sensor.boiler_ack_dhw_set_setpoint_result`
+- laisse la conclusion lisible via la conjonction
+  `sensor.boiler_ack_dhw_set_setpoint_status` **ET**
+  `sensor.boiler_ack_dhw_set_setpoint_request_id`
 
 ---
 
@@ -144,13 +173,21 @@ Contrainte YAML : `mode: single`
 
 Le script ne retourne pas de valeur au sens classique.
 
-Après exécution, l'appelant lit :
+Après exécution, l'appelant lit **les deux entités ensemble** :
+
 ```yaml
-sensor.boiler_ack_dhw_set_setpoint_result
+sensor.boiler_ack_dhw_set_setpoint_status      # applied | rejected | timeout
+sensor.boiler_ack_dhw_set_setpoint_request_id  # doit égaler le request_id de la transaction
 ```
 
 et décide de la suite : poursuite de cycle, relance, notification, arrêt.
 Toute logique conditionnelle post-ACK reste chez l'appelant.
+
+> **La lecture conjointe n'est pas facultative.** Un `status` lu sans
+> vérification du `request_id` peut décrire une transaction antérieure : c'est
+> l'interdiction du §8 de
+> [`../boiler/consommation_ack.md`](../boiler/consommation_ack.md). L'appelant
+> qui ne peut pas corréler ne peut pas conclure.
 
 ---
 
