@@ -3,10 +3,38 @@
 <!-- audit:scope=doc -->
 
 **Composant :** `arsenal-boiler-guard`
-**Version :** v1.1
+**Version normative de ce document :** v1.1 · **Version terrain déployée : v1.3**
 **Scope :** Résilience locale du Raspberry Pi boiler bridge
 **Dossier :** `/homeassistant/00_documentation_arsenal/outils_externes/boiler_pi/`
-**Dernière mise à jour :** 2026-04-07
+**Dernière mise à jour :** 2026-04-07 (voir note de convergence C48 ci-dessous)
+
+---
+
+## 0. Note de convergence (C48, 2026-09-06)
+
+Depuis la migration Boiler Bridge → Boilerack (technique, close et validée
+terrain), le guard a été retargeté sans changement de ses 3 axes ni de sa
+logique d'escalade :
+
+- **Service protégé par défaut : `boilerack.service`** (historiquement
+  `boiler_bridge.service` — voir §7). Le guard ne cible plus le service
+  désactivé.
+- **Rôle inchangé : supervision externe locale du Pi**, indépendante de la
+  **garde fonctionnelle HA composée** (`contrats/chauffage/30_decision_centrale__amendement_garde_execution.md`)
+  — les deux gardes évaluent des signaux différents, à des couches
+  différentes, et ne se substituent pas l'une à l'autre.
+- **Le probe `vclient`/`vcontrold` de l'Axe 3 (§2) ne constitue pas une
+  preuve de santé complète de Boilerack.** Il valide la chaîne locale
+  partagée (`vclient → vcontrold → Optolink → chaudière`), pas le diagnostic
+  agrégé propre à Boilerack (`<prefix>/bridge/telemetry_status`,
+  `chain.status`/`chain.cause` — cf.
+  [`migration_boiler_bridge_vers_boilerack.md`](../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md)
+  §3), que ce guard ne lit pas.
+- **Limites connues, explicitement parquées** (chantier
+  [`c48_convergence_documentaire_boilerack.md`](../../audits/04_chantiers/chauffage/c48_convergence_documentaire_boilerack.md),
+  Axe C — aucun développement n'est engagé ici) : panne propre de Boilerack
+  non détectée directement par ce guard · `RC_PROBE` · sous-axe MQTT 3b ·
+  escalade/reboot du guard.
 
 ---
 
@@ -14,13 +42,13 @@
 
 Le guard est un outil d'infrastructure locale exécuté sur le Raspberry Pi boiler bridge.
 
-Son rôle est d'évaluer périodiquement si le boiler bridge remplit encore sa mission, et d'agir localement en cas de défaillance, selon une escalade progressive et déterministe.
+Son rôle est d'évaluer périodiquement si le service protégé (§7) remplit encore sa mission, et d'agir localement en cas de défaillance, selon une escalade progressive et déterministe.
 
 **Ce que le guard n'est pas :**
 
 - Il n'est pas un contrat MQTT — il n'interagit pas avec les topics boiler.
 - Il n'est pas un superviseur Home Assistant — il ne dépend pas de HA pour fonctionner.
-- Il n'est pas un oracle de santé global — il évalue uniquement les axes définis ci-dessous.
+- Il n'est pas un oracle de santé global — il évalue uniquement les axes définis ci-dessous, et ne constitue pas une preuve de santé complète du service protégé (voir §0).
 
 **Invariant absolu :** le guard est plus simple que le système qu'il protège. Toute complexification du guard est un signal de mauvaise conception.
 
@@ -95,7 +123,7 @@ Le guard extrait `20.500000` via `tail -n 1 | awk '{print $1}'`.
 Réseau fonctionnel, chaîne locale ne produit plus de réponse valide sur test canonique.
 
 ```
-→ restart service boiler_bridge.service
+→ restart service <service protégé>   (cible par défaut : boilerack.service — §7)
 → délai de grâce : 90 secondes
 → re-test Axe 3
 → si KO : reboot Pi (un seul reboot logiciel par cycle d'évaluation)
@@ -153,11 +181,15 @@ Délai au boot : `OnBootSec=3min` — laisse le bridge démarrer avant le premie
 
 HA observe le résultat du guard, pas son fonctionnement interne.
 
+**Depuis la migration vers Boilerack, ces signaux sont publiés sous le
+préfixe déployé `boilerack/*`** (historiquement `boiler/*`, décrit ainsi par
+le contrat MQTT du prédécesseur — cf. [`mqtt.md`](mqtt.md)) :
+
 | Signal | Interprétation |
 |--------|---------------|
-| `boiler/bridge/online = online` + heartbeat actif | Bridge nominal |
-| Silence sur `boiler/bridge/heartbeat` > 60 secondes | État dégradé (cf. CONTRAT_MQTT §2.6) |
-| `boiler/bridge/online = offline` | Bridge déconnecté |
+| `boilerack/bridge/online = online` + heartbeat actif | Écrivain nominal |
+| Silence sur `boilerack/bridge/heartbeat` > 60 secondes | État dégradé (cf. [`mqtt.md`](mqtt.md) §2.6, historique — les seuils de garde composée HA sont normatifs dans `contrats/chauffage/30_decision_centrale__amendement_garde_execution.md`) |
+| `boilerack/bridge/online = offline` | Écrivain déconnecté |
 
 **Frontière d'autorité :** le Pi agit, HA constate. HA peut déclencher une alerte sur silence prolongé mais ne pilote pas les actions du guard.
 
@@ -170,8 +202,8 @@ HA observe le résultat du guard, pas son fonctionnement interne.
 | Script | `/home/pi/boiler-bridge/boiler_guard.sh` |
 | Service systemd | `boiler-guard.service` |
 | Timer systemd | `boiler-guard.timer` |
-| Version courante | v1.1 |
-| Service protégé | `boiler_bridge.service` |
+| Version courante | v1.1 (ce document) · **v1.3 (terrain déployé, §0)** |
+| Service protégé | **`boilerack.service`** (cible par défaut depuis le Lot 1 guard/systemd, C48) — historiquement `boiler_bridge.service` |
 | Interface réseau | `wlan0` (à vérifier sur le Pi cible) |
 | Gateway | `192.168.1.1` (à vérifier sur le Pi cible) |
 
@@ -230,6 +262,7 @@ Messages normalisés :
 |---------|------|-------------|
 | v1.0 | 2026-04-07 | Version initiale — 3 axes, escalade progressive, systemd timer |
 | v1.1 | 2026-04-07 | Suppression dépendance `bc` — comparaison plage via `awk` |
+| v1.2–v1.3 | non datée dans ce document (cf. §0) | Lot 1 guard/systemd (C48) : retargetage du service protégé par défaut vers `boilerack.service` (historiquement `boiler_bridge.service`). Aucun changement des 3 axes ni de la logique d'escalade. Détail non tenu par ce document normatif — source : chantier [`c48_convergence_documentaire_boilerack.md`](../../audits/04_chantiers/chauffage/c48_convergence_documentaire_boilerack.md). |
 
 ---
 

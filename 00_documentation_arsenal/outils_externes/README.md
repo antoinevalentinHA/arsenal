@@ -8,7 +8,7 @@ Imprimerie.
 
 ### Pont chaudière
 
-- [`boiler_pi/README.md`](boiler_pi/README.md) — documentation du pont Raspberry Pi (architecture, MQTT, guard, workflow)
+- [`boiler_pi/README.md`](boiler_pi/README.md) — documentation du pont Raspberry Pi **historique** (architecture, MQTT, workflow) et du **guard** de supervision externe, toujours actif (v1.3). L'écrivain souverain actif du bus MQTT chaudière est désormais **Boilerack** — voir [`architecture/ecosysteme_depots_satellites.md`](../architecture/ecosysteme_depots_satellites.md) §4.6.
 
 ### NAS Arsenal — outillage patrimonial
 
@@ -37,7 +37,7 @@ Imprimerie.
 
 ## Voir aussi
 
-- [`architecture/ecosysteme_depots_satellites.md`](../architecture/ecosysteme_depots_satellites.md) — référence canonique des **dépôts satellites gouvernés** par Arsenal. Le pont chaudière documenté ici correspond au dépôt `boiler-bridge` (patron « pont matériel externe sur bus MQTT »).
+- [`architecture/ecosysteme_depots_satellites.md`](../architecture/ecosysteme_depots_satellites.md) — référence canonique des **dépôts satellites gouvernés** par Arsenal. Le pont chaudière documenté ici correspond au dépôt historique `boiler-bridge` (patron « pont matériel externe sur bus MQTT », §4.7) ; l'écrivain souverain actif est **Boilerack** (§4.6).
 
 ## Navigation
 

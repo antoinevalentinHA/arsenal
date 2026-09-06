@@ -1,4 +1,27 @@
-# 🧠 ARSENAL — CONTRAT INFRA · Boiler Bridge — Architecture système locale · 🗂️ COUCHE : Infrastructure / Exécution locale · 🧱 TYPE : Contrat normatif · 🔍 NIVEAU DE CONFIANCE : ÉLEVÉ — PRODUCTION · 📅 VERSION : v1.1 (post-remédiation, contrat opposable)
+# 🧠 ARSENAL — CONTRAT INFRA · Boiler Bridge — Architecture système locale · 🗂️ COUCHE : Infrastructure / Exécution locale · 🧱 TYPE : Contrat normatif · 🔍 NIVEAU DE CONFIANCE : GUARD EN PRODUCTION, BRIDGE HISTORIQUE · 📅 VERSION : v1.1 (post-remédiation, contrat opposable — décrit le régime historique du service de pont)
+
+## 📌 STATUT DE PRODUCTION (convergence C48, 2026-09-06)
+
+* **Boiler Bridge** (`boiler_bridge.service`) : **historique, `disabled`/`inactive`**. Remplacé par **Boilerack**, écrivain souverain actif du bus MQTT chaudière (topics `boilerack/*`). Le présent document décrit l'architecture du **prédécesseur** ; il ne décrit plus le runtime de production pour la fonction d'écriture chaudière.
+* **Boiler Guard** (`boiler-guard.service` / `.timer`) : reste **actif**, en **v1.3**, hébergé dans ce même dépôt `boiler-bridge`. Sa cible par défaut est désormais `boilerack.service` — voir [`guard.md`](guard.md) §7. Composant de **supervision externe**, distinct de la garde fonctionnelle HA composée (`contrats/chauffage/30_decision_centrale__amendement_garde_execution.md`, hors périmètre de cette mise à jour documentaire).
+* **Topologie réelle actuelle** :
+
+  ```
+  Arsenal / Home Assistant
+        │  MQTT (topics boilerack/*)
+        ▼
+  Boilerack (écrivain souverain, service actif)
+        │  vcontrold / Optolink
+        ▼
+  Chaudière Viessmann
+  ```
+
+  Le guard (ce dépôt) supervise localement le Pi et sa mission, **indépendamment** de ce chemin MQTT (il n'interagit pas avec les topics boiler — voir [`guard.md`](guard.md) §1) — voir la section « Services » ci-dessous pour la topologie interne historique du bridge.
+* Pour l'état de production détaillé côté Boilerack : dépôt public **Boilerack**
+  (README, `docs/design/README.md`, `docs/operations.md`) et
+  [`architecture/ecosysteme_depots_satellites.md`](../../architecture/ecosysteme_depots_satellites.md) §4.6.
+
+---
 
 ## 🎯 OBJET
 
@@ -96,19 +119,20 @@ Contient :
 
 ## ⚙️ SERVICES
 
-### Boiler Bridge
+### Boiler Bridge — **historique, désactivé**
 
-* Service : `boiler_bridge.service`
-* Rôle :
+* Service : `boiler_bridge.service` — **`disabled`/`inactive`** depuis la migration vers Boilerack (cf. statut en tête de document).
+* Rôle (historique) :
   * interface MQTT ↔ chaudière
   * exécution transactionnelle
-* Dépend de :
+* Dépendait de :
   * `/home/pi/boiler-bridge/boiler_mqtt.py`
   * `/home/pi/boiler_bridge.env`
+* **Fonction reprise par Boilerack** (`boilerack.service`, `enabled`/`active`), hors dépôt `boiler-bridge`.
 
 ---
 
-### Boiler Guard
+### Boiler Guard — **actif, v1.3**
 
 * Service : `boiler-guard.service`
 * Rôle :
@@ -120,6 +144,8 @@ Contient :
 ```
 /home/pi/boiler-bridge/boiler_guard.sh
 ```
+
+* **Cible protégée par défaut : `boilerack.service`** (retargetée depuis `boiler_bridge.service` lors du Lot 1 guard/systemd — audité, mergé, déployé, validé terrain). Détail des axes d'évaluation et limites : [`guard.md`](guard.md).
 
 ---
 
@@ -247,7 +273,7 @@ Les situations suivantes sont considérées comme des **violations du contrat** 
 
 ## 🧾 VERDICT
 
-Le Boiler Bridge est désormais :
+Le Boiler Bridge **était** :
 
 * déterministe
 * reproductible
@@ -255,6 +281,6 @@ Le Boiler Bridge est désormais :
 * restaurable
 * protégé contre la dérive
 
-👉 conforme aux exigences Arsenal niveau production.
+👉 conforme aux exigences Arsenal niveau production — **pour le régime historique** qu'il décrit. Ce verdict ne s'applique plus à la fonction d'écriture chaudière, aujourd'hui assurée par Boilerack (statut en tête de document). Il reste valable pour le **guard**, toujours hébergé et déployé depuis ce dépôt.
 
 # ==========================================================
