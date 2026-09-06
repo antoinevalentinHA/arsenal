@@ -1,8 +1,8 @@
 # ==========================================================
 # 🧠 ARSENAL — CORPS PARTAGÉ : Dashboard Boiler (Boiler Pi / Bridge)
 # ----------------------------------------------------------
-# Corps unique (santé bridge, activité, combustion, transactions,
-# dernière erreur, supervision) partagé par les 3 dashboards frères
+# Corps unique (santé bridge, activité, combustion, dernière erreur,
+# supervision) partagé par les 3 dashboards frères
 # Boiler, qui ne diffèrent QUE par la destination du bouton Retour :
 #   • systeme/boiler.yaml            -> retour /system-dashboard
 #   • systeme/boiler_chauffage.yaml  -> retour /diagnostics-chauffage-dashboard
@@ -128,65 +128,6 @@ cards:
         template: boiler_kpi_courbe
         entity: sensor.boiler_heating_curve_shift
         name: Décalage
-
-  # ==========================================================
-  # 🧠 SECTION — TRANSACTIONS
-  # ==========================================================
-  - type: custom:button-card
-    template: section_header
-    name: 🔁 Transactions
-
-  # ECS
-  - type: horizontal-stack
-    cards:
-      - type: custom:button-card
-        template: boiler_decision_ack
-        entity: sensor.boiler_ack_dhw_set_setpoint_status
-        name: ECS
-
-      - type: custom:button-card
-        template: boiler_info_timestamp
-        entity: sensor.boiler_ack_dhw_set_setpoint_ts
-        name: Timestamp
-
-  # Chauffage temperature
-  - type: horizontal-stack
-    cards:
-      - type: custom:button-card
-        template: boiler_decision_ack
-        entity: sensor.boiler_ack_heating_set_temperature_status
-        name: Chauffage
-
-      - type: custom:button-card
-        template: boiler_info_timestamp
-        entity: sensor.boiler_ack_heating_set_temperature_ts
-        name: Timestamp
-
-  # Pente
-  - type: horizontal-stack
-    cards:
-      - type: custom:button-card
-        template: boiler_decision_ack
-        entity: sensor.boiler_ack_heating_set_curve_slope_status
-        name: Pente
-
-      - type: custom:button-card
-        template: boiler_info_timestamp
-        entity: sensor.boiler_ack_heating_set_curve_slope_ts
-        name: Timestamp
-
-  # Decalage
-  - type: horizontal-stack
-    cards:
-      - type: custom:button-card
-        template: boiler_decision_ack
-        entity: sensor.boiler_ack_heating_set_curve_shift_status
-        name: Décalage
-
-      - type: custom:button-card
-        template: boiler_info_timestamp
-        entity: sensor.boiler_ack_heating_set_curve_shift_ts
-        name: Timestamp
 
   # ==========================================================
   # 🧠 SECTION — DERNIERE ERREUR

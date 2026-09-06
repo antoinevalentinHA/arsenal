@@ -49,17 +49,28 @@ Exemple : `boiler_status_degraded_flag`
 
 ---
 
-### D. Décision transactionnelle
+### D. Décision transactionnelle — **FAMILLE RETIRÉE (C49, 2026-09-06)**
 
-Exemple : `boiler_decision_ack`
+~~Exemple : `boiler_decision_ack`~~
 
-- Lecture du cycle transactionnel ACK
-- Distinction état intermédiaire vs état final : `accepted ≠ succès`, `applied = succès`
-- **Type UI : diagnostic** (lecture de fiabilité d'exécution transactionnelle)
-
-> `boiler_decision_ack` constitue la référence canonique de lecture transactionnelle du système boiler. Aucune autre carte ne doit redéfinir cette sémantique.
-
-→ Cœur sémantique du modèle boiler v11. Carte pivot du domaine transactionnel.
+> **Le template `boiler_decision_ack` a été supprimé.** Il rendait les statuts
+> ACK de la section `🔁 Transactions` du corps Boiler, section elle-même retirée
+> au même lot : en régime établi elle affichait un `Appliqué` **figé sur la
+> dernière transaction historique**, à côté d'un horodatage structurellement
+> `unknown`. Après ce retrait, le template n'avait plus **aucun consommateur**
+> — ni carte, ni dashboard, ni include.
+>
+> **La sémantique n'est pas perdue, elle est rendue à son propriétaire.**
+> `accepted ≠ succès` / `applied = succès` est une règle **de contrat**, pas de
+> template : elle est portée par
+> [`contrats/boiler/mqtt_ack_ha.md`](../../../00_documentation_arsenal/contrats/boiler/mqtt_ack_ha.md)
+> §4 et §10, et par
+> [`contrats/boiler/consommation_ack.md`](../../../00_documentation_arsenal/contrats/boiler/consommation_ack.md)
+> §6–§8. Aucune carte n'a jamais eu le droit de la redéfinir, et cela reste vrai :
+> **toute restitution ACK future devra s'y conformer**, sans que ce dossier
+> n'ait à en conserver un rendu inutilisé.
+>
+> Chantier : [`C49`](../../../00_documentation_arsenal/audits/04_chantiers/chauffage/c49_suppression_restitution_transactions_ack.md), Lot 2.
 
 ---
 
@@ -115,7 +126,7 @@ de décision dans le système.
 |----------------|--------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
 | pure           | aucune transformation                                                                            | `boiler_status_burner`, `boiler_status_infra`, `boiler_status_degraded_flag`       |
 | interprétative | transformation locale tolérée (affichage, seuils, classification), non source de vérité système | `boiler_kpi_consigne`, `boiler_kpi_courbe`, `boiler_kpi_temperature`               |
-| diagnostic     | qualifie la cohérence ou l'état d'exécution du système                                          | `boiler_decision_ack`, `boiler_diagnostic_error`                                   |
+| diagnostic     | qualifie la cohérence ou l'état d'exécution du système                                          | `boiler_diagnostic_error` *(`boiler_decision_ack` retiré — C49)*                   |
 | info           | traçabilité technique, sans interprétation                                                      | `boiler_info_requete`, `boiler_info_timestamp`                                     |
 | agrégative     | combinaison de plusieurs signaux *(non utilisé dans ce domaine)*                                | —                                                                                  |
 | action         | proxy UI d'une commande backend *(non utilisé dans ce domaine)*                                 | —                                                                                  |
@@ -151,8 +162,7 @@ Niveau 5 — KPI                    → 50_kpi/
     boiler_status_infra_positif.yaml
     boiler_status_degraded_flag.yaml
 
-  20_decision/
-    boiler_decision_ack.yaml
+  (20_decision/ — dossier retiré avec boiler_decision_ack.yaml, C49)
 
   30_diagnostic/
     boiler_diagnostic_error.yaml

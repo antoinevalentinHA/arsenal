@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Supprimer la section UI `🔁 Transactions` du corps Boiler partagé et les **12 projections ACK legacy** (`*_ts`, `*_correlation`, `*_result`) devenues sans consommateur, en préservant intégralement le runtime transactionnel réellement exploité (`*_raw`, `*_status`, `*_request_id`, `*_reason`, helpers de requête, commandabilité par rôle). |
 | **Domaine** | Chauffage / boiler — la surface ACK est partagée avec l'ECS (rôle `dhw_setpoint`). Rangé sous `chauffage/`, comme le socle transactionnel et la migration Boilerack. |
-| **Statut** | **Ouvert — Lot 1 (documentation / contrat) LIVRÉ le 2026-09-06. Lots 2 à 5 non exécutés.** |
+| **Statut** | **Ouvert — Lots 1 (contrat) et 2 (UI) LIVRÉS le 2026-09-06. Lot 3 bloqué sur A-4. Lots 4 et 5 non exécutés.** |
 | **Priorité** | P2 — aucun risque fonctionnel courant ; la section incriminée est en lecture seule et n'entre dans aucune boucle de décision. Enjeu de véracité de restitution et de dette runtime morte. |
 | **Ouvert le** | 2026-09-06. |
 | **Registre** | Chantier **C49** — ① Actifs, cf. [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
@@ -201,7 +201,14 @@ runtime la source de vérité, contre la doctrine « contrat avant runtime ».
 > sont des **sauvegardes de release** : ils décrivent un état passé et ne sont
 > jamais réécrits.
 
-### Lot 2 — UI
+### Lot 2 — UI — **LIVRÉ 2026-09-06**
+
+> **Réalisé** : section `🔁 Transactions` retirée du corps partagé (58 lignes,
+> en-tête de fichier réaligné) ; les 3 dashboards héritiers vérifiés — chacun
+> n'inclut le corps qu'une fois, comme unique carte, aucune structure YAML
+> touchée ; **A-2 tranché : `boiler_decision_ack` SUPPRIMÉ — ORPHELIN**, avec
+> son README de famille réaligné. `boiler_info_timestamp` **conservé**
+> (Heartbeat + « Dernière erreur »). Aucun runtime, contrat ou checker touché.
 
 - Supprimer la section `🔁 Transactions` de
   [`boiler_corps.yaml`](../../../../18_lovelace/includes/cartes/systeme/boiler_corps.yaml)
@@ -211,10 +218,12 @@ runtime la source de vérité, contre la doctrine « contrat avant runtime ».
   `boiler_chauffage.yaml`, `boiler_ecs.yaml`. Aucun ne référence les entités
   directement (héritage par `!include` du corps commun) — à **confirmer** au
   lot, pas à présumer.
-- Statuer sur le template
-  [`19_button_card_templates/40_dashboards/boiler/20_decision/boiler_decision_ack.yaml`](../../../../19_button_card_templates/40_dashboards/boiler/20_decision/boiler_decision_ack.yaml),
-  dont la section supprimée est **l'unique consommateur** : suppression ou
-  conservation explicitement motivée. Aucune suppression par effet de bord.
+- Statuer sur le template `boiler_decision_ack`
+  (`19_button_card_templates/40_dashboards/boiler/20_decision/`), dont la
+  section supprimée est **l'unique consommateur** : suppression ou conservation
+  explicitement motivée. Aucune suppression par effet de bord. → **A-2 tranché :
+  supprimé**, avec son dossier `20_decision/` et le réalignement de
+  [`README.md`](../../../../19_button_card_templates/40_dashboards/boiler/README.md).
 - **Ne pas toucher** à `boiler_info_timestamp` (Heartbeat + Dernière erreur).
 
 ### Lot 3 — Runtime legacy
@@ -272,8 +281,19 @@ Ouverts, non tranchés par cette ouverture :
   du timeout local HA. L'option (ii) — recréer un consommateur — aurait donc
   dégradé la finesse de diagnostic pour un gain de sûreté nul. **Amendé en
   v1.2 ; aucun consommateur `*_result` créé.**
-- **A-2 — Sort du template `boiler_decision_ack` (Lot 2).** Supprimé avec son
-  unique consommateur, ou conservé au socle UI comme brique disponible.
+- **A-2 — Sort du template `boiler_decision_ack` (Lot 2). TRANCHÉ le
+  2026-09-06 : SUPPRIMÉ — ORPHELIN.** Preuves : après retrait de la section,
+  recherche exhaustive sur le dépôt entier — **zéro consommateur** (aucune
+  carte, aucun include, aucun dashboard) ; les 95 dashboards déclarés sont
+  **tous** en `mode: yaml`, donc le dépôt est l'autorité complète de la surface
+  Lovelace et aucun consommateur masqué en `.storage` n'est possible ; les
+  templates sont chargés par `!include_dir_merge_named`, le retrait d'un
+  fichier n'affecte donc aucun chargement. **La sémantique n'est pas perdue** :
+  `accepted ≠ succès` / `applied = succès` appartient aux contrats
+  (`mqtt_ack_ha.md` §4/§10, `consommation_ack.md` §6–§8), non au template — la
+  clause « aucune autre carte ne doit redéfinir cette sémantique » reste
+  opposable à toute restitution future. `19_button_card_templates/40_dashboards/boiler/README.md`
+  réaligné en conséquence (famille D marquée retirée, taxonomie et arbre).
 - **A-3 — Retrait des 12 entités du registre HA (Lot 4).** Geste opérateur sur
   l'instance, non versionnable ; à planifier, pas à supposer fait.
 - **A-4 — `check_boiler_transactionnel_contracts.py` T03 (Lot 3). NOUVEAU,
@@ -324,7 +344,7 @@ Le chantier est déclarable clos quand :
 10. les 7 invariants du §3 sont vérifiés — en particulier INV-C49-6, prouvé par
     l'absence de diff sur les 4 exécuteurs et les 4 automatisations de retry ;
 11. les checkers du Lot 4 sont verts ;
-12. le sort du template `boiler_decision_ack` est tranché et écrit (A-2) ;
+12. le sort du template `boiler_decision_ack` est tranché et écrit (A-2) — **fait** ;
 13. la traçabilité repose sur le registre et les commits/PR, **sans changelog
     fabriqué** (§8).
 
