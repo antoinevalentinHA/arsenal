@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Supprimer la section UI `🔁 Transactions` du corps Boiler partagé et les **12 projections ACK legacy** (`*_ts`, `*_correlation`, `*_result`) devenues sans consommateur, en préservant intégralement le runtime transactionnel réellement exploité (`*_raw`, `*_status`, `*_request_id`, `*_reason`, helpers de requête, commandabilité par rôle). |
 | **Domaine** | Chauffage / boiler — la surface ACK est partagée avec l'ECS (rôle `dhw_setpoint`). Rangé sous `chauffage/`, comme le socle transactionnel et la migration Boilerack. |
-| **Statut** | **Ouvert — Lots 1 (contrat) et 2 (UI) LIVRÉS le 2026-09-06. Lot 3 bloqué sur A-4. Lots 4 et 5 non exécutés.** |
+| **Statut** | **Ouvert — Lots 1 (contrat) et 2 (UI) LIVRÉS ; A-4 TRAITÉ le 2026-09-06, Lot 3 DÉBLOQUÉ. Lots 3 à 5 non exécutés.** |
 | **Priorité** | P2 — aucun risque fonctionnel courant ; la section incriminée est en lecture seule et n'entre dans aucune boucle de décision. Enjeu de véracité de restitution et de dette runtime morte. |
 | **Ouvert le** | 2026-09-06. |
 | **Registre** | Chantier **C49** — ① Actifs, cf. [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
@@ -228,9 +228,9 @@ runtime la source de vérité, contre la doctrine « contrat avant runtime ».
 
 ### Lot 3 — Runtime legacy
 
-> **Préalable bloquant : arbitrage A-4** (§5) — le test T03 de
-> `check_boiler_transactionnel_contracts.py` ancre la corrélation dans la couche
-> template. Le Lot 3 ne peut pas être exécuté avant qu'il soit tranché.
+> **Préalable A-4 : LEVÉ (2026-09-06).** T03 est désormais ancré sur les
+> scripts exécutifs et reste vert après retrait des 3 projections legacy —
+> vérifié par simulation (§5, A-4). Le Lot 3 est exécutable.
 
 - Retirer les 12 projections mortes des 4 fichiers
   `12_template_sensors/boiler/boiler_ack_*_transaction.yaml`.
@@ -296,8 +296,9 @@ Ouverts, non tranchés par cette ouverture :
   réaligné en conséquence (famille D marquée retirée, taxonomie et arbre).
 - **A-3 — Retrait des 12 entités du registre HA (Lot 4).** Geste opérateur sur
   l'instance, non versionnable ; à planifier, pas à supposer fait.
-- **A-4 — `check_boiler_transactionnel_contracts.py` T03 (Lot 3). NOUVEAU,
-  démontré au Lot 1 — préalable bloquant du Lot 3.** Le test T03 vérifie que
+- **A-4 — `check_boiler_transactionnel_contracts.py` T03 (Lot 3). TRAITÉ le
+  2026-09-06 — le Lot 3 n'est plus bloqué.** Constat d'origine, vérifié par
+  simulation avant correction : Le test T03 vérifie que
   chaque `boiler_ack_*_transaction.yaml` **contient** la chaîne
   `boiler_req_<cmd>`, au motif « corrélation transactionnelle absente ». Il
   place donc la corrélation dans la **couche template**, alors que le §5 amendé
@@ -307,10 +308,29 @@ Ouverts, non tranchés par cette ouverture :
   `request_id_en_cours`. **Après le Lot 3, il n'en reste que le commentaire
   d'en-tête** : T03 passerait **vacuement**, sur un commentaire — et virerait au
   **rouge** si l'en-tête est remis en cohérence comme le Lot 3 le prévoit.
-  **Le checker encode l'ancienne doctrine ; il n'a pas été modifié.** Arbitrage
-  requis avant le Lot 3 : réécrire T03 pour l'ancrer sur les scripts exécutifs
-  (où la garantie vit), ou le retirer au profit d'un test équivalent. Aucune
-  option n'est prise ici.
+  **Correction retenue — ancrer T03 là où la garantie vit.** T03 vérifie
+  désormais, **pour les 4 rôles et sur leur script exécutif**, six propriétés :
+  la projection `sensor.boiler_ack_<role>_request_id` est déclarée (seule
+  dépendance subsistante à la couche template, et elle survit au Lot 3) ; le
+  script la lit (C1) ; il la compare au `request_id` courant (C2) ; il lit
+  `*_status` (C3) ; il ne conclut pas via `*_result` (C4) ; **au moins une
+  expression Jinja conjugue statut et corrélation** (C5) ; et surtout
+  **aucune expression concluant au succès `applied` n'est dépourvue de la
+  corrélation** (C6) — l'invariant de sûreté, pas une simple présence.
+  Les commentaires sont retirés avant analyse et l'unité d'évaluation est
+  l'expression `{{ … }}`, non le fichier : un identifiant cité en commentaire,
+  ou une corrélation située dans un bloc sans rapport, ne peuvent plus valider
+  quoi que ce soit. Le checker porte un `--selftest` (convention du dépôt,
+  lancé par `scripts/ci/run_checkers.py` avant le checker lui-même) couvrant
+  les cas N1 à N5 et deux faux positifs à éviter ; **5 mutations du cœur de
+  T03 sur 5 le font virer au rouge**, preuve que ces auto-tests ne sont pas
+  vacués à leur tour.
+  **Simulation du Lot 3, avant de l'exécuter** : projections `*_ts` /
+  `*_correlation` / `*_result` retirées des 4 fichiers, dans les deux variantes
+  (en-tête conservé, en-tête nettoyé). L'ancien T03 passait **vert vacuement**
+  dans la première et **rouge** dans la seconde ; le nouveau T03 est **vert
+  dans les deux**, et rouge dès que la corrélation des scripts est atteinte.
+  **Le Lot 3 est donc déblocable sans faux vert ni faux rouge.**
 
 ---
 
