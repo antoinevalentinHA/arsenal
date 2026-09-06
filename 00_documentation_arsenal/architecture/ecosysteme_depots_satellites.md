@@ -24,7 +24,7 @@ composants logiciels** répartis sur plusieurs dépôts GitHub, développés et
 maintenus séparément mais participant tous au fonctionnement d'Arsenal. Ces
 composants sont des **dépôts satellites gouvernés**.
 
-Ce document couvre les six dépôts suivants, tous sous le compte GitHub
+Ce document couvre les sept dépôts suivants, tous sous le compte GitHub
 `antoinevalentinHA` :
 
 | # | Dépôt | Type |
@@ -34,7 +34,18 @@ Ce document couvre les six dépôts suivants, tous sous le compte GitHub
 | 3 | [`ha_airstage`](https://github.com/antoinevalentinHA/ha_airstage) | Intégration Home Assistant (custom component) |
 | 4 | [`ha-linky`](https://github.com/antoinevalentinHA/ha-linky) | Add-on Home Assistant (Supervisor) |
 | 5 | [`rainbird-esp32-elegoo`](https://github.com/antoinevalentinHA/rainbird-esp32-elegoo) | Firmware ESP32 (pont matériel) |
-| 6 | [`boiler-bridge`](https://github.com/antoinevalentinHA/boiler-bridge) | Pont matériel Raspberry Pi (service) |
+| 6 | [`boilerack`](https://github.com/antoinevalentinHA/boilerack) | Pont matériel Raspberry Pi (service) — **écrivain souverain actif** |
+| 7 | [`boiler-bridge`](https://github.com/antoinevalentinHA/boiler-bridge) | Pont matériel Raspberry Pi (service) — **historique, désactivé** ; héberge encore le guard de supervision externe (actif, v1.3) |
+
+> **Convergence C48 (2026-09-06).** Boilerack a remplacé `boiler-bridge` comme
+> écrivain souverain du bus MQTT chaudière — migration technique close et
+> validée terrain (`architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`
+> §16). `boiler_bridge.service` est `disabled`/`inactive` ; `boilerack.service`
+> est `enabled`/`active`. Le dépôt `boiler-bridge` n'est pas retiré de ce
+> document : il reste la source de vérité du **guard de supervision externe**
+> (toujours actif, v1.3, ciblant par défaut `boilerack.service`) et sa fiche
+> (§4.7) garde valeur historique pour le service de pont qu'il portait. Détail
+> et roadmap : [`audits/04_chantiers/chauffage/c48_convergence_documentaire_boilerack.md`](../audits/04_chantiers/chauffage/c48_convergence_documentaire_boilerack.md).
 
 **Parmi les dépôts satellites gouvernés, le seul dépôt modifiable est Arsenal.** Les
 dépôts satellites sont décrits, non pilotés depuis ce document ; leur code et leurs
@@ -129,7 +140,7 @@ agir sur le protocole.
 ```
 Chaudière Viessmann / contrôleur Rain Bird
    ↓  (Optolink / vcontrold  ·  SIP over BLE)
-Pont matériel (satellite)              ← boiler-bridge (Pi)  ·  rainbird-esp32-elegoo (ESP32)
+Pont matériel (satellite)              ← boilerack (Pi, actif)  ·  rainbird-esp32-elegoo (ESP32)
    ↓  (MQTT : bus contractuel / auto-discovery)
 Sensors HA « raw » (transport)
    ↓
@@ -138,8 +149,10 @@ Templates Arsenal (extraction / corrélation)   ← APPARTIENT À ARSENAL
 Logique métier Arsenal (contrats)
 ```
 
-Concernés : **`boiler-bridge`** (bus MQTT contractuel avec ACK transactionnel) ;
-**`rainbird-esp32-elegoo`** (MQTT auto-discovery, sans modèle transactionnel).
+Concernés : **`boilerack`** (bus MQTT contractuel avec ACK transactionnel,
+écrivain souverain actif — successeur de `boiler-bridge`, historique et
+désactivé, cf. §4.6/§4.7) ; **`rainbird-esp32-elegoo`** (MQTT auto-discovery,
+sans modèle transactionnel).
 
 ### Tableau de synthèse
 
@@ -150,7 +163,8 @@ Concernés : **`boiler-bridge`** (bus MQTT contractuel avec ACK transactionnel) 
 | `ha_airstage` | Intégration HA | `climatisation` | A | *Vendored* `custom_components/fujitsu_airstage/` (LAN) | Élevée |
 | `ha-linky` | Add-on Supervisor | `energie` | B | Add-on Docker → statistiques long-terme (WebSocket) | Faible (reporting) |
 | `rainbird-esp32-elegoo` | Firmware ESP32 | `arrosage` | C | MQTT auto-discovery (BLE ⇄ MQTT) | Moyenne (coexistence fail-safe) |
-| `boiler-bridge` | Pont Raspberry Pi | `boiler` / `chauffage` | C | Bus MQTT contractuel (ACK transactionnel) | **Critique** |
+| `boilerack` | Pont Raspberry Pi | `boiler` / `chauffage` | C | Bus MQTT contractuel (ACK transactionnel) — **écrivain souverain actif** | **Critique** |
+| `boiler-bridge` | Pont Raspberry Pi | `boiler` / `chauffage` | C | Historique — service `disabled`/`inactive` ; héberge le guard de supervision externe (actif, v1.3) | **Critique** (guard résiduel) |
 
 > **Note criticité.** La criticité est **fonctionnelle**, pas technique : elle
 > reflète l'impact d'une défaillance du composant sur le métier Arsenal, tel que
@@ -238,20 +252,41 @@ Arsenal le consomme**. Elle ne redéfinit ni le protocole, ni l'API du satellite
 | **Contrats importants** | Côté Arsenal : [`arrosage/03_coexistence_rainbird.md`](../contrats/arrosage/03_coexistence_rainbird.md) (coexistence gouvernée, `rain_delay` en *dead-man switch*, direction de défaillance → Rain Bird) et le **relevé runtime** [`arrosage/08_inventaire_pont_runtime.md`](../contrats/arrosage/08_inventaire_pont_runtime.md) (« recenser ≠ ratifier »). |
 | **Documentation associée** | `README.md`, `PROTOCOL.md` du dépôt ; hub [`navigation/domaines/arrosage.md`](../navigation/domaines/arrosage.md). |
 
-### 4.6 `boiler-bridge` — pont Raspberry Pi chaudière Viessmann
+### 4.6 `boilerack` — pont Raspberry Pi chaudière Viessmann (écrivain souverain actif)
 
 | Champ | Valeur |
 |---|---|
-| **Objectif** | Pont local **Optolink ↔ MQTT** pour le pilotage **transactionnel** de la chaudière Viessmann. « Conçu pour Arsenal. Zéro cloud. ACK obligatoire sur toute commande. » |
+| **Objectif** | Pont local **Optolink ↔ MQTT** pour le pilotage **transactionnel** de la chaudière Viessmann. **Écrivain souverain actif** du domaine boiler — successeur de `boiler-bridge` (§4.7), migration technique close et validée terrain. |
+| **Propriétaire** | `antoinevalentinHA` — dépôt public. |
+| **Type** | Service Raspberry Pi (Python + systemd), `boilerack.service` `enabled`/`active`. |
+| **Domaine Arsenal** | `boiler` (et par aval `chauffage` / `ecs`). |
+| **Méthode d'intégration** | **Bus MQTT contractuel**, racine configurable `read_surface.prefix` (déployée : `boilerack`) dérivant les trois surfaces lecture/commande/ACK. HA est un **adaptateur déterministe** du bus : il consomme les topics, corrèle par `request_id`, expose des entités — sans agir sur le protocole (cf. [`architecture/chauffage/interface_ha_boiler_bridge.md`](chauffage/interface_ha_boiler_bridge.md) et [`architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`](chauffage/migration_boiler_bridge_vers_boilerack.md)). |
+| **Stratégie de version** | Dépôt public Boilerack — voir son README et `docs/design/README.md` pour la posture de production et le classifieur de maturité. |
+| **Dépendances** | `vcontrold` + accès Optolink (via `vclient` sur `localhost:3002`) ; broker MQTT LAN ; chaudière Viessmann (circuit M1 + ECS). |
+| **Interfaces exposées** | Santé : `<prefix>/bridge/{online,heartbeat,telemetry_status}` (`chain.status`/`chain.cause`/`last_result` par mesure). Commandes/ACK : `<prefix>/command` (payload à rôle) → `<prefix>/ack/<role>` (`accepted → applied \| rejected \| timeout`). Télémétrie : `<prefix>/telemetry/{temperatures,heating,burner}/*`. Déployé : `prefix = boilerack`. **Le guard de supervision externe reste hébergé par le dépôt `boiler-bridge` (§4.7)** et publie toujours `boiler/guard/*` — surface distincte, inchangée par cette migration (cf. migration doc §6). |
+| **Contrats importants** | **Bus MQTT = source de vérité externe.** Contrat HA d'adaptation : [`interface_ha_boiler_bridge.md`](chauffage/interface_ha_boiler_bridge.md) ; cadrage de migration : [`migration_boiler_bridge_vers_boilerack.md`](chauffage/migration_boiler_bridge_vers_boilerack.md) (§16 clôture fonctionnelle) ; socle transactionnel côté HA : [`contrats/boiler/`](../contrats/boiler/). Modèle ACK : `accepted → applied \| rejected \| timeout`, `request_id` = clé d'idempotence, `applied` seul = preuve. |
+| **Fait terrain complémentaire** | Le drop-in `/etc/systemd/system/boilerack.service.d/10-exclusion.conf` porte `Conflicts=boiler_bridge.service`, persistant face à `install.py` de Boilerack (non versionné dans le fragment principal du service) — cf. C48 §1.1. |
+| **Documentation associée** | Dépôt public Boilerack (README, `docs/design/README.md`, `docs/operations.md` — exploitation, migration, rollback, topics MQTT) ; `outils_externes/boiler_pi/` (documentation historique du prédécesseur, guard actif) ; hub [`navigation/domaines/boiler.md`](../navigation/domaines/boiler.md). |
+
+---
+
+### 4.7 `boiler-bridge` — pont Raspberry Pi chaudière Viessmann (historique)
+
+> **Statut (C48, 2026-09-06).** `boiler_bridge.service` est **`disabled`/`inactive`** en production, remplacé par Boilerack (§4.6). Cette fiche est **conservée pour valeur historique** : elle décrit le prédécesseur, pas le runtime de production actuel. Le dépôt lui-même reste vivant pour un composant distinct, toujours actif : le **guard de supervision externe** (`boiler-guard.service`/`.timer`, v1.3, ciblant par défaut `boilerack.service` — cf. [`outils_externes/boiler_pi/guard.md`](../outils_externes/boiler_pi/guard.md)).
+
+| Champ | Valeur |
+|---|---|
+| **Objectif** | Pont local **Optolink ↔ MQTT** pour le pilotage **transactionnel** de la chaudière Viessmann. « Conçu pour Arsenal. Zéro cloud. ACK obligatoire sur toute commande. » — objectif du **service historique**, aujourd'hui rempli par Boilerack. |
 | **Propriétaire** | `antoinevalentinHA` — **dépôt original** (non forké), **privé**. |
 | **Type** | Service Raspberry Pi (Python `paho-mqtt` + systemd + bash). |
-| **Domaine Arsenal** | `boiler` (et par aval `chauffage` / `ecs`). |
-| **Méthode d'intégration** | **Bus MQTT contractuel**. HA est un **adaptateur déterministe** du bus : il consomme les topics, corrèle par `request_id`, expose des entités — sans agir sur le protocole (cf. [`architecture/chauffage/interface_ha_boiler_bridge.md`](chauffage/interface_ha_boiler_bridge.md)). |
-| **Stratégie de version** | `BRIDGE_VERSION = "v0.5"`. Déploiement **Git-only** : PC → GitHub → Pi via `deploy.sh` (`fetch` + `reset --hard origin/main`), aucun état runtime comme source de vérité (cf. [`outils_externes/boiler_pi/workflow.md`](../outils_externes/boiler_pi/workflow.md)). |
-| **Dépendances** | `vcontrold` + accès Optolink (via `vclient` sur `localhost:3002`) ; broker MQTT LAN ; chaudière Viessmann (circuit M1 + ECS). |
-| **Interfaces exposées** | Santé : `boiler/bridge/{online,heartbeat,version,vcontrold_status,optolink_status}` (heartbeat 30 s). Commandes/ACK : `boiler/command/{heating/set_temperature, heating/set_curve_slope, heating/set_curve_shift, dhw/set_setpoint}` → `boiler/ack/…`. Erreurs : `boiler/error/last` (retenu). Télémétrie : `boiler/telemetry/burner/*`. Guard : `boiler/guard/*`. |
-| **Contrats importants** | **Bus MQTT = source de vérité externe.** Contrat HA d'adaptation : [`interface_ha_boiler_bridge.md`](chauffage/interface_ha_boiler_bridge.md) ; socle transactionnel : [`contrats/boiler/`](../contrats/boiler/) ; contrat bridge MQTT + guard : [`outils_externes/boiler_pi/`](../outils_externes/boiler_pi/). Modèle ACK : `accepted → applied \| rejected \| timeout`, `request_id` = clé d'idempotence, `applied` seul = preuve. Domaine physique en **REJECT (pas CLAMP)**. |
-| **Documentation associée** | README du dépôt (privé) ; `outils_externes/boiler_pi/` (mqtt, architecture, guard, workflow) ; hub [`navigation/domaines/boiler.md`](../navigation/domaines/boiler.md). |
+| **Domaine Arsenal** | `boiler` (et par aval `chauffage` / `ecs`) — **historique** pour la fonction d'écriture ; **actif** pour le guard. |
+| **Méthode d'intégration (historique)** | **Bus MQTT contractuel**, topics `boiler/*`. HA consommait les topics, corrélait par `request_id`, exposait des entités — sans agir sur le protocole. |
+| **Stratégie de version** | `BRIDGE_VERSION = "v0.5"` (dernière version du service de pont, avant désactivation). Déploiement **Git-only** : PC → GitHub → Pi via `deploy.sh` (`fetch` + `reset --hard origin/main`), toujours le mécanisme de déploiement du **guard** (cf. [`outils_externes/boiler_pi/workflow.md`](../outils_externes/boiler_pi/workflow.md) — rollback = opération explicite, pas un chemin normal). |
+| **Dépendances** | `vcontrold` + accès Optolink (via `vclient` sur `localhost:3002`) ; broker MQTT LAN ; chaudière Viessmann (circuit M1 + ECS) — partagées avec Boilerack sur le même Pi. |
+| **Interfaces exposées (historique, non produites depuis la désactivation)** | Santé : `boiler/bridge/{online,heartbeat,version,vcontrold_status,optolink_status}` (heartbeat 30 s). Commandes/ACK : `boiler/command/{heating/set_temperature, heating/set_curve_slope, heating/set_curve_shift, dhw/set_setpoint}` → `boiler/ack/…`. Erreurs : `boiler/error/last` (retenu). Télémétrie : `boiler/telemetry/burner/*`. |
+| **Interface toujours active** | Guard : `boiler/guard/{status,last_action,last_run,version}` — surface vivante, **inchangée** par la migration (cf. migration doc §6 : « ce n'est pas un renoncement »). |
+| **Contrats importants** | Contrat HA d'adaptation (couvre les deux régimes) : [`interface_ha_boiler_bridge.md`](chauffage/interface_ha_boiler_bridge.md) ; socle transactionnel : [`contrats/boiler/`](../contrats/boiler/) ; contrat bridge MQTT + guard (documentation historique + guard actif) : [`outils_externes/boiler_pi/`](../outils_externes/boiler_pi/). Modèle ACK historique : `accepted → applied \| rejected \| timeout`, `request_id` = clé d'idempotence, `applied` seul = preuve. Domaine physique en **REJECT (pas CLAMP)**. |
+| **Documentation associée** | README du dépôt (privé) ; `outils_externes/boiler_pi/` (mqtt, architecture, guard, workflow — statut de convergence C48 en tête de chaque document) ; hub [`navigation/domaines/boiler.md`](../navigation/domaines/boiler.md). |
 
 ---
 
@@ -375,7 +410,7 @@ Arsenal le consomme**. Elle ne redéfinit ni le protocole, ni l'API du satellite
 - Airstage (`climatisation`) : [`contrats/climatisation/`](../contrats/climatisation/) · hub [`navigation/domaines/climatisation.md`](../navigation/domaines/climatisation.md)
 - Énergie / Linky : [`contrats/energie.md`](../contrats/energie.md) · hub [`navigation/domaines/energie.md`](../navigation/domaines/energie.md)
 - Rain Bird (`arrosage`) : [`contrats/arrosage/03_coexistence_rainbird.md`](../contrats/arrosage/03_coexistence_rainbird.md) · [`contrats/arrosage/08_inventaire_pont_runtime.md`](../contrats/arrosage/08_inventaire_pont_runtime.md) · hub [`navigation/domaines/arrosage.md`](../navigation/domaines/arrosage.md)
-- Boiler bridge : [`architecture/chauffage/interface_ha_boiler_bridge.md`](chauffage/interface_ha_boiler_bridge.md) · [`contrats/boiler/`](../contrats/boiler/) · [`outils_externes/boiler_pi/`](../outils_externes/boiler_pi/) · hub [`navigation/domaines/boiler.md`](../navigation/domaines/boiler.md)
+- Boiler (Boilerack, écrivain souverain actif · `boiler-bridge`, historique) : [`architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`](chauffage/migration_boiler_bridge_vers_boilerack.md) · [`architecture/chauffage/interface_ha_boiler_bridge.md`](chauffage/interface_ha_boiler_bridge.md) · [`contrats/boiler/`](../contrats/boiler/) · [`outils_externes/boiler_pi/`](../outils_externes/boiler_pi/) · hub [`navigation/domaines/boiler.md`](../navigation/domaines/boiler.md) · chantier [`audits/04_chantiers/chauffage/c48_convergence_documentaire_boilerack.md`](../audits/04_chantiers/chauffage/c48_convergence_documentaire_boilerack.md)
 - Index de la famille architecture : [`index.md`](index.md)
 
 ---

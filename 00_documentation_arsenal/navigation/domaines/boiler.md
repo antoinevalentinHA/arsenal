@@ -5,7 +5,7 @@
 
 ## Orientation
 
-Interface physique HA↔chaudière via Boiler Pi (Raspberry Pi exécutant le boiler bridge). Domaine à **double présence** : contrats HA dans [`contrats/boiler/`](../../contrats/boiler/README.md) (socle transactionnel, MQTT/ACK, retry, guard) et documentation de l'outil dans [`outils_externes/boiler_pi/`](../../outils_externes/boiler_pi/). Architecture dans `architecture/chauffage/`. **Non audité** (état de cycle).
+Interface physique HA↔chaudière via Boiler Pi. **Écrivain souverain actif : Boilerack** (`boilerack.service`, migration technique close et validée terrain — voir [`migration_boiler_bridge_vers_boilerack.md`](../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md)) ; le bridge historique `boiler-bridge` (`boiler_bridge.service`) est `disabled`/`inactive`, et son dépôt reste la source du **guard de supervision externe** (actif, v1.3). Domaine à **double présence** : contrats HA dans [`contrats/boiler/`](../../contrats/boiler/README.md) (socle transactionnel, MQTT/ACK, retry, guard) et documentation de l'outil dans [`outils_externes/boiler_pi/`](../../outils_externes/boiler_pi/) (statut historique/guard détaillé en tête de chaque document). Architecture dans `architecture/chauffage/`. Gouvernance de la convergence documentaire : chantier [`c48_convergence_documentaire_boilerack.md`](../../audits/04_chantiers/chauffage/c48_convergence_documentaire_boilerack.md). **Non audité** (état de cycle).
 
 ## Contrat — « ce que le système doit faire »
 
@@ -32,7 +32,7 @@ Interface physique HA↔chaudière via Boiler Pi (Raspberry Pi exécutant le boi
 
 - **Chauffage** — [`contrats/chauffage/`](../../contrats/chauffage/) ; consomme le pont HA↔chaudière pour l'exécution thermique (aval).
 - **ECS** — [`contrats/ecs/`](../../contrats/ecs/) ; consomme le boiler comme source thermique eau chaude sanitaire (aval).
-- **Dépôt satellite (amont, gouverné)** — [`architecture/ecosysteme_depots_satellites.md`](../../architecture/ecosysteme_depots_satellites.md) §4.6 ; le bus MQTT chaudière est produit par le dépôt `boiler-bridge` (pont Raspberry Pi Optolink↔MQTT), dont HA est l'adaptateur.
+- **Dépôt satellite (amont, gouverné)** — [`architecture/ecosysteme_depots_satellites.md`](../../architecture/ecosysteme_depots_satellites.md) §4.6 ; le bus MQTT chaudière est produit par le dépôt **Boilerack** (pont Raspberry Pi Optolink↔MQTT, écrivain souverain actif), dont HA est l'adaptateur. Le dépôt `boiler-bridge` (§4.7 du même document) est le prédécesseur, historique, dont le guard de supervision externe reste actif.
 
 ## Points de vigilance (non normatif)
 

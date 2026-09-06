@@ -1,11 +1,31 @@
-# ARSENAL — Boiler Bridge · Contrat MQTT
+# ARSENAL — Boiler Bridge · Contrat MQTT (historique)
 
 <!-- audit:scope=doc -->
 
-**Composant :** `arsenal-boiler-bridge`
-**Version bridge :** v0.4.3
+**Composant :** `arsenal-boiler-bridge` — **service historique, `disabled`/`inactive`**
+**Version bridge :** v0.4.3 (dernière version du service avant désactivation)
 **Scope :** Télémétrie chaudière · Santé du bridge · Pipeline ACK transactionnel
 **Dernière mise à jour :** 2026-03-27
+
+> **⚠️ Statut (convergence C48, 2026-09-06).** Ce contrat décrit le pont
+> **historique** `boiler-bridge`, sous le préfixe de topics **`boiler/*`**.
+> Le service correspondant (`boiler_bridge.service`) est aujourd'hui
+> `disabled`/`inactive`. **Le contrat de production actuel est publié par
+> Boilerack**, sous le préfixe déployé **`boilerack/*`** — grammaire
+> équivalente (payload à `request_id`, pipeline ACK
+> `accepted → applied | rejected | timeout`), racine dérivée de
+> `read_surface.prefix` (voir
+> [`architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`](../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md)
+> §2–§4 pour le mapping topic par topic, et le dépôt public Boilerack,
+> `docs/operations.md`, pour la spécification actuelle). **Ce document n'est
+> pas réécrit topic par topic** : il garde sa valeur de référence historique
+> et de grammaire protocolaire ; il ne doit plus être lu comme décrivant les
+> topics réellement publiés en production.
+>
+> **Exception vivante : `boiler/guard/*` n'est pas concerné.** Ces topics
+> appartiennent au superviseur (guard), restent publiés **tels quels**, et ne
+> sont ni renommés ni affectés par cette migration (cf.
+> [`guard.md`](guard.md) et migration doc §6).
 
 ---
 

@@ -1,6 +1,17 @@
 # Workflow Git — boiler-bridge
 
 <!-- audit:scope=doc -->
+
+> **⚠️ Statut (convergence C48, 2026-09-06).** Ce workflow décrit la
+> discipline Git du dépôt `boiler-bridge`. Il reste **valide et utilisé** pour
+> le composant toujours actif de ce dépôt : le **guard** (`boiler-guard.service`
+> / `.timer`, v1.3). Il décrit aussi la discipline de déploiement du **service
+> de pont historique** `boiler_bridge.service`, aujourd'hui `disabled`/`inactive`
+> — écrivain souverain actif désormais : **Boilerack**. Voir en particulier la
+> mise en garde §5 (Rollback) : redéployer ce dépôt ne doit **jamais** être lu
+> comme un chemin de déploiement normal permettant de relancer silencieusement
+> le bridge historique.
+
 ## PC → GitHub → Pi
 
 > **Objectif** : zéro bricolage, zéro surprise, rollback trivial.  
@@ -168,6 +179,19 @@ Le script refuse le déploiement si :
 
 ## 5. Rollback
 
+> **⚠️ Régime historique — ne pas lire comme un chemin de déploiement normal
+> (C48, 2026-09-06).** Cette procédure appartient au régime antérieur à
+> Boilerack. Boilerack est désormais l'écrivain souverain de la chaudière ;
+> une restauration du bridge historique via cette procédure est une
+> **opération explicite de rollback**, jamais un geste routinier, et suppose
+> de **maîtriser l'exclusion mutuelle des deux services** : le drop-in
+> terrain `/etc/systemd/system/boilerack.service.d/10-exclusion.conf` porte
+> `Conflicts=boiler_bridge.service`, ce qui a un effet direct sur ce que ce
+> `deploy.sh` peut ou non démarrer simultanément à `boilerack.service`.
+> **La procédure publique et à jour de rollback/exploitation Boilerack est
+> celle du dépôt public Boilerack (`docs/operations.md`)** — s'y référer
+> plutôt que de dupliquer ou d'improviser une procédure ici.
+
 ```bash
 cd /home/pi/boiler-bridge
 git log --oneline
@@ -181,7 +205,7 @@ Pour revenir ensuite sur la dernière version de `main` :
 /home/pi/boiler-bridge/deploy.sh
 ```
 
-`deploy.sh` applique `fetch` + `reset --hard origin/main`, vérifie le code, redéploie les unités systemd et redémarre les services.
+`deploy.sh` applique `fetch` + `reset --hard origin/main`, vérifie le code, redéploie les unités systemd et redémarre les services **de ce dépôt** (guard actif ; service de pont historique si son unité est présente dans le commit visé — voir la mise en garde ci-dessus).
 
 ---
 
