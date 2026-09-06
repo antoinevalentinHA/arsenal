@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Supprimer la section UI `🔁 Transactions` du corps Boiler partagé et les **12 projections ACK legacy** (`*_ts`, `*_correlation`, `*_result`) devenues sans consommateur, en préservant intégralement le runtime transactionnel réellement exploité (`*_raw`, `*_status`, `*_request_id`, `*_reason`, helpers de requête, commandabilité par rôle). |
 | **Domaine** | Chauffage / boiler — la surface ACK est partagée avec l'ECS (rôle `dhw_setpoint`). Rangé sous `chauffage/`, comme le socle transactionnel et la migration Boilerack. |
-| **Statut** | **Ouvert — Lots 1 (contrat), 2 (UI), 3 (runtime) et 4 (validation terrain) LIVRÉS le 2026-09-06 ; A-1, A-2, A-3 et A-4 tranchés. Reste le Lot 5 — clôture documentaire.** |
+| **Statut** | **CLOS (2026-09-06).** Les 5 lots sont livrés et les 4 arbitrages tranchés ; les 14 critères du §7 sont satisfaits. Voir §10. |
 | **Priorité** | P2 — aucun risque fonctionnel courant ; la section incriminée est en lecture seule et n'entre dans aucune boucle de décision. Enjeu de véracité de restitution et de dette runtime morte. |
 | **Ouvert le** | 2026-09-06. |
 | **Registre** | Chantier **C49** — ① Actifs, cf. [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
@@ -308,10 +308,15 @@ déclencheur.
 
 **Aucune entrée du registre d'entités n'a été supprimée** — voir A-3 (§5).
 
-### Lot 5 — Clôture documentaire
+### Lot 5 — Clôture documentaire — **LIVRÉ 2026-09-06**
 
-Mise à jour du présent document et de la ligne de registre au même commit
-(règle de gouvernance n°1 du registre), contre les critères du §7.
+Revue des 14 critères du §7, un par un, sur pièces : **14/14 SATISFAITS**,
+aucun non satisfait, aucun non applicable. Le détail des preuves est porté par
+les lots eux-mêmes (commits/PR #784 à #789) et par les §1 à §7 du présent
+document ; il n'est pas recopié ici, conformément à la règle « la source prime,
+le registre n'analyse pas ».
+
+**C49 est clos.**
 
 ---
 
@@ -429,7 +434,8 @@ Ouverts, non tranchés par cette ouverture :
 
 ## 7. Critères de clôture de C49
 
-Le chantier est déclarable clos quand :
+Le chantier est déclarable clos quand — **revue du Lot 5, 2026-09-06 :
+14/14 SATISFAITS, sur pièces (§10)** :
 
 1. la section `🔁 Transactions` n'existe plus dans le corps Boiler partagé ;
 2. les 3 dashboards héritiers sont vérifiés propres, sans entité indisponible ;
@@ -486,7 +492,49 @@ aucun changelog fabriqué.
 
 ---
 
-## 10. Renvois
+## 10. Clôture — C49 CLOS le 2026-09-06
+
+**Ce que le chantier a fait, en six lignes :**
+
+- la section Lovelace `🔁 Transactions` est **supprimée**, sans remplacement ;
+- les **12 projections ACK legacy** (`*_ts`, `*_correlation`, `*_result` × 4
+  rôles) sont **supprimées** du runtime ;
+- le checker **T03 est réaligné** sur les scripts exécutifs, où la corrélation
+  est réellement évaluée, et porte des auto-tests ;
+- la suppression est **validée terrain** (2026-09-06, ≈ 13:33:25 locale) ;
+- la **purge du registre d'entités HA reste facultative**, et n'a jamais été
+  une condition de clôture ;
+- **aucun impact transactionnel ni chaudière** : les 4 exécuteurs et les 4
+  automatisations de retry sont **strictement inchangés** sur toute la durée du
+  chantier, la surface MQTT est intacte.
+
+**Traçabilité** — six PR, aucun changelog fabriqué (§8) : ouverture #784 ·
+Lot 1 contrat #785 · Lot 2 UI #786 · A-4 checker #787 · Lot 3 runtime #788 ·
+Lot 4 terrain #789 · Lot 5 clôture (présent commit).
+
+**Arbitrages, tous tranchés** : A-1 (`*_result` legacy supprimable) · A-2
+(`boiler_decision_ack` supprimé, orphelin) · A-3 (purge du registre
+facultative) · A-4 (T03 réancré sur les scripts exécutifs).
+
+**Ce que la clôture n'absorbe pas.** La purge du registre d'entités HA reste
+disponible à l'opérateur, sans échéance opposable. **C48 n'est pas touché** —
+il poursuit son propre cours. Aucune autre dette n'est reprise ni éteinte par
+C49.
+
+> **Dernier alignement, fait à la clôture.** Le paragraphe de clôture du §11 de
+> [`consommation_ack.md`](../../../contrats/boiler/consommation_ack.md) avait
+> été écrit au Lot 1, avant l'exécution des Lots 2 et 3 : il énonçait encore le
+> retrait comme seulement *autorisé*, et la section Lovelace `Transactions`
+> comme lecteur subsistant de `*_ts`. Les faits l'avaient dépassé. Le §11
+> **constate désormais** que les trois familles legacy ont été retirées du
+> runtime par C49 et que le retrait a été validé terrain. **Sa règle normative
+> est inchangée** : la table qualifie les mêmes statuts, et `*_status` +
+> `*_request_id` demeure l'interface consommée canonique. **Aucun résidu
+> documentaire ne reste ouvert.**
+
+---
+
+## 11. Renvois
 
 - Consommation des ACK (contrat propriétaire) :
   [`contrats/boiler/consommation_ack.md`](../../../contrats/boiler/consommation_ack.md)
