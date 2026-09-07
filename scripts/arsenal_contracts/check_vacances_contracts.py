@@ -137,7 +137,11 @@ definition_found = False
 
 for path in yaml_files():
 
-    path_str = str(path)
+    # `as_posix()` et non `str()` : ce dernier rend le séparateur natif de la
+    # plateforme, et le préfixe ci-dessous — écrit en `/` — ne matchait alors
+    # AUCUN chemin sous Windows. Le test devenait vide, et TEST 3 échouait en
+    # annonçant une définition introuvable qui était bien là.
+    path_str = path.as_posix()
 
     if not path_str.startswith("12_template_sensors/"):
         continue

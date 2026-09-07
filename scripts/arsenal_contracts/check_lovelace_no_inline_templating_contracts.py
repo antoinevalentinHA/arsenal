@@ -56,10 +56,13 @@ def fail(msg: str):
 
 
 def rel(path: Path) -> str:
+    # `as_posix()` et non `str()` : le second rend le séparateur natif de la
+    # plateforme. Les chemins de ce module sont écrits, comparés et affichés
+    # en `/` — un antislash sous Windows les rendait incomparables.
     try:
-        return str(path.resolve().relative_to(ROOT.resolve()))
+        return path.resolve().relative_to(ROOT.resolve()).as_posix()
     except Exception:
-        return str(path)
+        return path.as_posix()
 
 
 # ==========================================================
@@ -179,7 +182,13 @@ def test_detection_self_check():
 
 
 def rel_to(base: Path, path: Path) -> str:
-    return str(path.resolve().relative_to(base.resolve()))
+    # Même raison que `rel()`. Ici l'enjeu n'est PAS cosmétique : l'auto-test
+    # compare ce résultat à des chemins écrits en `/`, et le garde-fou
+    # d'exclusion cherche la sous-chaîne `includes/`. Sous Windows, la
+    # comparaison échouait des deux côtés — les deux dashboards fautifs
+    # étaient annoncés NON DÉTECTÉS alors qu'ils l'étaient, et le garde-fou
+    # d'exclusion ne pouvait plus rien attraper.
+    return path.resolve().relative_to(base.resolve()).as_posix()
 
 
 # ==========================================================
