@@ -5,10 +5,10 @@
 | **Chantier** | Propager dans les contrats, la CI, le runtime et l'interface la sémantique tranchée par les arbitrages `Q1` et `Q2` : deux notions distinctes — **mission Arsenal ouverte** (autorité : verdict de classe `O`) et **session robot active** (autorité : témoin natif Roborock) —, une **projection métier dédiée** en lecteur pur nominatif sous `ASP-CI-11`, la **migration atomique** de l'attribut ambigu `mission_ouverte`, et les **règles d'offre** des gestes de conduite. |
 | **Domaine** | Aspirateur. |
 | **Nature** | **Propagation gouvernée d'un arbitrage rendu.** Ce n'est **pas** une exploration architecturale : les options ont été examinées et tranchées en `Q2` §4, et ce chantier n'en rouvre aucune. |
-| **Statut** | **Ouvert — les SEPT lots sont exécutés (Lot 1 : 2026-09-01 · Lot 2 : 2026-09-02 · Lot 3 : 2026-09-03 · Lots 4 à 7 : 2026-09-07), et la CLÔTURE N'EST PAS ACQUISE.** Le Lot 7 établit `R-LOT7-1` : **Pause** et **Reprise** restent offertes sur une **mission externe**, leurs conditions étant demeurées adossées à l'activité physique parce que `Q2` §6 *in fine* les a explicitement laissées **hors arbitrage** — or la garde du script s'arrête **avant** le dispatch, sur le seul verdict, et ces deux boutons sont donc **présentés puis refusés**. C'est `RC-02`, subsistant sur les gestes que l'arbitrage n'a pas couverts. **Une décision d'arbitrage est due** (§5.7). **Lot 1** — la rectification documentaire `D1` est **produite, datée, classée et indexée** ([`rectification_cardinal_allowlist_asp_ci_11.md`](../../02_arbitrages/aspirateur/rectification_cardinal_allowlist_asp_ci_11.md)), conformément au véhicule décidé au §4.1 ; `Q1`, `Q2`, l'audit, la contre-expertise et la confrontation sont **prouvés inchangés**. **Lot 2** — les chapitres `08`, `11`, `12` et `15` portent la sémantique de `Q1` et `Q2` ; **`ASP-INV-96`**, **`ASP-INV-97`** et **`ASP-INV-98`** sont déclarés ; la dette `D2` est soldée **en commentaire seul** ; le recensement du §3.2 est **rectifié**. **Checker Aspirateur vert et inchangé** ; aucun Lovelace, aucune ligne exécutable de runtime, aucun changelog. **Lot 3** — le checker porte **`ASP-CI-43`**, **`ASP-CI-44`** et **`ASP-CI-45`** ; `ASP-CI-11` est **étendu sans nouveau numéro** ; les **quatre** représentations non gardées le sont désormais, et les **trois** déjà gardées ne sont pas affaiblies. **Aucun runtime, aucun Lovelace, aucun contrat, aucun changelog.** **Lot 4** — la **projection métier** `binary_sensor.aspirateur_mission_arsenal_ouverte` **existe** : créée au chemin attribué et **inscrite aux trois constantes dans le même commit**, sans qu'aucune autorisation dormante n'ait précédé. Contrôle neuf **`ASP-CI-47`**, qui **REND** les deux gabarits sur les 34 valeurs du vocabulaire et sur quatre valeurs extérieures ; `ASP-CI-43` **étendu sans nouveau numéro** aux listes **Jinja**, et la **classe `H`** qualifiée comme ensemble canonique (§5.4, `E-1` et `E-2`). Batterie **702 → 736 cas**, aucun contrôle affaibli. **Lot 5** — la **migration atomique** a eu lieu : **zéro** occurrence du code historique dans le YAML et dans les contrats, **une** dans le module de contrôle — sa déclaration —, en **un seul commit** où les deux noms ne coexistent à aucun instant. La **clause d'état transitoire** du `08` §1.3 est **retirée**, et **`ASP-CI-44` exécute sa mort programmée** : l'allowlist transitoire est supprimée, la règle permanente de **zéro occurrence** lui est substituée, et le contrôle est **vérifié aussi en positif** — un attribut chez le producteur, quatre slots dans l'arbre Lovelace —, sans quoi une recherche d'absence serait verte sur un dépôt où la restitution aurait disparu. **Lot 6** — les **quatre sites** lisent désormais l'autorité correcte : la **projection métier** pour la mission Arsenal et les trois gardes de conduite, l'**attribut orthogonal** pour la seule restitution de la session physique, sous des **libellés distincts**. **`RC-02` est levée** : l'affichage et la garde du backend lisent **le même prédicat**. `ASP-CI-45` est **étendu sans nouveau numéro** à l'**autorité** des sites — les deux fautes symétriques jouées, et la **section** vérifiée à part. **Ce qui reste devant** : le **Lot 7**, vérification et clôture — scénarios statiques, recherches d'absence, conditions de fermeture des trois constats, et les scénarios terrain à nommer, **disjoints de `C42`**. |
+| **Statut** | **Ouvert — HUIT lots exécutés (Lot 1 : 2026-09-01 · Lot 2 : 2026-09-02 · Lot 3 : 2026-09-03 · Lots 4 à 8 : 2026-09-07). Les conditions de fermeture des trois constats sont RÉUNIES ; leur prononcé et la clôture appartiennent à l'opérateur.** Le Lot 7 avait établi `R-LOT7-1` — Pause et Reprise offertes sur une mission externe, donc **présentées puis refusées**. La vérification faite au Lot 8 a montré que ce n'était **pas une question ouverte mais une non-conformité** : `ASP-INV-97` vise « un geste de conduite Arsenal » **sans exception**, et le `15` §3.1 portait **déjà** la mission Arsenal ouverte dans la garde de ces deux gestes. L'interface n'en appliquait que la **moitié physique**. **Le Lot 8 pose la moitié d'autorité manquante** ; `R-LOT7-1` est **résolu**. |
 | **Priorité** | **P2** — aucun risque de sûreté établi ; le backend refuse déjà correctement. L'enjeu est la **cohérence de l'offre à l'opérateur** et la levée de la cause structurelle de `RC-02`. |
 | **Ouvert le** | 2026-09-01. |
-| **Prochain jalon** | **Un arbitrage, pas un lot.** Les sept lots sont exécutés et les items 7.1 à 7.3 sont verts ; le scénario **(b)** passe et le scénario **(a)** passe **pour l'Arrêt et le Retour base**. Reste `R-LOT7-1` : **étendre l'autorité de la mission Arsenal à Pause et à Reprise**, ou **contractualiser la capacité distincte** de pilotage hors mission qu'évoque `Q2` §6.4. Les deux voies ne sont **pas équivalentes** et sont exposées au §5.7. Tant qu'elle n'est pas tranchée, `RC-02` reste **ouverte** et `C45` **ne peut pas être clôturé**. Restent aussi les **quatre scénarios terrain** `T1` à `T4` (§7.5), **disjoints de `C42`**, et la **qualification** — acte de l'opérateur — des fermetures **proposées** de `AUD-ASP-01` et `CC-01`, dont les quatre conditions sont réunies. |
+| **Prochain jalon** | **Deux actes de l'opérateur, et rien d'autre côté exécution.** **(1)** **Prononcer** les fermetures de `AUD-ASP-01`, `CC-01` et `RC-02`, dont les conditions du §6 sont désormais **toutes réunies** — établir des conditions et les **qualifier** sont deux actes distincts, et le second n'appartient pas à un lot. **(2)** Dérouler les **quatre scénarios terrain** `T1` à `T4` (§7.5), **restreints à ce que la preuve statique ne peut pas atteindre** et **disjoints de `C42`** — `T2` change de sens depuis le Lot 8 : il ne confirme plus `R-LOT7-1`, il **vérifie sa résorption** sur l'instance. La clôture de `C45` suit ces deux actes. |
 | **Registre** | Chantier **C45** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 | **Autorités amont** | [`arbitrage_mission_arsenal_ouverte_et_session_robot_active.md`](../../02_arbitrages/aspirateur/arbitrage_mission_arsenal_ouverte_et_session_robot_active.md) (`Q1`) · [`arbitrage_projection_mission_arsenal_ouverte_vers_interface.md`](../../02_arbitrages/aspirateur/arbitrage_projection_mission_arsenal_ouverte_vers_interface.md) (`Q2` et décision subsidiaire sur les gestes). |
 | **Constats couverts** | `AUD-ASP-01`, `CC-01`, `RC-02` — **un seul noyau causal** (confrontation §10 et §11), jamais additionnés comme trois écarts. `AUD-ASP-04` — **dette contractuelle locale**, distincte de ce noyau — est **rattaché au Lot 2** par décision rendue (§4.2). |
@@ -755,6 +755,55 @@ faire sans usurper un arbitrage.
 | **7.5** | **Scénarios terrain réellement nécessaires** — à établir au lot, **restreints à ce que la preuve statique ne peut pas atteindre**, et **distincts de ceux de `C42`** (§7). |
 | **7.6** | **Conditions de fermeture** des trois constats (§6). |
 
+### 5.8 Lot 8 — Alignement de Pause et de Reprise — **EXÉCUTÉ (2026-09-07)**
+
+**Décision opérateur rendue le 2026-09-07**, sur les deux voies exposées au §5.7 : **aligner les
+quatre gestes sur la mission Arsenal**.
+
+> **Cette décision ne crée aucune doctrine — elle en restaure une.** La vérification faite avant
+> exécution l'établit : `ASP-INV-97` vise « **un geste de conduite Arsenal** », **sans exception**, et
+> le [`15`](../../../contrats/aspirateur/15_conduite_et_supervision.md) §3.1 porte **déjà** la mission
+> Arsenal ouverte dans la garde des deux gestes — « mission **Arsenal** ouverte **et** activité en
+> cours » pour Pause, « `ASP-INV-62`, **plus** mission **Arsenal** ouverte » pour Reprise (`D-07`).
+>
+> **`R-LOT7-1` n'était donc pas une question ouverte : c'était une non-conformité.** L'interface
+> n'appliquait que la **moitié physique** de ces deux gardes. Le §8 les classait « non arbitrées »
+> sur une **erreur de fait**, et la clause du `15` §3 affirmait qu'elles satisfaisaient « **déjà** »
+> l'autorité « par leur garde de mission ouverte » — vrai du **backend**, faux de l'**interface**.
+> **C'est cette affirmation, en présentant une conformité comme acquise, qui a laissé l'écart
+> subsister.** Elle est **rectifiée** au contrat, le texte erroné **reproduit** à côté de sa
+> correction.
+
+| Item | Contenu |
+|---|---|
+| **8.1** | **Interface** — Pause et Reprise reçoivent la condition d'**autorité** sur la projection métier, **cumulative** avec leur garde de sens physique, qui n'est **pas touchée**. |
+| **8.2** | **Section de conduite** — sa disjonction se **réduit à un seul terme**, « mission Arsenal ouverte ». Ce n'est pas un raccourci : la garde d'Arrêt est ce terme **nu**, et les trois autres le **contiennent**. Une disjonction plus large ferait paraître l'en-tête au-dessus de **zéro bouton** sur une mission externe — une offre annoncée puis absente. |
+| **8.3** | **Contrat `15` §3** — rectification de la clause « Pause et Reprise », avec **conservation du texte erroné** à côté de sa correction. **Le §3.1 n'est pas amendé** : il disait déjà juste. |
+| **8.4** | **CI** — `ASP-CI-45` étendu aux **quatre** gestes ; `ASP-CI-48` voit ses attendus **passer du gel à la conformité**, et **vérifie désormais la section** dans les deux sens : elle ne paraît pas quand aucun geste n'a d'objet, et elle ne masque pas des gestes qui en ont un. |
+| **Ne fait pas** | Ne touche **ni la garde de sens physique**, **ni la séquence**, **ni `ASP-INV-62`**. Ne crée **aucune** capacité de pilotage hors mission Arsenal — elle reste la **capacité distincte** de `Q2` §6.4, exigeant un contrat propre. |
+
+**Offre rendue après alignement**, sur les mêmes mondes simulés qu'au §5.7 :
+
+| Monde simulé | Section | Arrêt | Retour base | Pause | Reprise |
+|---|---|---|---|---|---|
+| **(a)** mission **externe**, robot en nettoyage | **absente** | masqué | masqué | **masqué ✅** | masqué |
+| **(a bis)** mission **externe**, robot en pause | **absente** | masqué | masqué | masqué | **masqué ✅** |
+| **(b)** mission Arsenal, robot rentré au dock | présente | **offert** | masqué | masqué | masqué |
+| **(c)** nominal, mission Arsenal, robot nettoie | présente | **offert** | **offert** | **offert** | masqué |
+| **(d)** verdict **inconnaissable** au démarrage | **absente** | masqué | masqué | **masqué ✅** | masqué |
+
+**`R-LOT7-1` est résolu.** Le gel posé au Lot 7 aura duré **un lot**, et sa levée est **vérifiée** :
+les attendus d'`ASP-CI-48` disent désormais la conformité, et un retour en arrière serait rouge.
+
+> **Ce que ce lot ne prétend pas.** La coïncidence établie porte sur l'**autorité**. Les gardes de
+> **sens physique** de l'interface restent **plus grossières** que celles du backend — la Reprise y
+> est offerte sur le seul état de pause, quand `ASP-INV-62` en exige **quatre** conditions. C'est une
+> **commodité de lecture**, conforme au principe « masquer ici n'est jamais une autorisation », et
+> **non** un second `RC-02` : le backend revalide, et l'écart résiduel porte sur le **sens physique**,
+> jamais sur l'autorité. **Il est nommé ici plutôt que passé sous silence**, et n'est pas instruit.
+
+---
+
 ---
 
 ## 6. Conditions de fermeture de `AUD-ASP-01`, `CC-01` et `RC-02`
@@ -766,7 +815,7 @@ seule livraison d'un lot.
 | Constat | Substance | Conditions **cumulatives** de fermeture |
 |---|---|---|
 | `AUD-ASP-01` · `CC-01` | Double sémantique sous un nom unique — le backend garde sur le verdict, l'interface sur le témoin de session | **(1)** Lot 2 ratifié : deux notions, deux noms, deux autorités inscrits au contrat · **(2)** Lot 5 livré : migration atomique achevée, **zéro occurrence** de l'ancien nom · **(3)** Lot 3 item 3.7 vert et **mutation rouge** démontrée · **(4)** aucun document normatif du domaine n'emploie plus le nom ambigu |
-| `RC-02` | Divergence de prédicat entre l'affichage et la garde d'acceptation du backend | **(1)** Lot 4 livré : la projection existe et est gardée · **(2)** Lot 6 livré : les quatre sites lisent l'autorité correcte · **(3)** Lot 3 items 3.3 et 3.8 verts · **(4)** **scénarios statiques 7.4 (a) et (b) passés** · **(5)** aucun bouton présenté puis refusé par le backend |
+| `RC-02` | Divergence de prédicat entre l'affichage et la garde d'acceptation du backend | **(1)** Lot 4 livré : la projection existe et est gardée · **(2)** Lot 6 livré : les quatre sites lisent l'autorité correcte · **(3)** Lot 3 items 3.3 et 3.8 verts · **(4)** **scénarios statiques 7.4 (a) et (b) passés** · **(5)** aucun bouton présenté puis refusé par le backend. — **ÉTAT (2026-09-07) : les cinq sont réunies.** (4) et (5) l'ont été par le **Lot 8**, qui a résorbé `R-LOT7-1` ; le Lot 7 les avait trouvées **non réunies** et l'avait écrit. **Fermeture proposée, non prononcée.** |
 
 > **Ce que l'ouverture ne fait pas.** Aucune sévérité n'est officialisée. Aucun constat n'est
 > requalifié. Aucun constat n'est clos.
@@ -812,7 +861,7 @@ passage**, jamais un partage de preuve.
 
 | Objet | Motif |
 |---|---|
-| **Conditions de Pause et de Reprise** | Non arbitrées (`Q2` §6 in fine et §8). Restent celles de [`15`](../../../contrats/aspirateur/15_conduite_et_supervision.md) §3.1. |
+| ~~**Conditions de Pause et de Reprise**~~ **→ ENTRÉES AU PÉRIMÈTRE le 2026-09-07** | Le texte initial disait : « Non arbitrées (`Q2` §6 in fine et §8). Restent celles de [`15`](../../../contrats/aspirateur/15_conduite_et_supervision.md) §3.1. » **Le Lot 7 a établi que ce classement reposait sur une erreur de fait** : le §3.1 portait **déjà** la mission Arsenal ouverte dans la garde de ces deux gestes, et il n'y avait donc **rien à arbitrer** — seulement une moitié de garde que l'interface n'appliquait pas. **Leur garde de sens physique reste inchangée** ; seule la moitié d'**autorité** est posée (Lot 8, §5.8). |
 | **Contrôle physique du robot hors mission Arsenal** — mission externe, état post-terminal | **Capacité distincte**, exigeant un **contrat propre** (`Q2` §6.4). **N'est pas créée** par `Q2` et n'est pas ouverte ici. |
 | **Coloration et composition de la tuile de navigation** | `Q2` §4 option **G écartée** : la navigation **reste** adossée à l'activité physique. Le fichier n'entre au périmètre que pour être prouvé **non modifié**. |
 | **Questions `Q3` à `Q8`** de la confrontation, et **`P1` à `P9`** en attente de preuve ou de terrain | Restent ouvertes. Non instruites ici. |

@@ -702,8 +702,8 @@ cards:
   # (ASP-INV-97). L'interface la reçoit par la PROJECTION MÉTIER — elle
   # ne lit jamais le verdict, ce que le contrat 11 §2 interdit — et
   # jamais par une combinaison de témoins natifs :
-  #   pause       ← nettoyage réel en cours
-  #   reprise     ← mission en pause
+  #   pause       ← mission Arsenal ouverte, ET nettoyage réel en cours
+  #   reprise     ← mission Arsenal ouverte, ET mission en pause
   #   arrêt       ← mission Arsenal ouverte, SANS AUTRE GARDE : l'arrêt
   #                 n'est jamais plus contraint que le lancement
   #                 (ASP-INV-43), et il ne dépend plus du témoin natif
@@ -713,19 +713,32 @@ cards:
   # Le backend REVALIDE chacune : masquer ici est une commodité, pas
   # une autorisation.
   #
-  # C'EST LA LEVÉE DE RC-02. L'affichage et la garde du backend lisent
-  # désormais LE MÊME PRÉDICAT : aucun bouton n'est présenté puis
-  # refusé, et aucun geste possible n'est masqué. Une mission externe —
-  # robot actif qu'Arsenal n'a pas ouvert — n'expose donc AUCUN geste
-  # de conduite Arsenal, et une mission ouverte robot immobile les
-  # expose tous.
+  # C'EST LA LEVÉE DE RC-02, ET ELLE PORTE SUR LES QUATRE GESTES.
+  # L'affichage et la garde du backend lisent LE MÊME PRÉDICAT
+  # D'AUTORITÉ : aucun bouton n'est présenté puis refusé, et aucun geste
+  # possible n'est masqué. Une mission externe — robot actif qu'Arsenal
+  # n'a pas ouvert — n'expose donc AUCUN geste de conduite Arsenal.
+  #
+  # LES DEUX CONDITIONS SE CUMULENT, ET NE SE CONFONDENT PAS :
+  # l'AUTORITÉ ouvre l'offre — la mission Arsenal, reçue par la
+  # projection —, le SENS PHYSIQUE la restreint. C'est la lettre du
+  # contrat 15 §3.1, dont la garde de Pause est « mission Arsenal
+  # ouverte ET activité en cours », et celle de Reprise « ASP-INV-62,
+  # PLUS mission Arsenal ouverte » (D-07). L'interface n'appliquait que
+  # la moitié physique de ces deux gardes : le lot 8 pose la moitié
+  # d'autorité qui manquait.
   #
   # LA SECTION ENTIÈRE, EN-TÊTE COMPRIS, tient dans une condition : la
-  # disjonction EXACTE des quatre gardes ci-dessus. Trois termes
-  # suffisent à la couvrir — la garde d'arrêt est « mission Arsenal
-  # ouverte » nue, et celle du retour la contient. Aucun sur-ensemble,
-  # aucune approximation : si un seul geste a du sens, l'en-tête paraît ;
-  # si aucun n'en a, rien ne paraît.
+  # disjonction EXACTE des quatre gardes ci-dessus. Depuis que les quatre
+  # exigent l'autorité, cette disjonction se réduit à UN SEUL TERME —
+  # « mission Arsenal ouverte » —, et ce n'est pas un raccourci : la
+  # garde d'Arrêt est ce terme NU, et les trois autres le contiennent.
+  # Une disjonction plus large ferait paraître l'en-tête au-dessus de
+  # ZÉRO bouton sur une mission externe, exactement ce que la règle
+  # ci-dessous proscrit.
+  #
+  # Aucun sur-ensemble, aucune approximation : si un seul geste a du
+  # sens, l'en-tête paraît ; si aucun n'en a, rien ne paraît.
   #
   # L'INDISPONIBILITÉ DE LA PROJECTION NE VAUT PAS « PAS DE MISSION ».
   # Elle est rendue comme telle par la projection (ASP-INV-96), et une
@@ -735,17 +748,9 @@ cards:
   # ==================================================
   - type: conditional
     conditions:
-      - condition: or
-        conditions:
-          - condition: state
-            entity: sensor.aspirateur_etat_canonique
-            state: nettoyage_reel
-          - condition: state
-            entity: sensor.aspirateur_etat_canonique
-            state: pause
-          - condition: state
-            entity: binary_sensor.aspirateur_mission_arsenal_ouverte
-            state: "on"
+      - condition: state
+        entity: binary_sensor.aspirateur_mission_arsenal_ouverte
+        state: "on"
     card:
       type: vertical-stack
       cards:
@@ -755,6 +760,9 @@ cards:
 
         - type: conditional
           conditions:
+            - condition: state
+              entity: binary_sensor.aspirateur_mission_arsenal_ouverte
+              state: "on"
             - condition: state
               entity: sensor.aspirateur_etat_canonique
               state: nettoyage_reel
@@ -775,6 +783,9 @@ cards:
 
         - type: conditional
           conditions:
+            - condition: state
+              entity: binary_sensor.aspirateur_mission_arsenal_ouverte
+              state: "on"
             - condition: state
               entity: sensor.aspirateur_etat_canonique
               state: pause
