@@ -56,7 +56,7 @@ LÉGENDE
                                 |
                                 v
    ========================= APPLICATION MATÉRIELLE =================
-   script.chauffage_appliquer_consigne -> protocole local (boiler bridge)
+   script.chauffage_appliquer_consigne -> écrivain souverain (Boilerack)
    exécute · observe · NE DÉCIDE JAMAIS
    valide UNIQUEMENT après ACK explicite (souveraineté : l'état interne
    prévaut tant qu'aucune confirmation d'exécution n'est reçue)
@@ -69,7 +69,7 @@ LÉGENDE
 
   [N0] OVERRIDE OPÉRATEUR ........ input_boolean.mode_confort_chauffage = on
         -> impose {comfort} · écrase toute logique métier
-        -> ne contourne PAS les gardes techniques (G2 bridge, G5 idempotence)
+        -> ne contourne PAS les gardes techniques (G2 exécution, G5 idempotence)
         raison : confort_force
 
   [N1] INTERDICTION SYSTÈME ...... binary_sensor.chauffage_autorise_systeme
@@ -139,15 +139,18 @@ LÉGENDE
      +-- G3  programme = unknown ET pas override ? -> STOP  (contournable override)
      +-- G4  desired_mode = neutre ?               -> STOP  (NON contournable)
      +-- G5  desired_mode = prog_actuel ?          -> STOP  (NON — idempotence)
-     +-- G2  bridge offline (binary_sensor.boiler_bridge_online=off)? -> STOP (NON)
+     +-- G2  garde d'exécution composée KO (binary_sensor.boiler_bridge_online
+     |       nécessaire, non suffisant seul — cf. amendement garde d'exécution)
+     |       ? -> STOP (NON)
      |
      v
    EXÉCUTION
      -> script.chauffage_appliquer_consigne (consigne, raison)
      -> timer.chauffage_geoloc_antirebond (start)
 
-   NB : une décision valide peut être produite mais NON exécutée (bridge offline).
-        Décision et exécution sont deux événements distincts.
+   NB : une décision valide peut être produite mais NON exécutée (garde
+        d'exécution composée KO). Décision et exécution sont deux événements
+        distincts.
 
 ======================================================================
                           INVARIANTS NON NÉGOCIABLES
@@ -169,4 +172,13 @@ LÉGENDE
 #   standby/protection traités comme niveaux décisionnels, déclenchement direct
 #   par écart thermique) a été remplacée par le présent schéma. Elle reste
 #   restituable via l'historique git de ce fichier.
+#
+#   Convergence C48 (2026-09-06, lot A7) : le libellé « protocole local
+#   (boiler bridge) » de la couche Application matérielle et le libellé
+#   « G2 bridge offline » de la séquence de gardes désignaient le pont
+#   historique, remplacé par Boilerack (écrivain souverain actif). Mis à
+#   jour pour nommer l'écrivain souverain et la garde d'exécution composée
+#   (cf. `30_decision_centrale.md` §7/§8 et son amendement de garde
+#   d'exécution) — sémantique du schéma inchangée, seuls les libellés
+#   reflètent l'état terrain.
 # ======================================================================

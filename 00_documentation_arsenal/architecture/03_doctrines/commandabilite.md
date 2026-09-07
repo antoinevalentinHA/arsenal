@@ -184,7 +184,7 @@ du principe.
 
 | Signal existant | Dimension de commandabilité | Usage observé |
 |---|---|---|
-| `binary_sensor.boiler_bridge_online` / `sensor.boiler_bridge_sante` | capacité d'exécution du pont chaudière | gate de décision (`!= on → STOP`) |
+| `binary_sensor.boiler_bridge_online` / `sensor.boiler_bridge_sante` | capacité d'exécution de l'écrivain souverain chaudière (Boilerack ; `entity_id` hérité du pont historique, conservé par doctrine de migration) | composante d'une garde d'exécution composée (`!= on → STOP` ; nécessaire, non suffisante seule — cf. `30_decision_centrale__amendement_garde_execution.md`) |
 | `binary_sensor.panne_secteur_en_cours` | dépendance secteur | inhibe des remédiations automatiques |
 | `binary_sensor.systeme_stable` | stabilité / amorçage système | pré-condition transversale d'action |
 
