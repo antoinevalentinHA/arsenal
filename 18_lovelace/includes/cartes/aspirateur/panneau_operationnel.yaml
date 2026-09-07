@@ -78,9 +78,9 @@
 #
 # 🧩 PATRONS RÉUTILISÉS — AUCUNE FORME NATIVE MASSIVE
 #   `section_header` · `sub_section_header` · `carte_etat_interprete` ·
-#   `carte_attribut_categoriel_interprete` · `carte_mode_binaire_interprete` ·
+#   `carte_attribut_categoriel_interprete` ·
 #   `carte_aspirateur_batterie` (satellite de `socle_status`, comme ses
-#   trois voisines de bloc : même hauteur, même typographie) ·
+#   deux voisines de bloc : même hauteur, même typographie) ·
 #   `socle_status_label_72` ·
 #   `socle_toggle_compact_68` · `carte_action_standard` ·
 #   `carte_action_standard_warning` ·
@@ -115,18 +115,24 @@ cards:
   # faite (ASP-INV-44). L'indisponibilité tombe au gris atténué,
   # jamais sur un état nominal (ASP-INV-45).
   #
-  # DEUX LIGNES, DEUX ALTITUDES DE LECTURE — et c'est la hiérarchie du
-  # bloc : la première dit CE QUE FAIT le robot et ce qu'Arsenal en
-  # attend, la seconde DE QUOI IL DISPOSE pour le faire. L'ordre n'est
-  # pas décoratif : on lit d'abord le verdict, ensuite la ressource.
-  # Quatre cellules pour deux colonnes — la grille reste complète
-  # (R-LL-GRID-1), et le bloc reste carré à toute largeur.
+  # UNE LIGNE, TROIS CELLULES — et l'ordre porte le sens : ce que fait
+  # le robot · ce dont il dispose · ce qu'Arsenal en attend. La mesure
+  # est au centre parce qu'elle se lit AVEC les deux verdicts qui
+  # l'encadrent, jamais après eux ; et parce qu'elle est la seule des
+  # trois à ne rien juger, son gris la distingue sans la reléguer.
+  # Trois cellules pour trois colonnes — grille complète
+  # (R-LL-GRID-1).
+  #
+  # TROIS COLONNES TIENNENT : la section Composition, plus bas, rend
+  # déjà « Rez-de-chaussée » — quinze caractères à 12 px — dans une
+  # grille de même largeur. Le pire libellé d'ici, « Non qualifié »,
+  # demande douze caractères à 14 px, soit moins.
   #
   # Aucun en-tête : la barre du dashboard porte déjà « Aspirateur ».
   # ==================================================
   - type: grid
     square: false
-    columns: 2
+    columns: 3
     cards:
       - type: custom:button-card
         template: carte_etat_interprete
@@ -155,6 +161,24 @@ cards:
             indisponibilite: rgba(158, 158, 158, 0.1)
             etat_non_qualifie: rgba(158, 158, 158, 0.2)
 
+      # ── L'OBSERVATION, ENTRE LES DEUX VERDICTS ───────────────────
+      # AUCUN SEUIL, DONC AUCUNE COULEUR D'ALERTE. ASP-INV-41 ne
+      # conditionne le lancement à aucun seuil de batterie PARCE QUE
+      # l'opérateur décide : une teinte de vigilance sous un certain
+      # niveau serait ce seuil, appliqué sans être écrit. Contrat 11
+      # §3 item 9, et ASP-CI-46 le vérifie.
+      #
+      # LE NIVEAU SEUL. L'ALIMENTATION EST DÉJÀ LÀ. « En charge » est
+      # l'un des dix états canoniques, rendu par la tuile de gauche :
+      # une seconde tuile qui le redirait n'ajouterait pas une
+      # information, elle diviserait la même en deux endroits.
+      # Arbitrage opérateur du 2026-09-07 (chantier C50, D-2 révisée) ;
+      # ASP-CI-46 refuse désormais cette duplication.
+      - type: custom:button-card
+        template: carte_aspirateur_batterie
+        entity: sensor.roborock_q7_max_batterie
+        name: Batterie
+
       - type: custom:button-card
         template: carte_attribut_categoriel_interprete
         entity: sensor.aspirateur_etat_canonique
@@ -170,38 +194,6 @@ cards:
             oui: rgba(33, 150, 243, 0.2)
             non: rgba(158, 158, 158, 0.2)
             indisponible: rgba(158, 158, 158, 0.1)
-
-      # ── LIGNE 2 — DE QUOI LE ROBOT DISPOSE POUR LE FAIRE ──────────
-      # La ligne 1 JUGE : état canonique et mission, colorés. La ligne 2
-      # OBSERVE : niveau et alimentation, gris. La hiérarchie du bloc est
-      # portée par la géométrie ET par la couleur, et les deux disent la
-      # même chose (chantier C50, décision D-1).
-      #
-      # DEUX TUILES, PAS UNE. Le niveau et l'alimentation ont deux
-      # témoins natifs distincts, qui peuvent légitimement diverger — un
-      # robot amarré batterie pleine n'est plus « en charge ». Les fondre
-      # en une lecture unique serait une agrégation de confort (D-2).
-      #
-      # AUCUN SEUIL, DONC AUCUNE COULEUR D'ALERTE. ASP-INV-41 ne
-      # conditionne le lancement à aucun seuil de batterie PARCE QUE
-      # l'opérateur décide : une teinte de vigilance sous un certain
-      # niveau serait ce seuil, appliqué sans être écrit. Contrat 11 §3
-      # item 9, et ASP-CI-46 le vérifie.
-      - type: custom:button-card
-        template: carte_aspirateur_batterie
-        entity: sensor.roborock_q7_max_batterie
-        name: Batterie
-
-      - type: custom:button-card
-        template: carte_mode_binaire_interprete
-        entity: binary_sensor.roborock_q7_max_en_charge
-        name: En charge
-        icon: mdi:power-plug-outline
-        variables:
-          label_on: Oui
-          label_off: Non
-          color_on: 'rgba(158, 158, 158, 0.2)'
-          color_off: 'rgba(158, 158, 158, 0.2)'
 
   # Motif lisible — restitué NON TRONQUÉ, tel que le backend le produit.
   # CHROME RÉDUIT : plus de hauteur minimale imposée, la carte prend la
