@@ -77,6 +77,20 @@ chapitre l'instancie pour le domaine sans la redéfinir.
    **session robot**. La mission Arsenal se lit sur la **projection métier**
    (`ASP-INV-96`) ; la session robot se lit sur l'attribut orthogonal du
    chapitre [`08`](08_etats_et_observation.md) §1.
+9. **Restituer l'observation de charge** — le **niveau** et l'**alimentation en
+   cours** —, sur l'écran opérationnel du domaine. C'est la **contrepartie
+   exigible** d'`ASP-INV-41` ([`07`](07_moteur_de_mission.md) §5.3) : le contrat
+   ne conditionne le lancement à aucun seuil de batterie **parce que**
+   l'opérateur décide, et il ne peut décider de ce qu'il ne voit pas. Trois
+   conditions, cumulatives :
+   - **les deux notions se rendent séparément** — l'une est un niveau, l'autre
+     une alimentation ; deux témoins natifs distincts, jamais fondus en une
+     lecture unique ([`08`](08_etats_et_observation.md) §2) ;
+   - **aucun seuil, donc aucune couleur d'alerte** — un niveau peint en rouge,
+     en orange ou en jaune *est* un seuil, et `ASP-INV-41` n'en admet aucun.
+     L'observation reste **neutre** : elle informe, elle ne juge pas ;
+   - **l'indisponibilité est rendue** et jamais rabattue sur une dernière valeur
+     connue ni sur un nominal (`ASP-INV-45`).
 
 ---
 

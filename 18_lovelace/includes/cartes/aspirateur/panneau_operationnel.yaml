@@ -47,6 +47,11 @@
 #               n'est pas une alerte : le lancement se signale par sa
 #               largeur, sa hauteur et sa confirmation, pas par une
 #               couleur de vigilance.
+#               LES OBSERVATIONS DE CHARGE AUSSI, et pour la même
+#               raison inversée : elles ne jugent rien. Un niveau de
+#               batterie peint en rouge serait un SEUIL, qu'ASP-INV-41
+#               refuse explicitement au motif que l'opérateur décide
+#               (chantier C50, décision D-3).
 #   Palette bornée aux valeurs de `ui/couleurs/02_palette.md`.
 #   La coloration de la tuile Navigation vient exclusivement de
 #   `sensor.etat_aspirateur_dashboard` : cette carte n'en produit aucune.
@@ -73,7 +78,10 @@
 #
 # 🧩 PATRONS RÉUTILISÉS — AUCUNE FORME NATIVE MASSIVE
 #   `section_header` · `sub_section_header` · `carte_etat_interprete` ·
-#   `carte_attribut_categoriel_interprete` · `socle_status_label_72` ·
+#   `carte_attribut_categoriel_interprete` · `carte_mode_binaire_interprete` ·
+#   `carte_aspirateur_batterie` (satellite de `socle_status`, comme ses
+#   trois voisines de bloc : même hauteur, même typographie) ·
+#   `socle_status_label_72` ·
 #   `socle_toggle_compact_68` · `carte_action_standard` ·
 #   `carte_action_standard_warning` ·
 #   `carte_action_aspirateur_option` (segment de sélecteur, patron de
@@ -99,13 +107,20 @@ type: vertical-stack
 cards:
 
   # ==================================================
-  # 1️⃣ ÉTAT — synthèse du robot et mission en cours
+  # 1️⃣ ÉTAT — synthèse du robot, mission en cours et charge
   # --------------------------------------------------
   # Les dix états canoniques et « mission ouverte » sont rendus
   # SÉPARÉMENT : le dixième se superpose aux neuf autres au lieu de
   # les exclure (ASP-INV-68), et aucune agrégation de confort n'est
   # faite (ASP-INV-44). L'indisponibilité tombe au gris atténué,
   # jamais sur un état nominal (ASP-INV-45).
+  #
+  # DEUX LIGNES, DEUX ALTITUDES DE LECTURE — et c'est la hiérarchie du
+  # bloc : la première dit CE QUE FAIT le robot et ce qu'Arsenal en
+  # attend, la seconde DE QUOI IL DISPOSE pour le faire. L'ordre n'est
+  # pas décoratif : on lit d'abord le verdict, ensuite la ressource.
+  # Quatre cellules pour deux colonnes — la grille reste complète
+  # (R-LL-GRID-1), et le bloc reste carré à toute largeur.
   #
   # Aucun en-tête : la barre du dashboard porte déjà « Aspirateur ».
   # ==================================================
@@ -155,6 +170,38 @@ cards:
             oui: rgba(33, 150, 243, 0.2)
             non: rgba(158, 158, 158, 0.2)
             indisponible: rgba(158, 158, 158, 0.1)
+
+      # ── LIGNE 2 — DE QUOI LE ROBOT DISPOSE POUR LE FAIRE ──────────
+      # La ligne 1 JUGE : état canonique et mission, colorés. La ligne 2
+      # OBSERVE : niveau et alimentation, gris. La hiérarchie du bloc est
+      # portée par la géométrie ET par la couleur, et les deux disent la
+      # même chose (chantier C50, décision D-1).
+      #
+      # DEUX TUILES, PAS UNE. Le niveau et l'alimentation ont deux
+      # témoins natifs distincts, qui peuvent légitimement diverger — un
+      # robot amarré batterie pleine n'est plus « en charge ». Les fondre
+      # en une lecture unique serait une agrégation de confort (D-2).
+      #
+      # AUCUN SEUIL, DONC AUCUNE COULEUR D'ALERTE. ASP-INV-41 ne
+      # conditionne le lancement à aucun seuil de batterie PARCE QUE
+      # l'opérateur décide : une teinte de vigilance sous un certain
+      # niveau serait ce seuil, appliqué sans être écrit. Contrat 11 §3
+      # item 9, et ASP-CI-46 le vérifie.
+      - type: custom:button-card
+        template: carte_aspirateur_batterie
+        entity: sensor.roborock_q7_max_batterie
+        name: Batterie
+
+      - type: custom:button-card
+        template: carte_mode_binaire_interprete
+        entity: binary_sensor.roborock_q7_max_en_charge
+        name: En charge
+        icon: mdi:power-plug-outline
+        variables:
+          label_on: Oui
+          label_off: Non
+          color_on: 'rgba(158, 158, 158, 0.2)'
+          color_off: 'rgba(158, 158, 158, 0.2)'
 
   # Motif lisible — restitué NON TRONQUÉ, tel que le backend le produit.
   # CHROME RÉDUIT : plus de hauteur minimale imposée, la carte prend la
