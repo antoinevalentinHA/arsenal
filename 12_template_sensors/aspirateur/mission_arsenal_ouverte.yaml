@@ -1,0 +1,146 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR
+#     Aspirateur — Mission Arsenal ouverte (projection métier)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter vers l'interface la MISSION ARSENAL OUVERTE, et elle
+#   seule. Rôle contractuel `‹projection_mission_arsenal_ouverte›`.
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             08_etats_et_observation.md §1.2 (ASP-INV-96)
+#             15_conduite_et_supervision.md §2 (ASP-INV-87, partition)
+#             11_frontiere_ui.md §2 et §3
+#   Chantier : C45, lot 4 — arbitrages Q1 et Q2.
+#
+# 🧭 CE QU'ELLE DIT, ET CE QU'ELLE NE DIT PAS
+#   Elle dit la RESPONSABILITÉ MÉTIER d'Arsenal : une mission est
+#   ouverte, Arsenal en répond. Elle ne dit RIEN de l'activité
+#   physique du robot — c'est la SESSION ROBOT ACTIVE, notion
+#   distincte, d'autorité exclusive native, portée ailleurs.
+#   Les deux peuvent LÉGITIMEMENT DIVERGER : mission externe (robot
+#   actif, aucune mission Arsenal) et retour au dock (mission
+#   ouverte, témoin natif à `off`). L'interface REND cette
+#   divergence, elle ne la résorbe pas (ASP-INV-47, ASP-INV-87).
+#
+# 📡 SOURCE EXCLUSIVE — UNE, ET UNE SEULE
+#   input_text.aspirateur_mission_verdict
+#   AUCUN témoin natif n'intervient : ni état machine, ni témoin de
+#   session, ni entité `vacuum`. Ce n'est pas une omission, c'est la
+#   règle : aucun d'eux n'établit une mission Arsenal ni ne s'y
+#   substitue (ASP-INV-96, ASP-INV-87, ASP-INV-47).
+#
+# 🔒 LECTURE PURE — JAMAIS UN QUATRIÈME ÉCRIVAIN
+#   Elle LIT le verdict et ne l'ÉCRIT jamais. L'écriture reste au
+#   trio des écrivains — moteur, conduite, supervision (ASP-INV-86).
+#   Son autorisation de lecture est NOMINATIVE : ASP-CI-11 nomme ce
+#   fichier, jamais un motif ni un répertoire.
+#
+# 🧱 TROIS RÉGIMES, DONT LE TROISIÈME EST EXPLICITE
+#   · mission Arsenal ouverte          → `on`
+#   · aucune mission Arsenal ouverte   → `off`
+#   · impossibilité de conclure        → INDISPONIBLE
+#
+#   Le troisième n'est pas un raffinement. Le helper de verdict ne
+#   porte AUCUNE valeur initiale : il vaut `unknown` au premier
+#   démarrage. Rabattre cela sur `off` affirmerait « aucune mission
+#   Arsenal » sur la foi d'une absence de donnée (ASP-INV-45).
+#   `unknown`, `unavailable` ET TOUTE VALEUR HORS PARTITION y sont
+#   rendus comme indisponibilité, jamais comme une absence de
+#   mission.
+#
+# 🧩 POURQUOI LA PARTITION ENTIÈRE, ET PAS LA SEULE CLASSE O
+#   Distinguer « valeur valide hors O » d'« valeur hors partition »
+#   est précisément ce que le troisième régime exige — et cela ne se
+#   déduit d'aucune forme. `VALIDATION_EN_COURS` est une valeur
+#   légitime de classe H et ne porte pas de barre oblique : un test
+#   structurel la rejetterait comme du bruit et la rendrait
+#   indisponible, alors qu'elle dit exactement « aucune mission
+#   ouverte ». La partition doit donc être ÉNUMÉRÉE.
+#
+#   Les quatre listes ci-dessous sont CONFRONTÉES À ÉGALITÉ EXACTE
+#   par ASP-CI-43 aux ensembles canoniques du module de contrôle
+#   (ASP-INV-98). La classe O est recopiée DEUX FOIS — l'état la
+#   teste, la disponibilité l'agrège — et les deux recopies sont
+#   confrontées séparément : une dérive de l'une ou de l'autre est
+#   rouge en CI. C'est ce qui rend cette duplication sûre.
+#
+# 🚫 INTERDITS
+#   - Écrire le verdict, ou tout autre helper du domaine
+#   - Faire intervenir un témoin natif, à quelque titre que ce soit
+#   - Rabattre `unknown`, `unavailable` ou le hors-partition sur `off`
+#   - Déduire l'appartenance à O par exclusion des autres classes :
+#     ASP-INV-87 la définit POSITIVEMENT, et elle se teste ainsi
+#   - Déclencher une action depuis ce capteur
+#
+# 🏷️ STATUT
+#   Projection métier — domaine aspirateur, C45 lot 4
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Aspirateur mission Arsenal ouverte"
+      unique_id: aspirateur_mission_arsenal_ouverte
+      default_entity_id: binary_sensor.aspirateur_mission_arsenal_ouverte
+
+      # DISPONIBILITÉ — la valeur appartient-elle à la partition ?
+      # Les quatre classes du contrat 15 §2 sont exhaustives et
+      # disjointes ; ce qui n'y figure pas est EXTÉRIEUR à la
+      # partition, et ne se conclut pas.
+      availability: >
+        {% set v = states('input_text.aspirateur_mission_verdict') %}
+        {% set classe_o = [
+            'CONDUITE/ARRET_ENGAGE',
+            'CONDUITE/PAUSE_CONFIRMEE',
+            'CONDUITE/PAUSE_ENGAGEE',
+            'CONDUITE/PAUSE_NON_CONFIRMEE',
+            'CONDUITE/REPRISE_CONFIRMEE',
+            'CONDUITE/REPRISE_ENGAGEE',
+            'CONDUITE/REPRISE_NON_CONFIRMEE',
+            'CONDUITE/RETOUR_ENGAGE',
+            'LANCEE/DEMARRAGE_OBSERVE'] %}
+        {% set classe_t = [
+            'CLOTURE/APRES_ARRET_CONFIRME',
+            'CLOTURE/APRES_ARRET_NON_CONFIRME',
+            'CLOTURE/APRES_RETOUR_CONFIRME',
+            'CLOTURE/APRES_RETOUR_NON_CONFIRME',
+            'CLOTURE/FIN_NOMINALE',
+            'CLOTURE/ISSUE_OPAQUE_APRES_REDEMARRAGE',
+            'ECHEC/ERREUR_EN_MISSION',
+            'ECHEC/MISSION_INTERROMPUE'] %}
+        {% set classe_h = [
+            'COMMANDE/ISSUE_NON_ETABLIE',
+            'ECHEC/TRANSITION_NON_OBSERVEE',
+            'EMISSION/COMMANDE_ACCEPTEE',
+            'REFUS/CARTE_NON_CONFIRMEE',
+            'REFUS/ERREUR_EQUIPEMENT',
+            'REFUS/ETAT_NON_QUALIFIE',
+            'REFUS/MISSION_DEJA_OUVERTE',
+            'REFUS/PASSAGES_HORS_CONTRAT',
+            'REFUS/PREREQUIS_MATERIEL_ABSENT',
+            'REFUS/PROFIL_INCONNU',
+            'REFUS/REGLAGE_NON_CONFIRME',
+            'REFUS/ROBOT_INDISPONIBLE',
+            'REFUS/SEGMENT_INCONNU',
+            'REFUS/SELECTION_MULTI_CARTE',
+            'REFUS/SELECTION_VIDE',
+            'REFUS/SESSION_INACHEVEE',
+            'VALIDATION_EN_COURS'] %}
+        {{ v in classe_o + classe_t + classe_h }}
+
+      # ÉTAT — appartenance à la classe O, sous-classe O-R comprise.
+      # Test POSITIF, jamais par exclusion : ASP-INV-87 dit qu'une
+      # mission est ouverte SI ET SEULEMENT SI le verdict est de
+      # classe O. `CONDUITE/RETOUR_ENGAGE` — la sous-classe O-R — y
+      # figure : un retour engagé n'a pas clos la mission.
+      state: >
+        {% set v = states('input_text.aspirateur_mission_verdict') %}
+        {% set classe_o = [
+            'CONDUITE/ARRET_ENGAGE',
+            'CONDUITE/PAUSE_CONFIRMEE',
+            'CONDUITE/PAUSE_ENGAGEE',
+            'CONDUITE/PAUSE_NON_CONFIRMEE',
+            'CONDUITE/REPRISE_CONFIRMEE',
+            'CONDUITE/REPRISE_ENGAGEE',
+            'CONDUITE/REPRISE_NON_CONFIRMEE',
+            'CONDUITE/RETOUR_ENGAGE',
+            'LANCEE/DEMARRAGE_OBSERVE'] %}
+        {{ v in classe_o }}
