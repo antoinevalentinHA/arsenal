@@ -2,10 +2,10 @@
 
 | Champ | Valeur |
 |---|---|
-| **Chantier** | **Honorer le renvoi d'`ASP-INV-41`.** Le contrat refuse tout seuil de batterie au lancement **parce que** la charge est « une **observation** exposée à l'opérateur, qui décide » ([`07`](../../../contrats/aspirateur/07_moteur_de_mission.md) §5.3). Aucune surface du domaine ne la portait : la contrepartie était **promise et non tenue**. Ce chantier la rend — **niveau** et **alimentation en cours** —, la place dans la hiérarchie du panneau plutôt qu'à côté d'elle, et ferme la boucle par un contrôle CI. |
+| **Chantier** | **Honorer le renvoi d'`ASP-INV-41`.** Le contrat refuse tout seuil de batterie au lancement **parce que** la charge est « une **observation** exposée à l'opérateur, qui décide » ([`07`](../../../contrats/aspirateur/07_moteur_de_mission.md) §5.3). Aucune surface du domaine ne la portait : la contrepartie était **promise et non tenue**. Ce chantier rend le **niveau**, le place dans la hiérarchie du panneau plutôt qu'à côté d'elle, et ferme la boucle par un contrôle CI. **Amendé le 2026-09-07 par arbitrage opérateur** : une seule tuile en grille à trois colonnes, la tuile d'alimentation initialement livrée étant redondante avec l'état canonique (`D-1` et `D-2` révisées). |
 | **Domaine** | Aspirateur. |
 | **Nature** | **Écart contrat ↔ interface, corrigé.** Aucune règle métier nouvelle, aucun arbitrage nouveau : la clause existe depuis `ASP-INV-41` et n'était pas exécutée. Ce chantier **n'ajoute aucun invariant** et n'amende la portée d'aucun. |
-| **Statut** | **Ouvert (2026-09-07) — Lots 1 à 4 exécutés le jour de l'ouverture ; Lot 5 (validation terrain) dû.** Contrat, interface et CI livrés d'un même mouvement ; reste à confirmer sur l'instance que les deux témoins natifs alimentent bien les deux tuiles et que la mise en page tient sur mobile portrait. |
+| **Statut** | **Ouvert (2026-09-07) — Lots 1 à 4 exécutés le jour de l'ouverture ; Lot 5 (validation terrain) dû.** Contrat, interface et CI livrés d'un même mouvement (PR #795), puis **amendés le jour même par arbitrage opérateur** (`D-1` et `D-2` révisées) — grille à trois colonnes, tuile d'alimentation retirée. Reste à confirmer sur l'instance que le témoin natif alimente bien la tuile et que la ligne à trois cellules tient sur mobile portrait. |
 | **Priorité** | **P2** — aucun risque de sûreté : la charge ne conditionne rien, et le backend ne la lit pas. L'enjeu est la **complétude de la lecture offerte à l'opérateur** avant une décision de lancement. |
 | **Ouvert le** | 2026-09-07. |
 | **Prochain jalon** | **Lot 5 — validation terrain** (§5.5). |
@@ -82,7 +82,7 @@ n'ouvre aucune porte, il emprunte une porte ouverte que personne n'avait franchi
 robot amarré batterie pleine tomberait en classe `N`, rendu « Non qualifié », et **refuserait le
 lancement** (`ASP-INV-60`). C'est un arbitrage **rendu et assumé** (`ARB-1`), qui prévoit son propre
 véhicule de révision — un lot terrain. Ce chantier **ne le rouvre pas**, mais il en atténue l'opacité :
-face à un « Non qualifié », l'opérateur lira désormais le niveau et l'alimentation, au lieu de n'avoir
+face à un « Non qualifié », l'opérateur lira désormais le niveau, au lieu de n'avoir
 aucune prise. **Aucune conclusion n'est tirée ici de cette hypothèse, qui reste à observer (§5.5).**
 
 ---
@@ -104,39 +104,85 @@ d'`ASP-INV-41`, enfin adressée.
 
 ## 4. Décisions de conception rendues
 
-### `D-1` — La restitution vit dans le bloc d'entrée, en deuxième ligne
+### `D-1` — ~~Le bloc d'entrée passe à 2 × 2~~ → **RÉVISÉE le 2026-09-07 : une ligne, trois colonnes**
 
-Le bloc d'entrée du panneau est une grille à deux colonnes portant **État** et **Mission**. Il devient
-une grille **2 × 2** : la charge occupe la **seconde ligne**, sous les deux tuiles existantes, et
-**avant** le « Dernier motif » pleine largeur.
+> **Texte initial, conservé.** Le bloc d'entrée devenait une grille **2 × 2**, la charge occupant la
+> **seconde ligne** sous **État** et **Mission**. L'objection portée contre les **trois colonnes**
+> était celle-ci : « Tronquerait les libellés existants (« Non qualifié », « Indisponible ») sur
+> mobile portrait, que la géométrie à deux colonnes protège explicitement. On ne dégrade pas ce qui
+> marche pour loger ce qui manque. »
 
-**La hiérarchie est portée par la géométrie, et redoublée par la couleur** :
+**Arbitrage opérateur rendu le 2026-09-07 : une seule ligne, trois colonnes.**
 
 ```text
-┌───────────────┬───────────────┐   ligne 1 — CE QUE FAIT LE ROBOT
-│ État          │ Mission       │   verdicts, colorés (vert / bleu / orange / rouge)
-├───────────────┼───────────────┤   ligne 2 — DE QUOI IL DISPOSE POUR LE FAIRE
-│ Batterie      │ En charge     │   observations, gris neutre — jamais un verdict
-├───────────────┴───────────────┤
-│ Dernier motif                 │   phrase du backend, pleine largeur
-└───────────────────────────────┘
+┌────────────┬────────────┬────────────┐
+│ État       │ Batterie   │ Mission    │
+├────────────┴────────────┴────────────┤
+│ Dernier motif                        │
+└──────────────────────────────────────┘
+   verdict      observation    verdict
+   coloré       grise          coloré
 ```
 
-**Alternatives examinées et écartées** :
+**L'objection initiale ne résiste pas aux pièces.** La section **Composition**, dans **ce même
+panneau et à la même largeur**, rend déjà une grille à **trois colonnes** dont le libellé le plus long
+est « Rez-de-chaussée » — **quinze caractères à 12 px**. Le pire cas du bloc d'entrée, « Non
+qualifié », demande **douze caractères à 14 px**, soit une largeur **inférieure**. La géométrie était
+donc déjà démontrée dans le fichier ; l'objection reposait sur une prudence non vérifiée, et non sur
+une mesure.
+
+**Ce que la révision gagne, au-delà de corriger une erreur** : le bloc reste sur **une seule ligne**,
+la mesure obtient la **même prominence** que les deux verdicts au lieu d'être reléguée dessous, et la
+tuile redondante disparaît (`D-2` révisée). La hiérarchie ne se lit plus dans la position verticale
+mais dans la **couleur** : deux verdicts colorés encadrent une observation grise, qui ne juge rien.
+
+**Restent écartées, et pour leurs motifs initiaux** :
 
 | Écartée | Motif |
 |---|---|
-| Passer le bloc d'entrée à **trois colonnes** | Tronquerait les libellés existants (« Non qualifié », « Indisponible ») sur mobile portrait, que la géométrie à deux colonnes protège explicitement. On ne dégrade pas ce qui marche pour loger ce qui manque. |
-| Une **cinquième section** avec en-tête | Cinq en-têtes pour deux tuiles de lecture : c'est précisément le « vrac » que la commande interdit. La charge n'est pas un sujet, c'est une lecture d'entrée. |
+| Une **cinquième section** avec en-tête | Cinq en-têtes pour une tuile de lecture : c'est précisément le « vrac » que la commande interdit. La charge n'est pas un sujet, c'est une lecture d'entrée. |
 | Une tuile **pleine largeur** | Un pourcentage n'a pas besoin de toute la largeur ; il déséquilibrerait le bloc et concurrencerait le « Dernier motif », seul objet qui mérite cette forme. |
-| Une **troisième tuile seule** dans la grille à deux colonnes | Laisse une demi-cellule vide, et `R-LL-GRID-1` refuse une cardinalité non divisible. La contrainte CI et l'exigence esthétique disent ici la même chose. |
+| Une **troisième tuile** dans une grille à **deux** colonnes | Laisse une demi-cellule vide, et `R-LL-GRID-1` refuse une cardinalité non divisible. C'est d'ailleurs cette contrainte qui avait poussé à la quatrième tuile — le remède était pire que le mal. |
 
-### `D-2` — Deux tuiles, pas une
+> **La preuve reste falsifiable, et elle est due.** L'argument ci-dessus est une **comparaison de
+> largeurs sur pièces**, pas une observation. Le §5.2 du lot 5 la met à l'épreuve sur l'instance ; s'il
+> la dément, le repli est la grille 2 × 2 **sans** la tuile redondante, c'est-à-dire une tuile
+> pleine largeur ou un libellé raccourci — et non le retour du doublon.
 
-Le **niveau** et l'**alimentation en cours** ont deux autorités natives distinctes et peuvent
-**légitimement diverger** — c'est le régime que le `08` §1.1 pose déjà pour deux autres notions du
-domaine, et qu'il demande à l'interface de **rendre** plutôt que de résorber. Les fondre en une seule
-tuile serait une agrégation de confort. Elles sont donc deux, côte à côte, jamais confondues.
+### `D-2` — ~~Deux tuiles, pas une~~ → **RÉVISÉE le 2026-09-07 : une tuile, le niveau seul**
+
+> **Texte initial, conservé.** « Le **niveau** et l'**alimentation en cours** ont deux autorités
+> natives distinctes et peuvent **légitimement diverger** — c'est le régime que le `08` §1.1 pose déjà
+> pour deux autres notions du domaine, et qu'il demande à l'interface de **rendre** plutôt que de
+> résorber. Les fondre en une seule tuile serait une agrégation de confort. Elles sont donc deux, côte
+> à côte, jamais confondues. »
+
+**Arbitrage opérateur rendu le 2026-09-07, après livraison** (PR #795 mergée) : la tuile
+« En charge » est **redondante avec la tuile « État »**, et elle est **retirée**.
+
+**L'arbitrage est fondé, et le raisonnement initial était faux.** « En charge » est **l'un des dix
+états canoniques** — la tuile d'état l'affiche déjà, en toutes lettres, dès que l'état machine vaut
+`charging`. Symétriquement, un robot hors de son dock est rendu « Hors base ». **Sur toute la classe
+de repos, l'état canonique détermine donc entièrement l'alimentation** : la seconde tuile ne
+produisait aucune information neuve. Elle n'en produisait qu'aux marges — un état de classe `A`, `E`
+ou `N` où l'alimentation resterait indécidable —, c'est-à-dire dans des cas où la question ne se pose
+pas ou reste hypothétique (§2.4).
+
+**Ce que le texte initial confondait.** L'argument de la divergence légitime du `08` §1.1 vaut pour
+**mission Arsenal ouverte** et **session robot active** — deux notions **métier** distinctes, dont
+l'une n'est pas dérivable de l'autre. L'état canonique et le témoin d'alimentation, eux, ne sont pas
+deux notions : ce sont **deux vues du même fait physique**, dont l'une est déjà projetée par le
+backend. Invoquer la divergence ici était un **emprunt d'argument**, pas une analyse.
+
+**Aveu de la cause.** La seconde tuile servait aussi à **remplir la quatrième cellule** d'une grille
+2 × 2. Ajouter une information pour satisfaire une géométrie est l'inverse de l'ordre correct : c'est
+le besoin qui fixe le nombre de tuiles, et la géométrie qui s'y plie. `D-1` est révisée en
+conséquence.
+
+**Le contrat porte désormais la règle générale** qu'aucun texte ne portait : *l'interface ne rend pas
+deux fois un fait qu'un état canonique porte déjà* (`11` §3, item 9, troisième condition). Et
+`ASP-CI-46` **refuse** la tuile d'alimentation — ce que le contrôle **exigeait** la veille, il
+l'interdit : la décision est mécanisée dans les deux sens.
 
 ### `D-3` — Aucun seuil, donc aucune couleur sémantique
 
@@ -178,12 +224,13 @@ Un gabarit de batterie à seuils existe déjà, mais il vit sous `40_dashboards/
 seuils colorés** que `D-3` refuse. Le domaine crée donc le sien,
 [`carte_aspirateur_batterie.yaml`](../../../../19_button_card_templates/40_dashboards/aspirateur/carte_aspirateur_batterie.yaml),
 **satellite de `socle_status`** — le même socle que ses trois voisines de bloc, ce qui garantit
-l'unité typographique de la grille 2 × 2. C'est le précédent déjà suivi par
+l'unité typographique de la ligne à trois cellules. C'est le précédent déjà suivi par
 `carte_action_aspirateur_option`, généralisé depuis un gabarit voisin plutôt qu'appelé à travers les
 domaines.
 
-L'alimentation, elle, **ne crée aucun gabarit** : elle emploie le générique
-`carte_mode_binaire_interprete`, dont les variables de libellé et de couleur suffisent exactement.
+**Aucun autre gabarit n'est créé.** La tuile d'alimentation, qui employait le générique
+`carte_mode_binaire_interprete`, est retirée par la révision de `D-2` ; ce générique n'est plus appelé
+ici.
 
 ### `D-6` — Identifiant de contrôle
 
@@ -203,7 +250,7 @@ aucun code.**
 
 | Item | Contenu |
 |---|---|
-| **2.1** | `11` §3 — **neuvième obligation** : l'UI restitue l'observation de charge, **niveau et alimentation distinctement**, **sans seuil ni couleur d'alerte**, en rendant l'indisponibilité. |
+| **2.1** | `11` §3 — **neuvième obligation** : l'UI restitue le **niveau** de charge, **sans seuil ni couleur d'alerte**, en rendant l'indisponibilité — et **ne rend pas deux fois** un fait qu'un état canonique porte déjà (troisième condition, posée par la révision de `D-2`). |
 | **2.2** | `07` §5.3 — le renvoi devient **exigible** : il nomme le chapitre qui porte désormais l'obligation. |
 | **2.3** | `08` §2 — la ligne « Batterie, charge » dit que cette observation **est restituée**, et sous quel régime. |
 | **Ne fait pas** | Aucun invariant déclaré. **Aucun identifiant technique porté au contrat** (`ASP-INV-58`) : le rôle, jamais l'entité. |
@@ -213,8 +260,8 @@ aucun code.**
 | Item | Contenu |
 |---|---|
 | **3.1** | Gabarit `carte_aspirateur_batterie` — lecture seule stricte, pourcentage arrondi, `—` sur valeur non numérique, icône suivant le niveau, **deux gris et rien d'autre**. |
-| **3.2** | Bloc d'entrée porté à **2 × 2** selon `D-1` ; en-tête du panneau mis à jour — il énumère ses patrons et sa hiérarchie, il ne peut pas décrire un bloc qui a changé. |
-| **3.3** | Tuile d'alimentation sur le générique binaire, libellés `Oui` / `Non`, **deux gris**. |
+| **3.2** | Bloc d'entrée porté à **une ligne de trois colonnes** — `État · Batterie · Mission` — selon `D-1` révisée ; en-tête du panneau mis à jour, il énumère ses patrons et sa hiérarchie et ne peut pas décrire un bloc qui a changé. |
+| **3.3** | **Aucune tuile d'alimentation** (`D-2` révisée) : le fait « en charge » est déjà l'un des dix états canoniques. |
 | **Preuve** | Grille à quatre cellules pour deux colonnes (`R-LL-GRID-1`) ; aucune entité d'action, aucun nom de service (`ASP-CI-7`) ; aucun Jinja dans un dashboard (`R-LL-SKEL-1`). |
 
 ### 5.4 Lot 4 — Fermeture de la boucle CI — **EXÉCUTÉ (2026-09-07)**
@@ -225,7 +272,7 @@ réels :
 | Volet | Ce qui est vérifié | Ce qu'une régression produit |
 |---|---|---|
 | **Présence** | Le panneau porte **une tuile par témoin**, chacune sur l'entité native attestée, hors commentaires | Une suppression de tuile est **rouge** — l'écart de 2026-09-07 ne peut pas se reformer en silence |
-| **Distinction** | Les deux tuiles sont **deux nœuds distincts** — jamais une seule qui porterait les deux | Une fusion « de confort » est **rouge** (`D-2`) |
+| **Non-duplication** | **Aucune** tuile ne restitue le témoin natif d'alimentation | Réintroduire le doublon retiré le 2026-09-07 est **rouge** (`D-2` révisée) |
 | **Absence de seuil** | Le gabarit de batterie ne contient **aucune couleur sémantique** — ni rouge, ni orange, ni jaune, ni vert, ni bleu ; ses seules teintes sont les deux gris | L'introduction d'un seuil visuel est **rouge**, y compris déguisée en réglage de gabarit (`D-3`, `ASP-INV-41`) |
 
 **Ce troisième volet est le cœur du contrôle** : sans lui, `ASP-INV-41` resterait une clause qu'aucun
@@ -235,10 +282,10 @@ mécanisme ne défend — exactement l'état qui a produit ce chantier.
 
 | Item | À observer sur l'instance |
 |---|---|
-| **5.1** | Les deux tuiles s'alimentent : un pourcentage plausible, une alimentation cohérente avec l'état du robot. |
-| **5.2** | Le bloc 2 × 2 tient sur **mobile portrait** — quatre libellés entiers, quatre hauteurs égales, aucune troncature. |
+| **5.1** | La tuile s'alimente : un pourcentage plausible, cohérent avec l'état du robot. |
+| **5.2** | La ligne à **trois colonnes** tient sur **mobile portrait** — trois libellés entiers, trois hauteurs égales, **aucune troncature**, `État` affichant « Non qualifié » et `Mission` « Indisponible ». **C'est la preuve due de `D-1` révisée** : l'argument est une comparaison de largeurs sur pièces, pas une observation. |
 | **5.3** | Sur robot amarré et plein, relever **la valeur native de l'état machine** — c'est le seul relevé qui établirait ou infirmerait l'hypothèse `charging_complete` du §2.4. **À consigner, pas à exploiter ici.** |
-| **5.4** | Indisponibilité rendue : robot hors ligne, les deux tuiles tombent au gris atténué et affichent `—`. |
+| **5.4** | Indisponibilité rendue : robot hors ligne, la tuile tombe au gris atténué et affiche `—`. |
 
 ---
 
@@ -259,7 +306,7 @@ mécanisme ne défend — exactement l'état qui a produit ce chantier.
 | Chantier | Ce qu'il touche | Recouvrement |
 |---|---|---|
 | **C42** | Écran d'entretien, script de déclaration | **Aucun** — autre écran, autre objet. |
-| **C45** | Projection métier de mission, migration de l'attribut ambigu, gestes de conduite | **Aucun fichier commun hors le panneau lui-même**, et **aucune ligne commune dans ce panneau** : le Lot 6 de `C45` travaille la section Mission et la section Conduite, `C50` la seconde ligne du bloc d'entrée. Les deux tuiles ajoutées ici **ne lisent ni le verdict, ni sa projection, ni le témoin de session** — aucune interaction avec `ASP-CI-11`, `ASP-CI-43`, `ASP-CI-44` ni `ASP-CI-45`. |
+| **C45** | Projection métier de mission, migration de l'attribut ambigu, gestes de conduite | **Aucun fichier commun hors le panneau lui-même**, et **aucune ligne commune dans ce panneau** : le Lot 6 de `C45` travaille la section Mission et la section Conduite, `C50` la cellule centrale du bloc d'entrée. La tuile ajoutée ici **ne lit ni le verdict, ni sa projection, ni le témoin de session** — aucune interaction avec `ASP-CI-11`, `ASP-CI-43`, `ASP-CI-44` ni `ASP-CI-45`. |
 
 **Aucune dette n'est transférée, aucun constat n'est fermé, aucun état de clôture du domaine n'est
 modifié.**

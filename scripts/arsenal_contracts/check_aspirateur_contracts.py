@@ -303,13 +303,17 @@ exécute les arbitrages `Q1` et `Q2` :
                           contraint que le lancement ; le RETOUR À LA BASE
                           porte ses TROIS exclusions de sens physique, ni plus
                           ni moins, des deux côtés (ASP-INV-97, ASP-INV-48).
-  ASP-CI-46 Charge      — l'observation de charge EST RESTITUÉE, et sans seuil
-                          (11 §3 item 9, ASP-INV-41). Trois volets : le
-                          panneau porte UNE TUILE PAR TÉMOIN — niveau et
-                          alimentation —, ces tuiles sont DEUX NŒUDS DISTINCTS
-                          (jamais une lecture fondue), et NI leur site d'appel
-                          NI le gabarit de la mesure ne porte de couleur
-                          sémantique. Ce dernier volet est le cœur du
+  ASP-CI-46 Charge      — le NIVEAU de charge EST RESTITUÉ, sans seuil et sans
+                          doublon (11 §3 item 9, ASP-INV-41). Trois volets : le
+                          panneau porte la TUILE DE NIVEAU ; il ne porte AUCUNE
+                          tuile sur le témoin natif d'alimentation — le fait
+                          « en charge » est déjà l'un des dix états canoniques,
+                          et l'interface ne rend pas deux fois un fait qu'un
+                          état canonique porte déjà (arbitrage opérateur du
+                          2026-09-07, C50 D-2 révisée : ce que ce contrôle
+                          exigeait la veille, il le REFUSE) ; et NI le site
+                          d'appel NI le gabarit de la mesure ne porte de
+                          couleur sémantique. Ce dernier volet est le cœur du
                           contrôle : ASP-INV-41 ne refuse le seuil que parce
                           que l'opérateur décide, et une teinte de vigilance
                           sous un certain niveau EST ce seuil, appliqué sans
@@ -11170,24 +11174,24 @@ def selftest() -> None:
     c.viole(check_restitution_charge(_mut(
         _lov0, _ui, f"        entity: {TEMOIN_NIVEAU}\n", "")),
         "aucune tuile ne restitue le NIVEAU", "CI-46 tuile de niveau retiree")
-    c.viole(check_restitution_charge(_mut(
-        _lov0, _ui, f"        entity: {TEMOIN_ALIMENTATION}\n", "")),
-        "aucune tuile ne restitue l'ALIMENTATION",
-        "CI-46 tuile d'alimentation retiree")
     c.viole(check_restitution_charge({k: v for k, v in _lov0.items()
                                       if k != _ui}),
             "introuvable", "CI-46 panneau operationnel absent")
 
-    # ---- Volet 2 : DISTINCTION — pas de lecture fondue -------------------
-    # La fusion telle qu'elle se presenterait vraiment : la tuile de niveau
-    # se met a lire aussi l'alimentation, pour n'en faire qu'une lecture.
+    # ---- Volet 2 : NON-DUPLICATION de l'alimentation ---------------------
+    # Le doublon que l'arbitrage du 2026-09-07 a retire : une tuile sur le
+    # temoin natif d'alimentation, alors que l'etat canonique porte deja le
+    # fait « en charge ». La remettre est desormais rouge.
     c.viole(check_restitution_charge(_mut(
         _lov0, _ui,
         f"        entity: {TEMOIN_NIVEAU}\n        name: Batterie\n",
         f"        entity: {TEMOIN_NIVEAU}\n        name: Batterie\n"
-        "        variables:\n"
-        f"          temoin_charge: {TEMOIN_ALIMENTATION}\n")),
-        "lit aussi", "CI-46 les deux temoins fondus en une tuile")
+        "\n      - type: custom:button-card\n"
+        "        template: carte_mode_binaire_interprete\n"
+        f"        entity: {TEMOIN_ALIMENTATION}\n"
+        "        name: En charge\n")),
+        "deja porte par l'etat canonique",
+        "CI-46 tuile d'alimentation reintroduite")
 
     # ---- Volet 3a : le gabarit EMPLOYE est celui du domaine --------------
     # Le test decisif du volet : substituer un gabarit A SEUILS laisse le
@@ -11200,12 +11204,16 @@ def selftest() -> None:
         "le seul dont", "CI-46 gabarit a seuils substitue")
 
     # ---- Volet 3b : aucune couleur semantique ----------------------------
-    # Au SITE d'appel — ici sur la tuile d'alimentation, seule des deux a
-    # porter ses couleurs en variables.
+    # Au SITE d'appel — une surcharge locale suffirait a peindre la mesure
+    # sans toucher au gabarit ; c'est le contournement que ce cas ferme.
     c.viole(check_restitution_charge(_mut(
-        _lov0, _ui, "          color_on: 'rgba(158, 158, 158, 0.2)'",
-        "          color_on: 'rgba(76, 175, 80, 0.2)'")),
-        "une observation ne juge pas", "CI-46 vert pose au site d'appel")
+        _lov0, _ui,
+        f"        entity: {TEMOIN_NIVEAU}\n        name: Batterie\n",
+        f"        entity: {TEMOIN_NIVEAU}\n        name: Batterie\n"
+        "        styles:\n"
+        "          card:\n"
+        "            - background-color: 'rgba(244, 67, 54, 0.2)'\n")),
+        "une observation ne juge pas", "CI-46 rouge pose au site d'appel")
     # …et dans le GABARIT, sous ses deux formes d'ecriture.
     c.viole(check_restitution_charge(_mut(
         _lov0, _gab, "isNaN(v) ? 'rgba(158, 158, 158, 0.1)'",
@@ -13462,7 +13470,7 @@ def _tuiles_par_entite(doc, entites: set[str]) -> dict[str, list[dict]]:
 
 
 def check_restitution_charge(lovelace: dict[str, str]) -> list[str]:
-    """ASP-CI-46 — la charge est restituee, distinctement, sans seuil."""
+    """ASP-CI-46 — le niveau est restitue, sans seuil et sans doublon."""
     errs: list[str] = []
 
     txt = lovelace.get(FICHIER_UI_MISSION)
@@ -13473,38 +13481,31 @@ def check_restitution_charge(lovelace: dict[str, str]) -> list[str]:
     if doc is None:
         return [f"ASP-CI-46 : `{FICHIER_UI_MISSION}` illisible en YAML."]
 
-    # ── Volet 1 — PRESENCE ────────────────────────────────────────────
+    # ── Volet 1 — PRESENCE du NIVEAU ──────────────────────────────────
     tuiles = _tuiles_par_entite(doc, {TEMOIN_NIVEAU, TEMOIN_ALIMENTATION})
-    roles = {TEMOIN_NIVEAU: "le NIVEAU de charge",
-             TEMOIN_ALIMENTATION: "l'ALIMENTATION en cours"}
-    for entite, role in roles.items():
-        if not tuiles[entite]:
-            errs.append(
-                f"ASP-CI-46 : aucune tuile ne restitue {role} "
-                f"(`{entite}`) dans `{FICHIER_UI_MISSION}`. Le contrat 11 §3 "
-                "item 9 l'exige, comme contrepartie de l'abstention "
+    if not tuiles[TEMOIN_NIVEAU]:
+        return [f"ASP-CI-46 : aucune tuile ne restitue le NIVEAU de charge "
+                f"(`{TEMOIN_NIVEAU}`) dans `{FICHIER_UI_MISSION}`. Le contrat "
+                "11 §3 item 9 l'exige, comme contrepartie de l'abstention "
                 "d'ASP-INV-41 : Arsenal ne juge pas la batterie PARCE QUE "
                 "l'operateur decide, et il ne decide pas de ce qu'il ne voit "
-                "pas.")
-    if errs:
-        return errs
+                "pas."]
 
-    # ── Volet 2 — DISTINCTION ─────────────────────────────────────────
-    # Deux temoins, deux tuiles. La fusion ne se presente pas comme une
-    # cle `entity` double — elle n'existe pas — mais comme une tuile qui
-    # lit l'AUTRE temoin par une variable ou dans son rendu, pour en
-    # faire une lecture unique (« 78 % ⚡ »). Ce serait l'agregation de
-    # confort que le 08 §1.1 refuse : les deux peuvent legitimement
-    # diverger, et l'interface les REND.
-    for entite, autre in ((TEMOIN_NIVEAU, TEMOIN_ALIMENTATION),
-                          (TEMOIN_ALIMENTATION, TEMOIN_NIVEAU)):
-        corps = yaml.safe_dump(tuiles[entite][0], allow_unicode=True)
-        if autre in corps:
-            errs.append(
-                f"ASP-CI-46 : la tuile de `{entite}` lit aussi `{autre}` — "
-                "niveau et alimentation sont deux temoins natifs distincts, "
-                "qui peuvent legitimement diverger ; ils ne se fondent pas en "
-                "une lecture unique (08 §1.1, 11 §3 item 9).")
+    # ── Volet 2 — NON-DUPLICATION de l'ALIMENTATION ───────────────────
+    # Arbitrage operateur du 2026-09-07 (C50, D-2 revisee). « Le robot est
+    # en charge » est DEJA l'un des dix etats canoniques, restitue par la
+    # tuile d'etat. Une seconde tuile sur le temoin natif d'alimentation
+    # n'ajouterait aucune information : elle DIVISERAIT LA MEME EN DEUX
+    # ENDROITS, et donnerait a lire deux sources la ou le contrat n'en
+    # nomme qu'une. Le controle refuse donc cette tuile — la premiere
+    # version de C50 la portait, et c'est elle que cet arbitrage retire.
+    for noeud in tuiles[TEMOIN_ALIMENTATION]:
+        errs.append(
+            f"ASP-CI-46 : une tuile restitue `{TEMOIN_ALIMENTATION}` "
+            f"(`{noeud.get('name')!r}`) dans `{FICHIER_UI_MISSION}` — le fait "
+            "« en charge » est deja porte par l'etat canonique, et "
+            "l'interface ne rend pas deux fois un fait qu'un etat canonique "
+            "porte deja (11 §3 item 9, troisieme condition).")
 
     # ── Volet 3a — le gabarit EMPLOYE est celui du domaine ────────────
     tuile_niveau = tuiles[TEMOIN_NIVEAU][0]
@@ -13518,15 +13519,14 @@ def check_restitution_charge(lovelace: dict[str, str]) -> list[str]:
             "fichier du domaine (ASP-INV-41, C50 D-5).")
 
     # ── Volet 3b — aucune couleur semantique, ni au site ni au gabarit ─
-    for entite, role in roles.items():
-        for hors in _couleurs_non_grises(yaml.safe_dump(tuiles[entite][0],
-                                                        allow_unicode=True)):
-            errs.append(
-                f"ASP-CI-46 : la tuile qui restitue {role} porte la couleur "
-                f"{hors} — une observation ne juge pas. Une teinte de "
-                "vigilance sous un certain niveau EST un seuil, applique "
-                "sans etre ecrit, et ASP-INV-41 n'en admet aucun. Seuls les "
-                "deux gris sont admis (charte, regle R6).")
+    for hors in _couleurs_non_grises(yaml.safe_dump(tuile_niveau,
+                                                    allow_unicode=True)):
+        errs.append(
+            f"ASP-CI-46 : la tuile qui restitue le NIVEAU de charge porte la "
+            f"couleur {hors} — une observation ne juge pas. Une teinte de "
+            "vigilance sous un certain niveau EST un seuil, applique sans "
+            "etre ecrit, et ASP-INV-41 n'en admet aucun. Seuls les deux gris "
+            "sont admis (charte, regle R6).")
 
     gab = lovelace.get(FICHIER_GABARIT_BATTERIE)
     if gab is None:

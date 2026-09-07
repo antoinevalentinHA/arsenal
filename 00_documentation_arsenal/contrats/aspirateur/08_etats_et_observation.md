@@ -201,7 +201,7 @@ règles.
 | **Quelle pièce ?** | `sensor.roborock_q7_max_piece_actuelle` | Observation ; sert aussi de **confirmation cartographique** ([`06`](06_integrite_mono_carte.md)) |
 | **Pourquoi l'erreur ?** | `sensor.roborock_q7_max_erreur_de_l_aspirateur`, `sensor.roborock_q7_max_dock_erreur_de_dock` | Observation de diagnostic |
 | **Progression** | Durée de nettoyage, surface de nettoyage | Observation — lecture bornée par [`04`](04_nombre_de_passages.md) §3 |
-| **Batterie, charge, prérequis matériels** | Entités natives correspondantes | Observation, jamais gate — sauf la serpillière ([`03`](03_profils_metier.md) §4). Le **niveau** et l'**alimentation en cours** sont **deux témoins distincts** : ils peuvent légitimement diverger, et l'interface les rend **séparément et sans seuil** ([`11`](11_frontiere_ui.md) §3, item 9) |
+| **Batterie, charge, prérequis matériels** | Entités natives correspondantes | Observation, jamais gate — sauf la serpillière ([`03`](03_profils_metier.md) §4). Le **niveau** est restitué à l'opérateur, **sans seuil** ([`11`](11_frontiere_ui.md) §3, item 9) ; l'**alimentation en cours** ne l'est pas séparément — elle est déjà portée par l'état canonique `charge` (§1) |
 
 > **`ASP-INV-46` — la garde anti-double-lancement s'appuie sur l'état machine.**
 > Elle repose sur `sensor.roborock_q7_max_etat`, **jamais** sur le témoin de
