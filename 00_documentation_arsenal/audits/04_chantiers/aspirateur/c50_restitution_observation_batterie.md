@@ -283,7 +283,7 @@ mécanisme ne défend — exactement l'état qui a produit ce chantier.
 | Item | À observer sur l'instance |
 |---|---|
 | **5.1** | La tuile s'alimente : un pourcentage plausible, cohérent avec l'état du robot. |
-| **5.2** | La ligne à **trois colonnes** tient sur **mobile portrait** — trois libellés entiers, trois hauteurs égales, **aucune troncature**, `État` affichant « Non qualifié » et `Mission` « Indisponible ». **C'est la preuve due de `D-1` révisée** : l'argument est une comparaison de largeurs sur pièces, pas une observation. |
+| **5.2** | **Attendu rectifié** — la géométrie à trois colonnes de `D-1` révisée a été **elle-même supplantée le même jour** par le Lot 6 de `C45` ([`c45_propagation_arbitrages_q1_q2.md`](c45_propagation_arbitrages_q1_q2.md) §5.6), qui a ajouté la tuile `Session robot` et ramené le bloc d'entrée à une **grille 2 × 2**. L'ancien attendu — trois colonnes, tuile `Mission` affichant « Indisponible » — **ne sert plus la validation terrain**. Ce qui reste à observer : le bloc d'entrée (`État · Mission · Session robot · Batterie`) tient sur **mobile portrait** — **quatre tuiles lisibles**, **sans chevauchement**, **sans troncature problématique**, **sans rupture de hiérarchie** ; la tuile `Mission` rend **`—`**, et non un libellé, lorsque la projection est **indisponible** (`ASP-INV-45`). Aucune décision esthétique nouvelle n'est prise par cette rectification, et `QO-C50-1` reste **ouverte**. |
 | **5.3** | Sur robot amarré et plein, relever **la valeur native de l'état machine** — c'est le seul relevé qui établirait ou infirmerait l'hypothèse `charging_complete` du §2.4. **À consigner, pas à exploiter ici.** |
 | **5.4** | Indisponibilité rendue : robot hors ligne, la tuile tombe au gris atténué et affiche `—`. |
 
