@@ -593,11 +593,34 @@ include:
     # =====================================================
     # ==== ❄️ CLIMATISATION ====
     # =====================================================
+    # RECORDER — Population B
+    # Rôle        : alimentation physique rapportée par l'intégration
+    #               (get_device_on_off_state), lecture seule.
+    # Utilité     : source du Logbook (cf. logbook.yaml) — le Logbook lit le
+    #               Recorder, l'entité doit y être historisée pour générer
+    #               ses entrées. N'alimente plus le history-graph du dashboard
+    #               Climatisation (remplacé par sensor.clim_mode_local, plus
+    #               bas) depuis l'introduction de l'historique coloré par mode.
+    # Logbook     : inclus — voir logbook.yaml.
+    # Cardinalité : binaire (on/off).
+    # Fréquence   : faible — une transition par cycle marche/arrêt.
+    - switch.clim_power
+
+    # RECORDER — Population B
+    # Rôle        : état réel du mode HVAC rapporté par climate.clim (source
+    #               fujitsu_airstage), miroir historisé pour observabilité.
+    # Utilité     : alimente le history-graph du dashboard Climatisation
+    #               (coloration par mode — heat/dry/cool/off) et les
+    #               investigations empiriques (ex.
+    #               investigation_historique_clim_30j.md).
+    # Logbook     : non inclus (cf. logbook.yaml — seul switch.clim_power l'est).
+    # Cardinalité : énumérée (off/cool/dry/heat/auto/fan_only).
+    # Fréquence   : faible — un changement par transition de mode.
+    - sensor.clim_mode_local
+
     # RECORDER — Population A — OBLIGATOIRE — contrainte HA
     # Route : source de capteur `platform: statistics` (proxys/energy.yaml) — historique requis.
     # Population A dans ce bloc : clim_consommation_estimee_energie uniquement.
-    - switch.clim_power
-    - sensor.clim_mode_local
     - sensor.clim_consommation_estimee_energie
     - sensor.clim_consommation_estimee_aujourd_hui
     # ---- Observabilité chaîne décisionnelle (audit historique) ----
