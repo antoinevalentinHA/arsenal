@@ -11189,20 +11189,22 @@ def selftest() -> None:
         "conditionne encore", "CI-45 un geste retourne au temoin natif")
     # …et la SECTION, dont la disjonction masque tout ce qu'elle contient :
     # un geste offert par sa condition propre mais retire par sa section
-    # n'est pas offert du tout.
+    # n'est pas offert du tout. Depuis le lot 8 elle tient en UN terme, a
+    # l'indentation de la liste de conditions du conditional.
+    _SECTION_PROJ = (f"      - condition: state\n        entity: {_PROJ}\n"
+                     "        state: \"on\"\n")
     c.viole(check_offre_gestes(rt0, _mut(
-        _lov0, _ui,
-        f"          - condition: state\n            entity: {_PROJ}\n"
-        "            state: \"on\"\n", "")),
+        _lov0, _ui, _SECTION_PROJ,
+        "      - condition: state\n"
+        "        entity: sensor.aspirateur_etat_canonique\n"
+        "        state: nettoyage_reel\n")),
         "n'inclut aucun terme", "CI-45 section privee du terme de projection")
     c.viole(check_offre_gestes(rt0, _mut(
-        _lov0, _ui,
-        f"          - condition: state\n            entity: {_PROJ}\n"
-        "            state: \"on\"\n",
-        "          - condition: state\n"
-        "            entity: sensor.aspirateur_etat_canonique\n"
-        f"            attribute: {ETAT_ORTHOGONAL}\n"
-        "            state: oui\n")),
+        _lov0, _ui, _SECTION_PROJ,
+        "      - condition: state\n"
+        "        entity: sensor.aspirateur_etat_canonique\n"
+        f"        attribute: {ETAT_ORTHOGONAL}\n"
+        "        state: oui\n")),
         "lit encore l'attribut", "CI-45 section revenue au temoin natif")
 
     # ---- ASP-CI-11 etendu : l'allowlist n'est ni dormante ni une breche --
@@ -11409,26 +11411,57 @@ def selftest() -> None:
     _COND_PROJ = (f"              entity: binary_sensor."
                   f"{ID_PROJECTION_MISSION_OUVERTE}\n"
                   "              state: \"on\"\n")
-
-    # ---- SUR-OFFRE : l'Arret retourne au temoin natif --------------------
-    # C'est la faute d'origine de RC-02, rejouee : sur une mission externe,
-    # le bouton reapparait, et le backend le refusera.
+    # ---- SUR-OFFRE : l'autorite retourne au temoin natif -----------------
+    # C'est la faute d'origine de RC-02, rejouee sur TOUTE la chaine — les
+    # quatre sites ET la section. Muter un seul site ne prouverait plus
+    # rien depuis le lot 8 : la section, reduite au terme d'autorite,
+    # masque a elle seule tout ce qu'elle contient. C'est une defense en
+    # profondeur, et le test doit donc la percer pour etre probant.
     c.viole(check_scenarios_noyau(_mut(
-        _dep0, _ui, _COND_PROJ,
-        "              entity: sensor.aspirateur_etat_canonique\n"
-        f"              attribute: {ETAT_ORTHOGONAL}\n"
-        "              state: oui\n", 2)),
-        "SUR-OFFRE", "CI-48 l'Arret revenu au temoin natif est offert")
+        _dep0, _ui, f"entity: binary_sensor.{ID_PROJECTION_MISSION_OUVERTE}\n",
+        "entity: sensor.aspirateur_etat_canonique\n", 9)),
+        "ASP-CI-48", "CI-48 l'autorite revenue au temoin natif")
 
+    # ---- SUR-OFFRE : la SECTION seule s'elargit --------------------------
+    # Elle paraitrait alors au-dessus de ZERO bouton sur une mission
+    # externe : une offre annoncee puis absente, que le lot 8 a fermee en
+    # reduisant la disjonction a son terme exact.
+    c.viole(check_scenarios_noyau(_mut(
+        _dep0, _ui,
+        f"      - condition: state\n        entity: binary_sensor."
+        f"{ID_PROJECTION_MISSION_OUVERTE}\n        state: \"on\"\n",
+        "      - condition: or\n        conditions:\n"
+        "          - condition: state\n"
+        f"            entity: binary_sensor.{ID_PROJECTION_MISSION_OUVERTE}\n"
+        "            state: \"on\"\n"
+        "          - condition: state\n"
+        "            entity: sensor.aspirateur_etat_canonique\n"
+        "            state: nettoyage_reel\n")),
+        "la section de conduite paraît malgré tout",
+        "CI-48 section elargie au-dessus de zero bouton")
     # ---- SOUS-OFFRE : l'Arret gagne une exclusion physique ---------------
     # L'arret n'est jamais plus contraint que le lancement (ASP-INV-43) :
-    # une exclusion le masque sur le scenario (b), ou il devrait etre offert.
+    # une exclusion le masque sur le scenario (b), ou il devrait etre
+    # offert. L'ancre vise le site de l'ARRET nommement — depuis le lot 8,
+    # les quatre sites portent la meme condition d'autorite, et un ancrage
+    # par rang toucherait le premier venu.
     c.viole(check_scenarios_noyau(_mut(
-        _dep0, _ui, _COND_PROJ,
-        _COND_PROJ
-        + "            - condition: state\n"
+        _dep0, _ui,
+        "              state: \"on\"\n"
+        "          card:\n"
+        "            type: custom:button-card\n"
+        "            template: carte_action_standard_warning\n"
+        "            entity: script.aspirateur_conduire_mission\n"
+        "            name: Arrêter la mission\n",
+        "              state: \"on\"\n"
+        "            - condition: state\n"
         "              entity: sensor.aspirateur_etat_canonique\n"
-        "              state_not: charge\n", 2)),
+        "              state_not: charge\n"
+        "          card:\n"
+        "            type: custom:button-card\n"
+        "            template: carte_action_standard_warning\n"
+        "            entity: script.aspirateur_conduire_mission\n"
+        "            name: Arrêter la mission\n")),
         "attendu OFFERT", "CI-48 l'Arret masque par une exclusion physique")
 
     # ---- Le RETOUR BASE perd une exclusion de sens physique --------------
@@ -13565,7 +13598,13 @@ def check_offre_gestes(textes_runtime, lovelace) -> list[str]:
         return any(isinstance(c, dict) and c.get("attribute") == ETAT_ORTHOGONAL
                    for c in conditions)
 
-    for geste in (GESTE_SANS_RESTRICTION, "retour_base"):
+    # LES QUATRE GESTES, depuis le lot 8. Le lot 6 n'avait bascule que
+    # l'Arret et le Retour base — les deux que `Q2` avait arbitres —, et
+    # Pause comme Reprise n'appliquaient que la moitie PHYSIQUE de leurs
+    # gardes du 15 §3.1, en omettant la moitie d'AUTORITE que ces gardes
+    # portent pourtant ecrite. ASP-INV-97 vise « un geste de conduite
+    # Arsenal », sans exception : les quatre sont donc verifies.
+    for geste in ("pause", "reprise", GESTE_SANS_RESTRICTION, "retour_base"):
         conds = sites.get(geste)
         if conds is None:
             continue
@@ -13966,31 +14005,29 @@ def check_projection_mission(depot: dict[str, str]) -> list[str]:
 #                          │
 #                          └─►  conditions Lovelace  ─►  gestes offerts
 #
-# CE QUE CE CONTROLE ETABLIT, ET QUI N'EST PAS CONFORTABLE.
+# CE QUE CE CONTROLE ETABLIT.
 #
-# Le scenario (b), SOUS-OFFRE, passe : mission Arsenal ouverte et robot
-# rentre au dock, l'Arret est offert et le Retour base masque par le SEUL
-# motif de sens physique. C'est la levee de RC-02 pour ces deux gestes.
+# Les DEUX scenarios du noyau causal passent, et sur les QUATRE gestes.
 #
-# Le scenario (a), SUR-OFFRE, ne passe PAS entierement, et le figer ici est
-# le seul moyen de ne pas le perdre de vue. Sur une MISSION EXTERNE — robot
-# qui nettoie sans qu'Arsenal ait rien ouvert —, l'Arret et le Retour base
-# sont bien masques : leur autorite a bascule au lot 6. Mais PAUSE reste
-# offerte, et REPRISE l'est sur une pause externe : leurs conditions sont
-# demeurees adossees a l'ACTIVITE PHYSIQUE, `Q2` §6 in fine les ayant
-# explicitement laissees NON ARBITREES.
+# (b) SOUS-OFFRE — mission Arsenal ouverte, robot rentre au dock : l'Arret
+# est offert, et le Retour base masque par le SEUL motif de sens physique.
 #
-# Or la garde du script de conduite s'arrete AVANT le dispatch, sur le seul
-# verdict : un Pause emis pendant une mission externe est REFUSE. C'est,
-# mot pour mot, RC-02 — un bouton presente puis ignore —, subsistant sur
-# les deux gestes que l'arbitrage n'a pas couverts.
+# (a) SUR-OFFRE — mission EXTERNE, robot que le domaine n'a jamais ouvert :
+# AUCUN geste de conduite Arsenal n'est propose, et la section elle-meme
+# disparait. C'est la propriete voulue d'ASP-INV-97, ecrite comme telle.
 #
-# LES ATTENDUS CI-DESSOUS DISENT DONC CE QUI EST, PAS CE QUI DEVRAIT ETRE.
-# Ils GELENT un residu documente et borne, comme l'allowlist du lot 3
-# gelait une population : le residu ne peut plus s'etendre en silence, et
-# le jour ou un arbitrage etendra l'autorite de la mission a Pause et
-# Reprise, ces attendus devront changer — le controle rendra ce changement
-# VISIBLE au lieu de le laisser passer. RC-02 reste OUVERTE d'ici la.
+# CE QUE LE LOT 7 AVAIT ETABLI, ET QUE LE LOT 8 A CORRIGE. Au lot 7, ces
+# attendus GELAIENT un residu : Pause restait offerte sur une mission
+# externe, Reprise sur une pause externe. Leurs conditions n'appliquaient
+# que la MOITIE PHYSIQUE des gardes du 15 §3.1 — « mission Arsenal ouverte
+# ET activite en cours » pour l'une, « ASP-INV-62 PLUS mission Arsenal
+# ouverte » pour l'autre — en omettant la moitie d'AUTORITE. Le lot 8 l'a
+# posee. Le gel a donc dure un lot, et sa levee est verifiee ici.
+#
+# LA SECTION EST VERIFIEE COMME LES GESTES. Une disjonction plus large que
+# la conjonction exacte des quatre gardes ferait paraitre l'en-tete de
+# conduite au-dessus de ZERO bouton — un en-tete vide n'est pas un defaut
+# cosmetique, c'est une offre annoncee puis absente.
 
 SCENARIOS_NOYAU = (
     # (libelle, etat machine natif, temoin de session, verdict,
@@ -13998,12 +14035,11 @@ SCENARIOS_NOYAU = (
     ("(a) SUR-OFFRE — mission externe, robot en nettoyage",
      "cleaning", "on", "REFUS/MISSION_DEJA_OUVERTE",
      {"arret": False, "retour_base": False,
-      # RESIDU documente — voir l'en-tete de ce controle.
-      "pause": True, "reprise": False}),
+      "pause": False, "reprise": False}),
     ("(a bis) SUR-OFFRE — mission externe, robot en pause",
      "paused", "on", "REFUS/MISSION_DEJA_OUVERTE",
      {"arret": False, "retour_base": False,
-      "pause": False, "reprise": True}),      # meme residu, autre geste
+      "pause": False, "reprise": False}),
     ("(b) SOUS-OFFRE — mission Arsenal ouverte, robot rentre au dock",
      "charging", "off", "CONDUITE/PAUSE_CONFIRMEE",
      {"arret": True, "retour_base": False,
@@ -14015,7 +14051,7 @@ SCENARIOS_NOYAU = (
     ("(d) VERDICT INCONNAISSABLE — helper non initialise au demarrage",
      "cleaning", "on", "unknown",
      {"arret": False, "retour_base": False,
-      "pause": True, "reprise": False}),
+      "pause": False, "reprise": False}),
 )
 
 # Le geste dont l'exclusion, en (b), doit venir du SEUL sens physique.
@@ -14135,6 +14171,20 @@ def check_scenarios_noyau(depot: dict[str, str]) -> list[str]:
                         f"{libelle} ({exc}).")
             continue
         visible = _evalue_condition(section, monde)
+        # La section suit les gestes : si aucun n'a d'objet, elle ne doit
+        # pas paraitre. Un en-tete de conduite au-dessus de zero bouton
+        # annonce une offre qui n'existe pas.
+        if visible and not any(attendu.values()):
+            errs.append(
+                f"ASP-CI-48 : {libelle} — aucun geste n'est offert, et la "
+                "section de conduite paraît malgré tout. Sa disjonction est "
+                "plus large que la conjonction exacte des quatre gardes : "
+                "l'en-tête annonce une offre qui n'existe pas.")
+        if not visible and any(attendu.values()):
+            errs.append(
+                f"ASP-CI-48 : {libelle} — des gestes ont un objet, et la "
+                "section de conduite ne paraît pas : elle les masque tous. "
+                "Un geste retiré par sa section n'est pas offert (RC-02).")
         for geste, offert_attendu in sorted(attendu.items()):
             conds = sites.get(geste)
             if conds is None:

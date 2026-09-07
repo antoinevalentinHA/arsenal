@@ -314,11 +314,30 @@ garde de sens physique → écriture de l'engagement → émission UNIQUE
 > précisément ce qui rend la coïncidence atteignable : sans projection, l'affichage
 > et la garde lisaient deux prédicats différents.
 
-> **Pause et Reprise ne sont pas modifiées par cet invariant.** Leurs conditions
-> restent **exactement** celles du §3.1. `ASP-INV-97` fixe l'**autorité** de
-> l'offre — la classe `O` —, condition que ces deux gestes satisfaisaient déjà par
-> leur garde de mission ouverte ; il ne touche **ni** leur garde de sens physique,
-> **ni** leur séquence, **ni** la garde fermée d'`ASP-INV-62`.
+> **Pause et Reprise : leur garde de sens physique n'est pas modifiée, leur
+> autorité n'a jamais été une exception.** `ASP-INV-97` vise **un geste de
+> conduite Arsenal**, sans exception : les **quatre** gestes ne sont proposés que
+> tant que le verdict appartient à la classe `O`. Ce qu'il ne touche pas, pour
+> Pause et Reprise, c'est leur **garde de sens physique**, leur **séquence** et la
+> garde fermée d'`ASP-INV-62` — toutes trois inchangées, et écrites au §3.1.
+>
+> **Les deux conditions se cumulent, et ne se confondent pas** : l'**autorité**
+> ouvre l'offre, le **sens physique** la restreint. Le §3.1 le dit déjà pour ces
+> deux gestes — garde de Pause : « mission **Arsenal** ouverte **et** activité en
+> cours » ; garde de Reprise : `ASP-INV-62`, **plus** mission **Arsenal** ouverte
+> (`D-07`).
+>
+> **Rectification (2026-09-07).** Une rédaction antérieure de cette clause
+> affirmait que ces deux gestes « satisfaisaient **déjà** » la condition
+> d'autorité « par leur garde de mission ouverte ». C'était vrai du **backend**,
+> dont la garde de classe `O` précède le dispatch et vaut donc pour les quatre
+> gestes — et **faux de l'interface**, qui n'appliquait que la moitié **physique**
+> de ces gardes. Cette affirmation, en présentant une conformité comme acquise,
+> est exactement ce qui a laissé l'écart subsister : un bouton **présenté puis
+> refusé** sur une mission externe, c'est-à-dire la **non-conformité** que la
+> clause « Aucun geste présenté puis refusé » ci-dessus qualifie comme telle.
+> L'écart a été **rendu** puis **résorbé** — chantier `C45`, constat `R-LOT7-1`,
+> lot 8.
 
 ---
 
