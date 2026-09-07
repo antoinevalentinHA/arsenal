@@ -301,7 +301,5 @@ views:
 
               - type: history-graph
                 entities:
-                  - entity: switch.clim_power
                   - entity: sensor.clim_mode_local
-                    name: Mode
                 logarithmic_scale: true
