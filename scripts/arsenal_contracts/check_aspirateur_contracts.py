@@ -212,8 +212,9 @@ au runtime de conduite et de supervision :
   ASP-CI-23 État rendu  — le gabarit d'état canonique est RENDU sur les 43
                           valeurs réellement exposées par l'appareil, plus
                           `unavailable`, et confronté à l'image contractuelle
-                          classe par classe ; `mission_ouverte` doit distinguer
-                          l'indisponibilité de `non` (ASP-INV-45/68).
+                          classe par classe ; `session_robot_active` doit
+                          distinguer l'indisponibilité de `non`
+                          (ASP-INV-45/68).
   ASP-CI-24 Garde rendue— la garde de lancement est RENDUE sur le produit
                           cartésien des quatre témoins et confrontée à la règle
                           du moteur : une garde qui ne calcule plus rien ne
@@ -266,34 +267,35 @@ exécute les arbitrages `Q1` et `Q2` :
                           représentation doit être QUALIFIÉE avant d'être
                           admise, une liste qui diverge pouvant être la bonne
                           (ASP-INV-98).
-  ASP-CI-44 Ancien code  — régime TRANSITOIRE du code historique du dixième
-                          état. Allowlist FERMÉE et NOMINATIVE qui GÈLE la
-                          population existant au HEAD du lot 2 : producteur,
-                          quatre sites de restitution, ce module et le
-                          chapitre 08. Refus de toute occurrence technique
-                          supplémentaire ou déplacée, et refus du code de
-                          REMPLACEMENT tant que le mouvement atomique du lot 5
-                          n'a pas eu lieu. Le cardinal des deux fichiers gelés
-                          est lu DEUX FOIS : en FORME, par analyse structurée
-                          des clés d'attribut du producteur et des slots de
-                          restitution de l'arbre Lovelace ; en NOMBRE, par
-                          recomptage du fichier une fois neutralisées les
-                          lignes ENTIÈREMENT commentées. La première dit ce que
-                          les emplois SONT, la seconde rattrape ceux qui ne
-                          sont ni clé ni slot : une lecture Jinja de
-                          l'attribut, une carte qui le restitue. RESTRICTION
-                          ASSUMÉE — un commentaire de FIN DE LIGNE n'est pas
-                          distingué d'un emploi et rend le contrôle ROUGE ;
-                          voir la docstring du contrôle. Dans les CONTRATS,
-                          les destinations de liens Markdown sont neutralisées
-                          d'abord — un chapitre doit pouvoir renvoyer à
-                          l'arbitrage `Q1`, dont le NOM DE FICHIER porte le
-                          code de remplacement. Les mentions documentaires hors
-                          contrats et hors ce module ne sont PAS des emplois
-                          techniques et ne sont pas balayées. Ce contrôle a
-                          une MORT PROGRAMMÉE : le lot 5 supprime l'allowlist
-                          et lui substitue, dans le même mouvement, la règle
-                          permanente de ZÉRO occurrence (08 §1.3).
+  ASP-CI-44 Code migré   — le code historique du dixième état a DISPARU, et le
+                          code canonique porte tout ce qu'il portait. RÉGIME
+                          PERMANENT depuis le lot 5 de C45 : l'allowlist
+                          transitoire du lot 3 — qui gelait quatorze emplois
+                          en attendant la migration — est SUPPRIMÉE, et la
+                          règle de ZÉRO occurrence lui est substituée dans le
+                          même mouvement (08 §1.3). Le balayage porte sur tout
+                          le YAML gouverné, sur les chapitres du contrat et
+                          sur ce module. CE MODULE EST LA SEULE EXCEPTION, ET
+                          ELLE EST D'UNE OCCURRENCE : un contrôle doit NOMMER
+                          ce qu'il refuse, sinon il ne peut pas le chercher —
+                          il le nomme une fois, et ses messages l'interpolent
+                          depuis la constante. VÉRIFIÉ AUSSI EN POSITIF, et
+                          c'est ce qui distingue ce contrôle d'une simple
+                          recherche d'absence : celle-ci serait verte sur un
+                          dépôt où la restitution aurait disparu — elle
+                          prouverait qu'on ne trouve plus l'ancien nom, pas
+                          que le nouveau porte ce que l'ancien portait. La
+                          population exacte est donc exigée : UN attribut chez
+                          le producteur, QUATRE slots dans l'arbre Lovelace.
+                          RESTRICTION ASSUMÉE — un commentaire de FIN DE LIGNE
+                          n'est pas distingué d'un emploi et rend le contrôle
+                          ROUGE ; voir la docstring du contrôle. Dans les
+                          CONTRATS, les destinations de liens Markdown sont
+                          neutralisées d'abord, le libellé du lien restant lu.
+                          Les mentions documentaires hors contrats et hors ce
+                          module ne sont PAS des emplois techniques : elles
+                          RACONTENT la migration, ce qu'elles ne peuvent pas
+                          faire sans citer le nom migré.
   ASP-CI-45 Offre gestes — l'offre d'un geste de conduite Arsenal se règle sur
                           le verdict, et sur lui seul : la garde de classe `O`
                           PRÉCÈDE le dispatch et n'écrit rien ; l'ARRÊT ne
@@ -1299,12 +1301,15 @@ CARTE_SANS_SEGMENT = "Garage"
 
 # Vocabulaire canonique des états (08 §1). Dix codes, aucun synonyme.
 ETATS_CANONIQUES = (
-    "mission_ouverte", "nettoyage_reel", "pause", "erreur", "retour_base",
+    "session_robot_active", "nettoyage_reel", "pause", "erreur",
+    "retour_base",
     "amarrage", "charge", "repos_hors_base", "indisponibilite",
     "etat_non_qualifie")
-# `mission_ouverte` dérive du TÉMOIN DE SESSION, pas de l'état machine : il se
-# superpose aux neuf autres et n'a donc aucune image dans la partition.
-ETAT_ORTHOGONAL = "mission_ouverte"
+# `session_robot_active` dérive du TÉMOIN DE SESSION, pas de l'état machine :
+# il se superpose aux neuf autres et n'a donc aucune image dans la partition.
+# Son nom DIT ce qu'il est depuis le lot 5 de C45 — il annonçait auparavant une
+# mission, qu'il n'a jamais établie (Q1, ASP-INV-87).
+ETAT_ORTHOGONAL = "session_robot_active"
 # Image attendue partition (07 §5.0) -> code canonique (08 §1).
 IMAGE_ATTENDUE = {
     "charger_disconnected": "repos_hors_base", "charging": "charge",
@@ -2739,11 +2744,11 @@ def check_etat_canonique_rendu(texte_etat) -> list[str]:
                               etats={NATIF_SESSION: s, NATIF_ETAT: "charging"})
                   for s in ("on", "off", "unknown", "unavailable")}
         if rendus["on"] == rendus["off"]:
-            errs.append("ASP-CI-23 : `mission_ouverte` ne distingue pas une "
-                        "session ouverte d'une session close.")
+            errs.append("ASP-CI-23 : `session_robot_active` ne distingue pas "
+                        "une session ouverte d'une session close.")
         for indispo in ("unknown", "unavailable"):
             if rendus[indispo] in (rendus["off"], rendus["on"]):
-                errs.append(f"ASP-CI-23 : `mission_ouverte` rend "
+                errs.append(f"ASP-CI-23 : `session_robot_active` rend "
                             f"{rendus[indispo]!r} sur `{indispo}` — une "
                             f"indisponibilité ne vaut ni `oui` ni `non` "
                             f"(ASP-INV-45).")
@@ -6101,8 +6106,8 @@ def run() -> int:
         # ── Lot 3 de C45 — propagation des arbitrages Q1 et Q2 ─────────
         ("ASP-CI-43 égalité exacte des représentations de classe",
          check_representations_de_classe(runtime, depot)),
-        ("ASP-CI-44 régime transitoire du code historique",
-         check_ancien_code_transitoire(runtime, depot, textes)),
+        ("ASP-CI-44 disparition du code historique (régime permanent)",
+         check_code_historique_absent(runtime, depot, textes)),
         ("ASP-CI-45 autorité et offre des gestes de conduite",
          check_offre_gestes(runtime, lovelace)),
         # ── C50 — la restitution de l'observation de charge ────────────
@@ -9066,7 +9071,7 @@ def selftest() -> None:
     # code historique et OFFRE des gestes, joues par la batterie ASP-CI-43 …
     # ASP-CI-45 plus bas, sur les fichiers reels du depot.
     controles_c45 = {"check_representations_de_classe",
-                     "check_ancien_code_transitoire", "check_offre_gestes"}
+                     "check_code_historique_absent", "check_offre_gestes"}
     # C50 : RESTITUTION de l'observation de charge, jouee par la batterie
     # ASP-CI-46 plus bas, sur le panneau et le gabarit reels.
     controles_c50 = {"check_restitution_charge"}
@@ -10898,189 +10903,133 @@ def selftest() -> None:
         "non lue", "CI-43 fichier du perimetre non lu refuse")
 
     # ---- ASP-CI-44 : le depot livre passe -------------------------------
+    # Le regime est PERMANENT depuis le lot 5 : zero occurrence du code
+    # historique, et population exacte du code canonique.
     _dom = sans_clotures(dom_m0)
-    c.conforme(check_ancien_code_transitoire(rt0, _dep0, _dom),
-               "CI-44 la population du code historique est celle du lot 2")
+    c.conforme(check_code_historique_absent(rt0, _dep0, _dom),
+               "CI-44 le code historique a disparu, le nouveau porte tout")
 
-    # ---- ASP-CI-44 : une VRAIE occurrence technique supplementaire ------
-    # Une SECONDE cle d'attribut, portee par un second capteur. Ce que la
-    # detection compte est l'EMPLOI TECHNIQUE, pas le mot : un identifiant
-    # VOISIN — `<code>_bis` — n'est pas une occurrence du code, et le
-    # controle a raison de ne pas le compter.
-    _second_capteur = (
-        "- sensor:\n"
-        '    - name: "Essai"\n'
-        "      unique_id: aspirateur_essai\n"
-        '      state: "x"\n'
-        "      attributes:\n"
-        f'        {ETAT_ORTHOGONAL}: "oui"\n'
-        "- sensor:\n")
-    c.viole(check_ancien_code_transitoire(
-        _mut(rt0, RUNTIME_ETAT, "- sensor:\n", _second_capteur),
-        _mut(_dep0, RUNTIME_ETAT, "- sensor:\n", _second_capteur), _dom),
-        "attendu exactement un",
-        "CI-44 seconde cle d'attribut chez le producteur")
+    _F08 = FICHIER_ETATS
+    assert _F08 in _dom, f"selftest : `{_F08}` absent du domaine"
 
-    # ---- C2 : une MENTION n'est pas un EMPLOI — les deux restent verts ---
-    # Un commentaire nommant le code ne repand rien : il ne cree ni cle
-    # d'attribut, ni slot de restitution. Le refuser reviendrait a interdire
-    # d'ecrire, dans le fichier meme qui le porte, ce que le lot 5 va faire.
-    _note = f"\n# note de migration : {ETAT_ORTHOGONAL} bascule au lot 5\n"
-    c.conforme(check_ancien_code_transitoire(
-        _mut(rt0, RUNTIME_ETAT, "- sensor:\n", _note + "- sensor:\n"),
-        _mut(_dep0, RUNTIME_ETAT, "- sensor:\n", _note + "- sensor:\n"),
-        _dom),
-        "CI-44 commentaire chez le producteur reste vert")
-    c.conforme(check_ancien_code_transitoire(
-        rt0, {**_dep0, _ui: _dep0[_ui] + _note}, _dom),
-        "CI-44 commentaire dans le panneau reste vert")
+    def _mut_prod(vieux: str, neuf: str):
+        """Le producteur muté DES DEUX CÔTÉS — sources runtime et dépôt.
 
-    # ---- Le COMMENTAIRE PLEINE LIGNE, et la RESTRICTION assumee ---------
-    # Ce qui est neutralise : la ligne ENTIEREMENT commentee, indentee ou
-    # non. Ce qui ne l'est pas : le commentaire de FIN DE LIGNE, qui compte
-    # donc comme un emploi et rend le controle ROUGE. C'est une restriction
-    # VOLONTAIRE, et le cas est joue ici pour qu'elle reste visible.
-    for _rel, _forme, _quoi in (
-            (RUNTIME_ETAT, f"\n# note : {ETAT_ORTHOGONAL} bascule au lot 5\n",
-             "commentaire pleine ligne chez le producteur"),
-            (RUNTIME_ETAT, f"\n    # {ETAT_ORTHOGONAL} — indente\n",
-             "commentaire indente chez le producteur"),
-            (_ui, f"\n# note : {ETAT_ORTHOGONAL} bascule au lot 5\n",
-             "commentaire pleine ligne dans le panneau")):
-        c.conforme(check_ancien_code_transitoire(
-            rt0 if _rel == _ui else {**rt0, _rel: rt0[_rel] + _forme},
-            {**_dep0, _rel: _dep0[_rel] + _forme}, _dom),
-            f"CI-44 {_quoi} reste vert")
+        Le volet (a) lit les sources runtime, le volet (c) balaie le dépôt :
+        muter un seul des deux prouverait que le contrôle sait lire ce qu'on
+        lui donne, pas qu'il garde ce que le dépôt contient.
+        """
+        rt = {**rt0, RUNTIME_ETAT: rt0[RUNTIME_ETAT].replace(vieux, neuf, 1)}
+        dep = {**_dep0,
+               RUNTIME_ETAT: _dep0[RUNTIME_ETAT].replace(vieux, neuf, 1)}
+        return rt, dep
 
-    # La RESTRICTION, jouee et non passee sous silence : un commentaire de
-    # FIN DE LIGNE est compte comme un emploi, et le controle est ROUGE. Le
-    # distinguer demanderait de suivre l'etat de citation, les blocs plies et
-    # les echappements — un mini-parseur YAML dont la moindre lacune
-    # produirait un FAUX VERT sur un emploi reel. Le regime transitoire
-    # prefere le faux rouge : les deux fichiers geles n'ont, jusqu'au lot 5,
-    # qu'a s'abstenir de cette forme.
-    _fin = _mut(_dep0, RUNTIME_ETAT, "      attributes:\n",
-                f"      attributes:  # {ETAT_ORTHOGONAL}, migre au lot 5\n")
-    assert yaml.safe_load(_fin[RUNTIME_ETAT]) is not None, \
-        "la mutation de commentaire doit rester un YAML valide"
-    _errs_fin = check_ancien_code_transitoire(
-        {**rt0, RUNTIME_ETAT: _fin[RUNTIME_ETAT]}, _fin, _dom)
-    assert not any("illisible" in e for e in _errs_fin), \
-        f"le rouge doit venir du COMPTAGE, pas d'un parse — {_errs_fin}"
-    c.viole(_errs_fin, "occurrence(s) techniques",
-            "CI-44 commentaire de fin de ligne — faux rouge ASSUME")
+    def _mut_ui(vieux: str, neuf: str, n: int = 1):
+        return {**_dep0, FICHIER_UI_MISSION:
+                _dep0[FICHIER_UI_MISSION].replace(vieux, neuf, n)}
 
-    # Les deux formes que le regime de surete rattrape, et qu'un helper de
-    # coupure aurait manquees : un emploi apres un `#` LITTERAL dans un bloc
-    # plie, et un emploi dans une chaine multiligne a guillemet echappe.
-    _bloc = ("      note: >\n"
-             f"        libre # {ETAT_ORTHOGONAL} dans un bloc plie\n")
-    _errs_bloc = check_ancien_code_transitoire(
-        rt0, _mut(_dep0, RUNTIME_ETAT, "      attributes:\n",
-                  _bloc + "      attributes:\n"), _dom)
-    assert not any("illisible" in e for e in _errs_bloc), _errs_bloc
-    c.viole(_errs_bloc, "occurrence(s) techniques",
-            "CI-44 emploi apres un # litteral dans un bloc plie")
+    # ---- ASP-CI-44 : le RETOUR du code historique, sur chaque porteur ----
+    # Les trois porteurs sont joues separement : un controle qui passerait
+    # par hasard sur deux d'entre eux masquerait le troisieme.
+    _rt, _dep = _mut_prod(f"        {ETAT_ORTHOGONAL}: >",
+                          f"        {CODE_HISTORIQUE}: >")
+    c.viole(check_code_historique_absent(_rt, _dep, _dom),
+            "occurrence(s) du code historique",
+            "CI-44 producteur revenu a l'ancien nom")
+    c.viole(check_code_historique_absent(
+        rt0, _mut_ui(f"attribut: {ETAT_ORTHOGONAL}",
+                     f"attribut: {CODE_HISTORIQUE}"), _dom),
+        "occurrence(s) du code historique",
+        "CI-44 un site Lovelace revenu a l'ancien nom")
+    c.viole(check_code_historique_absent(
+        rt0, _dep0, {**_dom, _F08: _dom[_F08] + f"\n`{CODE_HISTORIQUE}`\n"}),
+        "occurrence(s)", "CI-44 code historique revenu au contrat")
 
-    # ---- R1 : un EMPLOI qui n'est ni une cle ni un slot ------------------
-    # Une lecture Jinja de l'attribut : l'analyse de FORME ne la voit pas —
-    # ce n'est ni une cle d'attribut, ni un slot de restitution —, et seul
-    # le TOTAL, commentaires neutralises, la rattrape. Les deux cas sont
-    # joues sur les deux fichiers geles, car l'angle mort etait le meme.
-    _jinja = (f"\n      lecture: \"{{{{ state_attr('sensor.{ID_ETAT_CANON}',"
-              f" '{ETAT_ORTHOGONAL}') }}}}\"\n")
-    c.viole(check_ancien_code_transitoire(
-        _mut(rt0, RUNTIME_ETAT, "      attributes:\n",
-             _jinja + "      attributes:\n"),
-        _mut(_dep0, RUNTIME_ETAT, "      attributes:\n",
-             _jinja + "      attributes:\n"), _dom),
-        "occurrence(s) techniques",
-        "CI-44 lecture Jinja de l'attribut chez le producteur")
-    # La carte est inseree DANS la pile du panneau, a l'indentation reelle :
-    # une mutation qui casserait le YAML rendrait rouge par illisibilite, et
-    # ne prouverait rien du comptage qu'elle est censee eprouver.
-    _carte = (f"  - type: markdown\n    content: \"{{{{ state_attr("
-              f"'sensor.{ID_ETAT_CANON}', '{ETAT_ORTHOGONAL}') }}}}\"\n")
-    _ui_carte = _mut(_dep0, _ui, "  - type: grid\n",
-                     _carte + "  - type: grid\n")
-    assert yaml.safe_load(_ui_carte[_ui]) is not None, \
-        "R1 : la mutation de carte doit rester un YAML valide"
-    _errs_carte = check_ancien_code_transitoire(rt0, _ui_carte, _dom)
-    assert not any("illisible" in e for e in _errs_carte), \
-        f"R1 : le rouge doit venir du COMPTAGE, pas d'un parse — {_errs_carte}"
-    c.viole(_errs_carte, "occurrence(s) techniques",
-            "CI-44 carte markdown lisant l'attribut dans le panneau")
+    # ---- ASP-CI-44 : L'ALIAS, c'est-a-dire la COEXISTENCE ---------------
+    # Le defaut que Q2 §5.6 nomme : non pas un remplacement rate, mais un
+    # SECOND attribut pose a cote du premier. La recherche d'absence le voit
+    # la ou un renommage reussi ne montrerait rien.
+    _rt, _dep = _mut_prod(
+        f"        {ETAT_ORTHOGONAL}: >",
+        f"        {CODE_HISTORIQUE}: \"oui\"\n        {ETAT_ORTHOGONAL}: >")
+    c.viole(check_code_historique_absent(_rt, _dep, _dom),
+            "aucun alias", "CI-44 alias pose a cote du nouveau nom")
 
-    # Un CINQUIEME site de restitution : l'allowlist en gele quatre.
-    _site = ("            - condition: state\n"
-             "              entity: sensor.aspirateur_etat_canonique\n"
-             f"              attribute: {ETAT_ORTHOGONAL}\n"
-             "              state: oui\n")
-    c.viole(check_ancien_code_transitoire(
-        rt0, _mut(_dep0, _ui, _site, _site + _site), _dom),
-        "slot(s) d'attribut", "CI-44 cinquieme site Lovelace refuse")
+    # ---- ASP-CI-44 : la POPULATION POSITIVE du nouveau code -------------
+    # Une recherche d'absence SEULE serait verte sur un depot ou la
+    # restitution aurait disparu : elle prouverait qu'on ne trouve plus
+    # l'ancien nom, pas que le nouveau porte ce que l'ancien portait.
+    _rt, _dep = _mut_prod(f"        {ETAT_ORTHOGONAL}: >",
+                          "        _attribut_retire: >")
+    c.viole(check_code_historique_absent(_rt, _dep, _dom),
+            "attendu exactement 1", "CI-44 attribut du producteur supprime")
+    c.viole(check_code_historique_absent(
+        rt0, _mut_ui(f"attribute: {ETAT_ORTHOGONAL}",
+                     "attribute: etat_machine_brut"), _dom),
+        "attendu exactement 4", "CI-44 un slot Lovelace detourne")
+    # Un CINQUIEME site, ecrit comme une vraie condition : dupliquer la seule
+    # cle serait absorbe par le parseur YAML — deux cles identiques dans un
+    # meme mapping n'en font qu'une —, et la mutation ne prouverait rien.
+    c.viole(check_code_historique_absent(
+        rt0, _mut_ui(
+            "          - condition: state\n"
+            "            entity: sensor.aspirateur_etat_canonique\n"
+            f"            attribute: {ETAT_ORTHOGONAL}\n"
+            "            state: oui\n",
+            "          - condition: state\n"
+            "            entity: sensor.aspirateur_etat_canonique\n"
+            f"            attribute: {ETAT_ORTHOGONAL}\n"
+            "            state: oui\n"
+            "          - condition: state\n"
+            "            entity: sensor.aspirateur_etat_canonique\n"
+            f"            attribute: {ETAT_ORTHOGONAL}\n"
+            "            state: non\n"), _dom),
+        "attendu exactement 4", "CI-44 cinquieme slot Lovelace")
 
-    # Une occurrence DEPLACEE hors allowlist : le fichier n'y figure pas.
-    c.viole(check_ancien_code_transitoire(
-        rt0, {**_dep0, RUNTIME_MOTIF: _dep0[RUNTIME_MOTIF]
-              + f"\n# note : {ETAT_ORTHOGONAL}\n"}, _dom),
-        "FERMÉE et NOMINATIVE", "CI-44 occurrence hors allowlist refusee")
+    # ---- ASP-CI-44 : une MENTION en commentaire ne repand rien ----------
+    # La restriction assumee porte sur les lignes ENTIEREMENT commentees, et
+    # sur elles seules. Une note de migration s'ecrit sur sa propre ligne.
+    c.conforme(check_code_historique_absent(
+        rt0, {**_dep0, RUNTIME_ETAT: _dep0[RUNTIME_ETAT].replace(
+            "      attributes:\n",
+            f"      # Note : l'ancien code {CODE_HISTORIQUE} a ete migre.\n"
+            "      attributes:\n", 1)}, _dom),
+        "CI-44 mention en commentaire pleine ligne")
+    # …et le FAUX ROUGE assume, joue explicitement : un commentaire de FIN DE
+    # LIGNE n'est pas distingue d'un emploi. Le controle prefere echouer du
+    # cote sur plutot que developper un parseur dont une lacune produirait un
+    # FAUX VERT sur un emploi REEL.
+    c.viole(check_code_historique_absent(
+        rt0, {**_dep0, RUNTIME_ETAT: _dep0[RUNTIME_ETAT].replace(
+            "      attributes:\n",
+            f"      attributes:  # ex-{CODE_HISTORIQUE}\n", 1)}, _dom),
+        "occurrence(s) du code historique",
+        "CI-44 faux rouge assume, commentaire de fin de ligne")
 
-    # ---- ASP-CI-44 : le NOUVEAU code, avant le lot 5 --------------------
-    _prod_neuf = _mut(_dep0, RUNTIME_ETAT, "        classe_partition: >",
-                      f'        {CODE_SESSION_LOT5}: "{{{{ 1 }}}}"\n'
-                      "        classe_partition: >")
-    c.viole(check_ancien_code_transitoire(
-        _mut(rt0, RUNTIME_ETAT, "        classe_partition: >",
-             f'        {CODE_SESSION_LOT5}: "{{{{ 1 }}}}"\n'
-             "        classe_partition: >"), _prod_neuf, _dom),
-        "aucune coexistence des deux noms",
-        "CI-44 nouveau code au producteur refuse")
-    c.viole(check_ancien_code_transitoire(
-        rt0, _dep0, {**_dom, FICHIER_CONTRAT_TRANSITOIRE:
-                    T08 + f"\n`{CODE_SESSION_LOT5}`\n"}),
-            "le lot 2 aligne le LIBELLÉ",
-            "CI-44 nouveau code au contrat refuse")
+    # ---- ASP-CI-44 : la CIBLE d'un lien Markdown est neutralisee --------
+    # Un chapitre doit pouvoir renvoyer a un document dont le NOM porterait
+    # le code ; le LIBELLE du lien, lui, reste lu.
+    c.conforme(check_code_historique_absent(
+        rt0, _dep0,
+        {**_dom, _F08: _dom[_F08]
+         + f"\nVoir [la note](../x/{CODE_HISTORIQUE}.md).\n"}),
+        "CI-44 cible de lien Markdown neutralisee")
+    c.viole(check_code_historique_absent(
+        rt0, _dep0,
+        {**_dom, _F08: _dom[_F08]
+         + f"\nVoir [`{CODE_HISTORIQUE}`](../x/note.md).\n"}),
+        "occurrence(s)", "CI-44 code glisse dans le libelle du lien")
 
-    # ---- ASP-CI-44 : le CONTRAT, et sa clause transitoire ---------------
-    c.viole(check_ancien_code_transitoire(
-        rt0, _dep0, {**_dom, FICHIER_CONTRAT_TRANSITOIRE:
-                    T08.replace(ANCRE_CLAUSE_TRANSITOIRE, "Migration", 1)}),
-        "a disparu du chapitre 08", "CI-44 clause 08 §1.3 effacee refusee")
-    c.viole(check_ancien_code_transitoire(
-        rt0, _dep0, {**_dom, FICHIER_CONTRAT_TRANSITOIRE:
-                    T08 + f"\nRappel : `{ETAT_ORTHOGONAL}`.\n"}),
-        "attendu 3", "CI-44 occurrence contractuelle ajoutee refusee")
-
-    # ---- ASP-CI-44 / D4 : les chapitres AUTRES que le 08 ----------------
-    # Le token technique n'a plus de place hors du 08 ; la formulation
-    # METIER, elle, reste libre partout — c'est meme ce que le lot 2 y a
-    # inscrit. Les trois cas sont joues separement pour que le vert du
-    # troisieme prouve l'absence de faux positif, et non un oubli.
+    # ---- ASP-CI-44 : la FORMULATION METIER reste libre partout ----------
+    # Elle s'ecrit avec des espaces, le code avec des soulignes. Les deux ne
+    # se confondent pas, et c'est la formulation que les chapitres emploient.
     _F15 = "15_conduite_et_supervision.md"
-    assert _F15 in _dom, f"selftest D4 : `{_F15}` absent du domaine"
-    c.viole(check_ancien_code_transitoire(
-        rt0, _dep0, {**_dom, _F15: _dom[_F15] + f"\n`{ETAT_ORTHOGONAL}`\n"}),
-        "hors du chapitre 08", "CI-44 ancien token porte au chapitre 15")
-    c.viole(check_ancien_code_transitoire(
-        rt0, _dep0, {**_dom, _F15: _dom[_F15] + f"\n`{CODE_SESSION_LOT5}`\n"}),
-        "comme code technique", "CI-44 nouveau token porte au chapitre 15")
-    c.conforme(check_ancien_code_transitoire(
+    assert _F15 in _dom, f"selftest : `{_F15}` absent du domaine"
+    c.conforme(check_code_historique_absent(
         rt0, _dep0, {**_dom, _F15: _dom[_F15]
                      + "\nLa **session robot active** n'etablit pas la\n"
                      + "**mission Arsenal ouverte**.\n"}),
-        "CI-44 formulation metier au chapitre 15 reste verte")
-
-    # R2 — la CIBLE d'un lien est un chemin, pas du texte contractuel. Le
-    # fichier d'arbitrage `Q1` porte le code de remplacement dans son NOM :
-    # un chapitre doit pouvoir renvoyer a la note qui fonde la regle.
-    _lien = ("\nVoir [`Q1`](../../audits/02_arbitrages/aspirateur/"
-             "arbitrage_mission_arsenal_ouverte_et"
-             "_session_robot_active.md).\n")
-    assert CODE_SESSION_LOT5 in _lien, "R2 : le lien doit porter le token"
-    c.conforme(check_ancien_code_transitoire(
-        rt0, _dep0, {**_dom, _F15: _dom[_F15] + _lien}),
-        "CI-44 lien Markdown vers Q1 au chapitre 15 reste vert")
+        "CI-44 formulation metier libre au chapitre 15")
 
     # ---- ASP-CI-45 : le runtime livre passe -----------------------------
     c.conforme(check_offre_gestes(rt0, _lov0),
@@ -12983,184 +12932,99 @@ def check_representations_de_classe(textes_runtime, yaml_depot) -> list[str]:
     return errs
 
 
-# ── ASP-CI-44 : regime transitoire du code historique ────────────────────
+# ── ASP-CI-44 : ZERO occurrence du code historique (regime PERMANENT) ────
+#
+# CE CONTROLE A CHANGE DE REGIME AU LOT 5, ET C'EST SA MORT PROGRAMMEE QUI
+# S'EXECUTE — pas sa disparition. Le lot 3 l'avait livre TRANSITOIRE : une
+# allowlist nominative gelait quatorze emplois techniques du code historique,
+# parce que la decision H-3 en autorisait la survie jusqu'au lot 5. Elle
+# n'entendait pas TOLERER un nom : elle interdisait qu'il se REPANDE.
+#
+# La migration atomique ayant eu lieu, l'allowlist est SUPPRIMEE et la regle
+# permanente lui est substituee, dans le meme mouvement : ZERO occurrence du
+# code historique sur tout le perimetre gouverne — YAML de configuration,
+# chapitres du contrat et ce module —, COMMENTAIRES COMPRIS.
+#
+# CE MODULE EST LA SEULE EXCEPTION, ET ELLE EST D'UNE OCCURRENCE.
+# Un controle doit NOMMER ce qu'il refuse, sinon il ne peut pas le chercher.
+# Le code historique est donc declare ICI, une fois, et le controle verifie
+# qu'il n'y figure pas davantage : les messages le citent par la constante,
+# jamais en litteral. Declarer le nom qu'on refuse ne le repand pas — c'est
+# la meme raison qui autorisait le lot 3 a declarer le nom a venir.
+#
+# CE QUI EST VERIFIE EN POSITIF, ET PAS SEULEMENT EN ABSENCE. Une recherche
+# d'absence seule serait verte sur un depot ou l'attribut aurait disparu :
+# elle prouverait qu'on ne trouve plus l'ancien nom, pas que le nouveau porte
+# ce que l'ancien portait. Le controle exige donc AUSSI la population exacte
+# du nouveau code — un attribut chez le producteur, quatre slots dans l'arbre
+# Lovelace —, c'est-a-dire ce que l'allowlist gelait, mais sur le nom exact.
+#
+# CE QUI N'EST PAS BALAYE, et ce n'est pas un oubli. Les mentions
+# documentaires — arbitrages, audits, chantier, registres, index — ne sont
+# PAS des emplois techniques : elles nomment une decision et RACONTENT la
+# migration, ce qu'elles ne peuvent pas faire sans citer le nom migre. Les
+# balayer rendrait ce controle rouge sur le document meme qui le fonde.
 
-# Le code de REMPLACEMENT du dixieme etat, attribue par l'operateur et
-# INTERDIT comme code technique tant que le mouvement atomique du lot 5 n'a
-# pas eu lieu. Il est fige ici en tant que chaine A REFUSER, et ce module ne
-# l'emploie nulle part ailleurs : declarer le nom qu'on refuse n'ouvre
-# aucune coexistence des deux noms (08 §1.3, regle 3).
-CODE_SESSION_LOT5 = "session_robot_active"
+# Le code HISTORIQUE, cite ici et NULLE PART AILLEURS dans ce module. Les
+# messages l'interpolent depuis cette constante.
+CODE_HISTORIQUE = "mission_ouverte"
 
 # Le SEUL arbre Lovelace qui restitue le dixieme etat. Nomme, jamais
 # recherche : le perimetre vient de cette constante, pas d'un balayage.
 FICHIER_UI_MISSION = ("18_lovelace/includes/cartes/aspirateur/"
                       "panneau_operationnel.yaml")
 
-# ALLOWLIST TRANSITOIRE — FERMEE et NOMINATIVE.
-#
-# Elle enumere, fichier par fichier, les EMPLOIS TECHNIQUES du code
-# historique qui existent au HEAD du lot 2, ET EUX SEULS. Elle n'autorise
-# pas un nom : elle GELE une population. Tout emploi supplementaire, tout
-# emploi deplace vers un autre fichier, est un ecart.
-#
-# Le cardinal vaut DEUX FOIS, et les deux lectures sont necessaires.
-#
-#   · en FORME — l'analyse STRUCTUREE compte les cles d'attribut chez le
-#     producteur et les slots de restitution dans l'arbre Lovelace. Elle
-#     seule fait autorite sur CE QUE SONT ces emplois ;
-#   · en NOMBRE — le meme cardinal borne le total des occurrences du code
-#     dans le fichier, COMMENTAIRES NEUTRALISES. C'est ce qui rattrape un
-#     emploi technique qui ne serait ni une cle ni un slot : un
-#     `state_attr(..., '<code>')` en Jinja, une carte markdown qui lit
-#     l'attribut. La forme ne le verrait pas ; le total, si.
-#
-# Les commentaires sont neutralises AVANT ce comptage, et c'est tout ce qui
-# separe cette regle d'un recomptage brut : une MENTION ne repand rien, un
-# EMPLOI si. Un recomptage brut refuserait une ligne de prose ecrite dans le
-# fichier meme qui porte le code — y compris la note de migration que le lot
-# 5 aura toutes les raisons d'y laisser.
-#
-# Elle est SUPPRIMEE au lot 5, dans le commit meme de la migration, et
-# remplacee par la recherche d'absence a zero occurrence.
-ALLOWLIST_ANCIEN_CODE = {
-    RUNTIME_ETAT: 1,          # le PRODUCTEUR — une cle d'attribut, une seule
-    FICHIER_UI_MISSION: 4,    # les QUATRE sites de restitution (C45 §3.4)
-}
-
-# Le module lui-meme est le TROISIEME porteur, et l'item 5.2 du chantier
-# exige qu'il bascule avec les autres : deux constantes, deux commentaires
-# et les deux messages d'ASP-CI-23. Un renommage qui ne toucherait que les
-# constantes laisserait ce module DECRIRE un nom qui n'existe plus — et
-# l'en-tete vaut contrat local.
-OCCURRENCES_ANCIEN_CODE_MODULE = 6
-
-# Le chapitre 08 est le QUATRIEME porteur, et le SEUL chapitre ou le token
-# technique historique reste admis : le code du tableau §1, et les deux
-# occurrences de la clause d'etat transitoire §1.3. Cette clause est
-# LEGITIME — elle ecrit l'ecart au lieu de le subir — et sa suppression est
-# une obligation de preuve du lot 5, pas du lot 3.
-#
-# PARTOUT AILLEURS dans le contrat du domaine, le token est REFUSE : le lot
-# 2 a aligne le libelle des chapitres 11 et 12 sur « session robot active »,
-# et rien ne doit y ramener le code ambigu par la porte de derriere.
-#
-# La detection porte sur le TOKEN technique — celui qui s'ecrit avec des
-# soulignes —, jamais sur la formulation metier, qui s'ecrit avec des
-# espaces. Les deux ne se confondent pas : « session robot active » et
-# « mission Arsenal ouverte » restent libres partout, et c'est bien ce que
-# les chapitres doivent employer.
-OCCURRENCES_ANCIEN_CODE_CONTRAT = 3
-FICHIER_CONTRAT_TRANSITOIRE = FICHIER_ETATS
-ANCRE_CLAUSE_TRANSITOIRE = "Migration atomique du nom du dixième état"
-
 # Les cles de slot Lovelace qui DESIGNENT un attribut d'entite. La detection
-# est structuree parce que c'est l'EMPLOI TECHNIQUE qui est gele, non le mot :
-# le fichier livre ne cite le code que dans ces quatre slots, et rien
-# n'empeche qu'un commentaire l'y mentionne demain sans rien repandre. Un
-# recomptage textuel confondrait les deux et refuserait la ligne de prose.
+# reste STRUCTUREE : c'est l'EMPLOI TECHNIQUE qui est compte, non le mot.
 CLES_ATTRIBUT_UI = ("attribute", "attribut")
 
-# La CIBLE d'un lien Markdown est un CHEMIN, jamais du texte contractuel.
-# Or le fichier d'arbitrage `Q1` porte dans son NOM le code de remplacement,
-# et les chapitres ont toutes les raisons de le citer : sans neutralisation,
-# un renvoi legitime vers l'arbitrage qui FONDE la regle la declencherait.
-# Seule la cible est neutralisee — le libelle du lien et le reste de la
-# ligne restent lus, de sorte qu'un emploi technique glisse dans le texte
-# d'un lien reste refuse.
+# Population attendue du code canonique de l'etat orthogonal.
+ATTRIBUTS_PRODUCTEUR_ATTENDUS = 1
+SLOTS_UI_ATTENDUS = 4
+
+# La CIBLE d'un lien Markdown est un CHEMIN, jamais du texte contractuel : un
+# chapitre doit pouvoir renvoyer a un document dont le NOM porterait le code.
+# Seule la cible est neutralisee — le libelle du lien et le reste de la ligne
+# restent lus, de sorte qu'un emploi glisse dans le texte d'un lien est refuse.
 CIBLE_LIEN_MD = re.compile(r"\]\([^)]*\)")
 
 
 def _valeurs_de_slot(noeud, cles):
-    """Les valeurs des slots dont la CLE appartient a `cles`."""
-    if isinstance(noeud, dict):
-        for cle, val in noeud.items():
-            if cle in cles and isinstance(val, str):
-                yield val
-            yield from _valeurs_de_slot(val, cles)
-    elif isinstance(noeud, list):
-        for val in noeud:
-            yield from _valeurs_de_slot(val, cles)
+    """Valeurs des slots d'attribut, quelle que soit leur profondeur."""
+    for n in _noeuds_yaml(noeud):
+        if isinstance(n, dict):
+            for cle in cles:
+                val = n.get(cle)
+                if isinstance(val, str):
+                    yield val
 
 
 def _cles_d_attributs(doc):
-    """Les cles declarees sous un bloc `attributes:` de capteur template."""
-    for m in _mappings(doc):
-        attrs = m.get("attributes")
-        if isinstance(attrs, dict):
-            for cle in attrs:
-                if isinstance(cle, str):
-                    yield cle
+    """Cles declarees sous un bloc `attributes:`, a toute profondeur."""
+    for n in _noeuds_yaml(doc):
+        if isinstance(n, dict) and isinstance(n.get("attributes"), dict):
+            yield from (k for k in n["attributes"] if isinstance(k, str))
 
 
-def check_ancien_code_transitoire(textes_runtime, yaml_depot,
-                                  textes: dict) -> list[str]:
-    """ASP-CI-44 — la population du code historique est GELEE, pas tolérée.
+def _sans_lignes_commentees(txt: str) -> str:
+    """Lignes ENTIEREMENT commentees retirees — voir la restriction ci-dessous.
 
-    La decision H-3 du chantier AUTORISE l'ancien code jusqu'au lot 5 : le
-    controle ne peut donc pas exiger zero occurrence des maintenant. Il doit
-    neanmoins etre IMMEDIATEMENT ACTIF ET UTILE, sans pretendre que la
-    migration a deja eu lieu. C'est ce que fait l'allowlist : elle ne tolere
-    pas un nom, elle interdit qu'il se REPANDE.
-
-    CE QUE LE CONTROLE LIT, EXACTEMENT.
-
-    Sur les DEUX FICHIERS GELES — le producteur et l'arbre Lovelace —, deux
-    lectures se completent, et aucune ne remplace l'autre :
-
-      · en FORME, l'analyse STRUCTUREE compte les cles declarees sous un bloc
-        `attributes:` et les valeurs des slots d'attribut. Elle seule fait
-        autorite sur CE QUE SONT ces emplois ;
-      · en NOMBRE, le meme cardinal borne le total des occurrences du code
-        dans le fichier, une fois neutralisees les lignes ENTIEREMENT
-        commentees. C'est ce qui rattrape un emploi qui n'est ni cle ni
-        slot : un `state_attr(..., '<code>')` en Jinja, une carte markdown
-        qui restitue l'attribut. La forme ne le verrait pas.
-
-    RESTRICTION ASSUMEE, ET C'EST UNE DECISION.
-
-    Seules les lignes ENTIEREMENT commentees sont neutralisees. Un
-    commentaire de FIN DE LIGNE — `attributes:  # <code>, migre au lot 5` —
-    n'est PAS distingue d'un emploi technique : il compte, et le controle
-    devient ROUGE. C'est un FAUX ROUGE, et il est accepte.
-
-    Le distinguer demanderait de suivre l'etat de citation, les blocs plies
-    et litteraux, les echappements — un mini-parseur YAML. La moindre lacune
-    d'un tel parseur ne produirait pas un faux rouge de plus : elle
-    produirait un FAUX VERT sur un emploi REEL. Un `#` litteral dans un bloc
-    plie, ou dans une chaine multiligne, suffirait a faire disparaitre du
-    comptage tout ce qui le suit. Ce module ne developpe donc AUCUN parseur
-    supplementaire, et ce controle prefere echouer du cote sur.
-
-    La contrepartie est explicite et bornee dans le temps : jusqu'a la
-    suppression d'ASP-CI-44 au lot 5, les deux fichiers geles ne doivent pas
-    introduire de commentaire de fin de ligne contenant le code historique.
-    La note de migration s'ecrit sur sa propre ligne.
-
-    Ce module ne pretend couvrir correctement ni les blocs YAML plies ou
-    litteraux, ni les chaines multilignes, ni les guillemets echappes. Il
-    n'en a pas besoin : il les COMPTE, et c'est le sens de la restriction.
-
-    SUR LES CONTRATS, la recherche porte sur le TOKEN technique — celui qui
-    s'ecrit avec des soulignes —, jamais sur la formulation metier, qui
-    s'ecrit avec des espaces et reste libre partout. Les DESTINATIONS de
-    liens Markdown y sont neutralisees d'abord : un renvoi vers l'arbitrage
-    `Q1` cite son NOM DE FICHIER, pas un code, et il serait absurde qu'un
-    chapitre ne puisse plus renvoyer a la note qui fonde la regle. Le LIBELLE
-    du lien, lui, reste lu. Le futur code technique y est refuse pendant tout
-    le regime transitoire.
-
-    CE QUI N'EST PAS BALAYE, et ce n'est pas un oubli. Les mentions
-    documentaires — arbitrages, audits, chantier, registres, index — ne sont
-    PAS des emplois techniques : elles nomment une decision, elles ne creent
-    ni cle, ni slot, ni lecture. Le perimetre se borne donc au YAML de
-    configuration, aux chapitres du contrat et a ce module. Un balayage plus
-    large serait rouge des sa livraison, sur l'arbitrage meme qui le fonde.
+    Seules les lignes dont le premier caractere non blanc est un diese sont
+    neutralisees. Un commentaire de FIN DE LIGNE n'est pas distingue d'un
+    emploi technique : il compte, et le controle devient ROUGE. C'est un FAUX
+    ROUGE, et il est accepte — le distinguer demanderait un mini-parseur YAML
+    dont la moindre lacune produirait un FAUX VERT sur un emploi REEL.
     """
-    errs: list[str] = []
-    ancien = ETAT_ORTHOGONAL
+    return "\n".join(l for l in txt.splitlines()
+                     if not l.lstrip().startswith("#"))
 
-    # ── (a) le PRODUCTEUR : une CLE d'attribut, et une seule ──────────────
+
+def check_code_historique_absent(textes_runtime, yaml_depot,
+                                 textes: dict) -> list[str]:
+    """ASP-CI-44 — le code historique a DISPARU, et le nouveau porte tout."""
+    errs: list[str] = []
+
+    # ── (a) le PRODUCTEUR : une CLE d'attribut au nouveau nom, et une ─────
     try:
         doc_etat = yaml.safe_load(textes_runtime.get(RUNTIME_ETAT) or "")
     except yaml.YAMLError as exc:
@@ -13168,27 +13032,21 @@ def check_ancien_code_transitoire(textes_runtime, yaml_depot,
         errs.append(f"ASP-CI-44 : `{RUNTIME_ETAT}` est illisible ({exc}).")
     if doc_etat is not None:
         attributs = list(_cles_d_attributs(doc_etat))
-        if attributs.count(ancien) != 1:
+        vus = attributs.count(ETAT_ORTHOGONAL)
+        if vus != ATTRIBUTS_PRODUCTEUR_ATTENDUS:
             errs.append(
-                f"ASP-CI-44 : le producteur `{RUNTIME_ETAT}` déclare "
-                f"{attributs.count(ancien)} attribut(s) `{ancien}` — attendu "
-                "exactement un. Le dixième état est ORTHOGONAL et se rend "
-                "séparément : ni fondu dans la valeur d'état, ni dupliqué "
-                "(ASP-INV-68).")
-        if CODE_SESSION_LOT5 in attributs:
-            errs.append(
-                f"ASP-CI-44 : le producteur déclare déjà l'attribut "
-                f"`{CODE_SESSION_LOT5}` — la substitution du code technique "
-                "appartient au mouvement ATOMIQUE du lot 5, et aucune "
-                "coexistence des deux noms n'est admise, fût-elle "
-                "transitoire (08 §1.3, règle 3).")
+                f"ASP-CI-44 : le producteur `{RUNTIME_ETAT}` déclare {vus} "
+                f"attribut(s) `{ETAT_ORTHOGONAL}` — attendu exactement "
+                f"{ATTRIBUTS_PRODUCTEUR_ATTENDUS}. Le dixième état est "
+                "ORTHOGONAL et se rend séparément : ni fondu dans la valeur "
+                "d'état, ni dupliqué (ASP-INV-68).")
 
     # ── (b) les QUATRE sites Lovelace, par leurs SLOTS ────────────────────
     src_ui = yaml_depot.get(FICHIER_UI_MISSION)
     if src_ui is None:
         errs.append(f"ASP-CI-44 : `{FICHIER_UI_MISSION}` est introuvable — "
                     "les quatre sites de restitution ne peuvent pas être "
-                    "gelés s'ils ne sont pas lus.")
+                    "vérifiés s'ils ne sont pas lus.")
     else:
         try:
             doc_ui = yaml.safe_load(src_ui)
@@ -13198,126 +13056,66 @@ def check_ancien_code_transitoire(textes_runtime, yaml_depot,
                         f"({exc}).")
         if doc_ui is not None:
             slots = list(_valeurs_de_slot(doc_ui, CLES_ATTRIBUT_UI))
-            attendu = ALLOWLIST_ANCIEN_CODE[FICHIER_UI_MISSION]
-            if slots.count(ancien) != attendu:
+            vus = slots.count(ETAT_ORTHOGONAL)
+            if vus != SLOTS_UI_ATTENDUS:
                 errs.append(
-                    f"ASP-CI-44 : `{FICHIER_UI_MISSION}` porte "
-                    f"{slots.count(ancien)} slot(s) d'attribut `{ancien}` — "
-                    f"l'allowlist transitoire en gèle exactement {attendu}. "
-                    "Une restitution supplémentaire répandrait le code "
-                    "ambigu que le lot 5 doit faire disparaître.")
-            if CODE_SESSION_LOT5 in slots:
-                errs.append(
-                    f"ASP-CI-44 : `{FICHIER_UI_MISSION}` lit déjà l'attribut "
-                    f"`{CODE_SESSION_LOT5}` — l'interface bascule au lot 6, "
-                    "sur un code substitué au lot 5. L'anticiper produirait "
-                    "une lecture d'un attribut qui n'existe pas encore.")
+                    f"ASP-CI-44 : l'arbre `{FICHIER_UI_MISSION}` porte {vus} "
+                    f"slot(s) d'attribut `{ETAT_ORTHOGONAL}` — attendu "
+                    f"exactement {SLOTS_UI_ATTENDUS}. Une recherche d'absence "
+                    "seule serait verte sur un dépôt où la restitution aurait "
+                    "disparu : elle prouverait qu'on ne trouve plus l'ancien "
+                    "nom, pas que le nouveau porte ce que l'ancien portait.")
 
-    # ── (c) le TOTAL des deux fichiers gelés, commentaires neutralisés ────
-    #
-    # L'analyse structurée ci-dessus dit ce que SONT les emplois ; elle ne
-    # dit pas s'il en existe d'AUTRES. Un `state_attr(…, '<code>')` en Jinja,
-    # une carte markdown qui lit l'attribut, ne sont ni une clé ni un slot :
-    # la forme ne les voit pas. Le TOTAL, lui, les voit.
-    #
-    # Les commentaires sont neutralisés avant ce comptage — c'est tout ce qui
-    # sépare cette règle d'un recomptage brut. Une MENTION ne répand rien ;
-    # un EMPLOI, si.
-    for rel, attendu in sorted(ALLOWLIST_ANCIEN_CODE.items()):
-        txt = yaml_depot.get(rel)
-        if txt is None:
-            continue
-        vus = sans_commentaires_yaml(txt).count(ancien)
-        if vus != attendu:
-            errs.append(
-                f"ASP-CI-44 : `{rel}` porte {vus} occurrence(s) techniques de "
-                f"`{ancien}` — l'allowlist transitoire en gèle exactement "
-                f"{attendu}, commentaires neutralisés. Un emploi qui n'est ni "
-                "une clé ni un slot — une lecture Jinja de l'attribut, une "
-                "carte qui le restitue — répand le code que le lot 5 doit "
-                "faire disparaître, et l'analyse de forme ne le verrait pas.")
-
-    # ── (d) le reste du dépôt gouverné : AUCUNE autre occurrence ──────────
+    # ── (c) TOUT le YAML gouverné : zéro occurrence du code historique ────
     for rel, txt in sorted(yaml_depot.items()):
-        if rel not in ALLOWLIST_ANCIEN_CODE and ancien in txt:
+        vus = _sans_lignes_commentees(txt).count(CODE_HISTORIQUE)
+        if vus:
             errs.append(
-                f"ASP-CI-44 : `{rel}` emploie `{ancien}` — l'allowlist "
-                "transitoire est FERMÉE et NOMINATIVE : elle gèle la "
-                "population qui existe au HEAD du lot 2, elle n'ouvre aucun "
-                "droit nouveau (C45 item 3.7, régime ①).")
-        if CODE_SESSION_LOT5 in txt:
-            errs.append(
-                f"ASP-CI-44 : `{rel}` emploie déjà `{CODE_SESSION_LOT5}` — ce "
-                "code n'entre au dépôt qu'au lot 5, en un seul mouvement avec "
-                "le producteur, les contrats, le checker et l'interface "
-                "(ASP-INV-52 par analogie : le renommage est un acte "
-                "contractuel).")
+                f"ASP-CI-44 : `{rel}` porte {vus} occurrence(s) du code "
+                "historique du dixième état. La substitution est ATOMIQUE et "
+                "ACQUISE : aucun alias, aucune double exposition, aucun repli "
+                "sur l'ancien nom — et aucune coexistence des deux noms, "
+                "fût-elle transitoire (08 §1.3, règle 1).")
 
-    # ── (e) le MODULE lui-même — troisième porteur, item 5.2 du chantier ──
+    # ── (d) les CONTRATS du domaine : zéro occurrence, y compris en prose ─
+    #
+    # Les DESTINATIONS de liens Markdown sont neutralisées d'abord : un renvoi
+    # cite un NOM DE FICHIER, pas un code, et il serait absurde qu'un chapitre
+    # ne puisse plus renvoyer à la note qui fonde la règle. Le LIBELLÉ du lien
+    # reste lu, de sorte qu'un emploi technique glissé dans le texte d'un lien
+    # reste refusé.
+    #
+    # La recherche porte sur le TOKEN technique — celui qui s'écrit avec des
+    # soulignés. La formulation métier, qui s'écrit avec des espaces, reste
+    # libre partout : « session robot active » et « mission Arsenal ouverte »
+    # sont ce que les chapitres doivent employer.
+    for rel, brut in sorted(textes.items()):
+        txt = CIBLE_LIEN_MD.sub("", brut)
+        vus = txt.count(CODE_HISTORIQUE)
+        if vus:
+            errs.append(
+                f"ASP-CI-44 : le chapitre `{rel}` porte {vus} occurrence(s) "
+                "du code historique du dixième état. Le contrat désigne cet "
+                "état par le code qui DIT ce qu'il est ; le nom antérieur "
+                "annonçait une mission qu'il n'a jamais établie (`Q1`, "
+                "ASP-INV-87).")
+
+    # ── (e) le MODULE lui-même : UNE occurrence, la déclaration ───────────
     try:
         source = Path(__file__).read_text(encoding="utf-8")
-    except OSError as exc:                                # pragma: no cover
+    except OSError as exc:
         source = ""
         errs.append(f"ASP-CI-44 : le module est illisible ({exc}).")
     if source:
-        vus = source.count(ancien)
-        if vus != OCCURRENCES_ANCIEN_CODE_MODULE:
+        vus = source.count(CODE_HISTORIQUE)
+        if vus != 1:
             errs.append(
-                f"ASP-CI-44 : ce module porte {vus} occurrence(s) de "
-                f"`{ancien}` — l'allowlist transitoire en gèle "
-                f"{OCCURRENCES_ANCIEN_CODE_MODULE} : deux constantes, deux "
-                "commentaires et les deux messages d'ASP-CI-23. Un contrôle "
-                "qui répandrait lui-même le code qu'il gèle serait sans "
-                "autorité.")
-    # ── (f) les CONTRATS du domaine — le 08 gèle, les autres refusent ────
-    #
-    # Le chapitre 08 est le seul où le token technique historique reste
-    # admis, et à un cardinal exact. Partout ailleurs il est REFUSÉ : le lot
-    # 2 a aligné le libellé des chapitres 11 et 12 sur « session robot
-    # active », et rien ne doit y ramener le code ambigu.
-    #
-    # La détection porte sur le TOKEN — celui qui s'écrit avec des soulignés
-    # —, jamais sur la formulation métier, qui s'écrit avec des espaces. Un
-    # chapitre qui parle de « session robot active » ou de « mission Arsenal
-    # ouverte » reste libre : c'est précisément ce qu'il doit employer.
-    t08 = CIBLE_LIEN_MD.sub(
-        "]()", textes.get(FICHIER_CONTRAT_TRANSITOIRE, ""))
-    if not t08:
-        errs.append(f"ASP-CI-44 : `{FICHIER_CONTRAT_TRANSITOIRE}` "
-                    "introuvable — le code contractuel ne peut pas être gelé "
-                    "s'il n'est pas lu.")
-    else:
-        vus = t08.count(ancien)
-        if vus != OCCURRENCES_ANCIEN_CODE_CONTRAT:
-            errs.append(
-                f"ASP-CI-44 : le chapitre 08 porte {vus} occurrence(s) de "
-                f"`{ancien}` — attendu {OCCURRENCES_ANCIEN_CODE_CONTRAT} : le "
-                "code du tableau §1, et les deux de la clause d'état "
-                "transitoire §1.3.")
-        if ANCRE_CLAUSE_TRANSITOIRE not in t08:
-            errs.append(
-                f"ASP-CI-44 : la clause d'état transitoire « "
-                f"{ANCRE_CLAUSE_TRANSITOIRE} » a disparu du chapitre 08. "
-                "L'écart entre le libellé et le code est ÉCRIT, non subi : "
-                "l'effacer sans avoir migré le rendrait silencieux. Sa "
-                "suppression appartient au lot 5, avec la migration.")
-    for rel, brut in sorted(textes.items()):
-        txt = CIBLE_LIEN_MD.sub("]()", brut)
-        if rel != FICHIER_CONTRAT_TRANSITOIRE and ancien in txt:
-            errs.append(
-                f"ASP-CI-44 : le chapitre `{rel}` emploie le token technique "
-                f"`{ancien}` — hors du chapitre 08, le code historique n'a "
-                "PLUS de place au contrat : le lot 2 y a aligné le libellé "
-                "sur la notion, et la formulation métier — avec espaces — "
-                "reste libre partout. Seul le 08 porte encore le code, et "
-                "seulement le temps de sa clause transitoire §1.3.")
-        if CODE_SESSION_LOT5 in txt:
-            errs.append(
-                f"ASP-CI-44 : le chapitre `{rel}` écrit déjà le token "
-                f"`{CODE_SESSION_LOT5}` comme code technique — le lot 2 "
-                "aligne le LIBELLÉ, le lot 5 substitue le CODE, et jamais "
-                "l'inverse. La formulation métier « session robot active » "
-                "est, elle, admise partout.")
+                f"ASP-CI-44 : ce module porte {vus} occurrence(s) du code "
+                "historique — attendu exactement UNE, sa déclaration. Un "
+                "contrôle doit NOMMER ce qu'il refuse, sinon il ne peut pas "
+                "le chercher ; mais il le nomme une fois, et ses messages "
+                "l'interpolent depuis la constante. Un module qui le "
+                "répandrait serait sans autorité pour l'interdire ailleurs.")
     return errs
 
 

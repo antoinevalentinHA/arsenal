@@ -109,7 +109,7 @@ cards:
   # ==================================================
   # 1️⃣ ÉTAT — synthèse du robot, mission en cours et charge
   # --------------------------------------------------
-  # Les dix états canoniques et « mission ouverte » sont rendus
+  # Les dix états canoniques et la « session robot active » sont rendus
   # SÉPARÉMENT : le dixième se superpose aux neuf autres au lieu de
   # les exclure (ASP-INV-68), et aucune agrégation de confort n'est
   # faite (ASP-INV-44). L'indisponibilité tombe au gris atténué,
@@ -185,7 +185,7 @@ cards:
         name: Mission
         icon: mdi:play-circle-outline
         variables:
-          attribut: mission_ouverte
+          attribut: session_robot_active
           libelles:
             oui: Ouverte
             non: Aucune
@@ -667,18 +667,26 @@ cards:
   # contrat 11 interdit à l'UI :
   #   pause       ← nettoyage réel en cours
   #   reprise     ← mission en pause
-  #   arrêt       ← mission ouverte, sans autre garde : l'arrêt n'est
-  #                 jamais plus contraint que le lancement (ASP-INV-43)
-  #   retour base ← mission ouverte, et le robot ne rentre pas déjà
+  #   arrêt       ← session robot active, sans autre garde : l'arrêt
+  #                 n'est jamais plus contraint que le lancement
+  #                 (ASP-INV-43)
+  #   retour base ← session robot active, et le robot ne rentre pas déjà
   # Le backend REVALIDE chacune : masquer ici est une commodité, pas
   # une autorisation.
   #
   # LA SECTION ENTIÈRE, EN-TÊTE COMPRIS, tient dans une condition : la
   # disjonction EXACTE des quatre gardes ci-dessus. Trois termes
-  # suffisent à la couvrir — la garde d'arrêt est « mission ouverte »
-  # nue, et celle du retour la contient. Aucun sur-ensemble, aucune
-  # approximation : si un seul geste a du sens, l'en-tête paraît ; si
-  # aucun n'en a, rien ne paraît.
+  # suffisent à la couvrir — la garde d'arrêt est « session robot
+  # active » nue, et celle du retour la contient. Aucun sur-ensemble,
+  # aucune approximation : si un seul geste a du sens, l'en-tête paraît ;
+  # si aucun n'en a, rien ne paraît.
+  #
+  # CES QUATRE GARDES LISENT L'ACTIVITÉ PHYSIQUE, ET C'EST LA DETTE QUE
+  # LE LOT 6 SOLDE. L'autorité de l'offre est la MISSION ARSENAL OUVERTE
+  # — verdict de classe O, consommé par la projection métier — et non le
+  # témoin de session (ASP-INV-97). Le lot 5 rend ce nom EXACT ; il ne
+  # change aucune autorité, et l'écart devient donc lisible ici au lieu
+  # de se cacher derrière un nom ambigu.
   # ==================================================
   - type: conditional
     conditions:
@@ -692,7 +700,7 @@ cards:
             state: pause
           - condition: state
             entity: sensor.aspirateur_etat_canonique
-            attribute: mission_ouverte
+            attribute: session_robot_active
             state: oui
     card:
       type: vertical-stack
@@ -745,7 +753,7 @@ cards:
           conditions:
             - condition: state
               entity: sensor.aspirateur_etat_canonique
-              attribute: mission_ouverte
+              attribute: session_robot_active
               state: oui
             - condition: state
               entity: sensor.aspirateur_etat_canonique
@@ -775,7 +783,7 @@ cards:
           conditions:
             - condition: state
               entity: sensor.aspirateur_etat_canonique
-              attribute: mission_ouverte
+              attribute: session_robot_active
               state: oui
           card:
             type: custom:button-card

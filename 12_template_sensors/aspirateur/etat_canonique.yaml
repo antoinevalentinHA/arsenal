@@ -45,12 +45,19 @@
 #   `etat_non_qualifie` — jamais un repos, jamais la valeur connue « la
 #   plus proche » (ASP-INV-60).
 #
-# 🧭 MISSION OUVERTE — ORTHOGONALE, DONC EXPOSÉE À PART
+# 🧭 SESSION ROBOT ACTIVE — ORTHOGONALE, DONC EXPOSÉE À PART
 #   Le dixième état canonique ne dérive PAS de l'état machine mais du
 #   témoin de session : il se SUPERPOSE aux neuf autres au lieu de les
 #   exclure. Il est donc porté par un ATTRIBUT dédié, jamais fondu dans
 #   la valeur d'état (ASP-INV-68). `unknown` / `unavailable` y valent
 #   `indisponible`, jamais `non` (ASP-INV-45).
+#
+#   CE QU'IL DIT, ET CE QU'IL NE DIT PAS. Il dit l'ACTIVITÉ PHYSIQUE du
+#   robot, observée par le seul témoin natif. Il ne dit RIEN de la
+#   MISSION ARSENAL OUVERTE — responsabilité métier dont l'autorité
+#   exclusive est le verdict, portée vers l'interface par une projection
+#   dédiée. Les deux notions peuvent LÉGITIMEMENT DIVERGER, et son nom
+#   le dit désormais (Q1, contrat 08 §1.1 et §1.3).
 #
 # 🚫 INTERDITS
 #   - Agréger, simplifier ou masquer un état
@@ -93,7 +100,7 @@
            else 'etat_non_qualifie' }}
       attributes:
         # Dixième état canonique — orthogonal, jamais fondu dans l'état.
-        mission_ouverte: >
+        session_robot_active: >
           {% set s = states('binary_sensor.roborock_q7_max_nettoyage') %}
           {{ 'oui' if s == 'on' else 'non' if s == 'off' else 'indisponible' }}
         # Classe de la partition 07 §5.0 dont l'état courant relève.
