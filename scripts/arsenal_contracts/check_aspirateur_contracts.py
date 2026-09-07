@@ -10963,28 +10963,30 @@ def selftest() -> None:
                           "        _attribut_retire: >")
     c.viole(check_code_historique_absent(_rt, _dep, _dom),
             "attendu exactement 1", "CI-44 attribut du producteur supprime")
+    # Depuis le lot 6, le SEUL slot restant est celui de la RESTITUTION —
+    # les trois gardes de conduite lisent la projection metier. Il porte la
+    # cle `attribut` du gabarit, la ou les conditions portaient `attribute`.
     c.viole(check_code_historique_absent(
-        rt0, _mut_ui(f"attribute: {ETAT_ORTHOGONAL}",
-                     "attribute: etat_machine_brut"), _dom),
-        "attendu exactement 4", "CI-44 un slot Lovelace detourne")
-    # Un CINQUIEME site, ecrit comme une vraie condition : dupliquer la seule
+        rt0, _mut_ui(f"attribut: {ETAT_ORTHOGONAL}",
+                     "attribut: etat_machine_brut"), _dom),
+        "attendu exactement 1", "CI-44 le slot de restitution detourne")
+    # Un SECOND site, ecrit comme une vraie condition : dupliquer la seule
     # cle serait absorbe par le parseur YAML — deux cles identiques dans un
     # meme mapping n'en font qu'une —, et la mutation ne prouverait rien.
+    # Un SECOND slot, sous la forme qu'aurait une regression reelle : une
+    # garde de conduite qui redeviendrait conditionnee sur le temoin natif.
+    # C'est ce que le lot 6 vient de retirer, et le controle le refuse.
     c.viole(check_code_historique_absent(
         rt0, _mut_ui(
-            "          - condition: state\n"
-            "            entity: sensor.aspirateur_etat_canonique\n"
-            f"            attribute: {ETAT_ORTHOGONAL}\n"
-            "            state: oui\n",
-            "          - condition: state\n"
-            "            entity: sensor.aspirateur_etat_canonique\n"
-            f"            attribute: {ETAT_ORTHOGONAL}\n"
-            "            state: oui\n"
-            "          - condition: state\n"
-            "            entity: sensor.aspirateur_etat_canonique\n"
-            f"            attribute: {ETAT_ORTHOGONAL}\n"
-            "            state: non\n"), _dom),
-        "attendu exactement 4", "CI-44 cinquieme slot Lovelace")
+            "            - condition: state\n"
+            f"              entity: binary_sensor."
+            f"{ID_PROJECTION_MISSION_OUVERTE}\n",
+            "            - condition: state\n"
+            "              entity: sensor.aspirateur_etat_canonique\n"
+            f"              attribute: {ETAT_ORTHOGONAL}\n"
+            f"              entity_bis: binary_sensor."
+            f"{ID_PROJECTION_MISSION_OUVERTE}\n"), _dom),
+        "attendu exactement 1", "CI-44 second slot d attribut")
 
     # ---- ASP-CI-44 : une MENTION en commentaire ne repand rien ----------
     # La restriction assumee porte sur les lignes ENTIEREMENT commentees, et
@@ -11118,19 +11120,57 @@ def selftest() -> None:
         "              entity: sensor.aspirateur_etat_canonique\n"
         "              state_not: amarrage\n", "")),
         "Renvoyer à la base", "CI-45 exclusion retiree du site retour")
+    _PROJ = f"binary_sensor.{ID_PROJECTION_MISSION_OUVERTE}"
     c.viole(check_offre_gestes(rt0, _mut(
-        _lov0, _ui, f"              attribute: {ETAT_ORTHOGONAL}\n"
-        "              state: oui\n          card:\n"
+        _lov0, _ui,
+        f"              entity: {_PROJ}\n"
+        "              state: \"on\"\n          card:\n"
         "            type: custom:button-card\n"
         "            template: carte_action_standard_warning",
-        f"              attribute: {ETAT_ORTHOGONAL}\n"
-        "              state: oui\n"
+        f"              entity: {_PROJ}\n"
+        "              state: \"on\"\n"
         "            - condition: state\n"
         "              entity: sensor.aspirateur_etat_canonique\n"
         "              state_not: pause\n          card:\n"
         "            type: custom:button-card\n"
         "            template: carte_action_standard_warning")),
         "sans exclusion d'état", "CI-45 exclusion ajoutee au site arret")
+
+    # ---- ASP-CI-45 etendu au lot 6 : l'AUTORITE des sites ---------------
+    # C'est la levee de RC-02, rendue mecanique. Les deux fautes sont
+    # SYMETRIQUES et jouees toutes les deux : l'offre qui cesse de suivre la
+    # mission Arsenal, et celle qui retourne au temoin natif. Aucune des
+    # deux ne se voit dans un site pris isolement.
+    c.viole(check_offre_gestes(rt0, _mut(
+        _lov0, _ui,
+        f"              entity: {_PROJ}\n              state: \"on\"\n",
+        "              entity: sensor.aspirateur_etat_canonique\n"
+        "              state: nettoyage_reel\n", 2)),
+        "ne conditionne pas", "CI-45 un geste quitte la projection metier")
+    c.viole(check_offre_gestes(rt0, _mut(
+        _lov0, _ui,
+        f"              entity: {_PROJ}\n              state: \"on\"\n",
+        "              entity: sensor.aspirateur_etat_canonique\n"
+        f"              attribute: {ETAT_ORTHOGONAL}\n"
+        "              state: oui\n", 2)),
+        "conditionne encore", "CI-45 un geste retourne au temoin natif")
+    # …et la SECTION, dont la disjonction masque tout ce qu'elle contient :
+    # un geste offert par sa condition propre mais retire par sa section
+    # n'est pas offert du tout.
+    c.viole(check_offre_gestes(rt0, _mut(
+        _lov0, _ui,
+        f"          - condition: state\n            entity: {_PROJ}\n"
+        "            state: \"on\"\n", "")),
+        "n'inclut aucun terme", "CI-45 section privee du terme de projection")
+    c.viole(check_offre_gestes(rt0, _mut(
+        _lov0, _ui,
+        f"          - condition: state\n            entity: {_PROJ}\n"
+        "            state: \"on\"\n",
+        "          - condition: state\n"
+        "            entity: sensor.aspirateur_etat_canonique\n"
+        f"            attribute: {ETAT_ORTHOGONAL}\n"
+        "            state: oui\n")),
+        "lit encore l'attribut", "CI-45 section revenue au temoin natif")
 
     # ---- ASP-CI-11 etendu : l'allowlist n'est ni dormante ni une breche --
     c.conforme(refus_allowlist_lecteurs(LECTEURS_VERDICT),
@@ -12979,8 +13019,17 @@ FICHIER_UI_MISSION = ("18_lovelace/includes/cartes/aspirateur/"
 CLES_ATTRIBUT_UI = ("attribute", "attribut")
 
 # Population attendue du code canonique de l'etat orthogonal.
+#
+# UN SEUL SLOT DEPUIS LE LOT 6, ET C'EST UNE BASCULE D'AUTORITE, PAS UNE
+# DISPARITION. Le lot 5 avait laisse QUATRE slots : la tuile de restitution,
+# et les TROIS gardes de conduite — section, Retour base, Arret — qui
+# lisaient l'activite physique pour offrir des gestes Arsenal. Le lot 6 les
+# fait basculer sur la PROJECTION METIER (ASP-INV-97) : l'offre suit la
+# mission Arsenal ouverte, jamais le temoin natif. Ne reste donc qu'un slot,
+# celui qui RESTITUE la session robot active — et c'est ASP-CI-45 qui garde
+# desormais l'autorite des trois autres.
 ATTRIBUTS_PRODUCTEUR_ATTENDUS = 1
-SLOTS_UI_ATTENDUS = 4
+SLOTS_UI_ATTENDUS = 1
 
 # La CIBLE d'un lien Markdown est un CHEMIN, jamais du texte contractuel : un
 # chapitre doit pouvoir renvoyer a un document dont le NOM porterait le code.
@@ -13380,6 +13429,90 @@ def check_offre_gestes(textes_runtime, lovelace) -> list[str]:
             "bouton retiré alors que le backend l'accepterait est une "
             "sous-offre, exactement le défaut que ce chantier lève "
             "(ASP-INV-97, RC-02).")
+
+    # ── EXTENSION LOT 6, SANS NOUVEAU NUMERO — L'AUTORITE DES SITES ──────
+    #
+    # Jusqu'au lot 6, ce controle gardait la FORME de l'offre : les trois
+    # exclusions du Retour base, l'absence d'exclusion sur l'Arret. Il ne
+    # pouvait rien dire de l'AUTORITE, parce que la projection metier
+    # n'existait pas. Elle existe depuis le lot 4, l'interface la consomme
+    # depuis le lot 6, et c'est ce que ces gardes verifient.
+    #
+    # C'EST LA LEVEE DE RC-02, RENDUE MECANIQUE. Le defaut n'etait pas
+    # qu'un bouton fut mal place : c'est que l'AFFICHAGE et la GARDE DU
+    # BACKEND lisaient DEUX PREDICATS DIFFERENTS. Un robot actif sur une
+    # mission externe se voyait offrir des gestes que le backend refusait ;
+    # une mission Arsenal ouverte robot immobile les voyait masques alors
+    # que le backend les acceptait. Les deux fautes sont symetriques, et
+    # aucune ne se voit dans un site pris isolement — seule leur SOURCE
+    # commune se garde.
+    ENTITE_PROJECTION = f"binary_sensor.{ID_PROJECTION_MISSION_OUVERTE}"
+
+    def _lit_projection(conditions) -> bool:
+        return any(isinstance(c, dict)
+                   and c.get("entity") == ENTITE_PROJECTION
+                   and c.get("state") == "on"
+                   for c in conditions)
+
+    def _lit_temoin_natif(conditions) -> bool:
+        return any(isinstance(c, dict) and c.get("attribute") == ETAT_ORTHOGONAL
+                   for c in conditions)
+
+    for geste in (GESTE_SANS_RESTRICTION, "retour_base"):
+        conds = sites.get(geste)
+        if conds is None:
+            continue
+        if not _lit_projection(conds):
+            errs.append(
+                f"ASP-CI-45 : le site du geste `{geste}` ne conditionne pas "
+                f"son offre sur `{ENTITE_PROJECTION}` — l'autorité de l'offre "
+                "est la MISSION ARSENAL OUVERTE, reçue par la projection "
+                "métier, et l'interface ne lit jamais le verdict "
+                "(ASP-INV-97, ASP-INV-96, contrat 11 §2).")
+        if _lit_temoin_natif(conds):
+            errs.append(
+                f"ASP-CI-45 : le site du geste `{geste}` conditionne encore "
+                f"son offre sur l'attribut `{ETAT_ORTHOGONAL}` — la session "
+                "robot active dit l'ACTIVITÉ PHYSIQUE, jamais la "
+                "responsabilité métier d'Arsenal. Les deux peuvent "
+                "légitimement diverger, et c'est précisément la divergence "
+                "qui produisait RC-02 (ASP-INV-87, ASP-INV-47).")
+
+    # La SECTION entière — le conditional qui porte PLUSIEURS gestes. Si sa
+    # disjonction n'inclut pas la projection, l'Arret disparait avec elle :
+    # un geste offert par sa propre condition mais masque par sa section
+    # n'est pas offert du tout.
+    section = None
+    for n in _mappings(doc_ui):
+        if n.get("type") == "conditional" \
+                and len(set(_gestes_du_noeud(n.get("card")))) > 1:
+            section = n
+            break
+    if section is None:
+        errs.append("ASP-CI-45 : aucune section de conduite portant plusieurs "
+                    f"gestes dans `{FICHIER_UI_MISSION}` — la disjonction qui "
+                    "la conditionne ne peut pas être vérifiée.")
+    else:
+        termes = []
+        for c in section.get("conditions") or []:
+            if isinstance(c, dict) and c.get("condition") == "or":
+                termes.extend(c.get("conditions") or [])
+            else:
+                termes.append(c)
+        if not _lit_projection(termes):
+            errs.append(
+                "ASP-CI-45 : la disjonction qui conditionne la section de "
+                f"conduite n'inclut aucun terme sur `{ENTITE_PROJECTION}` — "
+                "la garde de l'Arrêt est « mission Arsenal ouverte » nue, et "
+                "une section masquée masque le geste qu'elle contient. Un "
+                "geste offert par sa condition propre mais retiré par sa "
+                "section n'est pas offert (ASP-INV-97, RC-02).")
+        if _lit_temoin_natif(termes):
+            errs.append(
+                "ASP-CI-45 : la disjonction qui conditionne la section de "
+                f"conduite lit encore l'attribut `{ETAT_ORTHOGONAL}` — la "
+                "section de conduite Arsenal suit la MISSION Arsenal, pas "
+                "l'activité physique du robot (`Q2` §6.1).")
     return errs
 
 

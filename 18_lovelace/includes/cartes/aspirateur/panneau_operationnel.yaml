@@ -78,9 +78,9 @@
 #
 # 🧩 PATRONS RÉUTILISÉS — AUCUNE FORME NATIVE MASSIVE
 #   `section_header` · `sub_section_header` · `carte_etat_interprete` ·
-#   `carte_attribut_categoriel_interprete` ·
+#   `carte_attribut_categoriel_interprete` · `carte_mode_binaire_interprete` ·
 #   `carte_aspirateur_batterie` (satellite de `socle_status`, comme ses
-#   deux voisines de bloc : même hauteur, même typographie) ·
+#   trois voisines de bloc : même hauteur, même typographie) ·
 #   `socle_status_label_72` ·
 #   `socle_toggle_compact_68` · `carte_action_standard` ·
 #   `carte_action_standard_warning` ·
@@ -107,7 +107,7 @@ type: vertical-stack
 cards:
 
   # ==================================================
-  # 1️⃣ ÉTAT — synthèse du robot, mission en cours et charge
+  # 1️⃣ ÉTAT — machine, mission Arsenal, session robot et charge
   # --------------------------------------------------
   # Les dix états canoniques et la « session robot active » sont rendus
   # SÉPARÉMENT : le dixième se superpose aux neuf autres au lieu de
@@ -115,24 +115,25 @@ cards:
   # faite (ASP-INV-44). L'indisponibilité tombe au gris atténué,
   # jamais sur un état nominal (ASP-INV-45).
   #
-  # UNE LIGNE, TROIS CELLULES — et l'ordre porte le sens : ce que fait
-  # le robot · ce dont il dispose · ce qu'Arsenal en attend. La mesure
-  # est au centre parce qu'elle se lit AVEC les deux verdicts qui
-  # l'encadrent, jamais après eux ; et parce qu'elle est la seule des
-  # trois à ne rien juger, son gris la distingue sans la reléguer.
-  # Trois cellules pour trois colonnes — grille complète
+  # DEUX LIGNES, DEUX ALTITUDES DE LECTURE. Ligne 1 : les deux lectures
+  # de tête — ce que fait la machine, et ce dont Arsenal répond.
+  # Ligne 2 : les deux observations qui les nuancent — une session peut
+  # rester ouverte sans que le robot bouge, et la charge dit s'il peut
+  # repartir. Quatre cellules pour deux colonnes : grille complète
   # (R-LL-GRID-1).
   #
-  # TROIS COLONNES TIENNENT : la section Composition, plus bas, rend
-  # déjà « Rez-de-chaussée » — quinze caractères à 12 px — dans une
-  # grille de même largeur. Le pire libellé d'ici, « Non qualifié »,
-  # demande douze caractères à 14 px, soit moins.
+  # LA QUATRIÈME TUILE N'EST PAS UN REMPLISSAGE, et c'est la différence
+  # avec la version écartée de C50 : « Session robot » et « Mission »
+  # sont DEUX NOTIONS distinctes, d'autorités exclusives et non
+  # substituables, dont la divergence est LÉGITIME (Q1). Les rendre
+  # séparément est une obligation contractuelle, pas un choix de mise
+  # en page.
   #
   # Aucun en-tête : la barre du dashboard porte déjà « Aspirateur ».
   # ==================================================
   - type: grid
     square: false
-    columns: 3
+    columns: 2
     cards:
       - type: custom:button-card
         template: carte_etat_interprete
@@ -161,7 +162,58 @@ cards:
             indisponibilite: rgba(158, 158, 158, 0.1)
             etat_non_qualifie: rgba(158, 158, 158, 0.2)
 
-      # ── L'OBSERVATION, ENTRE LES DEUX VERDICTS ───────────────────
+      # ── MISSION ARSENAL OUVERTE — sur la PROJECTION MÉTIER ───────
+      # L'autorité est le VERDICT, jamais un témoin natif (ASP-INV-87).
+      # L'interface ne le lit pas directement : elle CONSOMME la
+      # projection, qui en dérive la seule classe O (ASP-INV-96,
+      # contrat 11 §2). L'indisponibilité de la projection tombe au gris
+      # atténué et rend « — » : elle ne vaut PAS « aucune mission »
+      # (ASP-INV-45).
+      - type: custom:button-card
+        template: carte_mode_binaire_interprete
+        entity: binary_sensor.aspirateur_mission_arsenal_ouverte
+        name: Mission
+        icon: mdi:play-circle-outline
+        variables:
+          label_on: Ouverte
+          label_off: Aucune
+          color_on: 'rgba(33, 150, 243, 0.2)'
+          color_off: 'rgba(158, 158, 158, 0.2)'
+
+      # ── SESSION ROBOT ACTIVE — l'autre notion, l'autre autorité ───
+      # DEUX NOTIONS, DEUX RENDUS, DEUX LIBELLÉS. La mission ci-dessus
+      # dit ce dont ARSENAL RÉPOND ; celle-ci dit ce que L'APPAREIL
+      # FAIT, sur le seul témoin natif de session. Elles peuvent
+      # LÉGITIMEMENT DIVERGER — mission externe, ou retour au dock — et
+      # l'interface REND cette divergence au lieu de la résorber
+      # (Q1 §6.1, contrat 11 §3 items 7 et 8).
+      #
+      # GRISE, ET C'EST UNE DÉCISION. Elle n'engage aucune
+      # responsabilité Arsenal et ne conditionne plus aucun geste : elle
+      # observe. Lui prêter le bleu de la Mission ferait lire deux fois
+      # le même fait, ce que Q1 proscrit précisément.
+      - type: custom:button-card
+        template: carte_attribut_categoriel_interprete
+        entity: sensor.aspirateur_etat_canonique
+        name: Session robot
+        icon: mdi:robot-outline
+        variables:
+          attribut: session_robot_active
+          libelles:
+            oui: Active
+            non: Inactive
+            indisponible: Indisponible
+          couleurs:
+            oui: rgba(158, 158, 158, 0.2)
+            non: rgba(158, 158, 158, 0.2)
+            indisponible: rgba(158, 158, 158, 0.1)
+
+      # ── L'OBSERVATION DE CHARGE — seconde ligne, avec la session ─
+      # Ligne 1 : les deux lectures de tête — ce que fait la machine,
+      # ce dont Arsenal répond. Ligne 2 : les deux observations qui
+      # les nuancent — une session peut rester ouverte sans que le
+      # robot bouge, et la charge dit s'il peut repartir.
+      #
       # AUCUN SEUIL, DONC AUCUNE COULEUR D'ALERTE. ASP-INV-41 ne
       # conditionne le lancement à aucun seuil de batterie PARCE QUE
       # l'opérateur décide : une teinte de vigilance sous un certain
@@ -178,22 +230,6 @@ cards:
         template: carte_aspirateur_batterie
         entity: sensor.roborock_q7_max_batterie
         name: Batterie
-
-      - type: custom:button-card
-        template: carte_attribut_categoriel_interprete
-        entity: sensor.aspirateur_etat_canonique
-        name: Mission
-        icon: mdi:play-circle-outline
-        variables:
-          attribut: session_robot_active
-          libelles:
-            oui: Ouverte
-            non: Aucune
-            indisponible: Indisponible
-          couleurs:
-            oui: rgba(33, 150, 243, 0.2)
-            non: rgba(158, 158, 158, 0.2)
-            indisponible: rgba(158, 158, 158, 0.1)
 
   # Motif lisible — restitué NON TRONQUÉ, tel que le backend le produit.
   # CHROME RÉDUIT : plus de hauteur minimale imposée, la carte prend la
@@ -662,31 +698,40 @@ cards:
   # ==================================================
   # 4️⃣ CONDUITE — quatre gestes, masqués hors sens physique
   # --------------------------------------------------
-  # Les gardes sont celles du script de conduite, lues sur l'ÉTAT
-  # CANONIQUE — jamais sur une combinaison de témoins natifs, que le
-  # contrat 11 interdit à l'UI :
+  # L'AUTORITÉ DE L'OFFRE EST LA MISSION ARSENAL OUVERTE, et elle seule
+  # (ASP-INV-97). L'interface la reçoit par la PROJECTION MÉTIER — elle
+  # ne lit jamais le verdict, ce que le contrat 11 §2 interdit — et
+  # jamais par une combinaison de témoins natifs :
   #   pause       ← nettoyage réel en cours
   #   reprise     ← mission en pause
-  #   arrêt       ← session robot active, sans autre garde : l'arrêt
+  #   arrêt       ← mission Arsenal ouverte, SANS AUTRE GARDE : l'arrêt
   #                 n'est jamais plus contraint que le lancement
-  #                 (ASP-INV-43)
-  #   retour base ← session robot active, et le robot ne rentre pas déjà
+  #                 (ASP-INV-43), et il ne dépend plus du témoin natif
+  #   retour base ← mission Arsenal ouverte, et le robot ne rentre pas
+  #                 déjà — les trois exclusions sont de SENS PHYSIQUE,
+  #                 conservées telles quelles (ASP-INV-48)
   # Le backend REVALIDE chacune : masquer ici est une commodité, pas
   # une autorisation.
   #
+  # C'EST LA LEVÉE DE RC-02. L'affichage et la garde du backend lisent
+  # désormais LE MÊME PRÉDICAT : aucun bouton n'est présenté puis
+  # refusé, et aucun geste possible n'est masqué. Une mission externe —
+  # robot actif qu'Arsenal n'a pas ouvert — n'expose donc AUCUN geste
+  # de conduite Arsenal, et une mission ouverte robot immobile les
+  # expose tous.
+  #
   # LA SECTION ENTIÈRE, EN-TÊTE COMPRIS, tient dans une condition : la
   # disjonction EXACTE des quatre gardes ci-dessus. Trois termes
-  # suffisent à la couvrir — la garde d'arrêt est « session robot
-  # active » nue, et celle du retour la contient. Aucun sur-ensemble,
+  # suffisent à la couvrir — la garde d'arrêt est « mission Arsenal
+  # ouverte » nue, et celle du retour la contient. Aucun sur-ensemble,
   # aucune approximation : si un seul geste a du sens, l'en-tête paraît ;
   # si aucun n'en a, rien ne paraît.
   #
-  # CES QUATRE GARDES LISENT L'ACTIVITÉ PHYSIQUE, ET C'EST LA DETTE QUE
-  # LE LOT 6 SOLDE. L'autorité de l'offre est la MISSION ARSENAL OUVERTE
-  # — verdict de classe O, consommé par la projection métier — et non le
-  # témoin de session (ASP-INV-97). Le lot 5 rend ce nom EXACT ; il ne
-  # change aucune autorité, et l'écart devient donc lisible ici au lieu
-  # de se cacher derrière un nom ambigu.
+  # L'INDISPONIBILITÉ DE LA PROJECTION NE VAUT PAS « PAS DE MISSION ».
+  # Elle est rendue comme telle par la projection (ASP-INV-96), et une
+  # condition d'état sur `on` ne la confond donc avec rien : aucun geste
+  # n'est offert quand la responsabilité est inconnaissable. C'est le
+  # sens sûr, et c'est celui du backend.
   # ==================================================
   - type: conditional
     conditions:
@@ -699,9 +744,8 @@ cards:
             entity: sensor.aspirateur_etat_canonique
             state: pause
           - condition: state
-            entity: sensor.aspirateur_etat_canonique
-            attribute: session_robot_active
-            state: oui
+            entity: binary_sensor.aspirateur_mission_arsenal_ouverte
+            state: "on"
     card:
       type: vertical-stack
       cards:
@@ -752,9 +796,8 @@ cards:
         - type: conditional
           conditions:
             - condition: state
-              entity: sensor.aspirateur_etat_canonique
-              attribute: session_robot_active
-              state: oui
+              entity: binary_sensor.aspirateur_mission_arsenal_ouverte
+              state: "on"
             - condition: state
               entity: sensor.aspirateur_etat_canonique
               state_not: retour_base
@@ -782,9 +825,8 @@ cards:
         - type: conditional
           conditions:
             - condition: state
-              entity: sensor.aspirateur_etat_canonique
-              attribute: session_robot_active
-              state: oui
+              entity: binary_sensor.aspirateur_mission_arsenal_ouverte
+              state: "on"
           card:
             type: custom:button-card
             template: carte_action_standard_warning
