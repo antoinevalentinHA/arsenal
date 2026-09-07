@@ -117,7 +117,7 @@ A few live views, as they run. They are **dense by design**: the UI observes sta
 *System: infrastructure observability — Raspberry Pi, critical systems, connectivity, integrations. Unstaged: the audit is flagging 5 anomalies and two degraded links. That is exactly what a view whose job is to see is supposed to do — an observability page that has never caught anything proves nothing.*
 
 ![Boiler bridge — combustion, acknowledged transactions and supervision](00_documentation_arsenal/ui/captures/systeme-boiler-bridge.png)<br>
-*Boiler bridge: every physical command is transactional — acknowledgement, guard and supervision.*
+*Boilerack, the sovereign writer to the boiler: every physical command is transactional — acknowledgement, guard and supervision.*
 
 </details>
 

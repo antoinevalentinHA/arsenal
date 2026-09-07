@@ -26,7 +26,7 @@ Quelques comportements du système, tels qu'ils tournent aujourd'hui :
 - **Manuel ou automatique, au choix — une seule décision exécutoire** : pour les domaines où c'est utile (VMC, climatisation, chauffage, déshumidificateur cave), un carton « Autorité & reprise en main » désigne le titulaire — **Arsenal** (automatique) ou **vous** (manuel). En automatique, l'UI expose la décision d'Arsenal *et* les conditions qui la motivent (humidité, CO₂, intention thermique…) ; en manuel, vous commandez le domaine directement (VMC basse/haute, clim arrêt/froid/déshum./chaud, chauffage confort/réduit). Dans les deux cas, un même verdict — la **décision exécutoire** — est imposé à l'exécution. Bascule explicite et observable, sans reprise silencieuse ; l'autorité est unique, sa délégation révocable. Doctrine : [`autorite_de_domaine.md`](00_documentation_arsenal/architecture/03_doctrines/autorite_de_domaine.md).
 - **L'aération bloque le chauffage via une machine d'état explicite** : chaque épisode d'aération suit un cycle de vie normé, avec timers monotones et anti-triggers fantômes — la reprise thermique restant du ressort exclusif de la décision chauffage.
 - **L'eau chaude sanitaire est supervisée par un watchdog**, avec un sous-domaine bouclage (recirculation) audité et clôturé, et une désinfection au retour de vacances.
-- **Les commandes physiques critiques sont transactionnelles** : la chaudière est pilotée via un pont Raspberry Pi ([`boiler_pi`](00_documentation_arsenal/outils_externes/boiler_pi/)) avec acquittement MQTT, retry et garde — on ne suppose jamais qu'une commande a été exécutée.
+- **Les commandes physiques critiques sont transactionnelles** : la chaudière est pilotée par un écrivain souverain (Boilerack), hébergé sur le Raspberry Pi qui documentait historiquement le pont [`boiler_pi`](00_documentation_arsenal/outils_externes/boiler_pi/), avec acquittement MQTT, retry et garde — on ne suppose jamais qu'une commande a été exécutée.
 - **Une alimentation tampon locale (Bluetti AC180)** assure la continuité électrique de la chaîne thermique en cas de panne secteur, et les pannes internet / secteur sont des domaines à part entière, avec remédiation et signalisation.
 - **L'arrosage coexiste avec un contrôleur Rain Bird** via un pont ESP32 : besoin sol → intention → exécution supervisée, en V1 automatique mono-station.
 - **Les températures et humidités intérieures traversent un pipeline de mesure** — capteurs bruts → consolidation → stabilisation — avant toute décision : la mesure est un domaine en soi, séparé de la décision.
@@ -209,7 +209,7 @@ Le **contrat** ([`contrats/chauffage/`](00_documentation_arsenal/contrats/chauff
 Le héros de cette section n'est pas le chauffage : c'est la chaîne **contrat → CI → audit → clôture**. Le chauffage la rend simplement vérifiable — par vous, dans les fichiers liés.
 
 ![Pont chaudière (boiler bridge) — combustion, transactions acquittées et supervision](00_documentation_arsenal/ui/captures/systeme-boiler-bridge.png)<br>
-*Pont chaudière Viessmann : chaque commande physique est transactionnelle — acquittement, garde et supervision. On ne suppose jamais qu'une commande a été exécutée.*
+*Boilerack, écrivain souverain de la chaudière Viessmann : chaque commande physique est transactionnelle — acquittement, garde et supervision. On ne suppose jamais qu'une commande a été exécutée.*
 
 ### La documentation aussi
 

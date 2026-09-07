@@ -54,7 +54,7 @@ Il ne décide rien. Il ne notifie rien. Il ne gère aucun état métier ECS glob
 Il fait uniquement ceci :
 
 1. recevoir une valeur cible ECS
-2. générer une transaction boiler bridge
+2. générer une transaction vers l'écrivain souverain
 3. publier la commande MQTT
 4. attendre une conclusion ACK
 5. nettoyer le helper de corrélation

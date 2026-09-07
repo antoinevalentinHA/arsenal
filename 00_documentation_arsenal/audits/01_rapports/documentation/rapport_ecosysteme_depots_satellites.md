@@ -11,6 +11,19 @@
 >
 > **Date :** 2026-07-03.
 
+> **Rattachement (C48, 2026-09-06, lot A11).** Ce rapport fige un état daté du
+> 2026-07-03 : `boiler-bridge` y est décrit comme le seul satellite actif du
+> domaine boiler (tableau §3, fiche §4, constat n°5 ci-dessous). Depuis, la
+> migration Boiler Bridge → Boilerack est close fonctionnellement
+> ([`migration_boiler_bridge_vers_boilerack.md`](../../../architecture/chauffage/migration_boiler_bridge_vers_boilerack.md)
+> §16) et `boiler-bridge` est requalifié historique dans
+> [`ecosysteme_depots_satellites.md`](../../../architecture/ecosysteme_depots_satellites.md)
+> §4.7 (chantier
+> [C48](../../04_chantiers/chauffage/c48_convergence_documentaire_boilerack.md),
+> lot A3). Ce rapport n'est **pas réécrit** : le constat n°5 (dépôt privé, sans
+> licence) reste un point d'attention de gouvernance à part entière, sans
+> rapport avec la question de l'écrivain actif.
+
 ---
 
 ## 1. Documents créés

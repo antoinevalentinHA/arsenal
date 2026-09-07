@@ -310,7 +310,10 @@ Il sert uniquement de lecture explicative transverse.
 ---
 
 # ----------------------------------------------------------
-# ⚙️ CAPACITÉ D’EXÉCUTION — INFRASTRUCTURE BOILER BRIDGE
+# ⚙️ CAPACITÉ D’EXÉCUTION — GARDE D’EXÉCUTION (ÉCRIVAIN SOUVERAIN)
+# `boiler_bridge_online` : entity_id hérité du pont historique, conservé ;
+# composante nécessaire, non suffisante seule, de la garde d'exécution
+# composée (cf. `30_decision_centrale__amendement_garde_execution.md`).
 # ----------------------------------------------------------
 
 | Cause               | Transition | Trigger | Criticité | Commentaire |
