@@ -343,9 +343,9 @@ runtime modifié.
     runtime), sans affirmation sur l'activité du pont historique —
     **sans objet**.
 - **A9** — `contrats/ping_lan_synthese.md` : `binary_sensor.boiler_bridge`
-  (entité de l'intégration `ping`, cible ICMP `192.168.1.119`) vérifié
+  (entité de l'intégration `ping`, cible ICMP de la machine hôte) vérifié
   contre `migration_boiler_bridge_vers_boilerack.md` §8, qui la déclare
-  explicitement **conservée** — mesure la joignabilité de la machine hôte
+  explicitement **conservée** — mesure la joignabilité de cette machine
   (qui héberge toujours Boilerack), indépendante du transport MQTT, « ni
   renommée, ni déplacée, ni retirée ». **Aucune correction.**
 - **A10** — `README.md` : légende de `systeme-boiler-bridge.png`, « Boiler
