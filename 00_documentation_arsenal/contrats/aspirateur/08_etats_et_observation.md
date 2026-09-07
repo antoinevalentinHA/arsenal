@@ -14,7 +14,7 @@ Le domaine distingue **dix** situations, qui ne se confondent jamais :
 
 | État canonique | Code | Ce qu'il signifie |
 |---|---|---|
-| **Session robot active** | `mission_ouverte` | Une **session de nettoyage** du robot n'est pas terminée — donc reprenable. Observation du **témoin natif Roborock**, autorité exclusive de l'activité physique (§1.1). **Ne dit rien** du mouvement du robot, ni de la **mission Arsenal ouverte**. Son **code technique porte encore l'ancien nom** : sa substitution est atomique (§1.3). |
+| **Session robot active** | `session_robot_active` | Une **session de nettoyage** du robot n'est pas terminée — donc reprenable. Observation du **témoin natif Roborock**, autorité exclusive de l'activité physique (§1.1). **Ne dit rien** du mouvement du robot, ni de la **mission Arsenal ouverte**. |
 | **Nettoyage réel** | `nettoyage_reel` | Le robot **nettoie effectivement**. |
 | **Pause** | `pause` | La mission est ouverte et **suspendue**. |
 | **Erreur** | `erreur` | Le robot **ou le dock** signale une condition d'erreur. |
@@ -160,33 +160,24 @@ aucune ne se déduit de l'autre.
 elle ne lit jamais directement le verdict, et n'en teste jamais la classe
 ([`11`](11_frontiere_ui.md) §2).
 
-### 1.3 Migration atomique du nom du dixième état
+### 1.3 Nom du dixième état — substitution acquise
 
-Le code technique du dixième état est aujourd'hui `mission_ouverte`. **Ce nom est
-contractuellement ambigu** : il désigne la **session robot active**, alors que son
-libellé annonçait une mission. Sa substitution est **due**, et elle obéit à trois
-règles.
+Le code technique de cet état **dit ce que l'état est** : la **session robot
+active**. Il l'a dit après coup — il portait un nom qui annonçait une mission —,
+et la substitution a eu lieu **en un seul mouvement**, producteur, contrat,
+vérification mécanique et interface ensemble.
 
-1. **Le nom contractuel et le nom technique changent ensemble**, en une seule
-   fois.
-2. **Remplacement, jamais duplication.** L'attribut est **renommé** ; aucun second
-   attribut n'est créé, aucun alias, aucune double exposition, aucun repli sur
-   l'ancien nom.
-3. **Aucune coexistence des deux noms n'est admise, fût-elle transitoire.**
-   Producteur, contrats, vérification mécanique et interface basculent dans le
-   **même mouvement**.
+**Ce qu'il en reste comme règle, et qui ne se périme pas :**
 
-> **État transitoire, assumé et borné.** Le présent acte aligne le **libellé**
-> contractuel et la sémantique ; il **ne substitue pas** le code technique, dont
-> la bascule appartient au mouvement atomique ci-dessus. Jusque-là, le libellé dit
-> « session robot active » et le code dit encore `mission_ouverte`. Cet écart est
-> **écrit**, non subi, et il n'ouvre **aucune** coexistence de deux noms : il n'y
-> a toujours qu'**un seul** code pour cet état, et le vocabulaire reste clos à dix
-> codes (`ASP-INV-44`).
->
-> **Ce que le renommage ne change pas.** La **dérivation** reste celle du seul
+1. **Un seul code pour cet état.** Aucun alias, aucune double exposition, aucun
+   repli sur un nom antérieur. Le vocabulaire reste **clos à dix codes**
+   (`ASP-INV-44`).
+2. **Le nom contractuel et le nom technique ne divergent pas.** S'ils devaient
+   changer de nouveau, ils changeraient **ensemble**, en une seule fois.
+
+> **Ce que la substitution n'a pas changé.** La **dérivation** reste celle du seul
 > témoin natif de session, et le **vocabulaire de valeurs rendu** est **conservé
-> tel quel**. Le nom devient exact ; la sémantique était déjà celle-là.
+> tel quel**. Le nom est devenu exact ; la sémantique était déjà celle-là.
 
 ---
 

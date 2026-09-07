@@ -5,10 +5,10 @@
 | **Chantier** | Propager dans les contrats, la CI, le runtime et l'interface la sémantique tranchée par les arbitrages `Q1` et `Q2` : deux notions distinctes — **mission Arsenal ouverte** (autorité : verdict de classe `O`) et **session robot active** (autorité : témoin natif Roborock) —, une **projection métier dédiée** en lecteur pur nominatif sous `ASP-CI-11`, la **migration atomique** de l'attribut ambigu `mission_ouverte`, et les **règles d'offre** des gestes de conduite. |
 | **Domaine** | Aspirateur. |
 | **Nature** | **Propagation gouvernée d'un arbitrage rendu.** Ce n'est **pas** une exploration architecturale : les options ont été examinées et tranchées en `Q2` §4, et ce chantier n'en rouvre aucune. |
-| **Statut** | **Ouvert — Lots 1 à 4 exécutés (Lot 1 : 2026-09-01 · Lot 2 : 2026-09-02 · Lot 3 : 2026-09-03 · Lot 4 : 2026-09-07). Lots 5 à 7 non exécutés.** **Lot 1** — la rectification documentaire `D1` est **produite, datée, classée et indexée** ([`rectification_cardinal_allowlist_asp_ci_11.md`](../../02_arbitrages/aspirateur/rectification_cardinal_allowlist_asp_ci_11.md)), conformément au véhicule décidé au §4.1 ; `Q1`, `Q2`, l'audit, la contre-expertise et la confrontation sont **prouvés inchangés**. **Lot 2** — les chapitres `08`, `11`, `12` et `15` portent la sémantique de `Q1` et `Q2` ; **`ASP-INV-96`**, **`ASP-INV-97`** et **`ASP-INV-98`** sont déclarés ; la dette `D2` est soldée **en commentaire seul** ; le recensement du §3.2 est **rectifié**. **Checker Aspirateur vert et inchangé** ; aucun Lovelace, aucune ligne exécutable de runtime, aucun changelog. **Lot 3** — le checker porte **`ASP-CI-43`**, **`ASP-CI-44`** et **`ASP-CI-45`** ; `ASP-CI-11` est **étendu sans nouveau numéro** ; les **quatre** représentations non gardées le sont désormais, et les **trois** déjà gardées ne sont pas affaiblies. **Aucun runtime, aucun Lovelace, aucun contrat, aucun changelog.** **Lot 4** — la **projection métier** `binary_sensor.aspirateur_mission_arsenal_ouverte` **existe** : créée au chemin attribué et **inscrite aux trois constantes dans le même commit**, sans qu'aucune autorisation dormante n'ait précédé. Contrôle neuf **`ASP-CI-47`**, qui **REND** les deux gabarits sur les 34 valeurs du vocabulaire et sur quatre valeurs extérieures ; `ASP-CI-43` **étendu sans nouveau numéro** aux listes **Jinja**, et la **classe `H`** qualifiée comme ensemble canonique (§5.4, `E-1` et `E-2`). Batterie **702 → 736 cas**, aucun contrôle affaibli. **Ce qui reste devant** : **aucune interface n'est encore modifiée**, et la projection **n'est lue par personne** — c'est l'objet du **Lot 6** ; le **code technique** de l'attribut ambigu ne bascule qu'au **Lot 5** (décision `H-3`, §5.2). |
+| **Statut** | **Ouvert — Lots 1 à 5 exécutés (Lot 1 : 2026-09-01 · Lot 2 : 2026-09-02 · Lot 3 : 2026-09-03 · Lots 4 et 5 : 2026-09-07). Lots 6 et 7 non exécutés.** **Lot 1** — la rectification documentaire `D1` est **produite, datée, classée et indexée** ([`rectification_cardinal_allowlist_asp_ci_11.md`](../../02_arbitrages/aspirateur/rectification_cardinal_allowlist_asp_ci_11.md)), conformément au véhicule décidé au §4.1 ; `Q1`, `Q2`, l'audit, la contre-expertise et la confrontation sont **prouvés inchangés**. **Lot 2** — les chapitres `08`, `11`, `12` et `15` portent la sémantique de `Q1` et `Q2` ; **`ASP-INV-96`**, **`ASP-INV-97`** et **`ASP-INV-98`** sont déclarés ; la dette `D2` est soldée **en commentaire seul** ; le recensement du §3.2 est **rectifié**. **Checker Aspirateur vert et inchangé** ; aucun Lovelace, aucune ligne exécutable de runtime, aucun changelog. **Lot 3** — le checker porte **`ASP-CI-43`**, **`ASP-CI-44`** et **`ASP-CI-45`** ; `ASP-CI-11` est **étendu sans nouveau numéro** ; les **quatre** représentations non gardées le sont désormais, et les **trois** déjà gardées ne sont pas affaiblies. **Aucun runtime, aucun Lovelace, aucun contrat, aucun changelog.** **Lot 4** — la **projection métier** `binary_sensor.aspirateur_mission_arsenal_ouverte` **existe** : créée au chemin attribué et **inscrite aux trois constantes dans le même commit**, sans qu'aucune autorisation dormante n'ait précédé. Contrôle neuf **`ASP-CI-47`**, qui **REND** les deux gabarits sur les 34 valeurs du vocabulaire et sur quatre valeurs extérieures ; `ASP-CI-43` **étendu sans nouveau numéro** aux listes **Jinja**, et la **classe `H`** qualifiée comme ensemble canonique (§5.4, `E-1` et `E-2`). Batterie **702 → 736 cas**, aucun contrôle affaibli. **Lot 5** — la **migration atomique** a eu lieu : **zéro** occurrence du code historique dans le YAML et dans les contrats, **une** dans le module de contrôle — sa déclaration —, en **un seul commit** où les deux noms ne coexistent à aucun instant. La **clause d'état transitoire** du `08` §1.3 est **retirée**, et **`ASP-CI-44` exécute sa mort programmée** : l'allowlist transitoire est supprimée, la règle permanente de **zéro occurrence** lui est substituée, et le contrôle est **vérifié aussi en positif** — un attribut chez le producteur, quatre slots dans l'arbre Lovelace —, sans quoi une recherche d'absence serait verte sur un dépôt où la restitution aurait disparu. **Ce qui reste devant** : **aucune autorité n'a basculé** — les quatre gardes de conduite lisent toujours l'**activité physique** là où `ASP-INV-97` veut la mission Arsenal ouverte, et la projection métier **n'est lue par personne**. C'est l'objet du **Lot 6**, que le renommage rend désormais **lisible** au lieu de le laisser derrière un nom ambigu. |
 | **Priorité** | **P2** — aucun risque de sûreté établi ; le backend refuse déjà correctement. L'enjeu est la **cohérence de l'offre à l'opérateur** et la levée de la cause structurelle de `RC-02`. |
 | **Ouvert le** | 2026-09-01. |
-| **Prochain jalon** | **Lot 5 — migration atomique de l'attribut ambigu** (§5.5). Les **Lots 1 à 4 sont exécutés**. Le Lot 5 est **indivisible** : le code technique `mission_ouverte` est **remplacé** — jamais dupliqué, **aucune coexistence des deux noms, fût-elle transitoire** — chez le producteur, dans les contrats `08` §1, `11` et `12`, sur les **quatre sites Lovelace** du §3.4, et dans le **checker** (deux constantes, deux commentaires, les deux messages d'`ASP-CI-23`). La **clause d'état transitoire** du `08` §1.3 est **retirée** au même mouvement, et l'**allowlist transitoire** d'`ASP-CI-44` **supprimée**, son régime permanent de **zéro occurrence** activé. **Preuve attendue** : recherche d'absence de l'ancien nom rendant **zéro occurrence** sur tout le périmètre gouverné, **commentaires compris**, et **aucun commit intermédiaire** où les deux noms coexistent. |
+| **Prochain jalon** | **Lot 6 — adaptation de l'interface** (§5.6). Les **Lots 1 à 5 sont exécutés**. Le Lot 6 fait basculer la **section Mission** et les **gestes de conduite** sur la **projection métier** livrée au Lot 4 — l'autorité passe de l'activité physique à la **mission Arsenal ouverte** (`ASP-INV-97`) —, **conserve la navigation** adossée à l'activité physique (§3.5), impose des **libellés distincts** aux deux notions, offre l'**Arrêt** pendant toute la classe `O` **sans condition sur le témoin natif** et le **Retour base** avec ses **trois** exclusions de sens physique **conservées telles quelles**, et n'expose **aucun geste** sur une mission externe. **C'est la levée effective de `RC-02`** : aucun bouton présenté puis ignoré, la condition d'affichage et la garde d'acceptation du backend devant coïncider. |
 | **Registre** | Chantier **C45** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 | **Autorités amont** | [`arbitrage_mission_arsenal_ouverte_et_session_robot_active.md`](../../02_arbitrages/aspirateur/arbitrage_mission_arsenal_ouverte_et_session_robot_active.md) (`Q1`) · [`arbitrage_projection_mission_arsenal_ouverte_vers_interface.md`](../../02_arbitrages/aspirateur/arbitrage_projection_mission_arsenal_ouverte_vers_interface.md) (`Q2` et décision subsidiaire sur les gestes). |
 | **Constats couverts** | `AUD-ASP-01`, `CC-01`, `RC-02` — **un seul noyau causal** (confrontation §10 et §11), jamais additionnés comme trois écarts. `AUD-ASP-04` — **dette contractuelle locale**, distincte de ce noyau — est **rattaché au Lot 2** par décision rendue (§4.2). |
@@ -544,10 +544,49 @@ est attribué** : elles sont désignées par leur objet.
 | **Ne fait pas** | **Le nom technique n'est ni inventé ni proposé par ce document** : `Q2` §8 l'exclut de l'arbitrage. L'identifiant `binary_sensor.aspirateur_mission_arsenal_ouverte` et le chemin `12_template_sensors/aspirateur/mission_arsenal_ouverte.yaml` sont **attribués par l'opérateur propriétaire** et employés **ici**, jamais avant : au Lot 3, le **fichier n'est pas créé** et le **chemin n'est pas inscrit dans `LECTEURS_VERDICT`** — **aucune autorisation dormante n'y est créée**. |
 | **Preuve** | La projection existe, ne lit que le verdict, n'écrit rien ; les trois régimes — mission ouverte, pas de mission, indisponible — sont distincts et observables. |
 
-### 5.5 Lot 5 — Migration atomique de l'attribut ambigu
+### 5.5 Lot 5 — Migration atomique de l'attribut ambigu — **EXÉCUTÉ (2026-09-07)**
 
 **Un seul mouvement.** `Q2` §5.6 et §5.7 : l'attribut est **renommé**, pas dupliqué ; **aucune
 coexistence des deux noms n'est admise, fût-elle transitoire**.
+
+> **Exécution — la preuve d'abord.** Recherche d'absence sur le **périmètre gouverné** :
+> **zéro** occurrence dans le YAML (runtime et interface), **zéro** dans les chapitres du contrat,
+> et **une** dans le module de contrôle — sa **déclaration**, et rien d'autre. Un seul commit ; à
+> aucun instant les deux noms ne coexistent.
+>
+> **Les quatre porteurs, tous dans le même mouvement.** Le **producteur**
+> [`etat_canonique.yaml`](../../../../12_template_sensors/aspirateur/etat_canonique.yaml) — clé
+> d'attribut **et en-tête**, dont le bloc dit désormais ce que l'état est et ce qu'il **ne dit pas**.
+> Le **contrat `08`** — code du tableau §1, et **retrait de la clause d'état transitoire** §1.3,
+> l'écart qu'elle écrivait ayant cessé d'exister ; ce qu'il en reste est ce qui ne se périme pas —
+> un seul code, aucun alias, et les deux noms qui changent ensemble s'ils devaient changer. Les
+> chapitres `11` et `12` étaient **déjà propres** depuis le Lot 2 : le token n'y figurait plus, et
+> ce lot n'avait donc rien à y faire. L'**interface** — les **quatre sites** du §3.4. Le **module de
+> contrôle** — deux constantes, deux commentaires et les deux messages d'`ASP-CI-23`.
+>
+> **`ASP-CI-44` exécute sa mort programmée, et ce n'est pas sa disparition.** L'allowlist
+> transitoire — qui gelait quatorze emplois en attendant ce lot — est **supprimée**, et la règle
+> permanente de **zéro occurrence** lui est substituée dans le même mouvement. Le contrôle change de
+> nom avec son régime : `check_ancien_code_transitoire` devient `check_code_historique_absent`, un
+> contrôle nommé « transitoire » qui décrirait un régime permanent étant exactement le défaut
+> — « décrire un nom qui n'existe plus » — que ce lot corrige ailleurs.
+>
+> **Le module reste la seule exception, et elle est d'une occurrence.** Un contrôle doit **nommer**
+> ce qu'il refuse, sinon il ne peut pas le chercher. Le code historique y est déclaré **une fois**,
+> les messages l'**interpolent** depuis la constante, et le contrôle vérifie lui-même qu'il n'y
+> figure pas davantage : un module qui le répandrait serait sans autorité pour l'interdire ailleurs.
+>
+> **Vérifié aussi EN POSITIF, et c'est ce qui distingue ce contrôle d'une recherche d'absence.**
+> Celle-ci serait **verte sur un dépôt où la restitution aurait disparu** : elle prouverait qu'on ne
+> trouve plus l'ancien nom, pas que le nouveau porte ce que l'ancien portait. La **population
+> exacte** est donc exigée — **un** attribut chez le producteur, **quatre** slots dans l'arbre
+> Lovelace —, c'est-à-dire ce que l'allowlist gelait, mais sur le nom exact.
+>
+> **Ce que ce lot n'a pas changé, et qui devient visible.** Aucune **autorité** ne bascule : les
+> quatre gardes de conduite lisent toujours l'**activité physique**, là où `ASP-INV-97` veut la
+> mission Arsenal ouverte. C'est la dette du **Lot 6**. Le renommage la rend **lisible** au lieu de
+> la laisser derrière un nom ambigu — les commentaires du panneau le disent désormais explicitement.
+> **Aucun changelog.**
 
 | Item | Contenu |
 |---|---|
