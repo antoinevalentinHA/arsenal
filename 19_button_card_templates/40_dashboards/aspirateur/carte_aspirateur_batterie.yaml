@@ -1,0 +1,102 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Aspirateur — Niveau de batterie (observation neutre)
+#
+# 🗂️ COUCHE : 40_dashboards/aspirateur
+# 🧱 TYPE UI : lecture seule — mesure
+# 🔍 NIVEAU DE CONFIANCE : eleve
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Restituer le NIVEAU de charge du robot comme une OBSERVATION.
+#   Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#             11_frontiere_ui.md §3 item 9 (obligation de restitution)
+#             07_moteur_de_mission.md §5.3 (ASP-INV-41 — aucun seuil)
+#
+# 📡 SOURCE
+#   - entity.state — pourcentage natif du robot, lecture seule
+#
+# ⚙️ LOGIQUE UI
+#   - valeur numerique   → « xx % », arrondi a l'entier
+#   - valeur non numerique, unknown, unavailable → « — »
+#   - aucune interaction (tap / hold / double_tap desactives)
+#
+# 🚫 AUCUN SEUIL — ET C'EST LA RAISON D'ETRE DE CE GABARIT
+#   ASP-INV-41 ne conditionne le lancement a AUCUN seuil de batterie,
+#   PARCE QUE l'operateur decide. Peindre un niveau bas en rouge, en
+#   orange ou en jaune SERAIT un seuil : un seuil qu'aucun texte ne
+#   fixe, applique sans etre ecrit. Ce gabarit n'en porte donc aucun,
+#   et c'est pourquoi il ne reutilise pas le gabarit a seuils voisin
+#   d'un autre domaine (chantier C50, decisions D-3 et D-5).
+#
+#   Deux teintes, et deux seulement :
+#     ⚪ gris neutre   rgba(158, 158, 158, 0.2) — mesure lisible
+#     ⚪ gris indispo  rgba(158, 158, 158, 0.1) — valeur inexploitable
+#   Le gris indisponibilite prime, jamais masque (regle R6, ASP-INV-45).
+#
+#   ASP-CI-46 verifie mecaniquement cette absence : toute couleur
+#   semantique introduite ici est ROUGE en CI.
+#
+# 🎨 ICONE — SUIT LA MESURE, NE LA JUGE PAS
+#   Le glyphe epouse le niveau par pas de 10 %. Il ne dit rien de plus
+#   que le nombre affiche a cote : ce n'est pas un signal, c'est la
+#   meme information sous une autre forme. Sa couleur reste celle du
+#   socle (#111), inchangee par le niveau.
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : socle_status
+#   Meme socle que `carte_etat_interprete` et
+#   `carte_mode_binaire_interprete`, ses voisines de grille : la
+#   typographie et la hauteur du bloc 2 x 2 sont ainsi identiques
+#   d'une cellule a l'autre.
+#
+# ==========================================================
+
+carte_aspirateur_batterie:
+  template: socle_status
+
+  show_state: true
+  show_label: false
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity ? entity.state : null);
+      return isNaN(v) ? '—' : `${Math.round(v)} %`;
+    ]]]
+
+  icon: |
+    [[[
+      const v = parseFloat(entity ? entity.state : null);
+      if (isNaN(v)) return 'mdi:battery-unknown';
+      if (v >= 95) return 'mdi:battery';
+      if (v < 5)   return 'mdi:battery-outline';
+      return `mdi:battery-${Math.round(v / 10) * 10}`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = parseFloat(entity ? entity.state : null);
+            return isNaN(v) ? 'rgba(158, 158, 158, 0.1)'
+                            : 'rgba(158, 158, 158, 0.2)';
+          ]]]
+
+    name:
+      - justify-self: center
+      - text-align: center
+
+    state:
+      - justify-self: center
+      - text-align: center

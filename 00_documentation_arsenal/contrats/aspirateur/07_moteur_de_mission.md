@@ -526,6 +526,12 @@ contournement de refus. Il est remplacé par une règle **testable**.
 >
 > La batterie reste une **observation** exposée à l'opérateur
 > ([`08`](08_etats_et_observation.md)), qui décide.
+>
+> **Cette exposition est exigible, et non facultative.** L'abstention ci-dessus
+> ne se tient que si l'opérateur voit ce sur quoi il lui revient de décider :
+> l'obligation de restitution est portée par [`11`](11_frontiere_ui.md) §3,
+> item 9 — niveau et alimentation rendus séparément, **sans seuil ni couleur
+> d'alerte**, indisponibilité rendue.
 
 ### 5.4 Session inachevée — arbitrage `ARB-2`
 

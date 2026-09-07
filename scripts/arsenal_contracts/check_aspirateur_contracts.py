@@ -303,6 +303,20 @@ exécute les arbitrages `Q1` et `Q2` :
                           contraint que le lancement ; le RETOUR À LA BASE
                           porte ses TROIS exclusions de sens physique, ni plus
                           ni moins, des deux côtés (ASP-INV-97, ASP-INV-48).
+  ASP-CI-46 Charge      — l'observation de charge EST RESTITUÉE, et sans seuil
+                          (11 §3 item 9, ASP-INV-41). Trois volets : le
+                          panneau porte UNE TUILE PAR TÉMOIN — niveau et
+                          alimentation —, ces tuiles sont DEUX NŒUDS DISTINCTS
+                          (jamais une lecture fondue), et NI leur site d'appel
+                          NI le gabarit de la mesure ne porte de couleur
+                          sémantique. Ce dernier volet est le cœur du
+                          contrôle : ASP-INV-41 ne refuse le seuil que parce
+                          que l'opérateur décide, et une teinte de vigilance
+                          sous un certain niveau EST ce seuil, appliqué sans
+                          être écrit. Le gabarit employé est vérifié
+                          NOMMÉMENT : un gabarit voisin porteur de seuils
+                          peindrait la mesure sans que le fichier du domaine
+                          ait changé.
 
 CE QUE LE LOT 3 NE COUVRE PAS, ET POURQUOI. Ni la source exclusive de la
 projection métier, ni ses trois régimes d'indisponibilité, ni l'AUTORITÉ des
@@ -6053,6 +6067,9 @@ def run() -> int:
          check_ancien_code_transitoire(runtime, depot, textes)),
         ("ASP-CI-45 autorité et offre des gestes de conduite",
          check_offre_gestes(runtime, lovelace)),
+        # ── C50 — la restitution de l'observation de charge ────────────
+        ("ASP-CI-46 restitution de l'observation de charge (sans seuil)",
+         check_restitution_charge(lovelace)),
     )
 
     erreurs: list[str] = []
@@ -6081,11 +6098,11 @@ def run() -> int:
           "runtime, acte contractuel Maintenance, projection "
           "d'entretien, projections persistantes, conduite et supervision "
           "de mission, couche d'intention vérifiées — "
-          f"{len(controles)} lignes affichées pour 45 contrôles logiques, "
+          f"{len(controles)} lignes affichées pour 46 contrôles logiques, "
           "0 écart.")
     print("     décompte : ASP-CI-12/13 et ASP-CI-16/17 partagent chacun une "
           "ligne ; ASP-CI-28 est LIVRÉ par le lot U0 ; ASP-CI-43/44/45 sont "
-          "LIVRÉS par le lot 3 de C45.")
+          "LIVRÉS par le lot 3 de C45 ; ASP-CI-46 par C50.")
     return 0
 
 
@@ -9008,9 +9025,12 @@ def selftest() -> None:
     # ASP-CI-45 plus bas, sur les fichiers reels du depot.
     controles_c45 = {"check_representations_de_classe",
                      "check_ancien_code_transitoire", "check_offre_gestes"}
+    # C50 : RESTITUTION de l'observation de charge, jouee par la batterie
+    # ASP-CI-46 plus bas, sur le panneau et le gabarit reels.
+    controles_c50 = {"check_restitution_charge"}
     manquants = (invoques - normatifs - set(CONTROLES_RUNTIME) - controles_m1
                  - controles_n1 - controles_l2 - controles_u0 - controles_m2
-                 - controles_c45)
+                 - controles_c45 - controles_c50)
     assert not manquants, \
         f"m-C bis : `run()` invoque {sorted(manquants)}, absent(s) de la " \
         f"batterie du selftest — c'est exactement le trou qui a laissé " \
@@ -11129,9 +11149,91 @@ def selftest() -> None:
     c.viole(refus_allowlist_lecteurs(LECTEURS_VERDICT | {_ui}),
             "arbre Lovelace", "CI-11 lecteur loge dans un arbre Lovelace")
 
-    print(f"selftest OK — 45 contrôles logiques (ASP-CI-28 livré par le lot "
-          f"U0 ; ASP-CI-43/44/45 par le lot 3 de C45), {c.total()} cas "
-          f"({c.conformes} conformes, {c.violations} violations).")
+    # ═════════════════════════════════════════════════════════════
+    # C50 — ASP-CI-46 : la restitution de l'observation de charge
+    #
+    # Meme discipline que ci-dessus : les mutations portent sur les
+    # FICHIERS REELS. Chaque volet du controle est joue DANS LES DEUX
+    # SENS — le depot livre passe, et la regression correspondante est
+    # rouge.
+    # ═════════════════════════════════════════════════════════════
+
+    _gab = FICHIER_GABARIT_BATTERIE
+
+    # ---- ASP-CI-46 : le depot livre passe --------------------------------
+    c.conforme(check_restitution_charge(_lov0),
+               "CI-46 la charge est restituee, distinctement, sans seuil")
+
+    # ---- Volet 1 : PRESENCE — c'est l'ecart d'entree de C50 --------------
+    # Sans ce volet, la tuile peut disparaitre au detour d'une refonte, et
+    # la clause ASP-INV-41 redevient une promesse sans destinataire.
+    c.viole(check_restitution_charge(_mut(
+        _lov0, _ui, f"        entity: {TEMOIN_NIVEAU}\n", "")),
+        "aucune tuile ne restitue le NIVEAU", "CI-46 tuile de niveau retiree")
+    c.viole(check_restitution_charge(_mut(
+        _lov0, _ui, f"        entity: {TEMOIN_ALIMENTATION}\n", "")),
+        "aucune tuile ne restitue l'ALIMENTATION",
+        "CI-46 tuile d'alimentation retiree")
+    c.viole(check_restitution_charge({k: v for k, v in _lov0.items()
+                                      if k != _ui}),
+            "introuvable", "CI-46 panneau operationnel absent")
+
+    # ---- Volet 2 : DISTINCTION — pas de lecture fondue -------------------
+    # La fusion telle qu'elle se presenterait vraiment : la tuile de niveau
+    # se met a lire aussi l'alimentation, pour n'en faire qu'une lecture.
+    c.viole(check_restitution_charge(_mut(
+        _lov0, _ui,
+        f"        entity: {TEMOIN_NIVEAU}\n        name: Batterie\n",
+        f"        entity: {TEMOIN_NIVEAU}\n        name: Batterie\n"
+        "        variables:\n"
+        f"          temoin_charge: {TEMOIN_ALIMENTATION}\n")),
+        "lit aussi", "CI-46 les deux temoins fondus en une tuile")
+
+    # ---- Volet 3a : le gabarit EMPLOYE est celui du domaine --------------
+    # Le test decisif du volet : substituer un gabarit A SEUILS laisse le
+    # fichier du domaine sans une seule couleur, et peint pourtant la
+    # mesure. Verifier le fichier sans verifier quel gabarit est employe
+    # laisserait cette porte grande ouverte.
+    c.viole(check_restitution_charge(_mut(
+        _lov0, _ui, f"        template: {GABARIT_BATTERIE}\n",
+        "        template: carte_batterie_seuils_variables\n")),
+        "le seul dont", "CI-46 gabarit a seuils substitue")
+
+    # ---- Volet 3b : aucune couleur semantique ----------------------------
+    # Au SITE d'appel — ici sur la tuile d'alimentation, seule des deux a
+    # porter ses couleurs en variables.
+    c.viole(check_restitution_charge(_mut(
+        _lov0, _ui, "          color_on: 'rgba(158, 158, 158, 0.2)'",
+        "          color_on: 'rgba(76, 175, 80, 0.2)'")),
+        "une observation ne juge pas", "CI-46 vert pose au site d'appel")
+    # …et dans le GABARIT, sous ses deux formes d'ecriture.
+    c.viole(check_restitution_charge(_mut(
+        _lov0, _gab, "isNaN(v) ? 'rgba(158, 158, 158, 0.1)'",
+        "v < 20 ? 'rgba(244, 67, 54, 0.2)' : isNaN(v) "
+        "? 'rgba(158, 158, 158, 0.1)'")),
+        "seuil colore", "CI-46 seuil rouge introduit au gabarit")
+    c.viole(check_restitution_charge(_mut(
+        _lov0, _gab, "                            : 'rgba(158, 158, 158, 0.2)'",
+        "                            : '#4caf50'")),
+        "seuil colore", "CI-46 couleur hexadecimale introduite au gabarit")
+    c.viole(check_restitution_charge({k: v for k, v in _lov0.items()
+                                      if k != _gab}),
+            "rendrait le controle de couleur vide",
+            "CI-46 gabarit de la mesure absent")
+
+    # ---- ASP-CI-46 : une MENTION en commentaire ne peint rien ------------
+    # Le gabarit EXPLIQUE en tete pourquoi il refuse le rouge : le mot ne
+    # doit pas rendre le fichier rouge. Seul ce qui peint compte.
+    c.conforme(check_restitution_charge(_mut(
+        _lov0, _gab, "#   Deux teintes, et deux seulement :",
+        "#   Jamais rgba(244, 67, 54, 0.2) ici, ni #f44336.\n"
+        "#   Deux teintes, et deux seulement :")),
+        "CI-46 couleur citee en commentaire, non appliquee")
+
+    print(f"selftest OK — 46 contrôles logiques (ASP-CI-28 livré par le lot "
+          f"U0 ; ASP-CI-43/44/45 par le lot 3 de C45 ; ASP-CI-46 par C50), "
+          f"{c.total()} cas ({c.conformes} conformes, {c.violations} "
+          f"violations).")
 
 
 # ═════════════════════════════════════════════════════════════
@@ -13284,6 +13386,163 @@ def check_offre_gestes(textes_runtime, lovelace) -> list[str]:
             "sous-offre, exactement le défaut que ce chantier lève "
             "(ASP-INV-97, RC-02).")
     return errs
+
+
+# ═════════════════════════════════════════════════════════════
+# C50 — ASP-CI-46 : restitution de l'observation de charge
+# ═════════════════════════════════════════════════════════════
+#
+# CE QUE CE CONTROLE DEFEND, ET POURQUOI IL EXISTE.
+#
+# ASP-INV-41 ne conditionne le lancement a AUCUN seuil de batterie, et il
+# le motive : « la batterie reste une OBSERVATION EXPOSEE A L'OPERATEUR,
+# qui decide ». Cette clause a vecu des mois sans qu'aucune surface ne
+# porte l'observation — le renvoi se terminait dans le vide, et rien ne
+# le signalait. C'est l'ecart d'entree de C50.
+#
+# Une clause qu'aucun mecanisme ne defend se reperd. Ce controle la
+# defend sur trois volets, et le troisieme est le moins evident :
+#
+#   1. PRESENCE      — le panneau porte UNE TUILE PAR TEMOIN ;
+#   2. DISTINCTION   — ce sont DEUX noeuds, jamais une lecture fondue ;
+#   3. ABSENCE DE SEUIL — ni le site d'appel ni le gabarit de la mesure
+#      ne porte de couleur semantique.
+#
+# Le volet 3 est le coeur. Peindre un niveau bas en rouge SERAIT un
+# seuil : un seuil qu'aucun texte ne fixe, applique sans etre ecrit.
+# ASP-INV-41 ne serait plus vrai, sans qu'une seule ligne de contrat ait
+# change.
+#
+# LE GABARIT EST VERIFIE NOMMEMENT, et ce n'est pas une redondance : un
+# gabarit voisin porteur de seuils (il en existe un dans un autre
+# domaine) peindrait la mesure sans qu'aucune couleur n'apparaisse dans
+# le fichier du domaine. Verifier le fichier sans verifier QUEL gabarit
+# est employe laisserait cette porte ouverte.
+
+TEMOIN_NIVEAU = "sensor.roborock_q7_max_batterie"
+TEMOIN_ALIMENTATION = "binary_sensor.roborock_q7_max_en_charge"
+GABARIT_BATTERIE = "carte_aspirateur_batterie"
+FICHIER_GABARIT_BATTERIE = ("19_button_card_templates/40_dashboards/"
+                            f"aspirateur/{GABARIT_BATTERIE}.yaml")
+
+# Les DEUX seules teintes admises sur une observation : gris neutre
+# (0.2) et gris d'indisponibilite (0.1). Elles partagent le meme
+# triplet ; c'est l'ALPHA qui les separe, et aucun des deux ne juge.
+TRIPLET_GRIS = ("158", "158", "158")
+RGBA_TRIPLET = re.compile(r'rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,')
+# Une couleur hexadecimale echapperait au motif rgba. Les commentaires
+# etant neutralises en amont, un `#` suivi de 3 ou 6 chiffres hexa ne
+# peut plus etre un debut de commentaire YAML.
+HEX_COULEUR = re.compile(r'#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b')
+
+
+def _sans_commentaires(txt: str) -> str:
+    """Lignes de commentaire retirees : une MENTION ne peint rien."""
+    return "\n".join(l for l in txt.splitlines()
+                     if not l.lstrip().startswith("#"))
+
+
+def _couleurs_non_grises(txt: str) -> list[str]:
+    """Toute couleur du texte qui n'est pas l'un des deux gris."""
+    utile = _sans_commentaires(txt)
+    trouvees = [f"rgba({r}, {g}, {b}, …)"
+                for r, g, b in RGBA_TRIPLET.findall(utile)
+                if (r, g, b) != TRIPLET_GRIS]
+    trouvees += sorted(set(HEX_COULEUR.findall(utile)))
+    return trouvees
+
+
+def _tuiles_par_entite(doc, entites: set[str]) -> dict[str, list[dict]]:
+    """Noeuds de carte portant `entity` parmi les entites demandees."""
+    trouve: dict[str, list[dict]] = {e: [] for e in entites}
+    for n in _noeuds_yaml(doc):
+        if isinstance(n, dict) and n.get("entity") in trouve:
+            trouve[n["entity"]].append(n)
+    return trouve
+
+
+def check_restitution_charge(lovelace: dict[str, str]) -> list[str]:
+    """ASP-CI-46 — la charge est restituee, distinctement, sans seuil."""
+    errs: list[str] = []
+
+    txt = lovelace.get(FICHIER_UI_MISSION)
+    if txt is None:
+        return [f"ASP-CI-46 : `{FICHIER_UI_MISSION}` introuvable — le panneau "
+                "operationnel est le seul ecran qui porte une lecture d'etat."]
+    doc = charge_ha(txt)
+    if doc is None:
+        return [f"ASP-CI-46 : `{FICHIER_UI_MISSION}` illisible en YAML."]
+
+    # ── Volet 1 — PRESENCE ────────────────────────────────────────────
+    tuiles = _tuiles_par_entite(doc, {TEMOIN_NIVEAU, TEMOIN_ALIMENTATION})
+    roles = {TEMOIN_NIVEAU: "le NIVEAU de charge",
+             TEMOIN_ALIMENTATION: "l'ALIMENTATION en cours"}
+    for entite, role in roles.items():
+        if not tuiles[entite]:
+            errs.append(
+                f"ASP-CI-46 : aucune tuile ne restitue {role} "
+                f"(`{entite}`) dans `{FICHIER_UI_MISSION}`. Le contrat 11 §3 "
+                "item 9 l'exige, comme contrepartie de l'abstention "
+                "d'ASP-INV-41 : Arsenal ne juge pas la batterie PARCE QUE "
+                "l'operateur decide, et il ne decide pas de ce qu'il ne voit "
+                "pas.")
+    if errs:
+        return errs
+
+    # ── Volet 2 — DISTINCTION ─────────────────────────────────────────
+    # Deux temoins, deux tuiles. La fusion ne se presente pas comme une
+    # cle `entity` double — elle n'existe pas — mais comme une tuile qui
+    # lit l'AUTRE temoin par une variable ou dans son rendu, pour en
+    # faire une lecture unique (« 78 % ⚡ »). Ce serait l'agregation de
+    # confort que le 08 §1.1 refuse : les deux peuvent legitimement
+    # diverger, et l'interface les REND.
+    for entite, autre in ((TEMOIN_NIVEAU, TEMOIN_ALIMENTATION),
+                          (TEMOIN_ALIMENTATION, TEMOIN_NIVEAU)):
+        corps = yaml.safe_dump(tuiles[entite][0], allow_unicode=True)
+        if autre in corps:
+            errs.append(
+                f"ASP-CI-46 : la tuile de `{entite}` lit aussi `{autre}` — "
+                "niveau et alimentation sont deux temoins natifs distincts, "
+                "qui peuvent legitimement diverger ; ils ne se fondent pas en "
+                "une lecture unique (08 §1.1, 11 §3 item 9).")
+
+    # ── Volet 3a — le gabarit EMPLOYE est celui du domaine ────────────
+    tuile_niveau = tuiles[TEMOIN_NIVEAU][0]
+    gabarit = tuile_niveau.get("template")
+    if gabarit != GABARIT_BATTERIE:
+        errs.append(
+            f"ASP-CI-46 : la tuile de niveau emploie le gabarit "
+            f"{gabarit!r} — attendu `{GABARIT_BATTERIE}`, le seul dont "
+            "l'absence de seuil soit verifiee ici. Un gabarit a seuils "
+            "peindrait la mesure sans qu'aucune couleur n'apparaisse dans le "
+            "fichier du domaine (ASP-INV-41, C50 D-5).")
+
+    # ── Volet 3b — aucune couleur semantique, ni au site ni au gabarit ─
+    for entite, role in roles.items():
+        for hors in _couleurs_non_grises(yaml.safe_dump(tuiles[entite][0],
+                                                        allow_unicode=True)):
+            errs.append(
+                f"ASP-CI-46 : la tuile qui restitue {role} porte la couleur "
+                f"{hors} — une observation ne juge pas. Une teinte de "
+                "vigilance sous un certain niveau EST un seuil, applique "
+                "sans etre ecrit, et ASP-INV-41 n'en admet aucun. Seuls les "
+                "deux gris sont admis (charte, regle R6).")
+
+    gab = lovelace.get(FICHIER_GABARIT_BATTERIE)
+    if gab is None:
+        errs.append(f"ASP-CI-46 : `{FICHIER_GABARIT_BATTERIE}` introuvable — "
+                    "le gabarit de la mesure fait partie du perimetre, et son "
+                    "absence rendrait le controle de couleur vide.")
+    else:
+        for hors in _couleurs_non_grises(gab):
+            errs.append(
+                f"ASP-CI-46 : le gabarit de la mesure porte la couleur "
+                f"{hors} — il ne doit en porter que deux, le gris neutre et "
+                "le gris d'indisponibilite. Introduire un seuil colore ici "
+                "reviendrait a fixer, en gabarit, le seuil qu'ASP-INV-41 "
+                "refuse au contrat.")
+    return errs
+
 
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(
