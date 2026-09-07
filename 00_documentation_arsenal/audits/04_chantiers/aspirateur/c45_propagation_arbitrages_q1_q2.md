@@ -5,10 +5,10 @@
 | **Chantier** | Propager dans les contrats, la CI, le runtime et l'interface la sémantique tranchée par les arbitrages `Q1` et `Q2` : deux notions distinctes — **mission Arsenal ouverte** (autorité : verdict de classe `O`) et **session robot active** (autorité : témoin natif Roborock) —, une **projection métier dédiée** en lecteur pur nominatif sous `ASP-CI-11`, la **migration atomique** de l'attribut ambigu `mission_ouverte`, et les **règles d'offre** des gestes de conduite. |
 | **Domaine** | Aspirateur. |
 | **Nature** | **Propagation gouvernée d'un arbitrage rendu.** Ce n'est **pas** une exploration architecturale : les options ont été examinées et tranchées en `Q2` §4, et ce chantier n'en rouvre aucune. |
-| **Statut** | **Ouvert — Lots 1, 2 et 3 exécutés (Lot 1 : 2026-09-01 · Lot 2 : 2026-09-02 · Lot 3 : 2026-09-03). Lots 4 à 7 non exécutés.** **Lot 1** — la rectification documentaire `D1` est **produite, datée, classée et indexée** ([`rectification_cardinal_allowlist_asp_ci_11.md`](../../02_arbitrages/aspirateur/rectification_cardinal_allowlist_asp_ci_11.md)), conformément au véhicule décidé au §4.1 ; `Q1`, `Q2`, l'audit, la contre-expertise et la confrontation sont **prouvés inchangés**. **Lot 2** — les chapitres `08`, `11`, `12` et `15` portent la sémantique de `Q1` et `Q2` ; **`ASP-INV-96`**, **`ASP-INV-97`** et **`ASP-INV-98`** sont déclarés ; la dette `D2` est soldée **en commentaire seul** ; le recensement du §3.2 est **rectifié**. **Checker Aspirateur vert et inchangé** ; aucun Lovelace, aucune ligne exécutable de runtime, aucun changelog. **Lot 3** — le checker porte **`ASP-CI-43`**, **`ASP-CI-44`** et **`ASP-CI-45`** ; `ASP-CI-11` est **étendu sans nouveau numéro** ; les **quatre** représentations non gardées le sont désormais, et les **trois** déjà gardées ne sont pas affaiblies. **Aucun runtime, aucun Lovelace, aucun contrat, aucun changelog.** **Ce qui reste devant** : aucun runtime et aucune interface n'ont encore été modifiés — c'est l'objet des Lots 4 à 6 ; la **projection métier** n'existe pas, son fichier n'est pas créé et son chemin n'est inscrit **ni** dans le checker, **ni** dans `LECTEURS_VERDICT` — le Lot 3 livre le **mécanisme** de l'exception nominative, le Lot 4 le **nom** (§5.3), de sorte qu'**aucune autorisation dormante n'est créée** ; le **code technique** de l'attribut ambigu ne bascule qu'au **Lot 5** (décision `H-3`, §5.2). |
+| **Statut** | **Ouvert — Lots 1 à 4 exécutés (Lot 1 : 2026-09-01 · Lot 2 : 2026-09-02 · Lot 3 : 2026-09-03 · Lot 4 : 2026-09-07). Lots 5 à 7 non exécutés.** **Lot 1** — la rectification documentaire `D1` est **produite, datée, classée et indexée** ([`rectification_cardinal_allowlist_asp_ci_11.md`](../../02_arbitrages/aspirateur/rectification_cardinal_allowlist_asp_ci_11.md)), conformément au véhicule décidé au §4.1 ; `Q1`, `Q2`, l'audit, la contre-expertise et la confrontation sont **prouvés inchangés**. **Lot 2** — les chapitres `08`, `11`, `12` et `15` portent la sémantique de `Q1` et `Q2` ; **`ASP-INV-96`**, **`ASP-INV-97`** et **`ASP-INV-98`** sont déclarés ; la dette `D2` est soldée **en commentaire seul** ; le recensement du §3.2 est **rectifié**. **Checker Aspirateur vert et inchangé** ; aucun Lovelace, aucune ligne exécutable de runtime, aucun changelog. **Lot 3** — le checker porte **`ASP-CI-43`**, **`ASP-CI-44`** et **`ASP-CI-45`** ; `ASP-CI-11` est **étendu sans nouveau numéro** ; les **quatre** représentations non gardées le sont désormais, et les **trois** déjà gardées ne sont pas affaiblies. **Aucun runtime, aucun Lovelace, aucun contrat, aucun changelog.** **Lot 4** — la **projection métier** `binary_sensor.aspirateur_mission_arsenal_ouverte` **existe** : créée au chemin attribué et **inscrite aux trois constantes dans le même commit**, sans qu'aucune autorisation dormante n'ait précédé. Contrôle neuf **`ASP-CI-47`**, qui **REND** les deux gabarits sur les 34 valeurs du vocabulaire et sur quatre valeurs extérieures ; `ASP-CI-43` **étendu sans nouveau numéro** aux listes **Jinja**, et la **classe `H`** qualifiée comme ensemble canonique (§5.4, `E-1` et `E-2`). Batterie **702 → 736 cas**, aucun contrôle affaibli. **Ce qui reste devant** : **aucune interface n'est encore modifiée**, et la projection **n'est lue par personne** — c'est l'objet du **Lot 6** ; le **code technique** de l'attribut ambigu ne bascule qu'au **Lot 5** (décision `H-3`, §5.2). |
 | **Priorité** | **P2** — aucun risque de sûreté établi ; le backend refuse déjà correctement. L'enjeu est la **cohérence de l'offre à l'opérateur** et la levée de la cause structurelle de `RC-02`. |
 | **Ouvert le** | 2026-09-01. |
-| **Prochain jalon** | **Lot 4 — implémentation de la projection métier** (§5.4). Les **Lots 1, 2 et 3 sont exécutés**. Le Lot 4 crée `binary_sensor.aspirateur_mission_arsenal_ouverte` au **chemin attribué pour le Lot 4** — `12_template_sensors/aspirateur/mission_arsenal_ouverte.yaml` —, **et inscrit son nom dans `LECTEURS_VERDICT` au même commit** (§5.3). **Au Lot 3, le fichier n'est pas créé et le chemin n'est pas inscrit dans `LECTEURS_VERDICT` : aucune autorisation dormante n'est créée.** L'extension d'`ASP-CI-11` livrée au Lot 3 refuse toute allowlist nommant un fichier inexistant, de sorte qu'une inscription anticipée serait **rouge**. Les contrôles de **source exclusive** et d'**indisponibilité** sont livrés là, avec leur cible. |
+| **Prochain jalon** | **Lot 5 — migration atomique de l'attribut ambigu** (§5.5). Les **Lots 1 à 4 sont exécutés**. Le Lot 5 est **indivisible** : le code technique `mission_ouverte` est **remplacé** — jamais dupliqué, **aucune coexistence des deux noms, fût-elle transitoire** — chez le producteur, dans les contrats `08` §1, `11` et `12`, sur les **quatre sites Lovelace** du §3.4, et dans le **checker** (deux constantes, deux commentaires, les deux messages d'`ASP-CI-23`). La **clause d'état transitoire** du `08` §1.3 est **retirée** au même mouvement, et l'**allowlist transitoire** d'`ASP-CI-44` **supprimée**, son régime permanent de **zéro occurrence** activé. **Preuve attendue** : recherche d'absence de l'ancien nom rendant **zéro occurrence** sur tout le périmètre gouverné, **commentaires compris**, et **aucun commit intermédiaire** où les deux noms coexistent. |
 | **Registre** | Chantier **C45** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 | **Autorités amont** | [`arbitrage_mission_arsenal_ouverte_et_session_robot_active.md`](../../02_arbitrages/aspirateur/arbitrage_mission_arsenal_ouverte_et_session_robot_active.md) (`Q1`) · [`arbitrage_projection_mission_arsenal_ouverte_vers_interface.md`](../../02_arbitrages/aspirateur/arbitrage_projection_mission_arsenal_ouverte_vers_interface.md) (`Q2` et décision subsidiaire sur les gestes). |
 | **Constats couverts** | `AUD-ASP-01`, `CC-01`, `RC-02` — **un seul noyau causal** (confrontation §10 et §11), jamais additionnés comme trois écarts. `AUD-ASP-04` — **dette contractuelle locale**, distincte de ce noyau — est **rattaché au Lot 2** par décision rendue (§4.2). |
@@ -486,9 +486,53 @@ est attribué** : elles sont désignées par leur objet.
 | **Ne fait pas** | **Ne crée aucun fichier runtime**, **n'inscrit aucun nom de projection**, ne touche **ni Lovelace, ni contrat, ni changelog**. Le plus haut `ASP-CI-*` constaté avant ce lot était `ASP-CI-42` ; les numéros **43**, **44** et **45** ont été **vérifiés libres** avant emploi et **attribués par l'opérateur propriétaire**, la numérotation restant **continue de 1 à 45**. **Le chemin attribué pour le Lot 4 n'est inscrit ni ici, ni dans `LECTEURS_VERDICT` : aucune autorisation dormante n'est créée.** |
 | **Preuve** | **Contrôles neufs verts**, et **mutations rouges** démontrées sur chacun : une liste amputée · une liste enrichie · une clé de table retirée · une représentation **renommée et amputée** — le test décisif de l'indifférence au nom de clé · une **huitième** représentation apparue · une occurrence technique ajoutée, déplacée, ou anticipant le nouveau code · la clause `08` §1.3 effacée · une garde de témoin natif posée sur l'arrêt · une exclusion retirée ou ajoutée au retour à la base · une lecture Lovelace du helper · une allowlist **dormante** ou logée dans un arbre Lovelace. **Auto-test étendu de 670 à 702 cas** ; **aucun contrôle existant affaibli** — `ASP-CI-16` et `ASP-CI-37` restent rouges sur les amputations qu'ils gardaient déjà. La mutation « rabattement d'indisponibilité sur `false` » est **déplacée au Lot 4** par décision de séquençage : sa cible n'existe pas encore. |
 
-### 5.4 Lot 4 — Implémentation de la projection métier
+### 5.4 Lot 4 — Implémentation de la projection métier — **EXÉCUTÉ (2026-09-07)**
 
 **Dépend de la ratification du Lot 2 et de la livraison du Lot 3.**
+
+> **Exécution — ce qui a été livré, et les deux décisions que le lot a dû rendre.**
+>
+> **Livré.** `binary_sensor.aspirateur_mission_arsenal_ouverte` au chemin attribué
+> [`12_template_sensors/aspirateur/mission_arsenal_ouverte.yaml`](../../../../12_template_sensors/aspirateur/mission_arsenal_ouverte.yaml),
+> **inscrit aux trois constantes dans le commit qui le crée** — `LECTEURS_VERDICT`,
+> `PERIMETRE_REPRESENTATIONS`, `REPRESENTATIONS_ATTENDUES` (cardinal **4**). Contrôle neuf
+> **`ASP-CI-47`** (identifiant **vérifié libre** avant emploi) portant les items **4.4** et **4.5**.
+> Batterie d'auto-tests **702 → 736 cas**, **aucun contrôle existant affaibli**.
+>
+> **`E-1` — la partition entière est énumérée, et pas la seule classe `O`.** Le troisième régime
+> exige de distinguer une valeur **valide hors `O`** d'une valeur **hors partition** : la première se
+> rend `off`, la seconde **indisponible**. Aucune forme ne les sépare — `VALIDATION_EN_COURS`, valeur
+> légitime de classe `H`, ne porte pas de barre oblique, et un test structurel la rejetterait comme du
+> bruit alors qu'elle dit exactement « aucune mission ouverte ». La projection énumère donc `O`, `T`
+> et `H`. **Conséquence en CI** : la **classe `H`** entre dans les ensembles canoniques
+> d'`ASP-CI-43`. C'est une **qualification**, pas un relâchement — `H` est l'une des quatre classes du
+> [`15`](../../../contrats/aspirateur/15_conduite_et_supervision.md) §2, donc pleinement dans la
+> lettre d'`ASP-INV-98` ; aucun invariant ne voit sa portée étendue, et **rien de ce qui échouait ne
+> devient vert**. Elle est **dérivée** (`vocabulaire − O − T`), jamais recopiée. La classe `O` est
+> écrite **deux fois** — l'état la teste, la disponibilité l'agrège — et **les deux recopies sont
+> confrontées séparément** à égalité exacte : c'est ce qui rend la duplication sûre.
+>
+> **`E-2` — `ASP-CI-43` est étendu sans nouveau numéro**, comme `ASP-CI-11` au Lot 3. Le Lot 3 ne
+> connaissait que scripts et automations, où une classe s'écrit en **liste YAML** ; la projection est
+> un **template**, et ses listes vivent dans un bloc **Jinja**, donc dans une chaîne que le visiteur
+> ne voyait pas. **Une représentation invisible n'est pas absente : elle est non gardée**, ce
+> qu'`ASP-INV-98` proscrit. Le visiteur rend désormais une **troisième forme** — le littéral de liste
+> Jinja. **Vérifié sur le dépôt d'entrée : aucun des sept recensements existants ne bouge**, aucun
+> fichier ne portait de liste Jinja de valeurs de verdict.
+>
+> **`ASP-CI-47` REND, il ne relit pas.** Il exécute les deux gabarits sur les **34** valeurs du
+> vocabulaire **et** sur quatre valeurs extérieures — `unknown`, `unavailable`, la chaîne vide et un
+> code hors vocabulaire —, et confronte le **résultat**. C'est ce qui rend l'item 4.5 opposable :
+> retirer la clé `availability` laisserait un fichier parfaitement lisible et parfaitement plausible,
+> où `unknown` au premier démarrage serait rendu « aucune mission Arsenal ouverte » — l'affirmation
+> exacte qu'`ASP-INV-45` interdit. **Une lecture ne le verrait pas ; le rendu, si.** Le contrôle
+> vérifie en outre que l'appartenance à `O` est testée **positivement** : la déduire par exclusion de
+> `T` et de `H` donnerait le même résultat aujourd'hui, et un résultat **faux** au premier ajout de
+> valeur (`ASP-INV-87`).
+>
+> **Aucun contrat touché** — le Lot 2 les avait alignés, et `ASP-INV-58` interdit d'y porter
+> l'identifiant. **Aucun Lovelace** : la bascule de l'interface est le **Lot 6**, et la projection
+> n'est encore lue par personne. **Aucun changelog.**
 
 | Item | Contenu |
 |---|---|

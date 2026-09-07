@@ -321,6 +321,29 @@ exécute les arbitrages `Q1` et `Q2` :
                           NOMMÉMENT : un gabarit voisin porteur de seuils
                           peindrait la mesure sans que le fichier du domaine
                           ait changé.
+  ASP-CI-47 Projection  — la projection métier de mission (ASP-INV-96). Ce
+                          contrôle REND, il ne relit pas : il exécute les deux
+                          gabarits du fichier sur les 34 valeurs du
+                          vocabulaire ET sur quatre valeurs extérieures, et
+                          confronte le RÉSULTAT. Trois volets : SOURCE
+                          EXCLUSIVE — hors commentaires, le fichier ne cite
+                          que le helper de verdict et sa propre entité, aucun
+                          témoin natif à aucun titre ; LECTURE PURE — aucun
+                          appel de service, la projection ne devient pas un
+                          quatrième écrivain (ASP-INV-86) ; TROIS RÉGIMES
+                          RENDUS — classe O → `on`, classes T et H → `off`,
+                          et TOUTE valeur extérieure à la partition →
+                          INDISPONIBLE. Ce dernier point est la garantie que
+                          le chantier exigeait : retirer `availability`
+                          laisserait un fichier parfaitement lisible où
+                          `unknown` au premier démarrage serait rendu « aucune
+                          mission Arsenal ouverte » — l'affirmation
+                          qu'ASP-INV-45 interdit. Une lecture ne le verrait
+                          pas ; le rendu, si. L'appartenance à O est en outre
+                          vérifiée POSITIVE : la déduire par exclusion de T et
+                          de H donnerait le même résultat aujourd'hui, et un
+                          résultat FAUX au premier ajout de valeur
+                          (ASP-INV-87).
 
 CE QUE LE LOT 3 NE COUVRE PAS, ET POURQUOI. Ni la source exclusive de la
 projection métier, ni ses trois régimes d'indisponibilité, ni l'AUTORITÉ des
@@ -3691,7 +3714,18 @@ WRITERS_VERDICT = {
 # composition. Elle en a structurellement besoin — la frontiere « apres tous
 # les refus, avant l'emission » n'est lisible que dans le verdict (A-12) —, et
 # l'exception reste NOMINATIVE : elle nomme un fichier, jamais un motif.
-LECTEURS_VERDICT = frozenset({RUNTIME_L2_PROJECTION, RUNTIME_U0_AUTO})
+#
+# AMENDEMENT C45 LOT 4 — un TROISIEME objet, et un seul : la PROJECTION
+# METIER de la mission Arsenal ouverte. C'est l'objet meme de l'arbitrage Q2 :
+# l'interface ne lit plus le verdict, elle consomme cette projection
+# (ASP-INV-96, 11 §2). L'exception reste NOMINATIVE, et le fichier est inscrit
+# ICI, dans le COMMIT QUI LE CREE — l'inscrire avant serait une autorisation
+# dormante, que l'extension d'ASP-CI-11 refuse.
+RUNTIME_L4_PROJECTION_MISSION = ("12_template_sensors/aspirateur/"
+                                 "mission_arsenal_ouverte.yaml")
+ID_PROJECTION_MISSION_OUVERTE = "aspirateur_mission_arsenal_ouverte"
+LECTEURS_VERDICT = frozenset({RUNTIME_L2_PROJECTION, RUNTIME_U0_AUTO,
+                              RUNTIME_L4_PROJECTION_MISSION})
 # Fichiers ou un appel d'appareil est admis. DEUX, et deux seulement.
 COMMANDENT_APPAREIL = frozenset({RUNTIME_MOTEUR, RUNTIME_L2_CONDUITE})
 
@@ -6074,6 +6108,9 @@ def run() -> int:
         # ── C50 — la restitution de l'observation de charge ────────────
         ("ASP-CI-46 restitution de l'observation de charge (sans seuil)",
          check_restitution_charge(lovelace)),
+        # ── Lot 4 de C45 — la projection metier de mission ─────────────
+        ("ASP-CI-47 projection métier (source exclusive, trois régimes)",
+         check_projection_mission(depot)),
     )
 
     erreurs: list[str] = []
@@ -6102,11 +6139,12 @@ def run() -> int:
           "runtime, acte contractuel Maintenance, projection "
           "d'entretien, projections persistantes, conduite et supervision "
           "de mission, couche d'intention vérifiées — "
-          f"{len(controles)} lignes affichées pour 46 contrôles logiques, "
+          f"{len(controles)} lignes affichées pour 47 contrôles logiques, "
           "0 écart.")
     print("     décompte : ASP-CI-12/13 et ASP-CI-16/17 partagent chacun une "
           "ligne ; ASP-CI-28 est LIVRÉ par le lot U0 ; ASP-CI-43/44/45 sont "
-          "LIVRÉS par le lot 3 de C45 ; ASP-CI-46 par C50.")
+          "LIVRÉS par le lot 3 de C45 ; ASP-CI-46 par C50 ; ASP-CI-47 par "
+          "le lot 4 de C45.")
     return 0
 
 
@@ -9032,9 +9070,12 @@ def selftest() -> None:
     # C50 : RESTITUTION de l'observation de charge, jouee par la batterie
     # ASP-CI-46 plus bas, sur le panneau et le gabarit reels.
     controles_c50 = {"check_restitution_charge"}
+    # C45 lot 4 : la PROJECTION METIER, jouee par la batterie ASP-CI-47 plus
+    # bas, sur le fichier reel et par RENDU des gabarits.
+    controles_c45_l4 = {"check_projection_mission"}
     manquants = (invoques - normatifs - set(CONTROLES_RUNTIME) - controles_m1
                  - controles_n1 - controles_l2 - controles_u0 - controles_m2
-                 - controles_c45 - controles_c50)
+                 - controles_c45 - controles_c50 - controles_c45_l4)
     assert not manquants, \
         f"m-C bis : `run()` invoque {sorted(manquants)}, absent(s) de la " \
         f"batterie du selftest — c'est exactement le trou qui a laissé " \
@@ -11238,10 +11279,101 @@ def selftest() -> None:
         "#   Deux teintes, et deux seulement :")),
         "CI-46 couleur citee en commentaire, non appliquee")
 
-    print(f"selftest OK — 46 contrôles logiques (ASP-CI-28 livré par le lot "
-          f"U0 ; ASP-CI-43/44/45 par le lot 3 de C45 ; ASP-CI-46 par C50), "
-          f"{c.total()} cas ({c.conformes} conformes, {c.violations} "
-          f"violations).")
+    # ═════════════════════════════════════════════════════════════
+    # C45 LOT 4 — ASP-CI-47 : la projection metier de mission
+    #
+    # Les mutations portent sur le FICHIER REEL, et les regressions sont
+    # jouees DANS LES DEUX SENS. Un controle qui REND se teste en cassant
+    # ce qu'il rend, pas ce qu'il lit.
+    # ═════════════════════════════════════════════════════════════
+
+    _proj = RUNTIME_L4_PROJECTION_MISSION
+
+    def _mutp(vieux: str, neuf: str, n: int = 1):
+        """Le depot, avec UNE substitution dans la projection metier."""
+        out = dict(_dep0)
+        assert vieux in out[_proj], f"ancre lot 4 absente : {vieux[:60]!r}"
+        out[_proj] = out[_proj].replace(vieux, neuf, n)
+        return out
+
+    # ---- ASP-CI-47 : le fichier livre passe -----------------------------
+    c.conforme(check_projection_mission(_dep0),
+               "CI-47 la projection rend les trois regimes sur 38 valeurs")
+
+    # ---- ASP-CI-47 : LE RABATTEMENT DE L'INDISPONIBILITE ----------------
+    # La mutation rouge exigee par le chantier (item 4.5). Sans
+    # `availability`, le fichier reste parfaitement lisible — et `unknown`
+    # au premier demarrage y devient « aucune mission Arsenal ouverte ».
+    c.viole(check_projection_mission(_mutp("      availability: >",
+                                           "      _availability_neutralisee: >")),
+            "AUCUNE cle `availability`", "CI-47 availability retiree")
+    # Une disponibilite qui ne regarde que unknown/unavailable laisse passer
+    # le HORS-VOCABULAIRE, que le contrat traite pourtant a l'identique.
+    c.viole(check_projection_mission(_mutp(
+        "        {{ v in classe_o + classe_t + classe_h }}",
+        "        {{ v not in ['unknown', 'unavailable', ''] }}")),
+        "EXTERIEURE a la partition",
+        "CI-47 hors-vocabulaire rabattu sur disponible")
+
+    # ---- ASP-CI-47 : L'ETAT, DANS LES DEUX SENS -------------------------
+    # Une classe O amputee : le verdict retire cesse d'ouvrir une mission.
+    c.viole(check_projection_mission(_mutp(
+        "            'CONDUITE/RETOUR_ENGAGE',\n            'LANCEE/DEMARRAGE_OBSERVE'] %}\n"
+        "        {{ v in classe_o }}",
+        "            'LANCEE/DEMARRAGE_OBSERVE'] %}\n"
+        "        {{ v in classe_o }}")),
+        "attendu `on`", "CI-47 sous-classe O-R retiree de l'etat")
+    # L'appartenance deduite PAR EXCLUSION — meme resultat aujourd'hui,
+    # faux au premier ajout de valeur.
+    c.viole(check_projection_mission(_mutp(
+        "        {{ v in classe_o }}", "        {{ v not in classe_o }}")),
+        "NON-appartenance", "CI-47 appartenance deduite par exclusion")
+
+    # ---- ASP-CI-47 : SOURCE EXCLUSIVE et LECTURE PURE -------------------
+    c.viole(check_projection_mission(_mutp(
+        "        {% set v = states('input_text.aspirateur_mission_verdict') %}\n"
+        "        {% set classe_o = [\n"
+        "            'CONDUITE/ARRET_ENGAGE',\n"
+        "            'CONDUITE/PAUSE_CONFIRMEE',\n"
+        "            'CONDUITE/PAUSE_ENGAGEE',\n"
+        "            'CONDUITE/PAUSE_NON_CONFIRMEE',\n"
+        "            'CONDUITE/REPRISE_CONFIRMEE',\n"
+        "            'CONDUITE/REPRISE_ENGAGEE',\n"
+        "            'CONDUITE/REPRISE_NON_CONFIRMEE',\n"
+        "            'CONDUITE/RETOUR_ENGAGE',\n"
+        "            'LANCEE/DEMARRAGE_OBSERVE'] %}\n"
+        "        {{ v in classe_o }}",
+        "        {% set v = states('input_text.aspirateur_mission_verdict') %}\n"
+        "        {{ is_state('binary_sensor.roborock_q7_max_nettoyage', 'on') }}")),
+        "temoin natif", "CI-47 temoin natif introduit dans la projection")
+
+    # ---- ASP-CI-47 : L'IDENTIFIANT ATTRIBUE, FIGE -----------------------
+    c.viole(check_projection_mission(_mutp(
+        f"      unique_id: {ID_PROJECTION_MISSION_OUVERTE}",
+        "      unique_id: aspirateur_projection_renommee")),
+        "unique_id attribue", "CI-47 identifiant attribue renomme")
+    c.viole(check_projection_mission({k: v for k, v in _dep0.items()
+                                      if k != _proj}),
+            "introuvable", "CI-47 projection metier absente")
+
+    # ---- ASP-CI-43 etendu : les listes JINJA sont GARDEES ---------------
+    # Le lot 3 ne voyait que les listes YAML. Sans cette extension, les
+    # quatre representations de la projection echapperaient a l'egalite
+    # exacte — non gardees, donc libres de deriver.
+    c.viole(check_representations_de_classe(rt0, _mutp(
+        "            'CLOTURE/FIN_NOMINALE',\n", "")),
+        "n'égale AUCUN ensemble canonique",
+        "CI-43 classe T amputee dans un bloc Jinja")
+    c.viole(check_representations_de_classe(rt0, _mutp(
+        "            'VALIDATION_EN_COURS'] %}",
+        "            'VALIDATION_EN_COURS',\n"
+        "            'CLOTURE/FIN_NOMINALE'] %}")),
+        "en trop", "CI-43 valeur d'une autre classe ajoutee en Jinja")
+
+    print(f"selftest OK — 47 contrôles logiques (ASP-CI-28 livré par le lot "
+          f"U0 ; ASP-CI-43/44/45 par le lot 3 de C45 ; ASP-CI-46 par C50 ; "
+          f"ASP-CI-47 par le lot 4 de C45), {c.total()} cas "
+          f"({c.conformes} conformes, {c.violations} violations).")
 
 
 # ═════════════════════════════════════════════════════════════
@@ -12669,14 +12801,34 @@ def check_ui_entretien(lovelace: dict[str, str],
 # perimetre contient, pas ce qui vit dehors. Elargir le perimetre est un
 # acte de lot, pas une correction de ce commentaire.
 PERIMETRE_REPRESENTATIONS = (RUNTIME_FICHIERS + RUNTIME_L2_FICHIERS
-                             + (RUNTIME_U0_AUTO,) + FICHIERS_U0)
+                             + (RUNTIME_U0_AUTO, RUNTIME_L4_PROJECTION_MISSION)
+                             + FICHIERS_U0)
 
-# Les TROIS ensembles canoniques fermes auxquels une representation peut se
-# confronter : les deux CLASSES du 15 §2, et le seul SOUS-ENSEMBLE que le
-# contrat nomme — les quatre engagements de W2 (15 §4, ASP-INV-92).
+# La classe H — HORS MISSION — n'est pas enumeree a la main : elle est ce que
+# la partition laisse quand on retire O et T du vocabulaire. Les quatre
+# classes du 15 §2 sont EXHAUSTIVES ET DISJOINTES, et c'est cette propriete
+# qui la definit. La deriver plutot que la recopier evite d'introduire ici la
+# derive que ce controle poursuit ailleurs.
+CLASSE_H = VOCABULAIRE_VERDICT - CLASSE_O - CLASSE_T
+
+# Les QUATRE ensembles canoniques fermes auxquels une representation peut se
+# confronter : les trois CLASSES du 15 §2 — O (sous-classe O-R comprise), T et
+# H —, et le seul SOUS-ENSEMBLE que le contrat nomme, les quatre engagements
+# de W2 (15 §4, ASP-INV-92).
+#
+# LA CLASSE H ENTRE ICI AU LOT 4, ET C'EST UNE QUALIFICATION, PAS UN
+# RELACHEMENT. Aucun runtime ne l'embarquait avant la projection metier : le
+# lot 3 n'avait donc rien a confronter, et l'omettre etait exact. La
+# projection en a structurellement besoin — son TROISIEME REGIME distingue
+# « valeur valide hors O » de « valeur hors partition », ce qui exige la
+# partition entiere. H est une CLASSE du verdict, donc pleinement dans la
+# lettre d'ASP-INV-98 : l'ajouter n'etend la portee d'aucun invariant, et rien
+# de ce qui echouait ne devient vert — seule une enumeration EGALE a H, qui
+# n'existait pas, cesse d'etre un faux positif.
 ENSEMBLES_CANONIQUES = (
     ("la classe O, sous-classe O-R comprise", CLASSE_O),
     ("la classe T", CLASSE_T),
+    ("la classe H", CLASSE_H),
     ("les engagements de W2", frozenset(ENGAGEMENTS_W2)),
 )
 
@@ -12699,15 +12851,49 @@ REPRESENTATIONS_ATTENDUES = {
     RUNTIME_L2_SUPERVISION: 2,   # `verdict_ouvert` et `engagements`
     RUNTIME_L2_PROJECTION: 3,    # `verdict_ouvert`, `verdict_terminal`,
                                  # et les cles de la table de phrases
+    # C45 LOT 4 — la projection metier. QUATRE representations, et le
+    # decompte se lit dans le fichier : la DISPONIBILITE agrege la
+    # partition entiere (O, T, H) pour separer « valide hors O » de
+    # « hors partition » ; l'ETAT teste la seule classe O, POSITIVEMENT
+    # (ASP-INV-87). La classe O est donc recopiee DEUX FOIS, et les deux
+    # recopies sont confrontees separement a egalite exacte : c'est ce
+    # qui rend la duplication sure plutot que risquee.
+    RUNTIME_L4_PROJECTION_MISSION: 4,
 }
 NB_REPRESENTATIONS = sum(REPRESENTATIONS_ATTENDUES.values())
+
+
+# EXTENSION C45 LOT 4 — SANS NOUVEAU NUMERO, comme ASP-CI-11 au lot 3.
+#
+# Le lot 3 ne connaissait que des scripts et des automations, ou une classe
+# s'ecrit en LISTE YAML. La projection metier du lot 4 est un TEMPLATE : ses
+# listes vivent dans un bloc Jinja, donc dans une CHAINE, et le visiteur YAML
+# n'y voyait rien. Une representation invisible n'est pas une representation
+# absente : c'est une representation NON GARDEE, exactement ce qu'ASP-INV-98
+# proscrit. La troisieme forme est donc rendue elle aussi.
+#
+# La detection reste STRUCTUREE dans sa portee : un literal de liste Jinja,
+# borne par ses crochets, dont on extrait les seuls scalaires cites. Une
+# valeur isolee — `{{ v == 'CLOTURE/FIN_NOMINALE' }}` — n'est pas une liste et
+# n'est donc pas une representation, ce que le seuil de deux valeurs confirme.
+LISTE_JINJA = re.compile(r"\[[^\[\]]*\]", re.S)
+SCALAIRE_JINJA = re.compile(r"""['"]([^'"\n]+)['"]""")
+
+
+def _enumerations_jinja(texte: str):
+    """Listes litterales d'un bloc Jinja qui enumerent des valeurs."""
+    for bloc in LISTE_JINJA.findall(texte):
+        scalaires = frozenset(SCALAIRE_JINJA.findall(bloc))
+        if len(scalaires & VOCABULAIRE_VERDICT) >= SEUIL_REPRESENTATION:
+            yield scalaires
 
 
 def _enumerations_de_classe(noeud, chemin="$"):
     """Tout noeud qui ENUMERE des valeurs de verdict, quel que soit son nom.
 
-    Deux formes portent une enumeration en YAML, et deux seulement : une
-    LISTE de scalaires, et les CLES d'un mapping. Les deux sont rendues.
+    Trois formes portent une enumeration, et trois seulement : une LISTE
+    YAML de scalaires, les CLES d'un mapping, et — depuis le lot 4 — un
+    LITERAL DE LISTE JINJA dans une chaine. Les trois sont rendues.
 
     Le nom sous lequel le noeud est heberge n'entre A AUCUN MOMENT dans la
     decision. C'est la lettre d'ASP-INV-98 — « la regle suit l'enumeration,
@@ -12727,6 +12913,9 @@ def _enumerations_de_classe(noeud, chemin="$"):
             yield chemin, "liste", scalaires
         for i, val in enumerate(noeud):
             yield from _enumerations_de_classe(val, f"{chemin}[{i}]")
+    elif isinstance(noeud, str):
+        for scalaires in _enumerations_jinja(noeud):
+            yield chemin, "liste Jinja", scalaires
 
 
 def check_representations_de_classe(textes_runtime, yaml_depot) -> list[str]:
@@ -13541,6 +13730,181 @@ def check_restitution_charge(lovelace: dict[str, str]) -> list[str]:
                 "le gris d'indisponibilite. Introduire un seuil colore ici "
                 "reviendrait a fixer, en gabarit, le seuil qu'ASP-INV-41 "
                 "refuse au contrat.")
+    return errs
+
+
+# ═════════════════════════════════════════════════════════════
+# C45 LOT 4 — ASP-CI-47 : la projection metier de mission
+# ═════════════════════════════════════════════════════════════
+#
+# CE CONTROLE REND, IL NE RELIT PAS.
+#
+# Une lecture textuelle prouverait que la projection RESSEMBLE a ce que le
+# contrat demande. Elle ne prouverait pas ce qu'elle REND. Or les trois
+# regimes d'ASP-INV-96 sont des SORTIES, pas des formes : « mission
+# ouverte », « aucune mission », « impossibilite de conclure ». Ce controle
+# execute donc les deux gabarits du fichier sur les 34 valeurs du
+# vocabulaire ET sur les valeurs qui lui sont exterieures, et confronte le
+# RESULTAT.
+#
+# C'est ce qui rend la garantie opposable. Retirer la cle `availability`
+# laisserait un fichier parfaitement lisible, parfaitement plausible — et un
+# `unknown` au premier demarrage y serait rendu « aucune mission Arsenal
+# ouverte », c'est-a-dire exactement l'affirmation qu'ASP-INV-45 interdit.
+# La lecture ne le verrait pas. Le rendu, si.
+#
+# TROIS VOLETS, ET AUCUN N'EST DEDUCTIBLE DES AUTRES :
+#
+#   1. SOURCE EXCLUSIVE (item 4.4) — la projection ne cite AUCUNE entite
+#      hors le helper de verdict et sa propre entite. Aucun temoin natif,
+#      a aucun titre : ni etat machine, ni temoin de session, ni entite
+#      `vacuum`. Les commentaires sont neutralises AVANT le releve — l'en-tete
+#      du fichier EXPLIQUE ce qu'il n'emploie pas, et l'expliquer n'est pas
+#      l'employer.
+#
+#   2. LECTURE PURE — aucun appel de service. La projection ne devient pas
+#      un quatrieme ecrivain du verdict (ASP-INV-86).
+#
+#   3. TROIS REGIMES RENDUS (items 4.2 et 4.5) — chaque valeur de classe O
+#      rend `on`, chaque valeur de classe T ou H rend `off`, et TOUTE valeur
+#      exterieure a la partition rend INDISPONIBLE. Le rabattement de
+#      l'indisponibilite sur `off` est la mutation rouge exigee par le
+#      chantier.
+#
+# L'APPARTENANCE EST TESTEE POSITIVEMENT, et c'est verifie. ASP-INV-87 dit
+# qu'une mission est ouverte SI ET SEULEMENT SI le verdict est de classe O.
+# Deduire O par exclusion de T et de H donnerait le meme resultat sur le
+# vocabulaire actuel, et un resultat FAUX au premier ajout de valeur.
+
+# Valeurs EXTERIEURES a la partition, jouees telles quelles. `unknown` n'est
+# pas theorique : le helper de verdict ne porte aucune valeur initiale.
+HORS_PARTITION = ("unknown", "unavailable", "", "CODE/HORS_VOCABULAIRE")
+
+
+def _gabarits_projection(doc):
+    """Les deux gabarits de l'entite unique du fichier, ou None."""
+    for n in _noeuds_yaml(doc):
+        if isinstance(n, dict) and n.get("unique_id") == \
+                ID_PROJECTION_MISSION_OUVERTE:
+            return n
+    return None
+
+
+def _rendre_projection(gabarit: str, verdict: str) -> str:
+    """REND un gabarit de la projection pour une valeur de verdict donnee.
+
+    `states()` est le SEUL point d'entree fourni : un gabarit qui appellerait
+    autre chose leverait, et c'est voulu — la source est exclusive.
+    """
+    from jinja2 import StrictUndefined
+    from jinja2.sandbox import ImmutableSandboxedEnvironment
+
+    env = ImmutableSandboxedEnvironment(undefined=StrictUndefined)
+    return env.from_string(gabarit).render(
+        states=lambda eid: verdict if eid == ID_VERDICT else "unknown").strip()
+
+
+def _vrai(rendu: str) -> bool:
+    """Verite au sens de Home Assistant pour un gabarit rendu."""
+    return rendu.strip().lower() in ("true", "on", "yes", "1")
+
+
+def check_projection_mission(depot: dict[str, str]) -> list[str]:
+    """ASP-CI-47 — source exclusive, lecture pure, trois regimes RENDUS."""
+    errs: list[str] = []
+    rel = RUNTIME_L4_PROJECTION_MISSION
+
+    src = depot.get(rel)
+    if src is None:
+        return [f"ASP-CI-47 : `{rel}` introuvable — la projection metier est "
+                "le SEUL objet par lequel l'interface recoit la mission "
+                "Arsenal ouverte (ASP-INV-96) ; sans elle, l'interface n'a "
+                "d'autre choix que de lire le verdict, ce que le 11 §2 "
+                "interdit."]
+    try:
+        doc = yaml.safe_load(src)
+    except yaml.YAMLError as exc:
+        return [f"ASP-CI-47 : `{rel}` est illisible ({exc})."]
+
+    gab = _gabarits_projection(doc)
+    if gab is None:
+        return [f"ASP-CI-47 : `{rel}` ne declare aucune entite portant "
+                f"l'unique_id attribue `{ID_PROJECTION_MISSION_OUVERTE}` — "
+                "l'identifiant est attribue par l'operateur, et un renommage "
+                "silencieux echoue ici (ASP-INV-58)."]
+
+    # ── Volet 1 — SOURCE EXCLUSIVE ────────────────────────────────────
+    utile = "\n".join(l for l in src.splitlines()
+                      if not l.lstrip().startswith("#"))
+    admis = {ID_VERDICT, f"binary_sensor.{ID_PROJECTION_MISSION_OUVERTE}"}
+    # Le releve n'est filtre par AUCUNE liste de domaines : hors commentaires,
+    # ce fichier ne cite que deux entites, et tout jeton supplementaire est un
+    # ecart — y compris d'un domaine qu'aucune liste n'aurait prevu.
+    for jeton in sorted(tous_les_jetons(utile) - admis):
+        errs.append(
+            f"ASP-CI-47 : `{rel}` cite `{jeton}` — la projection derive de la "
+            "SEULE appartenance du verdict a la classe O. Aucun temoin natif "
+            "n'etablit une mission Arsenal ni ne s'y substitue (ASP-INV-96, "
+            "ASP-INV-87, ASP-INV-47).")
+
+    # ── Volet 2 — LECTURE PURE ────────────────────────────────────────
+    for svc, _cible in _appels_de_service(doc):
+        errs.append(
+            f"ASP-CI-47 : `{rel}` appelle `{svc}` — la projection LIT le "
+            "verdict et ne l'ECRIT jamais ; l'ecriture reste au trio des "
+            "ecrivains (ASP-INV-86).")
+
+    # ── Volet 3 — LES TROIS REGIMES, RENDUS ───────────────────────────
+    dispo_tpl = gab.get("availability")
+    etat_tpl = gab.get("state")
+    if not isinstance(etat_tpl, str) or not etat_tpl.strip():
+        return errs + [f"ASP-CI-47 : `{rel}` ne porte aucun gabarit d'etat."]
+    if not isinstance(dispo_tpl, str) or not dispo_tpl.strip():
+        return errs + [
+            f"ASP-CI-47 : `{rel}` ne porte AUCUNE cle `availability` — sans "
+            "elle, le troisieme regime n'existe pas : `unknown` au premier "
+            "demarrage serait rendu « aucune mission Arsenal ouverte », ce "
+            "qu'ASP-INV-45 interdit. L'indisponibilite se REND, elle ne se "
+            "rabat pas sur `off` (ASP-INV-96)."]
+
+    if re.search(r"\bnot\s+in\b", etat_tpl):
+        errs.append(
+            f"ASP-CI-47 : le gabarit d'etat de `{rel}` teste une NON-"
+            "appartenance. ASP-INV-87 definit la mission ouverte "
+            "POSITIVEMENT — verdict de classe O —, et la deduire par "
+            "exclusion des autres classes donnerait le meme resultat "
+            "aujourd'hui pour un resultat FAUX au premier ajout de valeur.")
+
+    attendus = ([(v, True, True) for v in sorted(CLASSE_O)]
+                + [(v, True, False) for v in sorted(CLASSE_T | CLASSE_H)]
+                + [(v, False, None) for v in HORS_PARTITION])
+    for valeur, dispo_attendue, etat_attendu in attendus:
+        try:
+            dispo = _vrai(_rendre_projection(dispo_tpl, valeur))
+            etat = _vrai(_rendre_projection(etat_tpl, valeur))
+        except Exception as exc:                     # noqa: BLE001
+            errs.append(f"ASP-CI-47 : le rendu de `{rel}` leve sur "
+                        f"`{valeur or '(vide)'}` ({exc}).")
+            continue
+        if dispo != dispo_attendue:
+            quoi = ("appartient a la partition"
+                    if dispo_attendue else "est EXTERIEURE a la partition")
+            errs.append(
+                f"ASP-CI-47 : sur le verdict `{valeur or '(vide)'}`, qui "
+                f"{quoi}, la projection se rend "
+                f"{'disponible' if dispo else 'INDISPONIBLE'} — attendu "
+                f"{'disponible' if dispo_attendue else 'INDISPONIBLE'}. "
+                "`unknown`, `unavailable` et toute valeur hors vocabulaire ne "
+                "valent JAMAIS « aucune mission Arsenal » : ils se rendent "
+                "comme indisponibilite (ASP-INV-96, ASP-INV-45).")
+        if etat_attendu is not None and etat != etat_attendu:
+            classe = "O" if etat_attendu else ("T ou H")
+            errs.append(
+                f"ASP-CI-47 : sur le verdict `{valeur}`, de classe {classe}, "
+                f"la projection rend `{'on' if etat else 'off'}` — attendu "
+                f"`{'on' if etat_attendu else 'off'}` (ASP-INV-87 : une "
+                "mission est ouverte SI ET SEULEMENT SI le verdict est de "
+                "classe O, sous-classe O-R comprise).")
     return errs
 
 
