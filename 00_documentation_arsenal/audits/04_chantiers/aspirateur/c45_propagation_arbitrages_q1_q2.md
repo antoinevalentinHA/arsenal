@@ -709,7 +709,7 @@ dépend de l'**appareil réel** ou de l'**instance** :
 | # | Scénario terrain | Ce que la preuve statique ne peut pas atteindre |
 |---|---|---|
 | **T1** | Sur une mission Arsenal réelle, **arrêter** depuis l'interface après le retour du robot au dock | Que le backend **accepte** effectivement l'Arrêt dans cet état, et écrive une issue terminale. Le rendu prouve l'**offre**, jamais l'**acceptation**. |
-| **T2** | Lancer une mission **depuis l'application constructeur**, observer le panneau | Que `Mission` reste `Aucune` et `Session robot` passe `Active` **sur l'instance** — la divergence légitime, observée et non simulée. **Et confirmer `R-LOT7-1`** : le bouton Pause y est bien présenté, puis refusé. |
+| **T2** | Lancer une mission **depuis l'application constructeur**, donc hors Arsenal, observer le panneau | Que `Mission` reste `Aucune` et `Session robot` passe `Active` **sur l'instance** — le robot **physiquement actif**, la mission Arsenal **fermée**, divergence légitime observée et non simulée. **Vérifier la résorption de `R-LOT7-1`** (Lot 8), et non plus la confirmer : la section **🎛️ Conduite**, **en-tête compris**, est **entièrement absente** ; **aucun** des quatre gestes — Pause, Reprise, Arrêt, Retour base — n'est proposé ; **aucun bouton n'est présenté puis refusé**. |
 | **T3** | Au **premier démarrage** de Home Assistant, verdict non initialisé | Que la projection se rende **indisponible** et non `off` sur une instance réelle — `ASP-CI-47` le rend, il ne l'observe pas. |
 | **T4** | Vérifier la **tuile de navigation** pendant une mission externe | Qu'elle reste adossée à l'**activité physique** (§3.5) : le fichier est prouvé **non modifié**, sa **coloration effective** ne l'est pas. |
 
