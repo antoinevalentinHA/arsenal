@@ -346,6 +346,32 @@ exécute les arbitrages `Q1` et `Q2` :
                           de H donnerait le même résultat aujourd'hui, et un
                           résultat FAUX au premier ajout de valeur
                           (ASP-INV-87).
+  ASP-CI-48 Scénarios   — l'OFFRE RENDUE sur les combinaisons du noyau
+                          causal. Ce contrôle rend la chaîne ENTIÈRE, de la
+                          valeur native au bouton : gabarit d'état, gabarit
+                          de projection, puis évaluation des conditions
+                          RÉELLES de l'arbre Lovelace. C'est la seule
+                          formulation de RC-02 — un bouton présenté puis
+                          refusé — et aucun contrôle de maillon ne l'atteint.
+                          Le scénario (b), SOUS-OFFRE, passe : mission
+                          ouverte et robot rentré, l'Arrêt est offert et le
+                          Retour base masqué par le SEUL motif de sens
+                          physique. Le scénario (a), SUR-OFFRE, passe pour
+                          l'Arrêt et le Retour base, dont l'autorité a
+                          basculé au lot 6 — mais PAUSE et REPRISE restent
+                          offertes sur une mission externe, leurs conditions
+                          demeurant adossées à l'ACTIVITÉ PHYSIQUE parce que
+                          `Q2` §6 les a explicitement laissées NON
+                          ARBITRÉES. Or la garde du script s'arrête AVANT le
+                          dispatch, sur le seul verdict : ces deux boutons
+                          sont présentés puis refusés. LES ATTENDUS DISENT
+                          DONC CE QUI EST, PAS CE QUI DEVRAIT ÊTRE — ils
+                          GÈLENT un résidu documenté et borné, comme
+                          l'allowlist du lot 3 gelait une population. Il ne
+                          peut plus s'étendre en silence, et un arbitrage
+                          qui étendrait l'autorité de la mission à ces deux
+                          gestes rendrait ces attendus ROUGES, donc
+                          VISIBLES. RC-02 reste OUVERTE d'ici là.
 
 CE QUE LE LOT 3 NE COUVRE PAS, ET POURQUOI. Ni la source exclusive de la
 projection métier, ni ses trois régimes d'indisponibilité, ni l'AUTORITÉ des
@@ -6116,6 +6142,9 @@ def run() -> int:
         # ── Lot 4 de C45 — la projection metier de mission ─────────────
         ("ASP-CI-47 projection métier (source exclusive, trois régimes)",
          check_projection_mission(depot)),
+        # ── Lot 7 de C45 — les scenarios du noyau causal, RENDUS ───────
+        ("ASP-CI-48 scénarios du noyau causal (offre rendue)",
+         check_scenarios_noyau(depot)),
     )
 
     erreurs: list[str] = []
@@ -6144,12 +6173,12 @@ def run() -> int:
           "runtime, acte contractuel Maintenance, projection "
           "d'entretien, projections persistantes, conduite et supervision "
           "de mission, couche d'intention vérifiées — "
-          f"{len(controles)} lignes affichées pour 47 contrôles logiques, "
+          f"{len(controles)} lignes affichées pour 48 contrôles logiques, "
           "0 écart.")
     print("     décompte : ASP-CI-12/13 et ASP-CI-16/17 partagent chacun une "
           "ligne ; ASP-CI-28 est LIVRÉ par le lot U0 ; ASP-CI-43/44/45 sont "
-          "LIVRÉS par le lot 3 de C45 ; ASP-CI-46 par C50 ; ASP-CI-47 par "
-          "le lot 4 de C45.")
+          "LIVRÉS par le lot 3 de C45 ; ASP-CI-46 par C50 ; ASP-CI-47 et "
+          "ASP-CI-48 par les lots 4 et 7 de C45.")
     return 0
 
 
@@ -9078,9 +9107,13 @@ def selftest() -> None:
     # C45 lot 4 : la PROJECTION METIER, jouee par la batterie ASP-CI-47 plus
     # bas, sur le fichier reel et par RENDU des gabarits.
     controles_c45_l4 = {"check_projection_mission"}
+    # C45 lot 7 : les SCENARIOS du noyau causal, joues par la batterie
+    # ASP-CI-48 plus bas, par RENDU de bout en bout.
+    controles_c45_l7 = {"check_scenarios_noyau"}
     manquants = (invoques - normatifs - set(CONTROLES_RUNTIME) - controles_m1
                  - controles_n1 - controles_l2 - controles_u0 - controles_m2
-                 - controles_c45 - controles_c50 - controles_c45_l4)
+                 - controles_c45 - controles_c50 - controles_c45_l4
+                 - controles_c45_l7)
     assert not manquants, \
         f"m-C bis : `run()` invoque {sorted(manquants)}, absent(s) de la " \
         f"batterie du selftest — c'est exactement le trou qui a laissé " \
@@ -11359,9 +11392,83 @@ def selftest() -> None:
         "            'CLOTURE/FIN_NOMINALE'] %}")),
         "en trop", "CI-43 valeur d'une autre classe ajoutee en Jinja")
 
-    print(f"selftest OK — 47 contrôles logiques (ASP-CI-28 livré par le lot "
+    # ═════════════════════════════════════════════════════════════
+    # C45 LOT 7 — ASP-CI-48 : les scenarios du noyau causal, RENDUS
+    #
+    # Les mutations portent sur les FICHIERS REELS, et les deux fautes de
+    # RC-02 sont jouees SEPAREMENT : la SUR-OFFRE — un bouton que le
+    # backend refusera — et la SOUS-OFFRE — un geste possible et masque.
+    # Un controle qui n'attraperait que l'une des deux laisserait passer
+    # exactement la moitie du defaut qu'il pretend fermer.
+    # ═════════════════════════════════════════════════════════════
+
+    # ---- ASP-CI-48 : le depot livre passe --------------------------------
+    c.conforme(check_scenarios_noyau(_dep0),
+               "CI-48 l'offre rendue est celle attendue sur les 5 mondes")
+
+    _COND_PROJ = (f"              entity: binary_sensor."
+                  f"{ID_PROJECTION_MISSION_OUVERTE}\n"
+                  "              state: \"on\"\n")
+
+    # ---- SUR-OFFRE : l'Arret retourne au temoin natif --------------------
+    # C'est la faute d'origine de RC-02, rejouee : sur une mission externe,
+    # le bouton reapparait, et le backend le refusera.
+    c.viole(check_scenarios_noyau(_mut(
+        _dep0, _ui, _COND_PROJ,
+        "              entity: sensor.aspirateur_etat_canonique\n"
+        f"              attribute: {ETAT_ORTHOGONAL}\n"
+        "              state: oui\n", 2)),
+        "SUR-OFFRE", "CI-48 l'Arret revenu au temoin natif est offert")
+
+    # ---- SOUS-OFFRE : l'Arret gagne une exclusion physique ---------------
+    # L'arret n'est jamais plus contraint que le lancement (ASP-INV-43) :
+    # une exclusion le masque sur le scenario (b), ou il devrait etre offert.
+    c.viole(check_scenarios_noyau(_mut(
+        _dep0, _ui, _COND_PROJ,
+        _COND_PROJ
+        + "            - condition: state\n"
+        "              entity: sensor.aspirateur_etat_canonique\n"
+        "              state_not: charge\n", 2)),
+        "attendu OFFERT", "CI-48 l'Arret masque par une exclusion physique")
+
+    # ---- Le RETOUR BASE perd une exclusion de sens physique --------------
+    # L'exclusion est DEPLACEE, pas supprimee : effacer la condition
+    # entiere casserait la lecture, et le rouge viendrait de l'illisible au
+    # lieu de venir de l'offre. Ici la garde reste bien formee, et le geste
+    # devient offert sur un robot DEJA EN CHARGE — un geste sans objet, que
+    # le backend refuse (ASP-INV-48).
+    c.viole(check_scenarios_noyau(_mut(
+        _dep0, _ui, "              state_not: charge\n",
+        "              state_not: erreur\n")),
+        "attendu masque", "CI-48 le Retour base perd une exclusion physique")
+
+    # ---- LA PROJECTION SUR-AFFIRME, ET L'OFFRE SUIT ----------------------
+    # Le maillon amont, rendu jusqu'a son effet visible : une projection qui
+    # affirmerait la mission sur tout verdict rouvrirait l'Arret sur une
+    # MISSION EXTERNE. C'est ce qui relie ASP-CI-47 a l'operateur — un
+    # defaut de projection n'est pas une erreur d'etat, c'est un bouton.
+    #
+    # Le rabattement de l'indisponibilite sur `off`, lui, N'EST PAS joue
+    # ici : il ne change AUCUNE offre, `off` et `unavailable` masquant tous
+    # deux les gestes. C'est ASP-CI-47 qui le refuse, et c'est sa place —
+    # un controle ne doit pas revendiquer une garantie qu'il n'exerce pas.
+    c.viole(check_scenarios_noyau(_mut(
+        _dep0, RUNTIME_L4_PROJECTION_MISSION,
+        "        {{ v in classe_o }}", "        {{ true }}")),
+        "SUR-OFFRE", "CI-48 projection sur-affirmante, Arret rouvert")
+
+    # ---- Un maillon de la chaine absent ne prouve rien -------------------
+    c.viole(check_scenarios_noyau({k: v for k, v in _dep0.items()
+                                   if k != RUNTIME_L4_PROJECTION_MISSION}),
+            "ne prouve rien", "CI-48 projection absente de la chaine")
+    c.viole(check_scenarios_noyau({k: v for k, v in _dep0.items()
+                                   if k != _ui}),
+            "ne prouve rien", "CI-48 arbre Lovelace absent de la chaine")
+
+    print(f"selftest OK — 48 contrôles logiques (ASP-CI-28 livré par le lot "
           f"U0 ; ASP-CI-43/44/45 par le lot 3 de C45 ; ASP-CI-46 par C50 ; "
-          f"ASP-CI-47 par le lot 4 de C45), {c.total()} cas "
+          f"ASP-CI-47 par le lot 4 et ASP-CI-48 par le lot 7 de C45), "
+          f"{c.total()} cas "
           f"({c.conformes} conformes, {c.violations} violations).")
 
 
@@ -13836,6 +13943,231 @@ def check_projection_mission(depot: dict[str, str]) -> list[str]:
                 f"`{'on' if etat_attendu else 'off'}` (ASP-INV-87 : une "
                 "mission est ouverte SI ET SEULEMENT SI le verdict est de "
                 "classe O, sous-classe O-R comprise).")
+    return errs
+
+
+
+# ═════════════════════════════════════════════════════════════
+# C45 LOT 7 — ASP-CI-48 : les scenarios du noyau causal, RENDUS
+# ═════════════════════════════════════════════════════════════
+#
+# CE CONTROLE REND LA CHAINE ENTIERE, DE L'APPAREIL AU BOUTON.
+#
+# Les controles precedents gardent chacun un maillon : ASP-CI-23 le
+# gabarit d'etat, ASP-CI-47 la projection, ASP-CI-45 l'autorite des sites.
+# Aucun ne dit ce que l'OPERATEUR VOIT pour un etat donne du monde — et
+# c'est pourtant la seule formulation de RC-02 : un bouton presente puis
+# refuse. Ce controle simule donc un monde, le fait traverser les gabarits
+# REELS du depot, evalue les conditions REELLES de l'arbre Lovelace, et
+# confronte L'OFFRE OBTENUE a l'offre attendue.
+#
+#   valeur native  ─►  gabarit `etat_canonique`   ─►  etat + attribut
+#   valeur verdict ─►  gabarit `mission_arsenal…` ─►  projection
+#                          │
+#                          └─►  conditions Lovelace  ─►  gestes offerts
+#
+# CE QUE CE CONTROLE ETABLIT, ET QUI N'EST PAS CONFORTABLE.
+#
+# Le scenario (b), SOUS-OFFRE, passe : mission Arsenal ouverte et robot
+# rentre au dock, l'Arret est offert et le Retour base masque par le SEUL
+# motif de sens physique. C'est la levee de RC-02 pour ces deux gestes.
+#
+# Le scenario (a), SUR-OFFRE, ne passe PAS entierement, et le figer ici est
+# le seul moyen de ne pas le perdre de vue. Sur une MISSION EXTERNE — robot
+# qui nettoie sans qu'Arsenal ait rien ouvert —, l'Arret et le Retour base
+# sont bien masques : leur autorite a bascule au lot 6. Mais PAUSE reste
+# offerte, et REPRISE l'est sur une pause externe : leurs conditions sont
+# demeurees adossees a l'ACTIVITE PHYSIQUE, `Q2` §6 in fine les ayant
+# explicitement laissees NON ARBITREES.
+#
+# Or la garde du script de conduite s'arrete AVANT le dispatch, sur le seul
+# verdict : un Pause emis pendant une mission externe est REFUSE. C'est,
+# mot pour mot, RC-02 — un bouton presente puis ignore —, subsistant sur
+# les deux gestes que l'arbitrage n'a pas couverts.
+#
+# LES ATTENDUS CI-DESSOUS DISENT DONC CE QUI EST, PAS CE QUI DEVRAIT ETRE.
+# Ils GELENT un residu documente et borne, comme l'allowlist du lot 3
+# gelait une population : le residu ne peut plus s'etendre en silence, et
+# le jour ou un arbitrage etendra l'autorite de la mission a Pause et
+# Reprise, ces attendus devront changer — le controle rendra ce changement
+# VISIBLE au lieu de le laisser passer. RC-02 reste OUVERTE d'ici la.
+
+SCENARIOS_NOYAU = (
+    # (libelle, etat machine natif, temoin de session, verdict,
+    #  offre attendue)
+    ("(a) SUR-OFFRE — mission externe, robot en nettoyage",
+     "cleaning", "on", "REFUS/MISSION_DEJA_OUVERTE",
+     {"arret": False, "retour_base": False,
+      # RESIDU documente — voir l'en-tete de ce controle.
+      "pause": True, "reprise": False}),
+    ("(a bis) SUR-OFFRE — mission externe, robot en pause",
+     "paused", "on", "REFUS/MISSION_DEJA_OUVERTE",
+     {"arret": False, "retour_base": False,
+      "pause": False, "reprise": True}),      # meme residu, autre geste
+    ("(b) SOUS-OFFRE — mission Arsenal ouverte, robot rentre au dock",
+     "charging", "off", "CONDUITE/PAUSE_CONFIRMEE",
+     {"arret": True, "retour_base": False,
+      "pause": False, "reprise": False}),
+    ("(c) NOMINAL — mission Arsenal ouverte, robot en nettoyage",
+     "cleaning", "on", "LANCEE/DEMARRAGE_OBSERVE",
+     {"arret": True, "retour_base": True,
+      "pause": True, "reprise": False}),
+    ("(d) VERDICT INCONNAISSABLE — helper non initialise au demarrage",
+     "cleaning", "on", "unknown",
+     {"arret": False, "retour_base": False,
+      "pause": True, "reprise": False}),
+)
+
+# Le geste dont l'exclusion, en (b), doit venir du SEUL sens physique.
+GESTE_EXCLU_PHYSIQUE = "retour_base"
+
+# L entite de l etat canonique, telle que l arbre Lovelace la nomme.
+ENTITE_ETAT_CANON = f"sensor.{ID_ETAT_CANON}"
+
+
+def _rendre_gabarit(gabarit: str, etats: dict[str, str]) -> str:
+    """REND un gabarit sur un monde simule. `states` et `is_state` seuls."""
+    from jinja2 import StrictUndefined
+    from jinja2.sandbox import ImmutableSandboxedEnvironment
+
+    env = ImmutableSandboxedEnvironment(undefined=StrictUndefined)
+    return env.from_string(gabarit).render(
+        states=lambda eid: etats.get(eid, "unknown"),
+        is_state=lambda eid, v: etats.get(eid, "unknown") == v).strip()
+
+
+def _monde_simule(depot: dict[str, str], etat_machine: str, session: str,
+                  verdict: str):
+    """Le monde tel que les gabarits REELS du depot le produisent."""
+    natifs = {NATIF_ETAT: etat_machine, NATIF_SESSION: session}
+
+    ent = next(n for n in _noeuds_yaml(yaml.safe_load(depot[RUNTIME_ETAT]))
+               if isinstance(n, dict) and n.get("unique_id") == ID_ETAT_CANON)
+    etat_canon = _rendre_gabarit(ent["state"], natifs)
+    attrs = {k: _rendre_gabarit(v, natifs)
+             for k, v in (ent.get("attributes") or {}).items()}
+
+    p = next(n for n in _noeuds_yaml(
+        yaml.safe_load(depot[RUNTIME_L4_PROJECTION_MISSION]))
+        if isinstance(n, dict)
+        and n.get("unique_id") == ID_PROJECTION_MISSION_OUVERTE)
+    v = {ID_VERDICT: verdict}
+    dispo = _vrai(_rendre_gabarit(p["availability"], v))
+    on = _vrai(_rendre_gabarit(p["state"], v))
+    projection = ("on" if on else "off") if dispo else "unavailable"
+
+    return {ENTITE_ETAT_CANON: (etat_canon, attrs),
+            f"binary_sensor.{ID_PROJECTION_MISSION_OUVERTE}": (projection, {})}
+
+
+def _evalue_condition(cond, monde) -> bool:
+    """Evalue une condition Lovelace sur le monde simule.
+
+    Couvre exactement les formes que l'arbre emploie : `or`, `and`, et la
+    condition d'etat sous ses deux lectures — valeur d'etat, ou valeur
+    d'attribut —, en positif (`state`) comme en negatif (`state_not`). Une
+    forme inconnue rend `False` : le controle prefere conclure a l'absence
+    d'offre plutot qu'a une offre qu'il n'a pas su lire.
+    """
+    if isinstance(cond, list):
+        return all(_evalue_condition(c, monde) for c in cond)
+    if not isinstance(cond, dict):
+        return False
+    type_ = cond.get("condition")
+    if type_ == "or":
+        return any(_evalue_condition(c, monde)
+                   for c in cond.get("conditions") or [])
+    if type_ == "and":
+        return all(_evalue_condition(c, monde)
+                   for c in cond.get("conditions") or [])
+    if type_ != "state":
+        return False
+    entite = cond.get("entity")
+    if entite not in monde:
+        return False
+    etat, attrs = monde[entite]
+    valeur = attrs.get(cond["attribute"]) if "attribute" in cond else etat
+    if "state" in cond:
+        return valeur == cond["state"]
+    if "state_not" in cond:
+        return valeur != cond["state_not"]
+    return False
+
+
+def _sites_et_section(doc_ui):
+    """Les sites de geste isoles, et la section qui les contient tous."""
+    sites, section = {}, None
+    for n in _mappings(doc_ui):
+        if n.get("type") != "conditional":
+            continue
+        gestes = set(_gestes_du_noeud(n.get("card")))
+        if len(gestes) == 1:
+            sites[gestes.pop()] = n.get("conditions") or []
+        elif len(gestes) > 1 and section is None:
+            section = n.get("conditions") or []
+    return sites, section
+
+
+def check_scenarios_noyau(depot: dict[str, str]) -> list[str]:
+    """ASP-CI-48 — l'offre RENDUE sur les combinaisons du noyau causal."""
+    errs: list[str] = []
+    for rel in (RUNTIME_ETAT, RUNTIME_L4_PROJECTION_MISSION,
+                FICHIER_UI_MISSION):
+        if rel not in depot:
+            return [f"ASP-CI-48 : `{rel}` introuvable — la chaine ne peut pas "
+                    "etre rendue de bout en bout, et un scenario qu'on ne "
+                    "peut pas jouer ne prouve rien."]
+    try:
+        doc_ui = yaml.safe_load(depot[FICHIER_UI_MISSION])
+    except yaml.YAMLError as exc:
+        return [f"ASP-CI-48 : `{FICHIER_UI_MISSION}` illisible ({exc})."]
+
+    sites, section = _sites_et_section(doc_ui)
+    if section is None:
+        return ["ASP-CI-48 : aucune section de conduite portant plusieurs "
+                "gestes — l'offre ne peut pas etre evaluee."]
+
+    for libelle, etat_machine, temoin, verdict, attendu in SCENARIOS_NOYAU:
+        try:
+            monde = _monde_simule(depot, etat_machine, temoin, verdict)
+        except Exception as exc:                     # noqa: BLE001
+            errs.append(f"ASP-CI-48 : le rendu du monde echoue sur "
+                        f"{libelle} ({exc}).")
+            continue
+        visible = _evalue_condition(section, monde)
+        for geste, offert_attendu in sorted(attendu.items()):
+            conds = sites.get(geste)
+            if conds is None:
+                errs.append(f"ASP-CI-48 : aucun site d'offre isole pour le "
+                            f"geste `{geste}`.")
+                continue
+            offert = visible and _evalue_condition(conds, monde)
+            if offert != offert_attendu:
+                errs.append(
+                    f"ASP-CI-48 : {libelle} — le geste `{geste}` est "
+                    f"{'OFFERT' if offert else 'masque'}, attendu "
+                    f"{'OFFERT' if offert_attendu else 'masque'}. Monde "
+                    f"rendu : etat canonique "
+                    f"{monde[ENTITE_ETAT_CANON][0]!r}, session "
+                    f"{monde[ENTITE_ETAT_CANON][1].get(ETAT_ORTHOGONAL)!r}"
+                    f", projection "
+                    f"{monde['binary_sensor.' + ID_PROJECTION_MISSION_OUVERTE][0]!r}"
+                    ". Une offre qui diverge de l'attendu est soit une "
+                    "SUR-OFFRE — un bouton que le backend refusera —, soit "
+                    "une SOUS-OFFRE — un geste possible et masque : les deux "
+                    "sont RC-02.")
+
+        # En (b), l'exclusion du Retour base doit venir du SEUL sens
+        # physique : si la projection ne l'autorisait pas, l'exclusion
+        # serait juste par accident, et le scenario ne prouverait rien.
+        if libelle.startswith("(b)"):
+            proj = monde[f"binary_sensor.{ID_PROJECTION_MISSION_OUVERTE}"][0]
+            if proj != "on":
+                errs.append(
+                    "ASP-CI-48 : le scenario (b) n'etablit rien — la "
+                    f"projection y vaut {proj!r}, non `on`. L'exclusion du "
+                    f"`{GESTE_EXCLU_PHYSIQUE}` doit venir du SEUL motif de "
+                    "sens physique, jamais d'une mission absente.")
     return errs
 
 
