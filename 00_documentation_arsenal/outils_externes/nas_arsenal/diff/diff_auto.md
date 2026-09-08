@@ -212,6 +212,14 @@ Responsabilités :
 
 Le moteur diff est strictement indépendant de l'extracteur. Il peut être relancé seul pour reconstruire `_diff/` à partir de `versions/`.
 
+**Continuité du pipeline.** Ce document couvre l'extraction et le diff forensic
+(`_diff/`). `versions/` alimente également, en aval et indépendamment, la
+chaîne d'audit patrimonial (`run_pipeline.sh` → `audit_engine.py` → projection
+MQTT, déclenchée par le watcher — voir
+[`pipeline_watcher.md`](../pipeline_watcher.md),
+[`audit/audit.md`](../audit/audit.md), [`audit/mqtt.md`](../audit/mqtt.md)) :
+le pipeline ne s'arrête pas au diff décrit ici.
+
 ---
 
 ## Scheduler Synology
@@ -225,7 +233,7 @@ DSM → Planificateur de tâches
 | Paramètre | Valeur |
 |-----------|--------|
 | Tâche | `Arsenal - Timeline Backups HA` |
-| Fréquence | toutes les 30 minutes |
+| Fréquence | toutes les 5 minutes *(corrigé le 2026-09-08 — audit terrain NAS ; valeur précédente : 30 minutes, périmée)* |
 | Utilisateur | utilisateur NAS non-root |
 
 Commande exécutée :
@@ -238,7 +246,7 @@ python3 \
   --limit 5
 ```
 
-Le `--limit 5` borne la charge par exécution et garantit qu'une exécution ne dépasse pas la fenêtre de 30 minutes même en cas de rattrapage.
+Le `--limit 5` borne la charge par exécution et garantit qu'une exécution ne dépasse pas la fenêtre de 5 minutes même en cas de rattrapage.
 
 ---
 

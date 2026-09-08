@@ -2,7 +2,7 @@
 
 **Version** : v1.0.1
 **Révision** : v1.0.1 — publisher nommé `publish_release_diff_mqtt.py` (alignement sur le précédent réel `publish_audit_mqtt.py`) ; harmonisation des références croisées (sans pin de version). Aucun changement sémantique.
-**Statut** : proposé / non implémenté
+**Statut** : actif / implémenté *(corrigé le 2026-09-08 — audit terrain NAS : chaîne confirmée en production, `state/release_diff_last_run.json` et publication MQTT quotidienne constatés)*
 **Périmètre** : production du run-summary `release_diff` par le moteur NAS et projection MQTT de l'état d'exécution et des événements de génération de diff de release.
 **Dépendances** :
 - `diff/diff_release.md` — moteur `release_diff` (couche sémantique de versioning) ;
