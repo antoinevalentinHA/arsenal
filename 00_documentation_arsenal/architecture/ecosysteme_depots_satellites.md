@@ -24,7 +24,7 @@ composants logiciels** répartis sur plusieurs dépôts GitHub, développés et
 maintenus séparément mais participant tous au fonctionnement d'Arsenal. Ces
 composants sont des **dépôts satellites gouvernés**.
 
-Ce document couvre les sept dépôts suivants, tous sous le compte GitHub
+Ce document couvre les huit dépôts suivants, tous sous le compte GitHub
 `antoinevalentinHA` :
 
 | # | Dépôt | Type |
@@ -36,6 +36,13 @@ Ce document couvre les sept dépôts suivants, tous sous le compte GitHub
 | 5 | [`rainbird-esp32-elegoo`](https://github.com/antoinevalentinHA/rainbird-esp32-elegoo) | Firmware ESP32 (pont matériel) |
 | 6 | [`boilerack`](https://github.com/antoinevalentinHA/boilerack) | Pont matériel Raspberry Pi (service) — **écrivain souverain actif** |
 | 7 | [`boiler-bridge`](https://github.com/antoinevalentinHA/boiler-bridge) | Pont matériel Raspberry Pi (service) — **historique, désactivé** ; héberge encore le guard de supervision externe (actif, v1.3) |
+| 8 | [`arsenal-ha-backup-timeline`](https://github.com/antoinevalentinHA/arsenal-ha-backup-timeline) | Pipeline NAS Synology (scripts) — extraction, audit patrimonial, diff de releases |
+
+> **Ajout C51 (2026-09-08).** `arsenal-ha-backup-timeline` était absent de ce
+> registre alors que sa documentation normative (contrats moteur et MQTT) est
+> intégralement portée côté Arsenal sous `outils_externes/nas_arsenal/` depuis
+> plusieurs révisions — constat d'audit, comblé ici. Fiche : §4.8.
+> Chantier associé : [`audits/04_chantiers/transverses/c51_commandabilite_nas.md`](../audits/04_chantiers/transverses/c51_commandabilite_nas.md).
 
 > **Convergence C48 (2026-09-06).** Boilerack a remplacé `boiler-bridge` comme
 > écrivain souverain du bus MQTT chaudière — migration technique close et
@@ -165,6 +172,7 @@ sans modèle transactionnel).
 | `rainbird-esp32-elegoo` | Firmware ESP32 | `arrosage` | C | MQTT auto-discovery (BLE ⇄ MQTT) | Moyenne (coexistence fail-safe) |
 | `boilerack` | Pont Raspberry Pi | `boiler` / `chauffage` | C | Bus MQTT contractuel (ACK transactionnel) — **écrivain souverain actif** | **Critique** |
 | `boiler-bridge` | Pont Raspberry Pi | `boiler` / `chauffage` | C | Historique — service `disabled`/`inactive` ; héberge le guard de supervision externe (actif, v1.3) | **Critique** (guard résiduel) |
+| `arsenal-ha-backup-timeline` | Pipeline NAS Synology | `arsenal_self` / `arsenal_nas` | C *(adapté — pipeline batch planifié, pas de matériel dédié)* | Publication MQTT unidirectionnelle NAS→HA (`arsenal/nas/audit/*`, `arsenal/nas/release_diff/*`) ; canal de commande HA→NAS en cours de spécification (chantier C51) | Moyenne (patrimoine et observabilité, pas d'action matérielle directe) |
 
 > **Note criticité.** La criticité est **fonctionnelle**, pas technique : elle
 > reflète l'impact d'une défaillance du composant sur le métier Arsenal, tel que
@@ -290,6 +298,23 @@ Arsenal le consomme**. Elle ne redéfinit ni le protocole, ni l'API du satellite
 
 ---
 
+### 4.8 `arsenal-ha-backup-timeline` — pipeline NAS d'extraction, audit et diff de releases
+
+| Champ | Valeur |
+|---|---|
+| **Objectif** | Extraire le patrimoine Arsenal des sauvegardes Home Assistant chiffrées, l'historiser (`versions/`), produire un audit patrimonial (`audit_engine.py`) et des diffs sémantiques inter-releases (`release_diff.py`), et projeter l'état d'exécution de ces deux jobs vers Home Assistant par MQTT. |
+| **Propriétaire** | `antoinevalentinHA` — dépôt privé, original (non forké). |
+| **Type** | Pipeline NAS Synology (scripts Python + shell, tâches planifiées DSM). Ni intégration HA, ni add-on Supervisor, ni firmware. |
+| **Domaine Arsenal** | `arsenal_self` (audit patrimonial) et `arsenal_nas` (release_diff) — deux domaines HA distincts consommant chacun un job de ce dépôt. |
+| **Méthode d'intégration** | Publication **MQTT unidirectionnelle NAS→HA** : `arsenal/nas/audit/state` (audit) ; `arsenal/nas/release_diff/state`\|`event` (release_diff). Aucun canal de commande HA→NAS n'existe à ce jour ; sa spécification (vocabulaire fermé `AUDIT`/`RELEASE_DIFF`, admission, corrélation) est l'objet du chantier C51 et du contrat [`contrats/nas_transactionnel.md`](../contrats/nas_transactionnel.md). |
+| **Stratégie de version** | Aucun tag ni release GitHub relevé. Le NAS suit `HEAD` de la branche par défaut ; conformité runtime/dépôt confirmée par audit terrain (2026-09-08, `git status`/`diff` vides). |
+| **Dépendances** | Home Assistant (source des sauvegardes chiffrées, `ha_backup_maison/*.tar`) ; broker MQTT sur machine tierce (hors NAS) ; DSM Synology (Planificateur de tâches). |
+| **Interfaces exposées** | Topics MQTT `arsenal/nas/audit/state` (retain, QoS1) et `arsenal/nas/release_diff/state` (retain, QoS1) / `event` (non retenu, QoS1). Aucune entité `custom_component` : les entités HA sont des sensors MQTT génériques (`14_mqtt_sensors/system/`), propriété d'Arsenal. |
+| **Contrats importants** | Côté Arsenal, l'intégralité de la documentation normative de ce dépôt est portée sous `outils_externes/nas_arsenal/` : moteurs [`audit/audit.md`](../outils_externes/nas_arsenal/audit/audit.md), [`diff/diff_release.md`](../outils_externes/nas_arsenal/diff/diff_release.md) ; projections MQTT [`audit/mqtt.md`](../outils_externes/nas_arsenal/audit/mqtt.md), [`diff/release_diff_mqtt.md`](../outils_externes/nas_arsenal/diff/release_diff_mqtt.md) ; pipeline d'ingestion [`diff/diff_auto.md`](../outils_externes/nas_arsenal/diff/diff_auto.md), [`pipeline_watcher.md`](../outils_externes/nas_arsenal/pipeline_watcher.md) ; briques adjacentes [`quarantine_purger.md`](../outils_externes/nas_arsenal/quarantine_purger.md), [`retention_manager.md`](../outils_externes/nas_arsenal/retention_manager.md). Consommation HA : [`contrats/arsenal_self.md`](../contrats/arsenal_self.md), [`contrats/arsenal_nas.md`](../contrats/arsenal_nas.md). Direction de commande (nouvelle) : [`contrats/nas_transactionnel.md`](../contrats/nas_transactionnel.md). |
+| **Documentation associée** | README du dépôt (minimal — la documentation normative fait autorité côté Arsenal, par exception à la règle générale du présent document, cf. §1) ; chantier [`c51_commandabilite_nas.md`](../audits/04_chantiers/transverses/c51_commandabilite_nas.md). |
+
+---
+
 ## 5. Frontières de responsabilité
 
 > **Règle transverse.** Ce qui est **produit** par un satellite (protocole,
@@ -411,6 +436,7 @@ Arsenal le consomme**. Elle ne redéfinit ni le protocole, ni l'API du satellite
 - Énergie / Linky : [`contrats/energie.md`](../contrats/energie.md) · hub [`navigation/domaines/energie.md`](../navigation/domaines/energie.md)
 - Rain Bird (`arrosage`) : [`contrats/arrosage/03_coexistence_rainbird.md`](../contrats/arrosage/03_coexistence_rainbird.md) · [`contrats/arrosage/08_inventaire_pont_runtime.md`](../contrats/arrosage/08_inventaire_pont_runtime.md) · hub [`navigation/domaines/arrosage.md`](../navigation/domaines/arrosage.md)
 - Boiler (Boilerack, écrivain souverain actif · `boiler-bridge`, historique) : [`architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`](chauffage/migration_boiler_bridge_vers_boilerack.md) · [`architecture/chauffage/interface_ha_boiler_bridge.md`](chauffage/interface_ha_boiler_bridge.md) · [`contrats/boiler/`](../contrats/boiler/) · [`outils_externes/boiler_pi/`](../outils_externes/boiler_pi/) · hub [`navigation/domaines/boiler.md`](../navigation/domaines/boiler.md) · chantier [`audits/04_chantiers/chauffage/c48_convergence_documentaire_boilerack.md`](../audits/04_chantiers/chauffage/c48_convergence_documentaire_boilerack.md)
+- Backup timeline / audit / release diff NAS : `outils_externes/nas_arsenal/` · [`contrats/arsenal_self.md`](../contrats/arsenal_self.md) · [`contrats/arsenal_nas.md`](../contrats/arsenal_nas.md) · [`contrats/nas_transactionnel.md`](../contrats/nas_transactionnel.md) · chantier [`audits/04_chantiers/transverses/c51_commandabilite_nas.md`](../audits/04_chantiers/transverses/c51_commandabilite_nas.md)
 - Index de la famille architecture : [`index.md`](index.md)
 
 ---

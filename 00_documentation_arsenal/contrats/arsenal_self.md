@@ -1,11 +1,13 @@
 # Contrat — Domaine Home Assistant `arsenal_self`
 
-**Version** : v1.0.0
+**Version** : v1.0.1
+**Révision** : v1.0.1 — ajout du renvoi vers le contrat transactionnel `nas_transactionnel.md` (chantier C51). Aucun changement sémantique aux entités ou à leur comportement.
 **Statut** : actif
 **Périmètre** : exposition Home Assistant de l’auto-observation Arsenal issue du pipeline NAS d’audit patrimonial.
 **Contrats liés** :
 - [`outils_externes/nas_arsenal/audit/audit.md`](../outils_externes/nas_arsenal/audit/audit.md)
 - [`outils_externes/nas_arsenal/audit/mqtt.md`](../outils_externes/nas_arsenal/audit/mqtt.md)
+- [`nas_transactionnel.md`](./nas_transactionnel.md) — contrat transactionnel commun (direction HA→NAS, admission des commandes) ; distinct et complémentaire, ne redéfinit aucune entité ni sémantique du présent contrat
 
 ---
 
@@ -23,6 +25,14 @@ publiée par le NAS et la transforme en entités exploitables par :
 - les alertes humaines ;
 - les diagnostics de fraîcheur ;
 - les vues synthétiques Arsenal.
+
+**Note (chantier C51, 2026-09).** L'audit patrimonial devient commandable
+depuis Arsenal via le contrat transversal
+[`nas_transactionnel.md`](./nas_transactionnel.md), qui fixe la sémantique
+commune de **demande** (`request_id`/`run_id`, admission, `BUSY`) sur la
+direction HA→NAS. Ce contrat transversal ne modifie ni les entités ni la
+sémantique du présent domaine, qui reste exclusivement consommateur du
+résultat métier publié par le NAS.
 
 ---
 
@@ -245,4 +255,4 @@ publication relève du contrat MQTT associé.
 
 ---
 
-*Fin du contrat — Domaine Home Assistant `arsenal_self` v1.0.0.*
+*Fin du contrat — Domaine Home Assistant `arsenal_self` v1.0.1.*

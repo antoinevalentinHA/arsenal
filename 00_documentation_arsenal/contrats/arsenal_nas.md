@@ -1,12 +1,14 @@
 # Contrat — Domaine Home Assistant `arsenal_nas`
 
-**Version** : v1.0.1
-**Révision** : v1.0.1 — publisher nommé `publish_release_diff_mqtt.py` (alignement sur le précédent réel `publish_audit_mqtt.py`). Aucun changement sémantique.
-**Statut** : proposé / non implémenté
+**Version** : v1.0.2
+**Révision** : v1.0.2 — statut corrigé en `actif` (chaîne `release_diff` confirmée en production : `state/release_diff_last_run.json` et publication MQTT quotidiens constatés côté NAS ; les trois sensors §5.1 et l'automation §5.2 constatés implémentés côté dépôt, conformes au présent contrat). Ajout du renvoi vers le contrat transactionnel `nas_transactionnel.md` (chantier C51). Aucun changement sémantique aux entités ou à leur comportement.
+**Révision précédente** : v1.0.1 — publisher nommé `publish_release_diff_mqtt.py` (alignement sur le précédent réel `publish_audit_mqtt.py`). Aucun changement sémantique.
+**Statut** : actif
 **Périmètre** : exposition Home Assistant de l'observabilité d'exécution des jobs NAS Arsenal. En V1, locataire unique : `release_diff`.
 **Contrats liés** :
 - [`outils_externes/nas_arsenal/diff/diff_release.md`](../outils_externes/nas_arsenal/diff/diff_release.md)
 - [`outils_externes/nas_arsenal/diff/release_diff_mqtt.md`](../outils_externes/nas_arsenal/diff/release_diff_mqtt.md)
+- [`nas_transactionnel.md`](./nas_transactionnel.md) — contrat transactionnel commun (direction HA→NAS, admission des commandes) ; distinct et complémentaire, ne redéfinit aucune entité ni sémantique du présent contrat
 
 ---
 
@@ -25,6 +27,15 @@ publiée par le NAS et la transforme en entités exploitables par :
 
 En V1, le domaine couvre un seul job : `release_diff`. La généralisation
 multi-jobs est explicitement hors périmètre (voir §12).
+
+**Note (chantier C51, 2026-09).** Un second job NAS (`AUDIT`) devient
+commandable depuis Arsenal via le contrat transversal
+[`nas_transactionnel.md`](./nas_transactionnel.md), qui fixe la sémantique
+commune de **demande** (`request_id`/`run_id`, admission, `BUSY`) sur la
+direction HA→NAS. Ce contrat transversal ne généralise **pas** le domaine
+d'observabilité `arsenal_nas` : le présent document reste scopé à
+`release_diff` seul, sans entité ni sémantique nouvelle. Le contrat keystone
+`observabilite_nas.md` (§12) reste explicitement différé.
 
 ---
 
@@ -251,4 +262,4 @@ contrat [`diff_release.md`](../outils_externes/nas_arsenal/diff/diff_release.md)
 
 ---
 
-*Fin du contrat — Domaine Home Assistant `arsenal_nas` v1.0.1.*
+*Fin du contrat — Domaine Home Assistant `arsenal_nas` v1.0.2.*

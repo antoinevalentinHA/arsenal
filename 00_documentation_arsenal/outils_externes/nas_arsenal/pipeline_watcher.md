@@ -6,7 +6,7 @@
 | ----------------- | ------------------------------------------- |
 | Brique            | `watch_new_backup.sh`                       |
 | Version           | 1.0                                         |
-| Statut            | proposition initiale                        |
+| Statut            | actif/implémenté *(corrigé le 2026-09-08 — audit terrain NAS : le script embarqué au §3 est fonctionnellement identique au runtime déployé)* |
 | Couche            | orchestration NAS                           |
 | Déclenchement     | DSM toutes les 5 minutes                    |
 | Action principale | lancement conditionnel de `run_pipeline.sh` |
@@ -20,6 +20,15 @@
 Le watcher ne dépend pas d'horaires arbitraires pour lancer le pipeline Arsenal.
 
 Il observe le patrimoine `versions/` et déclenche le pipeline uniquement lorsqu'une nouvelle version stable et non encore traitée est détectée.
+
+**Coexistence terrain (2026-09-08).** Le watcher n'est pas le seul déclencheur
+du pipeline. Une tâche DSM directe et inconditionnelle (`Pipeline HA`,
+quotidienne) appelle également `run_pipeline.sh`, indépendamment de toute
+détection de stabilité par le watcher. Ce document décrit le watcher
+lui-même ; il ne décrit pas l'ensemble des chemins de déclenchement du
+pipeline — voir le futur contrat [`nas_transactionnel.md`](../../contrats/nas_transactionnel.md)
+et le chantier [`c51_commandabilite_nas.md`](../../audits/04_chantiers/transverses/c51_commandabilite_nas.md)
+pour la vue d'ensemble et la trajectoire de convergence.
 
 ---
 
