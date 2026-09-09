@@ -13,10 +13,14 @@ du listener MQTT NAS est également livré et **validé terrain** — tâche
 planifiée DSM Task Scheduler (watchdog toutes les 5 minutes), cycle no-op
 sans doublon, arrêt contrôlé et réactivation prouvés, relance automatique
 après disparition simulée en moins de 5 minutes, instance unique laissée
-active. `RELEASE_DIFF` côté backend Arsenal n'est pas livré. Aucune UI
-Lovelace n'est livrée. Voir chantier
+active. `RELEASE_DIFF` côté backend Arsenal est également livré et
+**validé terrain** — `script.nas_admission_demander_release_diff`, sur le
+clone runtime réellement exécuté par Home Assistant (`/config`) :
+`request_id`/`run_id` corrélés, terminaison `completed`/`wrapper_rc=0`,
+admission dans la fenêtre contractuelle, résultat métier `ok` observé
+séparément. Aucune UI Lovelace n'est livrée. Voir chantier
 [`c51_commandabilite_nas.md`](../audits/04_chantiers/transverses/c51_commandabilite_nas.md)
-(§12.5).
+(§12.5, §12.7).
 
 > **v1.1.0 — clarification pré-Lot A (2026-09-09).** Fermeture des ambiguïtés
 > identifiées avant le Lot A d'admission (chantier C51) : ajout du champ
