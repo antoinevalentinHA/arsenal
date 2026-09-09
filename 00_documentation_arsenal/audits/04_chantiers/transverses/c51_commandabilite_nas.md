@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Permettre à Home Assistant/Arsenal de demander au NAS, via MQTT, l'exécution des deux opérations métier existantes `AUDIT` et `RELEASE_DIFF`, sans fusionner leurs chaînes, sans big bang sur les tâches DSM actuelles, et sans jamais confondre la transaction de commande et le résultat métier qu'elle produit. |
 | **Domaine** | Transverse — dépôts `arsenal` et `arsenal-ha-backup-timeline` ; domaines Home Assistant `arsenal_self` (audit) et `arsenal_nas` (release_diff). |
-| **Statut** | **Ouvert (2026-09-08) — socle transactionnel NAS local livré et mergé côté `arsenal-ha-backup-timeline` (2026-09-09).** Verrou RELEASE_DIFF (Lot 2), durcissement AUDIT + `run_id` corrélable (Lot 3) et moteur d'admission transactionnelle locale (Lot 4 — `admission/bin/admission_core.py`) livrés, mergés et testés **en dépôt** (concurrence même process et multi-process testée). Contrat `nas_transactionnel.md` inchangé (v1.1.1). Chantier désormais en phase **transport/intégration MQTT → Arsenal → terrain** : aucun listener MQTT NAS, aucun daemon/service d'admission, aucune commande MQTT activée, aucune preuve terrain — voir §12.1. |
+| **Statut** | **Ouvert (2026-09-08) — socle transactionnel NAS local livré et mergé côté `arsenal-ha-backup-timeline` (2026-09-09).** Verrou RELEASE_DIFF (Lot 2), durcissement AUDIT + `run_id` corrélable (Lot 3) et moteur d'admission transactionnelle locale (Lot 4 — `admission/bin/admission_core.py`) livrés, mergés et testés **en dépôt** (concurrence même process et multi-process testée). Contrat `nas_transactionnel.md` v1.2.1. Chantier désormais en phase **transport/intégration MQTT → Arsenal → terrain** : aucun listener MQTT NAS, aucun daemon/service d'admission, aucune commande MQTT activée, aucune preuve terrain — voir §12.1. |
 | **Priorité** | P2 — aucun risque fonctionnel actuel ; enjeu d'architecture et de gouvernance documentaire avant toute commandabilité. |
 | **Ouvert le** | 2026-09-08. |
 | **Registre** | Chantier **C51** — ① Actifs, cf. [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
@@ -207,10 +207,21 @@ périmètre de ce chantier.
   contraste assumé avec les topics état, retenus.
 - Déduplication applicative (mémoire persistante bornée côté NAS), en sus
   du QoS MQTT.
-- Identité MQTT du canal de commande : principe du moindre privilège ;
-  compte concret non choisi ici, déterminé après audit du broker.
-- ACL vérifiées avant activation terrain — non bloquant pour la rédaction
-  documentaire, bloquant pour l'implémentation.
+- Identité MQTT dédiée au canal de commande : **obligatoire**, distincte
+  des comptes existants (`nas_audit`, `nas_imprimerie`, `boiler_bridge`,
+  `rain_bird_mqtt`) — compte concret non choisi ici. Moindre privilège
+  (cantonnement ACL par topic) reste la **cible normative** de cette
+  identité dédiée, non garantie aujourd'hui — voir constat ci-dessous.
+- **Constat terrain (audit broker, 2026-09-09).** Broker = add-on officiel
+  HA Mosquitto (`core_mosquitto`), authentification par comptes HA locaux,
+  `customize.active = false` : aucune ACL par topic active aujourd'hui,
+  pour aucun compte. Activer une ACL par topic impose une politique
+  explicite globale à tous les comptes du broker, pas seulement au futur
+  compte C51 — chantier broker transversal (HA, Zigbee2MQTT, chauffage,
+  arrosage), **non ouvert par ce chantier**. Le cantonnement ACL par topic
+  de `nas_admission` ne peut donc pas être garanti sans cette migration.
+- **Dette explicite.** Identité dédiée sans cantonnement ACL par topic =
+  dette de sécurité documentée, non tranchée par ce chantier — voir §13.
 
 ---
 
@@ -335,8 +346,13 @@ déclenchements DSM ; clôture C51.
 
 *(ne bloquent pas la documentation — bloquent les lots 2+)*
 
-- ACL MQTT réelles sur le broker (machine tierce, hors NAS, non vérifiables
-  depuis le NAS).
+- ACL MQTT réelles sur le broker — **vérifiées (2026-09-09)** : voir §10.
+  Point de fait tranché ; **arbitrage Direction requis** avant toute
+  activation terrain du canal de commande (Lot 4 preuve terrain / Lot 5+) :
+  accepter la dette — identité dédiée sans cantonnement topic, avec les
+  mesures de réduction du risque applicatif déjà présentes (vocabulaire
+  fermé §5, validation `admit()`) — ou conditionner l'activation à une
+  migration ACL globale du broker.
 - Accès Docker/Container Manager pour utilisateur non-root, ou mécanisme
   de supervision alternatif du futur listener.
 - Comportement réel de `ha_backup_timeline_extract_v2.py` sous collision
@@ -359,6 +375,8 @@ déclenchements DSM ; clôture C51.
   d'exclusion mutuelle (Lot 2) soit livré et prouvé.
 - Aucune suppression de tâche DSM sans preuve terrain que sa garantie est
   reprise ailleurs.
+- Aucune activation terrain du canal de commande MQTT sans arbitrage
+  Direction explicite sur la dette ACL constatée au §10.
 
 ---
 

@@ -1,6 +1,6 @@
 # Contrat — Socle transactionnel des commandes NAS Arsenal
 
-**Version** : v1.2.0
+**Version** : v1.2.1
 **Statut** : proposé / non implémenté
 
 **État d'implémentation (2026-09-09).** Le noyau local qu'il régit — verrou
@@ -41,6 +41,22 @@ production et aucune preuve terrain à ce jour — voir chantier
 > renvois §6, §9.4, §11 sont mis à jour en conséquence) ; aucun verdict,
 > aucune section, aucune autre sémantique C51 n'est ajouté, retiré ou
 > modifié par cette révision.
+
+> **v1.2.1 — clarification identité dédiée / moindre privilège au §13.5
+> (2026-09-09).** Le constat terrain broker (audit 2026-09-09) montre
+> qu'aucune ACL par topic n'est aujourd'hui active sur le broker MQTT de
+> production, pour aucun compte, et qu'en activer une impose une politique
+> explicite globale à tous les comptes du broker — un chantier transversal
+> non ouvert par ce contrat. Le §13.5 distingue désormais explicitement
+> l'identité MQTT dédiée au canal de commande (**obligatoire**, sans
+> ambiguïté) du moindre privilège/cantonnement ACL par topic (**cible
+> normative**, non garantie aujourd'hui). Le constat terrain lui-même, la
+> dette qui en découle et la condition d'activation restent hors périmètre
+> de ce contrat (§3.2, ACL hors périmètre documentaire) et sont portés par
+> le chantier [`c51_commandabilite_nas.md`](../audits/04_chantiers/transverses/c51_commandabilite_nas.md)
+> (§10, §13, §14). Purement additif — aucun retrait, aucune renumérotation
+> de section, aucune autre sémantique C51 ajoutée, retirée ou modifiée par
+> cette révision.
 
 > **v1.2.0 — fixation des topics et formats physiques du canal de commande
 > (2026-09-09).** Lève le point de décision documentaire restant recensé au
@@ -494,11 +510,15 @@ verdict inchangée, réversible sans toucher `admission_core.py`.
 - Vocabulaire fermé (§5) : rien d'autre n'est interprété par l'admission.
 - Aucun argument shell arbitraire transmis par Arsenal.
 - Déduplication applicative (§8), en sus du QoS MQTT.
-- Identité MQTT dédiée au canal de commande recommandée par moindre
-  privilège (distincte des identités de publication d'état) — le compte
-  concret n'est pas choisi ici.
+- Identité MQTT dédiée au canal de commande **obligatoire**, distincte des
+  identités de publication d'état — le compte concret n'est pas choisi ici.
+  Moindre privilège (restriction ACL par topic) reste la **cible
+  normative** portée par cette identité dédiée, sans en être elle-même une
+  précondition d'activation fixée par ce contrat (ACL hors périmètre
+  documentaire, §3.2).
 - ACL du broker vérifiées avant toute activation terrain — prérequis
-  d'implémentation, non bloquant pour ce contrat.
+  d'implémentation, non bloquant pour ce contrat. État terrain constaté et
+  dette éventuelle documentés au chantier C51 (§10, §13) — jamais ici.
 
 ---
 
@@ -555,4 +575,4 @@ contrat.
 
 ---
 
-*Fin du contrat — Socle transactionnel des commandes NAS Arsenal v1.2.0.*
+*Fin du contrat — Socle transactionnel des commandes NAS Arsenal v1.2.1.*
