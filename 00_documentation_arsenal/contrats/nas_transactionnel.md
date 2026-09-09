@@ -1,7 +1,21 @@
 # Contrat — Socle transactionnel des commandes NAS Arsenal
 
-**Version** : v1.0.0
+**Version** : v1.1.0
 **Statut** : proposé / non implémenté
+
+> **v1.1.0 — clarification pré-Lot A (2026-09-09).** Fermeture des ambiguïtés
+> identifiées avant le Lot A d'admission (chantier C51) : ajout du champ
+> `expires_at` au schéma de commande (§6), traitement explicite d'un
+> `request_id` connu non terminal (§7, §9.4) et d'un `request_id` réutilisé
+> avec un payload incompatible (§7, nouveau verdict `rejected_conflict`,
+> §10.1), fail-closed sur ledger illisible (nouveau verdict
+> `admission_unavailable`, §7, §10.1), verrouillage de l'invariant de
+> crash-consistency (§9.5), et convergence explicite du `run_id` unique
+> (§9.2). Aucun mécanisme d'implémentation n'est fixé par cette révision
+> (probe-then-release, recovery de ledger, réconciliation concrète restent
+> ouverts au design). Purement additif — aucun retrait, aucune
+> renumérotation de section.
+
 **Périmètre** : direction **Home Assistant → NAS** — admission et corrélation
 des commandes `AUDIT` et `RELEASE_DIFF`. Ne couvre ni la logique des moteurs,
 ni la projection MQTT existante NAS→HA.
@@ -104,12 +118,24 @@ Une commande porte au minimum :
 
 - `request_id` — identifiant unique attribué par le backend Arsenal, unique
   par demande (pas par opération) ;
-- l'opération demandée, prise dans le vocabulaire fermé du §5 ;
-- un horodatage d'émission ;
-- une source (utilisateur ou automatisation), à des fins diagnostiques.
+- `operation` — l'opération demandée, prise dans le vocabulaire fermé du §5 ;
+- `ts` — horodatage d'émission ;
+- `expires_at` — horodatage de péremption de la commande, fourni par le
+  backend Arsenal ;
+- `source` — utilisateur ou automatisation, à des fins diagnostiques.
 
 Le `request_id` est la seule identité que le backend Arsenal contrôle. Il ne
 préjuge d'aucune identité d'exécution.
+
+**Autorité sur `expires_at`.** `expires_at` est une valeur **fournie par
+Arsenal, validée par le NAS** — jamais une identité d'exécution, jamais une
+délégation d'autorité de décision. Le NAS reste seul autorité d'admission
+(§4) : il ne fait pas confiance à `expires_at` tel quel, il le valide (forme,
+cohérence avec `ts`, plage jugée raisonnable) avant de l'opposer à la
+commande — voir §7 point 3. Le NAS ne substitue **jamais** silencieusement
+`expires_at` par une fenêtre de fraîcheur globale (TTL NAS) qui ignorerait la
+valeur transmise par Arsenal ; un garde-fou NAS supplémentaire, s'il existe,
+est un contrôle additionnel explicite, pas un remplacement.
 
 ---
 
@@ -119,18 +145,51 @@ L'admission est un acte NAS. Une commande y est reçue et évaluée selon un
 ordre normatif strict, à la manière de la Phase 0 du socle
 [`switchbot_transactionnel.md`](./switchbot_transactionnel.md) §9 :
 
-1. Opération dans le vocabulaire fermé du §5 → sinon rejet.
-2. Payload bien formé (`request_id` présent, forme valide) → sinon rejet.
-3. Fraîcheur de la commande dans une fenêtre de validité définie à
-   l'implémentation → sinon rejet.
-4. `request_id` déjà connu et déjà terminal (§9) → réponse par relecture du
-   résultat déjà produit, jamais par une nouvelle exécution.
-5. Opération demandée déjà en cours (§11) → rejet `BUSY`.
+0. Mémoire d'idempotence (§8, le « ledger ») lisible et exploitable de façon
+   fiable → sinon échec fermé de l'admission, **avant tout autre point de
+   contrôle** : verdict `admission_unavailable` (§10.1). Un ledger illisible
+   ou corrompu n'est **jamais** traité comme un ledger vide — l'admission
+   n'a pas les moyens de savoir si un `request_id` a déjà été vu, elle ne
+   peut donc décider pour aucune commande tant que la lecture n'est pas
+   restaurée. Aucune nouvelle exécution, aucun `run_id`, aucun écrasement du
+   ledger par un ledger vide ne sont jamais produits sous ce verdict. Le
+   mécanisme de restauration (réparation, remplacement, intervention
+   manuelle) est un choix d'implémentation, non fixé par ce contrat.
+1. Opération dans le vocabulaire fermé du §5 → sinon rejet
+   `rejected_precondition`.
+2. Payload bien formé (`request_id` présent, forme valide) → sinon rejet
+   `rejected_precondition`.
+3. Fraîcheur de la commande : `expires_at` (§6) non dépassé et contraintes
+   temporelles NAS satisfaites (cohérence de forme, cohérence avec `ts`,
+   plage jugée admissible) → sinon rejet `rejected_stale`. Une commande est
+   stale dès que l'une de ces contraintes temporelles n'est pas satisfaite,
+   pas seulement en cas de dépassement strict de `expires_at`.
+4. `request_id` déjà connu dans le ledger (§8) :
+   a. présenté avec une `operation` ou des champs d'identité incompatibles
+      avec la demande déjà enregistrée sous ce `request_id` → rejet
+      `rejected_conflict` (§10.1). Incohérence de demande — aucune nouvelle
+      exécution, aucun nouveau `run_id`, quel que soit par ailleurs l'état
+      terminal ou non de l'enregistrement existant.
+   b. sinon, déjà **terminal** (`completed`/`technical_failure`, §10.2) →
+      réponse par relecture du résultat déjà produit, jamais par une
+      nouvelle exécution.
+   c. sinon, **non terminal** (`admitted`, `run_id` déjà attribué, transaction
+      non close) → **aucune réadmission, aucun nouveau `run_id`, aucun
+      nouvel appel du wrapper métier.** L'admission relit et retourne l'état
+      `admitted` déjà connu, associé au `run_id` déjà attribué, sans jamais
+      invoquer le moteur pour cette demande. Voir §9.4 (réconciliation) pour
+      ce qui détermine, hors chaîne d'admission, la vivacité réelle de ce
+      `run_id`.
+5. `request_id` inconnu, opération demandée déjà en cours (§11) → rejet
+   `rejected_busy`. Aucun `run_id` n'est attribué et aucun wrapper métier
+   n'est invoqué pour cette demande.
 
-**Invariant.** Un rejet d'admission (points 1 à 3, et le rejet `BUSY` du
-point 5) n'ouvre **jamais** de transaction : aucun verrou n'est posé, aucun
-`run_id` n'est attribué, aucune trace transactionnelle n'est créée au-delà
-du rejet lui-même.
+**Invariant.** Un rejet d'admission (points 0 à 3, 4a et 5) n'ouvre **jamais**
+de transaction : aucun verrou n'est posé, aucun `run_id` n'est attribué,
+aucun wrapper métier n'est invoqué, aucune trace transactionnelle n'est créée
+au-delà du rejet lui-même. Le point 4c (non terminal) n'ouvre pas non plus de
+nouvelle transaction : il relit un état déjà ouvert, sans jamais en créer un
+second.
 
 ---
 
@@ -174,6 +233,12 @@ sont deux mécanismes distincts, à deux niveaux distincts.
   `run_id` — l'association ne change jamais après attribution.
 - Le `run_id` est le pivot qui relie la **terminaison transactionnelle**
   (§10) au **résultat métier** publié par ailleurs (§11).
+- **Convergence stricte.** Le `run_id` attribué par l'admission est, sans
+  exception, le même `run_id` transmis au moteur/wrapper métier et publié
+  dans le résultat (AUDIT/RELEASE_DIFF, via `arsenal_self`/`arsenal_nas`).
+  Aucune seconde identité d'exécution n'est générée en aval de l'admission,
+  à quelque étape que ce soit — ni par le wrapper, ni par le moteur, ni par
+  la publication du résultat.
 
 ### 9.3 Ce que ce contrat ne fixe pas
 
@@ -192,6 +257,39 @@ transactionnelle suffisante en présence de concurrence — c'est précisément
 la limite que le présent contrat corrige en déplaçant l'attribution du
 `run_id` en amont du moteur.
 
+### 9.4 Réconciliation d'un `request_id` non terminal
+
+Un `request_id` déjà connu, associé à un `run_id`, mais dont la transaction
+n'est pas close (verdict `admitted` persistant, §10.2) ne peut jamais, par
+simple redelivery, être réadmis (§7 point 4c) : l'admission relit cet état,
+elle ne le retranche ni ne le prolonge.
+
+Déterminer si l'exécution sous-jacente est toujours réellement active, ou si
+l'enregistrement `admitted` est orphelin (processus producteur disparu, par
+exemple après un crash), n'est **pas** une décision de l'admission — c'est
+une logique de réconciliation/diagnostic distincte de la chaîne normale
+d'admission du §7. Son issue possible (laisser courir, marquer
+`technical_failure`, ou bloquer en sécurité dans l'attente d'une
+intervention) et son déclenchement concret (détection de processus vivant,
+délai d'observation, intervention manuelle) sont des choix d'implémentation,
+non fixés par ce contrat. Le présent contrat fixe uniquement l'invariant
+qui les encadre : voir §9.5.
+
+### 9.5 Invariant de crash-consistency
+
+Dès qu'une association `request_id` → `run_id` a été persistée dans le
+ledger (§8), **aucune** redelivery ultérieure de ce `request_id` — MQTT
+QoS 1, retry applicatif, ou tout autre chemin — ne peut jamais produire un
+second `run_id`. Cette propriété est absolue, y compris si le processus
+d'admission ou le moteur métier crashe entre la persistance de l'association
+et la clôture de la transaction.
+
+Une entrée `admitted` orpheline doit être réconciliée (§9.4) ou rester
+bloquée en sécurité. Elle ne peut **jamais** être transformée en nouvelle
+admission par expiration de `expires_at` ou par toute autre logique de TTL :
+`expires_at` (§6) gouverne l'admission d'une **nouvelle** demande (§7), il
+ne requalifie jamais une demande déjà admise.
+
 ---
 
 ## 10. Terminaison transactionnelle
@@ -206,8 +304,18 @@ Produite par le §7. Aucun `run_id`, aucun verrou.
 | Verdict | Signification |
 |---|---|
 | `rejected_precondition` | Opération inconnue, payload malformé, ou hors vocabulaire fermé |
-| `rejected_stale` | Commande hors fenêtre de fraîcheur |
-| `rejected_busy` | Opération déjà en cours |
+| `rejected_stale` | Commande hors fenêtre de fraîcheur (`expires_at` dépassé ou contrainte temporelle NAS non satisfaite) |
+| `rejected_busy` | Opération déjà en cours (`request_id` inconnu du ledger) |
+| `rejected_conflict` | `request_id` déjà connu, présenté avec une `operation` ou des champs d'identité incompatibles avec la demande déjà enregistrée sous ce `request_id` |
+| `admission_unavailable` | Ledger d'idempotence (§8) illisible ou corrompu — l'admission ne peut évaluer aucune demande tant que la lecture n'est pas restaurée |
+
+**Nature distincte d'`admission_unavailable`.** Les quatre autres verdicts de
+cette famille sont produits après évaluation complète de la demande
+présentée : ils la refusent. `admission_unavailable` n'évalue rien — il
+signale que l'admission elle-même est hors d'état de décider, pour
+**toute** demande, indépendamment de son contenu. Il partage néanmoins la
+propriété structurelle de la famille (§7, invariant) : aucune transaction
+n'est ouverte, aucun `run_id` n'est attribué.
 
 ### 10.2 Famille résultat de transaction (dans transaction)
 
@@ -239,6 +347,16 @@ C51 :
 - Le verrou garantissant l'exclusion mutuelle intra-opération est une
   responsabilité NAS, réutilisant/durcissant les mécanismes déjà en place
   plutôt que d'en créer un second et incompatible.
+
+**Ce que ce contrat fixe, et ce qu'il ne fixe pas encore.** Le contrat fixe
+le **résultat** : une opération déjà en cours produit `rejected_busy`, sans
+`run_id` attribué et sans qu'aucun wrapper métier soit invoqué pour cette
+demande (§7 point 5). Il ne fige **pas** encore le mécanisme concret de
+coordination avec le verrou déjà en place (par ex. `flock`) — notamment un
+éventuel schéma probe-then-release — qui reste à démontrer au design
+d'implémentation. Cette coordination ne doit en aucun cas créer une seconde
+autorité de verrouillage concurrente de celle déjà en place : elle la
+réutilise ou la durcit, jamais ne la double.
 
 ---
 
@@ -335,4 +453,4 @@ contrat.
 
 ---
 
-*Fin du contrat — Socle transactionnel des commandes NAS Arsenal v1.0.0.*
+*Fin du contrat — Socle transactionnel des commandes NAS Arsenal v1.1.0.*
