@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Permettre à Home Assistant/Arsenal de demander au NAS, via MQTT, l'exécution des deux opérations métier existantes `AUDIT` et `RELEASE_DIFF`, sans fusionner leurs chaînes, sans big bang sur les tâches DSM actuelles, et sans jamais confondre la transaction de commande et le résultat métier qu'elle produit. |
 | **Domaine** | Transverse — dépôts `arsenal` et `arsenal-ha-backup-timeline` ; domaines Home Assistant `arsenal_self` (audit) et `arsenal_nas` (release_diff). |
-| **Statut** | **Ouvert (2026-09-08) — volet NAS livré, mergé et validé terrain bout-en-bout (2026-09-09).** Verrou RELEASE_DIFF (Lot 2), durcissement AUDIT + `run_id` corrélable (Lot 3), moteur d'admission transactionnelle (Lot 4 — `admission/bin/admission_core.py`) et listener MQTT NAS (identité dédiée `nas_admission`) livrés, mergés et **validés terrain** pour `AUDIT` et `RELEASE_DIFF`, y compris en concurrence inter-opérations — voir §12.2 « Preuves terrain NAS ». Contrat `nas_transactionnel.md` v1.2.1, vérifié conforme à l'état livré, **non modifié** par ce lot. **Lot 5 (backend Arsenal, pilote `AUDIT` seul) livré, déployé et validé terrain bout-en-bout** (2026-09-09, Home Assistant 2026.9.1) : génération des enveloppes `request_id`/`ts`/`expires_at`/`source`, publication MQTT, corrélation/diagnostic du résultat transactionnel — voir §12.3/§12.4. Preuve du lot fournie : `request_id`/`run_id` corrélés HA↔NAS et NAS↔HA, terminaison transactionnelle `completed`, `wrapper_rc=0`, durée ≈ 33 s, ancrage nettoyé, une seule exécution `AUDIT`, aucune reconnexion MQTT — résultat métier `ok` (0 anomalie) observé **séparément** sur `sensor.arsenal_self_audit_statut`, jamais déduit du verdict transactionnel. Listener MQTT NAS lancé pour cette preuve **manuellement au premier plan** puis arrêté proprement — **hébergement/supervision permanent du listener livré et validé terrain le même jour** (2026-09-09), voir la ligne « Mise à jour » suivante et §12.5. **Lot 6 (backend Arsenal, extension `RELEASE_DIFF`) — livré, déployé et validé terrain (2026-09-09).** Prolonge strictement le patron du Lot 5 : helper transactionnel dédié `input_text.nas_admission_req_release_diff` (jamais partagé avec le helper AUDIT), `script.nas_admission_demander_release_diff` (émission `operation: "RELEASE_DIFF"` fixe), diagnostic dédié `sensor.nas_admission_release_diff_etat_transaction` — voir §12.6/§12.7. Réutilise sans modification le sensor MQTT brut et la couche de corrélation communs (§13.1). AUDIT (Lot 5) **inchangé** par ce lot (zéro octet modifié dans ses fichiers runtime). Preuve terrain fournie (2026-09-09) : `request_id`/`run_id` corrélés HA↔NAS et NAS↔HA, admission ≈ 1 s après `ts`, terminaison transactionnelle `completed`, `wrapper_rc=0`, durée totale `ts`→terminal ≈ 3 min 23 s, ancrage nettoyé, une seule exécution, aucune reconnexion MQTT — résultat métier `ok` observé **séparément** sur `sensor.arsenal_nas_release_diff_statut`, jamais déduit du verdict transactionnel — voir §12.7. Chantier **non clos** : aucune UI Lovelace n'existe (Lot 7, non commencé), preuves de replay/`BUSY`/crash-reprise et dette ACL C52 restent ouvertes — voir §12.1/§12.5/§12.6/§12.7. |
+| **Statut** | **Ouvert (2026-09-08) — volet NAS livré, mergé et validé terrain bout-en-bout (2026-09-09).** Verrou RELEASE_DIFF (Lot 2), durcissement AUDIT + `run_id` corrélable (Lot 3), moteur d'admission transactionnelle (Lot 4 — `admission/bin/admission_core.py`) et listener MQTT NAS (identité dédiée `nas_admission`) livrés, mergés et **validés terrain** pour `AUDIT` et `RELEASE_DIFF`, y compris en concurrence inter-opérations — voir §12.2 « Preuves terrain NAS ». Contrat `nas_transactionnel.md` v1.2.1, vérifié conforme à l'état livré, **non modifié** par ce lot. **Lot 5 (backend Arsenal, pilote `AUDIT` seul) livré, déployé et validé terrain bout-en-bout** (2026-09-09, Home Assistant 2026.9.1) : génération des enveloppes `request_id`/`ts`/`expires_at`/`source`, publication MQTT, corrélation/diagnostic du résultat transactionnel — voir §12.3/§12.4. Preuve du lot fournie : `request_id`/`run_id` corrélés HA↔NAS et NAS↔HA, terminaison transactionnelle `completed`, `wrapper_rc=0`, durée ≈ 33 s, ancrage nettoyé, une seule exécution `AUDIT`, aucune reconnexion MQTT — résultat métier `ok` (0 anomalie) observé **séparément** sur `sensor.arsenal_self_audit_statut`, jamais déduit du verdict transactionnel. Listener MQTT NAS lancé pour cette preuve **manuellement au premier plan** puis arrêté proprement — **hébergement/supervision permanent du listener livré et validé terrain le même jour** (2026-09-09), voir la ligne « Mise à jour » suivante et §12.5. **Lot 6 (backend Arsenal, extension `RELEASE_DIFF`) — livré, déployé et validé terrain (2026-09-09).** Prolonge strictement le patron du Lot 5 : helper transactionnel dédié `input_text.nas_admission_req_release_diff` (jamais partagé avec le helper AUDIT), `script.nas_admission_demander_release_diff` (émission `operation: "RELEASE_DIFF"` fixe), diagnostic dédié `sensor.nas_admission_release_diff_etat_transaction` — voir §12.6/§12.7. Réutilise sans modification le sensor MQTT brut et la couche de corrélation communs (§13.1). AUDIT (Lot 5) **inchangé** par ce lot (zéro octet modifié dans ses fichiers runtime). Preuve terrain fournie (2026-09-09) : `request_id`/`run_id` corrélés HA↔NAS et NAS↔HA, admission ≈ 1 s après `ts`, terminaison transactionnelle `completed`, `wrapper_rc=0`, durée totale `ts`→terminal ≈ 3 min 23 s, ancrage nettoyé, une seule exécution, aucune reconnexion MQTT — résultat métier `ok` observé **séparément** sur `sensor.arsenal_nas_release_diff_statut`, jamais déduit du verdict transactionnel — voir §12.7. **Lot 7 (UI Lovelace) — livré en code, non déployé, non testé terrain (2026-09-09).** Nouvelle section « Commandabilité NAS (C51) » dans `18_lovelace/dashboards/systeme/nas.yaml`, dérivée exclusivement de la documentation UI existante (`ui/pattern_dashboard.md`, `ui/socle_ui/02_action.md`, `ui/socle_ui/07_status.md`, `ui/couleurs/`) et des patrons déjà en usage (`carte_action_arrosage_script`, `arsenal_self_audit_status_card`) : deux boutons de demande confirmés (`script.nas_admission_demander_audit`/`_release_diff`, aucune publication MQTT directe), deux cartes de diagnostic transactionnel (`sensor.nas_admission_audit_etat_transaction`/`_release_diff_etat_transaction`, jamais colorées en vert sur `completed`), et deux cartes de résultat métier strictement séparées (réutilisation de `arsenal_self_audit_status_card` pour AUDIT, nouvelle `arsenal_nas_release_diff_status_card` pour RELEASE_DIFF — sans binary_sensor de fraîcheur/erreur inventé, `arsenal_nas.md` §5.3 n'en déclarant aucun). Aucun backend Lots 5/6 modifié, aucune automation créée, aucun ID d'automatisation inventé (§14) — voir §12.8. Chantier **non clos** : preuve d'usage réel Lovelace absente, preuves de replay/`BUSY`/crash-reprise et dette ACL C52 restent ouvertes — voir §12.1/§12.5/§12.6/§12.7/§12.8. |
 | **Priorité** | P2 — aucun risque fonctionnel actuel ; enjeu d'architecture et de gouvernance documentaire avant toute commandabilité. |
 | **Ouvert le** | 2026-09-08. |
 | **Registre** | Chantier **C51** — ① Actifs, cf. [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
@@ -15,6 +15,7 @@
 | **Mise à jour** | 2026-09-09 — **Lot documentaire uniquement : preuve terrain de la supervision permanente du listener NAS fournie** — architecture DSM Task Scheduler (5 minutes, 00:00–23:55) → `admission/bin/mqtt_listener_watchdog.sh` → `admission/bin/mqtt_listener.py`, tâche `Arsenal - MQTT Listener Watchdog (C51)`, dépôt NAS canonique `/volume1/Backups_HA/ha_backup_timeline`, aucun secret inline. Cycle no-op sans doublon (RC0, même PID), fd lock enfant non hérité, `--stop` et réactivation validés terrain, relance automatique après disparition simulée en 4 min 46 s, instance unique laissée active en fin de preuve, connexion broker établie, abonnement `arsenal/nas/admission/command`, aucun secret dupliqué. Transaction `AUDIT` rejouée avec ce listener permanent (`request_id` `0de32d59-262a-49bf-9d88-2f2214f1a5f4`, `run_id` `02a3d516-883f-40ff-a19a-708e48081033`, `completed`/`wrapper_rc=0`, corrélation bidirectionnelle, aucune reconnexion MQTT pendant la transaction) ; résultat métier `ok`/0 anomalie/539 observations patrimoniales **observé séparément**, jamais assimilé au verdict transactionnel. **Hébergement/supervision permanent du listener NAS désormais livré et validé terrain** — seul point non livré restant du volet NAS. Dette mineure d'observabilité consignée (`runtime/mqtt_listener.log` bufferisé tant que le process tourne, non bloquant, aucun chantier ouvert). Aucun runtime Arsenal ni NAS modifié par cette mise à jour documentaire ; contrat `nas_transactionnel.md` corrigé uniquement sur son encart d'état d'implémentation (aucune clause normative touchée). `RELEASE_DIFF` (Lot 6) et UI (Lot 7) toujours non commencés ; dette ACL C52 inchangée. Voir §11.A6/§12.5. |
 | **Mise à jour** | 2026-09-09 — **Lot 6, extension `RELEASE_DIFF`, livré côté configuration Home Assistant — code seul, non déployé, non testé terrain.** Prolonge le patron du Lot 5 sans le modifier : `input_text.nas_admission_req_release_diff` (helper dédié, jamais partagé avec le helper AUDIT), `script.nas_admission_demander_release_diff` (precheck, `request_id`, ancrage, `ts`/`expires_at`/`source`, `mqtt.publish` QoS 1 `retain=false` sur le topic commun `arsenal/nas/admission/command`, attente corrélée `request_id`+`operation=="RELEASE_DIFF"`, cleanup systématique), `sensor.nas_admission_release_diff_etat_transaction` (diagnostic filtré/latché sur `RELEASE_DIFF`, symétrique du diagnostic AUDIT). Sensor MQTT brut et couche de corrélation communs **réutilisés sans modification fonctionnelle** (deux commentaires d'en-tête corrigés uniquement, une mention devenue factuellement inexacte du seul consommateur AUDIT). Fenêtres temporelles (`expires_at` 60 s, timeout local HA 15 min) **délibérément identiques** à AUDIT, après audit documentaire des caractéristiques réelles de `release_diff.py` (aucune durée nominale contractualisée ; seul point de mesure terrain disponible, §12.2, montre RELEASE_DIFF achevé 36 s avant AUDIT) — justification consignée dans l'en-tête du script, à réviser après preuve terrain Lot 6 dédiée. AUDIT (Lot 5) **inchangé** (diff nul sur ses fichiers runtime, vérifié). Vérificateur statique ajouté (`scripts/arsenal_contracts/verify_nas_admission_transactionnel_lot6.py`, non câblé à `contracts_all.yml`/au registre de couverture CI — hors périmètre strict de ce lot, cf. §12.6) : preuve négative de détection (mutation injectée puis retirée). Aucun contrat modifié, aucune UI Lovelace, aucune automation planifiée, aucun ID d'automatisation HA inventé (§14 chantier). Voir §12.1/§12.6. |
 | **Mise à jour** | 2026-09-09 — **Lot documentaire uniquement : preuve terrain du Lot 6 `RELEASE_DIFF` fournie** — `script.nas_admission_demander_release_diff` déployé et exécuté sur le clone runtime réellement exécuté par Home Assistant (`/config`, fast-forward propre `c01fdcd4`→`4e0059d1` jusqu'au merge de la PR #817 ; un premier fast-forward sur un clone Windows distinct n'était pas le clone exécuté par HA et n'a donc valu aucune preuve) : `request_id` `c49d02fa-1588-46e7-8e4f-27d9a26cf416`, `run_id` `c70c093f-fd37-4889-902e-2ff4310c13bf`, `operation` `RELEASE_DIFF`, admission reçue ≈ 1 s après `ts` (marge restante avant `expires_at` ≈ 59 s, sans confondre l'admission elle-même avec une durée d'exécution), terminaison transactionnelle `completed`, `wrapper_rc` `0`, durée totale `ts`→terminal ≈ 3 min 23 s — **`expires_at` borne l'admission de la demande, pas la durée totale d'une exécution déjà admise** : cette preuve montre précisément une admission dans la fenêtre contractuelle suivie d'une exécution poursuivie au-delà de `expires_at` sans anomalie (contrat §6, §9.5). Corrélation `request_id`/`run_id` bidirectionnelle HA↔NAS vérifiée, ancrage nettoyé, une seule exécution `RELEASE_DIFF`, aucune reconnexion MQTT pendant la transaction (listener permanent, même PID avant/après). Résultat métier observé **séparément** sur `sensor.arsenal_nas_release_diff_derniere_execution`/`sensor.arsenal_nas_release_diff_statut` (`ok`) : `transaction_verdict=completed` n'est à aucun moment assimilé à ce résultat. Aucun runtime Arsenal ni NAS modifié par cette mise à jour ; contrat `nas_transactionnel.md` corrigé uniquement sur son encart d'état d'implémentation (aucune clause normative touchée). UI Lovelace (Lot 7) toujours non commencée, non ouverte par ce lot ; preuves de replay/`BUSY`/crash-reprise et dette ACL C52 inchangées. Voir §12.1/§12.7. |
+| **Mise à jour** | 2026-09-09 — **Lot 7, UI Lovelace, livré en code — non déployé, non testé terrain.** Nouvelle section « Commandabilité NAS (C51) » ajoutée à `18_lovelace/dashboards/systeme/nas.yaml` (dashboard NAS existant, aucune nouvelle page créée — `arsenal_self`/`arsenal_nas` restent des contrats système/transverses sans hub de domaine, `navigation/carte_domaines.md` §3/§6) : deux boutons de demande confirmés (`carte_action_nas_admission_demander`, satellite de `socle_action_script_confirme`, appelant exclusivement `script.turn_on` sur `script.nas_admission_demander_audit`/`_release_diff` — aucune publication MQTT, aucun `request_id` généré côté UI), deux cartes de diagnostic transactionnel (`carte_nas_admission_etat_transaction`, satellite de `socle_status_label`, vocabulaire fermé `nas_transactionnel.md` §10 traduit sans jamais colorer `completed` en vert ni l'assimiler à un succès métier), deux cartes de résultat métier strictement séparées (réutilisation de `arsenal_self_audit_status_card` pour AUDIT, nouvelle `arsenal_nas_release_diff_status_card` pour RELEASE_DIFF, construite sur les seules entités `arsenal_nas.md` §5.1, sans binary_sensor de fraîcheur/erreur inventé — §5.3 du même contrat). Conception dérivée exclusivement de la documentation UI existante (`ui/pattern_dashboard.md`, `ui/socle_ui/02_action.md`/`07_status.md`, `ui/couleurs/`) et des patrons déjà en usage dans le dépôt (`carte_action_arrosage_script`, `arsenal_self_audit_status_card`) — aucune convention inventée hors documentation. Aucun backend Lots 5/6 modifié (diff nul vérifié), aucune automation créée, aucun ID d'automatisation inventé (§14), aucun contrat NAS modifié. Voir §12.1/§12.8. |
 
 ---
 
@@ -418,6 +419,52 @@ exécuté par Home Assistant (`/config`).
   ce lot. C51 n'est pas clos : UI (Lot 7) reste non commencée, preuves de
   replay/`BUSY`/crash-reprise et dette ACL C52 restent ouvertes.
 
+### A9. Lot 7 — UI Lovelace (2026-09-09)
+
+Troisième lot runtime **Arsenal** (dépôt `arsenal`) de ce chantier — UI
+uniquement, aucun backend touché (Lots 5/6 inchangés).
+
+- Le présent document — Statut, `Mise à jour` (nouvelle ligne), §11.A9
+  (nouveau), §12 (tableau, ligne Lot 7), §12.1 (paragraphe « Non livré »),
+  présent §12.8 (nouveau).
+- `18_lovelace/dashboards/systeme/nas.yaml` — nouvelle section
+  « 🗂️ Commandabilité NAS (C51) » : deux boutons de demande confirmés,
+  deux cartes de diagnostic transactionnel, deux cartes de résultat
+  métier. Aucune autre section modifiée.
+- `19_button_card_templates/40_dashboards/nas/10_action/carte_action_nas_admission_demander.yaml`
+  *(nouveau)* — satellite de `socle_action_script_confirme`, générique
+  AUDIT/RELEASE_DIFF ; appelle exclusivement `script.turn_on` sur le
+  script backend désigné par l'instance.
+- `19_button_card_templates/40_dashboards/nas/20_diagnostic_transaction/carte_nas_admission_etat_transaction.yaml`
+  *(nouveau)* — satellite de `socle_status_label`, générique
+  AUDIT/RELEASE_DIFF ; affiche le vocabulaire transactionnel fermé
+  (`nas_transactionnel.md` §10) sans jamais lire une entité de résultat
+  métier pour se conclure.
+- `19_button_card_templates/40_dashboards/system/20_supervision/arsenal_nas_release_diff_status_card.yaml`
+  *(nouveau)* — satellite direct de `arsenal_self_audit_status_card`
+  (même socle) pour le résultat métier RELEASE_DIFF
+  (`sensor.arsenal_nas_release_diff_statut`), sans binary_sensor de
+  fraîcheur/erreur inventé (`arsenal_nas.md` §5.3).
+- `19_button_card_templates/40_dashboards/nas/README.md` — deux
+  familles UI ajoutées (action, diagnostic transactionnel) pour rester
+  factuel vis-à-vis des deux fichiers ci-dessus.
+- `contrats/nas_transactionnel.md` — **encart d'état d'implémentation
+  corrigé uniquement** (la phrase affirmant qu'aucune UI Lovelace
+  n'était livrée était devenue factuellement fausse) ; aucune clause
+  normative (§1-§17), aucun vocabulaire, aucun topic, aucune sémantique
+  modifiés ; aucune renumérotation ; version du contrat inchangée
+  (même règle qu'aux lots A5/A6/A8).
+- `10_scripts/system/nas_admission_demander_audit.yaml`,
+  `10_scripts/system/nas_admission_demander_release_diff.yaml`,
+  `12_template_sensors/system/nas_admission/**`,
+  `04_input_texts/system/nas_admission/**` — **non modifiés** (Lots 5/6
+  intégralement inchangés ; ce lot ne fait que les appeler/les lire
+  depuis l'UI).
+- Aucun contrat NAS modifié, aucune automation créée, aucun ID
+  d'automatisation HA inventé (§14 chantier), aucune publication MQTT
+  directe depuis Lovelace. Aucun déploiement, aucune preuve d'usage réel
+  fournie par ce lot (voir §12.8).
+
 ### B. Référencés, non modifiés
 
 `outils_externes/nas_arsenal/audit/audit.md`, `audit/mqtt.md`,
@@ -463,7 +510,7 @@ périmètre).
 | 4 | `arsenal-ha-backup-timeline` | Admission NAS minimale, une seule opération pilote | Lots 1–3 | Commande MQTT manuelle → run_id corrélé → résultat identique à un déclenchement DSM | Divergence avec le comportement DSM existant | Concurrence avec les tâches DSM si verrou non partagé |
 | 5 | `arsenal` | Backend Arsenal — émission de commande | Lot 4 validé terrain | Appel de test hors UI | Vocabulaire plus large que le contrat | Couplage prématuré à une UI non stabilisée |
 | 6 | `arsenal-ha-backup-timeline` + `arsenal` | Extension à la seconde opération | Lot 5 | Idem Lot 4 | Verrou partagé non justifié entre AUDIT et RELEASE_DIFF | Tentation de fusionner les deux chaînes |
-| 7 | `arsenal` | UI Lovelace (bouton) | Lots 5–6 | Usage réel | Le bouton porte lui-même une logique MQTT | Régression backend décide/UI rend |
+| 7 | `arsenal` | UI Lovelace (bouton) | Lots 5–6 | Usage réel *(non fournie — code livré, non déployé, voir §12.8)* | Le bouton porte lui-même une logique MQTT *(écarté — voir §12.8)* | Régression backend décide/UI rend *(écarté par construction — voir §12.8)* |
 | 8 | NAS (hors Git) + doc | Décommissionnement conditionnel des tâches DSM | Lots 4–7 + observation terrain | N jours sans écart ancien/nouveau mécanisme | Toute perte de garantie constatée | Décommissionnement prématuré |
 | 9 | `arsenal` + `arsenal-ha-backup-timeline` | Clôture documentaire | Lot 8 | Revue documentaire | — | Dette documentaire si sauté |
 
@@ -486,7 +533,7 @@ tant que la preuve terrain correspondante n'existe pas.
 | 4 — admission NAS minimale | **Livré, mergé, testé ; preuve du lot fournie terrain (2026-09-09)** | `admission/bin/admission_core.py` mergé : ledger persistant, verrou ledger court, fail-closed si ledger indisponible/corrompu, validation des demandes, opérations V1 (`AUDIT`/`RELEASE_DIFF`), `request_id` durable et identité immuable (`operation`/`ts`/`expires_at`/`source`), verdicts `rejected_precondition`/`rejected_stale`/`rejected_conflict`/`admission_unavailable`/`rejected_busy`, `run_id` UUID4 avec mapping durable request_id→run_id, persistance `admitted` avant wrapper, déduplication durable (aucune réexécution d'un `request_id` connu, replay terminal), réconciliation des `admitted`, terminaison `completed`/`technical_failure`, handoff du vrai verrou métier via fd dynamique hérité (conservé jusqu'à la fin réelle des descendants), validation fail-closed du fd reçu par les wrappers, compatibilité legacy préservée, concurrence même process et multi-process testée en dépôt. **Preuve du lot** (« commande MQTT manuelle → run_id corrélé → résultat identique à un déclenchement DSM ») **fournie terrain** pour `AUDIT` et `RELEASE_DIFF`, via listener MQTT NAS opérationnel (identité `nas_admission`) — voir §12.2. La commande reste **manuelle** (backend Arsenal d'émission, Lot 5, non livré) : la preuve porte sur l'admission/exécution NAS, pas sur une émission Arsenal réelle. |
 | 5 — backend Arsenal (émission) | **Livré, déployé, validé terrain, pilote `AUDIT` seul (2026-09-09)** | Génération côté Arsenal des enveloppes `request_id`/`ts`/`expires_at`/`source`, publication MQTT `arsenal/nas/admission/command` (QoS 1, `retain=false`), attente et corrélation du résultat transactionnel, diagnostic AUDIT dédié : livrés en configuration Home Assistant (voir §12.3) et **exécutés en conditions réelles sur Home Assistant 2026.9.1** (voir §12.4, puis rejoué avec le listener permanent au §12.5) — `request_id`/`run_id` corrélés, `completed`/`wrapper_rc=0`, ancrage nettoyé, exécution unique, aucune reconnexion MQTT, résultat métier `ok` observé séparément. `RELEASE_DIFF` explicitement hors périmètre de ce lot. Preuve du lot (« appel de test hors UI ») **fournie**. |
 | 6 — extension seconde opération | **Livré, déployé, validé terrain (2026-09-09)** | Helper d'ancrage, script exécutif et diagnostic dédiés à `RELEASE_DIFF`, prolongeant strictement le patron du Lot 5 sans le modifier — livrés en configuration Home Assistant (voir §12.6) puis **exécutés en conditions réelles** sur le clone runtime `/config` (voir §12.7) — `request_id`/`run_id` corrélés, `completed`/`wrapper_rc=0`, admission ≈ 1 s après `ts`, durée totale ≈ 3 min 23 s, ancrage nettoyé, exécution unique, aucune reconnexion MQTT, résultat métier `ok` observé séparément. AUDIT (Lot 5) inchangé (diff nul, vérifié). Preuve du lot (« idem lot 4 ») **fournie**. |
-| 7 — UI Lovelace | Non commencé | Aucune UI de commande NAS livrée. |
+| 7 — UI Lovelace | **Livré (code), non déployé, non testé terrain (2026-09-09)** | Section « Commandabilité NAS (C51) » ajoutée à `18_lovelace/dashboards/systeme/nas.yaml` (demande AUDIT/RELEASE_DIFF, état transactionnel, résultat métier) — voir §12.8. Aucun usage réel prouvé. |
 | 8 — décommissionnement DSM | Non commencé | Aucun retrait ni rationalisation des anciens déclenchements DSM. |
 | 9 — clôture documentaire | Non applicable | Chantier ouvert — aucune clôture. |
 
@@ -498,10 +545,11 @@ simulée en 4 min 46 s, instance unique laissée active. Ce point n'est donc
 plus à recenser dans la liste « Non livré » qui suit.
 
 Non livré, à ne pas confondre avec ce qui précède (rappel exhaustif) : ACL
-broker par topic (dette C52, acceptée pour la V1 — voir §12.2/§13) ; UI de
-commande NAS (Lot 7, **non commencé**) ; déploiement du noyau d'admission
-validé comme remplacement définitif des tâches DSM legacy (§9) ; preuves
-terrain de replay, de `BUSY` même-opération et de crash-reprise ; retrait ou
+broker par topic (dette C52, acceptée pour la V1 — voir §12.2/§13) ; usage
+réel de l'UI de commande NAS (Lot 7, **livré en code, non déployé, non
+testé terrain** — voir §12.8) ; déploiement du noyau d'admission validé
+comme remplacement définitif des tâches DSM legacy (§9) ; preuves terrain de
+replay, de `BUSY` même-opération et de crash-reprise ; retrait ou
 rationalisation des anciens déclenchements DSM ; clôture C51.
 
 ---
@@ -860,9 +908,96 @@ backend Arsenal), jusqu'ici livré en code seul (§12.6), est désormais
 Home Assistant.
 
 **Non livré par cette preuve, à ne pas déduire de ce qui précède :** UI
-Lovelace (Lot 7, non commencé) ; preuves de `BUSY` même-opération et de
-crash-reprise au niveau du Lot 6 ; câblage CI du vérificateur statique dans
-le registre de couverture ; dette ACL C52 (inchangée) ; clôture C51.
+Lovelace (Lot 7, non commencé à cette date) ; preuves de `BUSY`
+même-opération et de crash-reprise au niveau du Lot 6 ; câblage CI du
+vérificateur statique dans le registre de couverture ; dette ACL C52
+(inchangée) ; clôture C51.
+
+---
+
+### 12.8 Lot 7 — UI Lovelace (2026-09-09)
+
+Troisième lot runtime livré côté dépôt `arsenal`, portant exclusivement sur
+l'interface Lovelace — aucun backend touché (Lots 5/6, §12.3/§12.6,
+strictement inchangés ; diff nul vérifié sur `10_scripts/system/nas_admission_*`,
+`12_template_sensors/system/nas_admission/**`,
+`04_input_texts/system/nas_admission/**`).
+
+**Audit préalable (§4/§14 chantier, §12 contrat — dérivation documentaire
+obligatoire).** Avant toute écriture, consultation de la documentation UI
+existante — [`ui/pattern_dashboard.md`](../../../ui/pattern_dashboard.md)
+(structure canonique, géométrie des grilles `R-LL-GRID-1`/`R-LL-GRID-2`),
+[`ui/socle_ui/02_action.md`](../../../ui/socle_ui/02_action.md) (socle
+`socle_action_script_confirme` — confirmation modale obligatoire, seul
+socle Action à l'embarquer nativement),
+[`ui/socle_ui/07_status.md`](../../../ui/socle_ui/07_status.md)/`09_diagnostic.md`,
+[`ui/couleurs/`](../../../ui/couleurs/README.md) (palette contractuelle,
+traitement `unknown`/`unavailable`) — et de l'UI déjà instanciée :
+`18_lovelace/dashboards/systeme/nas.yaml` (section « Commandes système »
+existante, patron de confirmation déjà en usage pour des actions NAS),
+`19_button_card_templates/40_dashboards/system/20_supervision/arsenal_self_audit_status_card.yaml`
+(carte de résultat métier AUDIT déjà livrée au Lot 5, jamais consommée
+jusqu'ici par aucun dashboard NAS),
+`19_button_card_templates/10_generiques/action/carte_action_standard.yaml`
+et `19_button_card_templates/40_dashboards/arrosage/10_action/carte_action_arrosage_script.yaml`
+(patron « demander un script, confirmation obligatoire »). Aucune
+convention n'a été inventée hors de ces sources : la confirmation modale
+sur les deux boutons de demande reproduit un patron **omniprésent** dans le
+dépôt pour tout déclenchement de script (arrosage, vacances, bonne nuit,
+etc.), jamais un réflexe de ce chantier.
+
+**Emplacement retenu.** `18_lovelace/dashboards/systeme/nas.yaml` — le
+dashboard NAS existant, seul point déjà navigable pour toute commande NAS
+(section « Commandes système » y existe déjà pour redémarrage/extinction).
+`arsenal_nas` et `arsenal_self` sont des contrats système/transverses
+**sans hub de domaine dédié** (`navigation/carte_domaines.md` §3/§6) : aucune
+nouvelle page ni aucun nouveau dashboard n'a donc été créé — un ajout de
+section à une page existante satisfait strictement « enrichir une page
+existante plutôt qu'en créer une nouvelle » (consigne d'audit préalable).
+
+**Livré :**
+
+- Deux boutons de demande (`carte_action_nas_admission_demander`, satellite
+  de `socle_action_script_confirme`) : `script.nas_admission_demander_audit`
+  et `script.nas_admission_demander_release_diff`, chacun avec confirmation
+  modale dédiée. Chaque bouton appelle exclusivement `script.turn_on` sur
+  le script backend désigné — aucun payload MQTT construit ici, aucun
+  `request_id`, aucune donnée métier libre (chantier §4 : « Backend Arsenal
+  décide, UI Lovelace rend »).
+- Deux cartes de diagnostic transactionnel
+  (`carte_nas_admission_etat_transaction`, satellite de
+  `socle_status_label`) : lisent respectivement
+  `sensor.nas_admission_audit_etat_transaction` et
+  `sensor.nas_admission_release_diff_etat_transaction`. Le vocabulaire
+  transactionnel fermé (`admitted`/`completed`/`technical_failure`, famille
+  rejet, `sans_donnee`) y est traduit sans jamais assimiler `completed` à
+  un succès métier : `admitted`/`completed` sont rendus dans la même
+  couleur bleue (« information/technique », `02_palette.md`), jamais en
+  vert (réservé à un état métier favorable) ; le label renvoie
+  explicitement vers l'entité de résultat métier séparée.
+- Deux cartes de résultat métier, strictement disjointes des précédentes :
+  réutilisation de `arsenal_self_audit_status_card` (déjà livrée au Lot 5)
+  pour AUDIT, et nouvelle `arsenal_nas_release_diff_status_card` (satellite
+  direct du même socle) pour RELEASE_DIFF — construite sur les seules
+  entités déclarées par `arsenal_nas.md` §5.1 (`ok`/`partial`/`error`),
+  sans inventer de binary_sensor de fraîcheur/erreur que ce contrat
+  déclare explicitement absent en V1 (`arsenal_nas.md` §5.3).
+
+**Invariants respectés par construction :** aucune publication MQTT depuis
+Lovelace ; aucune reconstruction de payload ; aucun `request_id` généré
+côté UI ; aucun paramètre métier libre exposé ; aucune gestion du `BUSY`
+dans la carte (le NAS reste seul autorité, §4/§7 contrat) ; AUDIT et
+RELEASE_DIFF restent deux instances distinctes des mêmes templates
+génériques, jamais fusionnées (§14 chantier) ; aucun ID d'automatisation
+inventé ; aucune automation créée ; aucun contrat NAS modifié ; aucun
+fichier backend des Lots 5/6 touché.
+
+**Non fourni par ce lot :** déploiement sur Home Assistant ; usage réel
+(clic effectif sur les deux boutons, observation du rendu terrain des
+couleurs et labels) ; preuve de `BUSY`/replay/crash-reprise au niveau de
+l'UI ; dette ACL C52 (inchangée) ; clôture C51 — les critères du §15
+restent partiellement ouverts tant que la preuve terrain de ce lot n'est
+pas fournie.
 
 ---
 

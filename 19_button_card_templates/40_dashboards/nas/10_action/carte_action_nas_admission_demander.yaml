@@ -1,0 +1,75 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     NAS Admission — Demander une opération (C51 Lot 7)
+#
+# 🔖 NATURE  : carte_action
+# 🖼️ TYPE UI : action
+# 🎚️ CONFIANCE : elevee
+# ==========================================================
+# 🎯 RÔLE
+#   Déclencher, après confirmation, l'un des scripts backend
+#   dédiés au socle transactionnel NAS Admission
+#   (contrats/nas_transactionnel.md, chantier C51) :
+#   script.nas_admission_demander_audit ou
+#   script.nas_admission_demander_release_diff.
+#
+# 🧩 PÉRIMÈTRE
+#   - Déclenchement explicite d'action backend uniquement
+#   - Aucune publication MQTT, aucun request_id, aucun
+#     payload construits ici — la carte appelle uniquement
+#     script.turn_on sur le script backend désigné par
+#     `entity` (chantier C51 §4 : « Backend Arsenal décide,
+#     UI Lovelace rend »)
+#   - Aucune gestion du BUSY ni de la concurrence : le NAS
+#     reste seul autorité d'admission (contrat §4/§7) ; cette
+#     carte ne fait qu'exprimer une intention utilisateur
+#   - Satellite générique : AUDIT et RELEASE_DIFF restent deux
+#     instances distinctes de ce même template, jamais fusionnées
+#     (chantier C51 §14 — aucune fusion des chaînes)
+#
+# 🔗 DÉPENDANCES
+#   Appelle  : script.turn_on sur `entity` (le script backend
+#              d'émission désigné par l'instance)
+#   Template : socle_action_script_confirme
+#
+# ⚠️ CONTRAINTES
+#   - Confirmation modale obligatoire avant déclenchement
+#     (texte fourni par variables.confirmation) — convention
+#     déjà appliquée à tout déclenchement de script Arsenal
+#     (carte_action_arrosage_script, carte_vacances_demande_manuelle)
+#   - Ne redéfinit ni couleur, ni state mapping, ni show_* du socle
+#   - Icône et nom fixés par l'instance (AUDIT / RELEASE_DIFF diffèrent)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_action_nas_admission_demander
+#     entity: script.nas_admission_demander_audit
+#     name: Demander AUDIT
+#     icon: mdi:clipboard-search-outline
+#     variables:
+#       confirmation: "Demander l'exécution de AUDIT au NAS ?"
+#
+# 🚫 INTERDITS
+#   - Déclenchement implicite ou automatique
+#   - Logique métier locale
+#   - Publier un message MQTT depuis cette carte
+#   - Désactiver l'action sur la base d'un état transactionnel
+#     (le NAS gère seul le BUSY — chantier C51 §14)
+#
+# 🔗 SATELLITE DE : socle_action_script_confirme
+# ==========================================================
+
+carte_action_nas_admission_demander:
+  template: socle_action_script_confirme
+
+  tap_action:
+    action: call-service
+    service: script.turn_on
+    confirmation:
+      text: >
+        [[[
+          return variables?.confirmation
+            || "Confirmer cette demande au NAS ?";
+        ]]]
+    service_data:
+      entity_id: '[[[ return entity.entity_id ]]]'

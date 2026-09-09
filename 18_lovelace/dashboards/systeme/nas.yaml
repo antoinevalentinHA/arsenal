@@ -270,6 +270,87 @@ views:
                       icon: mdi:alert-octagram
 
           # ==================================================
+          # 🗂️ COMMANDABILITÉ NAS (C51)
+          # --------------------------------------------------
+          # Demande explicite des deux opérations métier existantes
+          # AUDIT et RELEASE_DIFF, via les scripts backend Arsenal
+          # dédiés (contrats/nas_transactionnel.md,
+          # audits/04_chantiers/transverses/c51_commandabilite_nas.md).
+          # Aucune logique MQTT ici : chaque carte appelle uniquement
+          # un script backend existant (§4 chantier — « Backend
+          # Arsenal décide, UI Lovelace rend »). Le NAS reste seul
+          # autorité d'admission, d'exécution et de résultat.
+          #
+          # Trois plans strictement distincts, jamais fusionnés :
+          #   - action        : déclencher une demande ;
+          #   - transaction   : verdict d'admission/exécution NAS
+          #                     (nas_transactionnel.md §12 — ne dit
+          #                     JAMAIS le résultat métier) ;
+          #   - résultat métier : arsenal_self (AUDIT) / arsenal_nas
+          #                     (RELEASE_DIFF), seules autorités de
+          #                     leur propre verdict.
+          # AUDIT et RELEASE_DIFF restent deux chaînes indépendantes
+          # (chantier C51 §14 — aucune fusion).
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - type: custom:button-card
+                template: section_header
+                name: 🗂️ Commandabilité NAS (C51)
+
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: carte_action_nas_admission_demander
+                    entity: script.nas_admission_demander_audit
+                    name: Demander AUDIT
+                    icon: mdi:clipboard-search-outline
+                    variables:
+                      confirmation: >-
+                        Demander l'exécution de AUDIT au NAS ?
+
+                  - type: custom:button-card
+                    template: carte_action_nas_admission_demander
+                    entity: script.nas_admission_demander_release_diff
+                    name: Demander RELEASE_DIFF
+                    icon: mdi:file-compare
+                    variables:
+                      confirmation: >-
+                        Demander l'exécution de RELEASE_DIFF au NAS ?
+
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: carte_nas_admission_etat_transaction
+                    entity: sensor.nas_admission_audit_etat_transaction
+                    name: Transaction AUDIT
+                    variables:
+                      resultat_metier_hint: sensor.arsenal_self_audit_statut
+
+                  - type: custom:button-card
+                    template: carte_nas_admission_etat_transaction
+                    entity: sensor.nas_admission_release_diff_etat_transaction
+                    name: Transaction RELEASE_DIFF
+                    variables:
+                      resultat_metier_hint: sensor.arsenal_nas_release_diff_statut
+
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: arsenal_self_audit_status_card
+
+                  - type: custom:button-card
+                    template: arsenal_nas_release_diff_status_card
+
+          # ==================================================
           # ⚙️ COMMANDES SYSTÈME
           # ==================================================
           - type: grid

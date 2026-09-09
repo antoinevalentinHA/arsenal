@@ -1,0 +1,136 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Arsenal NAS Release Diff — Statut synthétique (C51 Lot 7)
+#
+# 🔖 NATURE  : carte_metier
+# 🖼️ TYPE UI : statut
+# 🎚️ CONFIANCE : elevee
+# ==========================================================
+# 🎯 RÔLE
+#   Visualiser le résultat métier RELEASE_DIFF publié par le
+#   domaine arsenal_nas (contrats/arsenal_nas.md) — jamais le
+#   verdict transactionnel NAS Admission (contrats/nas_transactionnel.md
+#   §12 : « completed ne dit rien du résultat métier »).
+#   Satellite direct de arsenal_self_audit_status_card (même socle,
+#   même grammaire visuelle) — aucun nouveau paradigme introduit.
+#
+# 🧩 PÉRIMÈTRE
+#   - Affichage et interprétation visuelle uniquement
+#   - Aucune logique métier exécutive
+#   - Aucune autorité système
+#   - N'expose QUE les entités déclarées par arsenal_nas.md §5.1 :
+#     ce domaine ne déclare explicitement AUCUN binary_sensor
+#     d'erreur ni de fraîcheur (arsenal_nas.md §5.3 — « entités
+#     explicitement absentes en V1 »). Cette carte n'invente donc
+#     PAS d'équivalent RELEASE_DIFF aux binary_sensor
+#     arsenal_self_audit_error/_stale : ils n'existent pas côté
+#     arsenal_nas, contrairement à arsenal_self.
+#
+# 🔗 DÉPENDANCES
+#   Lit      :
+#     - sensor.arsenal_nas_release_diff_statut (ok/partial/error,
+#       arsenal_nas.md §5.1/§6)
+#     - sensor.arsenal_nas_release_diff_derniere_execution
+#
+#   Template :
+#     - socle_status_label
+#
+# 🚫 INTERDITS
+#   - Prendre une décision métier
+#   - Remplacer une automatisation
+#   - Produire un effet matériel
+#   - Devenir une source de vérité système
+#   - Interpréter sensor.nas_admission_release_diff_etat_transaction
+#     (plan transactionnel distinct, chantier C51) pour se conclure
+#   - Inventer un binary_sensor de fraîcheur/erreur non déclaré par
+#     arsenal_nas.md
+#
+# 🏷️ STATUT
+#   Carte UI — Arsenal C51 Lot 7
+# ==========================================================
+
+arsenal_nas_release_diff_status_card:
+
+  template:
+    - socle_status_label
+
+  entity: sensor.arsenal_nas_release_diff_statut
+
+  name: Release Diff NAS
+
+  show_state: true
+  show_label: true
+
+  state_display: >
+    [[[
+      if (
+        entity.state === 'unknown' ||
+        entity.state === 'unavailable'
+      ) {
+        return 'Indisponible';
+      }
+
+      if (entity.state === 'error') {
+        return 'Erreur';
+      }
+
+      if (entity.state === 'partial') {
+        return 'Partiel';
+      }
+
+      if (entity.state === 'ok') {
+        return 'Nominal';
+      }
+
+      return entity.state;
+    ]]]
+
+  label: >
+    [[[
+      const derniere =
+        states['sensor.arsenal_nas_release_diff_derniere_execution']?.state;
+
+      if (
+        entity.state === 'unknown' ||
+        entity.state === 'unavailable'
+      ) {
+        return 'Verdict indisponible';
+      }
+
+      if (
+        derniere &&
+        derniere !== 'unknown' &&
+        derniere !== 'unavailable'
+      ) {
+        return 'Dernier run : ' + derniere;
+      }
+
+      return 'Aucun run connu';
+    ]]]
+
+  styles:
+
+    card:
+      - background-color: >
+          [[[
+            if (
+              entity.state === 'unknown' ||
+              entity.state === 'unavailable'
+            ) {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            if (entity.state === 'error') {
+              return 'rgba(244, 67, 54, 0.2)';
+            }
+
+            if (entity.state === 'partial') {
+              return 'rgba(255, 152, 0, 0.2)';
+            }
+
+            if (entity.state === 'ok') {
+              return 'rgba(76, 175, 80, 0.2)';
+            }
+
+            return 'rgba(158, 158, 158, 0.2)';
+          ]]]
