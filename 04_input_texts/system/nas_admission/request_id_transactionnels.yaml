@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT
+#     NAS Admission — Request_id transactionnels
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Conserver le request_id de la transaction d'admission NAS
+#   en cours pour la commande MQTT exécutive Arsenal → NAS.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucune logique transactionnelle locale
+#   - Aucune décision d'admission (NAS seul autorité, cf.
+#     contrats/nas_transactionnel.md §4)
+#   - Pilote C51 Lot 5 : opération AUDIT uniquement. L'extension
+#     à RELEASE_DIFF (Lot 6) ajoutera son propre helper dédié —
+#     jamais un helper partagé entre opérations (nas_transactionnel.md
+#     §12, séparation stricte).
+#
+# 🔖 NATURE
+#   Registre transactionnel
+#   Identifiant technique
+#   Mémoire persistante
+#
+# 📋 FORMAT
+#   Identifiant transactionnel textuel unique (request_id),
+#   utilisé pour corréler la commande MQTT
+#   arsenal/nas/admission/command à son résultat sur
+#   arsenal/nas/admission/result.
+#
+# 🚫 INTERDITS
+#   - Utiliser ce helper comme état métier AUDIT (voir domaine
+#     arsenal_self pour le résultat métier)
+#   - Déduire une admission ou un succès depuis la seule
+#     présence d'un request_id
+#   - Écrire sans source exécutive identifiable
+#   - Réutiliser un request_id sans garantie d'unicité
+#   - Partager ce helper entre plusieurs opérations
+#
+# 🔗 ÉCRIT PAR
+#   script.nas_admission_demander_audit
+#
+# 🔗 CONSOMMATEURS
+#   Aucun consommateur direct : le script exécutif relit sa
+#   propre variable locale pour la corrélation, pas ce helper.
+#   Ce helper porte l'ancrage transactionnel (garde de résidu
+#   entre deux appels), pas la corrélation elle-même.
+#
+# ⚠️ SÉMANTIQUE
+#   - Le request_id représente une corrélation transactionnelle
+#     d'admission, jamais un résultat métier AUDIT.
+#   - Chantier : audits/04_chantiers/transverses/c51_commandabilite_nas.md
+#     (Lot 5 — backend Arsenal, pilote AUDIT).
+#
+# 🏷️ STATUT
+#   Socle — Arsenal C51 Lot 5 (pilote AUDIT)
+# ==========================================================
+
+nas_admission_req_audit:
+  name: "NAS admission req AUDIT (pilote)"
+  max: 64
+  # initial VOULU — transactionnel
+  # Raison : registre de corrélation MQTT, repart vide à chaque cycle/reboot (aucun request_id périmé).
+  # Restauration HA volontairement désactivée : oui
+  initial: ""

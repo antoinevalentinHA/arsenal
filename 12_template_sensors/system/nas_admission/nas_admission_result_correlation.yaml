@@ -1,0 +1,89 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     NAS Admission — Corrélation du résultat transactionnel
+# ----------------------------------------------------------
+# 📌 Fichier
+#   12_template_sensors/system/nas_admission/nas_admission_result_correlation.yaml
+#
+# 🎯 RÔLE
+#   Exposer les quatre termes de corrélation portés par le
+#   résultat transactionnel d'admission NAS, tels que fixés
+#   par contrats/nas_transactionnel.md §13.4 : request_id,
+#   operation, run_id, transaction_verdict.
+#
+# 🧱 PRINCIPE
+#   - Source brute unique :
+#       sensor.nas_admission_result_raw
+#   - Extraction pure, aucune logique métier, aucune conclusion
+#   - Ce fichier NE FILTRE PAS par opération : le canal est
+#     PARTAGÉ AUDIT + RELEASE_DIFF (contrat §13.1). Le filtrage
+#     AUDIT est porté par la couche diagnostic dédiée
+#     (nas_admission_audit_etat_transaction.yaml).
+#   - La corrélation et la conclusion transactionnelle
+#     effectives sont évaluées par le script exécutif
+#     (script.nas_admission_demander_audit), qui compare
+#     sensor.nas_admission_result_request_id à son propre
+#     request_id — jamais ici.
+#
+# ⚠️ IMPORTANT
+#   - run_id est contractuellement toujours absent/null pour la
+#     famille rejet (§13.4) : exposé 'unknown' dans ce cas, ce
+#     qui n'est PAS une anomalie.
+#   - transaction_verdict ne dit RIEN du résultat métier AUDIT
+#     (ok/alert/error, domaine arsenal_self) — séparation stricte
+#     non négociable (contrat §12).
+#   - Pilote C51 Lot 5 : consommé par le script AUDIT uniquement.
+# ==========================================================
+
+- sensor:
+    - name: "NAS admission result request_id"
+      unique_id: nas_admission_result_request_id
+      icon: mdi:identifier
+      state: >
+        {% set raw = states('sensor.nas_admission_result_raw') %}
+        {% if raw in ['unknown', 'unavailable', ''] or not raw.startswith('{') %}
+          unknown
+        {% else %}
+          {% set payload = raw | from_json %}
+          {% set value = payload.request_id if payload.request_id is defined else '' %}
+          {{ value if value not in ['', none] else 'unknown' }}
+        {% endif %}
+
+    - name: "NAS admission result operation"
+      unique_id: nas_admission_result_operation
+      icon: mdi:cog-outline
+      state: >
+        {% set raw = states('sensor.nas_admission_result_raw') %}
+        {% if raw in ['unknown', 'unavailable', ''] or not raw.startswith('{') %}
+          unknown
+        {% else %}
+          {% set payload = raw | from_json %}
+          {% set value = payload.operation if payload.operation is defined else '' %}
+          {{ value if value not in ['', none] else 'unknown' }}
+        {% endif %}
+
+    - name: "NAS admission result run_id"
+      unique_id: nas_admission_result_run_id
+      icon: mdi:identifier
+      state: >
+        {% set raw = states('sensor.nas_admission_result_raw') %}
+        {% if raw in ['unknown', 'unavailable', ''] or not raw.startswith('{') %}
+          unknown
+        {% else %}
+          {% set payload = raw | from_json %}
+          {% set value = payload.run_id if payload.run_id is defined else '' %}
+          {{ value if value not in ['', none] else 'unknown' }}
+        {% endif %}
+
+    - name: "NAS admission result transaction_verdict"
+      unique_id: nas_admission_result_transaction_verdict
+      icon: mdi:gavel
+      state: >
+        {% set raw = states('sensor.nas_admission_result_raw') %}
+        {% if raw in ['unknown', 'unavailable', ''] or not raw.startswith('{') %}
+          unknown
+        {% else %}
+          {% set payload = raw | from_json %}
+          {% set value = payload.transaction_verdict if payload.transaction_verdict is defined else '' %}
+          {{ value if value not in ['', none] else 'unknown' }}
+        {% endif %}

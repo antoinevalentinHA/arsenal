@@ -1,0 +1,59 @@
+# ==========================================================
+# 🧠 ARSENAL — MQTT SENSOR
+#     NAS Admission — Résultat transactionnel (transport brut)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer en transport passif le payload brut du plan
+#   résultat transactionnel de l'admission NAS : le canal
+#   PARTAGÉ AUDIT + RELEASE_DIFF (aucun topic par opération
+#   en V1), tel que fixé par contrats/nas_transactionnel.md
+#   §13.1/§13.4.
+#
+# 🧩 PÉRIMÈTRE
+#   - Transport passif de données MQTT uniquement
+#   - Aucune extraction, aucune interprétation ici
+#   - Aucune logique métier
+#   - Aucune qualification d'état système
+#   - Ne préjuge d'aucune opération : un message sur ce topic
+#     peut porter AUDIT ou RELEASE_DIFF (point d'admission
+#     unique, nas_transactionnel.md §13.1). Le filtrage par
+#     opération est délégué à la couche diagnostic dédiée
+#     (12_template_sensors/system/nas_admission/).
+#
+# 🔖 NATURE
+#   transport_json
+#
+# 🆔 UNIQUE_ID
+#   nas_admission_result_raw
+#
+# 📋 TRANSPORT
+#   state_topic     : arsenal/nas/admission/result
+#   qos             : 1
+#   retain (source) : false (contrat §13.2 — jamais retenu)
+#   json_attributes : non (payload JSON conservé brut comme état)
+#   structure JSON  : non extraite ici — interprétation
+#                     déléguée aux couches template / diagnostic
+#
+# 🔗 DÉPENDANCES
+#   Lit : canal résultat transactionnel d'admission NAS via
+#         broker MQTT (identité nas_admission)
+#   Réf : contrats/nas_transactionnel.md §13.1, §13.2, §13.4
+#         audits/04_chantiers/transverses/c51_commandabilite_nas.md
+#         (Lot 5 — pilote AUDIT)
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Recalculer ou réinterpréter transaction_verdict
+#   - Constituer une autorité décisionnelle (le NAS reste seul
+#     autorité d'admission, §4)
+#   - Remplacer une couche template dédiée
+#
+# 🏷️ STATUT
+#   Transport — Arsenal C51 Lot 5 (pilote AUDIT)
+# ==========================================================
+
+- name: "NAS admission result raw"
+  unique_id: nas_admission_result_raw
+  state_topic: "arsenal/nas/admission/result"
+  qos: 1
+  icon: mdi:message-processing-outline

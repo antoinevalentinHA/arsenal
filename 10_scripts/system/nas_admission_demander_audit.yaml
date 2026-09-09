@@ -1,0 +1,340 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT EXECUTIF SOUVERAIN
+#     C51 Lot 5 — NAS Admission — Demander AUDIT (pilote)
+# ==========================================================
+#
+# 📌 STATUT
+#     SCRIPT EXECUTIF — CONTRAT OPPOSABLE
+#     Pilote C51 Lot 5 : AUDIT UNIQUEMENT. RELEASE_DIFF est
+#     hors périmètre de ce script (Lot 6 — extension à la
+#     seconde opération, non commencé). Vocabulaire fermé
+#     opposable (nas_transactionnel.md §5) : ce script n'émet
+#     jamais autre chose que operation "AUDIT".
+#
+# 🎯 ROLE
+#     Demander au NAS, via MQTT, l'admission puis l'exécution
+#     de l'opération AUDIT, dans un modèle strictement
+#     transactionnel basé sur le socle
+#     contrats/nas_transactionnel.md.
+#
+#     Ce script constitue une FRONTIERE D'EMISSION locale pour
+#     la commande :
+#       topic arsenal/nas/admission/command
+#       (point d'admission UNIQUE, partagé AUDIT/RELEASE_DIFF ;
+#        c'est le champ operation du payload qui identifie la
+#        commande — contrat §13.1)
+#
+# ----------------------------------------------------------
+#
+# 🧱 NATURE
+#     - Script strictement exécutif (demande, contrat §4)
+#     - Aucune logique d'admission, d'exécution, de concurrence
+#       ni de résultat — le NAS reste seul autorité (§4)
+#     - Aucun arbitrage sur le verdict métier AUDIT
+#     - Aucun retry
+#     - Aucune notification utilisateur
+#
+#     Il émet une demande ; il ne décide jamais du résultat.
+#
+# ----------------------------------------------------------
+#
+# 🔁 MODELE TRANSACTIONNEL
+#
+#     1. Precheck helper transactionnel
+#     2. Génération d'un request_id unique
+#     3. Ancrage dans le helper transactionnel dédié AUDIT
+#     4. Vérification post-écriture helper
+#     5. Construction ts / expires_at (source fixe, non paramétrable
+#        — voir GARANTIES)
+#     6. Publication MQTT (QoS 1, retain=false)
+#     7. Attente d'un résultat transactionnel terminal corrélé
+#     8. Conclusion (log — jamais un verdict métier)
+#     9. Nettoyage terminal systématique de l'ancrage
+#
+#     👉 Seul un résultat transactionnel terminal corrélé
+#        (request_id ET operation == AUDIT) fait foi ici.
+#        Ce script ne lit jamais, ne dérive jamais et ne
+#        conclut jamais sur le résultat métier AUDIT
+#        (sensor.arsenal_self_audit_statut) — séparation
+#        stricte transaction/résultat métier (contrat §12).
+#
+# ----------------------------------------------------------
+#
+# 📡 RESULTAT TRANSACTIONNEL — REGLES OPPOSABLES (contrat §10)
+#
+#     Famille rejet (hors transaction, jamais de run_id) :
+#       - rejected_precondition
+#       - rejected_stale
+#       - rejected_busy
+#       - rejected_conflict
+#       - admission_unavailable
+#
+#     Famille résultat de transaction :
+#       - admitted        (transitoire — n'arrête jamais l'attente)
+#       - completed        (terminal — ne dit RIEN du verdict métier)
+#       - technical_failure (terminal)
+#
+#     Invariants :
+#       - Aucune conclusion sur 'admitted' (non terminal)
+#       - Aucune inférence de succès métier depuis 'completed'
+#       - Aucune corrélation approximative (request_id ET
+#         operation doivent matcher)
+#       - Aucun request_id réutilisé
+#
+# ----------------------------------------------------------
+#
+# 🔐 GARANTIES
+#
+#     - Aucune publication si helper transactionnel non fiable
+#     - Aucune publication si helper résiduel non nettoyé
+#     - Vocabulaire fermé : operation toujours "AUDIT"
+#     - source toujours "arsenal" — littéral fixe, non paramétrable
+#       (aucun champ libre interpolé dans le payload JSON)
+#     - Nettoyage transactionnel systématique
+#     - Aucune transaction fantôme locale
+#
+# ----------------------------------------------------------
+#
+# ⚠️ PRECONDITIONS
+#
+#     - input_text.nas_admission_req_audit vide
+#
+#     Sinon :
+#       → aborted immédiat (helper résiduel non nettoyé)
+#
+# ----------------------------------------------------------
+#
+# 🧷 ANCRAGE TRANSACTIONNEL
+#
+#     Helper :
+#       input_text.nas_admission_req_audit
+#
+#     Invariants :
+#       - écriture avant publication
+#       - vérification immédiate post-écriture
+#       - cleanup obligatoire, y compris sur timeout local HA
+#
+# ----------------------------------------------------------
+#
+# 🔄 FENETRES TEMPORELLES
+#
+#     - expires_at (fraîcheur d'ADMISSION, contrat §6) : ts + 60s.
+#       Gouverne uniquement la fenêtre d'admissibilité d'une
+#       commande INCONNUE du ledger NAS (contrat §7 point 4) —
+#       jamais la durée d'exécution AUDIT elle-même.
+#     - Attente locale HA du résultat terminal : 15 minutes.
+#       Fenêtre volontairement large et purement locale HA (pas
+#       une autorité NAS) : la chaîne AUDIT couvre extraction,
+#       double mesure de stabilité (60s d'intervalle) et audit
+#       patrimonial — une durée non bornée par ce contrat.
+#       Un dépassement produit un "timeout local HA", distinct
+#       d'un verdict transactionnel NAS (voir §12 chantier C51,
+#       point 9 : transaction et résultat métier jamais fusionnés).
+#
+# ----------------------------------------------------------
+#
+# 🚫 INTERDICTIONS ABSOLUES
+#
+#     - Émettre operation != "AUDIT"
+#     - Conclure sur 'admitted'
+#     - Inférer un résultat métier AUDIT depuis ce script
+#     - Publier avec helper sale
+#     - Réutiliser un request_id
+#     - Laisser un helper transactionnel sale
+#     - Retenir la commande ou le résultat (retain=true)
+#
+# ----------------------------------------------------------
+#
+# 📦 DEPENDANCES
+#
+#     - input_text.nas_admission_req_audit
+#     - sensor.nas_admission_result_request_id
+#     - sensor.nas_admission_result_operation
+#     - sensor.nas_admission_result_run_id
+#     - sensor.nas_admission_result_transaction_verdict
+#
+# ----------------------------------------------------------
+#
+# 🔗 REFERENCES
+#
+#     - contrats/nas_transactionnel.md v1.2.1
+#     - audits/04_chantiers/transverses/c51_commandabilite_nas.md
+#       (Lot 5 — backend Arsenal, pilote AUDIT)
+#
+# ==========================================================
+
+nas_admission_demander_audit:
+  alias: "Système - NAS Admission - Demander AUDIT (pilote)"
+  description: >
+    Demande au NAS, via MQTT, l'admission puis l'exécution de
+    l'opération AUDIT selon le socle transactionnel
+    contrats/nas_transactionnel.md. Pilote C51 Lot 5 —
+    AUDIT uniquement.
+  mode: single
+
+  sequence:
+    # ======================================================
+    # ETAPE 1 : PRECHECK
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('input_text.nas_admission_req_audit') | trim != '' }}
+          sequence:
+            - stop: "Helper transactionnel résiduel non vide — aborted"
+
+    # ======================================================
+    # ETAPE 2 : VARIABLES D'EMISSION
+    # ======================================================
+    - variables:
+        nas_admission_request_id: >
+          {% set h = '0123456789abcdef' %}
+          {% set v = '89ab' %}
+          {{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-4{{ h|random }}{{ h|random }}{{ h|random }}-{{ v|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}
+
+        nas_admission_ts: >
+          {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+
+        nas_admission_expires_at: >
+          {{ (as_timestamp(utcnow()) + 60) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+
+    # ======================================================
+    # ETAPE 3 : ANCRAGE TRANSACTIONNEL
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.nas_admission_req_audit
+      data:
+        value: "{{ nas_admission_request_id }}"
+
+    # ======================================================
+    # ETAPE 4 : VERIFICATION POST-ECRITURE
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('input_text.nas_admission_req_audit') != nas_admission_request_id }}
+          sequence:
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.nas_admission_req_audit
+              data:
+                value: ""
+            - stop: "Post-écriture helper échouée — aborted"
+
+    # ======================================================
+    # ETAPE 5 : PUBLICATION MQTT
+    # ======================================================
+    - service: mqtt.publish
+      data:
+        topic: "arsenal/nas/admission/command"
+        qos: 1
+        retain: false
+        payload: >-
+          {
+            "request_id": "{{ nas_admission_request_id }}",
+            "operation": "AUDIT",
+            "ts": "{{ nas_admission_ts }}",
+            "expires_at": "{{ nas_admission_expires_at }}",
+            "source": "arsenal"
+          }
+
+    # ======================================================
+    # ETAPE 6 : ATTENTE RESULTAT TRANSACTIONNEL TERMINAL CORRELE
+    # ======================================================
+    - wait_template: >
+        {{
+          states('sensor.nas_admission_result_request_id') == nas_admission_request_id
+          and states('sensor.nas_admission_result_operation') == 'AUDIT'
+          and states('sensor.nas_admission_result_transaction_verdict') in [
+            'rejected_precondition', 'rejected_stale', 'rejected_busy',
+            'rejected_conflict', 'admission_unavailable',
+            'completed', 'technical_failure'
+          ]
+        }}
+      timeout: "00:15:00"
+      continue_on_timeout: true
+
+    # ======================================================
+    # ETAPE 7 : CONCLUSION (LOG — JAMAIS UN VERDICT METIER)
+    # ======================================================
+    - variables:
+        nas_admission_correlated: >
+          {{
+            states('sensor.nas_admission_result_request_id') == nas_admission_request_id
+            and states('sensor.nas_admission_result_operation') == 'AUDIT'
+          }}
+        nas_admission_final_verdict: >
+          {{ states('sensor.nas_admission_result_transaction_verdict') }}
+        nas_admission_final_run_id: >
+          {{ states('sensor.nas_admission_result_run_id') }}
+
+    - choose:
+        # FAMILLE REJET
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  nas_admission_correlated
+                  and nas_admission_final_verdict in [
+                    'rejected_precondition', 'rejected_stale', 'rejected_busy',
+                    'rejected_conflict', 'admission_unavailable'
+                  ]
+                }}
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                message: >
+                  NAS Admission AUDIT rejetée — request_id
+                  {{ nas_admission_request_id }} — verdict
+                  {{ nas_admission_final_verdict }}
+
+        # TRANSACTION TERMINALE — technical_failure
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ nas_admission_correlated and nas_admission_final_verdict == 'technical_failure' }}
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                message: >
+                  NAS Admission AUDIT — échec technique — request_id
+                  {{ nas_admission_request_id }} — run_id
+                  {{ nas_admission_final_run_id }}
+
+        # TRANSACTION TERMINALE — completed (ne dit rien du résultat métier)
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ nas_admission_correlated and nas_admission_final_verdict == 'completed' }}
+          sequence:
+            - service: system_log.write
+              data:
+                level: info
+                message: >
+                  NAS Admission AUDIT — transaction complétée — request_id
+                  {{ nas_admission_request_id }} — run_id
+                  {{ nas_admission_final_run_id }} — résultat métier :
+                  voir sensor.arsenal_self_audit_statut
+
+      default:
+        - service: system_log.write
+          data:
+            level: warning
+            message: >
+              NAS Admission AUDIT — timeout local HA (aucun résultat
+              transactionnel terminal corrélé sous 15 minutes) —
+              request_id {{ nas_admission_request_id }}
+
+    # ======================================================
+    # ETAPE 8 : LIBERATION TRANSACTIONNELLE (systématique)
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.nas_admission_req_audit
+      data:
+        value: ""
