@@ -1,7 +1,8 @@
-# Contrat — Projection MQTT de l'audit Arsenal NAS — V1.0.1
+# Contrat — Projection MQTT de l'audit Arsenal NAS — V1.0.2
 
-**Version** : v1.0.1
-**Statut** : actif / implémenté
+**Version** : v1.0.2
+**Révision** : v1.0.2 — ajout du champ `run_id` au schéma `latest.verdict.json` et au payload MQTT nominal, en anticipation du lot runtime C51 (durcissement AUDIT, dépôt `arsenal-ha-backup-timeline`, chantier [`c51_commandabilite_nas.md`](../../../audits/04_chantiers/transverses/c51_commandabilite_nas.md)). Contrat écrit avant le runtime correspondant, conformément à la doctrine « contrat avant runtime » : le champ n'est pas encore émis par le publisher actuel. Aucun changement de verdict métier, aucune admission MQTT introduite, aucun `request_id`.
+**Statut** : actif / implémenté *(`run_id` : spécifié par anticipation, non encore émis — voir Révision)*
 **Périmètre** : production du verdict JSON NAS et projection MQTT de l’état d’audit Arsenal NAS.
 **Dépendances** :
 - `audit.md` v1.1.1 — moteur d’audit patrimonial NAS ;
@@ -54,6 +55,8 @@ Sont publiés via MQTT :
 - le verdict patrimonial ;
 - les compteurs principaux ;
 - l’identifiant de la version auditée ;
+- l’identifiant d’exécution NAS (`run_id`) — pure corrélation technique,
+  sans portée métier ;
 - l’horodatage de publication ;
 - un statut `error` si la chaîne ne peut pas produire de verdict exploitable.
 
@@ -84,9 +87,10 @@ Le détail patrimonial reste porté exclusivement par le rapport NAS.
 
 ```json
 {
-  "contract_version": "1.0.1",
+  "contract_version": "1.0.2",
   "engine_version": "1.1.1",
   "published_at": "2026-05-11T13:00:00Z",
+  "run_id": "20260511T130000",
   "version_auditee": "2026-05-11_03-15-00",
   "verdict": "ok",
   "total_anomalies": 0,
@@ -101,6 +105,7 @@ Le détail patrimonial reste porté exclusivement par le rapport NAS.
 | `contract_version` | string | Version du présent contrat |
 | `engine_version` | string | Version du moteur d’audit |
 | `published_at` | string ISO 8601 UTC | Suffixe `Z` obligatoire |
+| `run_id` | string \| null | Identifiant d’exécution NAS attribué par `run_audit.sh`. Obligatoire (non `null`) sur le payload nominal. Pure corrélation technique : n’entre dans aucune décision métier, ne modifie jamais `verdict`. Distinct du futur `request_id` et du `run_id` transactionnel que `nas_transactionnel.md` spécifiera à l’implémentation de l’admission NAS (chantier C51) — celui-ci est le précurseur produit par le wrapper, hors toute admission. Forme laissée à l’implémentation. |
 | `version_auditee` | string | Nom de la version auditée |
 | `verdict` | string | `ok` ou `alert` |
 | `total_anomalies` | int | `0` si `ok`, `>= 1` si `alert` |
@@ -127,9 +132,10 @@ En cas d’incapacité à produire un verdict exploitable :
 
 ```json
 {
-  "contract_version": "1.0.1",
+  "contract_version": "1.0.2",
   "engine_version": null,
   "published_at": "2026-05-11T13:00:00Z",
+  "run_id": null,
   "version_auditee": null,
   "verdict": "error",
   "total_anomalies": null,
@@ -148,6 +154,20 @@ Causes normalisées :
 | `verdict_json_stale` | Fichier trop ancien en mode strict |
 | `audit_engine_unexpected_exit_code` | Code retour audit inattendu |
 | `mqtt_publish_failed` | Échec `mosquitto_pub`, conservé en log local |
+
+### 7.1 Cas particulier — `run_id` sur `verdict_json_stale`
+
+Lorsque `error_reason = verdict_json_stale`, `latest.verdict.json` existe et
+reste lisible : il est seulement trop ancien pour le mode strict. Dans ce
+cas uniquement, le payload d’erreur reprend le `run_id` déjà présent dans ce
+JSON encore lisible — il n’est **pas** mis à `null`.
+
+Pour toute autre cause d’erreur (`verdict_json_missing`,
+`verdict_json_malformed`, `audit_engine_unexpected_exit_code`), aucun JSON
+exploitable n’existe : `run_id` reste `null`. Cela ne constitue pas une
+rupture de corrélation transactionnelle — la future couche transactionnelle
+C51 (`nas_transactionnel.md`) portera son propre `run_id`, attribué en
+amont du moteur par l’admission NAS, distinct de celui spécifié ici.
 
 ---
 
@@ -223,8 +243,12 @@ Le contrat est valide si :
 | Crash moteur simulé | Payload `verdict=error` |
 | JSON absent | Payload `verdict_json_missing` |
 | JSON malformé | Payload `verdict_json_malformed` |
+| JSON stale mais encore lisible (mode strict) | Payload `verdict_json_stale`, `run_id` repris du JSON encore lisible |
 | Broker MQTT indisponible | Aucun payload ; erreur locale journalisée |
 | Redémarrage HA | Dernier état restauré via retain |
+
+Sur tout payload nominal (`verdict=ok` ou `alert`), `run_id` est présent et
+non `null`.
 
 ---
 
@@ -261,4 +285,4 @@ relève du contrat `arsenal_self.md`.
 
 ---
 
-*Fin du contrat — Projection MQTT de l’audit Arsenal NAS v1.0.1.*
+*Fin du contrat — Projection MQTT de l’audit Arsenal NAS v1.0.2.*
