@@ -8,11 +8,15 @@ RELEASE_DIFF, durcissement AUDIT et moteur d'admission `admission_core.py`
 — est livré, mergé et testé dans `arsenal-ha-backup-timeline`. Le listener
 MQTT NAS (identité `nas_admission`) et le backend Arsenal de commande
 (pilote `AUDIT`, `script.nas_admission_demander_audit`) sont l'un et
-l'autre livrés et **validés terrain**. `RELEASE_DIFF` côté backend Arsenal
-n'est pas livré. Aucune UI Lovelace n'est livrée. L'hébergement/supervision
-permanent du listener NAS n'est pas livré (listener lancé manuellement pour
-les preuves terrain, puis arrêté) — voir chantier
-[`c51_commandabilite_nas.md`](../audits/04_chantiers/transverses/c51_commandabilite_nas.md).
+l'autre livrés et **validés terrain**. L'hébergement/supervision permanent
+du listener MQTT NAS est également livré et **validé terrain** — tâche
+planifiée DSM Task Scheduler (watchdog toutes les 5 minutes), cycle no-op
+sans doublon, arrêt contrôlé et réactivation prouvés, relance automatique
+après disparition simulée en moins de 5 minutes, instance unique laissée
+active. `RELEASE_DIFF` côté backend Arsenal n'est pas livré. Aucune UI
+Lovelace n'est livrée. Voir chantier
+[`c51_commandabilite_nas.md`](../audits/04_chantiers/transverses/c51_commandabilite_nas.md)
+(§12.5).
 
 > **v1.1.0 — clarification pré-Lot A (2026-09-09).** Fermeture des ambiguïtés
 > identifiées avant le Lot A d'admission (chantier C51) : ajout du champ
