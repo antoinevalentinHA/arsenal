@@ -1,6 +1,6 @@
 # Contrat — Socle transactionnel des commandes NAS Arsenal
 
-**Version** : v1.1.0
+**Version** : v1.1.1
 **Statut** : proposé / non implémenté
 
 > **v1.1.0 — clarification pré-Lot A (2026-09-09).** Fermeture des ambiguïtés
@@ -15,6 +15,25 @@
 > (probe-then-release, recovery de ledger, réconciliation concrète restent
 > ouverts au design). Purement additif — aucun retrait, aucune
 > renumérotation de section.
+
+> **v1.1.1 — correction d'une contradiction interne §7/§8 (2026-09-09).**
+> L'ordre normatif d'admission (§7 v1.1.0) évaluait la fraîcheur
+> (`expires_at`, alors point 3) **avant** la consultation du `request_id`
+> connu (alors point 4) : une redelivery QoS 1 d'un `request_id` déjà
+> **terminal**, survenant après `expires_at`, était rejetée
+> `rejected_stale` avant toute relecture du ledger — en contradiction
+> directe avec l'idempotence de commande fixée par le §8 (« une redelivery
+> ne crée jamais une seconde exécution ») et avec l'invariant de
+> crash-consistency du §9.5 (« `expires_at` ne requalifie jamais une
+> demande déjà admise »). Correction : dans l'ordre normatif du §7, la
+> consultation du `request_id` connu (désormais point 3) précède
+> désormais la fraîcheur (désormais point 4), qui ne gouverne plus que
+> l'admissibilité d'un `request_id` **inconnu**. Un `request_id` déjà
+> connu — terminal ou `admitted` — n'est plus jamais rejeté
+> `rejected_stale`. Renumérotation des seuls points internes du §7 (les
+> renvois §6, §9.4, §11 sont mis à jour en conséquence) ; aucun verdict,
+> aucune section, aucune autre sémantique C51 n'est ajouté, retiré ou
+> modifié par cette révision.
 
 **Périmètre** : direction **Home Assistant → NAS** — admission et corrélation
 des commandes `AUDIT` et `RELEASE_DIFF`. Ne couvre ni la logique des moteurs,
@@ -132,7 +151,7 @@ Arsenal, validée par le NAS** — jamais une identité d'exécution, jamais une
 délégation d'autorité de décision. Le NAS reste seul autorité d'admission
 (§4) : il ne fait pas confiance à `expires_at` tel quel, il le valide (forme,
 cohérence avec `ts`, plage jugée raisonnable) avant de l'opposer à la
-commande — voir §7 point 3. Le NAS ne substitue **jamais** silencieusement
+commande — voir §7 point 4. Le NAS ne substitue **jamais** silencieusement
 `expires_at` par une fenêtre de fraîcheur globale (TTL NAS) qui ignorerait la
 valeur transmise par Arsenal ; un garde-fou NAS supplémentaire, s'il existe,
 est un contrôle additionnel explicite, pas un remplacement.
@@ -159,12 +178,11 @@ ordre normatif strict, à la manière de la Phase 0 du socle
    `rejected_precondition`.
 2. Payload bien formé (`request_id` présent, forme valide) → sinon rejet
    `rejected_precondition`.
-3. Fraîcheur de la commande : `expires_at` (§6) non dépassé et contraintes
-   temporelles NAS satisfaites (cohérence de forme, cohérence avec `ts`,
-   plage jugée admissible) → sinon rejet `rejected_stale`. Une commande est
-   stale dès que l'une de ces contraintes temporelles n'est pas satisfaite,
-   pas seulement en cas de dépassement strict de `expires_at`.
-4. `request_id` déjà connu dans le ledger (§8) :
+3. `request_id` déjà connu dans le ledger (§8) — ce point est évalué **avant**
+   la fraîcheur (point 4) : un `request_id` déjà enregistré ne redevient
+   **jamais** une nouvelle demande du seul fait de l'écoulement du temps ;
+   la fraîcheur (point 4) ne décide que de l'admissibilité d'un `request_id`
+   **inconnu**.
    a. présenté avec une `operation` ou des champs d'identité incompatibles
       avec la demande déjà enregistrée sous ce `request_id` → rejet
       `rejected_conflict` (§10.1). Incohérence de demande — aucune nouvelle
@@ -172,24 +190,34 @@ ordre normatif strict, à la manière de la Phase 0 du socle
       terminal ou non de l'enregistrement existant.
    b. sinon, déjà **terminal** (`completed`/`technical_failure`, §10.2) →
       réponse par relecture du résultat déjà produit, jamais par une
-      nouvelle exécution.
+      nouvelle exécution — **y compris si `expires_at` est désormais
+      dépassé** : la fraîcheur ne s'oppose jamais à un `request_id` déjà
+      connu.
    c. sinon, **non terminal** (`admitted`, `run_id` déjà attribué, transaction
       non close) → **aucune réadmission, aucun nouveau `run_id`, aucun
-      nouvel appel du wrapper métier.** L'admission relit et retourne l'état
-      `admitted` déjà connu, associé au `run_id` déjà attribué, sans jamais
-      invoquer le moteur pour cette demande. Voir §9.4 (réconciliation) pour
-      ce qui détermine, hors chaîne d'admission, la vivacité réelle de ce
-      `run_id`.
+      nouvel appel du wrapper métier, et jamais `rejected_stale`.**
+      L'admission relit et retourne l'état `admitted` déjà connu, associé au
+      `run_id` déjà attribué, sans jamais invoquer le moteur pour cette
+      demande. Voir §9.4 (réconciliation) pour ce qui détermine, hors chaîne
+      d'admission, la vivacité réelle de ce `run_id`.
+4. `request_id` **inconnu** du ledger (point 3) : fraîcheur de la commande —
+   `expires_at` (§6) non dépassé et contraintes temporelles NAS satisfaites
+   (cohérence de forme, cohérence avec `ts`, plage jugée admissible) →
+   sinon rejet `rejected_stale`. Une commande est stale dès que l'une de ces
+   contraintes temporelles n'est pas satisfaite, pas seulement en cas de
+   dépassement strict de `expires_at`. Un `request_id` déjà connu (point 3)
+   n'atteint jamais ce point et ne peut donc jamais être rejeté
+   `rejected_stale`.
 5. `request_id` inconnu, opération demandée déjà en cours (§11) → rejet
    `rejected_busy`. Aucun `run_id` n'est attribué et aucun wrapper métier
    n'est invoqué pour cette demande.
 
-**Invariant.** Un rejet d'admission (points 0 à 3, 4a et 5) n'ouvre **jamais**
-de transaction : aucun verrou n'est posé, aucun `run_id` n'est attribué,
-aucun wrapper métier n'est invoqué, aucune trace transactionnelle n'est créée
-au-delà du rejet lui-même. Le point 4c (non terminal) n'ouvre pas non plus de
-nouvelle transaction : il relit un état déjà ouvert, sans jamais en créer un
-second.
+**Invariant.** Un rejet d'admission (points 0 à 2, 3a, 4 et 5) n'ouvre
+**jamais** de transaction : aucun verrou n'est posé, aucun `run_id` n'est
+attribué, aucun wrapper métier n'est invoqué, aucune trace transactionnelle
+n'est créée au-delà du rejet lui-même. Le point 3c (non terminal) n'ouvre pas
+non plus de nouvelle transaction : il relit un état déjà ouvert, sans jamais
+en créer un second.
 
 ---
 
@@ -261,7 +289,7 @@ la limite que le présent contrat corrige en déplaçant l'attribution du
 
 Un `request_id` déjà connu, associé à un `run_id`, mais dont la transaction
 n'est pas close (verdict `admitted` persistant, §10.2) ne peut jamais, par
-simple redelivery, être réadmis (§7 point 4c) : l'admission relit cet état,
+simple redelivery, être réadmis (§7 point 3c) : l'admission relit cet état,
 elle ne le retranche ni ne le prolonge.
 
 Déterminer si l'exécution sous-jacente est toujours réellement active, ou si
@@ -304,7 +332,7 @@ Produite par le §7. Aucun `run_id`, aucun verrou.
 | Verdict | Signification |
 |---|---|
 | `rejected_precondition` | Opération inconnue, payload malformé, ou hors vocabulaire fermé |
-| `rejected_stale` | Commande hors fenêtre de fraîcheur (`expires_at` dépassé ou contrainte temporelle NAS non satisfaite) |
+| `rejected_stale` | Commande hors fenêtre de fraîcheur (`expires_at` dépassé ou contrainte temporelle NAS non satisfaite) — uniquement pour un `request_id` **inconnu** du ledger (§7 point 4) ; un `request_id` déjà connu n'est jamais rejeté sous ce verdict (§7 point 3) |
 | `rejected_busy` | Opération déjà en cours (`request_id` inconnu du ledger) |
 | `rejected_conflict` | `request_id` déjà connu, présenté avec une `operation` ou des champs d'identité incompatibles avec la demande déjà enregistrée sous ce `request_id` |
 | `admission_unavailable` | Ledger d'idempotence (§8) illisible ou corrompu — l'admission ne peut évaluer aucune demande tant que la lecture n'est pas restaurée |
@@ -453,4 +481,4 @@ contrat.
 
 ---
 
-*Fin du contrat — Socle transactionnel des commandes NAS Arsenal v1.1.0.*
+*Fin du contrat — Socle transactionnel des commandes NAS Arsenal v1.1.1.*
