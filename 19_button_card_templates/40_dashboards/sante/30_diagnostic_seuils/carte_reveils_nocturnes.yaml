@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Santé — Réveils nocturnes enfants (compteur)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher le compteur de réveils nocturnes détectés
+#     (domaine reveils), avec un libellé explicite quand
+#     ce nombre est nul.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de carte_compteur_seuils_variables
+#       (seuils et couleur hérités, non recopiés)
+#     - UI uniquement (aucune décision)
+#     - Surface UI co-localisée avec le contexte « sommeil »,
+#       hors périmètre du domaine reveils (contrats/reveils.md §6)
+#
+# 🎨 SEMANTIQUE
+#     - v = 0            -> "Aucun réveil détecté" (fond vert, hérité)
+#     - v > 0             -> valeur brute (comme le générique)
+#     - v non numérique   -> "—" (fond gris indispo, hérité)
+#       unknown/unavailable ne sont jamais assimilés à 0
+#
+# ⚠️ CONTRAINTES
+#     - "détecté" est volontaire : le compteur est une
+#       observabilité passive du bruit nocturne (INV-REV-3,
+#       contrats/reveils.md), pas une preuve de réveil réel
+#     - Ne redéclare aucune logique de seuil ou de couleur —
+#       héritée intégralement de carte_compteur_seuils_variables
+#
+# 🔗 DEPENDANCES
+#     Lit      : entity.state (input_number.reveils_nocturnes)
+#     Template : carte_compteur_seuils_variables
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_reveils_nocturnes
+#     entity: input_number.reveils_nocturnes
+#     variables:
+#       seuil_1: 0
+#       seuil_2: 1
+#       seuil_3: 2
+#       seuil_4: 3
+#
+# ==========================================================
+
+carte_reveils_nocturnes:
+  template: carte_compteur_seuils_variables
+
+  state_display: |
+    [[[
+      const v = parseInt(entity.state);
+      if (isNaN(v)) return '—';
+      if (v === 0) return 'Aucun réveil détecté';
+      return `${v}`;
+    ]]]
