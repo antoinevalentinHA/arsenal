@@ -4,11 +4,12 @@
 |---|---|
 | **Chantier** | Permettre à Home Assistant/Arsenal de demander au NAS, via MQTT, l'exécution des deux opérations métier existantes `AUDIT` et `RELEASE_DIFF`, sans fusionner leurs chaînes, sans big bang sur les tâches DSM actuelles, et sans jamais confondre la transaction de commande et le résultat métier qu'elle produit. |
 | **Domaine** | Transverse — dépôts `arsenal` et `arsenal-ha-backup-timeline` ; domaines Home Assistant `arsenal_self` (audit) et `arsenal_nas` (release_diff). |
-| **Statut** | **Ouvert (2026-09-08) — lot documentaire livré.** Aucun runtime touché : aucun YAML exécutable, aucun Python, aucun shell, aucun topic MQTT réel, aucune tâche DSM, aucun fichier du dépôt `arsenal-ha-backup-timeline`. |
+| **Statut** | **Ouvert (2026-09-08) — socle transactionnel NAS local livré et mergé côté `arsenal-ha-backup-timeline` (2026-09-09).** Verrou RELEASE_DIFF (Lot 2), durcissement AUDIT + `run_id` corrélable (Lot 3) et moteur d'admission transactionnelle locale (Lot 4 — `admission/bin/admission_core.py`) livrés, mergés et testés **en dépôt** (concurrence même process et multi-process testée). Contrat `nas_transactionnel.md` inchangé (v1.1.1). Chantier désormais en phase **transport/intégration MQTT → Arsenal → terrain** : aucun listener MQTT NAS, aucun daemon/service d'admission, aucune commande MQTT activée, aucune preuve terrain — voir §12.1. |
 | **Priorité** | P2 — aucun risque fonctionnel actuel ; enjeu d'architecture et de gouvernance documentaire avant toute commandabilité. |
 | **Ouvert le** | 2026-09-08. |
 | **Registre** | Chantier **C51** — ① Actifs, cf. [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 | **Mesure amont** | Audit terrain NAS en lecture seule (2026-09-08, DSM + SSH, aucune écriture) ; synthèse architecturale confrontant Git et terrain (même session) ; HEAD `arsenal` `a317b5b82c91bcbb79b02d787ed2e0ca2386398e` (branche par défaut) ; HEAD `arsenal-ha-backup-timeline` `033b1eff498ebd1107abe516bcca81c01f936f25` (branche `main`), confirmé identique entre le rapport terrain et l'API GitHub au moment de l'audit, `git status`/`diff` vides côté NAS hormis un fichier non suivi hors périmètre. |
+| **Mise à jour** | 2026-09-09 — merge du socle transactionnel NAS local (RELEASE_DIFF, AUDIT, admission locale) dans `arsenal-ha-backup-timeline`. **Lot documentaire intermédiaire uniquement** : aucun runtime Arsenal, aucun runtime NAS supplémentaire, aucun nouveau contrat, aucun nouveau chantier ouverts par cette mise à jour. Voir §12.1. |
 
 ---
 
@@ -234,6 +235,17 @@ périmètre de ce chantier.
   `arsenal-ha-backup-timeline` (absente du registre des dépôts gouvernés).
 - `audits/REGISTRE_CHANTIERS.md` — ligne C51.
 
+### A2. Lot documentaire intermédiaire (2026-09-09) — après merge NAS local
+
+- Le présent document — Statut, `Mesure amont`/`Mise à jour`, §12.1
+  (nouveau).
+- `audits/REGISTRE_CHANTIERS.md` — ligne C51.
+- `audits/index.md` — renvoi C51.
+- `contrats/nas_transactionnel.md` — **non modifié** (toujours v1.1.1) ;
+  vérifié conforme à l'état livré.
+- Aucun autre contrat, aucune doc runtime, aucune UI, aucun CI touchés par
+  ce lot.
+
 ### B. Référencés, non modifiés
 
 `outils_externes/nas_arsenal/audit/audit.md`, `audit/mqtt.md`,
@@ -282,6 +294,40 @@ périmètre).
 | 7 | `arsenal` | UI Lovelace (bouton) | Lots 5–6 | Usage réel | Le bouton porte lui-même une logique MQTT | Régression backend décide/UI rend |
 | 8 | NAS (hors Git) + doc | Décommissionnement conditionnel des tâches DSM | Lots 4–7 + observation terrain | N jours sans écart ancien/nouveau mécanisme | Toute perte de garantie constatée | Décommissionnement prématuré |
 | 9 | `arsenal` + `arsenal-ha-backup-timeline` | Clôture documentaire | Lot 8 | Revue documentaire | — | Dette documentaire si sauté |
+
+---
+
+### 12.1 État d'avancement — mise à jour documentaire du 2026-09-09
+
+Lot documentaire intermédiaire uniquement : ne modifie pas le découpage
+ci-dessus, ne referme aucun lot, n'ouvre aucun nouveau lot. Documente l'état
+réel après le merge du socle transactionnel NAS local dans
+`arsenal-ha-backup-timeline`. Vocabulaire de statut : « livré, mergé » /
+« livré, mergé, testé » (dépôt) — jamais « déployé » ni « validé terrain »
+tant que la preuve terrain correspondante n'existe pas.
+
+| Lot | État | Constat |
+|---|---|---|
+| 1 | Livré | Contrat `nas_transactionnel.md` (v1.1.1) et ouverture du chantier — inchangé par ce lot. |
+| 2 — verrou RELEASE_DIFF | **Livré, mergé** | Exclusion mutuelle robuste, verrou métier `runtime/release_diff.lock`, RC 75 si occupé (chemin legacy), `--run-id` explicite, comportement legacy DSM conservé, aucun paramètre métier libre exposé. Non déployé, non validé terrain. |
+| 3 — durcissement AUDIT + `run_id` | **Livré, mergé** | AUDIT commandable via `run_pipeline.sh` (sélection/extraction, contrôle de stabilité, audit, publication, extraction runtime informative), verrou métier `runtime/run_pipeline.lock`, RC 75 si occupé, source instable différée (RC extracteur 3 / pipeline 32) sans faux marquage traité par le watcher, `--run-id` propagé jusqu'au résultat AUDIT, compatibilité avec les déclenchements legacy préservée. Non déployé, non validé terrain. |
+| 4 — admission NAS minimale | **Moteur livré, mergé, testé ; preuve du lot restante** | `admission/bin/admission_core.py` mergé : ledger persistant, verrou ledger court, fail-closed si ledger indisponible/corrompu, validation des demandes, opérations V1 (`AUDIT`/`RELEASE_DIFF`), `request_id` durable et identité immuable (`operation`/`ts`/`expires_at`/`source`), verdicts `rejected_precondition`/`rejected_stale`/`rejected_conflict`/`admission_unavailable`/`rejected_busy`, `run_id` UUID4 avec mapping durable request_id→run_id, persistance `admitted` avant wrapper, déduplication durable (aucune réexécution d'un `request_id` connu, replay terminal), réconciliation des `admitted`, terminaison `completed`/`technical_failure`, handoff du vrai verrou métier via fd dynamique hérité (conservé jusqu'à la fin réelle des descendants), validation fail-closed du fd reçu par les wrappers, compatibilité legacy préservée, concurrence même process et multi-process testée. **Preuve du lot** (« commande MQTT manuelle → run_id corrélé → résultat identique à un déclenchement DSM ») **non fournie** : aucun listener MQTT, aucun daemon/service d'admission. |
+| 5 — backend Arsenal (émission) | Non commencé | Génération côté Arsenal des enveloppes `request_id`/`ts`/`expires_at`/`source`, backend de commande Arsenal/HA, suivi transactionnel côté Arsenal : non livrés. |
+| 6 — extension seconde opération | Non applicable | Dépend du lot 5, non commencé. |
+| 7 — UI Lovelace | Non commencé | Aucune UI de commande NAS livrée. |
+| 8 — décommissionnement DSM | Non commencé | Aucun retrait ni rationalisation des anciens déclenchements DSM. |
+| 9 — clôture documentaire | Non applicable | Chantier ouvert — aucune clôture. |
+
+Non livré, à ne pas confondre avec ce qui précède (rappel exhaustif) :
+listener MQTT NAS ; daemon/service d'admission ; choix définitif du mode
+d'hébergement du listener ; compte MQTT dédié définitif ; ACL broker
+vérifiées pour la commande ; activation de commandes MQTT ; backend de
+commande Arsenal/HA ; génération côté Arsenal des enveloppes
+`request_id`/`ts`/`expires_at`/`source` ; suivi transactionnel côté
+Arsenal ; UI de commande NAS ; déploiement du nouveau noyau d'admission sur
+le NAS de production ; preuves terrain de commande AUDIT, RELEASE_DIFF,
+replay/BUSY/crash-reprise ; retrait ou rationalisation des anciens
+déclenchements DSM ; clôture C51.
 
 ---
 
