@@ -1,6 +1,6 @@
 # Contrat — Socle transactionnel des commandes NAS Arsenal
 
-**Version** : v1.1.1
+**Version** : v1.2.0
 **Statut** : proposé / non implémenté
 
 **État d'implémentation (2026-09-09).** Le noyau local qu'il régit — verrou
@@ -41,6 +41,17 @@ production et aucune preuve terrain à ce jour — voir chantier
 > renvois §6, §9.4, §11 sont mis à jour en conséquence) ; aucun verdict,
 > aucune section, aucune autre sémantique C51 n'est ajouté, retiré ou
 > modifié par cette révision.
+
+> **v1.2.0 — fixation des topics et formats physiques du canal de commande
+> (2026-09-09).** Lève le point de décision documentaire restant recensé au
+> chantier C51 (ancien §15 « la définition du format physique final des
+> topics de commande ») : topics, QoS/retain, format commande/résultat et
+> arbitrage de corrélation `operation` (option A, cf. audit de
+> `admission_core.py`) désormais fixés au §13 (13.1 à 13.4). Aucune
+> modification de `admission_core.py`. §15 mis à jour (retrait du point
+> désormais tranché). Aucun autre verdict, aucune autre section numérotée,
+> aucune autre sémantique C51 n'est ajouté, retiré ou modifié par cette
+> révision.
 
 **Périmètre** : direction **Home Assistant → NAS** — admission et corrélation
 des commandes `AUDIT` et `RELEASE_DIFF`. Ne couvre ni la logique des moteurs,
@@ -405,26 +416,83 @@ Cette séparation est l'invariant le plus important du présent contrat.
   **aucune** valeur, **aucun** nom.
 - Une transaction `completed` n'implique jamais un résultat métier
   favorable.
-- Une future implémentation physique des topics MQTT (fusion ou séparation
-  des plans transaction et état) est un choix d'optimisation de transport,
-  laissé ouvert par ce contrat — mais la séparation **sémantique** reste
-  non négociable, quelle que soit l'implémentation physique retenue.
+- L'implémentation physique des topics MQTT est fixée par §13.1 : plans
+  transaction et état/événement métier strictement séparés, jamais
+  fusionnés — la séparation **sémantique** reste non négociable en tout
+  état de cause.
 
 ---
 
-## 13. Sécurité minimale
+## 13. Sécurité minimale et canal de commande MQTT (V1)
+
+### 13.1 Topics et point d'admission
+
+| Plan | Topic |
+|---|---|
+| Commande | `arsenal/nas/admission/command` |
+| Résultat transactionnel | `arsenal/nas/admission/result` |
+
+Point d'admission **unique**, partagé par `AUDIT` et `RELEASE_DIFF` (§5) —
+aucun topic par opération en V1 : une commande peut porter une `operation`
+inconnue ou invalide, et le transport doit pouvoir la recevoir puis la
+rejeter (`rejected_precondition`, §10.1) sans résoudre au préalable un
+topic métier valide. Le routage métier reste dans `admission_core.py`
+(§4), jamais dans la topologie MQTT.
+
+### 13.2 QoS et retain
+
+| Plan | QoS | Retain |
+|---|---|---|
+| `arsenal/nas/admission/command` | 1 | `false` |
+| `arsenal/nas/admission/result` | 1 | `false` |
+
+Aucune commande ni aucun résultat transactionnel retenus, sur le modèle de
+la doctrine retain déjà actée par `release_diff_mqtt.md` §6.2.
+
+### 13.3 Format de la commande
+
+Format défini au §6 (`request_id`/`operation`/`ts`/`expires_at`/`source`) ;
+rien d'autre n'est transmis par le listener à `admit()`.
+
+Un payload UTF-8/JSON invalide, ou dont la racine n'est pas un objet,
+n'atteint **jamais** `admit()` : aucun appel, aucun `request_id` inventé,
+aucun verdict transactionnel fabriqué — contrôle de transport, en amont de
+l'admission elle-même.
+
+### 13.4 Format du résultat transactionnel — corrélation
+
+Le résultat MQTT porte, lorsque disponible : `request_id`, `operation`,
+`transaction_verdict`, `run_id`. `admit()` reste l'unique autorité du
+verdict (§7, §10) : le listener ne recalcule, ne transforme, ni ne
+réinterprète aucune valeur qu'il produit.
+
+**Ambiguïté auditée.** Le record retourné par `admit()`
+(`admission_core.py`, `arsenal-ha-backup-timeline`, livré/mergé/testé) ne
+porte `operation` que sur la famille résultat de transaction (§10.2 —
+`admitted`/`completed`/`technical_failure`) ; jamais sur la famille rejet
+(§10.1), y compris `rejected_stale`/`rejected_busy`/`rejected_conflict`, où
+l'opération a pourtant déjà franchi la validation de vocabulaire fermé
+(§7 point 1). `request_id` (si extractible du payload) et `run_id`
+(toujours `null`) sont en revanche déjà portés par le rejet.
+
+**Arbitrage retenu — option A.** Le transport publie le record `admit()`
+tel quel, complété **uniquement** d'une projection de corrélation
+`operation` recopiée verbatim depuis l'objet JSON reçu lorsque le record ne
+la porte pas — sans validation, sans substitution en cas d'absence. Aucune
+seconde grammaire transactionnelle : `transaction_verdict` et `run_id` ne
+sont jamais touchés, et la projection ne s'applique jamais si `admit()` n'a
+pas été appelé (§13.3).
+
+**Justification (A plutôt que B).** Faire porter ces champs par `admit()`
+lui-même (option B) modifierait le contrat de retour d'un runtime NAS déjà
+livré/mergé/testé (Lot 4) — hors périmètre documentaire. A est la solution
+la plus sobre : projection de lecture au transport uniquement, autorité de
+verdict inchangée, réversible sans toucher `admission_core.py`.
+
+### 13.5 Identité et ACL MQTT
 
 - Vocabulaire fermé (§5) : rien d'autre n'est interprété par l'admission.
 - Aucun argument shell arbitraire transmis par Arsenal.
-- Le canal de commande est **non retenu** (`retain=false`) — un
-  redémarrage du broker ne doit jamais rejouer une commande périmée.
-  Contraste assumé avec les topics état existants, retenus par conception
-  (`release_diff_mqtt.md` §6.2, `audit/mqtt.md` §6).
-- Extension proposée, cohérente avec le namespace déjà déclaré extensible
-  par `release_diff_mqtt.md` §6.1 (`arsenal/nas/<job>/state`,
-  `arsenal/nas/<job>/event`) : un troisième plan `arsenal/nas/<job>/command`
-  — proposition à valider à l'implémentation, pas un engagement définitif
-  de ce contrat.
 - Déduplication applicative (§8), en sus du QoS MQTT.
 - Identité MQTT dédiée au canal de commande recommandée par moindre
   privilège (distincte des identités de publication d'état) — le compte
@@ -457,7 +525,6 @@ Le présent contrat ne fait pas :
 
 - la génération de diffs ou de verdicts d'audit ;
 - la définition ou la modification des états métier existants ;
-- la définition du format physique final des topics de commande ;
 - le choix du mécanisme de supervision du listener NAS ;
 - l'attribution d'une identité MQTT concrète ;
 - la décision d'agir (UI, automatisation) — c'est le backend Arsenal, hors
@@ -488,4 +555,4 @@ contrat.
 
 ---
 
-*Fin du contrat — Socle transactionnel des commandes NAS Arsenal v1.1.1.*
+*Fin du contrat — Socle transactionnel des commandes NAS Arsenal v1.2.0.*
