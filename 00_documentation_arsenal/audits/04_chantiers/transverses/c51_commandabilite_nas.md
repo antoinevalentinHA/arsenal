@@ -4,12 +4,12 @@
 |---|---|
 | **Chantier** | Permettre à Home Assistant/Arsenal de demander au NAS, via MQTT, l'exécution des deux opérations métier existantes `AUDIT` et `RELEASE_DIFF`, sans fusionner leurs chaînes, sans big bang sur les tâches DSM actuelles, et sans jamais confondre la transaction de commande et le résultat métier qu'elle produit. |
 | **Domaine** | Transverse — dépôts `arsenal` et `arsenal-ha-backup-timeline` ; domaines Home Assistant `arsenal_self` (audit) et `arsenal_nas` (release_diff). |
-| **Statut** | **Ouvert (2026-09-08) — socle transactionnel NAS local livré et mergé côté `arsenal-ha-backup-timeline` (2026-09-09).** Verrou RELEASE_DIFF (Lot 2), durcissement AUDIT + `run_id` corrélable (Lot 3) et moteur d'admission transactionnelle locale (Lot 4 — `admission/bin/admission_core.py`) livrés, mergés et testés **en dépôt** (concurrence même process et multi-process testée). Contrat `nas_transactionnel.md` v1.2.1. Chantier désormais en phase **transport/intégration MQTT → Arsenal → terrain** : aucun listener MQTT NAS, aucun daemon/service d'admission, aucune commande MQTT activée, aucune preuve terrain — voir §12.1. |
+| **Statut** | **Ouvert (2026-09-08) — volet NAS livré, mergé et validé terrain bout-en-bout (2026-09-09).** Verrou RELEASE_DIFF (Lot 2), durcissement AUDIT + `run_id` corrélable (Lot 3), moteur d'admission transactionnelle (Lot 4 — `admission/bin/admission_core.py`) et listener MQTT NAS (identité dédiée `nas_admission`) livrés, mergés et **validés terrain** pour `AUDIT` et `RELEASE_DIFF`, y compris en concurrence inter-opérations — voir §12.2 « Preuves terrain NAS ». Contrat `nas_transactionnel.md` v1.2.1, vérifié conforme à l'état livré, **non modifié** par ce lot. Chantier **non clos** : la prochaine phase est l'intégration côté **Arsenal/Home Assistant** (backend d'émission, UI) — voir §12.1, Lots 5+. |
 | **Priorité** | P2 — aucun risque fonctionnel actuel ; enjeu d'architecture et de gouvernance documentaire avant toute commandabilité. |
 | **Ouvert le** | 2026-09-08. |
 | **Registre** | Chantier **C51** — ① Actifs, cf. [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 | **Mesure amont** | Audit terrain NAS en lecture seule (2026-09-08, DSM + SSH, aucune écriture) ; synthèse architecturale confrontant Git et terrain (même session) ; HEAD `arsenal` `a317b5b82c91bcbb79b02d787ed2e0ca2386398e` (branche par défaut) ; HEAD `arsenal-ha-backup-timeline` `033b1eff498ebd1107abe516bcca81c01f936f25` (branche `main`), confirmé identique entre le rapport terrain et l'API GitHub au moment de l'audit, `git status`/`diff` vides côté NAS hormis un fichier non suivi hors périmètre. |
-| **Mise à jour** | 2026-09-09 — merge du socle transactionnel NAS local (RELEASE_DIFF, AUDIT, admission locale) dans `arsenal-ha-backup-timeline`. **Lot documentaire intermédiaire uniquement** : aucun runtime Arsenal, aucun runtime NAS supplémentaire, aucun nouveau contrat, aucun nouveau chantier ouverts par cette mise à jour. Voir §12.1. |
+| **Mise à jour** | 2026-09-09 — **volet NAS validé terrain bout-en-bout** : listener MQTT NAS opérationnel (identité `nas_admission`), `AUDIT` et `RELEASE_DIFF` admis, `run_id` corrélé, résultat transactionnel MQTT reçu, concurrence inter-opérations démontrée (voir §12.2). **Lot documentaire uniquement** : aucun runtime Arsenal, aucun nouveau contrat, aucun nouveau chantier ouverts par cette mise à jour ; aucun runtime NAS modifié (constat d'un état déjà livré). Prochaine phase : intégration Arsenal/Home Assistant. Voir §12.1/§12.2. |
 
 ---
 
@@ -209,9 +209,11 @@ périmètre de ce chantier.
   du QoS MQTT.
 - Identité MQTT dédiée au canal de commande : **obligatoire**, distincte
   des comptes existants (`nas_audit`, `nas_imprimerie`, `boiler_bridge`,
-  `rain_bird_mqtt`) — compte concret non choisi ici. Moindre privilège
-  (cantonnement ACL par topic) reste la **cible normative** de cette
-  identité dédiée, non garantie aujourd'hui — voir constat ci-dessous.
+  `rain_bird_mqtt`) — identité `nas_admission`, opérationnelle et
+  effectivement utilisée en terrain pour les preuves AUDIT/RELEASE_DIFF
+  (§12.2). Moindre privilège (cantonnement ACL par topic) reste la
+  **cible normative** de cette identité dédiée, non garantie aujourd'hui —
+  voir constat ci-dessous.
 - **Constat terrain (audit broker, 2026-09-09).** Le broker MQTT de
   production est l'add-on officiel HA Mosquitto (`core_mosquitto`),
   authentification par comptes HA locaux, `customize.active = false` :
@@ -257,6 +259,20 @@ périmètre de ce chantier.
   vérifié conforme à l'état livré.
 - Aucun autre contrat, aucune doc runtime, aucune UI, aucun CI touchés par
   ce lot.
+
+### A3. Lot documentaire — preuves terrain NAS (2026-09-09)
+
+- Le présent document — Statut, `Mise à jour`, §10 (identité `nas_admission`),
+  §12.1 (Lot 4), §12.2 (nouveau, « Preuves terrain NAS »), §13 (arbitrage
+  ACL rendu).
+- `audits/REGISTRE_CHANTIERS.md` — ligne C51 ; ligne C52 (référence
+  factuelle à l'arbitrage rendu, corrigée en conséquence).
+- `audits/index.md` — renvoi C51.
+- `contrats/nas_transactionnel.md` — **non modifié** ; relu et vérifié
+  conforme à l'état livré et validé terrain (aucune contradiction
+  détectée).
+- Aucun runtime Arsenal, aucun runtime NAS, aucune UI, aucun CI touchés
+  par ce lot. C51 n'est pas clos.
 
 ### B. Référencés, non modifiés
 
@@ -323,7 +339,7 @@ tant que la preuve terrain correspondante n'existe pas.
 | 1 | Livré | Contrat `nas_transactionnel.md` (v1.1.1) et ouverture du chantier — inchangé par ce lot. |
 | 2 — verrou RELEASE_DIFF | **Livré, mergé** | Exclusion mutuelle robuste, verrou métier `runtime/release_diff.lock`, RC 75 si occupé (chemin legacy), `--run-id` explicite, comportement legacy DSM conservé, aucun paramètre métier libre exposé. Non déployé, non validé terrain. |
 | 3 — durcissement AUDIT + `run_id` | **Livré, mergé** | AUDIT commandable via `run_pipeline.sh` (sélection/extraction, contrôle de stabilité, audit, publication, extraction runtime informative), verrou métier `runtime/run_pipeline.lock`, RC 75 si occupé, source instable différée (RC extracteur 3 / pipeline 32) sans faux marquage traité par le watcher, `--run-id` propagé jusqu'au résultat AUDIT, compatibilité avec les déclenchements legacy préservée. Non déployé, non validé terrain. |
-| 4 — admission NAS minimale | **Moteur livré, mergé, testé ; preuve du lot restante** | `admission/bin/admission_core.py` mergé : ledger persistant, verrou ledger court, fail-closed si ledger indisponible/corrompu, validation des demandes, opérations V1 (`AUDIT`/`RELEASE_DIFF`), `request_id` durable et identité immuable (`operation`/`ts`/`expires_at`/`source`), verdicts `rejected_precondition`/`rejected_stale`/`rejected_conflict`/`admission_unavailable`/`rejected_busy`, `run_id` UUID4 avec mapping durable request_id→run_id, persistance `admitted` avant wrapper, déduplication durable (aucune réexécution d'un `request_id` connu, replay terminal), réconciliation des `admitted`, terminaison `completed`/`technical_failure`, handoff du vrai verrou métier via fd dynamique hérité (conservé jusqu'à la fin réelle des descendants), validation fail-closed du fd reçu par les wrappers, compatibilité legacy préservée, concurrence même process et multi-process testée. **Preuve du lot** (« commande MQTT manuelle → run_id corrélé → résultat identique à un déclenchement DSM ») **non fournie** : aucun listener MQTT, aucun daemon/service d'admission. |
+| 4 — admission NAS minimale | **Livré, mergé, testé ; preuve du lot fournie terrain (2026-09-09)** | `admission/bin/admission_core.py` mergé : ledger persistant, verrou ledger court, fail-closed si ledger indisponible/corrompu, validation des demandes, opérations V1 (`AUDIT`/`RELEASE_DIFF`), `request_id` durable et identité immuable (`operation`/`ts`/`expires_at`/`source`), verdicts `rejected_precondition`/`rejected_stale`/`rejected_conflict`/`admission_unavailable`/`rejected_busy`, `run_id` UUID4 avec mapping durable request_id→run_id, persistance `admitted` avant wrapper, déduplication durable (aucune réexécution d'un `request_id` connu, replay terminal), réconciliation des `admitted`, terminaison `completed`/`technical_failure`, handoff du vrai verrou métier via fd dynamique hérité (conservé jusqu'à la fin réelle des descendants), validation fail-closed du fd reçu par les wrappers, compatibilité legacy préservée, concurrence même process et multi-process testée en dépôt. **Preuve du lot** (« commande MQTT manuelle → run_id corrélé → résultat identique à un déclenchement DSM ») **fournie terrain** pour `AUDIT` et `RELEASE_DIFF`, via listener MQTT NAS opérationnel (identité `nas_admission`) — voir §12.2. La commande reste **manuelle** (backend Arsenal d'émission, Lot 5, non livré) : la preuve porte sur l'admission/exécution NAS, pas sur une émission Arsenal réelle. |
 | 5 — backend Arsenal (émission) | Non commencé | Génération côté Arsenal des enveloppes `request_id`/`ts`/`expires_at`/`source`, backend de commande Arsenal/HA, suivi transactionnel côté Arsenal : non livrés. |
 | 6 — extension seconde opération | Non applicable | Dépend du lot 5, non commencé. |
 | 7 — UI Lovelace | Non commencé | Aucune UI de commande NAS livrée. |
@@ -331,15 +347,51 @@ tant que la preuve terrain correspondante n'existe pas.
 | 9 — clôture documentaire | Non applicable | Chantier ouvert — aucune clôture. |
 
 Non livré, à ne pas confondre avec ce qui précède (rappel exhaustif) :
-listener MQTT NAS ; daemon/service d'admission ; choix définitif du mode
-d'hébergement du listener ; compte MQTT dédié définitif ; ACL broker
-vérifiées pour la commande ; activation de commandes MQTT ; backend de
-commande Arsenal/HA ; génération côté Arsenal des enveloppes
+daemon/service d'admission en supervision **définitive** ; choix définitif
+du mode d'hébergement du listener ; ACL broker par topic (dette C52,
+acceptée pour la V1 — voir §12.2/§13) ; backend de commande Arsenal/HA ;
+génération côté Arsenal des enveloppes
 `request_id`/`ts`/`expires_at`/`source` ; suivi transactionnel côté
-Arsenal ; UI de commande NAS ; déploiement du nouveau noyau d'admission sur
-le NAS de production ; preuves terrain de commande AUDIT, RELEASE_DIFF,
-replay/BUSY/crash-reprise ; retrait ou rationalisation des anciens
-déclenchements DSM ; clôture C51.
+Arsenal ; UI de commande NAS ; déploiement du noyau d'admission validé
+comme remplacement définitif des tâches DSM ; preuves terrain de replay,
+de `BUSY` même-opération et de crash-reprise ; retrait ou rationalisation
+des anciens déclenchements DSM ; clôture C51.
+
+---
+
+### 12.2 Preuves terrain NAS (2026-09-09)
+
+Invariants utiles démontrés par la campagne terrain bout-en-bout ; le détail
+complet des campagnes (commandes, timestamps) n'est pas recopié ici.
+
+- **AUDIT** validé terrain bout-en-bout : admission OK, `run_id` propagé,
+  pipeline RC0, verdict métier OK, résultat transactionnel MQTT reçu.
+- **RELEASE_DIFF** validé terrain bout-en-bout : admission OK, `run_id`
+  propagé, wrapper RC0, résultat métier `status=ok`, résultat
+  transactionnel MQTT reçu.
+- Corrélation `request_id`↔`run_id` validée ; unicité validée ; locks
+  métier libérés correctement.
+- Listener MQTT NAS corrigé pour ne plus bloquer la boucle réseau Paho.
+- **Concurrence inter-opérations validée** : `RELEASE_DIFF` a été admis
+  alors qu'`AUDIT` était encore en cours, avec 36 secondes d'avance sur la
+  terminaison de l'AUDIT — aucune reconnexion MQTT observée pendant cette
+  preuve, aucun `rejected_busy` entre `AUDIT` et `RELEASE_DIFF`, conforme à
+  la politique du §8/contrat §11 (pas de verrou global entre opérations
+  distinctes). La concurrence **même-opération** reste arbitrée par
+  `admission_core` — non retestée par cette preuve.
+- Identité MQTT dédiée `nas_admission` réellement utilisée pour le canal
+  de commande.
+- Publication du résultat **non bloquante** côté listener : la preuve
+  fonctionnelle repose sur la **réception effective** du résultat MQTT par
+  un observateur externe, pas sur un PUBACK synchrone — cette preuve
+  n'introduit **aucune** nouvelle garantie de PUBACK synchrone.
+- Absence d'ACL topic active sur le broker (constat §10) **acceptée pour
+  la V1** de ce chantier ; dette maintenue et suivie par **C52** (non
+  ouvert par ce lot).
+
+Non couvert par cette campagne, à ne pas déduire de ce qui précède : replay
+QoS 1, rejet `BUSY` même-opération, crash-reprise, backend Arsenal
+d'émission, UI.
 
 ---
 
@@ -348,12 +400,13 @@ déclenchements DSM ; clôture C51.
 *(ne bloquent pas la documentation — bloquent les lots 2+)*
 
 - ACL MQTT réelles sur le broker — **vérifiées (2026-09-09)** : voir §10.
-  Point de fait tranché ; **arbitrage Direction requis** avant toute
-  activation terrain du canal de commande (Lot 4 preuve terrain / Lot 5+) :
-  accepter la dette — identité dédiée sans cantonnement topic, avec les
-  mesures de réduction du risque applicatif déjà présentes (vocabulaire
-  fermé §5, validation `admit()`) — ou conditionner l'activation à une
-  migration ACL globale du broker.
+  Point de fait tranché ; **arbitrage rendu** : la dette — identité dédiée
+  `nas_admission` sans cantonnement ACL par topic, avec les mesures de
+  réduction du risque applicatif déjà présentes (vocabulaire fermé §5,
+  validation `admit()`) — est **acceptée pour la V1** de ce chantier, sans
+  bloquer l'activation terrain (§12.2). Dette maintenue et suivie par le
+  chantier **C52** (non ouvert par ce lot). La migration ACL globale du
+  broker reste hors périmètre C51 (cf. C52).
 - Accès Docker/Container Manager pour utilisateur non-root, ou mécanisme
   de supervision alternatif du futur listener.
 - Comportement réel de `ha_backup_timeline_extract_v2.py` sous collision
