@@ -212,9 +212,10 @@ périmètre de ce chantier.
   `rain_bird_mqtt`) — compte concret non choisi ici. Moindre privilège
   (cantonnement ACL par topic) reste la **cible normative** de cette
   identité dédiée, non garantie aujourd'hui — voir constat ci-dessous.
-- **Constat terrain (audit broker, 2026-09-09).** Broker = add-on officiel
-  HA Mosquitto (`core_mosquitto`), authentification par comptes HA locaux,
-  `customize.active = false` : aucune ACL par topic active aujourd'hui,
+- **Constat terrain (audit broker, 2026-09-09).** Le broker MQTT de
+  production est l'add-on officiel HA Mosquitto (`core_mosquitto`),
+  authentification par comptes HA locaux, `customize.active = false` :
+  aucune ACL par topic active aujourd'hui,
   pour aucun compte. Activer une ACL par topic impose une politique
   explicite globale à tous les comptes du broker, pas seulement au futur
   compte C51 — chantier broker transversal (HA, Zigbee2MQTT, chauffage,
