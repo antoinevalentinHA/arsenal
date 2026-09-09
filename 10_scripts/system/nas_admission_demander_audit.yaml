@@ -44,7 +44,8 @@
 #     2. Génération d'un request_id unique
 #     3. Ancrage dans le helper transactionnel dédié AUDIT
 #     4. Vérification post-écriture helper
-#     5. Construction ts / expires_at / source
+#     5. Construction ts / expires_at (source fixe, non paramétrable
+#        — voir GARANTIES)
 #     6. Publication MQTT (QoS 1, retain=false)
 #     7. Attente d'un résultat transactionnel terminal corrélé
 #     8. Conclusion (log — jamais un verdict métier)
@@ -87,6 +88,8 @@
 #     - Aucune publication si helper transactionnel non fiable
 #     - Aucune publication si helper résiduel non nettoyé
 #     - Vocabulaire fermé : operation toujours "AUDIT"
+#     - source toujours "arsenal" — littéral fixe, non paramétrable
+#       (aucun champ libre interpolé dans le payload JSON)
 #     - Nettoyage transactionnel systématique
 #     - Aucune transaction fantôme locale
 #
@@ -169,15 +172,6 @@ nas_admission_demander_audit:
     AUDIT uniquement.
   mode: single
 
-  fields:
-    source:
-      name: source
-      description: "Origine diagnostique de la demande (utilisateur/automatisation)"
-      required: false
-      default: "arsenal_pilot_audit"
-      selector:
-        text:
-
   sequence:
     # ======================================================
     # ETAPE 1 : PRECHECK
@@ -204,8 +198,6 @@ nas_admission_demander_audit:
 
         nas_admission_expires_at: >
           {{ (as_timestamp(utcnow()) + 60) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
-
-        nas_admission_source: "{{ source | default('arsenal_pilot_audit') }}"
 
     # ======================================================
     # ETAPE 3 : ANCRAGE TRANSACTIONNEL
@@ -246,7 +238,7 @@ nas_admission_demander_audit:
             "operation": "AUDIT",
             "ts": "{{ nas_admission_ts }}",
             "expires_at": "{{ nas_admission_expires_at }}",
-            "source": "{{ nas_admission_source }}"
+            "source": "arsenal"
           }
 
     # ======================================================
