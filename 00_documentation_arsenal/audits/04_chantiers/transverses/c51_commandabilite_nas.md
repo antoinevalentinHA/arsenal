@@ -4,12 +4,13 @@
 |---|---|
 | **Chantier** | Permettre à Home Assistant/Arsenal de demander au NAS, via MQTT, l'exécution des deux opérations métier existantes `AUDIT` et `RELEASE_DIFF`, sans fusionner leurs chaînes, sans big bang sur les tâches DSM actuelles, et sans jamais confondre la transaction de commande et le résultat métier qu'elle produit. |
 | **Domaine** | Transverse — dépôts `arsenal` et `arsenal-ha-backup-timeline` ; domaines Home Assistant `arsenal_self` (audit) et `arsenal_nas` (release_diff). |
-| **Statut** | **Ouvert (2026-09-08) — volet NAS livré, mergé et validé terrain bout-en-bout (2026-09-09).** Verrou RELEASE_DIFF (Lot 2), durcissement AUDIT + `run_id` corrélable (Lot 3), moteur d'admission transactionnelle (Lot 4 — `admission/bin/admission_core.py`) et listener MQTT NAS (identité dédiée `nas_admission`) livrés, mergés et **validés terrain** pour `AUDIT` et `RELEASE_DIFF`, y compris en concurrence inter-opérations — voir §12.2 « Preuves terrain NAS ». Contrat `nas_transactionnel.md` v1.2.1, vérifié conforme à l'état livré, **non modifié** par ce lot. Chantier **non clos** : la prochaine phase est l'intégration côté **Arsenal/Home Assistant** (backend d'émission, UI) — voir §12.1, Lots 5+. |
+| **Statut** | **Ouvert (2026-09-08) — volet NAS livré, mergé et validé terrain bout-en-bout (2026-09-09).** Verrou RELEASE_DIFF (Lot 2), durcissement AUDIT + `run_id` corrélable (Lot 3), moteur d'admission transactionnelle (Lot 4 — `admission/bin/admission_core.py`) et listener MQTT NAS (identité dédiée `nas_admission`) livrés, mergés et **validés terrain** pour `AUDIT` et `RELEASE_DIFF`, y compris en concurrence inter-opérations — voir §12.2 « Preuves terrain NAS ». Contrat `nas_transactionnel.md` v1.2.1, vérifié conforme à l'état livré, **non modifié** par ce lot. **Lot 5 (backend Arsenal, pilote `AUDIT` seul) livré en configuration Home Assistant** (2026-09-09) : génération des enveloppes `request_id`/`ts`/`expires_at`/`source`, publication MQTT et corrélation/diagnostic du résultat transactionnel — voir §12.3. Code non déployé, non testé terrain, preuve du lot (« appel de test hors UI ») non fournie. Chantier **non clos** : `RELEASE_DIFF` reste hors périmètre du backend Arsenal (Lot 6) et aucune UI Lovelace n'existe (Lot 7) — voir §12.1/§12.3. |
 | **Priorité** | P2 — aucun risque fonctionnel actuel ; enjeu d'architecture et de gouvernance documentaire avant toute commandabilité. |
 | **Ouvert le** | 2026-09-08. |
 | **Registre** | Chantier **C51** — ① Actifs, cf. [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 | **Mesure amont** | Audit terrain NAS en lecture seule (2026-09-08, DSM + SSH, aucune écriture) ; synthèse architecturale confrontant Git et terrain (même session) ; HEAD `arsenal` `a317b5b82c91bcbb79b02d787ed2e0ca2386398e` (branche par défaut) ; HEAD `arsenal-ha-backup-timeline` `033b1eff498ebd1107abe516bcca81c01f936f25` (branche `main`), confirmé identique entre le rapport terrain et l'API GitHub au moment de l'audit, `git status`/`diff` vides côté NAS hormis un fichier non suivi hors périmètre. |
 | **Mise à jour** | 2026-09-09 — **volet NAS validé terrain bout-en-bout** : listener MQTT NAS opérationnel (identité `nas_admission`), `AUDIT` et `RELEASE_DIFF` admis, `run_id` corrélé, résultat transactionnel MQTT reçu, concurrence inter-opérations démontrée (voir §12.2). **Lot documentaire uniquement** : aucun runtime Arsenal, aucun nouveau contrat, aucun nouveau chantier ouverts par cette mise à jour ; aucun runtime NAS modifié (constat d'un état déjà livré). Prochaine phase : intégration Arsenal/Home Assistant. Voir §12.1/§12.2. |
+| **Mise à jour** | 2026-09-09 — **Lot 5, pilote `AUDIT`, livré côté configuration Home Assistant** : `script.nas_admission_demander_audit` (génération `request_id`, ancrage `input_text.nas_admission_req_audit`, `ts`/`expires_at`/`source`, `mqtt.publish` QoS 1 `retain=false` sur `arsenal/nas/admission/command`, attente corrélée du résultat, nettoyage de l'ancrage), capteur MQTT brut `sensor.nas_admission_result_raw` (`arsenal/nas/admission/result`), capteurs de corrélation (`request_id`/`operation`/`run_id`/`transaction_verdict`) et capteur diagnostic `sensor.nas_admission_audit_etat_transaction` (état de la transaction `AUDIT`, filtré/latché sur le canal partagé `AUDIT`+`RELEASE_DIFF`). `RELEASE_DIFF` explicitement hors périmètre de ce lot (vocabulaire fermé §5, émission `operation: "AUDIT"` uniquement). **Non déployé, non testé terrain, aucun appel de test hors UI encore réalisé** : la preuve du Lot 5 n'est pas fournie par cette mise à jour. Aucun contrat modifié, aucune UI Lovelace, aucune automation planifiée. Voir §12.1/§12.3. |
 
 ---
 
@@ -274,6 +275,29 @@ périmètre de ce chantier.
 - Aucun runtime Arsenal, aucun runtime NAS, aucune UI, aucun CI touchés
   par ce lot. C51 n'est pas clos.
 
+### A4. Lot 5 — backend Arsenal, pilote AUDIT (2026-09-09)
+
+Premier lot runtime **Arsenal** (dépôt `arsenal`) de ce chantier — tout ce qui
+précède (A à A3) était NAS ou documentaire pur.
+
+- Le présent document — Statut, `Mise à jour`, §12.1 (ligne Lot 5), présent
+  §12.3 (nouveau).
+- `04_input_texts/system/nas_admission/request_id_transactionnels.yaml`
+  *(nouveau)* — helper d'ancrage `input_text.nas_admission_req_audit`.
+- `10_scripts/system/nas_admission_demander_audit.yaml` *(nouveau)* —
+  `script.nas_admission_demander_audit`.
+- `14_mqtt_sensors/system/nas_admission_result_raw.yaml` *(nouveau)* —
+  transport brut `arsenal/nas/admission/result`.
+- `12_template_sensors/system/nas_admission/nas_admission_result_correlation.yaml`
+  *(nouveau)* — extraction `request_id`/`operation`/`run_id`/`transaction_verdict`.
+- `12_template_sensors/system/nas_admission/nas_admission_audit_etat_transaction.yaml`
+  *(nouveau)* — diagnostic AUDIT, filtré/latché sur le canal partagé.
+- `contrats/nas_transactionnel.md` — **non modifié** ; ce lot implémente le
+  contrat existant (§6, §13), il ne le révise pas.
+- Aucun contrat NAS, aucune UI Lovelace, aucune automation planifiée,
+  aucun ID d'automatisation HA inventé (§14 chantier) touchés par ce lot.
+  `RELEASE_DIFF` explicitement hors périmètre (Lot 6).
+
 ### B. Référencés, non modifiés
 
 `outils_externes/nas_arsenal/audit/audit.md`, `audit/mqtt.md`,
@@ -340,7 +364,7 @@ tant que la preuve terrain correspondante n'existe pas.
 | 2 — verrou RELEASE_DIFF | **Livré, mergé** | Exclusion mutuelle robuste, verrou métier `runtime/release_diff.lock`, RC 75 si occupé (chemin legacy), `--run-id` explicite, comportement legacy DSM conservé, aucun paramètre métier libre exposé. Non déployé, non validé terrain. |
 | 3 — durcissement AUDIT + `run_id` | **Livré, mergé** | AUDIT commandable via `run_pipeline.sh` (sélection/extraction, contrôle de stabilité, audit, publication, extraction runtime informative), verrou métier `runtime/run_pipeline.lock`, RC 75 si occupé, source instable différée (RC extracteur 3 / pipeline 32) sans faux marquage traité par le watcher, `--run-id` propagé jusqu'au résultat AUDIT, compatibilité avec les déclenchements legacy préservée. Non déployé, non validé terrain. |
 | 4 — admission NAS minimale | **Livré, mergé, testé ; preuve du lot fournie terrain (2026-09-09)** | `admission/bin/admission_core.py` mergé : ledger persistant, verrou ledger court, fail-closed si ledger indisponible/corrompu, validation des demandes, opérations V1 (`AUDIT`/`RELEASE_DIFF`), `request_id` durable et identité immuable (`operation`/`ts`/`expires_at`/`source`), verdicts `rejected_precondition`/`rejected_stale`/`rejected_conflict`/`admission_unavailable`/`rejected_busy`, `run_id` UUID4 avec mapping durable request_id→run_id, persistance `admitted` avant wrapper, déduplication durable (aucune réexécution d'un `request_id` connu, replay terminal), réconciliation des `admitted`, terminaison `completed`/`technical_failure`, handoff du vrai verrou métier via fd dynamique hérité (conservé jusqu'à la fin réelle des descendants), validation fail-closed du fd reçu par les wrappers, compatibilité legacy préservée, concurrence même process et multi-process testée en dépôt. **Preuve du lot** (« commande MQTT manuelle → run_id corrélé → résultat identique à un déclenchement DSM ») **fournie terrain** pour `AUDIT` et `RELEASE_DIFF`, via listener MQTT NAS opérationnel (identité `nas_admission`) — voir §12.2. La commande reste **manuelle** (backend Arsenal d'émission, Lot 5, non livré) : la preuve porte sur l'admission/exécution NAS, pas sur une émission Arsenal réelle. |
-| 5 — backend Arsenal (émission) | Non commencé | Génération côté Arsenal des enveloppes `request_id`/`ts`/`expires_at`/`source`, backend de commande Arsenal/HA, suivi transactionnel côté Arsenal : non livrés. |
+| 5 — backend Arsenal (émission) | **Livré (code HA), pilote `AUDIT` seul ; non déployé, non testé terrain** | Génération côté Arsenal des enveloppes `request_id`/`ts`/`expires_at`/`source`, publication MQTT `arsenal/nas/admission/command` (QoS 1, `retain=false`), attente et corrélation du résultat transactionnel, diagnostic AUDIT dédié : livrés en configuration Home Assistant (voir §12.3). `RELEASE_DIFF` explicitement hors périmètre de ce lot. Preuve du lot (« appel de test hors UI ») **non fournie**. |
 | 6 — extension seconde opération | Non applicable | Dépend du lot 5, non commencé. |
 | 7 — UI Lovelace | Non commencé | Aucune UI de commande NAS livrée. |
 | 8 — décommissionnement DSM | Non commencé | Aucun retrait ni rationalisation des anciens déclenchements DSM. |
@@ -349,13 +373,12 @@ tant que la preuve terrain correspondante n'existe pas.
 Non livré, à ne pas confondre avec ce qui précède (rappel exhaustif) :
 daemon/service d'admission en supervision **définitive** ; choix définitif
 du mode d'hébergement du listener ; ACL broker par topic (dette C52,
-acceptée pour la V1 — voir §12.2/§13) ; backend de commande Arsenal/HA ;
-génération côté Arsenal des enveloppes
-`request_id`/`ts`/`expires_at`/`source` ; suivi transactionnel côté
-Arsenal ; UI de commande NAS ; déploiement du noyau d'admission validé
-comme remplacement définitif des tâches DSM ; preuves terrain de replay,
-de `BUSY` même-opération et de crash-reprise ; retrait ou rationalisation
-des anciens déclenchements DSM ; clôture C51.
+acceptée pour la V1 — voir §12.2/§13) ; backend de commande Arsenal/HA pour
+`RELEASE_DIFF` (Lot 6, non commencé) ; déploiement ou test terrain du Lot 5
+(voir §12.3) ; UI de commande NAS (Lot 7) ; déploiement du noyau d'admission
+validé comme remplacement définitif des tâches DSM ; preuves terrain de
+replay, de `BUSY` même-opération et de crash-reprise ; retrait ou
+rationalisation des anciens déclenchements DSM ; clôture C51.
 
 ---
 
@@ -392,6 +415,52 @@ complet des campagnes (commandes, timestamps) n'est pas recopié ici.
 Non couvert par cette campagne, à ne pas déduire de ce qui précède : replay
 QoS 1, rejet `BUSY` même-opération, crash-reprise, backend Arsenal
 d'émission, UI.
+
+---
+
+### 12.3 Lot 5 — backend Arsenal, pilote AUDIT (2026-09-09)
+
+Premier lot runtime livré côté dépôt `arsenal` (configuration Home
+Assistant). Périmètre volontairement restreint à l'opération `AUDIT` seule
+— « premier lot pilote » : `RELEASE_DIFF` reste un vocabulaire fermé jamais
+émis par ce lot (§5, §14 — aucune extension du vocabulaire).
+
+**Livré (code HA, non déployé, non testé terrain) :**
+
+- `script.nas_admission_demander_audit` — frontière d'émission locale
+  couvrant, dans l'ordre : precheck de l'ancrage transactionnel, génération
+  d'un `request_id` unique, ancrage dans
+  `input_text.nas_admission_req_audit` (helper dédié à `AUDIT`,
+  §11.A4), vérification post-écriture, construction `ts`/`expires_at`
+  (fraîcheur d'admission, 60 s)/`source`, `mqtt.publish` QoS 1
+  `retain=false` sur `arsenal/nas/admission/command` (contrat §13.1/§13.2),
+  attente d'un résultat transactionnel **terminal** corrélé sur
+  `request_id` **et** `operation == "AUDIT"` (timeout local HA de 15
+  minutes, distinct d'un verdict NAS), puis nettoyage systématique de
+  l'ancrage — y compris sur timeout.
+- `sensor.nas_admission_result_raw` — transport passif du plan résultat
+  partagé `arsenal/nas/admission/result` (§13.1 : point d'admission unique,
+  aucun topic par opération).
+- Capteurs de corrélation `sensor.nas_admission_result_request_id`,
+  `_operation`, `_run_id`, `_transaction_verdict` — extraction pure du
+  payload, sans filtre par opération (le canal reste partagé).
+- `sensor.nas_admission_audit_etat_transaction` — couche diagnostic qui,
+  elle, filtre sur `operation == "AUDIT"` et latche le dernier verdict
+  `AUDIT` connu (`this.state`), pour ne jamais afficher, comme état AUDIT,
+  un verdict appartenant à une transaction `RELEASE_DIFF` observée sur le
+  même canal partagé.
+
+**Invariants du contrat respectés par construction :** séparation
+transaction/résultat métier (§12 — ce lot ne lit ni n'expose jamais
+`sensor.arsenal_self_audit_statut` depuis sa propre logique de conclusion) ;
+`admitted` jamais traité comme terminal (§10.2) ; aucun paramètre métier
+libre transmis ; aucun ID d'automatisation HA inventé (§14) ; aucune fusion
+AUDIT/RELEASE_DIFF.
+
+**Non fourni par ce lot :** la preuve du Lot 5 (« appel de test hors UI »,
+§12) — aucun appel réel du script contre un NAS/broker n'a été exécuté dans
+le cadre de ce lot ; aucun déploiement ; aucune automation planifiée
+émettrice ; aucune UI ; `RELEASE_DIFF` (Lot 6).
 
 ---
 
