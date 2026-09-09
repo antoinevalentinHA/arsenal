@@ -3,6 +3,13 @@
 **Version** : v1.1.1
 **Statut** : proposé / non implémenté
 
+**État d'implémentation (2026-09-09).** Le noyau local qu'il régit — verrou
+RELEASE_DIFF, durcissement AUDIT et moteur d'admission `admission_core.py`
+— est livré, mergé et testé dans `arsenal-ha-backup-timeline`. Aucun
+listener MQTT, aucun backend Arsenal de commande, aucun déploiement
+production et aucune preuve terrain à ce jour — voir chantier
+[`c51_commandabilite_nas.md`](../audits/04_chantiers/transverses/c51_commandabilite_nas.md).
+
 > **v1.1.0 — clarification pré-Lot A (2026-09-09).** Fermeture des ambiguïtés
 > identifiées avant le Lot A d'admission (chantier C51) : ajout du champ
 > `expires_at` au schéma de commande (§6), traitement explicite d'un
