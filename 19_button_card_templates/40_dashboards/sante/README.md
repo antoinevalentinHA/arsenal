@@ -47,11 +47,23 @@ Exemple : `carte_duree_ronflements`
 
 ---
 
+### C. Compteur interprétatif à seuils locaux
+
+Exemples : `carte_ronflements_episodes`, `carte_reveils_nocturnes`
+
+- Compteur entier qualifié par seuils calculés localement (hérités de `carte_compteur_seuils_variables`, sans recopie de la logique de seuil/couleur)
+- Libellé explicite au zéro (« Aucun *X* détecté ») au lieu de la valeur brute, pour éviter l'ambiguïté d'un compteur muet à 0 ; valeur brute conservée pour toute valeur strictement positive
+- **Type UI : interprétative** (même classification que le générique parent)
+
+> `carte_reveils_nocturnes` habille `input_number.reveils_nocturnes` (domaine `reveils`) ; sa surface UI est co-localisée ici avec le contexte « sommeil », hors périmètre du domaine `reveils` (`contrats/reveils.md` §6). Ce n'est pas une carte santé/Withings, mais son unique surface d'affichage vit dans ce dossier par co-localisation assumée.
+
+---
+
 ## Taxonomie des types UI
 
 | Type UI        | Signification                                                                                    | Exemples                                                              |
 |----------------|--------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|
-| interprétative | KPI avec qualification visuelle portée par le backend                                           | `carte_activite_calories_quotidiennes`, `carte_duree_qualitative`, `carte_score_qualitatif` |
+| interprétative | KPI avec qualification visuelle portée par le backend, ou compteur à seuils locaux              | `carte_activite_calories_quotidiennes`, `carte_duree_qualitative`, `carte_score_qualitatif`, `carte_ronflements_episodes`, `carte_reveils_nocturnes` |
 | info           | KPI informatif sans qualification d'alerte                                                      | `carte_duree_ronflements`                                             |
 | pure           | *(non utilisé dans ce domaine)*                                                                  | —                                                                     |
 | diagnostic     | *(non utilisé dans ce domaine)*                                                                  | —                                                                     |
@@ -62,8 +74,9 @@ Exemple : `carte_duree_ronflements`
 ## Architecture en couches (lecture système)
 
 ```
-Niveau 1 — KPI qualitatifs → 10_kpi_qualitatifs/
-Niveau 2 — KPI informatifs → 20_info/
+Niveau 1 — KPI qualitatifs            → 10_kpi_qualitatifs/
+Niveau 2 — KPI informatifs            → 20_info/
+Niveau 3 — Compteur interprétatif à seuils locaux → 30_diagnostic_seuils/
 ```
 
 > Cette architecture en couches est normative. Toute carte doit appartenir à une seule couche. Aucune carte hybride n'est autorisée.
@@ -87,6 +100,10 @@ Niveau 2 — KPI informatifs → 20_info/
 
   20_info/
     carte_duree_ronflements.yaml
+
+  30_diagnostic_seuils/
+    carte_ronflements_episodes.yaml
+    carte_reveils_nocturnes.yaml
 ```
 
 ---

@@ -80,7 +80,7 @@ views:
             cards:
               # Episodes de ronflements
               - type: custom:button-card
-                template: carte_compteur_seuils_variables
+                template: carte_ronflements_episodes
                 entity: sensor.withings_snoring_episode_count_local
                 name: Ronflements (épisodes)
                 icon: mdi:waveform
@@ -160,7 +160,7 @@ views:
             name: ⏰ Réveils enfants
 
           - type: custom:button-card
-            template: carte_compteur_seuils_variables
+            template: carte_reveils_nocturnes
             entity: input_number.reveils_nocturnes
             name: Enfants
             icon: mdi:bed

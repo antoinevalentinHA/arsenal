@@ -1,0 +1,58 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Santé — Ronflements, épisodes (compteur)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher le nombre d'épisodes de ronflement détectés,
+#     avec un libellé explicite quand ce nombre est nul.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de carte_compteur_seuils_variables
+#       (seuils et couleur hérités, non recopiés)
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - v = 0            -> "Aucun ronflement détecté" (fond vert, hérité)
+#     - v > 0             -> valeur brute (comme le générique)
+#     - v non numérique   -> "—" (fond gris indispo, hérité)
+#       unknown/unavailable ne sont jamais assimilés à 0
+#
+# ⚠️ CONTRAINTES
+#     - "détecté" est volontaire : le compteur reflète une
+#       observabilité produite par le pipeline Withings
+#       (cache Couche 1, cf. contrats/sante/sommeil.md), pas
+#       une confirmation physiologique d'un ronflement réel
+#     - Ne redéclare aucune logique de seuil ou de couleur —
+#       héritée intégralement de carte_compteur_seuils_variables
+#
+# 🔗 DEPENDANCES
+#     Lit      : entity.state (compteur d'épisodes, entier)
+#     Template : carte_compteur_seuils_variables
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_ronflements_episodes
+#     entity: sensor.withings_snoring_episode_count_local
+#     variables:
+#       seuil_1: 0
+#       seuil_2: 1
+#       seuil_3: 2
+#       seuil_4: 3
+#
+# ==========================================================
+
+carte_ronflements_episodes:
+  template: carte_compteur_seuils_variables
+
+  state_display: |
+    [[[
+      const v = parseInt(entity.state);
+      if (isNaN(v)) return '—';
+      if (v === 0) return 'Aucun ronflement détecté';
+      return `${v}`;
+    ]]]
