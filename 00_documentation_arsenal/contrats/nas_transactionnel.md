@@ -18,9 +18,12 @@ active. `RELEASE_DIFF` côté backend Arsenal est également livré et
 clone runtime réellement exécuté par Home Assistant (`/config`) :
 `request_id`/`run_id` corrélés, terminaison `completed`/`wrapper_rc=0`,
 admission dans la fenêtre contractuelle, résultat métier `ok` observé
-séparément. Aucune UI Lovelace n'est livrée. Voir chantier
+séparément. L'UI Lovelace (Lot 7) est désormais **livrée en code**
+(demande AUDIT/RELEASE_DIFF, observation de l'état transactionnel et du
+résultat métier, strictement séparés) — **non déployée, non testée
+terrain**. Voir chantier
 [`c51_commandabilite_nas.md`](../audits/04_chantiers/transverses/c51_commandabilite_nas.md)
-(§12.5, §12.7).
+(§12.5, §12.7, §12.8).
 
 > **v1.1.0 — clarification pré-Lot A (2026-09-09).** Fermeture des ambiguïtés
 > identifiées avant le Lot A d'admission (chantier C51) : ajout du champ

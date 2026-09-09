@@ -1,0 +1,178 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     NAS Admission — État de la transaction (C51 Lot 7)
+#
+# 🔖 NATURE  : carte_metier
+# 🖼️ TYPE UI : diagnostic
+# 🎚️ CONFIANCE : elevee
+# ==========================================================
+# 🎯 RÔLE
+#   Visualiser le dernier verdict TRANSACTIONNEL connu (admission
+#   ou terminaison NAS) pour une opération du socle
+#   contrats/nas_transactionnel.md — jamais un résultat métier.
+#
+# 🧩 PÉRIMÈTRE
+#   - Affichage et interprétation visuelle uniquement
+#   - Aucune logique métier exécutive, aucune autorité système
+#   - Lecture seule : aucune action, aucune navigation
+#   - Satellite générique : une seule et même carte pour AUDIT
+#     (sensor.nas_admission_audit_etat_transaction) et
+#     RELEASE_DIFF (sensor.nas_admission_release_diff_etat_transaction) —
+#     aucune fusion des deux transactions elles-mêmes, seule la
+#     grammaire d'affichage est mutualisée (chantier C51 §14)
+#
+# 🔗 DÉPENDANCES
+#   Lit      : `entity` — sensor.nas_admission_audit_etat_transaction
+#              OU sensor.nas_admission_release_diff_etat_transaction
+#              (vocabulaire fermé nas_transactionnel.md §10 :
+#              rejected_precondition/rejected_stale/rejected_busy/
+#              rejected_conflict/admission_unavailable — famille rejet ;
+#              admitted/completed/technical_failure — famille
+#              transaction ; sans_donnee — aucune transaction observée)
+#   Variable : variables.resultat_metier_hint — identifiant texte de
+#              l'entité de résultat métier séparée (jamais lue ici),
+#              affiché uniquement pour orienter l'utilisateur
+#   Template : socle_status_label
+#
+# ⚠️ SÉPARATION TRANSACTION / RÉSULTAT MÉTIER (contrat §12)
+#   - `completed` signifie que le moteur NAS a produit un résultat
+#     exploitable — PAS que ce résultat est favorable. Cette carte
+#     n'affiche jamais `completed` en vert (couleur reservée à un
+#     état metier favorable, 02_palette.md) : `admitted` et
+#     `completed` sont tous deux rendus en bleu (couleur
+#     « information / technique », jamais une couleur de verdict
+#     metier) et le label renvoie explicitement vers l'entité de
+#     résultat métier séparée.
+#   - `technical_failure` est un échec technique réel du moteur NAS
+#     (rouge, 02_palette.md « Erreur systeme »).
+#   - La famille rejet (rejected_*/admission_unavailable) signale une
+#     demande non admise, jamais une panne du moteur métier lui-même
+#     (orange, 02_palette.md « Avertissement non bloquant »).
+#   - `sans_donnee` (aucune transaction observée) = gris neutre
+#     (02_palette.md « Inactif / Aucune demande »).
+#   - `unknown`/`unavailable` (entité elle-même indisponible) = gris
+#     indisponibilité (05_regles.md — prime sur toute autre couleur).
+#   - Cette carte ne lit JAMAIS une entité de résultat métier
+#     (arsenal_self / arsenal_nas) pour se conclure elle-même.
+#
+# 🚫 INTERDITS
+#   - Prendre une décision métier
+#   - Remplacer une automatisation
+#   - Produire un effet matériel
+#   - Devenir une source de vérité système
+#   - Représenter `completed` comme un succès métier
+#   - Lire une entité de résultat métier pour calculer son propre état
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_nas_admission_etat_transaction
+#     entity: sensor.nas_admission_audit_etat_transaction
+#     name: Transaction AUDIT
+#     variables:
+#       resultat_metier_hint: sensor.arsenal_self_audit_statut
+#
+# 🏷️ STATUT
+#   Carte UI — Arsenal C51 Lot 7
+# ==========================================================
+
+carte_nas_admission_etat_transaction:
+
+  template:
+    - socle_status_label
+
+  show_state: true
+  show_label: true
+
+  state_display: >
+    [[[
+      const v = entity.state;
+
+      if (v === 'unknown' || v === 'unavailable') {
+        return 'Indisponible';
+      }
+      if (v === 'sans_donnee') {
+        return 'Aucune demande';
+      }
+      if (v === 'admitted') {
+        return 'En cours';
+      }
+      if (v === 'completed') {
+        return 'Terminee';
+      }
+      if (v === 'technical_failure') {
+        return 'Echec technique';
+      }
+      if (v === 'rejected_precondition') {
+        return 'Rejetee (precondition)';
+      }
+      if (v === 'rejected_stale') {
+        return 'Rejetee (expiree)';
+      }
+      if (v === 'rejected_busy') {
+        return 'Rejetee (deja en cours)';
+      }
+      if (v === 'rejected_conflict') {
+        return 'Rejetee (conflit)';
+      }
+      if (v === 'admission_unavailable') {
+        return 'Admission indisponible';
+      }
+
+      return v;
+    ]]]
+
+  label: >
+    [[[
+      const v = entity.state;
+      const hint = variables?.resultat_metier_hint || 'résultat métier';
+
+      if (v === 'unknown' || v === 'unavailable') {
+        return 'Etat transactionnel indisponible';
+      }
+      if (v === 'sans_donnee') {
+        return 'Aucune transaction observee';
+      }
+      if (v === 'admitted') {
+        return 'Execution en cours - resultat metier non disponible';
+      }
+      if (v === 'completed') {
+        return 'Terminee - resultat metier distinct : ' + hint;
+      }
+      if (v === 'technical_failure') {
+        return 'Echec du moteur NAS - voir ' + hint;
+      }
+
+      return 'Demande non admise par le NAS';
+    ]]]
+
+  styles:
+
+    card:
+      - background-color: >
+          [[[
+            const v = entity.state;
+
+            if (v === 'unknown' || v === 'unavailable') {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+            if (v === 'sans_donnee') {
+              return 'rgba(158, 158, 158, 0.2)';
+            }
+            if (v === 'admitted' || v === 'completed') {
+              return 'rgba(33, 150, 243, 0.2)';
+            }
+            if (v === 'technical_failure') {
+              return 'rgba(244, 67, 54, 0.2)';
+            }
+            if ([
+              'rejected_precondition',
+              'rejected_stale',
+              'rejected_busy',
+              'rejected_conflict',
+              'admission_unavailable'
+            ].includes(v)) {
+              return 'rgba(255, 152, 0, 0.2)';
+            }
+
+            return 'rgba(158, 158, 158, 0.1)';
+          ]]]
