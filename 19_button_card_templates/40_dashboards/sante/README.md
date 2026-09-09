@@ -47,7 +47,7 @@ Exemple : `carte_duree_ronflements`
 
 ---
 
-### C. Diagnostic à seuils locaux (compteur)
+### C. Compteur interprétatif à seuils locaux
 
 Exemples : `carte_ronflements_episodes`, `carte_reveils_nocturnes`
 
@@ -76,7 +76,7 @@ Exemples : `carte_ronflements_episodes`, `carte_reveils_nocturnes`
 ```
 Niveau 1 — KPI qualitatifs            → 10_kpi_qualitatifs/
 Niveau 2 — KPI informatifs            → 20_info/
-Niveau 3 — Diagnostic à seuils locaux → 30_diagnostic_seuils/
+Niveau 3 — Compteur interprétatif à seuils locaux → 30_diagnostic_seuils/
 ```
 
 > Cette architecture en couches est normative. Toute carte doit appartenir à une seule couche. Aucune carte hybride n'est autorisée.
