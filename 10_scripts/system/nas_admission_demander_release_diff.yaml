@@ -1,0 +1,429 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT EXECUTIF SOUVERAIN
+#     C51 Lot 6 — NAS Admission — Demander RELEASE_DIFF
+# ==========================================================
+#
+# 📌 STATUT
+#     SCRIPT EXECUTIF — CONTRAT OPPOSABLE
+#     Extension C51 Lot 6 : RELEASE_DIFF uniquement. Prolonge le
+#     patron du Lot 5 (script.nas_admission_demander_audit),
+#     sans le modifier et sans lui partager d'état local.
+#     Vocabulaire fermé opposable (nas_transactionnel.md §5) :
+#     ce script n'émet jamais autre chose que operation
+#     "RELEASE_DIFF".
+#
+# 🎯 ROLE
+#     Demander au NAS, via MQTT, l'admission puis l'exécution
+#     de l'opération RELEASE_DIFF, dans un modèle strictement
+#     transactionnel basé sur le socle
+#     contrats/nas_transactionnel.md.
+#
+#     Ce script constitue une FRONTIERE D'EMISSION locale pour
+#     la commande :
+#       topic arsenal/nas/admission/command
+#       (point d'admission UNIQUE, partagé AUDIT/RELEASE_DIFF ;
+#        c'est le champ operation du payload qui identifie la
+#        commande — contrat §13.1)
+#
+# ----------------------------------------------------------
+#
+# 🧱 NATURE
+#     - Script strictement exécutif (demande, contrat §4)
+#     - Aucune logique d'admission, d'exécution, de concurrence
+#       ni de résultat — le NAS reste seul autorité (§4)
+#     - Aucun arbitrage sur le verdict métier RELEASE_DIFF
+#     - Aucun retry
+#     - Aucune notification utilisateur
+#
+#     Il émet une demande ; il ne décide jamais du résultat.
+#
+# ----------------------------------------------------------
+#
+# 🔁 MODELE TRANSACTIONNEL
+#
+#     1. Precheck helper transactionnel dédié RELEASE_DIFF
+#     2. Génération d'un request_id unique
+#     3. Ancrage dans le helper transactionnel dédié RELEASE_DIFF
+#     4. Vérification post-écriture helper
+#     5. Construction ts / expires_at (source fixe, non paramétrable
+#        — voir GARANTIES)
+#     6. Publication MQTT (QoS 1, retain=false)
+#     7. Attente d'un résultat transactionnel terminal corrélé
+#     8. Conclusion (log — jamais un verdict métier)
+#     9. Nettoyage terminal systématique de l'ancrage
+#
+#     👉 Seul un résultat transactionnel terminal corrélé
+#        (request_id ET operation == RELEASE_DIFF) fait foi ici.
+#        Ce script ne lit jamais, ne dérive jamais et ne conclut
+#        jamais sur le résultat métier RELEASE_DIFF
+#        (sensor.arsenal_nas_release_diff_statut) — séparation
+#        stricte transaction/résultat métier (contrat §12).
+#
+# ----------------------------------------------------------
+#
+# 📡 RESULTAT TRANSACTIONNEL — REGLES OPPOSABLES (contrat §10)
+#
+#     Famille rejet (hors transaction, jamais de run_id) :
+#       - rejected_precondition
+#       - rejected_stale
+#       - rejected_busy
+#       - rejected_conflict
+#       - admission_unavailable
+#
+#     Famille résultat de transaction :
+#       - admitted        (transitoire — n'arrête jamais l'attente)
+#       - completed        (terminal — ne dit RIEN du verdict métier)
+#       - technical_failure (terminal)
+#
+#     Invariants :
+#       - Aucune conclusion sur 'admitted' (non terminal)
+#       - Aucune inférence de succès métier depuis 'completed'
+#       - Aucune corrélation approximative (request_id ET
+#         operation doivent matcher)
+#       - Aucun request_id réutilisé
+#
+# ----------------------------------------------------------
+#
+# 🔐 GARANTIES
+#
+#     - Aucune publication si helper transactionnel non fiable
+#     - Aucune publication si helper résiduel non nettoyé
+#     - Vocabulaire fermé : operation toujours "RELEASE_DIFF"
+#     - source toujours "arsenal" — littéral fixe, non paramétrable
+#       (aucun champ libre interpolé dans le payload JSON)
+#     - Aucun paramètre métier libre transmis (§5 chantier C51 :
+#       pas de --couple, pas de chemin, pas d'argument shell,
+#       pas de sélection de release, pas de paramètre batch —
+#       RELEASE_DIFF reste, côté NAS, le mode batch consécutif
+#       souverain existant, sans surface libre V1)
+#     - Nettoyage transactionnel systématique
+#     - Aucune transaction fantôme locale
+#     - Helper transactionnel strictement dédié à RELEASE_DIFF —
+#       jamais partagé avec input_text.nas_admission_req_audit
+#       (Lot 5). Aucun verrou local partagé entre AUDIT et
+#       RELEASE_DIFF : mode: single ci-dessous ne borne que CE
+#       script, jamais l'autre opération (contrat §11, chantier
+#       C51 §8 — concurrence inter-opérations déjà validée
+#       terrain au niveau NAS, §12.2 du chantier).
+#
+# ----------------------------------------------------------
+#
+# ⚠️ PRECONDITIONS
+#
+#     - input_text.nas_admission_req_release_diff vide
+#
+#     Sinon :
+#       → aborted immédiat (helper résiduel non nettoyé)
+#
+# ----------------------------------------------------------
+#
+# 🧷 ANCRAGE TRANSACTIONNEL
+#
+#     Helper :
+#       input_text.nas_admission_req_release_diff
+#
+#     Invariants :
+#       - écriture avant publication
+#       - vérification immédiate post-écriture
+#       - cleanup obligatoire, y compris sur timeout local HA
+#       - dédié RELEASE_DIFF : jamais lu ni écrit par
+#         script.nas_admission_demander_audit, et réciproquement
+#
+# ----------------------------------------------------------
+#
+# 🔎 AUDIT DES CARACTERISTIQUES REELLES DE RELEASE_DIFF
+#     (préalable normatif à la fixation des fenêtres ci-dessous —
+#     voir consigne Lot 6 : ne pas copier aveuglément AUDIT)
+#
+#     Sources consultées : diff/diff_release.md (moteur),
+#     diff/release_diff_mqtt.md (projection MQTT NAS→HA),
+#     c51_commandabilite_nas.md §12.2 (preuve terrain NAS).
+#
+#     - Mode concerné par la commande MQTT : exclusivement le
+#       mode batch consécutif (diff_release.md §"Capacités du
+#       moteur") — aucun --couple exposé (§5 GARANTIES ci-dessus).
+#     - Nature du travail par couple : hash SHA-256 du contenu
+#       canonique des deux répertoires ancres de versions/, puis
+#       diff direct des deux snapshots (aucun replay, aucun
+#       parcours d'intermédiaires) — diff_release.md §"Hash de
+#       snapshot"/"Algorithme". Le coût dépend donc du nombre de
+#       couples non encore idempotents (status=ok) et du volume
+#       de versions/, pas d'une durée fixe documentée.
+#     - Idempotence : un couple déjà status=ok avec sha256
+#       identiques est SKIP — en régime quotidien stable (tâche
+#       DSM historique "Arsenal - Release Diff", 03:15), le batch
+#       ne retraite typiquement rien de nouveau la plupart des
+#       jours.
+#     - Cadence attendue : "déclenchement manuel ou quotidien"
+#       (diff_release.md §"Ordonnancement") — pas de cadence
+#       temps réel, contrairement à l'extraction (30 min/5 min).
+#     - release_diff_mqtt.md §10 : RELEASE_DIFF est un job "à la
+#       demande", sans notion de fraîcheur/heartbeat NAS — aucune
+#       durée d'exécution nominale n'y est chiffrée.
+#     - Point de fait terrain disponible (chantier C51 §12.2,
+#       preuve de concurrence inter-opérations, 2026-09-09) :
+#       RELEASE_DIFF, admis pendant qu'AUDIT était encore en
+#       cours, a terminé sa propre transaction 36 secondes AVANT
+#       la terminaison d'AUDIT (dont la propre preuve, §12.4,
+#       mesure une durée ≈ 33 s) — seul point de mesure connu à
+#       ce jour, sur un run n'ayant probablement traité aucun
+#       couple nouveau (idempotence quotidienne). Aucune mesure
+#       terrain n'existe pour un run traitant un backlog de
+#       plusieurs couples non idempotents (ex. première activation
+#       après un long intervalle) : ce cas n'est PAS documenté et
+#       n'est couvert par aucun contrat de durée.
+#
+#     CONCLUSION (voir FENETRES TEMPORELLES ci-dessous) : aucune
+#     caractéristique connue ne suggère que RELEASE_DIFF est plus
+#     lent qu'AUDIT — le seul point de mesure terrain montre le
+#     contraire. Mais aucun contrat ne borne le pire cas (backlog
+#     multi-couples). En l'absence de preuve terrain dédiée au
+#     Lot 6, les fenêtres reprennent PRUDEMMENT les mêmes valeurs
+#     qu'AUDIT plutôt que d'inventer une valeur plus courte non
+#     justifiée par la seule mesure ponctuelle disponible.
+#
+# ----------------------------------------------------------
+#
+# 🔄 FENETRES TEMPORELLES
+#
+#     - expires_at (fraîcheur d'ADMISSION, contrat §6) : ts + 60s.
+#       Valeur IDENTIQUE à AUDIT, et volontairement non dérivée
+#       des caractéristiques métier de RELEASE_DIFF ci-dessus :
+#       ce délai ne gouverne QUE la fenêtre d'admissibilité d'une
+#       commande INCONNUE du ledger NAS le temps qu'elle atteigne
+#       le broker MQTT et soit évaluée (contrat §7 point 4) —
+#       un délai de transport/admission, jamais une durée
+#       d'exécution. Cette fenêtre ne dépend d'aucune opération
+#       particulière ; la même justification s'applique à l'identique
+#       pour RELEASE_DIFF.
+#     - Attente locale HA du résultat terminal : 15 minutes.
+#       Valeur IDENTIQUE à AUDIT, retenue PRUDEMMENT faute de
+#       preuve terrain Lot 6 bornant le pire cas RELEASE_DIFF
+#       (voir audit ci-dessus) — pas une simple copie non
+#       questionnée : le seul point de mesure terrain disponible
+#       (36 s d'avance sur AUDIT, §12.2 du chantier) suggère que
+#       RELEASE_DIFF est au moins aussi rapide qu'AUDIT en régime
+#       nominal (idempotence quotidienne), mais ne couvre pas un
+#       backlog de couples non idempotents. Fenêtre volontairement
+#       large et purement locale HA (pas une autorité NAS) : un
+#       dépassement produit un "timeout local HA", distinct d'un
+#       verdict transactionnel NAS (contrat §12 ; chantier C51,
+#       point 9 : transaction et résultat métier jamais fusionnés).
+#       À réviser à la baisse ou à la hausse une fois une preuve
+#       terrain Lot 6 dédiée disponible (voir RAPPORT — ce qui
+#       reste à prouver terrain).
+#
+# ----------------------------------------------------------
+#
+# 🚫 INTERDICTIONS ABSOLUES
+#
+#     - Émettre operation != "RELEASE_DIFF"
+#     - Conclure sur 'admitted'
+#     - Inférer un résultat métier RELEASE_DIFF depuis ce script
+#     - Publier avec helper sale
+#     - Réutiliser un request_id
+#     - Laisser un helper transactionnel sale
+#     - Retenir la commande ou le résultat (retain=true)
+#     - Transmettre --couple, un chemin, un argument shell, une
+#       sélection de release ou tout paramètre batch (§5 chantier
+#       C51, arbitrage Direction déjà tranché)
+#     - Partager l'ancrage transactionnel avec AUDIT
+#
+# ----------------------------------------------------------
+#
+# 📦 DEPENDANCES
+#
+#     - input_text.nas_admission_req_release_diff
+#     - sensor.nas_admission_result_request_id
+#     - sensor.nas_admission_result_operation
+#     - sensor.nas_admission_result_run_id
+#     - sensor.nas_admission_result_transaction_verdict
+#
+# ----------------------------------------------------------
+#
+# 🔗 REFERENCES
+#
+#     - contrats/nas_transactionnel.md v1.2.1
+#     - outils_externes/nas_arsenal/diff/diff_release.md
+#     - outils_externes/nas_arsenal/diff/release_diff_mqtt.md
+#     - audits/04_chantiers/transverses/c51_commandabilite_nas.md
+#       (Lot 6 — backend Arsenal, extension RELEASE_DIFF)
+#
+# ==========================================================
+
+nas_admission_demander_release_diff:
+  alias: "Système - NAS Admission - Demander RELEASE_DIFF"
+  description: >
+    Demande au NAS, via MQTT, l'admission puis l'exécution de
+    l'opération RELEASE_DIFF selon le socle transactionnel
+    contrats/nas_transactionnel.md. Extension C51 Lot 6 —
+    RELEASE_DIFF uniquement, indépendante du pilote AUDIT
+    (Lot 5).
+  mode: single
+
+  sequence:
+    # ======================================================
+    # ETAPE 1 : PRECHECK
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('input_text.nas_admission_req_release_diff') | trim != '' }}
+          sequence:
+            - stop: "Helper transactionnel résiduel non vide — aborted"
+
+    # ======================================================
+    # ETAPE 2 : VARIABLES D'EMISSION
+    # ======================================================
+    - variables:
+        nas_admission_request_id: >
+          {% set h = '0123456789abcdef' %}
+          {% set v = '89ab' %}
+          {{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-4{{ h|random }}{{ h|random }}{{ h|random }}-{{ v|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}
+
+        nas_admission_ts: >
+          {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+
+        nas_admission_expires_at: >
+          {{ (as_timestamp(utcnow()) + 60) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+
+    # ======================================================
+    # ETAPE 3 : ANCRAGE TRANSACTIONNEL
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.nas_admission_req_release_diff
+      data:
+        value: "{{ nas_admission_request_id }}"
+
+    # ======================================================
+    # ETAPE 4 : VERIFICATION POST-ECRITURE
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('input_text.nas_admission_req_release_diff') != nas_admission_request_id }}
+          sequence:
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.nas_admission_req_release_diff
+              data:
+                value: ""
+            - stop: "Post-écriture helper échouée — aborted"
+
+    # ======================================================
+    # ETAPE 5 : PUBLICATION MQTT
+    # ======================================================
+    - service: mqtt.publish
+      data:
+        topic: "arsenal/nas/admission/command"
+        qos: 1
+        retain: false
+        payload: >-
+          {
+            "request_id": "{{ nas_admission_request_id }}",
+            "operation": "RELEASE_DIFF",
+            "ts": "{{ nas_admission_ts }}",
+            "expires_at": "{{ nas_admission_expires_at }}",
+            "source": "arsenal"
+          }
+
+    # ======================================================
+    # ETAPE 6 : ATTENTE RESULTAT TRANSACTIONNEL TERMINAL CORRELE
+    # ======================================================
+    - wait_template: >
+        {{
+          states('sensor.nas_admission_result_request_id') == nas_admission_request_id
+          and states('sensor.nas_admission_result_operation') == 'RELEASE_DIFF'
+          and states('sensor.nas_admission_result_transaction_verdict') in [
+            'rejected_precondition', 'rejected_stale', 'rejected_busy',
+            'rejected_conflict', 'admission_unavailable',
+            'completed', 'technical_failure'
+          ]
+        }}
+      timeout: "00:15:00"
+      continue_on_timeout: true
+
+    # ======================================================
+    # ETAPE 7 : CONCLUSION (LOG — JAMAIS UN VERDICT METIER)
+    # ======================================================
+    - variables:
+        nas_admission_correlated: >
+          {{
+            states('sensor.nas_admission_result_request_id') == nas_admission_request_id
+            and states('sensor.nas_admission_result_operation') == 'RELEASE_DIFF'
+          }}
+        nas_admission_final_verdict: >
+          {{ states('sensor.nas_admission_result_transaction_verdict') }}
+        nas_admission_final_run_id: >
+          {{ states('sensor.nas_admission_result_run_id') }}
+
+    - choose:
+        # FAMILLE REJET
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  nas_admission_correlated
+                  and nas_admission_final_verdict in [
+                    'rejected_precondition', 'rejected_stale', 'rejected_busy',
+                    'rejected_conflict', 'admission_unavailable'
+                  ]
+                }}
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                message: >
+                  NAS Admission RELEASE_DIFF rejetée — request_id
+                  {{ nas_admission_request_id }} — verdict
+                  {{ nas_admission_final_verdict }}
+
+        # TRANSACTION TERMINALE — technical_failure
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ nas_admission_correlated and nas_admission_final_verdict == 'technical_failure' }}
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                message: >
+                  NAS Admission RELEASE_DIFF — échec technique — request_id
+                  {{ nas_admission_request_id }} — run_id
+                  {{ nas_admission_final_run_id }}
+
+        # TRANSACTION TERMINALE — completed (ne dit rien du résultat métier)
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ nas_admission_correlated and nas_admission_final_verdict == 'completed' }}
+          sequence:
+            - service: system_log.write
+              data:
+                level: info
+                message: >
+                  NAS Admission RELEASE_DIFF — transaction complétée — request_id
+                  {{ nas_admission_request_id }} — run_id
+                  {{ nas_admission_final_run_id }} — résultat métier :
+                  voir sensor.arsenal_nas_release_diff_statut
+
+      default:
+        - service: system_log.write
+          data:
+            level: warning
+            message: >
+              NAS Admission RELEASE_DIFF — timeout local HA (aucun résultat
+              transactionnel terminal corrélé sous 15 minutes) —
+              request_id {{ nas_admission_request_id }}
+
+    # ======================================================
+    # ETAPE 8 : LIBERATION TRANSACTIONNELLE (systématique)
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.nas_admission_req_release_diff
+      data:
+        value: ""

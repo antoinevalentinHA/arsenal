@@ -32,7 +32,15 @@
 #   - transaction_verdict ne dit RIEN du résultat métier AUDIT
 #     (ok/alert/error, domaine arsenal_self) — séparation stricte
 #     non négociable (contrat §12).
-#   - Pilote C51 Lot 5 : consommé par le script AUDIT uniquement.
+#   - C51 Lot 5 (AUDIT) puis Lot 6 (RELEASE_DIFF) : consommé par
+#     les deux scripts exécutifs (nas_admission_demander_audit,
+#     nas_admission_demander_release_diff). Justification de cette
+#     seule mise à jour de commentaire (Lot 6, §13 chantier) :
+#     la ligne affirmait « consommé par le script AUDIT uniquement »,
+#     devenu factuellement faux dès l'ajout du second consommateur —
+#     aucune logique, aucun template, aucun filtre par opération
+#     modifiés ici (le fichier reste, comme avant, sans filtre par
+#     opération).
 # ==========================================================
 
 - sensor:

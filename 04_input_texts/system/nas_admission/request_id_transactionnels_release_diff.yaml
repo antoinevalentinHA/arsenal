@@ -1,0 +1,68 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT
+#     NAS Admission — Request_id transactionnels — RELEASE_DIFF
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Conserver le request_id de la transaction d'admission NAS
+#   en cours pour la commande MQTT exécutive Arsenal → NAS,
+#   pour l'opération RELEASE_DIFF exclusivement.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucune logique transactionnelle locale
+#   - Aucune décision d'admission (NAS seul autorité, cf.
+#     contrats/nas_transactionnel.md §4)
+#   - C51 Lot 6 : opération RELEASE_DIFF uniquement. Helper
+#     strictement dédié — jamais partagé avec
+#     input_text.nas_admission_req_audit (Lot 5). Une
+#     transaction AUDIT en vol n'a aucune incidence sur ce
+#     helper, et réciproquement (nas_transactionnel.md §12,
+#     séparation stricte ; contrat §11, aucun verrou global
+#     entre opérations).
+#
+# 🔖 NATURE
+#   Registre transactionnel
+#   Identifiant technique
+#   Mémoire persistante
+#
+# 📋 FORMAT
+#   Identifiant transactionnel textuel unique (request_id),
+#   utilisé pour corréler la commande MQTT
+#   arsenal/nas/admission/command à son résultat sur
+#   arsenal/nas/admission/result.
+#
+# 🚫 INTERDITS
+#   - Utiliser ce helper comme état métier RELEASE_DIFF (voir
+#     domaine arsenal_nas pour le résultat métier)
+#   - Déduire une admission ou un succès depuis la seule
+#     présence d'un request_id
+#   - Écrire sans source exécutive identifiable
+#   - Réutiliser un request_id sans garantie d'unicité
+#   - Partager ce helper avec l'opération AUDIT
+#
+# 🔗 ÉCRIT PAR
+#   script.nas_admission_demander_release_diff
+#
+# 🔗 CONSOMMATEURS
+#   Aucun consommateur direct : le script exécutif relit sa
+#   propre variable locale pour la corrélation, pas ce helper.
+#   Ce helper porte l'ancrage transactionnel (garde de résidu
+#   entre deux appels), pas la corrélation elle-même.
+#
+# ⚠️ SÉMANTIQUE
+#   - Le request_id représente une corrélation transactionnelle
+#     d'admission, jamais un résultat métier RELEASE_DIFF.
+#   - Chantier : audits/04_chantiers/transverses/c51_commandabilite_nas.md
+#     (Lot 6 — backend Arsenal, extension RELEASE_DIFF).
+#
+# 🏷️ STATUT
+#   Socle — Arsenal C51 Lot 6 (RELEASE_DIFF)
+# ==========================================================
+
+nas_admission_req_release_diff:
+  name: "NAS admission req RELEASE_DIFF"
+  max: 64
+  # initial VOULU — transactionnel
+  # Raison : registre de corrélation MQTT, repart vide à chaque cycle/reboot (aucun request_id périmé).
+  # Restauration HA volontairement désactivée : oui
+  initial: ""

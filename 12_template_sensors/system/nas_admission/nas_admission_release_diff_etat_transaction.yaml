@@ -1,0 +1,73 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     NAS Admission — Diagnostic RELEASE_DIFF (état de la transaction)
+# ----------------------------------------------------------
+# 📌 Fichier
+#   12_template_sensors/system/nas_admission/nas_admission_release_diff_etat_transaction.yaml
+#
+# 🎯 RÔLE
+#   Exposer, en lecture diagnostique, le dernier état
+#   transactionnel connu pour l'opération RELEASE_DIFF — jamais
+#   un résultat métier (voir domaine arsenal_nas pour
+#   ok/partial/error, contrats/nas_transactionnel.md §12).
+#
+# 🧱 PRINCIPE
+#   - Source : sensor.nas_admission_result_operation /
+#     sensor.nas_admission_result_transaction_verdict /
+#     sensor.nas_admission_result_run_id /
+#     sensor.nas_admission_result_request_id
+#     (12_template_sensors/system/nas_admission/nas_admission_result_correlation.yaml)
+#   - Le canal source est PARTAGÉ AUDIT + RELEASE_DIFF (contrat
+#     §13.1) : ce fichier FILTRE sur operation == 'RELEASE_DIFF'
+#     et LATCHE (via this.state) le dernier verdict RELEASE_DIFF
+#     connu — un message AUDIT sur le canal partagé ne doit
+#     jamais effacer ou remplacer l'état RELEASE_DIFF affiché ici.
+#   - Diagnostic minimal inspiré de nas_transactionnel.md §14
+#     (last_operation/last_run_id/last_transaction_verdict),
+#     décliné côté HA pour le seul périmètre de l'extension
+#     RELEASE_DIFF (C51 Lot 6). Même patron que le diagnostic
+#     AUDIT du Lot 5 (nas_admission_audit_etat_transaction.yaml),
+#     non modifié par ce fichier — aucun second paradigme.
+#
+# ⚠️ IMPORTANT
+#   - 'sans_donnee' avant toute première transaction RELEASE_DIFF
+#     observée (aucun latch à faire : rien à latcher)
+#   - Cette entité ne décide rien et ne déclenche aucune action
+#     corrective — lecture seule
+#   - Ne remplace pas la corrélation réelle effectuée par le
+#     script exécutif (qui compare le request_id à sa propre
+#     transaction en cours, pas au dernier message reçu)
+#   - Ne lit jamais sensor.arsenal_nas_release_diff_statut (résultat
+#     métier) : séparation stricte transaction/résultat métier
+#     (contrat §12) — cette entité reste sur le seul plan
+#     transactionnel.
+# ==========================================================
+
+- sensor:
+    - name: "NAS admission RELEASE_DIFF état transaction"
+      unique_id: nas_admission_release_diff_etat_transaction
+      icon: mdi:list-status
+      state: >
+        {% set op = states('sensor.nas_admission_result_operation') %}
+        {% set verdict = states('sensor.nas_admission_result_transaction_verdict') %}
+        {% if op == 'RELEASE_DIFF' and verdict not in ['unknown', 'unavailable', ''] %}
+          {{ verdict }}
+        {% else %}
+          {% set prev = this.state %}
+          {{ prev if prev not in [none, 'unknown', 'unavailable'] else 'sans_donnee' }}
+        {% endif %}
+      attributes:
+        request_id: >
+          {% set op = states('sensor.nas_admission_result_operation') %}
+          {% if op == 'RELEASE_DIFF' %}
+            {{ states('sensor.nas_admission_result_request_id') }}
+          {% else %}
+            {{ this.attributes.get('request_id', 'unknown') }}
+          {% endif %}
+        run_id: >
+          {% set op = states('sensor.nas_admission_result_operation') %}
+          {% if op == 'RELEASE_DIFF' %}
+            {{ states('sensor.nas_admission_result_run_id') }}
+          {% else %}
+            {{ this.attributes.get('run_id', 'unknown') }}
+          {% endif %}
