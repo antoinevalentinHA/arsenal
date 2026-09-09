@@ -5,9 +5,13 @@
 
 **État d'implémentation (2026-09-09).** Le noyau local qu'il régit — verrou
 RELEASE_DIFF, durcissement AUDIT et moteur d'admission `admission_core.py`
-— est livré, mergé et testé dans `arsenal-ha-backup-timeline`. Aucun
-listener MQTT, aucun backend Arsenal de commande, aucun déploiement
-production et aucune preuve terrain à ce jour — voir chantier
+— est livré, mergé et testé dans `arsenal-ha-backup-timeline`. Le listener
+MQTT NAS (identité `nas_admission`) et le backend Arsenal de commande
+(pilote `AUDIT`, `script.nas_admission_demander_audit`) sont l'un et
+l'autre livrés et **validés terrain**. `RELEASE_DIFF` côté backend Arsenal
+n'est pas livré. Aucune UI Lovelace n'est livrée. L'hébergement/supervision
+permanent du listener NAS n'est pas livré (listener lancé manuellement pour
+les preuves terrain, puis arrêté) — voir chantier
 [`c51_commandabilite_nas.md`](../audits/04_chantiers/transverses/c51_commandabilite_nas.md).
 
 > **v1.1.0 — clarification pré-Lot A (2026-09-09).** Fermeture des ambiguïtés
