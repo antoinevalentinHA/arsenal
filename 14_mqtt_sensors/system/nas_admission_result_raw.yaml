@@ -39,7 +39,7 @@
 #         broker MQTT (identité nas_admission)
 #   Réf : contrats/nas_transactionnel.md §13.1, §13.2, §13.4
 #         audits/04_chantiers/transverses/c51_commandabilite_nas.md
-#         (Lot 5 — pilote AUDIT)
+#         (Lot 5 — pilote AUDIT ; Lot 6 — extension RELEASE_DIFF)
 #
 # 🚫 INTERDITS
 #   - Introduire une logique métier
@@ -49,7 +49,12 @@
 #   - Remplacer une couche template dédiée
 #
 # 🏷️ STATUT
-#   Transport — Arsenal C51 Lot 5 (pilote AUDIT)
+#   Transport — Arsenal C51 Lot 5 (pilote AUDIT) + Lot 6
+#   (RELEASE_DIFF). Justification de cette seule mise à jour de
+#   commentaire (Lot 6, §13 chantier) : la ligne affirmait un
+#   statut mono-lot devenu factuellement incomplet dès l'ajout du
+#   second consommateur — aucune logique, aucun topic, aucun QoS/
+#   retain modifiés ici (transport passif inchangé).
 # ==========================================================
 
 - name: "NAS admission result raw"
