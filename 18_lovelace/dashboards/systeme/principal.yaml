@@ -140,7 +140,7 @@ views:
               - type: custom:button-card
                 template: carte_action_nas_admission_demander
                 entity: script.nas_admission_demander_audit
-                name: Demander un audit Arsenal
+                name: Demander un audit
                 icon: mdi:clipboard-search-outline
                 variables:
                   confirmation: >-
@@ -149,7 +149,7 @@ views:
               - type: custom:button-card
                 template: carte_action_nas_admission_demander
                 entity: script.nas_admission_demander_release_diff
-                name: Demander un release diff Arsenal
+                name: Demander un release diff
                 icon: mdi:file-compare
                 variables:
                   confirmation: >-
@@ -184,7 +184,7 @@ views:
             card:
               type: grid
               square: false
-              columns: 2
+              columns: 1
               cards:
                 - type: custom:button-card
                   template: carte_nas_admission_etat_transaction
