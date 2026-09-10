@@ -1,7 +1,7 @@
 # Contrat — Domaine Home Assistant `arsenal_self`
 
-**Version** : v1.0.1
-**Révision** : v1.0.1 — ajout du renvoi vers le contrat transactionnel `nas_transactionnel.md` (chantier C51). Aucun changement sémantique aux entités ou à leur comportement.
+**Version** : v1.0.2
+**Révision** : v1.0.2 — explicite la politique de fraîcheur portée par `stale` (seuil de référence 168 h / 7 jours, indépendance vis-à-vis de toute cadence DSM ou de tout déclenchement automatique, absence d'implication sur le statut d'audit, le résultat transactionnel ou la disponibilité de la chaîne), dans le cadre du Lot 8.2 (retrait des déclencheurs DSM historiques d'AUDIT, chantier C51). Aucun changement aux entités exposées ni à leur comportement runtime.
 **Statut** : actif
 **Périmètre** : exposition Home Assistant de l’auto-observation Arsenal issue du pipeline NAS d’audit patrimonial.
 **Contrats liés** :
@@ -115,6 +115,9 @@ Dérivés des sensors MQTT par template :
 |---|---|
 | `input_number.arsenal_self_audit_stale_threshold_hours` | Seuil humain de péremption de l’état publié |
 
+Valeur cible normative Arsenal (2026-09) : **168 heures (7 jours)**. Cette
+valeur ne prescrit aucune cadence d'exécution d'AUDIT ; voir §6.4.
+
 ---
 
 ## 6. Sémantique des états
@@ -158,6 +161,24 @@ stale = on
 
 Cela signifie que le dernier verdict était sain, mais qu’il est trop
 ancien pour être considéré comme frais.
+
+Le seuil de référence retenu par Arsenal pour cette qualification est de
+**168 heures (7 jours)**, porté par
+`input_number.arsenal_self_audit_stale_threshold_hours` (§5.3).
+
+Cette valeur ne constitue **pas** une cadence d'exécution d'AUDIT. Elle
+signifie uniquement qu'au-delà de 7 jours depuis le dernier résultat
+métier AUDIT publié, ce résultat est qualifié de périmé. Elle est
+indépendante de toute cadence DSM ou de tout déclenchement automatique :
+aucune obligation d'exécuter un AUDIT selon cette fréquence n'en
+découle, et aucune automatisation n'est requise pour maintenir
+`binary_sensor.arsenal_self_audit_stale` à `off`.
+
+Dépasser ce seuil ne signifie ni un échec d'AUDIT, ni un échec
+transactionnel, ni une indisponibilité de la chaîne : cela signifie
+seulement que le dernier résultat connu doit être rafraîchi, à la
+discrétion de l'opérateur, avant d'être considéré comme représentatif
+de l'état patrimonial courant.
 
 ---
 
@@ -255,4 +276,4 @@ publication relève du contrat MQTT associé.
 
 ---
 
-*Fin du contrat — Domaine Home Assistant `arsenal_self` v1.0.1.*
+*Fin du contrat — Domaine Home Assistant `arsenal_self` v1.0.2.*

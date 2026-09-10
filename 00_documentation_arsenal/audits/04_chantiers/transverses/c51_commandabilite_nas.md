@@ -1184,6 +1184,11 @@ preuve terrain avant le retrait qu'il documente :
    Après preuve terrain que le nouveau chemin `AUDIT` (8.1) porte seul la
    garantie de stabilité, retirer les deux tâches DSM de déclenchement
    réactif/quotidien du pipeline `AUDIT` (§9, lignes 2 et 3 du tableau).
+   La fin de ces déclenchements automatiques ne supprime pas la notion de
+   fraîcheur portée par `binary_sensor.arsenal_self_audit_stale` : ce
+   signal reste indépendant de toute cadence DSM et continue de qualifier
+   l'âge du dernier résultat métier AUDIT publié selon le seuil de
+   référence Arsenal — 168 h / 7 jours (`arsenal_self.md` §6.4/§5.3).
 3. **8.3 — `RELEASE_DIFF` : autonomie par extraction à la demande.** Rendre
    `run_release_diff.sh` autonome en lui ajoutant l'extraction à la
    demande. Pendant la coexistence avec `Arsenal - Timeline Backups HA`

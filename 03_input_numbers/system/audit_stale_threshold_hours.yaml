@@ -26,9 +26,13 @@
 #
 # 📐 VALEURS
 #   min : 1   (1h, valeur de garde pour test)
-#   max : 168 (1 semaine, marge maximale raisonnable)
+#   max : 168 (1 semaine, borne haute — alignée sur la politique cible)
 #   step : 1
-#   initial : 25 (24h + 1h marge, conforme §11.a du contrat)
+#   Pas de clé `initial` (cf. corps du fichier ci-dessous) : valeur
+#   opérateur restaurée par HA au redémarrage. Politique cible Arsenal
+#   (2026-09, arsenal_self.md §6.4/§5.3) : seuil de référence 168h / 7
+#   jours. Réglage terrain de la valeur opérateur à 168 à effectuer
+#   séparément, via l'UI Home Assistant (hors du présent lot documentaire).
 # ==========================================================
 
 arsenal_self_audit_stale_threshold_hours:
