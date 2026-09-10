@@ -5,7 +5,7 @@
 # 🎯 RÔLE
 #   Exposer une entrée de décision binaire : ON si la
 #   dernière projection MQTT d'audit reçue par HA est plus
-#   ancienne que le seuil configuré (default 25h).
+#   ancienne que le seuil configuré (default 168h).
 #
 # 🧩 PÉRIMÈTRE
 #   - Cohérence temporelle de la projection, pas du verdict
@@ -48,5 +48,5 @@
 
       state: >
         {% set age_min = states('sensor.arsenal_self_audit_age_minutes') | float(0) %}
-        {% set threshold_h = states('input_number.arsenal_self_audit_stale_threshold_hours') | float(25) %}
+        {% set threshold_h = states('input_number.arsenal_self_audit_stale_threshold_hours') | float(168) %}
         {{ (age_min / 60) > threshold_h }}
