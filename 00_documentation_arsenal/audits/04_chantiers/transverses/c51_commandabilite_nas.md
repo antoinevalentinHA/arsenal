@@ -18,6 +18,7 @@
 | **Mise à jour** | 2026-09-09 — **Lot 7, UI Lovelace, livré en code — non déployé, non testé terrain.** Nouvelle section « Commandabilité NAS (C51) » ajoutée à `18_lovelace/dashboards/systeme/nas.yaml` (dashboard NAS existant, aucune nouvelle page créée — `arsenal_self`/`arsenal_nas` restent des contrats système/transverses sans hub de domaine, `navigation/carte_domaines.md` §3/§6) : deux boutons de demande confirmés (`carte_action_nas_admission_demander`, satellite de `socle_action_script_confirme`, appelant exclusivement `script.turn_on` sur `script.nas_admission_demander_audit`/`_release_diff` — aucune publication MQTT, aucun `request_id` généré côté UI), deux cartes de diagnostic transactionnel (`carte_nas_admission_etat_transaction`, satellite de `socle_status_label`, vocabulaire fermé `nas_transactionnel.md` §10 traduit sans jamais colorer `completed` en vert ni l'assimiler à un succès métier), deux cartes de résultat métier strictement séparées (réutilisation de `arsenal_self_audit_status_card` pour AUDIT, nouvelle `arsenal_nas_release_diff_status_card` pour RELEASE_DIFF, construite sur les seules entités `arsenal_nas.md` §5.1, sans binary_sensor de fraîcheur/erreur inventé — §5.3 du même contrat). Conception dérivée exclusivement de la documentation UI existante (`ui/pattern_dashboard.md`, `ui/socle_ui/02_action.md`/`07_status.md`, `ui/couleurs/`) et des patrons déjà en usage dans le dépôt (`carte_action_arrosage_script`, `arsenal_self_audit_status_card`) — aucune convention inventée hors documentation. Aucun backend Lots 5/6 modifié (diff nul vérifié), aucune automation créée, aucun ID d'automatisation inventé (§14), aucun contrat NAS modifié. Voir §12.1/§12.8. |
 | **Mise à jour** | 2026-09-10 — **Correction fonctionnelle du Lot 7 (UI Lovelace) — repositionnement Arsenal/Système, sans revert global de la PR #819.** Retrait intégral de la section « Commandabilité NAS (C51) » de `18_lovelace/dashboards/systeme/nas.yaml` ; nouvelle section « Arsenal — Audit & Release Diff (C51) » ajoutée à `18_lovelace/dashboards/systeme/principal.yaml` (dashboard Système), en cohérence avec la carte de résultat métier AUDIT déjà présente (`arsenal_self_audit_status_card`, non déplacée, non réécrite) ; ajout à côté d'elle de la carte de résultat métier RELEASE_DIFF (`arsenal_nas_release_diff_status_card`, livrée au Lot 7 mais jusqu'ici consommée par aucun dashboard). Les deux templates NAS-spécifiques du Lot 7 (`carte_action_nas_admission_demander`, `carte_nas_admission_etat_transaction`) sont déplacés de `19_button_card_templates/40_dashboards/nas/` vers `19_button_card_templates/40_dashboards/system/` (contenu inchangé) ; `nas/README.md` et `system/README.md` mis à jour en conséquence. Libellés UI adaptés pour nommer le service rendu à Arsenal en premier, le NAS en second plan (exécutant) — aucune entité backend renommée. Motif : le Lot 7 avait placé cette UI dans `nas.yaml` au seul motif que `arsenal_self`/`arsenal_nas` n'ont pas de hub de domaine dédié (`navigation/carte_domaines.md` §3/§6) ; cette lecture est corrigée — l'absence de hub ne désigne aucun domaine d'accueil par défaut, et le sens fonctionnel de `AUDIT`/`RELEASE_DIFF` reste Arsenal/Système, le NAS n'étant que l'exécutant technique externe de la demande (§4). Aucun fichier backend (Lots 5/6), script, helper, sensor MQTT, template sensor, automation, secret ou contrat NAS touchés. Voir §11.A10/§12.9. |
 | **Mise à jour** | 2026-09-10 — **Décision produit actée : ouverture du Lot 8 — lot documentaire uniquement, aucune exécution.** État cible arbitré : `AUDIT` est déclenché uniquement à la demande depuis Arsenal/Home Assistant via MQTT ; `RELEASE_DIFF` est déclenché uniquement à la demande depuis Arsenal/Home Assistant via MQTT ; l'extraction timeline n'est exécutée que lorsqu'une demande Arsenal en a besoin ; aucune extraction périodique DSM, aucun `AUDIT` automatique DSM, aucun `RELEASE_DIFF` automatique DSM ne subsistent à l'état cible ; le NAS reste moteur d'exécution, Arsenal porte l'initiative. Les mécanismes indépendants de maintenance (watchdog MQTT, `Arsenal - Retention`, `Arsenal - Quarantine Purger`, protections natives DSM) ne sont pas concernés par cette décision. Chantier existant **C51** réutilisé tel quel : aucun nouvel identifiant, aucun nouveau chantier. Séquencement arrêté en six sous-lots 8.1→8.6, détaillé au §12.10 (nouveau) ; complément normatif au §9 (extraction sur demande, règle `rc=77` transitoire puis cible). Le Lot 8 reste **globalement non commencé** : cette mise à jour documente le plan, elle n'exécute aucun lot. Le Lot 9 (clôture documentaire) suit le Lot 8. |
+| **Mise à jour** | 2026-09-10 — **Lot documentaire uniquement : dépendance réelle de `Arsenal - Retention` à `versions/` documentée, sous-lot Retention autonome ouvert (§12.11, nouveau).** Constat fait en préparation du sous-lot 8.4 (retrait de `Arsenal - Timeline Backups HA`, §12.10) : `Arsenal - Retention` (`retention_manager.py --root /volume1/Backups_HA/ha_backup_timeline/versions ... --apply`, 04:00) dépend de la **complétude** de `versions/`, pas seulement de son contenu — le moteur scanne `--root` à plat et classe notamment les `Automatic_backup*` par rang/date (`retention_manager.md` §2-§4/§13) sans jamais relire le contenu extrait ; sur une vue partielle, il peut fonctionner techniquement tout en produisant une décision `KEEP`/`QUARANTINE` sémantiquement fausse, alors que `--apply` déplace réellement des dossiers. Retirer `Arsenal - Timeline Backups HA` sans autre mécanisme serait donc incorrect pour Retention, indépendamment de l'autonomie déjà acquise ou à acquérir par `AUDIT`/`RELEASE_DIFF`. Doctrine actée : `versions/` cesse d'être conçu comme un cache entretenu en continu par polling ; chaque consommateur qui exige une vue fraîche (AUDIT, RELEASE_DIFF, Retention) prépare lui-même, avant de décider, la fraîcheur dont il a besoin ; pour Retention en particulier, la préparation de matière doit précéder la décision de rétention, et si cette préparation échoue, Retention ne doit jamais être exécutée en mode `--apply` — aucun fallback sur un `versions/` potentiellement incomplet. Architecture runtime cible documentée pour un futur lot, **non codée par ce lot** : wrapper dédié `run_retention.sh` dans `arsenal-ha-backup-timeline`, orchestrant conceptuellement `run_retention.lock` → chargement du secret runtime → `timeline_extract.lock` → `ha_backup_timeline_extract_v2.py --no-diff` (batch complet, sans `--latest-only`, sans `--limit`) → `retention_manager.py --apply` seulement si l'extraction a réussi, sinon échec bruyant (fail-loud) et moteur Retention non lancé ; `timeline_extract.lock` reste le verrou partagé interne déjà prévu au §12.10 (8.3), `run_retention.lock` (nouveau) protégerait la chaîne Retention complète ; aucun changement requis de `retention_manager.py` ni de `retention_policy.yaml` par cette architecture. Condition de retrait du sous-lot 8.4 élargie en conséquence : preuve terrain désormais requise pour `AUDIT` (8.1/8.2), `RELEASE_DIFF` (8.3) **et** Retention autonome (§12.11), les trois chemins devant être prouvés avant ce retrait — pas l'un sans les autres. Sous-lots 8.5 (requalification `timeline_extract.lock`) et 8.6 (retrait `Arsenal - Release Diff` quotidien) **inchangés**, dans leur numérotation comme dans leur contenu. `Arsenal - Quarantine Purger` reste inchangé et hors périmètre : sa purge différée est indépendante de la préparation timeline, son exécution à 04:05 après Retention restant une convention d'exploitation. **Lot strictement documentaire** : aucun runtime Arsenal, aucun runtime NAS, aucune configuration DSM, aucun fichier du dépôt `arsenal-ha-backup-timeline` modifiés par cette mise à jour ; `run_retention.sh` n'existe pas et n'est pas codé par ce lot ; aucun Lot 8.5/8.6 commencé. Voir §9, §12.10, §12.11 (nouveau). |
 
 ---
 
@@ -202,8 +203,18 @@ et prouvée en terrain.
 | `Pipeline HA` (02:45, inconditionnel) | Filet de sécurité quotidien | Oui | Preuve qu'un déclenchement planifié MQTT ne laisse aucune fenêtre sans audit | Automatisation Arsenal planifiée émettant `AUDIT` |
 | `Arsenal - Release Diff` (03:15) | Déclenchement quotidien inconditionnel | Oui | Verrou RELEASE_DIFF ajouté (§2.10) **et** preuve terrain du chemin MQTT | Automatisation Arsenal planifiée émettant `RELEASE_DIFF` |
 
-`Arsenal - Retention` et `Arsenal - Quarantine Purger` restent hors
-périmètre de ce chantier.
+`Arsenal - Quarantine Purger` reste hors périmètre de ce chantier : sa
+purge différée porte uniquement sur `_quarantine/`, elle est indépendante
+de la préparation timeline, et son exécution à 04:05 après Retention est
+une convention d'exploitation, non une dépendance technique — voir
+§12.11.
+
+`Arsenal - Retention` reste également hors périmètre pour toute
+modification de son moteur (`retention_manager.py`, `retention_policy.yaml`)
+ou de sa tâche DSM actuelle. Mais sa dépendance réelle à la **complétude**
+de `versions/`, révélée en préparation du sous-lot 8.4 (§12.10), conditionne
+désormais le retrait de `Arsenal - Timeline Backups HA` : voir §12.11
+(nouveau).
 
 **Extraction sur demande — arbitrage du 2026-09-10.** L'extraction timeline
 n'est plus conçue comme un flux périodique indépendant : à l'état cible,
@@ -536,13 +547,36 @@ l'emplacement fonctionnel de l'UI qu'elle a livrée. Aucun backend touché
   d'automatisation HA inventé (§14 chantier), aucune publication MQTT
   directe depuis Lovelace, aucun secret touché.
 
+### A11. Lot documentaire — Retention autonome, ouverture (2026-09-10)
+
+Lot documentaire pur : aucun fichier runtime Arsenal ni NAS touché, aucun
+fichier du dépôt `arsenal-ha-backup-timeline` touché. Documente un problème
+réel découvert en préparation du sous-lot 8.4 (§12.10) et ouvre le sous-lot
+Retention autonome (§12.11, nouveau).
+
+- Le présent document — Statut (aucune ligne Statut modifiée, seule la
+  `Mise à jour` du jour ajoutée), `Mise à jour` (nouvelle ligne), §9
+  (paragraphe Retention/Quarantine Purger reformulé), §12.10 (sous-lot 8.4 :
+  condition élargie ; note de complétion sans renumérotation ; « État de ce
+  lot » complété), §12.11 (nouveau, huit sous-sections).
+- `audits/REGISTRE_CHANTIERS.md` — ligne C51 (précision : `Arsenal -
+  Retention` n'est plus qualifiée de « non concernée » sans nuance par la
+  décision du 2026-09-10 ; renvoi vers §12.11).
+- `retention_manager.md`, `quarantine_purger.md`, `diff_auto.md` —
+  **non modifiés** ; relus et cités comme référence factuelle (§12.11.1,
+  §12.11.4, §12.11.6, §12.11.7).
+- Aucun runtime Arsenal, aucun runtime NAS, aucune configuration DSM,
+  aucun fichier de `arsenal-ha-backup-timeline` touchés par ce lot. Aucun
+  Lot 8.5/8.6 entamé. `run_retention.sh` n'existe pas et n'est pas codé
+  par ce lot.
+
 ### B. Référencés, non modifiés
 
 `outils_externes/nas_arsenal/audit/audit.md`, `audit/mqtt.md`,
 `diff/diff_release.md` (contenu substantif — exact pour son périmètre
 actuel), `contrats/switchbot_transactionnel.md` (précédent transactionnel
 réutilisé), `quarantine_purger.md`, `retention_manager.md` (hors
-périmètre).
+périmètre — cités comme référence factuelle par §12.11, non modifiés).
 
 ### C. À modifier au moment des lots runtime
 
@@ -1197,9 +1231,13 @@ preuve terrain avant le retrait qu'il documente :
    périodique — aucun verrou distinct, aucune fenêtre de collision non
    couverte.
 4. **8.4 — retrait de `Arsenal - Timeline Backups HA`.** Retrait
-   uniquement après preuves terrain acquises **pour `AUDIT` (8.1/8.2) ET
-   `RELEASE_DIFF` (8.3) autonomes** — les deux chemins doivent être
-   prouvés avant ce retrait, pas l'un sans l'autre.
+   uniquement après preuves terrain acquises **pour `AUDIT` (8.1/8.2),
+   `RELEASE_DIFF` (8.3) ET Retention autonome (§12.11, nouveau)** — les
+   trois chemins doivent être prouvés avant ce retrait, pas l'un sans les
+   autres. Condition élargie le 2026-09-10 : la préparation de ce sous-lot
+   a révélé que `Arsenal - Retention` dépend elle aussi de la complétude
+   de `versions/`, aujourd'hui alimentée par cette même tâche DSM — voir
+   §12.11.
 5. **8.5 — requalification de `timeline_extract.lock`.** Après retrait du
    dernier appelant DSM direct de l'extracteur (8.4), `timeline_extract.lock`
    cesse d'être le mécanisme normal de coordination entre extractions
@@ -1212,13 +1250,209 @@ preuve terrain avant le retrait qu'il documente :
    d'exclusion mutuelle RELEASE_DIFF, §2.10, et preuve terrain du chemin
    MQTT).
 
+Le sous-lot 8.4 est complété, sans être renuméroté, par l'ouverture
+documentaire du sous-lot **Retention autonome** (§12.11, nouveau) : celui-ci
+n'entre pas dans la numérotation 8.1→8.6, pour ne pas perturber l'identité
+déjà arrêtée de 8.5 (requalification `timeline_extract.lock`) et 8.6
+(retrait `Arsenal - Release Diff` quotidien), mais constitue un préalable
+obligatoire au retrait effectif de `Arsenal - Timeline Backups HA` (8.4),
+au même titre qu'`AUDIT` (8.1/8.2) et `RELEASE_DIFF` (8.3).
+
 Le **Lot 9**, hors périmètre du présent document, suit le Lot 8 pour la
 clôture documentaire du chantier.
 
 **État de ce lot : globalement non commencé.** Aucun sous-lot 8.1 à 8.6
 n'est livré à ce stade ; cette mise à jour documente le plan arbitré, elle
-n'exécute aucun sous-lot. Voir aussi la ligne `Mise à jour` du 2026-09-10
-et le complément du §9.
+n'exécute aucun sous-lot. Le sous-lot Retention autonome (§12.11) est lui
+aussi **non commencé** au sens runtime : seule son ouverture documentaire
+et son architecture cible sont formalisées par la présente mise à jour.
+Voir aussi la ligne `Mise à jour` du 2026-09-10 et le complément du §9.
+
+---
+
+### 12.11 Retention — autonomisation de la préparation de matière (ouverture documentaire, 2026-09-10)
+
+**Lot documentaire uniquement : ce lot ne modifie aucun runtime Arsenal,
+aucun runtime NAS, aucun fichier du dépôt `arsenal-ha-backup-timeline`,
+aucune configuration DSM.** Il documente un problème réel découvert en
+préparation du sous-lot 8.4 (§12.10), la doctrine d'architecture qui en
+découle, et l'architecture runtime cible d'un futur lot — sans le coder.
+Chantier existant **C51** réutilisé tel quel ; aucun nouvel identifiant,
+aucun nouveau chantier, aucun Lot 8.5/8.6 entamé.
+
+#### 12.11.1 Problème découvert au Lot 8.4
+
+Terrain confirmé : `Arsenal - Retention` exécute
+`retention_manager.py --root /volume1/Backups_HA/ha_backup_timeline/versions ... --apply`
+à 04:00 ; `Arsenal - Quarantine Purge` travaille sur
+`/volume1/Backups_HA/ha_backup_timeline/versions/_quarantine` à 04:05 ;
+`Arsenal - Timeline Backups HA` alimente aujourd'hui `versions/` toutes les
+5 minutes.
+
+Lecture du contrat [`retention_manager.md`](../../../outils_externes/nas_arsenal/retention_manager.md)
+(§2-§4, §13) : le moteur scanne `--root` **à plat** (aucune récursivité),
+ne lit jamais le contenu extrait, et classe notamment les
+`Automatic_backup*` par rang/date pour déterminer `KEEP_AUTOMATIC_RECENT`
+vs `QUARANTINE_AUTOMATIC_OLD` (doctrine asymétrique §2, ordre d'évaluation
+§4). Il suppose implicitement que la vue qu'il analyse est suffisamment
+complète pour que ce rang soit correct.
+
+Cette dépendance à `versions/` n'est donc **pas** un besoin de contenu
+extrait (Retention ne lit pas le contenu des dossiers), mais un besoin de
+**complétude d'inventaire** : sur une vue partielle, le script peut
+fonctionner techniquement sans erreur, mais la décision qu'il produit peut
+devenir sémantiquement fausse — un mauvais rang peut conduire à un mauvais
+`KEEP`/`QUARANTINE_AUTOMATIC_OLD`. Comme `--apply` déplace réellement des
+dossiers vers `_quarantine/` (`retention_manager.md` §6.1, §9.2), une
+décision prise sur une vue incomplète a un effet destructif potentiel réel,
+même si le déplacement lui-même reste techniquement réversible (§7 du même
+contrat : la quarantine n'est pas une suppression).
+
+**Conséquence directe pour le Lot 8 :** retirer `Arsenal - Timeline Backups
+HA` sans autre mécanisme, comme le prévoyait initialement le sous-lot 8.4
+(§12.10) une fois `AUDIT`/`RELEASE_DIFF` autonomes, serait **incorrect**
+pour Retention — Retention continuerait de décider sur un `versions/` figé
+au dernier état laissé par la dernière extraction périodique, sans plus
+aucune garantie de fraîcheur ni de complétude.
+
+#### 12.11.2 Décision d'architecture
+
+`versions/` n'est plus conçu, à l'état cible, comme un cache entretenu en
+continu par polling DSM. Chaque consommateur qui exige une vue fraîche
+prépare lui-même la matière nécessaire avant de décider :
+
+- **AUDIT** : extraction ciblée du dernier backup ;
+- **RELEASE_DIFF** : batch complet (§12.10, 8.3) ;
+- **Retention** : batch complet avant décision.
+
+Pour Retention spécifiquement :
+
+> La préparation de matière doit précéder la décision de rétention.
+>
+> Si la préparation échoue, Retention ne doit pas être exécutée en mode
+> `--apply`.
+
+Aucun fallback sur un `versions/` potentiellement incomplet : conformément
+à la doctrine Arsenal (`unknown`/`unavailable` ne vaut pas faux), une
+préparation en échec ne doit jamais être traitée comme une préparation
+réussie mais dégradée — elle doit produire un échec bruyant (fail-loud) et
+l'absence d'exécution du moteur de décision, pas une exécution silencieuse
+sur une base incertaine.
+
+#### 12.11.3 Responsabilités — distinction préservée
+
+- **Extracteur timeline** (`ha_backup_timeline_extract_v2.py`) = préparation
+  de matière. Il alimente `versions/`, il ne décide de rien.
+- **Retention** (`retention_manager.py`) = décision de conservation /
+  quarantine. Il classe et, sous `--apply`, déplace — il ne purge jamais.
+- **Quarantine Purger** (`quarantine_purger.py`) = purge différée des
+  éléments déjà quarantinés par Retention. Il ne travaille que sur
+  `_quarantine/` (`quarantine_purger.md` §69, §149, §278) et n'a aucune
+  dépendance à la fraîcheur de `versions/`.
+
+Ces trois responsabilités ne sont pas fusionnées par cette architecture.
+
+#### 12.11.4 Architecture runtime cible (à documenter, non codée par ce lot)
+
+Décision de lot futur, dans `arsenal-ha-backup-timeline` — **ce wrapper
+n'existe pas encore et cette session ne le code pas** :
+
+```text
+run_retention.sh
+  run_retention.lock
+    → chargement secret runtime
+    → timeline_extract.lock
+      → ha_backup_timeline_extract_v2.py --no-diff
+    → si préparation réussie : retention_manager.py --apply
+    → sinon : échec bruyant (fail-loud), moteur Retention non lancé
+```
+
+Précisions normatives pour ce futur lot :
+
+- Préparation en **batch complet** : sans `--latest-only`, sans `--limit`
+  (même exigence que la préparation RELEASE_DIFF, §12.10 8.3, et déjà
+  démontrée terrain au Lot 8.3 du chantier §6 « Contexte acquis ») —
+  Retention doit voir l'inventaire complet, pas une fenêtre bornée.
+- Préparation **sans diff forensic legacy** : `--no-diff` est impératif.
+  La disparition future du producteur historique du diff forensic
+  (`Arsenal - Timeline Backups HA`, à terme retiré par 8.4) ne doit **pas**
+  être contournée en réintroduisant ce diff par le chemin Retention —
+  Retention prépare de la matière pour décider, pas pour produire un
+  artefact `_diff/`.
+- Préparation **batch idempotente** : réutilise l'idempotence déjà portée
+  par `state/processed_backups.json` (`diff_auto.md`, section
+  « Fonctionnement incrémental ») — aucune réextraction d'un backup déjà
+  traité avec succès et `sha256` identique.
+- `timeline_extract.lock` reste le **verrou partagé interne** de
+  l'extracteur, déjà prévu comme tel au sous-lot 8.3 (§12.10) pendant la
+  coexistence avec `Arsenal - Timeline Backups HA` ; le futur
+  `run_retention.sh` s'y soumet au même titre que toute autre extraction
+  concurrente — aucun verrou distinct, aucune fenêtre de collision non
+  couverte (même exigence que 8.3).
+- Le futur `run_retention.lock` protège la **chaîne Retention complète**
+  (préparation + décision), pas seulement l'extraction — distinct de
+  `timeline_extract.lock`.
+- **Aucun changement du moteur Python `retention_manager.py` requis** par
+  cette architecture : le contrat existant (`retention_manager.md`,
+  invariants §17) reste intégralement valide — seule la fraîcheur de son
+  entrée (`--root`) change de garantie.
+- **Aucun changement de `retention_policy.yaml` requis** par principe :
+  cette architecture ne touche ni la doctrine asymétrique, ni les clés de
+  configuration existantes (`retention_manager.md` §10).
+- Sémantique fail-loud documentée, pas de code de retour numérique
+  inventé : aucun contrat existant n'impose aujourd'hui un `rc` spécifique
+  pour cette chaîne, et ce lot documentaire n'en fige aucun. Le futur lot
+  d'implémentation choisira et contractualisera ce point le moment venu.
+
+#### 12.11.5 Conséquence sur la tâche DSM `Arsenal - Retention`
+
+À terme, `Arsenal - Retention` devra appeler `run_retention.sh` plutôt que
+`retention_manager.py` directement. **Aucune modification DSM n'est faite
+par ce lot documentaire.** `Arsenal - Timeline Backups HA` n'est pas
+supprimée tant que ce wrapper n'est pas codé, testé, déployé et validé
+terrain — voir la condition élargie du sous-lot 8.4 (§12.10).
+
+#### 12.11.6 Relation avec Quarantine Purger
+
+`Arsenal - Quarantine Purge` est indépendant de la préparation timeline :
+il ne consomme que `_quarantine/`, produit par Retention, jamais
+`versions/` directement. Son exécution à 04:05, après Retention (04:00),
+est une convention d'exploitation, pas une dépendance technique nouvelle.
+Ce lot n'exige, et ne prévoit, aucune modification de `quarantine_purger.py`
+ni de `quarantine_purger.md`.
+
+#### 12.11.7 Diff forensic
+
+La préparation Retention devra utiliser `--no-diff` (§12.11.4). Le diff
+patrimonial forensic (`ha_backup_timeline_diff.py`, `_diff/`,
+[`diff_auto.md`](../../../outils_externes/nas_arsenal/diff/diff_auto.md))
+reste hors périmètre de ce chantier (§1) ; sa disparition future comme
+sous-produit de `Arsenal - Timeline Backups HA` (8.4) ne doit pas être
+compensée en le faisant réapparaître dans la chaîne Retention.
+
+#### 12.11.8 Séquence interne du sous-lot Retention autonome
+
+Avant que la condition élargie du sous-lot 8.4 (§12.10) puisse être
+considérée satisfaite pour Retention, la séquence suivante est requise —
+aucune de ses étapes n'est exécutée par ce lot documentaire :
+
+1. documentation / ouverture du sous-lot Retention autonome — **ce lot** ;
+2. implémentation runtime de `run_retention.sh` dans
+   `arsenal-ha-backup-timeline` ;
+3. tests ;
+4. déploiement terrain ;
+5. bascule DSM de `Arsenal - Retention` vers le wrapper ;
+6. preuve terrain sur un cycle réel (04:00, `--apply`) ;
+7. seulement ensuite, retrait effectif de `Arsenal - Timeline Backups HA`
+   (sous-lot 8.4, §12.10) — conditionné également, rappel, aux preuves
+   terrain `AUDIT` (8.1/8.2) et `RELEASE_DIFF` (8.3) ;
+8. sous-lot **8.5** — requalification de `timeline_extract.lock` (§12.10,
+   inchangé) ;
+9. sous-lot **8.6** — retrait de `Arsenal - Release Diff` quotidien
+   (§12.10, inchangé).
+
+**État de ce sous-lot : ouverture documentaire seule (étape 1). Étapes 2 à
+9 non commencées.**
 
 ---
 
