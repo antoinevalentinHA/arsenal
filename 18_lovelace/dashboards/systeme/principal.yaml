@@ -131,7 +131,7 @@ views:
           # ==================================================
           - type: custom:button-card
             template: section_header
-            name: 🧠 Arsenal — Audit & Release Diff (C51)
+            name: 🧠 Arsenal — Audit & Release Diff
 
           - type: grid
             square: false
@@ -155,31 +155,54 @@ views:
                   confirmation: >-
                     Confirmer la demande de release diff Arsenal (exécution déléguée au NAS) ?
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: custom:button-card
-                template: carte_nas_admission_etat_transaction
-                entity: sensor.nas_admission_audit_etat_transaction
-                name: Transaction — Audit
-                variables:
-                  resultat_metier_hint: sensor.arsenal_self_audit_statut
+          - type: conditional
+            conditions:
+              - condition: or
+                conditions:
+                  - condition: and
+                    conditions:
+                      - condition: state
+                        entity: sensor.nas_admission_audit_etat_transaction
+                        state_not: sans_donnee
+                      - condition: state
+                        entity: sensor.nas_admission_audit_etat_transaction
+                        state_not: admitted
+                      - condition: state
+                        entity: sensor.nas_admission_audit_etat_transaction
+                        state_not: completed
+                  - condition: and
+                    conditions:
+                      - condition: state
+                        entity: sensor.nas_admission_release_diff_etat_transaction
+                        state_not: sans_donnee
+                      - condition: state
+                        entity: sensor.nas_admission_release_diff_etat_transaction
+                        state_not: admitted
+                      - condition: state
+                        entity: sensor.nas_admission_release_diff_etat_transaction
+                        state_not: completed
+            card:
+              type: grid
+              square: false
+              columns: 2
+              cards:
+                - type: custom:button-card
+                  template: carte_nas_admission_etat_transaction
+                  entity: sensor.nas_admission_audit_etat_transaction
+                  name: Transaction — Audit
+                  variables:
+                    resultat_metier_hint: sensor.arsenal_self_audit_statut
 
-              - type: custom:button-card
-                template: carte_nas_admission_etat_transaction
-                entity: sensor.nas_admission_release_diff_etat_transaction
-                name: Transaction — Release Diff
-                variables:
-                  resultat_metier_hint: sensor.arsenal_nas_release_diff_statut
+                - type: custom:button-card
+                  template: carte_nas_admission_etat_transaction
+                  entity: sensor.nas_admission_release_diff_etat_transaction
+                  name: Transaction — Release Diff
+                  variables:
+                    resultat_metier_hint: sensor.arsenal_nas_release_diff_statut
 
           # 🧠 Arsenal Self Audit — Statut synthétique
           - type: custom:button-card
             template: arsenal_self_audit_status_card
-
-          # 🧠 Arsenal NAS Release Diff — Statut synthétique
-          - type: custom:button-card
-            template: arsenal_nas_release_diff_status_card
 
           ####################################################
           # 🩺 SYSTÈMES CRITIQUES
