@@ -17,6 +17,7 @@
 | **Mise à jour** | 2026-09-09 — **Lot documentaire uniquement : preuve terrain du Lot 6 `RELEASE_DIFF` fournie** — `script.nas_admission_demander_release_diff` déployé et exécuté sur le clone runtime réellement exécuté par Home Assistant (`/config`, fast-forward propre `c01fdcd4`→`4e0059d1` jusqu'au merge de la PR #817 ; un premier fast-forward sur un clone Windows distinct n'était pas le clone exécuté par HA et n'a donc valu aucune preuve) : `request_id` `c49d02fa-1588-46e7-8e4f-27d9a26cf416`, `run_id` `c70c093f-fd37-4889-902e-2ff4310c13bf`, `operation` `RELEASE_DIFF`, admission reçue ≈ 1 s après `ts` (marge restante avant `expires_at` ≈ 59 s, sans confondre l'admission elle-même avec une durée d'exécution), terminaison transactionnelle `completed`, `wrapper_rc` `0`, durée totale `ts`→terminal ≈ 3 min 23 s — **`expires_at` borne l'admission de la demande, pas la durée totale d'une exécution déjà admise** : cette preuve montre précisément une admission dans la fenêtre contractuelle suivie d'une exécution poursuivie au-delà de `expires_at` sans anomalie (contrat §6, §9.5). Corrélation `request_id`/`run_id` bidirectionnelle HA↔NAS vérifiée, ancrage nettoyé, une seule exécution `RELEASE_DIFF`, aucune reconnexion MQTT pendant la transaction (listener permanent, même PID avant/après). Résultat métier observé **séparément** sur `sensor.arsenal_nas_release_diff_derniere_execution`/`sensor.arsenal_nas_release_diff_statut` (`ok`) : `transaction_verdict=completed` n'est à aucun moment assimilé à ce résultat. Aucun runtime Arsenal ni NAS modifié par cette mise à jour ; contrat `nas_transactionnel.md` corrigé uniquement sur son encart d'état d'implémentation (aucune clause normative touchée). UI Lovelace (Lot 7) toujours non commencée, non ouverte par ce lot ; preuves de replay/`BUSY`/crash-reprise et dette ACL C52 inchangées. Voir §12.1/§12.7. |
 | **Mise à jour** | 2026-09-09 — **Lot 7, UI Lovelace, livré en code — non déployé, non testé terrain.** Nouvelle section « Commandabilité NAS (C51) » ajoutée à `18_lovelace/dashboards/systeme/nas.yaml` (dashboard NAS existant, aucune nouvelle page créée — `arsenal_self`/`arsenal_nas` restent des contrats système/transverses sans hub de domaine, `navigation/carte_domaines.md` §3/§6) : deux boutons de demande confirmés (`carte_action_nas_admission_demander`, satellite de `socle_action_script_confirme`, appelant exclusivement `script.turn_on` sur `script.nas_admission_demander_audit`/`_release_diff` — aucune publication MQTT, aucun `request_id` généré côté UI), deux cartes de diagnostic transactionnel (`carte_nas_admission_etat_transaction`, satellite de `socle_status_label`, vocabulaire fermé `nas_transactionnel.md` §10 traduit sans jamais colorer `completed` en vert ni l'assimiler à un succès métier), deux cartes de résultat métier strictement séparées (réutilisation de `arsenal_self_audit_status_card` pour AUDIT, nouvelle `arsenal_nas_release_diff_status_card` pour RELEASE_DIFF, construite sur les seules entités `arsenal_nas.md` §5.1, sans binary_sensor de fraîcheur/erreur inventé — §5.3 du même contrat). Conception dérivée exclusivement de la documentation UI existante (`ui/pattern_dashboard.md`, `ui/socle_ui/02_action.md`/`07_status.md`, `ui/couleurs/`) et des patrons déjà en usage dans le dépôt (`carte_action_arrosage_script`, `arsenal_self_audit_status_card`) — aucune convention inventée hors documentation. Aucun backend Lots 5/6 modifié (diff nul vérifié), aucune automation créée, aucun ID d'automatisation inventé (§14), aucun contrat NAS modifié. Voir §12.1/§12.8. |
 | **Mise à jour** | 2026-09-10 — **Correction fonctionnelle du Lot 7 (UI Lovelace) — repositionnement Arsenal/Système, sans revert global de la PR #819.** Retrait intégral de la section « Commandabilité NAS (C51) » de `18_lovelace/dashboards/systeme/nas.yaml` ; nouvelle section « Arsenal — Audit & Release Diff (C51) » ajoutée à `18_lovelace/dashboards/systeme/principal.yaml` (dashboard Système), en cohérence avec la carte de résultat métier AUDIT déjà présente (`arsenal_self_audit_status_card`, non déplacée, non réécrite) ; ajout à côté d'elle de la carte de résultat métier RELEASE_DIFF (`arsenal_nas_release_diff_status_card`, livrée au Lot 7 mais jusqu'ici consommée par aucun dashboard). Les deux templates NAS-spécifiques du Lot 7 (`carte_action_nas_admission_demander`, `carte_nas_admission_etat_transaction`) sont déplacés de `19_button_card_templates/40_dashboards/nas/` vers `19_button_card_templates/40_dashboards/system/` (contenu inchangé) ; `nas/README.md` et `system/README.md` mis à jour en conséquence. Libellés UI adaptés pour nommer le service rendu à Arsenal en premier, le NAS en second plan (exécutant) — aucune entité backend renommée. Motif : le Lot 7 avait placé cette UI dans `nas.yaml` au seul motif que `arsenal_self`/`arsenal_nas` n'ont pas de hub de domaine dédié (`navigation/carte_domaines.md` §3/§6) ; cette lecture est corrigée — l'absence de hub ne désigne aucun domaine d'accueil par défaut, et le sens fonctionnel de `AUDIT`/`RELEASE_DIFF` reste Arsenal/Système, le NAS n'étant que l'exécutant technique externe de la demande (§4). Aucun fichier backend (Lots 5/6), script, helper, sensor MQTT, template sensor, automation, secret ou contrat NAS touchés. Voir §11.A10/§12.9. |
+| **Mise à jour** | 2026-09-10 — **Décision produit actée : ouverture du Lot 8 — lot documentaire uniquement, aucune exécution.** État cible arbitré : `AUDIT` est déclenché uniquement à la demande depuis Arsenal/Home Assistant via MQTT ; `RELEASE_DIFF` est déclenché uniquement à la demande depuis Arsenal/Home Assistant via MQTT ; l'extraction timeline n'est exécutée que lorsqu'une demande Arsenal en a besoin ; aucune extraction périodique DSM, aucun `AUDIT` automatique DSM, aucun `RELEASE_DIFF` automatique DSM ne subsistent à l'état cible ; le NAS reste moteur d'exécution, Arsenal porte l'initiative. Les mécanismes indépendants de maintenance (watchdog MQTT, `Arsenal - Retention`, `Arsenal - Quarantine Purger`, protections natives DSM) ne sont pas concernés par cette décision. Chantier existant **C51** réutilisé tel quel : aucun nouvel identifiant, aucun nouveau chantier. Séquencement arrêté en six sous-lots 8.1→8.6, détaillé au §12.10 (nouveau) ; complément normatif au §9 (extraction sur demande, règle `rc=77` transitoire puis cible). Le Lot 8 reste **globalement non commencé** : cette mise à jour documente le plan, elle n'exécute aucun lot. Le Lot 9 (clôture documentaire) suit le Lot 8. |
 
 ---
 
@@ -203,6 +204,24 @@ et prouvée en terrain.
 
 `Arsenal - Retention` et `Arsenal - Quarantine Purger` restent hors
 périmètre de ce chantier.
+
+**Extraction sur demande — arbitrage du 2026-09-10.** L'extraction timeline
+n'est plus conçue comme un flux périodique indépendant : à l'état cible,
+elle n'est exécutée que lorsqu'une demande Arsenal (`AUDIT` ou
+`RELEASE_DIFF`, via MQTT) en a besoin. Aucune extraction périodique DSM,
+aucun `AUDIT` automatique DSM, aucun `RELEASE_DIFF` automatique DSM ne
+doivent subsister à l'état cible ; le NAS reste moteur d'exécution, Arsenal
+porte l'initiative. Le séquencement de ce basculement est détaillé au
+§12.10 (Lot 8, sous-lots 8.1→8.6).
+
+**Règle `rc=77` — transitoire puis cible.** Pendant la coexistence
+transitoire décrite par ce tableau, `rc=77` reste un échec transactionnel
+`technical_failure` **connu**, résultant d'une collision possible avec
+l'ancien mécanisme de déclenchement direct DSM — ce n'est ni un succès, ni
+un résultat métier nominal. À l'état cible, une fois le dernier appelant
+DSM direct de l'extracteur retiré (§12.10, sous-lot 8.5), une occurrence de
+`rc=77` devient **anormale** : aucun concurrent DSM légitime ne doit plus
+appeler directement l'extracteur.
 
 ---
 
@@ -1139,6 +1158,62 @@ créée ; aucun ID d'automatisation inventé.
 **Non fourni par cette correction :** preuve d'usage réel terrain
 (inchangé depuis §12.8 — C51 reste ouvert) ; preuves de
 replay/`BUSY`/crash-reprise ; dette ACL C52 (inchangée) ; clôture C51.
+
+---
+
+### 12.10 Lot 8 — plan de bascule Arsenal/MQTT pour AUDIT et RELEASE_DIFF, sous-lots 8.1 à 8.6 (2026-09-10)
+
+**Lot documentaire uniquement : ce lot ne modifie aucun runtime, aucun
+script NAS, aucune configuration Home Assistant.** Il détaille, sans
+l'exécuter, le séquencement arbitré par la décision produit du 2026-09-10
+(voir la ligne `Mise à jour` du 2026-09-10 et le complément du §9) : faire
+porter par Arsenal, via MQTT, l'initiative des deux opérations `AUDIT` et
+`RELEASE_DIFF`, le NAS restant seul moteur d'exécution. Chantier existant
+**C51** réutilisé tel quel ; aucun nouvel identifiant, aucun nouveau
+chantier.
+
+Le Lot 8 se décompose en six sous-lots, ordonnés, chacun conditionné à une
+preuve terrain avant le retrait qu'il documente :
+
+1. **8.1 — `AUDIT` : intégration de la garantie de stabilité.** Intégrer
+   dans `run_pipeline.sh` la garantie de stabilité aujourd'hui portée par
+   `watch_new_backup.sh` (double mesure de taille à 60 s d'intervalle,
+   §6), **sans modifier encore `timeline_extract.lock`**. `watch_new_backup.sh`
+   n'est pas retiré à ce sous-lot.
+2. **8.2 — retrait de `Arsenal - Pipeline Watcher` et `Pipeline HA`.**
+   Après preuve terrain que le nouveau chemin `AUDIT` (8.1) porte seul la
+   garantie de stabilité, retirer les deux tâches DSM de déclenchement
+   réactif/quotidien du pipeline `AUDIT` (§9, lignes 2 et 3 du tableau).
+3. **8.3 — `RELEASE_DIFF` : autonomie par extraction à la demande.** Rendre
+   `run_release_diff.sh` autonome en lui ajoutant l'extraction à la
+   demande. Pendant la coexistence avec `Arsenal - Timeline Backups HA`
+   (extraction périodique, 5 min), cette extraction à la demande utilise
+   **impérativement** le même `timeline_extract.lock` que l'extraction
+   périodique — aucun verrou distinct, aucune fenêtre de collision non
+   couverte.
+4. **8.4 — retrait de `Arsenal - Timeline Backups HA`.** Retrait
+   uniquement après preuves terrain acquises **pour `AUDIT` (8.1/8.2) ET
+   `RELEASE_DIFF` (8.3) autonomes** — les deux chemins doivent être
+   prouvés avant ce retrait, pas l'un sans l'autre.
+5. **8.5 — requalification de `timeline_extract.lock`.** Après retrait du
+   dernier appelant DSM direct de l'extracteur (8.4), `timeline_extract.lock`
+   cesse d'être le mécanisme normal de coordination entre extractions
+   concurrentes et devient garde-fou / défense en profondeur. C'est à ce
+   sous-lot que la règle `rc=77` bascule du régime transitoire (§9) au
+   régime cible : une occurrence devient anormale.
+6. **8.6 — retrait de `Arsenal - Release Diff` quotidien.** Retrait de la
+   tâche DSM quotidienne après preuve terrain du chemin `RELEASE_DIFF` à
+   la demande (8.3), dans les conditions déjà posées au §9 (verrou
+   d'exclusion mutuelle RELEASE_DIFF, §2.10, et preuve terrain du chemin
+   MQTT).
+
+Le **Lot 9**, hors périmètre du présent document, suit le Lot 8 pour la
+clôture documentaire du chantier.
+
+**État de ce lot : globalement non commencé.** Aucun sous-lot 8.1 à 8.6
+n'est livré à ce stade ; cette mise à jour documente le plan arbitré, elle
+n'exécute aucun sous-lot. Voir aussi la ligne `Mise à jour` du 2026-09-10
+et le complément du §9.
 
 ---
 
