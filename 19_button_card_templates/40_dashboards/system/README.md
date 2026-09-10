@@ -16,7 +16,7 @@ information → statut / santé → diagnostic / supervision → action de remé
 
 ## Structure implicite identifiée
 
-Le dossier est organisé en **5 familles UI distinctes** :
+Le dossier est organisé en **7 familles UI distinctes** :
 
 ### A. Information de stabilité
 
@@ -74,14 +74,50 @@ Exemple : `boiler_status_health`
 
 ---
 
+### F. Résultat métier des jobs NAS commandés par Arsenal
+
+Exemples : `arsenal_self_audit_status_card`, `arsenal_nas_release_diff_status_card`
+
+- Verdict métier (`ok`/`alert`/`error`, `ok`/`partial`/`error`) des deux opérations
+  commandables du socle `contrats/nas_transactionnel.md` (`AUDIT` → `arsenal_self`,
+  `RELEASE_DIFF` → `arsenal_nas`) — chantier `audits/04_chantiers/transverses/c51_commandabilite_nas.md`
+- Le NAS exécute la commande ; le résultat métier reste l'autorité exclusive du domaine
+  Home Assistant correspondant (`arsenal_self.md`, `arsenal_nas.md`) — jamais recalculé ici
+- **Type UI : diagnostic**
+
+---
+
+### G. Demande et transaction des jobs NAS commandés par Arsenal (C51)
+
+Exemples : `carte_action_nas_admission_demander`, `carte_nas_admission_etat_transaction`
+
+- Service rendu à Arsenal (audit Arsenal, release diff Arsenal), pas « commandabilité du
+  NAS » : la demande part d'Arsenal, le NAS n'est que l'exécutant technique externe de la
+  commande MQTT (chantier C51 §4 « Matrice des autorités » — le NAS n'a ici aucune autorité
+  de décision), le résultat revient nourrir les cartes de la famille F ci-dessus
+- `carte_action_nas_admission_demander` déclenche, après confirmation, le script backend
+  désigné (`script.nas_admission_demander_audit`/`_release_diff`) — aucune publication MQTT,
+  aucun `request_id` construit côté UI (« Backend Arsenal décide, UI Lovelace rend »)
+- `carte_nas_admission_etat_transaction` affiche le dernier verdict **transactionnel**
+  (admission/terminaison NAS) — jamais assimilé au résultat métier de la famille F ; séparation
+  stricte transaction/résultat métier opposable par `nas_transactionnel.md` §12
+- **Type UI : action** (`carte_action_nas_admission_demander`) et **diagnostic**
+  (`carte_nas_admission_etat_transaction`) — première introduction du type `action` dans ce
+  domaine
+- Repositionnées ici depuis `40_dashboards/nas/` (correction C51, 2026-09-10) : elles ne
+  qualifient jamais la santé du NAS, seulement une demande/transaction Arsenal — voir
+  `c51_commandabilite_nas.md` §12.9
+
+---
+
 ## Taxonomie des types UI
 
 | Type UI        | Signification                                                                                    | Exemples                                                                                 |
 |----------------|--------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
 | interprétative | transformation locale tolérée, non source de vérité système                                    | `carte_uptime_systeme`                                                                   |
-| diagnostic     | qualifie un état de santé, une cohérence ou une disponibilité                                   | `carte_compteur_alerte`, `systeme_bandeau_stabilite`, `carte_etat_internet`, `carte_integration_critique`, `netatmo_diagnostic`, `boiler_status_health` |
+| diagnostic     | qualifie un état de santé, une cohérence ou une disponibilité                                   | `carte_compteur_alerte`, `systeme_bandeau_stabilite`, `carte_etat_internet`, `carte_integration_critique`, `netatmo_diagnostic`, `boiler_status_health`, `arsenal_self_audit_status_card`, `arsenal_nas_release_diff_status_card`, `carte_nas_admission_etat_transaction` |
 | pure           | *(non utilisé dans ce domaine)*                                                                  | —                                                                                        |
-| action         | *(non utilisé dans ce domaine — les remédiations sont secondaires dans les cartes diagnostic)*  | —                                                                                        |
+| action         | proxy UI d'une commande backend                                                                  | `carte_action_nas_admission_demander` *(C51)*                                            |
 | info           | *(non utilisé dans ce domaine)*                                                                  | —                                                                                        |
 
 ---
@@ -96,6 +132,13 @@ Niveau 4 — Intégrations / Santé     → 40_diagnostic_integrations/
 ```
 
 > Cette architecture en couches est normative. Toute carte doit appartenir à une seule couche. Aucune carte hybride n'est autorisée.
+>
+> Les templates C51 (`carte_action_nas_admission_demander`,
+> `carte_nas_admission_etat_transaction`) vivent dans des couches propres à part
+> (`50_action_admission_arsenal/`, `51_diagnostic_transaction_arsenal/`), non numérotées dans
+> la séquence 10→40 ci-dessus : elles ne qualifient pas la santé d'un sous-système, mais une
+> commande Arsenal exécutée par le NAS — un axe orthogonal aux quatre niveaux d'origine,
+> volontairement non intercalé pour ne pas renuméroter l'existant.
 
 ---
 
@@ -110,6 +153,8 @@ Niveau 4 — Intégrations / Santé     → 40_diagnostic_integrations/
   20_supervision/
     carte_compteur_alerte.yaml
     systeme_bandeau_stabilite.yaml
+    arsenal_self_audit_status_card.yaml
+    arsenal_nas_release_diff_status_card.yaml
 
   30_diagnostic_connectivite/
     carte_etat_internet.yaml
@@ -118,6 +163,12 @@ Niveau 4 — Intégrations / Santé     → 40_diagnostic_integrations/
     carte_integration_critique.yaml
     netatmo_diagnostic.yaml
     boiler_status_health.yaml
+
+  50_action_admission_arsenal/                  ← C51
+    carte_action_nas_admission_demander.yaml
+
+  51_diagnostic_transaction_arsenal/             ← C51
+    carte_nas_admission_etat_transaction.yaml
 ```
 
 > `20_supervision/` et `30_diagnostic_connectivite/` peuvent être fusionnés en une seule couche si la compacité prime. La séparation est recommandée car les deux familles ont des rôles distincts (signal prioritaire vs diagnostic qualifié).
@@ -141,6 +192,10 @@ Dépendance forte à l'entity sous-jacente. À documenter dans l'entête comme d
 ### 4. `boiler_status_health` dans `system/`
 
 Cohérent ici comme vue externe de santé. Risque de doublon conceptuel avec `boiler/` si mal utilisé. La règle : `boiler/` = observabilité interne, `system/` = santé synthétique vue de l'extérieur.
+
+### 5. `carte_action_nas_admission_demander` — premier type `action` du domaine
+
+Introduit un déclenchement direct (pas une remédiation secondaire comme en B/C/D). Acceptable car il reste un satellite conditionnel de la famille G (jamais une action autonome hors contexte) et ne redéfinit aucune logique de transport — le backend Arsenal décide, cette carte ne fait qu'exprimer une intention utilisateur. À ne pas généraliser sans réexaminer la doctrine « remédiations secondaires » du domaine.
 
 ---
 

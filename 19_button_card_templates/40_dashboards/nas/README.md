@@ -55,49 +55,29 @@ Exemple : `carte_nas_temperature_disque`
 
 ---
 
-### E. Action de commandabilité NAS (C51 Lot 7)
-
-Exemple : `carte_action_nas_admission_demander`
-
-- Déclenche, après confirmation, l'un des scripts backend du socle
-  transactionnel `contrats/nas_transactionnel.md` (`AUDIT` ou
-  `RELEASE_DIFF`) — chantier `audits/04_chantiers/transverses/c51_commandabilite_nas.md`
-- Ne publie jamais de message MQTT elle-même : appelle uniquement
-  `script.turn_on` sur le script backend désigné par l'instance
-- **Type UI : action** — première introduction de ce type dans ce
-  domaine (les couches A à D ci-dessus étaient jusqu'ici toutes
-  diagnostiques)
-
----
-
-### F. Diagnostic transactionnel NAS Admission (C51 Lot 7)
-
-Exemple : `carte_nas_admission_etat_transaction`
-
-- Affiche le dernier verdict **transactionnel** (admission/terminaison
-  NAS) d'une opération du socle `nas_transactionnel.md` — jamais un
-  résultat métier
-- Satellite générique commun à `AUDIT` et `RELEASE_DIFF` (deux
-  instances du même template) ; le résultat métier correspondant
-  (`arsenal_self`/`arsenal_nas`) reste affiché par une carte séparée,
-  hors de ce domaine (`40_dashboards/system/20_supervision/`) —
-  séparation stricte transaction/résultat métier opposable par
-  `nas_transactionnel.md` §12
-- **Type UI : diagnostic**, sur un plan distinct des diagnostics
-  matériels A à D : ce n'est pas une lecture de santé NAS, mais l'état
-  d'une commande envoyée au NAS
-
----
-
 ## Taxonomie des types UI
 
 | Type UI        | Signification                                                                                    | Exemples                                                                  |
 |----------------|--------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
 | info           | lecture informative pure, sans qualification                                                    | `carte_info_systeme`                                                      |
-| diagnostic     | qualifie un état ou une mesure par rapport à une référence ou des seuils                        | `carte_nas_drive_etat`, `carte_nas_smart_etat`, `carte_capteur_etat_textuel`, `carte_nas_temperature_disque`, `carte_nas_admission_etat_transaction` |
+| diagnostic     | qualifie un état ou une mesure par rapport à une référence ou des seuils                        | `carte_nas_drive_etat`, `carte_nas_smart_etat`, `carte_capteur_etat_textuel`, `carte_nas_temperature_disque` |
 | pure           | aucune transformation, convention binaire constitutive                                          | `carte_etat_securite`                                                     |
 | interprétative | transformation locale tolérée *(non utilisé dans ce domaine)*                                   | —                                                                         |
-| action         | proxy UI d'une commande backend                                                                  | `carte_action_nas_admission_demander` *(C51 Lot 7)*                       |
+| action         | *(non utilisé dans ce domaine)*                                                                  | —                                                                         |
+
+> **Note (correction C51, 2026-09-10).** Le Lot 7 du chantier `c51_commandabilite_nas.md`
+> avait temporairement introduit ici deux familles UI (« E. Action de commandabilité NAS »,
+> « F. Diagnostic transactionnel NAS Admission », `carte_action_nas_admission_demander` et
+> `carte_nas_admission_etat_transaction`) pour la demande/l'état transactionnel
+> d'`AUDIT`/`RELEASE_DIFF`. Après arbitrage, ces cartes ne relèvent **pas** du domaine `nas/` :
+> elles ne qualifient jamais la santé ou l'état matériel du NAS (ce que fait tout ce dossier),
+> mais portent une demande et une transaction **Arsenal** dont le NAS n'est que l'exécutant
+> technique externe. Déplacées vers
+> [`40_dashboards/system/50_action_admission_arsenal/`](../system/50_action_admission_arsenal/)
+> et
+> [`40_dashboards/system/51_diagnostic_transaction_arsenal/`](../system/51_diagnostic_transaction_arsenal/)
+> — voir `c51_commandabilite_nas.md` §12.9. Ce dossier `nas/` redevient un domaine
+> exclusivement diagnostique (info/diagnostic/pure), comme avant le Lot 7.
 
 ---
 
@@ -111,14 +91,6 @@ Niveau 4 — Diagnostic thermique      → 40_diagnostic_thermique/
 ```
 
 > Cette architecture en couches est normative. Toute carte doit appartenir à une seule couche. Aucune carte hybride n'est autorisée.
->
-> Les templates C51 Lot 7 (`carte_action_nas_admission_demander`,
-> `carte_nas_admission_etat_transaction`) vivent dans des couches
-> propres à part (`10_action/`, `20_diagnostic_transaction/`), non
-> numérotées dans la séquence 10→40 ci-dessus : elles ne qualifient
-> pas le NAS lui-même (matériel), mais une commande envoyée au NAS —
-> un axe orthogonal aux quatre niveaux d'origine, volontairement non
-> intercalé pour ne pas renuméroter l'existant.
 
 ---
 
@@ -140,12 +112,6 @@ Niveau 4 — Diagnostic thermique      → 40_diagnostic_thermique/
 
   40_diagnostic_thermique/
     carte_nas_temperature_disque.yaml
-
-  10_action/                                    ← C51 Lot 7
-    carte_action_nas_admission_demander.yaml
-
-  20_diagnostic_transaction/                    ← C51 Lot 7
-    carte_nas_admission_etat_transaction.yaml
 ```
 
 ---
