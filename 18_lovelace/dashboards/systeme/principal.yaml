@@ -102,9 +102,84 @@ views:
                   action: more-info
                   entity: sensor.home_assistant_core_memory_percent
 
+          # ==================================================
+          # 🧠 ARSENAL — AUDIT & RELEASE DIFF (C51)
+          # --------------------------------------------------
+          # Service rendu à Arsenal, pas commandabilité du NAS :
+          # Arsenal demande AUDIT/RELEASE_DIFF, le NAS n'est que
+          # l'exécutant technique externe de la demande (MQTT), le
+          # résultat revient nourrir les diagnostics Arsenal
+          # ci-dessous (contrats/nas_transactionnel.md,
+          # audits/04_chantiers/transverses/c51_commandabilite_nas.md
+          # §12.9). Repositionné depuis `nas.yaml` (§12.9 du
+          # chantier) : `arsenal_self`/`arsenal_nas` sont des
+          # contrats système/transverses Arsenal
+          # (navigation/carte_domaines.md §3/§6), pas des domaines
+          # NAS — le NAS n'a ici aucune autorité de décision (§4
+          # chantier).
+          #
+          # Trois plans strictement distincts, jamais fusionnés :
+          #   - action        : déclencher une demande ;
+          #   - transaction   : verdict d'admission/exécution NAS
+          #                     (nas_transactionnel.md §12 — ne dit
+          #                     JAMAIS le résultat métier) ;
+          #   - résultat métier : arsenal_self (AUDIT) / arsenal_nas
+          #                     (RELEASE_DIFF), seules autorités de
+          #                     leur propre verdict.
+          # AUDIT et RELEASE_DIFF restent deux chaînes indépendantes
+          # (chantier C51 §14 — aucune fusion).
+          # ==================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🧠 Arsenal — Audit & Release Diff (C51)
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+              - type: custom:button-card
+                template: carte_action_nas_admission_demander
+                entity: script.nas_admission_demander_audit
+                name: Demander un audit Arsenal
+                icon: mdi:clipboard-search-outline
+                variables:
+                  confirmation: >-
+                    Confirmer la demande d'audit Arsenal (exécution déléguée au NAS) ?
+
+              - type: custom:button-card
+                template: carte_action_nas_admission_demander
+                entity: script.nas_admission_demander_release_diff
+                name: Demander un release diff Arsenal
+                icon: mdi:file-compare
+                variables:
+                  confirmation: >-
+                    Confirmer la demande de release diff Arsenal (exécution déléguée au NAS) ?
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+              - type: custom:button-card
+                template: carte_nas_admission_etat_transaction
+                entity: sensor.nas_admission_audit_etat_transaction
+                name: Transaction — Audit
+                variables:
+                  resultat_metier_hint: sensor.arsenal_self_audit_statut
+
+              - type: custom:button-card
+                template: carte_nas_admission_etat_transaction
+                entity: sensor.nas_admission_release_diff_etat_transaction
+                name: Transaction — Release Diff
+                variables:
+                  resultat_metier_hint: sensor.arsenal_nas_release_diff_statut
+
           # 🧠 Arsenal Self Audit — Statut synthétique
           - type: custom:button-card
             template: arsenal_self_audit_status_card
+
+          # 🧠 Arsenal NAS Release Diff — Statut synthétique
+          - type: custom:button-card
+            template: arsenal_nas_release_diff_status_card
 
           ####################################################
           # 🩺 SYSTÈMES CRITIQUES
