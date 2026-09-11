@@ -6,29 +6,36 @@
 | ----------------- | ------------------------------------------- |
 | Brique            | `watch_new_backup.sh`                       |
 | Version           | 1.0                                         |
-| Statut            | actif/implémenté *(corrigé le 2026-09-08 — audit terrain NAS : le script embarqué au §3 est fonctionnellement identique au runtime déployé)* |
+| Statut            | **historique — non actif** *(requalifié le 2026-09-10, clôture C51 : la tâche DSM `Arsenal - Pipeline Watcher` qui invoquait ce script est supprimée depuis le sous-lot 8.2 ; le script peut encore exister comme fichier dans le dépôt mais n'a plus aucun appelant DSM prouvé — il ne doit pas être présenté comme un déclencheur runtime actif. La garantie de stabilité qu'il portait — double mesure de taille à 60 s d'intervalle, §2.4/§3 ci-dessous — est désormais intégrée directement dans `run_pipeline.sh` (chantier `c51_commandabilite_nas.md` §12.10, sous-lot 8.1). Document conservé pour mémoire de cette logique, pas comme description d'un mécanisme actif)* |
 | Couche            | orchestration NAS                           |
-| Déclenchement     | DSM toutes les 5 minutes                    |
+| Déclenchement     | *(historique)* DSM toutes les 5 minutes — supprimé, voir Statut |
 | Action principale | lancement conditionnel de `run_pipeline.sh` |
 
 ---
 
 # 1. Objet
 
-`watch_new_backup.sh` introduit une logique pseudo-événementielle robuste.
+`watch_new_backup.sh` introduisait une logique pseudo-événementielle robuste.
 
-Le watcher ne dépend pas d'horaires arbitraires pour lancer le pipeline Arsenal.
+Le watcher ne dépendait pas d'horaires arbitraires pour lancer le pipeline Arsenal.
 
-Il observe le patrimoine `versions/` et déclenche le pipeline uniquement lorsqu'une nouvelle version stable et non encore traitée est détectée.
+Il observait le patrimoine `versions/` et déclenchait le pipeline uniquement lorsqu'une nouvelle version stable et non encore traitée était détectée.
 
-**Coexistence terrain (2026-09-08).** Le watcher n'est pas le seul déclencheur
-du pipeline. Une tâche DSM directe et inconditionnelle (`Pipeline HA`,
-quotidienne) appelle également `run_pipeline.sh`, indépendamment de toute
-détection de stabilité par le watcher. Ce document décrit le watcher
-lui-même ; il ne décrit pas l'ensemble des chemins de déclenchement du
-pipeline — voir le futur contrat [`nas_transactionnel.md`](../../contrats/nas_transactionnel.md)
+**État cible (2026-09-10, clôture C51).** `run_pipeline.sh` est aujourd'hui
+invoqué à la demande, via la commande MQTT `AUDIT` (admission NAS), et porte
+lui-même la garantie de stabilité décrite ci-dessous — ni le watcher
+événementiel ni la tâche DSM quotidienne `Pipeline HA` (également supprimée,
+sous-lot 8.2) ne sont plus des déclencheurs actifs. Voir le contrat
+[`nas_transactionnel.md`](../../contrats/nas_transactionnel.md)
 et le chantier [`c51_commandabilite_nas.md`](../../audits/04_chantiers/transverses/c51_commandabilite_nas.md)
 pour la vue d'ensemble et la trajectoire de convergence.
+
+**Coexistence terrain (2026-09-08) — historique.** À cette date, le watcher
+n'était pas le seul déclencheur du pipeline : une tâche DSM directe et
+inconditionnelle (`Pipeline HA`, quotidienne) appelait également
+`run_pipeline.sh`, indépendamment de toute détection de stabilité par le
+watcher. Cette coexistence a pris fin au sous-lot 8.2 (retrait des deux
+tâches).
 
 ---
 
@@ -230,7 +237,9 @@ exit 0
 
 ---
 
-# 4. Tâche DSM cible
+# 4. Tâche DSM cible *(historique — supprimée le sous-lot 8.2, 2026-09-10)*
+
+**Cette tâche n'existe plus.** Section conservée pour mémoire.
 
 ## Nom
 

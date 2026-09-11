@@ -422,10 +422,11 @@ Cette indépendance est un invariant architectural : les deux couches peuvent ê
 `release_diff` peut être exécuté :
 
 - à la main (commande directe),
+- à la demande via le canal de commande MQTT Arsenal (chantier `c51_commandabilite_nas.md`),
 - via Scheduler Synology, en tâche distincte de l'extraction timeline,
 - en mode CI/audit avec `--strict` lors d'une livraison de version.
 
-Fréquence recommandée : déclenchement manuel ou quotidien. Le besoin est aligné sur le rythme des releases (jours/semaines), pas sur le rythme des backups (30 minutes).
+Le besoin est aligné sur le rythme des releases (jours/semaines), pas sur le rythme des backups. **Précision (2026-09-10, clôture C51)** : la tâche planifiée `Arsenal - Release Diff` (03:15), qui portait jusqu'ici le mode « Scheduler Synology » de la liste ci-dessus, est supprimée sans remplacement — `release_diff` n'a aujourd'hui aucun déclenchement périodique DSM, il tourne exclusivement à la demande (manuel ou MQTT). Le moteur reste techniquement planifiable ; ce n'est plus la modalité en usage.
 
 Aucune dépendance temporelle entre `release_diff` et le scheduler d'extraction.
 
