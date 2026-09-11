@@ -10,8 +10,13 @@ from homeassistant.core import HomeAssistant
 from .const import AUTH_URL, DATA_URL, API_GOUV_URL, URL_CODE
 
 # Applied to every request. 120s used to be declared here and passed nowhere,
-# so a hung connection could tie a coordinator up indefinitely.
-DEFAULT_TIMEOUT = 30
+# so a hung connection could tie a coordinator up indefinitely — but the real
+# ceiling was aiohttp's own 300s default, and 30s turned out to be tighter than
+# the API deserves: observed timing out on two consecutive hourly cycles on
+# 2026-09-10. 60s stays bounded, sits well inside the hourly poll, and gives
+# Atmo France room for the slow spells it evidently has. Nothing blocks while
+# a request is in flight; the cost of waiting is only a delayed refresh.
+DEFAULT_TIMEOUT = 60
 CLIENT_TIMEOUT = ClientTimeout(total=DEFAULT_TIMEOUT)
 
 # Only used when the token carries no readable expiry. Observed against the
