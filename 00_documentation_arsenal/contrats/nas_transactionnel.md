@@ -1,7 +1,7 @@
 # Contrat — Socle transactionnel des commandes NAS Arsenal
 
 **Version** : v1.2.1
-**Statut** : proposé / non implémenté
+**Statut** : actif / implémenté *(corrigé le 2026-09-10 — clôture C51 : champ resté à sa valeur d'ouverture par oubli éditorial pendant les mises à jour successives des Lots 4 à 8 ; le socle qu'il régit est livré, déployé et validé terrain pour `AUDIT` et `RELEASE_DIFF`, voir l'encart « État d'implémentation » ci-dessous et le chantier [`c51_commandabilite_nas.md`](../audits/04_chantiers/transverses/c51_commandabilite_nas.md) §12.1-§12.13)*
 
 **État d'implémentation (2026-09-09).** Le noyau local qu'il régit — verrou
 RELEASE_DIFF, durcissement AUDIT et moteur d'admission `admission_core.py`

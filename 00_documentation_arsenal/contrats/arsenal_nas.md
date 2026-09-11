@@ -1,7 +1,8 @@
 # Contrat — Domaine Home Assistant `arsenal_nas`
 
 **Version** : v1.0.2
-**Révision** : v1.0.2 — statut corrigé en `actif` (chaîne `release_diff` confirmée en production : `state/release_diff_last_run.json` et publication MQTT quotidiens constatés côté NAS ; les trois sensors §5.1 et l'automation §5.2 constatés implémentés côté dépôt, conformes au présent contrat). Ajout du renvoi vers le contrat transactionnel `nas_transactionnel.md` (chantier C51). Aucun changement sémantique aux entités ou à leur comportement.
+**Révision** : v1.0.2 — statut corrigé en `actif` (chaîne `release_diff` confirmée en production : `state/release_diff_last_run.json` et publication MQTT constatés côté NAS ; les trois sensors §5.1 et l'automation §5.2 constatés implémentés côté dépôt, conformes au présent contrat). Ajout du renvoi vers le contrat transactionnel `nas_transactionnel.md` (chantier C51). Aucun changement sémantique aux entités ou à leur comportement.
+**Précision (2026-09-10, clôture C51)** : la mention « publication MQTT quotidiens » ci-dessus décrivait la cadence de la tâche DSM `Arsenal - Release Diff` (03:15) alors active. Cette tâche est supprimée sans remplacement (chantier `c51_commandabilite_nas.md` §12.10, sous-lot 8.6) : `release_diff` est **déclenché à la demande** (voir §10 ci-dessous, déjà correct), sans cadence périodique DSM restante. Aucun changement aux entités ou à leur comportement.
 **Révision précédente** : v1.0.1 — publisher nommé `publish_release_diff_mqtt.py` (alignement sur le précédent réel `publish_audit_mqtt.py`). Aucun changement sémantique.
 **Statut** : actif
 **Périmètre** : exposition Home Assistant de l'observabilité d'exécution des jobs NAS Arsenal. En V1, locataire unique : `release_diff`.

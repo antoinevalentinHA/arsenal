@@ -7,6 +7,8 @@
 - Document normatif
 - Domaine : NAS Arsenal / historisation / audit
 
+**Précision (2026-09-10, clôture C51).** L'extracteur (`ha_backup_timeline_extract_v2.py`) décrit ci-dessous reste actif et autonome, mais son déclenchement a changé de nature : la tâche DSM périodique `Arsenal - Timeline Backups HA` (section « Scheduler Synology » ci-dessous) est **supprimée définitivement** (chantier [`c51_commandabilite_nas.md`](../../../audits/04_chantiers/transverses/c51_commandabilite_nas.md) §12.10, sous-lot 8.4). L'extracteur n'est plus polled toutes les 5 minutes ; il est désormais invoqué à la demande par chacun des trois consommateurs métier autonomes qui en ont besoin — `AUDIT` (extraction ciblée), `RELEASE_DIFF` et `Retention` (extraction batch `--no-diff`) —, chacun via son propre verrou métier extérieur suivi du verrou partagé `runtime/timeline_extract.lock` (désormais un verrou structurel permanent de sérialisation entre ces trois chaînes, et non plus un mécanisme de coexistence avec cette tâche DSM ; voir chantier §12.12). La section « Scheduler Synology » ci-dessous est conservée à titre **historique** : elle documente un mécanisme qui n'existe plus.
+
 ---
 
 ## Objet
@@ -215,14 +217,23 @@ Le moteur diff est strictement indépendant de l'extracteur. Il peut être relan
 **Continuité du pipeline.** Ce document couvre l'extraction et le diff forensic
 (`_diff/`). `versions/` alimente également, en aval et indépendamment, la
 chaîne d'audit patrimonial (`run_pipeline.sh` → `audit_engine.py` → projection
-MQTT, déclenchée par le watcher — voir
-[`pipeline_watcher.md`](../pipeline_watcher.md),
-[`audit/audit.md`](../audit/audit.md), [`audit/mqtt.md`](../audit/mqtt.md)) :
-le pipeline ne s'arrête pas au diff décrit ici.
+MQTT — voir [`pipeline_watcher.md`](../pipeline_watcher.md) *(historique,
+voir statut en tête de ce document)*, [`audit/audit.md`](../audit/audit.md),
+[`audit/mqtt.md`](../audit/mqtt.md)) : `run_pipeline.sh` est aujourd'hui
+déclenché à la demande via la commande MQTT `AUDIT`, plus par le watcher
+événementiel décrit dans ce document lié — le pipeline ne s'arrête pas au
+diff décrit ici.
 
 ---
 
-## Scheduler Synology
+## Scheduler Synology *(historique — tâche supprimée le 2026-09-10)*
+
+**Cette section décrit un mécanisme qui n'existe plus.** Conservée pour
+mémoire ; voir la précision en tête de document. À l'état cible, l'extracteur
+n'a plus de tâche DSM qui lui soit propre — il est invoqué par les wrappers
+`run_pipeline.sh`, `run_release_diff.sh` et `run_retention.sh` (chantier
+[`c51_commandabilite_nas.md`](../../../audits/04_chantiers/transverses/c51_commandabilite_nas.md)
+§12.10-§12.13).
 
 Infrastructure pilotée par :
 
@@ -246,7 +257,7 @@ python3 \
   --limit 5
 ```
 
-Le `--limit 5` borne la charge par exécution et garantit qu'une exécution ne dépasse pas la fenêtre de 5 minutes même en cas de rattrapage.
+Le `--limit 5` bornait la charge par exécution et garantissait qu'une exécution ne dépassait pas la fenêtre de 5 minutes même en cas de rattrapage.
 
 ---
 

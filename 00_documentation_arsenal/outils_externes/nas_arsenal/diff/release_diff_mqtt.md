@@ -2,7 +2,7 @@
 
 **Version** : v1.0.1
 **Révision** : v1.0.1 — publisher nommé `publish_release_diff_mqtt.py` (alignement sur le précédent réel `publish_audit_mqtt.py`) ; harmonisation des références croisées (sans pin de version). Aucun changement sémantique.
-**Statut** : actif / implémenté *(corrigé le 2026-09-08 — audit terrain NAS : chaîne confirmée en production, `state/release_diff_last_run.json` et publication MQTT quotidienne constatés)*
+**Statut** : actif / implémenté *(corrigé le 2026-09-08 — audit terrain NAS : chaîne confirmée en production, `state/release_diff_last_run.json` et publication MQTT constatés ; précision du 2026-09-10, clôture C51 : la publication observée alors était **quotidienne** parce que la tâche DSM `Arsenal - Release Diff` (03:15) tournait encore — cette tâche est désormais supprimée sans remplacement (`c51_commandabilite_nas.md` §12.10, sous-lot 8.6), et la publication suit désormais exclusivement les déclenchements à la demande décrits au §10 ci-dessous)*
 **Périmètre** : production du run-summary `release_diff` par le moteur NAS et projection MQTT de l'état d'exécution et des événements de génération de diff de release.
 **Dépendances** :
 - `diff/diff_release.md` — moteur `release_diff` (couche sémantique de versioning) ;
@@ -88,6 +88,21 @@ Produit par `release_diff.py` à chaque exécution, sur le modèle de
 `latest.verdict.json` côté audit. Il constitue la **source unique** du
 publisher : le publisher ne reconstruit jamais l'état à partir de
 `processed_releases.json`.
+
+**Précision run_id (2026-09-10, clôture C51).** Les exemples `run_id` des
+§5.2/§5.3 (`"20260603T115958"`, horodatage condensé) illustrent le format
+**historique**, généré à l'intérieur du moteur avant le chantier C51 — ce
+que [`contrats/nas_transactionnel.md`](../../../contrats/nas_transactionnel.md)
+§9.3 identifie comme devant évoluer. Depuis le Lot 6 (validé terrain,
+chantier `c51_commandabilite_nas.md` §12.7), le `run_id` réellement produit
+par une exécution admise via MQTT est un UUID4 (ex. terrain :
+`c70c093f-fd37-4889-902e-2ff4310c13bf`), **attribué par l'admission NAS
+avant l'entrée dans le moteur** et repris tel quel par `release_diff.py` —
+jamais régénéré en aval. Le schéma JSON (structure des champs) reste exact ;
+seul le format illustratif de la valeur `run_id` est daté. La révision
+complète du format documenté ici, y compris pour un déclenchement legacy
+hors admission, reste à statuer dans `arsenal-ha-backup-timeline` — hors
+périmètre documentaire de ce dépôt.
 
 ### 5.2 Schéma nominal
 
