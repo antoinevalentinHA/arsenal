@@ -117,7 +117,7 @@ Seule fait foi une **déclaration explicite de l'intention architecturale** : ce
 
 > **Classe B ⇒ Retour obligatoire vers le parent déclaré.**
 
-Cette règle est **normative dès à présent** pour toute création ou revue de dashboard. Sa **vérification automatique en CI** est différée : le checker `R-LL-NAV-1` (§10) sait aujourd'hui contrôler la **cohérence** d'un Retour déjà présent (sa cible est-elle un parent réel ou un hub structurel ?), mais ne vérifie pas encore l'**obligation** de Retour pour un sous-dashboard Classe B — cette vérification suppose une déclaration explicite de l'intention architecturale (§6.3), dont la forme reste à concevoir dans un chantier ultérieur. Tant que ce mécanisme n'existe pas, la future CI **ne doit pas deviner** la topologie à partir des heuristiques structurelles proscrites au §6.3 : l'absence de vérification automatisée d'un cas Classe B n'autorise aucune inférence de conformité, ni de non-conformité, par un autre moyen que la revue humaine.
+Cette règle est **normative dès à présent** pour toute création ou revue de dashboard. Sa **vérification automatique en CI** est différée : le checker `R-LL-NAV-1` (§10) sait aujourd'hui contrôler la **cohérence** d'un Retour déjà présent (sa cible est-elle un parent réel ou un hub structurel ?), mais ne vérifie pas encore l'**obligation** de Retour pour un sous-dashboard Classe B — cette vérification suppose une déclaration explicite de l'intention architecturale (§6.3), dont la forme est désormais posée par `navigation_topology.yaml` (§6.6). Sa consommation effective par le checker reste hors périmètre du présent chantier. Tant que ce mécanisme n'existe pas, la future CI **ne doit pas deviner** la topologie à partir des heuristiques structurelles proscrites au §6.3 : l'absence de vérification automatisée d'un cas Classe B n'autorise aucune inférence de conformité, ni de non-conformité, par un autre moyen que la revue humaine.
 
 ### 6.5 Cas de référence
 
@@ -129,6 +129,16 @@ Cette règle est **normative dès à présent** pour toute création ou revue de
 | Voiture / Aspirateur / Imprimerie | C | aucun (bandeau de domaine) | maillage latéral |
 | `reglages-meteo-dashboard`, `meteo-backups-dashboard` | D | aucun (Accueil/Navigation suffisent) | conforme |
 | `reglages-maison-dashboard` via `hold_action` Arsenal | E (accès secondaire) | parent principal inchangé = `modes-dashboard` | conforme |
+
+### 6.6 Déclaration machine-readable — `navigation_topology.yaml`
+
+> [`navigation_topology.yaml`](navigation_topology.yaml) est l'**autorité déclarative machine-readable** des intentions Classe B, C et D. Elle déclare ce qui ne peut pas être garanti dans le temps par le seul runtime — jamais ce qui s'en déduit. Principe fondamental : **l'humain déclare l'intention ; le checker vérifie la réalisation.**
+
+- **Classe B** : toute relation hiérarchique doit y être déclarée, sous la forme `dashboard: parent`. Le Retour runtime **doit être vérifié contre cette déclaration** — la présence d'un Retour ne suffit jamais, seule, à établir la Classe B ni à en vérifier la conformité ; si le Retour runtime disparaît ou change de cible, la relation B déclarée reste connue.
+- **Classe C** : la déclaration porte la liste des fichiers de bandeau reconnus comme groupes latéraux ; leurs membres restent lus depuis les bandeaux eux-mêmes, jamais recopiés dans la déclaration. Un dashboard membre d'un groupe Classe C ne porte pas de Retour contextuel dédié.
+- **Classe D** : la déclaration liste les ressources partagées ; elles ne portent pas de Retour contextuel dédié vers un parent arbitraire, quel que soit leur nombre courant de prédécesseurs.
+- **Classes A et E restent hors déclaration** : A se calcule depuis Navigation, E relève de la syntaxe des actions secondaires (`hold_action`, etc.) et ne crée aucune parenté.
+- Aucune heuristique structurelle (§6.3) ne remplace cette autorité.
 
 ---
 
@@ -193,7 +203,7 @@ Règles (résumé ; le détail vit dans le checker et les audits Lovelace) :
 
 La CI agit comme **garde de non-régression** : toute réintroduction d'un segment de vue ou d'un `/0` échoue le contrôle.
 
-**Périmètre actuel vs futur** : R2 vérifie la **cohérence** d'un Retour déjà présent (cible = parent réel ou hub structurel) ; il ne vérifie pas encore l'**obligation** de Retour pour un sous-dashboard Classe B (§6.4) — cette extension future suppose une déclaration explicite de l'intention architecturale, non encore conçue.
+**Périmètre actuel vs futur** : R2 vérifie la **cohérence** d'un Retour déjà présent (cible = parent réel ou hub structurel) ; il ne vérifie pas encore l'**obligation** de Retour pour un sous-dashboard Classe B (§6.4) — cette extension future suppose une déclaration explicite de l'intention architecturale, désormais posée par `navigation_topology.yaml` (§6.6) ; sa consommation par le checker reste hors périmètre du présent chantier.
 
 Détail complet : checker `R-LL-NAV-1` et rapport [`audit_navigation_ui_lovelace.md`](../audits/01_rapports/lovelace/audit_navigation_ui_lovelace.md) (constat historique + clôture).
 

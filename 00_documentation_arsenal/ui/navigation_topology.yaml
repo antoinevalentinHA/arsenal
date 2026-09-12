@@ -1,0 +1,60 @@
+hierarchie:
+  bluetti-dashboard: system-dashboard
+  cardio-dashboard: sante-dashboard
+  diagnostics-aeration-dashboard: aeration-dashboard
+  diagnostics-alarme-dashboard: alarme-dashboard
+  diagnostics-arrosage-dashboard: arrosage-dashboard
+  diagnostics-automatisations-dashboard: system-dashboard
+  diagnostics-batteries-dashboard: system-dashboard
+  diagnostics-bluetooth-dashboard: system-dashboard
+  diagnostics-boiler-chauffage-dashboard: diagnostics-chauffage-dashboard
+  diagnostics-boiler-dashboard: system-dashboard
+  diagnostics-boiler-ecs-dashboard: diagnostics-ecs-dashboard
+  diagnostics-chauffage-dashboard: chauffage-dashboard
+  diagnostics-climatisation-dashboard: clim-dashboard
+  diagnostics-courbe-dashboard: diagnostics-chauffage-dashboard
+  diagnostics-deshumidificateur-dashboard: deshumidificateur-dashboard
+  diagnostics-eclairage-dashboard: eclairage-dashboard
+  diagnostics-ecs-dashboard: ecs-dashboard
+  diagnostics-mouvements-dashboard: mouvements-dashboard
+  diagnostics-netatmo-dashboard: system-dashboard
+  diagnostics-netatmo-wifi-dashboard: system-dashboard
+  diagnostics-ouvertures-dashboard: ouvertures-dashboard
+  diagnostics-rain-bird-dashboard: system-dashboard
+  diagnostics-thermiques-dashboard: diagnostics-chauffage-dashboard
+  diagnostics-vannes-dashboard: diagnostics-chauffage-dashboard
+  diagnostics-vmc-dashboard: vmc-dashboard
+  diagnostics-volets-dashboard: volets-dashboard
+  diagnostics-zigbee-dashboard: system-dashboard
+  id-automatisations-dashboard: system-dashboard
+  meteo-min-max-temperature-dashboard: meteo-temperature-dashboard
+  nas-dashboard: system-dashboard
+  reglages-aeration-dashboard: aeration-dashboard
+  reglages-alarme-dashboard: alarme-dashboard
+  reglages-arrosage-dashboard: arrosage-dashboard
+  reglages-chauffage-dashboard: chauffage-dashboard
+  reglages-climatisation-dashboard: clim-dashboard
+  reglages-deshumidificateur-dashboard: deshumidificateur-dashboard
+  reglages-eclairage-dashboard: eclairage-dashboard
+  reglages-ecs-dashboard: ecs-dashboard
+  reglages-ecs-petite-maison-dashboard: ecs-petite-maison-dashboard
+  reglages-ecs-planning-dashboard: reglages-ecs-dashboard
+  reglages-maison-dashboard: modes-dashboard
+  reglages-ouvertures-dashboard: ouvertures-dashboard
+  reglages-sommeil-dashboard: sommeil-dashboard
+  reglages-telephones-dashboard: system-dashboard
+  reglages-vmc-dashboard: vmc-dashboard
+  reglages-volets-dashboard: volets-dashboard
+  sommeil-dashboard: sante-dashboard
+  ups-dashboard: system-dashboard
+
+groupes_lateraux:
+  - ../../18_lovelace/includes/navigation/aspirateur.yaml
+  - ../../18_lovelace/includes/navigation/ecs.yaml
+  - ../../18_lovelace/includes/navigation/imprimerie.yaml
+  - ../../18_lovelace/includes/navigation/meteo.yaml
+  - ../../18_lovelace/includes/navigation/voiture.yaml
+
+ressources_partagees:
+  - reglages-meteo-dashboard
+  - meteo-backups-dashboard
