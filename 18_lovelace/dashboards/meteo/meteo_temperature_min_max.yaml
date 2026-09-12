@@ -8,6 +8,12 @@ views:
       - type: custom:button-card
         template: bouton_navigation_badge_carre
 
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /meteo-temperature-dashboard
+
     # ======================================================
     # 🌡️ CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
     # ------------------------------------------------------
