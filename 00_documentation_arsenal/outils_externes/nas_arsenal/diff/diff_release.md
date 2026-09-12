@@ -6,7 +6,7 @@
 - Couche : NAS Arsenal / versioning sémantique
 - Dépend de : `ha_backup_timeline_extract_v2.py`, `versions/`
 - Indépendante de : `ha_backup_timeline_diff.py`, `_diff/timeline/`
-- Révision : intègre `state/release_diff_last_run.json` (cf. `release_diff_mqtt.md`)
+- Révision : intègre `state/release_diff_last_run.json` (cf. `release_diff_mqtt.md`) ; **agrégation par run** — `release_diff_last_run.json` porte désormais, pour `status=partial`, le résumé agrégé des rejets du run courant (`rejection_summary`), sans jamais exposer le détail patrimonial des ancres ; schéma normatif porté par `release_diff_mqtt.md` v1.1.0 (§5, §9)
 
 ---
 
@@ -355,6 +355,9 @@ Résumé du dernier run, destiné exclusivement à la projection MQTT (`publish_
 - Schéma défini par le contrat `release_diff_mqtt.md` §5 (source unique) ; le présent contrat n'en duplique pas la structure.
 - Artefact de projection **non patrimonial** : régénéré intégralement à chaque run, il ne participe ni à l'idempotence (portée par `state/processed_releases.json`), ni à la régénérabilité de `_diff/releases/`. Sa suppression n'entraîne aucune perte de patrimoine.
 - Le champ `produced[]` ne liste que les couples nouvellement produits au cours du run ; il ne se substitue jamais à `processed_releases.json`.
+- **Agrégation par run** : lorsque l'exécution se termine avec `status=partial`, la brique agrège dans `release_diff_last_run.json` le nombre et les catégories dédupliquées des rejets survenus **au cours du run courant uniquement** (champ `rejection_summary`, schéma porté par `release_diff_mqtt.md` §5.3/§5.5). Cette agrégation porte exclusivement sur les couples rejetés pendant l'exécution en cours — jamais sur le ledger historique cumulé `rejected[]` de `state/processed_releases.json`, qui reste patrimonial et non scope-limité au run. Un rejet enregistré lors d'une exécution antérieure n'apparaît jamais dans le `rejection_summary` d'un run ultérieur qui ne l'a pas re-détecté.
+- Par construction, `status=partial` implique `rejection_summary.count >= 1` et `rejection_summary.categories` non vide : toute entrée de `rejected[]` porte toujours un `reason` non nul (§ Politiques d'échec), donc il ne peut exister de run `partial` sans rejet identifiable, ni de rejet sans catégorie. Un run-summary qui violerait cette implication est contractuellement malformé et traité comme tel par le publisher (`error_reason=last_run_malformed`, cf. `release_diff_mqtt.md` §9).
+- Le détail patrimonial des rejets (ancre concernée, répertoires, dates de détection) reste exclusivement local à `state/processed_releases.json` sur le NAS. Ni `release_diff_last_run.json`, ni la projection MQTT ne portent jamais ce détail — seul le résumé agrégé (`rejection_summary`) traverse la frontière NAS → MQTT → Home Assistant, conformément à `release_diff_mqtt.md` §2 et §4.2.
 
 ---
 
@@ -511,6 +514,7 @@ Renforcés par cette brique :
 - non-interprétation des renommages en V1 (rename = delete + create), garantissant reproductibilité et déterminisme,
 - namespace plat stable pour les artefacts de diff : la nature consécutive ou non d'un couple n'altère ni son chemin, ni son contenu, et reste une métadonnée recalculable.
 - `state/release_diff_last_run.json` est un artefact de projection non patrimonial, régénéré à chaque run, hors idempotence ; son schéma est porté par `release_diff_mqtt.md`.
+- `rejection_summary` (porté par `release_diff_last_run.json`) agrège exclusivement les rejets du run courant ; il ne dérive jamais du ledger historique cumulé de `state/processed_releases.json` et ne publie jamais de détail patrimonial (ancre, chemin, répertoire).
 
 Déjà établis et préservés :
 

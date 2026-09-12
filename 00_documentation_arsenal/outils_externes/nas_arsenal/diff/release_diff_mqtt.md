@@ -1,8 +1,9 @@
-# Contrat — Projection MQTT de `release_diff` (NAS Arsenal) — V1.0.1
+# Contrat — Projection MQTT de `release_diff` (NAS Arsenal) — V1.1.0
 
-**Version** : v1.0.1
-**Révision** : v1.0.1 — publisher nommé `publish_release_diff_mqtt.py` (alignement sur le précédent réel `publish_audit_mqtt.py`) ; harmonisation des références croisées (sans pin de version). Aucun changement sémantique.
-**Statut** : actif / implémenté *(corrigé le 2026-09-08 — audit terrain NAS : chaîne confirmée en production, `state/release_diff_last_run.json` et publication MQTT constatés ; précision du 2026-09-10, clôture C51 : la publication observée alors était **quotidienne** parce que la tâche DSM `Arsenal - Release Diff` (03:15) tournait encore — cette tâche est désormais supprimée sans remplacement (`c51_commandabilite_nas.md` §12.10, sous-lot 8.6), et la publication suit désormais exclusivement les déclenchements à la demande décrits au §10 ci-dessous)*
+**Version** : v1.1.0
+**Révision** : v1.1.0 — introduction de l'événement `release_diff_partial` (réservé aux runs `status=partial`, distinct de `release_diff_failed` désormais réservé exclusivement à `status=error`) et du champ agrégé `rejection_summary` (`count` + `categories[]` dédupliquées, vocabulaire hérité de `diff_release.md`) porté par le run-summary, le plan état et le plan événement ; `error_reason` est désormais explicitement exclu pour `status=partial`. Corrige une divergence runtime observée le 12/09/2026 : une implémentation antérieure du publisher produisait, en fallback pour `status=partial`, la valeur `anchor_rejected` — celle-ci n'a jamais fait partie du vocabulaire contractuel d'aucune version de ce contrat et ne doit plus être produite par aucune implémentation à compter de la présente version. Évolution strictement documentaire : l'alignement du publisher runtime relève d'un chantier séparé.
+**Révision précédente** : v1.0.1 — publisher nommé `publish_release_diff_mqtt.py` (alignement sur le précédent réel `publish_audit_mqtt.py`) ; harmonisation des références croisées (sans pin de version). Aucun changement sémantique.
+**Statut** : actif / implémenté *(corrigé le 2026-09-08 — audit terrain NAS : chaîne confirmée en production, `state/release_diff_last_run.json` et publication MQTT constatés ; précision du 2026-09-10, clôture C51 : la publication observée alors était **quotidienne** parce que la tâche DSM `Arsenal - Release Diff` (03:15) tournait encore — cette tâche est désormais supprimée sans remplacement (`c51_commandabilite_nas.md` §12.10, sous-lot 8.6), et la publication suit désormais exclusivement les déclenchements à la demande décrits au §10 ci-dessous)* — *(v1.1.0 : le publisher réellement déployé n'implémente pas encore `release_diff_partial`/`rejection_summary` ; il produit toujours `release_diff_failed` avec une cause non contractuelle pour `status=partial` — voir chantier runtime à ouvrir)*
 **Périmètre** : production du run-summary `release_diff` par le moteur NAS et projection MQTT de l'état d'exécution et des événements de génération de diff de release.
 **Dépendances** :
 - `diff/diff_release.md` — moteur `release_diff` (couche sémantique de versioning) ;
@@ -59,7 +60,8 @@ Sont publiés via MQTT :
 
 - l'état d'exécution du dernier run (statut, horodatage, résumé) ;
 - un événement par couple de release **nouvellement produit** ;
-- un événement d'échec si le run n'a pas pu se terminer normalement.
+- un événement de run partiel si au moins un couple a été rejeté sans que le run ait échoué (`release_diff_partial`) ;
+- un événement d'échec si le run n'a pas pu se terminer normalement (`release_diff_failed`).
 
 ### 4.2 Exclus
 
@@ -90,7 +92,7 @@ publisher : le publisher ne reconstruit jamais l'état à partir de
 `processed_releases.json`.
 
 **Précision run_id (2026-09-10, clôture C51).** Les exemples `run_id` des
-§5.2/§5.3 (`"20260603T115958"`, horodatage condensé) illustrent le format
+§5.2/§5.3/§5.4 (`"20260603T115958"`, horodatage condensé) illustrent le format
 **historique**, généré à l'intérieur du moteur avant le chantier C51 — ce
 que [`contrats/nas_transactionnel.md`](../../../contrats/nas_transactionnel.md)
 §9.3 identifie comme devant évoluer. Depuis le Lot 6 (validé terrain,
@@ -130,7 +132,48 @@ périmètre documentaire de ce dépôt.
 }
 ```
 
-### 5.3 Schéma d'erreur
+### 5.3 Schéma partiel
+
+Run terminé normalement mais ayant rejeté au moins un couple. Un ou
+plusieurs couples ont pu être produits par ailleurs — `partial` n'est
+jamais un échec d'exécution (voir §5.6, §5.7) :
+
+```json
+{
+  "schema_version": 1,
+  "run_id": "20260912T091500",
+  "run_at": "2026-09-12T09:15:00Z",
+  "status": "partial",
+  "mode": "batch",
+  "summary": {
+    "couples_produced": 1,
+    "couples_skipped": 108,
+    "rejected": 2,
+    "latest_couple": "v18 → v18.0.1"
+  },
+  "produced": [
+    {
+      "from": "v18",
+      "to": "v18.0.1",
+      "diff_name": "v18__to__v18.0.1.md",
+      "produced_at": "2026-09-12T09:15:00+02:00"
+    }
+  ],
+  "rejection_summary": {
+    "count": 2,
+    "categories": ["anchor_ambiguous"]
+  }
+}
+```
+
+`rejection_summary` porte exclusivement un résumé agrégé, anonymisé et
+scopé au run courant (cf. `diff_release.md`, section « Agrégation par
+run ») : aucune ancre, aucun nom de version précis, aucun chemin, aucun
+répertoire n'y figure jamais. Par construction, `status=partial` implique
+`rejection_summary.count >= 1` et `rejection_summary.categories` non
+vide — un couple rejeté porte toujours une catégorie (§5.6).
+
+### 5.4 Schéma d'erreur
 
 En cas d'échec opérationnel empêchant un run exploitable :
 
@@ -148,7 +191,7 @@ En cas d'échec opérationnel empêchant un run exploitable :
 }
 ```
 
-### 5.4 Champs
+### 5.5 Champs
 
 | Champ | Type | Contrainte |
 |---|---|---|
@@ -163,20 +206,45 @@ En cas d'échec opérationnel empêchant un run exploitable :
 | `summary.rejected` | int | Couples rejetés (REJECT-not-clamp) |
 | `summary.latest_couple` | string | Couple le plus récent produit, forme lisible |
 | `produced` | array | Couples nouvellement produits ; vide si aucun |
-| `error_reason` | string | Présent si `status=error` |
-| `error_detail` | string | Présent si `status=error` |
+| `rejection_summary` | object \| absent | Présent **uniquement** si `status=partial` ; absent pour `ok` et `error` |
+| `rejection_summary.count` | int | Nombre de couples rejetés durant le run courant ; toujours ≥ 1 si présent |
+| `rejection_summary.categories` | array\<string\> | Catégories dédupliquées des rejets du run courant, vocabulaire fermé hérité de `diff_release.md` (`anchor_ambiguous`, `snapshot_unreadable`, `order_inconsistent`) ; sans ordre significatif ; jamais vide si présent |
+| `error_reason` | string | Présent **uniquement** si `status=error` ; jamais présent pour `partial` |
+| `error_detail` | string | Présent **uniquement** si `status=error` ; jamais présent pour `partial` |
 
-### 5.5 Sémantique de `status`
+### 5.6 Sémantique de `status`
 
 | Valeur | Signification |
 |---|---|
 | `ok` | Run terminé, zéro rejet ; couples produits ou ignorés proprement |
-| `partial` | Run terminé mais au moins un couple rejeté ; d'autres ont pu être produits |
+| `partial` | Run terminé **normalement** ; au moins un couple rejeté ; d'autres couples ont pu être produits avec succès dans le même run |
 | `error` | Échec opérationnel ; aucun run exploitable (correspond à l'exit code 1 du moteur) |
 
 `status` qualifie **l'exécution du job**. Il ne décrit pas un verdict
 patrimonial — cette notion relève du domaine `arsenal_self`, étranger au
 présent contrat.
+
+`partial` est un statut de **run**, jamais de transaction ni de couple
+(cf. `nas_transactionnel.md` §12 pour la séparation transaction / résultat
+métier). Un run `partial` s'est terminé normalement : il n'est en aucun
+cas un sous-cas d'`error`, et le fait qu'il contienne un rejet ne remet
+pas en cause la validité des couples effectivement produits dans le même
+run.
+
+### 5.7 Invariant `partial` / `error`
+
+- `partial != error` : un run `partial` n'est jamais représenté comme un
+  échec d'exécution.
+- `release_diff_partial != release_diff_failed` (voir §8) : les deux
+  événements sont mutuellement exclusifs pour un même run.
+- `error_reason`/`error_detail` ne sont jamais présents pour `status=partial`.
+- `rejection_summary` n'est jamais présent pour `status=error` ni pour
+  `status=ok`.
+- Un run-summary `status=partial` sans `rejection_summary` exploitable
+  (absent, `count` nul ou incohérent avec `categories`) est
+  contractuellement malformé : le publisher le traite comme un run-summary
+  invalide (`error_reason=last_run_malformed`, §9), jamais comme un
+  `partial` silencieux à catégories vides.
 
 ---
 
@@ -218,7 +286,7 @@ y compris en erreur.
 
 ```json
 {
-  "contract_version": "1.0.0",
+  "contract_version": "1.1.0",
   "job": "release_diff",
   "published_at": "2026-06-03T12:00:02Z",
   "status": "ok",
@@ -233,11 +301,34 @@ y compris en erreur.
 }
 ```
 
-### 7.2 Schéma d'erreur
+### 7.2 Schéma partiel
 
 ```json
 {
-  "contract_version": "1.0.0",
+  "contract_version": "1.1.0",
+  "job": "release_diff",
+  "published_at": "2026-09-12T09:15:05Z",
+  "status": "partial",
+  "last_run_at": "2026-09-12T09:15:00Z",
+  "last_run_id": "20260912T091500",
+  "summary": {
+    "couples_produced": 1,
+    "couples_skipped": 108,
+    "rejected": 2,
+    "latest_couple": "v18 → v18.0.1"
+  },
+  "rejection_summary": {
+    "count": 2,
+    "categories": ["anchor_ambiguous"]
+  }
+}
+```
+
+### 7.3 Schéma d'erreur
+
+```json
+{
+  "contract_version": "1.1.0",
   "job": "release_diff",
   "published_at": "2026-06-03T12:00:02Z",
   "status": "error",
@@ -248,7 +339,7 @@ y compris en erreur.
 }
 ```
 
-### 7.3 Champs
+### 7.4 Champs
 
 | Champ | Type | Contrainte |
 |---|---|---|
@@ -259,7 +350,8 @@ y compris en erreur.
 | `last_run_at` | string ISO 8601 UTC | Horodatage d'exécution du job, suffixe `Z` |
 | `last_run_id` | string | Repris du run-summary |
 | `summary` | object \| null | Repris du run-summary |
-| `error_reason` | string | Présent si `status=error` |
+| `rejection_summary` | object \| absent | Repris du run-summary ; présent **uniquement** si `status=partial` |
+| `error_reason` | string | Présent **uniquement** si `status=error` ; jamais présent pour `partial` |
 
 `published_at` (transport) est distinct de `last_run_at` (exécution).
 En V1, Home Assistant n'exploite pas `published_at` : aucune couche de
@@ -279,7 +371,7 @@ couple ignoré par idempotence) :
 
 ```json
 {
-  "contract_version": "1.0.0",
+  "contract_version": "1.1.0",
   "event": "release_diff_generated",
   "event_id": "20260603T115958_v15.3_v15.4",
   "job": "release_diff",
@@ -293,11 +385,12 @@ couple ignoré par idempotence) :
 
 ### 8.2 Événement d'échec
 
-Publié **une fois par run** dont le `status` vaut `error` ou `partial` :
+Publié **une fois par run** dont le `status` vaut `error`. Un run
+`status=partial` ne produit **jamais** cet événement — voir §8.3.
 
 ```json
 {
-  "contract_version": "1.0.0",
+  "contract_version": "1.1.0",
   "event": "release_diff_failed",
   "event_id": "20260603T115958_run",
   "job": "release_diff",
@@ -307,35 +400,71 @@ Publié **une fois par run** dont le `status` vaut `error` ou `partial` :
 }
 ```
 
+Un run `status=error` ne produit par définition aucun couple :
+`release_diff_generated` n'est jamais émis pour lui. `release_diff_failed`
+est alors le seul événement du run.
+
+### 8.3 Événement de run partiel
+
+Publié **une fois par run** dont le `status` vaut `partial`, en
+complément des événements `release_diff_generated` déjà émis pour les
+couples produits au cours du même run :
+
+```json
+{
+  "contract_version": "1.1.0",
+  "event": "release_diff_partial",
+  "event_id": "20260912T091500_run",
+  "job": "release_diff",
+  "status": "partial",
+  "rejection_summary": {
+    "count": 2,
+    "categories": ["anchor_ambiguous"]
+  },
+  "partial_at": "2026-09-12T09:15:00Z"
+}
+```
+
 Un run `partial` produit donc à la fois un ou plusieurs événements
 `release_diff_generated` (pour les couples produits) et un unique
-événement `release_diff_failed` (pour signaler le rejet). Cela satisfait
-l'exigence : tout diff qui n'a pas pu être généré est signalé.
+événement `release_diff_partial` (pour signaler l'agrégat des rejets).
+Cela satisfait l'exigence : tout diff qui n'a pas pu être généré est
+signalé, sans jamais laisser croire que les couples produits dans le même
+run sont eux-mêmes rejetés.
 
-### 8.3 Champs communs
+**Invariant** : `release_diff_partial` et `release_diff_failed` sont
+mutuellement exclusifs — un run donné n'émet jamais les deux. `partial !=
+error`, et `release_diff_partial != release_diff_failed` (voir §5.7).
+
+### 8.4 Champs communs
 
 | Champ | Rôle |
 |---|---|
-| `event` | Nom sémantique — `release_diff_generated` ou `release_diff_failed`. Ne pas déduire du topic. |
-| `event_id` | Identifiant unique de l'occurrence. `<run_id>_<from>_<to>` pour une génération, `<run_id>_run` pour un échec. Permet la déduplication QoS1. |
+| `event` | Nom sémantique — `release_diff_generated`, `release_diff_partial` ou `release_diff_failed`. Ne pas déduire du topic. |
+| `event_id` | Identifiant unique de l'occurrence. `<run_id>_<from>_<to>` pour une génération, `<run_id>_run` pour un événement de run (`release_diff_partial` ou `release_diff_failed`). Permet la déduplication QoS1. |
 | `job` | `release_diff` |
 | `status` | Statut associé à l'occurrence |
 
-### 8.4 Règle d'idempotence
+### 8.5 Règle d'idempotence
 
 Le publisher publie un événement `release_diff_generated` exactement une
 fois par couple effectivement produit au cours du run, et au plus un
-événement `release_diff_failed` par run. Aucune republication au
-redémarrage du NAS. `event_id` permet au consommateur de dédupliquer en
-cas de retransmission QoS1.
+événement de run (`release_diff_partial` ou `release_diff_failed`,
+mutuellement exclusifs) par run. Aucune republication au redémarrage du
+NAS. `event_id` permet au consommateur de dédupliquer en cas de
+retransmission QoS1.
 
 **Invariant** : un run n'est jamais silencieux. Il produit toujours une
 mise à jour du plan état, et au moins un événement si quelque chose a été
-produit ou a échoué.
+produit, rejeté, ou a échoué.
 
 ---
 
 ## 9. Modes d'erreur de publication
+
+Ce tableau couvre exclusivement les causes de `status=error`. Un run
+`status=partial` ne produit **jamais** de `error_reason` — l'information
+correspondante est portée par `rejection_summary` (§5.3, §5.5).
 
 | `error_reason` | Sens | Origine |
 |---|---|---|
@@ -349,6 +478,14 @@ produit ou a échoué.
 Si le moteur n'a pas produit de run-summary exploitable, le publisher
 synthétise lui-même un état `status=error` avec la cause appropriée
 (`last_run_missing` ou `last_run_malformed`), sur le modèle de l'audit.
+
+Un run-summary annonçant `status=partial` sans `rejection_summary`
+exploitable (absent, `count` absent, ou `categories` vide alors que
+`count >= 1`, ou toute autre incohérence entre `count` et `categories`)
+relève du même traitement : le publisher le considère `last_run_malformed`
+et synthétise `status=error` en conséquence. Aucun événement
+`release_diff_partial` n'est émis dans ce cas, et aucune valeur de
+remplacement n'est inventée pour `rejection_summary` ou `error_reason`.
 
 En cas de broker indisponible : aucun payload n'est publié, l'échec est
 journalisé localement (`mqtt_publish_failed`), et **le run n'échoue
@@ -419,10 +556,13 @@ Le contrat est valide si :
 |---|---|
 | Run produisant un nouveau couple | État `status=ok` + événement `release_diff_generated` |
 | Run sans nouveau couple (idempotent) | État `status=ok`, `couples_produced=0`, aucun événement |
-| Run avec rejet d'ancre | État `status=partial` + événement `release_diff_failed` |
-| Échec opérationnel (`versions/` absent) | État `status=error` + événement `release_diff_failed` |
+| Run avec rejet d'ancre, aucun couple produit | État `status=partial` + événement `release_diff_partial` (`rejection_summary.count>=1`) ; jamais `release_diff_failed` |
+| Run avec rejet(s) d'ancre ET couple(s) produits | État `status=partial` + un `release_diff_generated` par couple produit + un unique `release_diff_partial` agrégeant les rejets |
+| Run avec rejets multi-catégories (ex. `anchor_ambiguous` + `snapshot_unreadable`) | `rejection_summary.categories` contient les deux catégories, dédupliquées, sans ordre significatif |
+| Échec opérationnel (`versions/` absent) | État `status=error` + événement `release_diff_failed` ; jamais `release_diff_partial` |
 | Run-summary absent | État `status=error`, `error_reason=last_run_missing` |
 | Run-summary malformé | État `status=error`, `error_reason=last_run_malformed` |
+| Run-summary `status=partial` sans `rejection_summary` exploitable | Traité comme malformé : État `status=error`, `error_reason=last_run_malformed` ; aucun `release_diff_partial` émis |
 | Broker MQTT indisponible | Aucun payload ; erreur locale journalisée ; run non échoué |
 | Redémarrage HA | Dernier état restauré via retain ; aucun événement rejoué |
 
@@ -451,8 +591,13 @@ Explicitement hors V1, à n'introduire que sur besoin réel :
 - couche de fraîcheur HA (`age_minutes`, `stale`, seuil) si
   `release_diff` devient planifié ;
 - rollup multi-jobs `binary_sensor.arsenal_nas_any_job_stale` ;
-- événement dédié distinguant `partial` d'`error` ;
+- enrichissement de `rejection_summary` (compte par catégorie plutôt que
+  simple ensemble) — non retenu en v1.1.0, à réévaluer sur besoin réel ;
 - enrichissement du `summary` (domaines Arsenal touchés, volumétrie).
+
+> L'événement dédié distinguant `partial` d'`error` (anciennement listé
+> ici) est introduit par la présente version (`release_diff_partial`,
+> §8.3).
 
 ---
 
@@ -469,4 +614,4 @@ contrat `diff_release.md`.
 
 ---
 
-*Fin du contrat — Projection MQTT de `release_diff` (NAS Arsenal) v1.0.1.*
+*Fin du contrat — Projection MQTT de `release_diff` (NAS Arsenal) v1.1.0.*

@@ -1,9 +1,10 @@
 # Contrat — Domaine Home Assistant `arsenal_nas`
 
-**Version** : v1.0.2
-**Révision** : v1.0.2 — statut corrigé en `actif` (chaîne `release_diff` confirmée en production : `state/release_diff_last_run.json` et publication MQTT constatés côté NAS ; les trois sensors §5.1 et l'automation §5.2 constatés implémentés côté dépôt, conformes au présent contrat). Ajout du renvoi vers le contrat transactionnel `nas_transactionnel.md` (chantier C51). Aucun changement sémantique aux entités ou à leur comportement.
+**Version** : v1.0.3
+**Révision** : v1.0.3 — alignement du vocabulaire événementiel sur `release_diff_mqtt.md` v1.1.0 : `release_diff_partial` (nouveau) notifie les runs `status=partial` (rejet signalé, jamais interprété comme un échec d'exécution) ; `release_diff_failed` reste réservé aux runs `status=error`. Aucune nouvelle entité, aucun nouveau sensor, aucune nouvelle projection persistante : mise en cohérence documentaire du §6, du §7.2 et du §11 uniquement. *(L'automation réellement déployée n'écoute encore que `release_diff_failed` pour `partial` ; son alignement relève d'un chantier runtime séparé, hors périmètre de cette révision.)*
+**Révision précédente** : v1.0.2 — statut corrigé en `actif` (chaîne `release_diff` confirmée en production : `state/release_diff_last_run.json` et publication MQTT constatés côté NAS ; les trois sensors §5.1 et l'automation §5.2 constatés implémentés côté dépôt, conformes au présent contrat). Ajout du renvoi vers le contrat transactionnel `nas_transactionnel.md` (chantier C51). Aucun changement sémantique aux entités ou à leur comportement.
 **Précision (2026-09-10, clôture C51)** : la mention « publication MQTT quotidiens » ci-dessus décrivait la cadence de la tâche DSM `Arsenal - Release Diff` (03:15) alors active. Cette tâche est supprimée sans remplacement (chantier `c51_commandabilite_nas.md` §12.10, sous-lot 8.6) : `release_diff` est **déclenché à la demande** (voir §10 ci-dessous, déjà correct), sans cadence périodique DSM restante. Aucun changement aux entités ou à leur comportement.
-**Révision précédente** : v1.0.1 — publisher nommé `publish_release_diff_mqtt.py` (alignement sur le précédent réel `publish_audit_mqtt.py`). Aucun changement sémantique.
+**Révision antérieure** : v1.0.1 — publisher nommé `publish_release_diff_mqtt.py` (alignement sur le précédent réel `publish_audit_mqtt.py`). Aucun changement sémantique.
 **Statut** : actif
 **Périmètre** : exposition Home Assistant de l'observabilité d'exécution des jobs NAS Arsenal. En V1, locataire unique : `release_diff`.
 **Contrats liés** :
@@ -112,9 +113,10 @@ Le domaine ne déclare **pas**, par décision de périmètre :
 - de rollup multi-jobs.
 
 `release_diff` étant déclenché à la demande, la fraîcheur n'a pas de sens
-métier en V1. L'état d'échec est porté par le plan état (consultable) et
-par la notification d'échec (événement). Aucune entité de décision n'est
-nécessaire pour cela.
+métier en V1. L'état de rejet ou d'échec est porté par le plan état
+(consultable) et par les notifications d'événement (`release_diff_partial`
+pour un rejet, `release_diff_failed` pour un échec d'exécution — §7.2).
+Aucune entité de décision n'est nécessaire pour cela.
 
 ---
 
@@ -134,15 +136,22 @@ ou ignorés proprement par idempotence.
 Le dernier run s'est terminé mais au moins un couple a été rejeté
 (ambiguïté d'ancre). D'autres couples ont pu être produits.
 
-`partial` est traité comme une situation à signaler : un diff attendu n'a
-pas pu être généré.
+`partial` est traité comme une situation à signaler, jamais comme un
+échec d'exécution : Home Assistant ne l'interprète jamais comme un
+sous-cas d'`error`. L'événement associé est `release_diff_partial`
+(§7.2), distinct de `release_diff_failed` réservé à `error` (§6.3). La
+donnée agrégée des rejets (`rejection_summary.count`/`categories`, cf.
+`release_diff_mqtt.md` §5.3) est consommée depuis cet événement pour la
+notification ; aucune nouvelle entité n'en découle en V1.
 
 ### 6.3 `error`
 
 La chaîne n'a pas pu produire ou publier un run exploitable.
 
 `error` ne signifie pas qu'un diff est incorrect. Il signifie que
-l'exécution du job a échoué.
+l'exécution du job a échoué. La cause associée (`error_reason`, cf.
+`release_diff_mqtt.md` §9) est propre à ce statut ; elle n'est jamais
+présente pour `partial`.
 
 ---
 
@@ -162,7 +171,8 @@ notifications d'Arsenal (`script.notification_envoyer*`). Aucune cible
 | Événement reçu | Notification |
 |---|---|
 | `release_diff_generated` | Informative : un nouveau diff de release a été généré (`from → to`) |
-| `release_diff_failed` | Informative : un run n'a pas pu produire un diff attendu (statut + cause) |
+| `release_diff_partial` | Informative : le run s'est terminé normalement mais au moins un couple a été rejeté (résumé agrégé `rejection_summary`, jamais présentée comme un échec) |
+| `release_diff_failed` | Informative : le run a échoué (`status=error`, statut + `error_reason`) |
 
 ### 7.3 Nature
 
@@ -182,6 +192,10 @@ Aucune action corrective automatique n'est autorisée dans ce domaine.
 - Le domaine `arsenal_nas` supervise l'exécution d'un job, pas un
   équipement physique.
 - `status` reflète l'exécution du job, jamais un verdict patrimonial.
+- `partial` n'est jamais interprété comme un échec d'exécution ;
+  `release_diff_partial` (rejet signalé) et `release_diff_failed` (échec
+  d'exécution) restent des événements distincts et mutuellement exclusifs
+  (cf. `release_diff_mqtt.md` §5.7, §8.3).
 - La notification est une trace d'événement, l'état est une projection
   d'état ; les deux ne sont jamais confondus.
 - Aucune cible de notification n'est codée en dur.
@@ -223,10 +237,13 @@ Le domaine est conforme si :
 3. l'automation se déclenche sur le topic événement ;
 4. un événement `release_diff_generated` produit une notification de
    succès via `script.notification_envoyer*` ;
-5. un événement `release_diff_failed` produit une notification d'échec ;
-6. aucune cible `notify.*` n'est codée en dur ;
-7. aucune entité de fraîcheur n'est présente ;
-8. le détail produit reste exclusivement porté par les artefacts NAS.
+5. un événement `release_diff_partial` produit une notification de rejet,
+   sans jamais être présentée comme un échec d'exécution ;
+6. un événement `release_diff_failed` produit une notification d'échec,
+   exclusivement pour `status=error` ;
+7. aucune cible `notify.*` n'est codée en dur ;
+8. aucune entité de fraîcheur n'est présente ;
+9. le détail produit reste exclusivement porté par les artefacts NAS.
 
 ---
 
@@ -263,4 +280,4 @@ contrat [`diff_release.md`](../outils_externes/nas_arsenal/diff/diff_release.md)
 
 ---
 
-*Fin du contrat — Domaine Home Assistant `arsenal_nas` v1.0.2.*
+*Fin du contrat — Domaine Home Assistant `arsenal_nas` v1.0.3.*
