@@ -1,0 +1,36 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Status — Label XL sans icône (80px)
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : pure
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Variante XL de socle_status_label : strictement la même
+#   sémantique d'affichage (name + state + label, icône
+#   masquée), avec une hauteur de carte augmentée pour les
+#   contenus multi-ligne.
+#
+# ⚙️ COMPORTEMENT
+#   - hérite de socle_status_label (icon masqué, name affiché,
+#     state affiché, label affiché ; aucune interaction)
+#   - seule différence : hauteur de carte 80px (au lieu de
+#     72px hérité de carte_base_v2)
+#
+# 📡 SOURCE
+#   - entity de la carte dérivée
+#
+# 📐 USAGE
+#   - destiné aux cartes socle_status_label dont le contenu
+#     multi-ligne (label sur plusieurs lignes) dépasse la
+#     hauteur standard 72px
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
+socle_status_label_xl_sans_icone:
+  template: socle_status_label
+
+  styles:
+    card:
+      - height: 80px
