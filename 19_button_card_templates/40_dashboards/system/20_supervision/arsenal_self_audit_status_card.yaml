@@ -25,7 +25,7 @@
 #     - binary_sensor.arsenal_self_audit_stale
 #
 #   Template :
-#     - socle_status_label
+#     - socle_status_label_xl_sans_icone
 #
 # 🚫 INTERDITS
 #   - Prendre une décision métier
@@ -40,7 +40,7 @@
 arsenal_self_audit_status_card:
 
   template:
-    - socle_status_label
+    - socle_status_label_xl_sans_icone
 
   entity: sensor.arsenal_self_audit_statut
 
