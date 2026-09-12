@@ -172,8 +172,8 @@ HUB_KEYS = {"arsenal-dashboard", "navigation-dashboard", "system-dashboard"}
 INCLUDE_FILE_RE = re.compile(r"!include\s+(?!_dir)(\S+)")
 
 # Autorité déclarative Classe B/C/D (§6.6 navigation.md). Machine-readable,
-# sans tags Home Assistant : chargée avec yaml.safe_load, pas le loader
-# !include ci-dessus.
+# sans tags Home Assistant : chargée avec un loader strict dédié
+# (`_StrictTopologyLoader`, ci-dessous), pas le loader `!include` ci-dessus.
 TOPOLOGY_PATH = ROOT / "00_documentation_arsenal" / "ui" / "navigation_topology.yaml"
 ALLOWED_TOPOLOGY_KEYS = {"hierarchie", "groupes_lateraux", "ressources_partagees"}
 
@@ -402,8 +402,12 @@ def check_topology(res: Result, dash_keys: set, config_root: Path, topology_path
     try:
         raw = load_topology(topology_path)
     except yaml.YAMLError as e:
+        # yaml.YAMLError couvre aussi bien une clé de mapping dupliquée
+        # (`_StrictTopologyLoader`) qu'une syntaxe/indentation YAML invalide :
+        # le libellé reste générique, le détail de l'exception (conservé
+        # ci-dessous) précise le cas réel (ex. « clé de mapping dupliquée »).
         res.errors.append(
-            f"R6 doublon de clé YAML dans la topologie déclarative | fichier={rel(topology_path)} "
+            f"R6 YAML invalide dans la topologie déclarative | fichier={rel(topology_path)} "
             f"| {e}"
         )
         return
@@ -955,7 +959,7 @@ def selftest() -> list[str]:
 
 
 def selftest_topology() -> list[str]:
-    """Vérifie R6-R9 : consommation de `navigation_topology.yaml` (autorité
+    """Vérifie R6-R10 : consommation de `navigation_topology.yaml` (autorité
     déclarative, §6.6 navigation.md) et conformité runtime des relations
     Classe B, des groupes Classe C et des ressources Classe D déclarés.
 
@@ -1359,10 +1363,20 @@ def selftest_topology() -> list[str]:
             BASE_RESSOURCES,
         )
         res = run()
-        if not has(res.errors, "R6 doublon de clé YAML dans la topologie déclarative"):
+        # Le libellé R6 reste générique (yaml.YAMLError couvre aussi une
+        # syntaxe YAML invalide) : on vérifie donc à la fois le libellé
+        # générique ET que le détail de l'exception nomme bien le cas réel
+        # (clé de mapping dupliquée), pour ne pas affaiblir ce test.
+        dup_errors = [e for e in res.errors if "R6 YAML invalide dans la topologie déclarative" in e]
+        if not dup_errors:
             failures.append(
                 "topologie R6 : clé `hierarchie` dupliquée (deux parents différents) "
                 "non détectée — PyYAML a pu l'écraser silencieusement"
+            )
+        elif not any("clé de mapping dupliquée" in e for e in dup_errors):
+            failures.append(
+                "topologie R6 : erreur générique levée, mais le détail de l'exception "
+                "ne précise plus « clé de mapping dupliquée »"
             )
         write_topology(BASE_HIER, BASE_GROUPES, BASE_RESSOURCES)  # restaure
 
@@ -1387,7 +1401,7 @@ def main() -> int:
         return 2
     print("✔ auto-test de résolution conforme (badges inclus vus, R1/R2 validées, "
           "pas de faux positif retour)")
-    print("✔ auto-test topologie déclarative conforme (R6-R9 : Classes B/C/D, "
+    print("✔ auto-test topologie déclarative conforme (R6-R10 : Classes B/C/D, "
           "y compris la régression type NAS et l'exclusion Classe E)")
 
     res = analyze(LOVELACE, config_root=ROOT)
