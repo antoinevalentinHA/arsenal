@@ -20,6 +20,7 @@
 #     - sensor.arsenal_self_audit_statut
 #     - sensor.arsenal_self_audit_total_anomalies
 #     - sensor.arsenal_self_audit_total_observations
+#     - sensor.arsenal_self_audit_version_auditee
 #     - binary_sensor.arsenal_self_audit_error
 #     - binary_sensor.arsenal_self_audit_stale
 #
@@ -43,7 +44,7 @@ arsenal_self_audit_status_card:
 
   entity: sensor.arsenal_self_audit_statut
 
-  name: Audit Arsenal
+  name: Audit Système
 
   show_state: true
   show_label: true
@@ -93,18 +94,27 @@ arsenal_self_audit_status_card:
       const stale =
         states['binary_sensor.arsenal_self_audit_stale']?.state;
 
+      const versionCourte =
+        states['sensor.arsenal_self_audit_version_auditee']
+          ?.attributes?.version_courte;
+
+      const versionLine = 'Version auditée : '
+        + (versionCourte ? versionCourte : 'indisponible');
+
       if (
         entity.state === 'unknown' ||
         entity.state === 'unavailable'
       ) {
-        return 'Verdict indisponible';
+        return 'Verdict indisponible' + '<br>' + versionLine;
       }
 
       if (stale === 'on') {
-        return anomalies + ' anomalie(s) • audit perime';
+        return versionLine + '<br>'
+          + anomalies + ' anomalie(s) • audit perime';
       }
 
-      return anomalies + ' anomalie(s) • '
+      return versionLine + '<br>'
+        + anomalies + ' anomalie(s) • '
         + observations + ' observations';
     ]]]
 
