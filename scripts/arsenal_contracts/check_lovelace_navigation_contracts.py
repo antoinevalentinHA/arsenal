@@ -58,6 +58,39 @@ Règles contrôlées
                  Paramètres/Diagnostics pointant vers une clé inexistante
                  (surchargés partout aujourd'hui — sans impact runtime).
 
+  R6 (ERROR)   — **topologie déclarative valide** : la structure de
+                 `00_documentation_arsenal/ui/navigation_topology.yaml`
+                 elle-même (clés/types attendus, doublons, clés B/C/D
+                 référençant des dashboards ou fichiers réellement
+                 existants, non-chevauchement B/C/D).
+  R7 (ERROR)   — **Classe B conforme** : pour chaque relation déclarée
+                 `enfant: parent` de `hierarchie`, l'enfant porte un Retour
+                 contextuel unique dont la cible effective résolue est le
+                 parent déclaré, et le parent navigue réellement (hors
+                 gestes secondaires Classe E) vers l'enfant.
+  R8 (ERROR)   — **Classe C conforme** : chaque fichier de
+                 `groupes_lateraux` existe, relie des dashboards réellement
+                 déclarés (membres lus depuis le fichier, jamais recopiés),
+                 et aucun de ses membres ne porte de Retour contextuel dédié.
+  R9 (ERROR)   — **Classe D conforme** : chaque ressource de
+                 `ressources_partagees` existe et ne porte aucun Retour
+                 contextuel dédié, indépendamment de son nombre courant de
+                 prédécesseurs.
+  R10 (ERROR)  — **Retour B effectif non déclaré** : sens inverse de R7 —
+                 tout dashboard portant en runtime un Retour contextuel
+                 réellement surchargé (`tap_action.navigation_path` explicite
+                 sur le template `bouton_retour_badge_carre`) doit être
+                 déclaré comme enfant dans `hierarchie`. Une intention
+                 Classe B ne doit jamais exister de fait sans que l'autorité
+                 déclarative n'en sache rien.
+
+L'autorité déclarative est `navigation_topology.yaml` (§6.6 de
+`navigation.md`) : l'humain y déclare l'intention Classe B/C/D, ce checker
+vérifie sa réalisation runtime. Aucune heuristique structurelle (nombre de
+prédécesseurs, absence dans Navigation, emplacement de fichier, asymétrie
+Réglages/Diagnostics, convention de nommage, forme du graphe brut) ne s'y
+substitue.
+
 Les chemins **Home Assistant natifs** (`/config/*`, `/developer-tools/*`,
 `/history`, `/logbook`, `/energy`, `/app/*`, …) sont classés à part et exemptés
 du contrôle de clé.
@@ -137,6 +170,16 @@ LATENT_DEFAULT_BADGES = {
 HUB_KEYS = {"arsenal-dashboard", "navigation-dashboard", "system-dashboard"}
 
 INCLUDE_FILE_RE = re.compile(r"!include\s+(?!_dir)(\S+)")
+
+# Autorité déclarative Classe B/C/D (§6.6 navigation.md). Machine-readable,
+# sans tags Home Assistant : chargée avec yaml.safe_load, pas le loader
+# !include ci-dessus.
+TOPOLOGY_PATH = ROOT / "00_documentation_arsenal" / "ui" / "navigation_topology.yaml"
+ALLOWED_TOPOLOGY_KEYS = {"hierarchie", "groupes_lateraux", "ressources_partagees"}
+
+# Gestes secondaires (Classe E, §6.1) : un navigation_path qui ne vit que
+# sous l'une de ces clés ne crée jamais de parenté hiérarchique.
+SECONDARY_ACTION_KEYS = {"hold_action", "double_tap_action"}
 
 
 def rel(path: Path) -> str:
@@ -218,6 +261,58 @@ def all_navigation_paths(data) -> list[str]:
     return out
 
 
+def primary_navigation_paths(node) -> list[str]:
+    """Comme `all_navigation_paths`, mais ignore tout sous-arbre porté par un
+    geste secondaire (`hold_action`, `double_tap_action`, Classe E, §6.1) :
+    ces actions ne créent jamais de parenté hiérarchique (§6.6)."""
+    out: list[str] = []
+    if isinstance(node, dict):
+        np = node.get("navigation_path")
+        if isinstance(np, str):
+            out.append(np)
+        for k, v in node.items():
+            if k in SECONDARY_ACTION_KEYS:
+                continue
+            out.extend(primary_navigation_paths(v))
+    elif isinstance(node, list):
+        for item in node:
+            out.extend(primary_navigation_paths(item))
+    return out
+
+
+class _StrictTopologyLoader(yaml.SafeLoader):
+    """`SafeLoader` durci : une clé de mapping dupliquée (ex. deux entrées
+    `hierarchie` pour le même enfant) est une déclaration ambiguë. PyYAML,
+    par défaut, la résout silencieusement en gardant la dernière valeur —
+    inacceptable pour une autorité déclarative (§6.6) : l'ambiguïté doit
+    échouer explicitement, jamais être écrasée sans trace."""
+
+
+def _construct_mapping_no_dup(loader, node, deep=False):
+    mapping = {}
+    for key_node, value_node in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        if key in mapping:
+            raise yaml.constructor.ConstructorError(
+                None, None, f"clé de mapping dupliquée : {key!r}", node.start_mark
+            )
+        mapping[key] = loader.construct_object(value_node, deep=deep)
+    return mapping
+
+
+_StrictTopologyLoader.add_constructor(
+    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _construct_mapping_no_dup
+)
+
+
+def load_topology(path: Path):
+    """Charge `navigation_topology.yaml` : YAML brut, aucun tag Home
+    Assistant à résoudre (autorité déclarative pure, §6.6 navigation.md).
+    Lève `yaml.YAMLError` sur toute clé de mapping dupliquée."""
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    return yaml.load(text, Loader=_StrictTopologyLoader)
+
+
 def view_badges(data) -> list[dict]:
     badges = []
     for view in (data or {}).get("views") or []:
@@ -272,6 +367,14 @@ class Result:
         self.n_navpaths = 0
         self.n_native = 0
         self.n_includes = 0
+        # Bilan topologie déclarative (R6-R9) : compte de relations/entrées
+        # déclarées vs. effectivement conformes, pour le résumé final.
+        self.b_total = 0
+        self.b_ok = 0
+        self.c_total = 0
+        self.c_ok = 0
+        self.d_total = 0
+        self.d_ok = 0
 
 
 def count_includes(lovelace_root: Path) -> int:
@@ -282,7 +385,258 @@ def count_includes(lovelace_root: Path) -> int:
     return n
 
 
-def analyze(lovelace_root: Path, config_root: Path) -> Result:
+def check_topology(res: Result, dash_keys: set, config_root: Path, topology_path: Path) -> None:
+    """Consomme l'autorité déclarative `navigation_topology.yaml` (R6) et en
+    vérifie la réalisation runtime pour les Classes B (R7), C (R8) et D (R9).
+
+    Principe (§6.6 navigation.md) : l'humain déclare l'intention ; ce
+    contrôle vérifie que le runtime la réalise encore — il ne la déduit
+    jamais d'une heuristique structurelle (§6.3)."""
+
+    if not topology_path.is_file():
+        res.errors.append(
+            f"R6 topologie déclarative introuvable | fichier={rel(topology_path)}"
+        )
+        return
+
+    try:
+        raw = load_topology(topology_path)
+    except yaml.YAMLError as e:
+        res.errors.append(
+            f"R6 doublon de clé YAML dans la topologie déclarative | fichier={rel(topology_path)} "
+            f"| {e}"
+        )
+        return
+
+    if not isinstance(raw, dict):
+        res.errors.append(
+            f"R6 racine de la topologie invalide | fichier={rel(topology_path)} "
+            f"| attendu=mapping, obtenu={type(raw).__name__}"
+        )
+        return
+
+    for cle in sorted(set(raw.keys()) - ALLOWED_TOPOLOGY_KEYS):
+        res.errors.append(f"R6 clé inconnue dans la topologie déclarative | clé={cle}")
+
+    hierarchie = raw.get("hierarchie") or {}
+    groupes_lateraux = raw.get("groupes_lateraux") or []
+    ressources_partagees = raw.get("ressources_partagees") or []
+
+    if not isinstance(hierarchie, dict):
+        res.errors.append("R6 `hierarchie` doit être un mapping enfant: parent")
+        hierarchie = {}
+    if not isinstance(groupes_lateraux, list):
+        res.errors.append("R6 `groupes_lateraux` doit être une liste de fichiers")
+        groupes_lateraux = []
+    if not isinstance(ressources_partagees, list):
+        res.errors.append("R6 `ressources_partagees` doit être une liste de clés")
+        ressources_partagees = []
+
+    for enfant, parent in hierarchie.items():
+        if not isinstance(enfant, str) or not isinstance(parent, str):
+            res.errors.append(
+                f"R6 relation Classe B mal typée | enfant={enfant!r} | parent={parent!r}"
+            )
+
+    vus: set = set()
+    for g in groupes_lateraux:
+        if g in vus:
+            res.errors.append(f"R6 groupe Classe C déclaré en double | fichier={g}")
+        vus.add(g)
+
+    vus = set()
+    for r in ressources_partagees:
+        if r in vus:
+            res.errors.append(f"R6 ressource Classe D déclarée en double | clé={r}")
+        vus.add(r)
+
+    # --- Membres réels des groupes C, lus depuis chaque fichier (jamais
+    # recopiés depuis la déclaration, §6.6) ---
+    group_members: dict[str, set] = {}
+    for g in groupes_lateraux:
+        if not isinstance(g, str):
+            continue
+        gpath = (topology_path.parent / g).resolve()
+        if not gpath.is_file():
+            res.errors.append(f"R6 fichier de groupe Classe C introuvable | fichier={g}")
+            continue
+        data = load_yaml(gpath, config_root)
+        members: set = set()
+        invalides: set = set()
+        for np in all_navigation_paths(data):
+            if is_native(np):
+                continue
+            dk = path_dashkey(np)
+            if not dk:
+                continue
+            if dk in dash_keys:
+                members.add(dk)
+            else:
+                invalides.add(dk)
+        group_members[g] = members
+        for dk in sorted(invalides):
+            res.errors.append(
+                f"R8 membre de groupe Classe C inexistant | fichier={g} | clé absente={dk}"
+            )
+
+    all_c_members: set = set()
+    for members in group_members.values():
+        all_c_members |= members
+
+    hierarchie_enfants = {k for k in hierarchie if isinstance(k, str)}
+    ressources_set = {r for r in ressources_partagees if isinstance(r, str)}
+
+    for dk in sorted(hierarchie_enfants & ressources_set):
+        res.errors.append(f"R6 dashboard à la fois Classe B et Classe D | dashboard={dk}")
+    for dk in sorted(hierarchie_enfants & all_c_members):
+        res.errors.append(f"R6 dashboard à la fois Classe B et Classe C | dashboard={dk}")
+
+    # ================= Classe B (R7) =================
+    # Graphe de prédécesseurs dédié : exclut les gestes secondaires Classe E
+    # (hold_action, double_tap_action) de la parenté hiérarchique (§6.1/§6.6).
+    hier_preds: dict = {}
+    for key, page in res.pages.items():
+        for np in primary_navigation_paths(page["data"]):
+            if is_native(np):
+                continue
+            tgt = path_dashkey(np)
+            if tgt in dash_keys and tgt != key:
+                hier_preds.setdefault(tgt, set()).add(key)
+
+    for enfant, parent in hierarchie.items():
+        if not isinstance(enfant, str) or not isinstance(parent, str):
+            continue  # déjà signalé (R6, mal typé)
+
+        res.b_total += 1
+
+        if enfant == parent:
+            res.errors.append(f"R7 boucle Classe B (enfant=parent) | dashboard={enfant}")
+            continue
+
+        enfant_absent = enfant not in dash_keys
+        parent_absent = parent not in dash_keys
+        if enfant_absent:
+            res.errors.append(f"R6 enfant Classe B inexistant | enfant={enfant} | parent={parent}")
+        if parent_absent:
+            res.errors.append(f"R6 parent Classe B inexistant | enfant={enfant} | parent={parent}")
+        if enfant_absent or parent_absent:
+            continue
+
+        page = res.pages.get(enfant)
+        if page is None:
+            res.errors.append(
+                f"R6 page introuvable pour l'enfant Classe B déclaré | enfant={enfant}"
+            )
+            continue
+
+        ok = True
+        retours = page["retours"]
+        if len(retours) == 0:
+            res.errors.append(
+                f"R7 Retour absent sur un enfant Classe B | enfant={enfant} "
+                f"| parent déclaré={parent}"
+            )
+            ok = False
+        elif len(retours) > 1:
+            res.errors.append(
+                f"R7 ambiguïté de Retour sur un enfant Classe B | enfant={enfant} "
+                f"| cibles={retours}"
+            )
+            ok = False
+        else:
+            cible = path_dashkey(retours[0])
+            if cible != parent:
+                res.errors.append(
+                    f"R7 Retour vers une mauvaise cible | enfant={enfant} "
+                    f"| retour→{retours[0]} | parent déclaré={parent}"
+                )
+                ok = False
+
+        if parent not in hier_preds.get(enfant, set()):
+            res.errors.append(
+                f"R7 parent ne navigue plus vers l'enfant déclaré | enfant={enfant} "
+                f"| parent={parent}"
+            )
+            ok = False
+
+        if ok:
+            res.b_ok += 1
+
+    # ================= R10 — Retour B effectif non déclaré =================
+    # Sens inverse de R7 : toute relation déclarée doit être réalisée (R7),
+    # mais tout Retour contextuel réellement surchargé en runtime doit aussi
+    # être déclaré — sinon une intention Classe B existe de fait sans que
+    # l'autorité déclarative n'en sache rien (§6.6).
+    for key, page in res.pages.items():
+        if key in hierarchie_enfants:
+            continue
+        cibles = [
+            (b.get("tap_action") or {}).get("navigation_path")
+            for b in page["badges"]
+            if b.get("template") == RETOUR_TEMPLATE
+            and isinstance((b.get("tap_action") or {}).get("navigation_path"), str)
+        ]
+        if cibles:
+            res.errors.append(
+                f"R10 Retour Classe B effectif non déclaré dans navigation_topology.yaml "
+                f"| dashboard={key} | retour(s)→{cibles}"
+            )
+
+    # ================= Classe C (R8) =================
+    for g in groupes_lateraux:
+        if not isinstance(g, str):
+            continue
+        res.c_total += 1
+        members = group_members.get(g)
+        if members is None:
+            continue  # fichier introuvable, déjà signalé (R6)
+
+        ok = True
+        if not members:
+            res.errors.append(f"R8 groupe Classe C sans membre valide | fichier={g}")
+            ok = False
+
+        for m in sorted(members):
+            mp = res.pages.get(m)
+            if mp and mp["retours"]:
+                res.errors.append(
+                    f"R8 Retour contextuel dédié sur un membre Classe C | fichier={g} "
+                    f"| membre={m} | retour(s)={mp['retours']}"
+                )
+                ok = False
+
+        if ok:
+            res.c_ok += 1
+
+    # ================= Classe D (R9) =================
+    for ressource in ressources_partagees:
+        if not isinstance(ressource, str):
+            continue
+        res.d_total += 1
+
+        if ressource not in dash_keys:
+            res.errors.append(f"R6 ressource Classe D inexistante | dashboard={ressource}")
+            continue
+
+        page = res.pages.get(ressource)
+        if page is None:
+            res.errors.append(
+                f"R6 page introuvable pour la ressource Classe D déclarée | dashboard={ressource}"
+            )
+            continue
+
+        # Volontairement : aucune lecture de `res.preds`/`hier_preds` ici — le
+        # statut D ne dépend jamais du nombre courant de prédécesseurs (§6.6).
+        if page["retours"]:
+            res.errors.append(
+                f"R9 Retour contextuel dédié sur une ressource Classe D | dashboard={ressource} "
+                f"| retour(s)={page['retours']}"
+            )
+        else:
+            res.d_ok += 1
+
+
+def analyze(lovelace_root: Path, config_root: Path, topology_path: Path | None = None) -> Result:
     res = Result()
 
     decl_path = lovelace_root / "dashboards.yaml"
@@ -409,6 +763,9 @@ def analyze(lovelace_root: Path, config_root: Path) -> Result:
             )
 
     res.n_includes = count_includes(lovelace_root)
+
+    check_topology(res, dash_keys, config_root, topology_path or TOPOLOGY_PATH)
+
     return res
 
 
@@ -597,6 +954,421 @@ def selftest() -> list[str]:
     return failures
 
 
+def selftest_topology() -> list[str]:
+    """Vérifie R6-R9 : consommation de `navigation_topology.yaml` (autorité
+    déclarative, §6.6 navigation.md) et conformité runtime des relations
+    Classe B, des groupes Classe C et des ressources Classe D déclarés.
+
+    Le cas B2 (« Retour supprimé ») est le cas critique : il prouve que la
+    régression type NAS (Retour contextuel disparu sans reclassification
+    silencieuse, cf. PR #828) est désormais bloquante."""
+    failures: list[str] = []
+
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        ll = base / "18_lovelace"
+        nav_inc = ll / "includes" / "navigation"
+        badges_inc = ll / "includes" / "badges"
+        dashdir = ll / "dashboards"
+        ui = base / "00_documentation_arsenal" / "ui"
+        for d in (nav_inc, badges_inc, dashdir, ui):
+            d.mkdir(parents=True, exist_ok=True)
+
+        (badges_inc / "base.yaml").write_text(
+            "- type: custom:button-card\n"
+            "  template: bouton_accueil_badge_carre\n"
+            "- type: custom:button-card\n"
+            "  template: bouton_navigation_badge_carre\n",
+            encoding="utf-8",
+        )
+
+        (ll / "dashboards.yaml").write_text(
+            "child-b-dashboard:\n  filename: 18_lovelace/dashboards/child_b.yaml\n"
+            "parent-b-dashboard:\n  filename: 18_lovelace/dashboards/parent_b.yaml\n"
+            "other-dashboard:\n  filename: 18_lovelace/dashboards/other.yaml\n"
+            "group-member-a-dashboard:\n  filename: 18_lovelace/dashboards/group_a.yaml\n"
+            "group-member-b-dashboard:\n  filename: 18_lovelace/dashboards/group_b.yaml\n"
+            "resource-d-dashboard:\n  filename: 18_lovelace/dashboards/resource_d.yaml\n",
+            encoding="utf-8",
+        )
+
+        def write_child_b(retour_np):
+            if retour_np is None:
+                (dashdir / "child_b.yaml").write_text(
+                    "views:\n"
+                    "  - badges: !include ../includes/badges/base.yaml\n"
+                    "    cards: []\n",
+                    encoding="utf-8",
+                )
+            else:
+                (dashdir / "child_b.yaml").write_text(
+                    "views:\n"
+                    "  - badges:\n"
+                    "      - type: custom:button-card\n"
+                    "        template: bouton_accueil_badge_carre\n"
+                    "      - type: custom:button-card\n"
+                    "        template: bouton_navigation_badge_carre\n"
+                    "      - type: custom:button-card\n"
+                    "        template: bouton_retour_badge_carre\n"
+                    "        tap_action:\n"
+                    "          action: navigate\n"
+                    f"          navigation_path: {retour_np}\n"
+                    "    cards: []\n",
+                    encoding="utf-8",
+                )
+
+        def write_parent_b(link: str):
+            # "tap" -> lien direct (tap_action) vers l'enfant ; "hold" ->
+            # UNIQUEMENT via hold_action (Classe E — ne doit jamais compter
+            # comme navigation hiérarchique, §6.1/§6.6) ; "none" -> aucun lien.
+            if link == "tap":
+                extra = (
+                    "      - type: custom:button-card\n"
+                    "        tap_action:\n"
+                    "          action: navigate\n"
+                    "          navigation_path: /child-b-dashboard\n"
+                )
+            elif link == "hold":
+                extra = (
+                    "      - type: custom:button-card\n"
+                    "        hold_action:\n"
+                    "          action: navigate\n"
+                    "          navigation_path: /child-b-dashboard\n"
+                )
+            else:
+                extra = ""
+            (dashdir / "parent_b.yaml").write_text(
+                "views:\n"
+                "  - badges: !include ../includes/badges/base.yaml\n"
+                "    cards:\n"
+                f"{extra}"
+                "      - type: custom:button-card\n"
+                "        tap_action:\n"
+                "          action: navigate\n"
+                "          navigation_path: /other-dashboard\n",
+                encoding="utf-8",
+            )
+
+        (dashdir / "other.yaml").write_text(
+            "views:\n"
+            "  - badges: !include ../includes/badges/base.yaml\n"
+            "    cards: []\n",
+            encoding="utf-8",
+        )
+
+        def write_group_member(name: str, with_retour: bool):
+            if with_retour:
+                (dashdir / name).write_text(
+                    "views:\n"
+                    "  - badges:\n"
+                    "      - type: custom:button-card\n"
+                    "        template: bouton_accueil_badge_carre\n"
+                    "      - type: custom:button-card\n"
+                    "        template: bouton_navigation_badge_carre\n"
+                    "      - type: custom:button-card\n"
+                    "        template: bouton_retour_badge_carre\n"
+                    "        tap_action:\n"
+                    "          action: navigate\n"
+                    "          navigation_path: /other-dashboard\n"
+                    "    cards: []\n",
+                    encoding="utf-8",
+                )
+            else:
+                (dashdir / name).write_text(
+                    "views:\n"
+                    "  - badges: !include ../includes/badges/base.yaml\n"
+                    "    cards: []\n",
+                    encoding="utf-8",
+                )
+
+        write_group_member("group_a.yaml", with_retour=False)
+        write_group_member("group_b.yaml", with_retour=False)
+
+        def write_group_file(with_invalid_member: bool):
+            invalid = (
+                "  - type: custom:button-card\n"
+                "    template: bouton_navigation_badge_carre\n"
+                "    tap_action:\n"
+                "      action: navigate\n"
+                "      navigation_path: /missing-member-dashboard\n"
+            ) if with_invalid_member else (
+                "  - type: custom:button-card\n"
+                "    template: bouton_navigation_badge_carre\n"
+                "    tap_action:\n"
+                "      action: navigate\n"
+                "      navigation_path: /group-member-b-dashboard\n"
+            )
+            (nav_inc / "group.yaml").write_text(
+                "type: custom:layout-card\n"
+                "cards:\n"
+                "  - type: custom:button-card\n"
+                "    template: bouton_navigation_badge_carre\n"
+                "    tap_action:\n"
+                "      action: navigate\n"
+                "      navigation_path: /group-member-a-dashboard\n"
+                f"{invalid}",
+                encoding="utf-8",
+            )
+
+        write_group_file(with_invalid_member=False)
+
+        def write_resource_d(with_retour: bool):
+            if with_retour:
+                (dashdir / "resource_d.yaml").write_text(
+                    "views:\n"
+                    "  - badges:\n"
+                    "      - type: custom:button-card\n"
+                    "        template: bouton_accueil_badge_carre\n"
+                    "      - type: custom:button-card\n"
+                    "        template: bouton_navigation_badge_carre\n"
+                    "      - type: custom:button-card\n"
+                    "        template: bouton_retour_badge_carre\n"
+                    "        tap_action:\n"
+                    "          action: navigate\n"
+                    "          navigation_path: /other-dashboard\n"
+                    "    cards: []\n",
+                    encoding="utf-8",
+                )
+            else:
+                (dashdir / "resource_d.yaml").write_text(
+                    "views:\n"
+                    "  - badges: !include ../includes/badges/base.yaml\n"
+                    "    cards: []\n",
+                    encoding="utf-8",
+                )
+
+        write_resource_d(with_retour=False)
+
+        topo_path = ui / "navigation_topology.yaml"
+
+        def write_topology(hierarchie: str, groupes: str, ressources: str):
+            topo_path.write_text(
+                f"hierarchie:\n{hierarchie}"
+                f"groupes_lateraux:\n{groupes}"
+                f"ressources_partagees:\n{ressources}",
+                encoding="utf-8",
+            )
+
+        def run() -> Result:
+            return analyze(ll, config_root=base, topology_path=topo_path)
+
+        def has(errs, needle: str) -> bool:
+            return any(needle in e for e in errs)
+
+        BASE_HIER = "  child-b-dashboard: parent-b-dashboard\n"
+        BASE_GROUPES = "  - ../../18_lovelace/includes/navigation/group.yaml\n"
+        BASE_RESSOURCES = "  - resource-d-dashboard\n"
+
+        # ---------- B1 : cas valide ----------
+        write_child_b("/parent-b-dashboard")
+        write_parent_b("tap")
+        write_topology(BASE_HIER, BASE_GROUPES, BASE_RESSOURCES)
+        res = run()
+        if (
+            has(res.errors, "R7")
+            or has(res.errors, "R6 enfant")
+            or has(res.errors, "R6 parent")
+            or has(res.errors, "R10")
+        ):
+            failures.append(f"topologie B1 (cas valide) : erreur inattendue -> {res.errors}")
+        if res.b_ok != 1 or res.b_total != 1:
+            failures.append("topologie B1 (cas valide) : b_ok/b_total inattendus")
+
+        # ---------- B2 : Retour supprimé (bug type NAS, PR #828) ----------
+        write_child_b(None)
+        res = run()
+        if not has(res.errors, "R7 Retour absent sur un enfant Classe B"):
+            failures.append(
+                "topologie B2 : suppression du Retour B non détectée "
+                "(régression type NAS non bloquée)"
+            )
+        write_child_b("/parent-b-dashboard")  # restaure
+
+        # ---------- B3 : Retour vers le mauvais parent ----------
+        write_child_b("/other-dashboard")
+        res = run()
+        if not has(res.errors, "R7 Retour vers une mauvaise cible"):
+            failures.append("topologie B3 : mauvaise cible de Retour B non détectée")
+        write_child_b("/parent-b-dashboard")  # restaure
+
+        # ---------- B4 : enfant déclaré inexistant ----------
+        write_topology(
+            "  missing-child-dashboard: parent-b-dashboard\n", BASE_GROUPES, BASE_RESSOURCES
+        )
+        res = run()
+        if not has(res.errors, "R6 enfant Classe B inexistant"):
+            failures.append("topologie B4 : enfant B inexistant non détecté")
+
+        # ---------- B5 : parent déclaré inexistant ----------
+        write_topology(
+            "  child-b-dashboard: missing-parent-dashboard\n", BASE_GROUPES, BASE_RESSOURCES
+        )
+        res = run()
+        if not has(res.errors, "R6 parent Classe B inexistant"):
+            failures.append("topologie B5 : parent B inexistant non détecté")
+        write_topology(BASE_HIER, BASE_GROUPES, BASE_RESSOURCES)  # restaure
+
+        # ---------- B6 : le parent ne navigue plus vers l'enfant ----------
+        write_parent_b("none")
+        res = run()
+        if not has(res.errors, "R7 parent ne navigue plus vers l'enfant déclaré"):
+            failures.append("topologie B6 : relation B orpheline (parent muet) non détectée")
+
+        # ---------- E : un hold_action ne crée pas de parent hiérarchique ----------
+        write_parent_b("hold")
+        res = run()
+        if not has(res.errors, "R7 parent ne navigue plus vers l'enfant déclaré"):
+            failures.append(
+                "topologie E : un hold_action du parent vers l'enfant a, à tort, "
+                "compté comme navigation hiérarchique"
+            )
+        write_parent_b("tap")  # restaure
+
+        # ---------- B7 : boucle enfant=parent ----------
+        write_topology(
+            "  child-b-dashboard: child-b-dashboard\n", BASE_GROUPES, BASE_RESSOURCES
+        )
+        res = run()
+        if not has(res.errors, "R7 boucle Classe B"):
+            failures.append("topologie B7 : boucle enfant=parent non détectée")
+        write_topology(BASE_HIER, BASE_GROUPES, BASE_RESSOURCES)  # restaure
+
+        # ---------- C1 : groupe valide ----------
+        res = run()
+        if has(res.errors, "R8"):
+            failures.append(f"topologie C1 (cas valide) : erreur R8 inattendue -> {res.errors}")
+        if res.c_ok != 1 or res.c_total != 1:
+            failures.append("topologie C1 (cas valide) : c_ok/c_total inattendus")
+
+        # ---------- C2 : fichier de groupe inexistant ----------
+        write_topology(
+            BASE_HIER,
+            "  - ../../18_lovelace/includes/navigation/missing_group.yaml\n",
+            BASE_RESSOURCES,
+        )
+        res = run()
+        if not has(res.errors, "R6 fichier de groupe Classe C introuvable"):
+            failures.append("topologie C2 : fichier de groupe C manquant non détecté")
+        write_topology(BASE_HIER, BASE_GROUPES, BASE_RESSOURCES)  # restaure
+
+        # ---------- C3 : membre dashboard inexistant ----------
+        write_group_file(with_invalid_member=True)
+        res = run()
+        if not has(res.errors, "R8 membre de groupe Classe C inexistant"):
+            failures.append("topologie C3 : membre de groupe C inexistant non détecté")
+        write_group_file(with_invalid_member=False)  # restaure
+
+        # ---------- C4 : Retour contextuel ajouté sur un membre C ----------
+        write_group_member("group_a.yaml", with_retour=True)
+        res = run()
+        if not has(res.errors, "R8 Retour contextuel dédié sur un membre Classe C"):
+            failures.append("topologie C4 : Retour ajouté sur un membre C non détecté")
+        write_group_member("group_a.yaml", with_retour=False)  # restaure
+
+        # ---------- D1 : ressource valide ----------
+        res = run()
+        if has(res.errors, "R9"):
+            failures.append(f"topologie D1 (cas valide) : erreur R9 inattendue -> {res.errors}")
+        if res.d_ok != 1 or res.d_total != 1:
+            failures.append("topologie D1 (cas valide) : d_ok/d_total inattendus")
+        preds_avant = len(res.preds.get("resource-d-dashboard", set()))
+
+        # ---------- D2 : ressource inexistante ----------
+        write_topology(BASE_HIER, BASE_GROUPES, "  - missing-resource-dashboard\n")
+        res = run()
+        if not has(res.errors, "R6 ressource Classe D inexistante"):
+            failures.append("topologie D2 : ressource D inexistante non détectée")
+        write_topology(BASE_HIER, BASE_GROUPES, BASE_RESSOURCES)  # restaure
+
+        # ---------- D3 : Retour contextuel ajouté sur une ressource D ----------
+        write_resource_d(with_retour=True)
+        res = run()
+        if not has(res.errors, "R9 Retour contextuel dédié sur une ressource Classe D"):
+            failures.append("topologie D3 : Retour ajouté sur une ressource D non détecté")
+        write_resource_d(with_retour=False)  # restaure
+
+        # ---------- D4 : le nombre de prédécesseurs ne doit jamais changer le verdict D ----------
+        (dashdir / "other.yaml").write_text(
+            "views:\n"
+            "  - badges: !include ../includes/badges/base.yaml\n"
+            "    cards:\n"
+            "      - type: custom:button-card\n"
+            "        tap_action:\n"
+            "          action: navigate\n"
+            "          navigation_path: /resource-d-dashboard\n",
+            encoding="utf-8",
+        )
+        res = run()
+        preds_apres = len(res.preds.get("resource-d-dashboard", set()))
+        if preds_apres == preds_avant:
+            failures.append(
+                "topologie D4 : fixture invalide — le nombre de prédécesseurs n'a pas changé"
+            )
+        if has(res.errors, "R9") or res.d_ok != 1:
+            failures.append(
+                "topologie D4 : le verdict D a changé avec le nombre de prédécesseurs "
+                "(heuristique interdite, §6.3/§6.6)"
+            )
+
+        # ---------- R10 : Retour B effectif non déclaré ----------
+        # parent-b-dashboard n'est jamais une clé (enfant) de `hierarchie` :
+        # lui ajouter un Retour réellement surchargé doit être bloquant même
+        # si aucune relation B ne le déclare.
+        (dashdir / "parent_b.yaml").write_text(
+            "views:\n"
+            "  - badges:\n"
+            "      - type: custom:button-card\n"
+            "        template: bouton_accueil_badge_carre\n"
+            "      - type: custom:button-card\n"
+            "        template: bouton_navigation_badge_carre\n"
+            "      - type: custom:button-card\n"
+            "        template: bouton_retour_badge_carre\n"
+            "        tap_action:\n"
+            "          action: navigate\n"
+            "          navigation_path: /other-dashboard\n"
+            "    cards:\n"
+            "      - type: custom:button-card\n"
+            "        tap_action:\n"
+            "          action: navigate\n"
+            "          navigation_path: /child-b-dashboard\n"
+            "      - type: custom:button-card\n"
+            "        tap_action:\n"
+            "          action: navigate\n"
+            "          navigation_path: /other-dashboard\n",
+            encoding="utf-8",
+        )
+        res = run()
+        if not any(
+            "R10 Retour Classe B effectif non déclaré" in e and "dashboard=parent-b-dashboard" in e
+            for e in res.errors
+        ):
+            failures.append(
+                "topologie R10 : Retour B effectif non déclaré (dashboard non présent "
+                "dans hierarchie) non détecté"
+            )
+        write_parent_b("tap")  # restaure (sans Retour)
+
+        # ---------- R6 : clé dupliquée dans `hierarchie` (deux parents différents) ----------
+        # PyYAML resout silencieusement une clé de mapping dupliquée en ne
+        # gardant que la dernière valeur ; l'autorité déclarative doit
+        # échouer explicitement plutôt que perdre la contradiction.
+        write_topology(
+            "  child-b-dashboard: parent-b-dashboard\n"
+            "  child-b-dashboard: other-dashboard\n",
+            BASE_GROUPES,
+            BASE_RESSOURCES,
+        )
+        res = run()
+        if not has(res.errors, "R6 doublon de clé YAML dans la topologie déclarative"):
+            failures.append(
+                "topologie R6 : clé `hierarchie` dupliquée (deux parents différents) "
+                "non détectée — PyYAML a pu l'écraser silencieusement"
+            )
+        write_topology(BASE_HIER, BASE_GROUPES, BASE_RESSOURCES)  # restaure
+
+    return failures
+
+
 # ==========================================================
 # Exécution
 # ==========================================================
@@ -607,7 +1379,7 @@ def main() -> int:
           "AVANT toute conclusion.\n")
 
     # Garde-fou : l'auto-test valide la mécanique de résolution avant le réel.
-    st_failures = selftest()
+    st_failures = selftest() + selftest_topology()
     if st_failures:
         print("❌ AUTO-TEST DE RÉSOLUTION EN ÉCHEC")
         for f in st_failures:
@@ -615,6 +1387,8 @@ def main() -> int:
         return 2
     print("✔ auto-test de résolution conforme (badges inclus vus, R1/R2 validées, "
           "pas de faux positif retour)")
+    print("✔ auto-test topologie déclarative conforme (R6-R9 : Classes B/C/D, "
+          "y compris la régression type NAS et l'exclusion Classe E)")
 
     res = analyze(LOVELACE, config_root=ROOT)
 
@@ -637,6 +1411,9 @@ def main() -> int:
     print(f"  !include (fichiers) résolus : {res.n_includes}")
     print(f"  navigation_path analysés   : {res.n_navpaths} "
           f"(dont {res.n_native} natifs HA classés à part)")
+    print(f"  Classe B (hiérarchie)      : {res.b_ok}/{res.b_total} conformes")
+    print(f"  Classe C (groupes latéraux) : {res.c_ok}/{res.c_total} conformes")
+    print(f"  Classe D (ressources partagées) : {res.d_ok}/{res.d_total} conformes")
     print(f"  erreurs                    : {len(res.errors)}")
     print(f"  warnings                   : {len(res.warnings)}")
 
