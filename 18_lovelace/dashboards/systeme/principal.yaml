@@ -131,7 +131,7 @@ views:
           # ==================================================
           - type: custom:button-card
             template: section_header
-            name: 🧠 Arsenal — Audit & Release Diff
+            name: 🛡️ Audit & Release Diff
 
           - type: grid
             square: false
