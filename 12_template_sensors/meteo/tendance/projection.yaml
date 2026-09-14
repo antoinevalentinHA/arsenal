@@ -1,0 +1,107 @@
+# ==========================================================
+# 🌡️ ARSENAL — TRIGGER TEMPLATE SENSORS
+#     Couche de projection statistique ré-échantillonnée
+#     (tendance thermique des agrégats intérieurs — amendement v1.2)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Recopier strictement, à cadence périodique explicite, l'état de
+#   chacun des trois agrégats thermiques intérieurs, afin d'alimenter
+#   de façon fiable les deux couches `statistics` (15 min / 60 min)
+#   de la famille tendance — indépendamment de la fréquence naturelle
+#   de rapport de la source (contrat v1.2 §4.2).
+#
+# ⚙️ Nature (contrat v1.2 §4.2, INV-TEND-15 à INV-TEND-20) :
+#   - recopie stricte de la source : aucune transformation, aucun
+#     lissage, aucun arrondi supplémentaire ;
+#   - aucune mémoire, aucun TTL, aucun fallback ;
+#   - disponibilité = exploitabilité numérique instantanée de la
+#     source (contrat §3.3), au même instant, pour aucune autre
+#     raison ;
+#   - `force_update` INTERDIT (INV-TEND-18) — non utilisé ici ;
+#   - seul consommateur autorisé : les couches `statistics` courte
+#     et longue de cette famille (INV-TEND-20) ;
+#   - hors de tout périmètre résilience/fraîcheur (INV-TEND-19,
+#     renvoi resilience_integrations.md R-ANCRAGE-2 / R-AXE1-1) :
+#     le `last_reported` de ces capteurs ne prouve jamais la
+#     fraîcheur/santé de la source amont.
+#
+# 📦 Capteurs créés :
+#   • sensor.temperature_min_chambres_projection
+#   • sensor.temperature_moyenne_maison_projection
+#   • sensor.temperature_max_chambres_projection
+#
+# 🧩 Sources consommées (lecture seule, jamais modifiées) :
+#   • sensor.temperature_min_chambres
+#   • sensor.temperature_moyenne_maison
+#   • sensor.temperature_max_chambres
+#
+# ⏱️ Cadence : time_pattern /5 min — borne contractuelle
+#   T ≤ W_court / 3 (contrat §4.2), valeur candidate actuelle,
+#   homogène sur les trois axes.
+#
+# 🚫 Interdits :
+#   - aucune décision, aucun seuil, aucune interprétation
+#   - aucun branchement hors des deux `statistics` de la famille
+#   - `force_update`
+#
+# 🏷️ Contrat : contrats/meteo/tendance_temperature.md §4.2 (amendement v1.2)
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.temperature_min_chambres
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Température min Chambres projection"
+      unique_id: temperature_min_chambres_projection
+      unit_of_measurement: "°C"
+      state_class: measurement
+      device_class: temperature
+
+      availability: &projection_availability >
+        {% set axe = this.entity_id | replace('sensor.temperature_', '') | replace('_projection', '') %}
+        {% set source = 'sensor.temperature_' ~ axe %}
+        {{ states(source) | float(none) is not none }}
+
+      state: &projection_state >
+        {% set axe = this.entity_id | replace('sensor.temperature_', '') | replace('_projection', '') %}
+        {% set source = 'sensor.temperature_' ~ axe %}
+        {{ states(source) }}
+
+- trigger:
+    - platform: state
+      entity_id: sensor.temperature_moyenne_maison
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Température moyenne Maison projection"
+      unique_id: temperature_moyenne_maison_projection
+      unit_of_measurement: "°C"
+      state_class: measurement
+      device_class: temperature
+      availability: *projection_availability
+      state: *projection_state
+
+- trigger:
+    - platform: state
+      entity_id: sensor.temperature_max_chambres
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Température max Chambres projection"
+      unique_id: temperature_max_chambres_projection
+      unit_of_measurement: "°C"
+      state_class: measurement
+      device_class: temperature
+      availability: *projection_availability
+      state: *projection_state
