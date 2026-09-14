@@ -47,7 +47,7 @@ Domaine météo extérieure : observation et structuration des données météo 
 - Rapport final — [`audit_meteo_axe_temperature_rapport_final.md`](../../audits/01_rapports/meteo/audit_meteo_axe_temperature_rapport_final.md)
 - Plan d'action — [`plan_action_meteo_axe_temperature.md`](../../audits/03_plans_action/meteo/plan_action_meteo_axe_temperature.md)
 - Audit affichage — [`audit_affichage_meteo.md`](../../audits/01_rapports/meteo/audit_affichage_meteo.md)
-- Audit tendance température (sensibilité) — [`audit_tendance_temperature_sensibilite.md`](../../audits/01_rapports/meteo/audit_tendance_temperature_sensibilite.md) — faux `stable` ; **contrat [`tendance_temperature.md`](../../contrats/meteo/tendance_temperature.md) amendé v1.2** : grandeur de décision v1.1 conforme au runtime (contrat §18) ; ajout d'une couche de projection statistique ré-échantillonnée pour corriger le faux `indisponible` sur source stable peu bavarde, **runtime non conforme sur ce point** (contrat §19) ; validation terrain des seuils (contrat §8.2) en dette ouverte.
+- Audit tendance température (sensibilité) — [`audit_tendance_temperature_sensibilite.md`](../../audits/01_rapports/meteo/audit_tendance_temperature_sensibilite.md) — faux `stable` ; **contrat [`tendance_temperature.md`](../../contrats/meteo/tendance_temperature.md) v1.2 (révision)** : grandeur de décision v1.1 conforme au runtime (contrat §18) ; couche de projection statistique ré-échantillonnée corrigeant le faux `indisponible` sur source stable peu bavarde, **déployée et validée terrain** (PR #839, contrat §19) ; validation terrain des seuils (contrat §8.2) reste en dette ouverte, distincte.
 
 > **Changelog** (pas de chantier dédié) : mentions diffuses `v15_7_2`, `v15_7_3`, `v15_8_3`, `v15_8_9`.
 

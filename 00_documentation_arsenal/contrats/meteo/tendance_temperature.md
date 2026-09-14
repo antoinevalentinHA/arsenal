@@ -1,7 +1,7 @@
 # Arsenal — Contrat métier et architectural
 # Famille — Tendance thermique des agrégats intérieurs (lecture glanceable)
-# Version : 1.2 (amendement)
-# Statut : normatif — doctrine de décision v1.1 conforme au runtime (§0, §18) ; doctrine d'architecture amendée v1.2 (couche de projection statistique ré-échantillonnée, §4.2) — runtime NON conforme sur ce point, aucune passe runtime dans ce lot (§19). Validation terrain des seuils §8.2 : dette ouverte distincte, non résorbée, non traitée par cet amendement.
+# Version : 1.2 (révision)
+# Statut : normatif — doctrine de décision v1.1 conforme au runtime (§0, §18) ; doctrine d'architecture v1.2 (couche de projection statistique ré-échantillonnée, §4.2) désormais conforme au runtime, déployée et validée terrain (PR #839, commit `9de7993`, §19). Validation terrain des seuils §8.2 : dette ouverte distincte, non résorbée, non traitée par cette clôture.
 # Chemin : 00_documentation_arsenal/contrats/meteo/tendance_temperature.md
 # Dépend de : meteo.md, affichage.md, validation.md, fallback.md
 # Renvoi : extrema_jour_courant.md §9.3 (usage « tendance » de la plateforme statistics)
@@ -58,8 +58,32 @@ projection statistique ré-échantillonnée** entre la source et les deux couche
 décision (§3.2, inchangée depuis v1.1) ni les seuils `S_in`/`S_out` (§8.2, dette
 de validation terrain inchangée et non rouverte par le présent amendement) :
 elle règle exclusivement le **défaut d'alimentation en échantillons** des
-couches `statistics`. **Aucune passe runtime n'accompagne cet amendement**
-(§19) : le présent lot est strictement documentaire.
+couches `statistics`.
+
+**Clôture v1.2 — runtime déployé et validé terrain.** La couche de projection
+décrite ci-dessus a été implémentée (PR #839, commit `9de7993`) : trois
+trigger-based template sensors de projection
+(`sensor.temperature_min_chambres_projection`,
+`sensor.temperature_moyenne_maison_projection`,
+`sensor.temperature_max_chambres_projection`, §11), repointage des six
+couches `statistics` existantes sur leur projection respective, inclusion
+Recorder Population A des trois projections (§13). Le SHA candidat exact de
+la PR a été déployé sur le `/config` réel et validé terrain avant merge :
+YAML valide, `ha core check` vert, redémarrage HA propre, trois projections
+numériques et strictement égales à leur source, six `statistics` numériques
+dès le premier report valide, trois tendances disponibles et `stable` ; sur
+les axes `min_chambres` et `max_chambres`, un plateau de plus de 15 minutes a
+montré une valeur de projection et un `last_changed`/`last_updated` inchangés
+tandis que `last_reported` avançait toutes les 5 minutes, les `statistics`
+15/60 min restant numériques et sans aucune bascule `indisponible` ; sur
+l'axe `moyenne_maison`, un changement naturel de la source s'est propagé
+immédiatement à la projection avec un véritable `state_changed` et une mise à
+jour des `statistics`. Aucun défaut bloquant n'a été observé. **Aucun test de
+panne réelle n'a été provoqué ni exécuté** : ce point reste hors du périmètre
+validé par ce lot. PR #839 mergée sur `main`. L'écart §19 est **résorbé** ; il
+est conservé à titre historique. La dette de validation terrain des seuils
+`S_in`/`S_out` (§8.2) reste **ouverte et distincte**, non traitée par cette
+clôture.
 
 Toute implémentation ultérieure doit être conforme aux invariants `INV-TEND-*`
 ci-dessous, dans leur version la plus récente (v1.1 pour la grandeur de
@@ -102,8 +126,8 @@ La famille crée, par axe, **quatre couches** (doctrine cible v1.2) :
 
 - une **couche de projection statistique ré-échantillonnée**, recopie stricte
   de la source à cadence périodique explicite, dédiée à l'alimentation fiable
-  des deux couches `statistics` ci-dessous (§4.2) — **amendement v1.2, non
-  encore implémentée, §19** ;
+  des deux couches `statistics` ci-dessous (§4.2) — **amendement v1.2,
+  implémentée et validée terrain, §19** ;
 - une **couche statistique « moyenne courte »** (moyenne glissante de la
   projection sur fenêtre courte `W_court`) ;
 - une **couche statistique « moyenne longue »** (moyenne glissante de la
@@ -118,11 +142,12 @@ Soit **3 axes**, chacun produisant un capteur de tendance consommable.
 > cette moyenne. La couche « moyenne courte » a été ajoutée en runtime ; les deux
 > couches sont **vivantes** (§11, §12). Cf. §18 pour la trace de cette résorption.
 >
-> **Note contractuelle (v1.2, ouverte).** Les deux couches `statistics`
+> **Note contractuelle (v1.2, résorbée).** Les deux couches `statistics`
 > consommaient jusqu'ici directement la source agrégée. L'amendement v1.2
 > intercale la couche de projection **entre** la source et les deux couches
-> `statistics`, sans modifier ces dernières ni la source. Cf. §19 pour le
-> statut ouvert de cet écart.
+> `statistics`, sans modifier ces dernières ni la source. Cette intercalation
+> est **vivante** en runtime (§11, §13). Cf. §19 pour la trace de cette
+> résorption.
 
 ### 2.3 Ce que la famille n'est pas
 
@@ -556,19 +581,24 @@ particulier de nommage. Ces identifiants sont ceux du runtime déployé ; toute
 modification ultérieure suit la règle générale (aucun renommage sans traçage
 changelog).
 
-**Gabarit non figé (v1.2, à arbitrer avant runtime).** La couche de projection
-introduite en §4.2 n'a, à ce stade, **aucun identifiant figé** : conformément
-à l'interdiction ci-dessus, ce contrat ne tranche pas son `entity_id`. Une
-syntaxe candidate, homogène avec la grammaire ci-dessus, est proposée à titre
-de **gabarit contractuel non figé** :
+**Gabarit figé (v1.2, implémenté et vivant).** La couche de projection
+introduite en §4.2 est implémentée en runtime (PR #839, commit `9de7993`,
+§19) sous la grammaire suivante, homogène avec celle ci-dessus :
 
 ```text
-couche de projection (candidate, NON figée) :  sensor.temperature_<axe>_projection     (axe ∈ {min_chambres, moyenne_maison, max_chambres})
+couche de projection :  sensor.temperature_<axe>_projection     (axe ∈ {min_chambres, moyenne_maison, max_chambres})
 ```
 
-Cette syntaxe est une proposition, pas un identifiant. Elle devra être
-arbitrée — et, le cas échéant, tracée au changelog — avant toute
-implémentation runtime (§19).
+Soit, par axe, les trois entités et `unique_id` réellement retenus :
+
+| Axe | Entité | `unique_id` |
+|---|---|---|
+| `min_chambres` | `sensor.temperature_min_chambres_projection` | `temperature_min_chambres_projection` |
+| `moyenne_maison` | `sensor.temperature_moyenne_maison_projection` | `temperature_moyenne_maison_projection` |
+| `max_chambres` | `sensor.temperature_max_chambres_projection` | `temperature_max_chambres_projection` |
+
+Ces identifiants sont ceux du runtime déployé ; toute modification ultérieure
+suit la règle générale (aucun renommage sans traçage changelog).
 
 ---
 
@@ -613,9 +643,10 @@ ligne Recorder ; un tick périodique à valeur identique ne produit qu'un
 (`force_update` ou autre) visant à forcer l'écriture Recorder sur valeur
 identique.
 
-Aucune modification de `recorder.yaml` n'est apportée par le présent
-amendement ; l'inclusion effective relève d'une passe runtime ultérieure
-(§19).
+L'inclusion Recorder Population A des trois projections a été réalisée par
+la passe runtime tracée en §19 (`recorder.yaml`, PR #839) : les trois
+entités de projection y figurent, sans élargissement du périmètre
+`recorder.yaml` au-delà de ces trois entités.
 
 ---
 
@@ -680,7 +711,7 @@ Il est **interdit**, au titre de ce contrat :
 | INV-TEND-11 | Les fenêtres glissantes servent exclusivement à qualifier une tendance ; elles ne sont jamais source d'un extrême du jour (renvoi `extrema_jour_courant.md` §9 ; usage légitimé §9.3). |
 | INV-TEND-12 | La tendance n'a aucune autorité décisionnelle : aucun pilotage d'équipement, aucun déclenchement d'automatisation métier. |
 | INV-TEND-13 | La grandeur `valeur_instantanee − moyenne_glissante` (v1.0) est **dépréciée** : elle sature sur les rampes lentes (§3.2). Toute nouvelle implémentation l'interdit ; sa persistance au runtime n'est tolérée que comme **écart temporaire tracé** (§18). |
-| INV-TEND-14 | Tout écart entre ce contrat et le runtime doit être **explicitement tracé** (§18 pour l'historique v1.0→v1.1, §19 pour l'écart ouvert v1.1→v1.2) ; un écart non tracé reste une non-conformité. |
+| INV-TEND-14 | Tout écart entre ce contrat et le runtime doit être **explicitement tracé** (§18 pour l'historique v1.0→v1.1, §19 pour l'historique v1.1→v1.2, résorbé) ; un écart non tracé reste une non-conformité. |
 | INV-TEND-15 | La couche de projection (§4.2) recopie **strictement** la valeur instantanée de la source ; elle n'applique aucune transformation, aucun lissage, aucune conversion supplémentaire. |
 | INV-TEND-16 | La couche de projection ne porte **aucune mémoire propre** : elle ne conserve, ne restaure ni ne prolonge aucune valeur au-delà de la lecture instantanée de la source ; aucune valeur non numérique n'est jamais prolongée ou extrapolée. |
 | INV-TEND-17 | La couche de projection ne déclenche et ne porte **aucun fallback, aucun seuil métier et aucune décision** ; sa disponibilité est strictement dérivée de l'exploitabilité instantanée de la source (§3.3). |
@@ -750,16 +781,17 @@ section.
 
 ---
 
-## 19. Écart contrat ↔ runtime v1.1 → v1.2 — statut ouvert
+## 19. Écart contrat ↔ runtime v1.1 → v1.2 — clôture historique
 
-Cette section **trace** l'écart ouvert par le présent amendement, conformément
-à `INV-TEND-14`. Contrairement à §18 (clos), **cet écart est ouvert** : le
-présent document est **strictement documentaire** (LOT DOC 2) et n'est
-accompagné d'**aucune passe runtime**.
+Cette section **trace historiquement** l'écart qui a existé entre la doctrine
+v1.2 et le runtime, avant sa résorption. Elle satisfait `INV-TEND-14`.
+**Cet écart est clos** : le runtime implémente la couche de projection
+statistique ré-échantillonnée décrite en §4.2. §19.3 précise ce que cette
+clôture **ne couvre pas**.
 
-### 19.1 Nature de l'écart
+### 19.1 Nature de l'écart (historique, au moment de l'amendement 2026-09-14)
 
-| Aspect | Contrat v1.2 (cible) | Runtime actuel |
+| Aspect | Contrat v1.2 (cible) | Runtime d'alors (avant PR #839) |
 |---|---|---|
 | Couche de projection statistique ré-échantillonnée (§4.2) | requise, en amont des deux couches `statistics` | absente |
 | Source des couches `statistics` courte/longue | la projection (§2.2, §4.1) | la source agrégée directement (`13_sensor_platforms/statistics/meteo/tendance_temperature.yaml`) |
@@ -767,25 +799,61 @@ accompagné d'**aucune passe runtime**.
 | Identifiants de la projection | gabarit non figé (§11) | — (inexistants) |
 | Recorder de la projection | Population A obligatoire (§13) | sans objet (entité inexistante) |
 
-### 19.2 Ce que cet écart ne couvre pas
+### 19.2 Résorption
 
-Cet écart est **indépendant** :
+- L'écart était **connu, documenté et volontaire** : le contrat avait été
+  amendé **en avance** sur le runtime (LOT DOC 2, 2026-09-14) pour fixer la
+  cible architecturale avant l'implémentation.
+- La passe runtime a été exécutée et tracée par la PR #839 (commit
+  `9de7993`, LOT R1) : ajout, par axe, des trois trigger-based template
+  sensors de projection (`12_template_sensors/meteo/tendance/projection.yaml`
+  — `sensor.temperature_min_chambres_projection`,
+  `sensor.temperature_moyenne_maison_projection`,
+  `sensor.temperature_max_chambres_projection`, §11) ; repointage des six
+  couches `statistics` 15/60 min existantes
+  (`13_sensor_platforms/statistics/meteo/tendance_temperature.yaml`) sur leur
+  projection respective (seul le champ `entity_id` modifié ; `unique_id`,
+  `name`, `state_characteristic`, `max_age`, `sampling_size` inchangés) ;
+  inclusion des trois projections au bloc Recorder Population A
+  (`recorder.yaml`, §13). Cadence runtime homogène sur les trois axes :
+  `time_pattern: /5` (§4.2). Aucune modification de la couche
+  d'interprétation, des seuils `S_in`/`S_out`, des fenêtres
+  `W_court`/`W_long`, ni des trois sources métier. `force_update` n'est pas
+  utilisé dans ce mécanisme (INV-TEND-18).
+- **Validation terrain acquise** sur le SHA candidat exact de la PR, déployé
+  sur le `/config` réel avant merge : YAML valide, `ha core check` vert,
+  redémarrage HA propre, trois projections numériques et strictement égales
+  à leur source, six `statistics` numériques dès le premier report valide,
+  trois tendances disponibles et `stable` ; sur les axes `min_chambres` et
+  `max_chambres`, un plateau de plus de 15 minutes a montré une valeur de
+  projection et un `last_changed`/`last_updated` inchangés tandis que
+  `last_reported` avançait toutes les 5 minutes, les `statistics` 15/60 min
+  restant numériques et sans aucune bascule `indisponible` ; sur l'axe
+  `moyenne_maison`, un changement naturel de la source s'est propagé
+  immédiatement à la projection avec un véritable `state_changed` et une
+  mise à jour des `statistics`. Aucun défaut bloquant observé. **Aucun test
+  de panne réelle n'a été provoqué ni exécuté.**
+- Verdict terrain : GO MERGE. PR #839 mergée sur `main` (commit `9de7993`).
+
+### 19.3 Ce que cette clôture ne couvre pas
+
+Cette clôture est **indépendante** :
 
 - de la grandeur de décision `moyenne_courte − moyenne_longue` (§3.2, v1.1,
-  résorbée §18) — inchangée par le présent amendement ;
-- de la dette de validation terrain des seuils `S_in`/`S_out` (§8.2, ouverte
-  et distincte) — ni traitée, ni rouverte, ni mélangée au présent amendement.
+  résorbée §18) — inchangée par cette clôture ;
+- de la dette de validation terrain des seuils `S_in`/`S_out` (§8.2/§8.3) :
+  le préalable de mesure du plancher de bruit réel des trois agrégats n'a
+  **pas été exécuté** par cette clôture et reste **ouvert et distinct**,
+  tracé en §8.2 ; les valeurs `S_in≈0,15`/`S_out≈0,08` ne sont **pas**
+  validées par la présente section ;
+- du test de panne réelle sur la couche de projection : ce test **n'a pas
+  été provoqué ni exécuté** lors de la validation terrain ; seul un
+  comportement nominal (plateau, changement naturel de source) a été
+  observé. L'absence de ce test n'est ni comblée ni présumée par la présente
+  clôture.
 
-### 19.3 Levée de l'écart
-
-La levée de cet écart nécessite une **passe runtime dédiée**, hors périmètre
-du présent document, portant au minimum : l'implémentation de la couche de
-projection par axe (§4.2, trigger-based template sensor, sans
-`force_update`) selon le gabarit arbitré (§11), le repointage des deux couches
-`statistics` courte et longue sur cette projection (§4.1, §12), et
-l'inclusion Recorder Population A correspondante (§13). Cette passe suivra la
-règle générale de traçage : tout écart résorbé devra être documenté, à
-l'instar de §18.
+Ces dettes sont **distinctes** de l'écart clos ci-dessus et ne sont **pas**
+résorbées par la présente section.
 
 ---
 
@@ -793,6 +861,7 @@ l'instar de §18.
 
 | Version | Date | Modification |
 |---|---|---|
+| 1.2 (révision) | 2026-09-14 | **Clôture de l'écart architectural v1.1 → v1.2 (LOT DOC 3).** Aucune doctrine fonctionnelle modifiée. Constat : la couche de projection statistique ré-échantillonnée spécifiée par l'amendement v1.2 (§4.2) a été implémentée en runtime (PR #839, commit `9de7993`, LOT R1) — trois trigger-based template sensors de projection (`sensor.temperature_min_chambres_projection`, `sensor.temperature_moyenne_maison_projection`, `sensor.temperature_max_chambres_projection`, §11, gabarit désormais figé), cadence `time_pattern: /5` (§4.2), sans `force_update` (INV-TEND-18), repointage des six couches `statistics` 15/60 min existantes sur leur projection respective, inclusion Recorder Population A des trois projections (§13). Validation terrain obtenue sur le SHA candidat exact déployé sur `/config` avant merge : YAML valide, `ha core check` vert, redémarrage propre, projections et `statistics` numériques, trois tendances `stable`, comportement de plateau conforme observé sur `min_chambres`/`max_chambres` (>15 min), propagation réelle observée sur `moyenne_maison`, aucun défaut bloquant. **Test de panne réelle non provoqué, non exécuté.** PR #839 mergée sur `main`. §19 transformé en clôture historique (19.1 nature de l'écart, 19.2 résorption, 19.3 ce que la clôture ne couvre pas). Dette de validation terrain des seuils `S_in`/`S_out` (§8.2) **non traitée, non rouverte, reste ouverte et distincte**. Aucun invariant ajouté, retiré ou renuméroté. |
 | 1.2 (amendement) | 2026-09-14 | **Amendement architectural — couche de projection statistique ré-échantillonnée (LOT DOC 2).** Constat terrain : `sensor.temperature_moyenne_maison` peut rester numériquement valide plus de 15 min sans regénérer d'échantillon `statistics` courte, faisant passer la tendance à tort en `indisponible` alors que la source est exploitable. Arbitrage : TTL en couche d'interprétation écarté ; ré-échantillonnage dédié retenu. Ajout d'une couche de projection statistique ré-échantillonnée (§2.2, §4.1, §4.2) intercalée entre la source et les deux couches `statistics` existantes — mécanisme trigger-based template sensor (triggers `state`/`time_pattern`/`homeassistant: start`, recopie stricte, `availability` = exploitabilité instantanée de la source), `force_update` explicitement interdit (qualifié contre le schéma YAML HA). Cadence normée `T ≤ W_court / 3`, valeur candidate actuelle `/5` (§4.2) — `W_court`, `W_long`, `S_in`, `S_out` **inchangés** (§8). Exclusion explicite de la projection de tout axe résilience/fraîcheur (`resilience_integrations.md` R-ANCRAGE-2, R-AXE1-1) — **aucune modification de ce contrat de résilience**. Population Recorder A obligatoire précisée pour la projection (§13) — `recorder.yaml` **non modifié** dans ce lot. Gabarit de nomenclature **non figé** proposé pour la projection (§11) — aucun `entity_id` ni `unique_id` créé. Nouveaux invariants `INV-TEND-15` à `INV-TEND-20` (§16), aucun invariant existant renuméroté. Nouvelle section §19 (écart contrat ↔ runtime v1.1 → v1.2, **ouvert**) ; §17/§18 non renumérotés. **Aucune modification runtime dans cette passe.** Dette de validation terrain des seuils (§8.2) **non traitée, non rouverte, non mélangée** à cet amendement. |
 | 1.1 (révision) | 2026-09-14 | **Clôture de la dette narrative v1.0 → v1.1 (LOT DOC 1).** Aucune doctrine fonctionnelle modifiée. Constat : la passe runtime alignant les deux fichiers (`13_sensor_platforms/statistics/meteo/tendance_temperature.yaml`, `12_template_sensors/meteo/tendance/temperature.yaml`) sur la grandeur `moyenne_courte − moyenne_longue` et les seuils `S_in=0,15`/`S_out=0,08` a déjà eu lieu (changelog `v16_0_3`), mais n'avait jamais été reportée dans le corps du contrat. Correction du statut (en-tête), §0, §2.2, §3.2, §11, §12 : passage du conditionnel/futur (« encore v1.0 », « à créer », « gabarit cible non figé ») au constat (« vivant », « figé »). §18 transformé en section de clôture historique (18.1 nature de l'écart, 18.2 résorption, 18.3 ce que la clôture ne couvre pas). §8.2 précisé : `S_in=0,15`/`S_out=0,08` sont **déployés en runtime** mais **non validés** — la mesure du plancher de bruit (§8.3, audit §9 tests 1–3) n'a pas été exécutée ; dette de validation terrain **conservée ouverte et distincte**, non close par la présente révision. Aucun invariant ajouté, retiré ou renuméroté. Aucune modification runtime dans cette passe. |
 | 1.1 | 2026-06-17 | **Amendement doctrinal de la grandeur de décision.** Dépréciation de `valeur_instantanée − moyenne_60_min` (saturation `r × W/2` sur rampes lentes ⇒ faux `stable`, cf. audit `audit_tendance_temperature_sensibilite.md`). Adoption de la grandeur lissée `moyenne_courte − moyenne_longue` (§3.2, §5) ; passage à 2 couches statistiques (§2.2, §4, §12) ; cibles candidates **non figées** `W_long=60`, `W_court≈15`, `S_in≈0,15`, `S_out≈0,08` à valider sur le bruit réel (§8). Invariants : INV-TEND-6 reformulé (écart entre deux statistiques lissées), ajout INV-TEND-13 (grandeur v1.0 dépréciée) et INV-TEND-14 (traçage des écarts). Section §18 « écart temporaire contrat ↔ runtime » ajoutée. **Aucune modification runtime** dans cette passe : le runtime applique encore la v1.0 ; correction reportée à une passe ultérieure (§18.3). Invariants structurants conservés : backend interprète / UI restitue, états fermés, indisponibilité honnête, hystérésis obligatoire, lecture seule des sources, aucune autorité décisionnelle. |
