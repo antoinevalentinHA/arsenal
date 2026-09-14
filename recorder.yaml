@@ -18,6 +18,9 @@ include:
     - sensor.temperature_exterieure_moyenne_jour
     - sensor.temperature_min_chambres
     - sensor.temperature_max_chambres
+    - sensor.temperature_min_chambres_projection
+    - sensor.temperature_moyenne_maison_projection
+    - sensor.temperature_max_chambres_projection
     - sensor.temperature_jardin
     - sensor.temperature_entree
     - sensor.temperature_sejour

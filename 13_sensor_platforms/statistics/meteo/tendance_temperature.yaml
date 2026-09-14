@@ -30,9 +30,9 @@
 #   sampling_size        : généreux, borné par l'âge (cf. temperature.yaml)
 #
 # 🔗 DÉPENDANCES (lecture)
-#   - sensor.temperature_min_chambres
-#   - sensor.temperature_moyenne_maison
-#   - sensor.temperature_max_chambres
+#   - sensor.temperature_min_chambres_projection      (couche de projection, contrat v1.2 §4.2)
+#   - sensor.temperature_moyenne_maison_projection    (couche de projection, contrat v1.2 §4.2)
+#   - sensor.temperature_max_chambres_projection       (couche de projection, contrat v1.2 §4.2)
 #
 # 🚫 INTERDITS
 #   - Introduire une logique métier ou un seuil
@@ -45,7 +45,7 @@
 - platform: statistics
   name: "Température min Chambres moyenne 60 min"
   unique_id: temperature_min_chambres_moyenne_60_min
-  entity_id: sensor.temperature_min_chambres
+  entity_id: sensor.temperature_min_chambres_projection
   state_characteristic: mean
   max_age: &max_age_60min
     minutes: 60
@@ -54,7 +54,7 @@
 - platform: statistics
   name: "Température moyenne Maison moyenne 60 min"
   unique_id: temperature_moyenne_maison_moyenne_60_min
-  entity_id: sensor.temperature_moyenne_maison
+  entity_id: sensor.temperature_moyenne_maison_projection
   state_characteristic: mean
   max_age: *max_age_60min
   sampling_size: *sampling_size_tendance
@@ -62,7 +62,7 @@
 - platform: statistics
   name: "Température max Chambres moyenne 60 min"
   unique_id: temperature_max_chambres_moyenne_60_min
-  entity_id: sensor.temperature_max_chambres
+  entity_id: sensor.temperature_max_chambres_projection
   state_characteristic: mean
   max_age: *max_age_60min
   sampling_size: *sampling_size_tendance
@@ -75,7 +75,7 @@
 - platform: statistics
   name: "Température min Chambres moyenne 15 min"
   unique_id: temperature_min_chambres_moyenne_15_min
-  entity_id: sensor.temperature_min_chambres
+  entity_id: sensor.temperature_min_chambres_projection
   state_characteristic: mean
   max_age: &max_age_15min
     minutes: 15
@@ -84,7 +84,7 @@
 - platform: statistics
   name: "Température moyenne Maison moyenne 15 min"
   unique_id: temperature_moyenne_maison_moyenne_15_min
-  entity_id: sensor.temperature_moyenne_maison
+  entity_id: sensor.temperature_moyenne_maison_projection
   state_characteristic: mean
   max_age: *max_age_15min
   sampling_size: *sampling_size_tendance
@@ -92,7 +92,7 @@
 - platform: statistics
   name: "Température max Chambres moyenne 15 min"
   unique_id: temperature_max_chambres_moyenne_15_min
-  entity_id: sensor.temperature_max_chambres
+  entity_id: sensor.temperature_max_chambres_projection
   state_characteristic: mean
   max_age: *max_age_15min
   sampling_size: *sampling_size_tendance
