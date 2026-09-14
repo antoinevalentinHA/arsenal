@@ -1,7 +1,7 @@
 # Arsenal — Contrat métier et architectural
 # Famille — Tendance thermique des agrégats intérieurs (lecture glanceable)
-# Version : 1.1
-# Statut : normatif — doctrine de décision amendée ; runtime en écart temporaire (voir §0 et §18)
+# Version : 1.1 (révision)
+# Statut : normatif — doctrine de décision amendée ; runtime conforme (voir §0 et §18). Validation terrain des seuils §8.2 : dette ouverte distincte, non résorbée.
 # Chemin : 00_documentation_arsenal/contrats/meteo/tendance_temperature.md
 # Dépend de : meteo.md, affichage.md, validation.md, fallback.md
 # Renvoi : extrema_jour_courant.md §9.3 (usage « tendance » de la plateforme statistics)
@@ -31,17 +31,18 @@ défaut d'implémentation** (le runtime appliquait fidèlement la v1.0) mais une
 cette grandeur et lui substitue une grandeur de tendance lissée
 **`moyenne_courte − moyenne_longue`** (§3.2, §5, §8).
 
-**État d'implémentation au moment de l'amendement.** Le runtime
+**État d'implémentation — résorbé.** Le runtime
 (`13_sensor_platforms/statistics/meteo/tendance_temperature.yaml`,
-`12_template_sensors/meteo/tendance/temperature.yaml`) implémente **encore la
-grandeur dépréciée v1.0**. Il existe donc un **écart temporaire assumé** entre ce
-contrat (v1.1, doctrine cible) et le runtime (v1.0). Cet écart est **explicitement
-tracé en §18** et sera résorbé dans une **passe runtime ultérieure** ; il n'est ni
-une non-conformité cachée, ni une dérive tolérée indéfiniment.
+`12_template_sensors/meteo/tendance/temperature.yaml`) implémente **la grandeur
+v1.1** (`moyenne_courte − moyenne_longue`, seuils `S_in=0.15` / `S_out=0.08`).
+L'écart contrat ↔ runtime décrit par les versions précédentes de ce document est
+**résorbé** ; il est conservé à titre historique en §18. Une **dette distincte**
+subsiste sur la validation terrain des seuils (§8.2) : elle n'est **pas** couverte
+par cette résorption et reste ouverte.
 
 Toute implémentation ultérieure doit être conforme aux invariants `INV-TEND-*`
-ci-dessous, dans leur version v1.1. Tout écart d'implémentation **non tracé en
-§18** est une non-conformité, pas une interprétation.
+ci-dessous, dans leur version v1.1. Tout écart d'implémentation non tracé au
+changelog est une non-conformité, pas une interprétation.
 
 ---
 
@@ -86,10 +87,10 @@ La famille crée, par axe, **trois couches** (doctrine cible v1.1) :
 
 Soit **3 axes**, chacun produisant un capteur de tendance consommable.
 
-> **Note d'écart (v1.0 → v1.1).** La v1.0 ne créait qu'**une** couche statistique
-> (moyenne longue 60 min) et comparait la **valeur instantanée** à cette moyenne.
-> La couche « moyenne courte » est **nouvelle** et reste **à créer** en passe
-> runtime (cf. §18). Aucun identifiant n'est figé ici (§11).
+> **Note historique (v1.0 → v1.1, résorbée).** La v1.0 ne créait qu'**une** couche
+> statistique (moyenne longue 60 min) et comparait la **valeur instantanée** à
+> cette moyenne. La couche « moyenne courte » a été ajoutée en runtime ; les deux
+> couches sont **vivantes** (§11, §12). Cf. §18 pour la trace de cette résorption.
 
 ### 2.3 Ce que la famille n'est pas
 
@@ -150,8 +151,8 @@ fenêtres** et reste **lissée des deux côtés** (robuste au bruit, contraireme
 une comparaison d'échantillon instantané). Elle reste **dans l'idiome maison**
 `statistics`/`mean` (sans état, sans automatisation, sans helper — §5, §14).
 
-> **Note d'écart.** Le runtime applique encore la grandeur v1.0 dépréciée ; voir
-> §18 (écart temporaire contrat ↔ runtime).
+> **Note historique.** Le runtime a appliqué la grandeur v1.0 dépréciée jusqu'à la
+> passe runtime tracée en §18 ; il applique désormais la grandeur v1.1 ci-dessus.
 
 ### 3.3 Donnée exploitable
 
@@ -309,14 +310,21 @@ La transition vers `hausse` ou `baisse` n'est déclarée que si l'écart
 `stable` n'a lieu qu'en deçà d'un **seuil de sortie** strictement inférieur. Cette
 **asymétrie est l'hystérésis** ; elle empêche tout scintillement autour du seuil.
 
-### 8.2 Cibles candidates v1.1 — à valider sur le bruit réel (NON figées)
+### 8.2 Cibles candidates v1.1 — déployées en runtime, non validées (NON figées)
 
-> **Statut de ces valeurs.** Ce sont des **cibles candidates / valeurs initiales**,
-> **pas** des valeurs définitives. Le **plancher de bruit réel** des trois
-> agrégats n'a pas encore été mesuré (cf. audit sensibilité §9, tests 1–3). Elles
-> doivent être **validées sur données runtime avant figement**. Tant que cette
-> validation n'a pas eu lieu, aucune de ces valeurs ne devient un défaut
-> contractuel opposable.
+> **Statut de ces valeurs — dette ouverte distincte.** Ces valeurs sont
+> **effectivement déployées en runtime** (`13_sensor_platforms/statistics/meteo/tendance_temperature.yaml`,
+> `12_template_sensors/meteo/tendance/temperature.yaml`) depuis la passe tracée en
+> §18. Leur déploiement **ne vaut pas validation** : elles restent des **cibles
+> candidates**, **pas** des valeurs définitives. Le **plancher de bruit réel** des
+> trois agrégats n'a **toujours pas été mesuré** (cf. audit sensibilité §9,
+> tests 1–3) ; cette mesure était et reste un **préalable contractuel** à leur
+> figement (§8.3), et son absence n'a **pas été comblée** par la mise en
+> production. Tant que cette validation n'a pas eu lieu, ces valeurs restent
+> **actives en runtime** mais **ne deviennent pas** un défaut contractuel
+> opposable ; ne pas lire leur présence en production comme une validation de
+> fait. Cette dette est **distincte** de la résorption de l'écart §0/§18 et n'est
+> **pas** close par elle.
 
 | Paramètre | Cible candidate | Caractère |
 |---|---|---|
@@ -381,26 +389,22 @@ mentalement** la qualification de l'état (auditabilité Arsenal).
 
 ---
 
-## 11. Convention de nommage (gabarit cible — non figé)
+## 11. Convention de nommage (grammaire vivante — identifiants figés)
 
 Le présent contrat **n'invente aucun identifiant d'entité ni `unique_id`**
-(interdiction `contrats/README.md`). Il fixe seulement une **grammaire cible**,
-à arrêter à l'implémentation :
+(interdiction `contrats/README.md`). La grammaire ci-dessous est **implémentée et
+vivante** en runtime (passe tracée au changelog et en §18) :
 
 ```text
-couche statistique courte :  moyenne glissante de la source, fenêtre W_court
-couche statistique longue :  moyenne glissante de la source, fenêtre W_long
-couche d'interprétation   :  tendance_<axe>     (axe ∈ {min_chambres, moyenne_maison, max_chambres})
+couche statistique courte :  sensor.temperature_<axe>_moyenne_15_min
+couche statistique longue :  sensor.temperature_<axe>_moyenne_60_min
+couche d'interprétation   :  sensor.tendance_temperature_<axe>     (axe ∈ {min_chambres, moyenne_maison, max_chambres})
 ```
 
-> **Note d'écart.** Le runtime v1.0 ne porte qu'une couche statistique longue
-> (`sensor.temperature_<axe>_moyenne_60_min`, identifiant existant **non renommé**).
-> La couche courte est à créer ; son identifiant définitif relève de la passe
-> runtime et sera tracé au changelog (le présent contrat n'en fige aucun).
-
-La grammaire doit être **homogène sur les trois axes** : aucun axe n'est un cas
-particulier de nommage. Les identifiants définitifs relèvent de l'implémentation
-et seront tracés au changelog.
+La grammaire est **homogène sur les trois axes** : aucun axe n'est un cas
+particulier de nommage. Ces identifiants sont ceux du runtime déployé ; toute
+modification ultérieure suit la règle générale (aucun renommage sans traçage
+changelog).
 
 ---
 
@@ -411,7 +415,7 @@ et seront tracés au changelog.
 | `sensor.temperature_min_chambres` | source agrégée — lue | bloquant (lecture) |
 | `sensor.temperature_moyenne_maison` | source agrégée — lue | bloquant (lecture) |
 | `sensor.temperature_max_chambres` | source agrégée — lue | bloquant (lecture) |
-| Couche statistique courte (moyenne glissante `W_court`, ×3) | référence récente | bloquant (à créer, cf. §18) |
+| Couche statistique courte (moyenne glissante `W_court`, ×3) | référence récente | bloquant |
 | Couche statistique longue (moyenne glissante `W_long`, ×3) | référence de fond | bloquant |
 | Couche d'interprétation (tendance, ×3) | interface consommable | bloquant |
 
@@ -501,48 +505,51 @@ Aucune de ces extensions n'a de valeur normative à ce stade.
 
 ---
 
-## 18. Écart temporaire contrat ↔ runtime (v1.1)
+## 18. Écart contrat ↔ runtime v1.0 → v1.1 — clôture historique
 
-Cette section **trace** l'écart, **assumé et borné**, entre la doctrine cible
-v1.1 (ci-dessus) et le runtime actuel, qui implémente encore la grandeur v1.0
-dépréciée. Elle satisfait `INV-TEND-13` et `INV-TEND-14`.
+Cette section **trace historiquement** l'écart qui a existé entre la doctrine
+v1.1 et le runtime, avant sa résorption. Elle satisfait `INV-TEND-13` et
+`INV-TEND-14`. **Cet écart est clos** : le runtime implémente la grandeur v1.1.
+§18.3 précise ce que cette clôture **ne couvre pas**.
 
-### 18.1 Nature de l'écart
+### 18.1 Nature de l'écart (historique, au moment de l'amendement 2026-06-17)
 
-| Aspect | Contrat v1.1 (cible) | Runtime actuel (v1.0) |
+| Aspect | Contrat v1.1 (cible) | Runtime d'alors (v1.0) |
 |---|---|---|
 | Grandeur de décision | `moyenne_courte − moyenne_longue` | `valeur_instantanée − moyenne_60_min` |
 | Couches statistiques | 2 (courte + longue) | 1 (longue, `..._moyenne_60_min`) |
 | Seuils | cibles candidates `S_in≈0,15` / `S_out≈0,08` (à valider) | `S_in=0,4` / `S_out=0,2` |
 | Symptôme | — | faux `stable` sur rampes lentes (audit §4) |
 
-### 18.2 Statut
+### 18.2 Résorption
 
-- L'écart est **connu, documenté et volontaire** : le contrat est amené **en
-  avance** sur le runtime pour fixer le besoin avant la correction.
-- Le runtime n'est **pas** modifié dans la passe documentaire qui produit cette
-  v1.1 : aucun YAML, aucun capteur, aucun helper, aucune automatisation touchés.
-- L'écart **n'est pas indéfini** : il est résorbé par la passe runtime décrite en
-  §18.3.
+- L'écart était **connu, documenté et volontaire** : le contrat avait été amené
+  **en avance** sur le runtime pour fixer le besoin avant la correction.
+- La passe runtime alignant les deux fichiers sur la doctrine v1.1 a été
+  exécutée et tracée au changelog (`v16_0_3`) : ajout, par axe, de la
+  **moyenne courte** (`13_sensor_platforms/statistics/meteo/tendance_temperature.yaml`,
+  `sensor.temperature_<axe>_moyenne_15_min`) ; remplacement de la grandeur de
+  décision par `moyenne_courte − moyenne_longue` et passage des seuils à
+  `S_in=0,15` / `S_out=0,08` (`12_template_sensors/meteo/tendance/temperature.yaml`).
+  La moyenne longue existante n'a pas été renommée ; aucune entité source
+  modifiée.
+- Constat fait à l'occasion de la présente révision (« v1.1 (révision) ») :
+  cette résorption runtime n'avait jamais été reportée dans le corps du présent
+  contrat — §0, §2.2, §3.2, §11 et §12 continuaient de décrire un écart déjà
+  refermé. C'est l'objet de la présente révision : mettre le texte en
+  concordance avec un runtime qui, lui, était déjà à jour.
 
-### 18.3 Passe runtime à venir (préparation, non exécutée ici)
+### 18.3 Ce que cette clôture ne couvre pas
 
-Fichiers à aligner sur la doctrine v1.1, en respectant lecture seule des sources,
-aucun renommage d'entité existante, aucun alias modifié :
-
-1. `13_sensor_platforms/statistics/meteo/tendance_temperature.yaml`
-   — ajouter, par axe, la **moyenne courte** (`statistics`/`mean`, `max_age`
-   ≈ `W_court`) ; conserver la moyenne longue existante **sans la renommer**.
-2. `12_template_sensors/meteo/tendance/temperature.yaml`
-   — remplacer la grandeur de décision par `moyenne_courte − moyenne_longue` ;
-   appliquer les seuils validés (après mesure du bruit, audit §9) ; écouter la
-   moyenne courte en trigger ; mettre à jour les attributs d'observabilité (§10).
-
-Préalable bloquant : **mesure du plancher de bruit réel** (audit
+La résorption de l'écart de **grandeur** (§18.1-18.2) est **indépendante** de la
+validation du **calibrage** des seuils. Le préalable de §8.3 — mesure du
+plancher de bruit réel des trois agrégats (audit
 [`audit_tendance_temperature_sensibilite.md`](../../audits/01_rapports/meteo/audit_tendance_temperature_sensibilite.md)
-§9, tests 1–3) avant figement des seuils. Tant que cette passe runtime n'est pas
-faite, le symptôme « faux `stable` » **persiste en production** : c'est le coût
-assumé de l'écart, préféré à une correction runtime non validée.
+§9, tests 1–3) — n'a **pas été exécuté**. Le passage en production de
+`S_in=0,15` / `S_out=0,08` (changelog `v16_0_3`) a eu lieu **sans** cette
+mesure. Cette dette est **distincte** de l'écart clos ci-dessus, reste
+**ouverte**, et est tracée en §8.2 : elle n'est **pas** résorbée par la présente
+section.
 
 ---
 
@@ -550,6 +557,7 @@ assumé de l'écart, préféré à une correction runtime non validée.
 
 | Version | Date | Modification |
 |---|---|---|
+| 1.1 (révision) | 2026-09-14 | **Clôture de la dette narrative v1.0 → v1.1 (LOT DOC 1).** Aucune doctrine fonctionnelle modifiée. Constat : la passe runtime alignant les deux fichiers (`13_sensor_platforms/statistics/meteo/tendance_temperature.yaml`, `12_template_sensors/meteo/tendance/temperature.yaml`) sur la grandeur `moyenne_courte − moyenne_longue` et les seuils `S_in=0,15`/`S_out=0,08` a déjà eu lieu (changelog `v16_0_3`), mais n'avait jamais été reportée dans le corps du contrat. Correction du statut (en-tête), §0, §2.2, §3.2, §11, §12 : passage du conditionnel/futur (« encore v1.0 », « à créer », « gabarit cible non figé ») au constat (« vivant », « figé »). §18 transformé en section de clôture historique (18.1 nature de l'écart, 18.2 résorption, 18.3 ce que la clôture ne couvre pas). §8.2 précisé : `S_in=0,15`/`S_out=0,08` sont **déployés en runtime** mais **non validés** — la mesure du plancher de bruit (§8.3, audit §9 tests 1–3) n'a pas été exécutée ; dette de validation terrain **conservée ouverte et distincte**, non close par la présente révision. Aucun invariant ajouté, retiré ou renuméroté. Aucune modification runtime dans cette passe. |
 | 1.1 | 2026-06-17 | **Amendement doctrinal de la grandeur de décision.** Dépréciation de `valeur_instantanée − moyenne_60_min` (saturation `r × W/2` sur rampes lentes ⇒ faux `stable`, cf. audit `audit_tendance_temperature_sensibilite.md`). Adoption de la grandeur lissée `moyenne_courte − moyenne_longue` (§3.2, §5) ; passage à 2 couches statistiques (§2.2, §4, §12) ; cibles candidates **non figées** `W_long=60`, `W_court≈15`, `S_in≈0,15`, `S_out≈0,08` à valider sur le bruit réel (§8). Invariants : INV-TEND-6 reformulé (écart entre deux statistiques lissées), ajout INV-TEND-13 (grandeur v1.0 dépréciée) et INV-TEND-14 (traçage des écarts). Section §18 « écart temporaire contrat ↔ runtime » ajoutée. **Aucune modification runtime** dans cette passe : le runtime applique encore la v1.0 ; correction reportée à une passe ultérieure (§18.3). Invariants structurants conservés : backend interprète / UI restitue, états fermés, indisponibilité honnête, hystérésis obligatoire, lecture seule des sources, aucune autorité décisionnelle. |
 | 1.0 | 2026-06-09 | Promotion en contrat normatif : la famille « tendance thermique des agrégats intérieurs » est implémentée au runtime (couche perception `sensor.temperature_<axe>_moyenne_60_min` — `statistics`/`mean`, fenêtre 60 min ; couche interprétation `sensor.tendance_temperature_<axe>` — trigger template sensors, hystérésis `S_in`=0.4 / `S_out`=0.2, écart arrondi au centième, `time_pattern` 5 min ; ni automatisation ni helper) et conforme aux invariants `INV-TEND-*`. Grammaire de nommage (§11) désormais figée aux valeurs ci-dessus. Cadrage « pré-contrat / avant implémentation » retiré. |
 | 0.1.0 | 2026-06-09 | Brouillon pré-normatif initial — formalisation de la famille « tendance thermique des agrégats intérieurs » destinée aux Favoris Android Auto : nature métier (écart instantané vs moyenne glissante), méthode retenue (`statistics`/`mean` + interprétation à bande morte et hystérésis), états fermés, icônes dynamiques, gestion d'indisponibilité, observabilité, exclusions et invariants `INV-TEND-*`. Avant implémentation : aucun identifiant figé, aucune entité existante modifiée. |
