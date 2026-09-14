@@ -1706,6 +1706,56 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Chauffage — garde d'intégrité d'écriture sur la mémorisation des plateaux TRV (`current_value <= 30`, plage déclarée du helper), consignée au contrat sans qualifier la pertinence métier de l'observation.
 - Voiture — dashboard Position : carte `map` bornée à une liste `entities` d'une seule entrée (`auto`, `auto-entities` et `geo_location_sources` interdits, `hours_to_show: 0`) et bouton d'itinéraire Google Maps construit depuis les attributs de position, sans coordonnée en dur.
 
+---
+
+## 🧠 ARSENAL HA — [v17.3.0](changelogs/v17/v17_3_0.md) — STABLE — 2026-08-30
+**Tags :** aspirateur, alarme, notifications, lovelace, ci, contrats, registres
+
+**Signal net :**
+- Aspirateur — nouveau domaine : contrats `01` à `15` + README, référentiel mono-carte (14 segments sur 3 cartes), moteur `script.aspirateur_lancer_mission` (verdict à 34 valeurs), conduite `script.aspirateur_conduire_mission` (pause/reprise/arrêt/retour, lot L2), entretien `script.aspirateur_declarer_entretien` (4 postes, seuil 10 %, lot M2), 3 dashboards Lovelace et checker `check_aspirateur_contracts.py`.
+- Alarme — `50_intrusion_detection.md` I7 : exclusion mouvement recalée sur `vacuum.roborock_q7_max` (`cleaning`/`returning`), l'ancien `binary_sensor.roborock_q7_max_nettoyage` étant faux dans les deux sens (déclenchement réel du 2026-08-24) ; ajout de la garde `systeme_stable` (I8).
+- Notifications — règle de frontière opérateur / mécanique interne ajoutée au contrat ; 27 automatisations réécrites en corps compacts, sans architecture interne ni justification contractuelle.
+- Navigation — tuile Aspirateur ajoutée (ligne 4), tuile NAS sortie de la grille et déplacée sur le dashboard Système avec un nouveau capteur `sensor.nas_valentin_sante_synthese`.
+- Registres — C42 (aspirateur, lot M2) et NOTIF-REDACTION ouverts, code `Cxx` à attribuer aux deux ; contrats 304 → 320, checkers 87 → 88.
+
+---
+
+## 🧠 ARSENAL HA — [v18.0.0](changelogs/v18/v18_0_0.md) — STABLE — 2026-09-10
+**Tags :** boiler, chauffage, ecs, aspirateur, nas, recorder, lovelace, checkers, registres
+
+**Signal net :**
+- Boiler (C48/C49) — Boilerack devient l'écrivain souverain du bus MQTT chaudière (racine `<prefix>`, topic de commande unique + champ `role`, garde d'exécution composée `binary_sensor.boiler_commandable_<role>`) ; retrait des 12 projections ACK legacy (`*_ts`/`*_correlation`/`*_result`), corrélation transactionnelle désormais évaluée dans les 4 scripts exécutifs.
+- Aspirateur (C45) — distinction contractuelle entre mission Arsenal ouverte et session robot active : migration atomique de l'attribut `mission_ouverte` vers `session_robot_active`, nouvelle projection `binary_sensor.aspirateur_mission_arsenal_ouverte`, 6 contrôles CI ajoutés (ASP-CI-43 à 48), restitution de la batterie sans seuil de couleur (C50).
+- NAS (C51) — commandabilité transactionnelle Arsenal → NAS : contrat `nas_transactionnel.md`, scripts de demande AUDIT/RELEASE_DIFF, séparation transaction / résultat métier, nouvelle section Lovelace dédiée sur le dashboard système.
+- Recorder — réduction du volume écrit sans changement d'état (C43, retrait de 6 attributs redondants) et nouvelle règle de sortie des microscopes à échéance opposable obligatoire (C44, 41 entités requalifiées observabilité permanente).
+- Registre des chantiers — contrôle `REG-2` bloquant contre les identifiants non attribués ; chantiers C43 à C52 inscrits, attribution différée de C46 et C47.
+- Éclairage — bouton et lampe Chambre Enfants (automation, capteurs MQTT, cartes Lovelace) ; correctifs de comparaison de chemins Windows sur 2 checkers CI.
+
+---
+
+## 🧠 ARSENAL HA — [v18.0.1](changelogs/v18/v18_0_1.md) — STABLE — 2026-09-12
+**Tags :** nas, nas_arsenal, contrats, docs, self_audit, lovelace, registres
+
+**Signal net :**
+- NAS (C51) — chantier clos : quatre tâches DSM retirées sans remplacement (`Arsenal - Timeline Backups HA`, `Arsenal - Pipeline Watcher`, `Pipeline HA`, `Arsenal - Release Diff`) ; `AUDIT`/`RELEASE_DIFF` déclenchés uniquement à la demande via le canal MQTT `arsenal/nas/admission/command`.
+- NAS — `Arsenal - Retention` basculée vers le wrapper `run_retention.sh` (extraction batch puis `retention_manager.py --apply`) ; `timeline_extract.lock` requalifié en verrou partagé permanent entre `AUDIT`, `RELEASE_DIFF` et Retention, `rc=77` documenté comme contention normale entre ces trois chaînes.
+- NAS — contrat `nas_transactionnel.md` passé de `proposé / non implémenté` à `actif / implémenté` ; schéma `pipeline_nas_ha.md` et documentation associée (`diff_auto.md`, `diff_release.md`, `release_diff_mqtt.md`, `pipeline_watcher.md`, `ecosysteme_depots_satellites.md`) mis à jour en cohérence.
+- Arsenal Self — seuil de péremption `audit_stale` porté de 25 h à 168 h (contrat `arsenal_self.md` v1.0.2, template sensor, commentaires de l'input_number).
+- Lovelace — dashboard Système : libellés des boutons de demande NAS raccourcis, grille des cartes de diagnostic transactionnel passée de 2 à 1 colonne.
+- Registres — chantier C51 déplacé de ① Actifs à ⑤ Clos récents (`REGISTRE_CHANTIERS.md`, `audits/index.md`).
+
+---
+
+## 🧠 ARSENAL HA — [v18.0.2](changelogs/v18/v18_0_2.md) — STABLE — 2026-09-12
+**Tags :** nas, navigation, ui, checkers, docs
+
+**Signal net :**
+- NAS — ajout de l'événement `release_diff_partial` et du champ `rejection_summary` (`release_diff_mqtt.md` v1.0.1 → v1.1.0) : `partial` n'est plus confondu avec `release_diff_failed` ; corrige la valeur non contractuelle `anchor_rejected` produite en fallback par le publisher. Alignement du publisher runtime noté hors périmètre.
+- Navigation Lovelace — ajout de la taxonomie Classes A–E (`ui/navigation.md` §6) et de l'autorité déclarative `navigation_topology.yaml` (48 relations Classe B, 5 groupes Classe C, 2 ressources Classe D).
+- Checker — `check_lovelace_navigation_contracts.py` : ajout des règles bloquantes R6 à R10 vérifiant `navigation_topology.yaml` contre le runtime, dans les deux sens (déclaration → Retour réel, et Retour réel → déclaration).
+- Lovelace — Retour contextuel restauré sur `nas-dashboard` (→ `/system-dashboard`) et ajouté sur `meteo-min-max-temperature-dashboard` (→ `/meteo-temperature-dashboard`).
+- Système — carte Audit renommée « Audit Système », affiche désormais la version auditée ; nouveau socle `socle_status_label_xl_sans_icone` (80px).
+
 ==================================================
 FIN INDEX
 ==================================================
