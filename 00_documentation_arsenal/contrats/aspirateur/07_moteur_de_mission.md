@@ -477,6 +477,62 @@ au dock** — un état dont le comportement n'est pas plus établi que celui de
 > dock — est **admissible**. Le lancement après transport physique du robot vers
 > un étage sans base reste donc **possible**, conformément au besoin.
 
+### 5.0 bis Amendement `C53` (2026-09-15) — admissibilité conditionnelle de `idle`
+
+**Fait terrain qui motive cet amendement.** `ARB-1` (§5.5) a élargi la classe R à
+`charger_disconnected` pour couvrir le lancement après transport vers une carte
+sans base — mais les deux essais qui l'ont validé partaient d'un robot **déjà
+présent** sur la carte demandée, jamais d'un robot **laissé au repos** avant le
+lancement. Le 2026-09-15, un lancement réel depuis Home Assistant a été refusé
+(`ETAT_NON_QUALIFIE`) alors que le robot, transporté à l'étage puis laissé
+quelques minutes avant que l'opérateur ne compose l'intention, était passé de
+`charger_disconnected` à **`idle`** — état que ce contrat classe en N. La même
+intention, lancée dans la foulée depuis l'application, a réussi sans délai. Le
+besoin qu'`ARB-1` reconnaissait déjà n'était donc pas mal arbitré : il était
+**mal traduit en états**, la fenêtre `charger_disconnected` ne survivant pas au
+délai humain réel entre transport et lancement.
+
+> **`ASP-INV-100` — `idle` n'est pas reclassé ; son refus l'est,
+> conditionnellement.** Cet amendement **ne déplace `idle` d'aucune classe** :
+> il reste, sans exception, un exemple de la classe **N** au sens du §5.0, et
+> la partition R/A/E/N ci-dessus n'est **pas modifiée**. Ce qui change est
+> **l'effet** que produit cette classification aux étapes 4 et 11 — jamais la
+> classification elle-même.
+>
+> **La règle, opposable.** Le refus `ETAT_NON_QUALIFIE` que `idle` produit
+> normalement (`ASP-INV-60`) est **levé**, à titre d'exception nommée et
+> bornée à ce seul état, lorsque **la carte de l'intention en cours de
+> validation** ([`05`](05_intention_de_mission.md) §2) porte
+> `dock_accessible = false` au référentiel ([`02`](02_referentiel_cartes_et_pieces.md)
+> §2.2, `ASP-INV-99`). Pour toute carte où `dock_accessible = true` — le RDC en
+> V1 —, `idle` continue de refuser exactement comme aujourd'hui.
+>
+> **Ce que l'exception ne relâche pas.** Un `idle` rendu admissible par cette
+> clause reste soumis à **toutes** les autres conditions du §5.1, sans
+> exception ni ordre différent : témoins d'erreur nominaux (`ASP-INV-61`),
+> absence de session ouverte (`ARB-2`) — `idle` y est alors traité **comme un
+> état de classe R** pour cette seule vérification, ce qui rend `SESSION_INACHEVEE`
+> opposable à son tour —, et confirmation cartographique intégrale
+> (`ASP-IMC-1`), qui reste l'unique garant de l'intégrité mono-carte que cette
+> clause ne touche pas. Elle ne s'applique par ailleurs qu'au **lancement**
+> (étapes 4 et 11) : elle ne dit rien de l'usage de `idle` ailleurs dans le
+> domaine — ni pour la restitution à l'écran (`08` §1, qui continue de rendre
+> `idle` sous le code canonique `etat_non_qualifie`), ni pour la cessation
+> qu'observe la supervision ([`15`](15_conduite_et_supervision.md) §5).
+>
+> **Portée non normative pour le runtime, à ce stade.** Cette clause est
+> **opposable dès son adoption contractuelle** — elle engage la conception —,
+> mais son exécution reste **due** : les étapes 4 et 11 du moteur n'implémentent
+> pas encore la condition `dock_accessible`. Tant que ce lot runtime n'est pas
+> livré, `idle` continue, en pratique, de refuser pour toute carte — chantier
+> [`C53`](../../audits/04_chantiers/aspirateur/c53_lancement_cloture_carte_sans_dock.md).
+>
+> **Révision d'`ARB-1`.** Cet amendement **révise** `ARB-1`
+> ([`13`](13_hors_perimetre_arbitrages_et_questions_ouvertes.md)) : la classe R
+> reste `{charger_disconnected, charging}`, mais l'admissibilité du besoin
+> qu'`ARB-1` visait n'est plus portée par cette seule classe — elle l'est
+> conjointement par elle et par la présente clause.
+
 ### 5.1 Conditions de lancement
 
 | Condition | Nature | Refus en défaut |

@@ -76,6 +76,15 @@ l'extension du vocabulaire est un acte contractuel).
 > domaine aurait dû le rendre sous un état faux, ou pas du tout. `ASP-INV-49`
 > proscrit les deux.
 
+> **Amendement `C53` — ce que `ASP-INV-100` ne change pas ici.** L'admissibilité
+> conditionnelle de `idle` au lancement, ouverte par
+> [`07`](07_moteur_de_mission.md) §5.0 bis, est une clause du **moteur**, pas de
+> ce chapitre : elle ne touche ni la table ci-dessus ni `ASP-INV-68`. `idle`
+> continue de se restituer, en toute circonstance, sous le code canonique
+> **`etat_non_qualifie`** — l'admissibilité d'un lancement et le libellé rendu à
+> l'opérateur restent deux questions distinctes, et cette table ne répond qu'à
+> la seconde.
+
 > **`ASP-INV-45` — l'indisponibilité est un état, pas un trou.** Conformément à
 > [`principes_generaux.md`](../../architecture/03_doctrines/principes_generaux.md)
 > §6 et §8, `unknown` et `unavailable` **ne valent ni `false`, ni un état

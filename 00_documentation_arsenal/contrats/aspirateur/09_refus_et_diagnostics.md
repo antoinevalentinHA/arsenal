@@ -69,6 +69,12 @@ Ils ne sont **ni des entités, ni des identifiants Home Assistant**.
 > [`07`](07_moteur_de_mission.md) §5.0 est exhaustive par construction, et
 > l'ordre d'arbitrage de [`08`](08_etats_et_observation.md) §3.1 rend le motif
 > **déterministe**. Aucun état ne produit deux motifs ; aucun n'en produit zéro.
+>
+> **Exception nommée, `ASP-INV-100`.** `ETAT_NON_QUALIFIE` cesse de se produire
+> pour `idle` lorsque la carte de l'intention porte `dock_accessible = false`
+> ([`02`](02_referentiel_cartes_et_pieces.md) §2.2, [`07`](07_moteur_de_mission.md)
+> §5.0 bis). La totalité ci-dessus reste vraie : c'est la même partition, la
+> même classe N, seul l'effet du motif sur ce cas précis est conditionnel.
 
 > **`ASP-INV-52` — extension gouvernée.** Ajouter un code de refus implique la
 > mise à jour de ce catalogue, du chapitre qui porte la règle, et une entrée de

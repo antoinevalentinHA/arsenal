@@ -205,6 +205,40 @@ gestes ci-dessus.
 > l'amendement. C'est le comportement voulu : l'alternative — deviner — est
 > exactement le recalage silencieux que ce contrat proscrit.
 
+### 2.2 Accessibilité du dock — `dock_accessible`
+
+**Fait terrain, tranché par l'opérateur (2026-09-15).** Le dock Roborock est
+**physiquement unique**, situé au RDC. Aucune des deux autres cartes n'y donne
+accès : l'Étage comme l'Annexe sont, l'une comme l'autre, dépourvues de base
+atteignable par le robot.
+
+> **`ASP-INV-99` — l'accessibilité du dock est une propriété du référentiel,
+> jamais déduite.** Chaque carte du référentiel V1 porte un champ
+> `dock_accessible`, au même titre que son option de sélecteur (§2.1) ou ses
+> segments (§2) :
+>
+> | Carte | `dock_accessible` |
+> |---|---|
+> | `0` — RDC | `true` |
+> | `1` — Étage | `false` |
+> | `2` — Annexe | `false` |
+>
+> **Pourquoi un champ, et non une comparaison codée.** `carte != "0"` produirait
+> aujourd'hui le même résultat, par coïncidence — deux cartes sur trois n'ont pas
+> de dock — mais rien ne le garantirait à un référentiel futur. Le champ **dit**
+> le fait ; il ne se déduit d'aucune autre valeur de cette table, et son
+> extension (une carte future, une reconfiguration du dock) est un amendement de
+> ce seul §2.2, jamais un recalcul ailleurs.
+>
+> **Ce que ce champ autorise, et où.** Il **ne commande rien** et ne change
+> aucune garde de ce chapitre. Il est **consommé** par
+> [`07`](07_moteur_de_mission.md) §5.0 bis (`ASP-INV-100`), seul chapitre
+> autorisé à en tirer une conséquence sur l'admissibilité d'un lancement. Aucun
+> autre chapitre ni aucune interface ne le lit directement (`ASP-INV-31`).
+>
+> **Le Garage n'est pas concerné.** Il ne porte aucun segment commandable (§2)
+> et n'a donc aucune intention à valider ; ce champ ne lui est pas attribué.
+
 ---
 
 ## 3. Périmètres prédéfinis — V1

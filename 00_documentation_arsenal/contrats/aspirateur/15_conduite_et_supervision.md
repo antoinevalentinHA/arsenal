@@ -402,7 +402,8 @@ W2 conclut, confirmé ou non. **Il n'y a plus ni échec perdu, ni échec faux.**
 | **Amarrage prouvé** **après** un retour ordonné par Arsenal — verdict de classe O-R | `CLOTURE/APRES_RETOUR_CONFIRME` — **T** |
 | **Amarrage prouvé** **sans** retour ordonné par Arsenal | `CLOTURE/FIN_NOMINALE` — **T** |
 | Erreur robot **ou** erreur de dock | `ECHEC/ERREUR_EN_MISSION` — **T** |
-| État machine **`idle`**, hors amarrage et hors engagement | `ECHEC/MISSION_INTERROMPUE` — **T** — **ne présume aucune cause** |
+| État machine **`idle`**, **précédé d'un passage par `returning_home`/`docking` observé depuis l'ouverture de la mission**, sur une carte `dock_accessible = false`, sans amarrage, sans erreur (§5.3, `ASP-INV-101`) | `CLOTURE/FIN_NOMINALE_HORS_BASE` — **T** — **lot runtime dû, non actif** |
+| État machine **`idle`**, hors amarrage et hors engagement, **hors cas ci-dessus** | `ECHEC/MISSION_INTERROMPUE` — **T** — **ne présume aucune cause** |
 | **Tout autre état**, y compris de classe **N** | **Rien.** La mission reste ouverte |
 
 **Les lignes sont évaluées dans cet ordre ; la première qui s'applique
@@ -457,6 +458,77 @@ la règle de priorité qui rend l'amarrage non ambigu.
 > `unknown`, `unavailable` ou hors ligne **ne produit aucun verdict terminal**
 > (`ASP-INV-45`). Il n'est ni une interruption, ni une erreur, ni une fin
 > nominale : la supervision **s'abstient**, et la mission reste ouverte.
+
+### 5.3 Amendement `C53` (2026-09-15) — clôture nominale d'une mission sans dock
+
+**Fait terrain qui motive cette clause.** Une commande segmentée réussie
+déclenche, en fin de cycle, une tentative de retour automatique — geste du
+robot, jamais commandé par Arsenal. Sur une carte `dock_accessible = false`
+([`02`](02_referentiel_cartes_et_pieces.md) §2.2), ce retour ne peut aboutir.
+Deux signatures terrain, distinctes et reproduites le 2026-09-15, établissent
+comment cela se traduit :
+
+| Cause | Séquence observée | `err_vac` / `err_dock` |
+|---|---|---|
+| Fin de cycle normale, carte sans dock | `segment_cleaning → returning_home → idle` | `none` / `ok`, tout du long |
+| Interruption externe explicite (`vacuum.stop`, hors geste `W2`) | `segment_cleaning → idle`, **direct** | `none` / `ok`, tout du long |
+
+Avant cette clause, les deux séquences produisaient **le même verdict**,
+`ECHEC/MISSION_INTERROMPUE` — la seconde à raison, la première à tort : une
+mission entièrement réussie s'y trouvait qualifiée, et notifiée
+(`ASP-INV-95`), comme une anomalie.
+
+> **`ASP-INV-101` — un passage observé par la chaîne de retour distingue les
+> deux causes.** Sur une mission ouverte dont la carte porte
+> `dock_accessible = false`, un état machine `idle` **précédé, depuis
+> l'ouverture de cette mission, d'un passage par `returning_home` ou
+> `docking`**, sans amarrage et sans erreur, est qualifié
+> `CLOTURE/FIN_NOMINALE_HORS_BASE` — valeur **terminale**, disjointe du reste
+> du vocabulaire (`ASP-INV-86`, `ASP-INV-98`) — plutôt que
+> `ECHEC/MISSION_INTERROMPUE`.
+>
+> **Ce que cette clause exige, et qui n'existe pas encore.** Elle suppose une
+> **mémoire de mission** — un moyen de savoir, au moment où `idle` apparaît, si
+> `returning_home`/`docking` a été vu depuis l'ouverture. Aucun mécanisme n'est
+> prescrit ici : son choix relève du lot runtime ([`C53`](../../audits/04_chantiers/aspirateur/c53_lancement_cloture_carte_sans_dock.md)
+> §7), pas de ce contrat.
+>
+> **Priorité absolue de l'erreur — non négociable.** La ligne d'erreur du §5
+> (`ECHEC/ERREUR_EN_MISSION`) est et reste évaluée **avant** cette clause, sans
+> aucune exception. Un état machine `error`, ou un témoin `err_vac`/`err_dock`
+> non nominal, **exclut** `CLOTURE/FIN_NOMINALE_HORS_BASE` quelle que soit la
+> séquence observée. Cette clause ne relâche `ASP-INV-93` ni la table du §5
+> sur aucun autre point.
+>
+> **Ce qui reste `ECHEC/MISSION_INTERROMPUE`, sans changement.** Un `idle`
+> atteint **sans** passage par `returning_home`/`docking` reste qualifié
+> exactement comme aujourd'hui — c'est la signature de l'interruption externe
+> ci-dessus, reproduite et confirmée le 2026-09-15, et cette clause ne la
+> touche pas.
+>
+> **Réserve batterie — risque résiduel assumé, non neutre.** `sensor.…_erreur_de_l_aspirateur`
+> expose, dans son énumération déjà lue par le moteur (`ASP-INV-61`), les
+> valeurs `low_battery`, `battery_error` et `charging_error` — un retour
+> déclenché par une batterie faible ou critique **pourrait** s'y signaler, ce
+> qui le ferait retomber dans la priorité d'erreur ci-dessus. **Aucune preuve
+> terrain n'établit que ce retour peuple effectivement l'un de ces codes** :
+> l'unique retour hors dock observé à ce jour (fin de cycle normale) a laissé
+> `err_vac` à `none` de bout en bout. **Ce n'est donc pas une neutralité de
+> comportement.** Si un retour batterie ne se signale pas, cette clause le
+> qualifierait `CLOTURE/FIN_NOMINALE_HORS_BASE` — une **fin nominale prise à
+> tort** — là où le comportement actuel le qualifierait (à tort dans l'autre
+> sens, mais **sans risque de masquer une alerte réelle**)
+> `ECHEC/MISSION_INTERROMPUE`. Le risque change de nature, il ne disparaît pas.
+> Cette réserve est **ouverte**, non tranchée, et fait partie des critères de
+> validation terrain du lot runtime — elle ne se referme pas en silence
+> (`ASP-INV-49`).
+>
+> **Portée non normative pour le runtime, à ce stade.** Comme `ASP-INV-100`,
+> cette clause est opposable dès son adoption contractuelle mais son exécution
+> est **due** : `W3` ne produit pas encore `CLOTURE/FIN_NOMINALE_HORS_BASE`
+> aujourd'hui, faute de la mémoire de mission qu'elle suppose. Tant que le lot
+> runtime n'est pas livré, une fin de cycle normale sans dock continue, en
+> pratique, de produire `ECHEC/MISSION_INTERROMPUE`.
 
 ---
 

@@ -66,6 +66,23 @@ indépendant.
 admissible n'accepte pas la commande, ou qu'une valeur non qualifiée est en
 réalité un repos, amenderait la partition du §5.0 — et elle seule.
 
+> **Révision partielle (2026-09-15), chantier `C53`.** Le lot terrain envisagé
+> ci-dessus est survenu, sur le second cas : un lancement Home Assistant réel a
+> été refusé (`ETAT_NON_QUALIFIE`) sur un robot transporté à l'étage puis laissé
+> quelques minutes — passé de `charger_disconnected` à `idle` avant que
+> l'opérateur ne compose l'intention. Le besoin qu'`ARB-1` reconnaissait n'était
+> pas mal arbitré ; il était **porté par une seule valeur d'état dont la
+> stabilité dans le temps n'était pas prouvée**.
+>
+> **Ce que cette révision change, et ce qu'elle ne change pas.** La partition du
+> §5.0 **n'est pas amendée** — `idle` reste de classe N, sans exception. C'est
+> [`07`](07_moteur_de_mission.md) §5.0 bis (`ASP-INV-100`) qui porte la
+> correction : une admissibilité **conditionnelle**, bornée aux cartes dont
+> `dock_accessible = false` ([`02`](02_referentiel_cartes_et_pieces.md) §2.2,
+> `ASP-INV-99`), jamais un déplacement de `idle` hors de sa classe. Le besoin
+> qu'`ARB-1` visait est donc désormais porté **conjointement** par la classe R
+> et par cette clause — et non plus par la seule classe R.
+
 ### `ARB-2` — Session inachevée, robot inactif ⇒ refus
 
 **Question.** Que fait une commande segmentée émise alors qu'une session est
@@ -159,6 +176,31 @@ et rouvrirait l'échappatoire discrétionnaire que la règle observable ferme.
 **Révision.** Un relevé établissant les énumérations exactes de ces deux témoins
 amenderait le §5.2 — et lui seul.
 
+### `ARB-6` — Clôture nominale d'une mission sans dock, chantier `C53`
+
+**Question.** Comment qualifier la fin d'une mission dont le robot, faute de
+dock accessible, ne peut pas s'amarrer ?
+
+**Ce qui est établi.** Deux signatures terrain distinctes, 2026-09-15 : une fin
+de cycle normale sur carte sans dock passe par `returning_home` avant `idle`,
+sans erreur ; une interruption externe explicite va directement à `idle`, sans
+`returning_home`. Le détail figure au chantier
+[`C53`](../../audits/04_chantiers/aspirateur/c53_lancement_cloture_carte_sans_dock.md).
+
+**Arbitrage retenu.** Un passage observé par `returning_home`/`docking` depuis
+l'ouverture de la mission qualifie la première comme `CLOTURE/FIN_NOMINALE_HORS_BASE`
+([`15`](15_conduite_et_supervision.md) §5.3, `ASP-INV-101`) ; son absence laisse
+`ECHEC/MISSION_INTERROMPUE` inchangé. Toute erreur robot ou dock reste
+prioritaire sur cette clôture, sans exception.
+
+**Ce que cela n'affirme pas.** Que ce signal distingue une fin de cycle d'un
+retour déclenché par batterie faible ou critique — question non tranchée,
+inscrite comme telle (`QO-7`).
+
+**Révision.** Un lot terrain établissant la signature d'un retour batterie
+amenderait le §5.3 du chapitre [`15`](15_conduite_et_supervision.md) — et lui
+seul.
+
 ---
 
 ## 3. Questions ouvertes — non tranchées, non normées
@@ -227,6 +269,27 @@ optionnel**, hors chemin critique.
 
 Sans effet sur ce contrat (`ASP-INV-8`), la restitution passant par les libellés
 canoniques Arsenal (`ASP-INV-7`). Consigné pour mémoire.
+
+### `QO-7` — Signature d'un retour pour charge, non distinguée d'une fin de cycle
+
+`sensor.roborock_q7_max_erreur_de_l_aspirateur` énumère, parmi ses valeurs,
+`low_battery`, `battery_error` et `charging_error` — déjà lues par le moteur
+(`ASP-INV-61`). Rien n'établit, à ce jour, qu'un retour automatique déclenché
+par un niveau de batterie faible ou critique peuple effectivement l'une de ces
+valeurs plutôt que de laisser le témoin à `none`, comme l'a fait l'unique retour
+hors dock observé le 2026-09-15 (fin de cycle normale, `err_vac` resté `none`
+tout du long).
+
+**Ce que cela engage.** `ASP-INV-101` ([`15`](15_conduite_et_supervision.md)
+§5.3) traite ce cas comme un **risque résiduel assumé** : si un retour batterie
+ne se signale pas, il serait qualifié à tort `CLOTURE/FIN_NOMINALE_HORS_BASE`
+plutôt que d'alerter. Ce n'est pas neutre par rapport au comportement actuel,
+qui le classerait (à tort dans l'autre sens) `ECHEC/MISSION_INTERROMPUE`, sans
+jamais masquer une alerte réelle.
+
+**Ce qui débloquerait.** Une observation terrain de la signature d'un retour
+réellement déclenché par batterie faible ou critique, sans provoquer cette
+condition artificiellement.
 
 ---
 
