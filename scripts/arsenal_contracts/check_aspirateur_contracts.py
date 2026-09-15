@@ -1198,11 +1198,35 @@ AUTORITE_PAR_FICHIER = {
         # commande jamais l'appareil, et l'interdit de commande ci-dessous
         # reste porte par SERVICES_PAR_FICHIER, qui ne contient aucun
         # service `vacuum.*`.
+        #
+        # AMENDEMENT C53 (ASP-INV-99, ASP-INV-101) — deux entites de plus.
+        # `input_text.aspirateur_derniere_intention_lancee` (ID_TRACE) est
+        # LUE, et seulement lue : la carte de LA MISSION OUVERTE est une
+        # PROPRIETE DE SESSION immuable (le moteur ne peut pas s'executer
+        # tant qu'une mission est ouverte, garde d'etape 0a), portee par la
+        # SEULE trace — jamais par un temoin natif mutable comme le
+        # selecteur de carte. Exception NOMINATIVE d'ASP-CI-11 (voir
+        # `LECTEURS_TRACE`, `check_ecrivain_unique`), bornee a la lecture :
+        # l'ecrivain de la trace reste le moteur seul.
+        # `input_boolean.aspirateur_retour_observe` est la memoire de
+        # mission qu'ASP-INV-101 exige (15 §5.3). ECRIVAIN UNIQUE : ce
+        # fichier, et lui seul, la pose sur `returning_home`/`docking`,
+        # la remet a zero a l'OUVERTURE de toute nouvelle mission (via
+        # le declencheur dedie sur LANCEE/DEMARRAGE_OBSERVE) et a chacune
+        # de ses six clotures. Une version anterieure de ce lot partageait
+        # l'ecriture avec le moteur ; corrige avant merge de la PR #843
+        # (audit independant du 2026-09-15) — voir le fichier du helper,
+        # 05_input_booleans/aspirateur/retour_observe.yaml.
         frozenset({"input_text.aspirateur_mission_verdict",
                    "sensor.roborock_q7_max_etat",
                    "sensor.roborock_q7_max_erreur_de_l_aspirateur",
                    "sensor.roborock_q7_max_dock_erreur_de_dock",
                    "vacuum.roborock_q7_max",
+                   # Litteral, et non `ID_TRACE` : ce dict est defini AVANT
+                   # la constante (ordre du module), qui n'existe pas
+                   # encore a ce point d'evaluation.
+                   "input_text.aspirateur_derniere_intention_lancee",
+                   "input_boolean.aspirateur_retour_observe",
                    READINESS_N1, CIBLE_MOBILE}),
     # AMENDEMENT U0 — quatrieme nature : la remise a zero de la composition.
     # Elle LIT le verdict — exception nominative d'ASP-CI-11 ci-dessous — et
@@ -1218,7 +1242,12 @@ SERVICES_PAR_FICHIER = {
         frozenset({"persistent_notification.create",
                    "persistent_notification.dismiss"}),
     "11_automations/aspirateur/supervision_mission.yaml":
-        frozenset({"input_text.set_value", SCRIPT_MOBILE}),
+        # `input_boolean.turn_on`/`turn_off` — AMENDEMENT C53 (ASP-INV-101) :
+        # l'unique ecrivain de la memoire de mission `aspirateur_retour_observe`.
+        # Aucun service `vacuum.*` : la supervision ne commande jamais
+        # l'appareil (ASP-INV-31).
+        frozenset({"input_text.set_value", SCRIPT_MOBILE,
+                   "input_boolean.turn_on", "input_boolean.turn_off"}),
     RUNTIME_U0_AUTO: frozenset({SCRIPT_U0_REINIT}),
 }
 # Les deux LECTEURS PURS : ils ne doivent ecrire aucun verdict, ni commander.
@@ -3590,10 +3619,13 @@ VERDICT_W2 = frozenset({
     "CLOTURE/APRES_ARRET_NON_CONFIRME",
     "CONDUITE/RETOUR_ENGAGE", "CLOTURE/APRES_RETOUR_NON_CONFIRME"})
 
-# W3 — automation de supervision. Cinq valeurs, TOUTES terminales.
+# W3 — automation de supervision. Six valeurs, TOUTES terminales.
+# AMENDEMENT C53 (2026-09-15, ASP-INV-101) : `CLOTURE/FIN_NOMINALE_HORS_BASE`
+# ajoutee — clotures d'une mission sur carte sans dock accessible.
 VERDICT_W3 = frozenset({
     "ECHEC/MISSION_INTERROMPUE", "ECHEC/ERREUR_EN_MISSION",
     "CLOTURE/FIN_NOMINALE", "CLOTURE/APRES_RETOUR_CONFIRME",
+    "CLOTURE/FIN_NOMINALE_HORS_BASE",
     "CLOTURE/ISSUE_OPAQUE_APRES_REDEMARRAGE"})
 
 # Vocabulaire FERME du verdict — l'UNION des trois, et rien d'autre.
@@ -3631,10 +3663,11 @@ CODES_HORS_PORTEE_L1 = {
     "ERREUR_EN_MISSION": "supervision continue, hors L1"}
 
 # Valeurs de cycle de vie que le motif lisible doit traduire en plus des
-# 18 codes du catalogue. DIX-HUIT depuis le lot L2 : les quatre du lot L1, les
-# onze de la conduite, et les trois valeurs de supervision qui n'appartiennent
-# a aucun catalogue. Les deux autres valeurs de W3 — mission interrompue et
-# erreur en mission — SONT des codes du catalogue et ne comptent pas ici.
+# 18 codes du catalogue. DIX-NEUF depuis le lot C53 (dix-huit depuis le lot
+# L2) : les quatre du lot L1, les onze de la conduite, et les quatre valeurs
+# de supervision qui n'appartiennent a aucun catalogue. Les deux autres
+# valeurs de W3 — mission interrompue et erreur en mission — SONT des codes
+# du catalogue et ne comptent pas ici.
 CYCLE_DE_VIE = ("VALIDATION_EN_COURS", "ISSUE_NON_ETABLIE",
                 "COMMANDE_ACCEPTEE", "DEMARRAGE_OBSERVE",
                 "PAUSE_ENGAGEE", "PAUSE_CONFIRMEE", "PAUSE_NON_CONFIRMEE",
@@ -3644,6 +3677,7 @@ CYCLE_DE_VIE = ("VALIDATION_EN_COURS", "ISSUE_NON_ETABLIE",
                 "APRES_ARRET_NON_CONFIRME",
                 "RETOUR_ENGAGE", "APRES_RETOUR_NON_CONFIRME",
                 "FIN_NOMINALE", "APRES_RETOUR_CONFIRME",
+                "FIN_NOMINALE_HORS_BASE",
                 "ISSUE_OPAQUE_APRES_REDEMARRAGE")
 
 # Entités natives dont le moteur a besoin, par rôle. Figées ici : elles sont
@@ -4545,11 +4579,31 @@ def check_ecrivain_unique(moteur_yaml, textes_runtime, yaml_depot) -> list[str]:
     # AMENDEMENT L2 — deux listes d'autorisation NOMINATIVES, et pas une.
     #   · le VERDICT est mentionnable par les cinq fichiers L1, par les trois
     #     writers, et par la SEULE projection de mission, lectrice pure ;
-    #   · la TRACE d'intention garde UN seul ecrivain, le moteur : ni la
-    #     conduite ni la supervision ne la citent, et la conduite ne relance
-    #     aucune intention (ASP-INV-15) ;
+    #   · la TRACE d'intention garde UN seul ECRIVAIN, le moteur — la
+    #     conduite ne relance aucune intention (ASP-INV-39) et ne la cite
+    #     jamais ;
     #   · un appel d'appareil n'est admis que dans DEUX fichiers — le moteur
     #     et la conduite (ASP-INV-31, amendement L2 du 07 §1).
+    #
+    # AMENDEMENT C53 — LECTEUR nominatif unique de la trace, en plus de son
+    # ecrivain. `ASP-INV-101` (15 §5.3) exige que la supervision sache, a la
+    # cloture, si la carte de LA MISSION OUVERTE a un dock accessible — une
+    # PROPRIETE DE SESSION, immuable pour la duree d'une mission (le moteur
+    # ne peut pas s'executer tant qu'une mission est ouverte, garde d'etape
+    # 0a : la trace est donc stable de bout en bout). C'est la trace, jamais
+    # un temoin natif MUTABLE (le selecteur de carte peut, en principe,
+    # changer en cours de mission), qui porte cette propriete. L'exception
+    # est NOMINATIVE — un seul fichier, jamais un motif ni un repertoire —
+    # et bornee a la LECTURE : la supervision n'ecrit toujours jamais la
+    # trace (seul le moteur le fait).
+    #
+    # ⚠️ Correction d'une citation erronee d'une version anterieure de ce
+    # module : `ASP-INV-15` (03 §5) porte sur la FIABILITE d'une lecture
+    # d'appareil POST-CYCLE pour reconstituer un profil — il n'interdit rien
+    # sur le LECTORAT d'un helper Arsenal. La restriction ci-dessus est une
+    # ALLOWLIST DE CONCEPTION (fermer le perimetre de chaque objet runtime,
+    # `ASP-INV-31` au sens large), pas une consequence d'`ASP-INV-15`.
+    LECTEURS_TRACE = frozenset({RUNTIME_L2_SUPERVISION})
     verdict_admis = (set(RUNTIME_FICHIERS) | set(WRITERS_VERDICT)
                      | set(LECTEURS_VERDICT))
     for rel, txt in sorted(yaml_depot.items()):
@@ -4558,11 +4612,13 @@ def check_ecrivain_unique(moteur_yaml, textes_runtime, yaml_depot) -> list[str]:
                         f"verdict n'est mentionnable que par ses trois "
                         f"écrivains, par le runtime L1 et par la projection "
                         f"de mission (ASP-INV-86).")
-        if ID_TRACE in txt and rel not in RUNTIME_FICHIERS:
+        if (ID_TRACE in txt and rel not in RUNTIME_FICHIERS
+                and rel not in LECTEURS_TRACE):
             errs.append(f"ASP-CI-11 : {rel} référence `{ID_TRACE}` — la trace "
-                        f"d'intention n'a qu'UN écrivain, le moteur : ni la "
-                        f"conduite ni la supervision ne la connaissent "
-                        f"(ASP-INV-15, ASP-INV-31).")
+                        f"d'intention n'a qu'UN écrivain, le moteur, et un "
+                        f"unique lecteur nominatif hors L1, la supervision "
+                        f"(ASP-INV-101, C53) ; ni la conduite ni aucun autre "
+                        f"fichier ne la connaissent (ASP-INV-31).")
         # `- action: vacuum.stop` comme `  action: vacuum.stop` : le tiret de
         # liste fait partie de la ligne, l'oublier laisserait passer la forme
         # la plus courante. Le guillemet est optionnel — un scalaire cite est
@@ -8307,7 +8363,7 @@ def selftest() -> None:
     c.viole(check_decompte_vocabulaire({**rt0, RUNTIME_HELPERS: faux}, t09_n),
             "décompte FAUX", "CI-18 codes absents sur-comptés (4 au lieu de 2)")
     faux = rt0[RUNTIME_HELPERS].replace(
-        "18 valeurs de CYCLE DE VIE", "4 valeurs de CYCLE DE VIE")
+        "19 valeurs de CYCLE DE VIE", "4 valeurs de CYCLE DE VIE")
     c.viole(check_decompte_vocabulaire({**rt0, RUNTIME_HELPERS: faux}, t09_n),
             "décompte FAUX",
             "CI-18 décompte du helper resté à la répartition du lot L1")
@@ -8350,7 +8406,7 @@ def selftest() -> None:
         "g2_etat in classe_e_indispo", "CI-25 comparaison d'indisponibilité détournée")
     # état machine : fourre-tout de classe N
     c.viole(check_branches_tardives(_tardif(
-        '"{{ g2_etat not in classe_r }}"', '"{{ g2_etat not in classe_a }}"')),
+        "g2_etat not in classe_r", "g2_etat not in classe_a")),
         "g2_etat not in classe_r", "CI-25 fourre-tout de classe N détourné")
 
     # N4 — le motif du refus tardif `error` doit rester exact.
@@ -10449,10 +10505,31 @@ def selftest() -> None:
                "                {{ etat == 'error'")),
         "sans exiger un verdict de classe O",
         "L2 supervision ecrivant hors mission ouverte")
+    # AMENDEMENT C53 — l'ancre porte le commentaire UNIQUE qui precede la
+    # branche d'interruption : la clause `engagements` de la nouvelle
+    # branche de cloture hors base (ASP-INV-101), textuellement
+    # IDENTIQUE, precede desormais celle-ci dans le fichier — une ancre
+    # non qualifiee frapperait la mauvaise occurrence (`n=1` prend la
+    # PREMIERE correspondance).
     c.viole(check_supervision(
-        l2_mut(F_SUP, '            - condition: template\n'
-                      '              value_template: "{{ verdict not in '
-                      'engagements }}"\n', "")),
+        l2_mut(F_SUP,
+               "Ce verdict NE PRÉSUME AUCUNE CAUSE (09 §3).\n"
+               "        ####################################################\n"
+               "        - conditions:\n"
+               "            - condition: trigger\n"
+               "              id: observation\n"
+               '            - condition: template\n'
+               '              value_template: "{{ verdict in verdict_ouvert }}"\n'
+               '            - condition: template\n'
+               '              value_template: "{{ verdict not in '
+               'engagements }}"\n',
+               "Ce verdict NE PRÉSUME AUCUNE CAUSE (09 §3).\n"
+               "        ####################################################\n"
+               "        - conditions:\n"
+               "            - condition: trigger\n"
+               "              id: observation\n"
+               '            - condition: template\n'
+               '              value_template: "{{ verdict in verdict_ouvert }}"\n')),
         "ne s'exclut pas pendant un engagement",
         "L2 garde de serialisation perdue")
     c.viole(check_supervision(
@@ -10479,9 +10556,28 @@ def selftest() -> None:
         "                {{ etat not in classe_a\n"
         "                   and etat not in classe_e_indispo\n"
         "                   and etat != 'error' }}\n")
+    # AMENDEMENT C53 — `etat == arret_atteste` est desormais present, a
+    # l'identique, dans la nouvelle branche de cloture hors base, qui
+    # PRECEDE l'interruption dans le fichier (n=1 prendrait la mauvaise
+    # occurrence). L'ancre porte donc, comme au test precedent, le
+    # commentaire UNIQUE de la branche d'interruption.
+    ANCRE_INTERRUPTION = (
+        "Ce verdict NE PRÉSUME AUCUNE CAUSE (09 §3).\n"
+        "        ####################################################\n"
+        "        - conditions:\n"
+        "            - condition: trigger\n"
+        "              id: observation\n"
+        '            - condition: template\n'
+        '              value_template: "{{ verdict in verdict_ouvert }}"\n'
+        '            - condition: template\n'
+        '              value_template: "{{ verdict not in engagements }}"\n'
+        '            - condition: template\n'
+        '              value_template: "{{ etat == arret_atteste }}"\n')
     c.viole(check_supervision(
-        l2_mut(F_SUP, '              value_template: "{{ etat == '
-                      'arret_atteste }}"\n', REGLE_NEGATIVE)),
+        l2_mut(F_SUP, ANCRE_INTERRUPTION,
+               ANCRE_INTERRUPTION.replace(
+                   '              value_template: "{{ etat == '
+                   'arret_atteste }}"\n', REGLE_NEGATIVE))),
         "par NÉGATION d'une classe",
         "F1 interruption conclue negativement sur toute la classe N")
     c.viole(check_supervision(
@@ -10578,6 +10674,328 @@ def selftest() -> None:
         '          - "CONDUITE/RETOUR_ENGAGE"\n', "", 1)),
         "valeurs de classe O et O-R",
         "F5 table de classe O incomplete dans le moteur")
+
+    # ═════════════════════════════════════════════════════════════
+    # C53 — admissibilité conditionnelle de `idle` au lancement
+    #       (ASP-INV-100) et clôture nominale hors base (ASP-INV-101).
+    # Rendu RÉEL des gabarits extraits du dépôt — pas une copie
+    # réinventée : chaque ancre est d'abord ASSERTÉE présente dans le
+    # texte réel, puis rendue par `rendu_ha` sur les cas exigés.
+    # ═════════════════════════════════════════════════════════════
+
+    # ---- Volet A : étape 4, condition d'état (g1_etat) ---------------------
+    COND_ETAT_G1 = (
+        "{{ g1_etat not in classe_r\n"
+        "                   and not (g1_etat == 'idle' and not "
+        "ctx_carte.dock_accessible) }}")
+    assert COND_ETAT_G1 in _mot_txt, "C53 : ancre g1_etat absente du moteur"
+    CLASSE_R_TEST = ["charger_disconnected", "charging"]
+
+    def _refuse_etat_non_qualifie(etat: str, dock_accessible: bool) -> bool:
+        return rendu_ha(COND_ETAT_G1, g1_etat=etat, classe_r=CLASSE_R_TEST,
+                         ctx_carte={"dock_accessible": dock_accessible})
+
+    # RDC + idle -> refus INCHANGÉ (dock accessible, l'exception ne joue pas)
+    assert _refuse_etat_non_qualifie("idle", True) is True, (
+        "C53 : idle sur une carte à dock accessible (RDC) doit rester refusé")
+    # Étage + idle -> ADMISSIBLE (dock non accessible)
+    assert _refuse_etat_non_qualifie("idle", False) is False, (
+        "C53 : idle sur une carte sans dock accessible (Étage) doit devenir "
+        "admissible")
+    # Annexe + idle -> ADMISSIBLE, même condition que l'Étage : cette clause
+    # est bornée à `dock_accessible`, jamais à une carte nommée (pas de
+    # comportement codé « uniquement pour Étage »)
+    assert _refuse_etat_non_qualifie("idle", False) is False, (
+        "C53 : idle sur une carte sans dock accessible (Annexe) doit devenir "
+        "admissible — même règle que l'Étage, jamais un cas spécial nommé")
+    # Sanity : la classe R reste admissible quelle que soit la carte
+    for etat_r in CLASSE_R_TEST:
+        assert _refuse_etat_non_qualifie(etat_r, False) is False, (
+            f"C53 : {etat_r} doit rester admissible (classe R, inchangée)")
+    # Sanity : un autre état de classe N (hors idle) reste refusé, dock ou non
+    for dock in (True, False):
+        assert _refuse_etat_non_qualifie("emptying_the_bin", dock) is True, (
+            "C53 : l'exception est bornée à `idle` — tout autre état de "
+            "classe N doit continuer de refuser, même sur carte sans dock")
+
+    # ---- Volet A : l'erreur reste prioritaire, par l'ORDRE du `choose` ----
+    # « erreur robot + carte sans dock -> refus erreur, jamais lancement » :
+    # un `choose` retient la PREMIÈRE branche vraie — c'est donc l'ORDRE des
+    # branches, pas une condition supplémentaire, qui garantit la priorité.
+    etape4 = next(
+        s for s in mot0[ID_MOTEUR]["sequence"]
+        if isinstance(s, dict) and "variables" in s
+        and any(k.startswith("g1_") for k in s["variables"]))
+    i_etape4 = mot0[ID_MOTEUR]["sequence"].index(etape4)
+    choose4 = next(
+        s for s in mot0[ID_MOTEUR]["sequence"][i_etape4 + 1:]
+        if isinstance(s, dict) and "choose" in s)["choose"]
+    i_erreur = next(i for i, o in enumerate(choose4)
+                     if "== 'error'" in str(o.get("conditions")))
+    i_non_qualifie = next(i for i, o in enumerate(choose4)
+                           if "not in classe_r" in str(o.get("conditions")))
+    assert i_erreur < i_non_qualifie, (
+        "C53 : la branche d'erreur (g1_etat == 'error') doit précéder la "
+        "branche état-non-qualifié dans le `choose` de l'étape 4 — sinon "
+        "l'exception dock_accessible pourrait laisser passer un lancement "
+        "sur un robot en erreur")
+
+    # ---- Volet B : la nouvelle clôture, rendue RÉELLEMENT ------------------
+    sup_txt = rt0[RUNTIME_L2_SUPERVISION]
+    COND_RETOUR_OBSERVE = (
+        "{{ is_state('input_boolean.aspirateur_retour_observe', 'on') }}")
+    COND_DOCK_INACCESSIBLE = (
+        "{{ not dock_accessible.get(carte_mission | string, true) }}")
+    COND_CARTE_MISSION = (
+        "{% set trace = states('input_text.aspirateur_derniere_"
+        "intention_lancee') %}\n"
+        "          {% set premier = trace.split('|')[0] %}\n"
+        "          {{ premier.split('=')[1]\n"
+        "             if (premier.startswith('carte=') and '=' in premier)\n"
+        "             else '' }}")
+    assert COND_RETOUR_OBSERVE in sup_txt, \
+        "C53 : ancre « retour observé » absente de la supervision"
+    assert COND_DOCK_INACCESSIBLE in sup_txt, \
+        "C53 : ancre « dock inaccessible » absente de la supervision"
+    assert COND_CARTE_MISSION in sup_txt, \
+        "C53 : ancre « carte de la mission » absente de la supervision"
+
+    DOCK_ACCESSIBLE_TEST = {"0": True, "1": False, "2": False}
+    VERDICT_OUVERT_TEST = ["LANCEE/DEMARRAGE_OBSERVE"]
+    ENGAGEMENTS_TEST = ["CONDUITE/PAUSE_ENGAGEE", "CONDUITE/REPRISE_ENGAGEE",
+                        "CONDUITE/ARRET_ENGAGE", "CONDUITE/RETOUR_ENGAGE"]
+
+    def _carte_mission(trace: str) -> str:
+        return rendu_ha(COND_CARTE_MISSION,
+                        etats={"input_text.aspirateur_derniere_intention_lancee":
+                               trace})
+
+    # La trace de la mission Étage la plus longue possible (02, C53 chantier
+    # §2.2) — vérifie que le parsing reste correct au pire cas, pas
+    # seulement sur un exemple court.
+    TRACE_ETAGE = ("carte=1|segments=1_16,1_17,1_18,1_19,1_20,1_21,1_22,1_23"
+                   "|profil=serpilliere_intensive|passages=1")
+    # `1` (entier), pas `"1"` : Home Assistant RETYPE un scalaire rendu qui
+    # ressemble à un nombre (`parse_result=True`) — fait ATTENDU, pas un
+    # bug (voir le commentaire du fichier réel). C'est `| string` en aval,
+    # dans `COND_DOCK_INACCESSIBLE`, qui neutralise cette reconversion :
+    # sans lui, `dock_accessible.get(1, true)` chercherait la clé entière
+    # `1`, absente d'un dictionnaire aux clés TEXTE, et échouerait TOUJOURS
+    # silencieusement vers `true` (dock accessible), quelle que soit la
+    # carte réelle.
+    assert _carte_mission(TRACE_ETAGE) == 1, (
+        "C53 : la carte n'est pas extraite correctement d'une trace réelle "
+        "de mission Étage")
+    assert _carte_mission("unknown") == "", (
+        "C53 : une trace `unknown` (premier démarrage) doit rendre une "
+        "carte vide — jamais une carte devinée")
+    assert _carte_mission("") == "", (
+        "C53 : une trace vide doit rendre une carte vide")
+
+    def _cloture_hors_base_fire(retour_observe: str, trace: str) -> bool:
+        """Rend les CINQ conditions réelles de la nouvelle branche, ET-ées en
+        Python — exactement la sémantique d'une liste `conditions:` HA."""
+        ctx_etats = {
+            "input_boolean.aspirateur_retour_observe": retour_observe,
+            "input_text.aspirateur_derniere_intention_lancee": trace,
+        }
+        carte = _carte_mission(trace)
+        c1 = rendu_ha("{{ verdict in verdict_ouvert }}",
+                      verdict="LANCEE/DEMARRAGE_OBSERVE",
+                      verdict_ouvert=VERDICT_OUVERT_TEST)
+        c2 = rendu_ha("{{ verdict not in engagements }}",
+                      verdict="LANCEE/DEMARRAGE_OBSERVE",
+                      engagements=ENGAGEMENTS_TEST)
+        c3 = rendu_ha("{{ etat == arret_atteste }}", etat="idle",
+                      arret_atteste="idle")
+        c4 = rendu_ha(COND_RETOUR_OBSERVE, etats=ctx_etats)
+        c5 = rendu_ha(COND_DOCK_INACCESSIBLE, carte_mission=carte,
+                      dock_accessible=DOCK_ACCESSIBLE_TEST)
+        return bool(c1 and c2 and c3 and c4 and c5)
+
+    TRACE_RDC = "carte=0|segments=0_16|profil=aspiration_normale|passages=1"
+    TRACE_ANNEXE = "carte=2|segments=2_16|profil=aspiration_normale|passages=1"
+
+    # Fin hors dock avec `returning_home` observé -> CLOTURE/FIN_NOMINALE_HORS_BASE
+    assert _cloture_hors_base_fire("on", TRACE_ETAGE) is True, (
+        "C53 : retour observé + Étage (sans dock) doit produire "
+        "CLOTURE/FIN_NOMINALE_HORS_BASE")
+    assert _cloture_hors_base_fire("on", TRACE_ANNEXE) is True, (
+        "C53 : retour observé + Annexe (sans dock) doit produire "
+        "CLOTURE/FIN_NOMINALE_HORS_BASE — même règle, aucun cas spécial")
+    # `idle` direct, sans retour observé -> ne doit PAS produire la clôture
+    # hors base (retombe sur ECHEC/MISSION_INTERROMPUE, branche inchangée)
+    assert _cloture_hors_base_fire("off", TRACE_ETAGE) is False, (
+        "C53 : idle direct sans passage par returning_home/docking ne doit "
+        "JAMAIS produire CLOTURE/FIN_NOMINALE_HORS_BASE")
+    # Retour observé mais carte À DOCK ACCESSIBLE (RDC) -> ne doit pas non
+    # plus produire cette clôture : la ligne existante (amarrage) en aurait
+    # déjà décidé avant, et ce cas ne doit pas la doubler.
+    assert _cloture_hors_base_fire("on", TRACE_RDC) is False, (
+        "C53 : la clôture hors base ne doit jamais se produire sur une "
+        "carte à dock accessible (RDC)")
+    # Trace illisible/absente -> refus FERMÉ, jamais une clôture nominale
+    # sur une donnée ambiguë (ASP-INV-51).
+    assert _cloture_hors_base_fire("on", "unknown") is False, (
+        "C53 : une trace illisible ne doit jamais produire "
+        "CLOTURE/FIN_NOMINALE_HORS_BASE — refus fermé par défaut")
+
+    # ---- Volet B : mémoire remise à zéro à TOUTE clôture — aucune ---------
+    #      contamination inter-mission possible.
+    sup_doc = yaml.safe_load(sup_txt)
+    sup_auto = sup_doc[0] if isinstance(sup_doc, list) else sup_doc
+    sup_actions = sup_auto.get("action") or sup_auto.get("actions") or []
+    branches_terminales_vues = 0
+    for st in sup_actions:
+        if not (isinstance(st, dict) and "choose" in st):
+            continue
+        for opt in st["choose"]:
+            if not isinstance(opt, dict):
+                continue
+            seq = opt.get("sequence") or []
+            ecrites, _ = _verdicts_du_document(seq)
+            if not (ecrites & VERDICT_W3):
+                continue
+            branches_terminales_vues += 1
+            eteint = any(
+                isinstance(s, dict)
+                and s.get("action") == "input_boolean.turn_off"
+                and "input_boolean.aspirateur_retour_observe" in _cibles(s)
+                for s in seq)
+            assert eteint, (
+                f"C53 : la branche qui écrit {sorted(ecrites)} ne remet pas "
+                "à zéro `input_boolean.aspirateur_retour_observe` — risque de "
+                "contamination inter-mission (la mémoire d'une mission close "
+                "resterait visible à la suivante)")
+    assert branches_terminales_vues == len(VERDICT_W3), (
+        f"C53 : {branches_terminales_vues} branche(s) terminale(s) "
+        f"vérifiée(s), attendu {len(VERDICT_W3)} — une valeur de "
+        "VERDICT_W3 n'a peut-être aucune branche d'écriture identifiée "
+        "(le test ne couvrirait alors pas tout le vocabulaire de W3).")
+    # ---- Volet B : l'erreur reste prioritaire sur la clôture hors base ----
+    # (réserve batterie, QO-7) : vérifiée par l'ORDRE des branches, comme au
+    # volet A — la branche d'erreur doit précéder la branche de clôture hors
+    # base dans le `choose` principal de la supervision.
+    choose_principal = next(
+        s["choose"] for s in sup_actions
+        if isinstance(s, dict) and "choose" in s
+        and any(_verdicts_du_document(o.get("sequence"))[0] & VERDICT_W3
+                for o in s["choose"] if isinstance(o, dict)))
+    i_erreur_w3 = next(
+        i for i, o in enumerate(choose_principal)
+        if isinstance(o, dict)
+        and "ECHEC/ERREUR_EN_MISSION" in _verdicts_du_document(
+            o.get("sequence"))[0])
+    i_hors_base = next(
+        i for i, o in enumerate(choose_principal)
+        if isinstance(o, dict)
+        and "CLOTURE/FIN_NOMINALE_HORS_BASE" in _verdicts_du_document(
+            o.get("sequence"))[0])
+    assert i_erreur_w3 < i_hors_base, (
+        "C53 : la branche d'erreur doit précéder la branche de clôture "
+        "hors base dans le `choose` de la supervision (réserve batterie, "
+        "QO-7) — sinon une erreur concomitante pourrait être absorbée par "
+        "une clôture nominale à tort")
+
+    # ---- Volet B : écrivain UNIQUE de aspirateur_retour_observe -----------
+    #      Audit indépendant du 2026-09-15 (avant merge de la PR #843) :
+    #      une première version de ce lot partageait l'écriture entre le
+    #      moteur (reset à l'ouverture) et la supervision (pose + reset aux
+    #      clôtures) — rejeté. Corrigé : la supervision observe elle-même
+    #      l'ouverture, via un déclencheur DÉDIÉ et BORNÉ à la seule valeur
+    #      qu'elle n'écrit jamais (LANCEE/DEMARRAGE_OBSERVE ∈ VERDICT_W1,
+    #      absente de VERDICT_W3 — pas de risque d'auto-annulation), et
+    #      reste l'écrivain unique sur les trois transitions.
+    assert "aspirateur_retour_observe" not in _mot_txt, (
+        "C53 : le moteur référence encore `aspirateur_retour_observe` — "
+        "cette mémoire ne doit plus avoir qu'un seul écrivain, la "
+        "supervision (audit du 2026-09-15, avant la PR #843)")
+
+    sup_trig = sup_auto.get("trigger") or sup_auto.get("triggers") or []
+    trig_ouverture = next(
+        (t for t in sup_trig
+         if isinstance(t, dict) and t.get("id") == "ouverture"), None)
+    assert trig_ouverture is not None, (
+        "C53 : aucun déclencheur `id: ouverture` dans la supervision — le "
+        "mécanisme qui remplace la remise à zéro côté moteur est "
+        "introuvable")
+    assert (trig_ouverture.get("platform") == "state"
+            and trig_ouverture.get("entity_id")
+                == "input_text.aspirateur_mission_verdict"
+            and trig_ouverture.get("to") == "LANCEE/DEMARRAGE_OBSERVE"), (
+        "C53 : le déclencheur `ouverture` doit être borné EXACTEMENT à "
+        "input_text.aspirateur_mission_verdict -> LANCEE/DEMARRAGE_OBSERVE "
+        "— un déclencheur plus large réveillerait la supervision sur ses "
+        "propres écritures de verdict (risque d'auto-annulation, cf. "
+        "en-tête du fichier)")
+
+    # La branche `ouverture` vit dans le `choose` MÉMOIRE — celui qui n'est
+    # PAS `choose_principal` (le `choose` des six clôtures, déjà localisé
+    # ci-dessus).
+    memoire_choose = next(
+        s["choose"] for s in sup_actions
+        if isinstance(s, dict) and "choose" in s
+        and s["choose"] is not choose_principal
+        and any(isinstance(o, dict)
+                and "'id': 'ouverture'" in str(o.get("conditions"))
+                for o in s["choose"]))
+    branche_ouverture_w3 = next(
+        o for o in memoire_choose
+        if isinstance(o, dict) and "'id': 'ouverture'" in str(o.get("conditions")))
+    seq_ouverture_w3 = branche_ouverture_w3["sequence"]
+    reset_present = any(
+        isinstance(s, dict) and s.get("action") == "input_boolean.turn_off"
+        and "input_boolean.aspirateur_retour_observe" in _cibles(s)
+        for s in seq_ouverture_w3)
+    assert reset_present, (
+        "C53 : la branche `ouverture` de la supervision n'écrit aucun "
+        "`input_boolean.turn_off` sur `aspirateur_retour_observe` — "
+        "l'invariant « aucune mission n'hérite d'un retour_observe=on "
+        "antérieur » n'est plus garanti à l'ouverture")
+    # INCONDITIONNELLE dans cette branche — pas cachée derrière un second
+    # `choose` qui pourrait ne pas s'exécuter une fois le déclencheur
+    # `ouverture` retenu.
+    assert not any(isinstance(s, dict) and "choose" in s
+                   for s in seq_ouverture_w3), (
+        "C53 : une action de la branche `ouverture` est nichée dans un "
+        "second `choose` — la remise à zéro doit rester inconditionnelle "
+        "dans la séquence directe")
+
+    # Mutation négative : RETIRER le reset de la branche `ouverture` (côté
+    # supervision, désormais) doit être détectable — preuve que le test
+    # teste bien quelque chose, et pas seulement sa propre présence.
+    _sup_sans_reset_ouverture = sup_txt.replace(
+        "            - condition: trigger\n"
+        "              id: ouverture\n"
+        "          sequence:\n"
+        "            - action: input_boolean.turn_off\n"
+        "              target:\n"
+        "                entity_id: input_boolean.aspirateur_retour_observe\n",
+        "            - condition: trigger\n"
+        "              id: ouverture\n"
+        "          sequence: []\n",
+        1)
+    assert _sup_sans_reset_ouverture != sup_txt, (
+        "C53 : ancre de mutation introuvable — le test de non-régression "
+        "sur le retrait du reset d'ouverture (côté supervision) ne prouve "
+        "rien")
+    doc_sans_reset = yaml.safe_load(_sup_sans_reset_ouverture)
+    auto_sans_reset = (doc_sans_reset[0] if isinstance(doc_sans_reset, list)
+                        else doc_sans_reset)
+    actions_sans_reset = (auto_sans_reset.get("action")
+                           or auto_sans_reset.get("actions") or [])
+    choose_mem_sans_reset = next(
+        s["choose"] for s in actions_sans_reset
+        if isinstance(s, dict) and "choose" in s
+        and any(isinstance(o, dict)
+                and "'id': 'ouverture'" in str(o.get("conditions"))
+                for o in s["choose"]))
+    branche_sans_reset = next(
+        o for o in choose_mem_sans_reset
+        if isinstance(o, dict) and "'id': 'ouverture'" in str(o.get("conditions")))
+    assert not (branche_sans_reset.get("sequence") or []), (
+        "C53 : la mutation n'a pas vidé la séquence de la branche "
+        "`ouverture` — le test ne teste rien")
 
     # ---- ASP-CI-37 : la projection de mission, symetrique de l'entretien ---
     N1_L2 = load_runtime_n1()

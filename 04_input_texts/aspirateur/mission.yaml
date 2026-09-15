@@ -25,7 +25,7 @@
 #   vocabulaire entier :
 #     W1  script.aspirateur_lancer_mission        — 18 valeurs
 #     W2  script.aspirateur_conduire_mission      — 11 valeurs
-#     W3  automation 10280000000001, supervision  —  5 valeurs
+#     W3  automation 10280000000001, supervision  —  6 valeurs (C53)
 #   Aucune valeur n'a deux auteurs ; aucune n'est orpheline. La table
 #   {fichier -> ensemble littéral} et sa disjonction sont confrontées par
 #   le checker (ASP-CI-11), et l'atteignabilité par ASP-CI-18.
@@ -62,17 +62,19 @@
 #          par la supervision depuis le lot L2 ;
 #        ·  2 codes du catalogue en sont ABSENTS : CANAL_INDISPONIBLE,
 #          COMMANDE_REJETEE ;
-#        · 18 valeurs de CYCLE DE VIE (ASP-INV-70) n'appartiennent a aucun
-#          catalogue et n'y entreront jamais.
-#      16 + 18 = 34 valeurs de verdict ; 16 + 2 = 18 codes du catalogue.
+#        · 19 valeurs de CYCLE DE VIE (ASP-INV-70) n'appartiennent a aucun
+#          catalogue et n'y entreront jamais — DIX-NEUF depuis le lot C53
+#          (ASP-INV-101), qui ajoute CLOTURE/FIN_NOMINALE_HORS_BASE.
+#      16 + 19 = 35 valeurs de verdict ; 16 + 2 = 18 codes du catalogue.
 #      Ce fichier ecrit toujours « valeurs de verdict » ou « codes du
 #      catalogue », jamais un nombre seul. Ce decompte est RECALCULE et
 #      confronte a ce texte par le checker (ASP-CI-18).
 #
-#   ⚠️ REPARTITION PAR ECRIVAIN — 18 + 11 + 5 = 34. Les trois ensembles
-#      sont deux a deux disjoints ; DEUX PREFIXES sont partages, et c'est
-#      conforme (D-09) : ECHEC/ entre W1 et W3, CLOTURE/ entre W2 et W3.
-#      La disjonction porte sur les VALEURS, jamais sur les prefixes.
+#   ⚠️ REPARTITION PAR ECRIVAIN — 18 + 11 + 6 = 35 depuis le lot C53
+#      (etait 18 + 11 + 5 = 34). Les trois ensembles sont deux a deux
+#      disjoints ; DEUX PREFIXES sont partages, et c'est conforme (D-09) :
+#      ECHEC/ entre W1 et W3, CLOTURE/ entre W2 et W3. La disjonction
+#      porte sur les VALEURS, jamais sur les prefixes.
 #
 #   Cycle de vie
 #     VALIDATION_EN_COURS            posé en PREMIÈRE action de chaque
@@ -145,14 +147,21 @@
 #     CLOTURE/APRES_RETOUR_NON_CONFIRME  terminal, sur defaut d'ENTREE
 #                                      dans la chaine de retour (D-10)
 #
-#   Supervision d'une mission ouverte — 5 valeurs, ECRITES PAR W3
-#   (automation 10280000000001, contrat 15 §5 et §6)
+#   Supervision d'une mission ouverte — 6 valeurs, ECRITES PAR W3
+#   (automation 10280000000001, contrat 15 §5, §5.3 et §6)
 #     ECHEC/MISSION_INTERROMPUE        code du catalogue, conserve tel quel
 #                                      (D-11). NE PRESUME AUCUNE CAUSE
 #     ECHEC/ERREUR_EN_MISSION          code du catalogue, conserve tel quel
 #     CLOTURE/FIN_NOMINALE             amarrage observe sans retour ordonne
 #     CLOTURE/APRES_RETOUR_CONFIRME    amarrage observe APRES un retour
 #                                      ordonne par Arsenal
+#     CLOTURE/FIN_NOMINALE_HORS_BASE   idle precede d'un passage observe par
+#                                      returning_home/docking depuis
+#                                      l'ouverture, sur une carte sans dock
+#                                      accessible, sans erreur (C53,
+#                                      ASP-INV-101). N'absorbe JAMAIS une
+#                                      erreur : la branche d'erreur reste
+#                                      strictement prioritaire
 #     CLOTURE/ISSUE_OPAQUE_APRES_REDEMARRAGE
 #                                      la chaine est devenue inobservable.
 #                                      Ni nominale — ce serait inventer une
@@ -174,7 +183,7 @@
 #      c'est l'automation 10280000000001 qui les écrit. Le moteur, lui,
 #      ne les écrit toujours JAMAIS — le checker le vérifie.
 #
-#   Les 18 CODES DU CATALOGUE et les 18 VALEURS DE CYCLE DE VIE sont TOUS
+#   Les 18 CODES DU CATALOGUE et les 19 VALEURS DE CYCLE DE VIE sont TOUS
 #   traduits par sensor.aspirateur_motif_lisible (ASP-CI-19).
 #
 # 📏 CAPACITÉ

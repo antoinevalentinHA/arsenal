@@ -28,10 +28,10 @@
 #   traduire — il n'en écrit AUCUNE valeur.
 #
 # 🧱 COUVERTURE — LES 18 CODES DU CATALOGUE, SANS EXCEPTION
-#   ⚠️ « 18 codes du catalogue » n'est PAS « 34 valeurs de verdict »
+#   ⚠️ « 18 codes du catalogue » n'est PAS « 35 valeurs de verdict »
 #      (04_input_texts/aspirateur/mission.yaml). Les deux ensembles SE
 #      RECOUPENT : 16 codes du catalogue figurent au verdict, 2 en sont
-#      absents, et 18 valeurs de cycle de vie n'appartiennent à aucun
+#      absents, et 19 valeurs de cycle de vie n'appartiennent à aucun
 #      catalogue.
 #   Les 13 refus (09 §2) et les 5 échecs (09 §3) sont TOUS traduits ici,
 #   y compris les deux qu'aucun lot n'écrit :
@@ -39,11 +39,12 @@
 #   Les traduire malgré tout garde le catalogue TOTAL : aucun code du
 #   contrat n'est orphelin de restitution, et un lot ultérieur qui les
 #   écrira n'aura rien à ajouter ici.
-#   S'y ajoutent les 18 valeurs de CYCLE DE VIE du verdict (ASP-INV-70),
+#   S'y ajoutent les 19 valeurs de CYCLE DE VIE du verdict (ASP-INV-70),
 #   qui n'appartiennent à aucun catalogue et n'y entreront jamais :
-#   les 4 du lot L1, les 11 de la conduite et les 3 de la supervision
-#   qui ne sont pas des codes du catalogue. 18 codes + 18 valeurs de
-#   cycle de vie = 36 traductions, toutes obligatoires (ASP-CI-19).
+#   les 4 du lot L1, les 11 de la conduite et les 4 de la supervision
+#   (depuis le lot C53, ASP-INV-101) qui ne sont pas des codes du
+#   catalogue. 18 codes + 19 valeurs de cycle de vie = 37 traductions,
+#   toutes obligatoires (ASP-CI-19).
 #
 #   ⚠️ MISSION_INTERROMPUE et ERREUR_EN_MISSION ne sont plus des codes
 #      « qu'aucun lot n'écrit » : depuis le lot L2, la supervision
@@ -169,6 +170,8 @@
             "Retour terminé : le robot est à sa base. La mission est close.",
           'FIN_NOMINALE':
             "Mission terminée : le robot a regagné sa base au terme du cycle.",
+          'FIN_NOMINALE_HORS_BASE':
+            "Mission terminée : le cycle est allé à son terme, mais le robot n'a pas pu regagner sa base sur cette carte.",
           'ISSUE_OPAQUE_APRES_REDEMARRAGE':
             "La mission était ouverte avant un redémarrage et son déroulement n'est plus observable. Elle est close sans conclusion : ni fin, ni interruption."
         } %}
