@@ -5,20 +5,19 @@
 | **Chantier** | **Réconcilier deux clauses du contrat qui se contredisent sur le cas étage/annexe.** `ASP-INV-40`/`ARB-1` autorisent explicitement le lancement d'une mission depuis un robot « hors base » — c'est le besoin même qui a motivé la classe R. Mais la seule valeur observable, en pratique, d'un robot transporté puis laissé au repos sur une carte sans dock n'est pas `charger_disconnected` (la valeur que `ARB-1` visait) : c'est `idle`, refusé par ailleurs au motif `ETAT_NON_QUALIFIE`. Le même défaut se reproduit en miroir à la clôture : une mission qui se termine normalement sur une carte sans dock retombe elle aussi sur `idle`, sans jamais s'amarrer, et `W3` la qualifie aujourd'hui à l'identique d'une interruption réelle. |
 | **Domaine** | Aspirateur. |
 | **Nature** | **Écart entre le besoin métier déjà reconnu par le contrat et la traduction opérationnelle de ce besoin.** Aucune règle nouvelle n'est inventée : `ASP-INV-40` et `ARB-1` disent déjà que le lancement hors base doit être possible. Ce chantier constate que la partition d'états retenue pour l'exprimer (`charger_disconnected`/`charging` seuls) ne couvre pas le cas réel, et propose de la corriger par un critère métier explicite (`dock_accessible`) plutôt que par une liste de valeurs d'état trop étroite. |
-| **Statut** | **Ouvert (2026-09-15) — Lot 2 (amendement contractuel) exécuté le jour même. Aucun runtime modifié.** `ASP-INV-99`, `ASP-INV-100`, `ASP-INV-101` déclarés (§10) ; `ARB-1` révisé, `ARB-6` et `QO-7` ajoutés ([`13`](../../../contrats/aspirateur/13_hors_perimetre_arbitrages_et_questions_ouvertes.md)) ; réserve batterie instruite (classement **B**) et reportée explicitement dans ces amendements. Checker `check_aspirateur_contracts.py` (normal et `--selftest`), `docs_lint.py` et `check_registre_chantiers.py` verts après édition. Lot 3 (runtime) **dû**. |
+| **Statut** | **Clôturé (2026-09-15) — GO FERMETURE AVEC RÉSERVES DOCUMENTÉES.** Lot 2 (contractuel, `PR #842`) et Lot 3 (runtime, `PR #843`, écrivain unique de `aspirateur_retour_observe` corrigé avant merge sur audit indépendant) exécutés et mergés sur `main`. Preuve terrain post-merge réalisée (§11) : `ASP-INV-99`/`ASP-INV-101` confirmés (fin nominale hors dock, non-contamination inter-session), non-régression de `W2` confirmée. Trois réserves explicitement conservées, non masquées : `QO-7` (batterie, toujours ouverte) ; `ASP-INV-100` (sous-cas précis d'un lancement depuis l'état natif `idle`, non exercé faute de fenêtre terrain — validation statique complète et non-régression terrain depuis `charger_disconnected` par ailleurs acquises) ; `ECHEC/MISSION_INTERROMPUE` (non reproduit terrain post-merge — branche préexistante, non modifiée par ce chantier, ordre de priorité couvert statiquement). |
 | **Priorité** | **P2** — aucun risque de sûreté nouveau : le défaut rend un usage légitime impossible (précondition) et produit une fausse alerte (postcondition), il n'ouvre aucune voie d'émission incontrôlée. Les gardes existantes (`ASP-IMC-1`, erreurs, session inachevée) restent souveraines et ne sont pas rouvertes. |
 | **Ouvert le** | 2026-09-15. |
-| **Prochain jalon** | Lot 3 — runtime (§7), subordonné à un arbitrage sur le mécanisme de mémoire de `W3` (point ouvert §8) et aux critères de validation terrain du §9, réserve batterie comprise (9.6). |
+| **Clôturé le** | 2026-09-15. |
+| **Prochain jalon** | **Aucun — chantier clôturé.** Les trois réserves ci-dessus (`Statut`) restent portées par `QO-7` (contrat `13`) et par ce document (§8, §9, §11) ; elles ne rouvrent pas C53 et ne bloquent aucun usage courant du domaine. Une occasion terrain future pourrait les lever, sans qu'aucune ne soit requise pour cette clôture. |
 | **Registre** | Chantier **C53** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 | **Autorités amont** | [`07_moteur_de_mission.md`](../../../contrats/aspirateur/07_moteur_de_mission.md) §5.0, §5.1, §5.5 (`ASP-INV-40`, `ASP-INV-60`, `ARB-1`) · [`08_etats_et_observation.md`](../../../contrats/aspirateur/08_etats_et_observation.md) §1, §1.1 (`ASP-INV-68`, `repos_hors_base`) · [`02_referentiel_cartes_et_pieces.md`](../../../contrats/aspirateur/02_referentiel_cartes_et_pieces.md) §2, §2.1 (table des cartes) · [`09_refus_et_diagnostics.md`](../../../contrats/aspirateur/09_refus_et_diagnostics.md) §2, §3 · [`15_conduite_et_supervision.md`](../../../contrats/aspirateur/15_conduite_et_supervision.md) §2, §5, §5.2 (`ASP-INV-93`, `ASP-INV-94`, `ASP-INV-98`) · [`13_hors_perimetre_arbitrages_et_questions_ouvertes.md`](../../../contrats/aspirateur/13_hors_perimetre_arbitrages_et_questions_ouvertes.md) (`ARB-1`). |
 | **Constats couverts** | **Aucun constat existant.** Entré par observation directe de l'opérateur le 2026-09-15 (échec de lancement HA d'une mission étage, succès immédiat par l'application), puis instruit par deux campagnes de terrain le jour même — l'une passive (lecture des traces d'une mission externe), l'autre active et bornée (mission courte WC Étage lancée puis interrompue volontairement, sous autorisation explicite). |
 
-> **⚠️ Ce que ce chantier ne fait pas, à ce stade.**
-> Il **n'amende plus aucun contrat au-delà du Lot 2** (§10) : `02`, `07`, `08`, `09`, `13`, `15` portent désormais `ASP-INV-99`/`100`/`101`, mais **aucun d'eux n'est actif au runtime** — chaque clause nouvelle le dit explicitement (« portée non normative pour le runtime, à ce stade »).
-> Il **ne touche toujours aucun fichier runtime** — ni `10_scripts/aspirateur/lancer_mission.yaml`, ni `11_automations/aspirateur/supervision_mission.yaml`, ni aucun helper. Les impacts restent **pressentis** (§7), pas réalisés ; c'est l'objet du Lot 3, non ouvert.
-> Il **ne tranche pas la réserve batterie** (`QO-7`) : elle est classée **B** (§8), reportée dans `ASP-INV-101`, et reste un point ouvert non résolu — pas un repli silencieux.
-> Il **n'attribue aucun identifiant `ASP-CI-*`** — aucun checker n'est créé, ce lot n'introduit aucune règle vérifiable en CI au-delà de ce que les checkers existants vérifient déjà (confirmé, §10).
-> Aucun commit, push ou PR n'est fait sans l'arbitrage final de l'opérateur.
+> **✅ Clôture (2026-09-15).**
+> Lot 2 (contractuel) et Lot 3 (runtime) sont **exécutés et mergés** (`PR #842`, `PR #843`) — `02`, `07`, `08`, `09`, `13`, `15` portent `ASP-INV-99`/`100`/`101` **et** le runtime les applique (`10_scripts/aspirateur/lancer_mission.yaml`, `11_automations/aspirateur/supervision_mission.yaml`, `05_input_booleans/aspirateur/retour_observe.yaml`). La preuve terrain post-merge (§11) confirme `ASP-INV-99` (lancement non refusé, non-régression depuis `charger_disconnected`), `ASP-INV-101` (fin nominale hors dock, non-contamination inter-session) et la non-régression de `W2`.
+> Trois réserves restent **explicitement ouvertes**, portées par `QO-7` et ce document — pas un repli silencieux : la réserve batterie (`QO-7`, classée **B**, §8) ; le sous-cas précis d'un lancement depuis l'état natif `idle` pour `ASP-INV-100` (non exercé faute de fenêtre terrain, §11) ; `ECHEC/MISSION_INTERROMPUE` non reproduit terrain post-merge (branche préexistante, non modifiée par ce chantier, §11).
+> Aucune de ces réserves ne rouvre C53. Aucun commit, push ou PR de cette clôture documentaire n'est fait sans l'arbitrage final de l'opérateur.
 
 ---
 
@@ -206,21 +205,23 @@ Le second cas de la seconde ligne est un **changement de nature du risque**, pas
 | **1** | Statut de la carte `Annexe` vis-à-vis du dock | **Tranché** (2026-09-15, opérateur) — `dock_accessible: false`, intégré au §4 |
 | **2** | Mécanisme exact de la mémoire `W3` (§7) | Non choisi — plusieurs voies possibles, à arbitrer au Lot 3 |
 | **3** | Chaque signature n'est établie qu'une seule fois (`n=1`) | Les deux campagnes du §2 sont chacune un unique échantillon ; aucune reproduction indépendante n'a été faite |
-| **4** | Comportement d'une mission Arsenal ouverte qui atteint une fin normale hors dock | **Non observé directement** — le §2.2 était une mission externe (jamais adoptée, aucun verdict produit) ; le §2.4 le déduit par confrontation, mais aucune trace `W3` n'a jamais vu passer cette séquence précise sous une mission qu'elle supervisait |
+| **4** | Comportement d'une mission Arsenal ouverte qui atteint une fin normale hors dock | **Résolu (2026-09-15, post-merge, §11 Test 2)** — observé directement sous mission Arsenal réelle : `segment_cleaning → idle`, verdict `CLOTURE/FIN_NOMINALE_HORS_BASE` écrit par `W3`, horodaté par le recorder HA |
 | **5** | Interaction avec le geste `arrêt` de `W2` (`CONDUITE/ARRET_ENGAGE`) sur une carte sans dock | Non examinée par ce chantier — l'arrêt via `W2` suit sa propre postcondition positive (`idle`, [`15`](../../../contrats/aspirateur/15_conduite_et_supervision.md) §3.1), indépendante du Volet B, mais la cohabitation n'a pas été vérifiée |
 
 ---
 
 ## 9. Critères de validation terrain après future implémentation
 
-| # | À observer |
-|---|---|
-| **9.1** | Lancement d'une mission Étage ou Annexe depuis Home Assistant, robot au repos en `idle` sur la carte demandée : la mission démarre. |
-| **9.2** | Lancement d'une mission RDC, robot au repos en `idle` : le refus `ETAT_NON_QUALIFIE` est inchangé. |
-| **9.3** | Une mission Étage ou Annexe **ouverte par Arsenal**, menée jusqu'à son terme sans intervention, produit la séquence `segment_cleaning → returning_home → idle` et se referme sur le nouveau code de clôture — jamais sur `ECHEC/MISSION_INTERROMPUE`. C'est le point du §8 (point ouvert 4) qui manque aujourd'hui et que ce critère comble. |
-| **9.4** | Une interruption externe explicite d'une mission Étage ou Annexe **ouverte par Arsenal**, sans passage par `returning_home`, continue de produire `ECHEC/MISSION_INTERROMPUE` — non-régression du cas déjà validé au §2.3. |
-| **9.5** | La confirmation cartographique (`ASP-IMC-1`) refuse toujours une mission dont la carte ne se confirme pas, y compris depuis `idle` — non-régression du garde-fou qui rend le Volet A sûr. |
-| **9.6** | Si une occasion terrain se présente, relever la signature d'un retour déclenché par batterie critique, pour lever ou border le point ouvert du §8. |
+**Statut après la preuve terrain post-merge du 2026-09-15 (§11).** Les critères ci-dessous datent du cadrage initial (avant Lot 3) ; leur colonne « Statut » restitue ce que la session de preuve terrain post-merge a effectivement couvert — pas plus.
+
+| # | À observer | Statut (2026-09-15, post-merge) |
+|---|---|---|
+| **9.1** | Lancement d'une mission Étage ou Annexe depuis Home Assistant, robot au repos en `idle` sur la carte demandée : la mission démarre. | **Non exercé sur le sous-cas précis `idle`** — le Test 1 (§11) est parti d'un robot en `charger_disconnected` (classe R, déjà admissible avant C53) ; la fenêtre terrain pour relancer spécifiquement depuis `idle` s'est refermée avant vérification (§11). Validé statiquement (`--selftest`) et confirmé en non-régression terrain depuis `charger_disconnected`. Reste une réserve de couverture. |
+| **9.2** | Lancement d'une mission RDC, robot au repos en `idle` : le refus `ETAT_NON_QUALIFIE` est inchangé. | Non exercé pendant cette session (hors périmètre des trois tests autorisés, tous sur Étage) — couvert statiquement par le checker (`ASP-CI-24`/`25`), code RDC non modifié par C53. |
+| **9.3** | Une mission Étage ou Annexe **ouverte par Arsenal**, menée jusqu'à son terme sans intervention, produit la séquence `segment_cleaning → returning_home → idle` et se referme sur le nouveau code de clôture — jamais sur `ECHEC/MISSION_INTERROMPUE`. | **Satisfait (§11, Test 2).** Verdict `CLOTURE/FIN_NOMINALE_HORS_BASE` confirmé sous mission Arsenal réelle, horodaté par le recorder HA. Le passage par `returning_home`/`docking` n'est pas lisible seconde par seconde dans l'historique (résolution insuffisante sur un intervalle aussi court) mais est établi structurellement : cette clôture exige `aspirateur_retour_observe == on` comme précondition stricte. |
+| **9.4** | Une interruption externe explicite d'une mission Étage ou Annexe **ouverte par Arsenal**, sans passage par `returning_home`, continue de produire `ECHEC/MISSION_INTERROMPUE`. | **Partiellement satisfait.** Non-régression confirmée pour un arrêt opérateur *reconnu* (§11, Test 3a — `CLOTURE/APRES_ARRET_CONFIRME`, chemin `W2`). Le cas d'une cessation *sans* engagement `W2` et *sans* passage par la chaîne de retour n'a pas pu être reproduit post-merge (§11, Test 3b — `vacuum.stop` a déclenché un passage par la chaîne de retour, concluant à `CLOTURE/FIN_NOMINALE_HORS_BASE`). Reste une réserve de couverture terrain sur une branche préexistante, non modifiée par C53. |
+| **9.5** | La confirmation cartographique (`ASP-IMC-1`) refuse toujours une mission dont la carte ne se confirme pas, y compris depuis `idle`. | Non exercé pendant cette session (hors périmètre des trois tests autorisés) — code inchangé par C53. |
+| **9.6** | Si une occasion terrain se présente, relever la signature d'un retour déclenché par batterie critique, pour lever ou border le point ouvert du §8. | Non levé — `QO-7` reste ouverte. Le constat du Test 3b (§11) corrobore le risque déjà écrit sans le trancher : un retour externe non lié à une fin de cycle a produit la même clôture silencieuse que celle redoutée pour un retour batterie. |
 
 ---
 
@@ -268,9 +269,59 @@ le commit qui les porte — pas un changelog.
 
 ---
 
+## 11. Preuve terrain post-merge (Lots 2+3) — session du 2026-09-15
+
+**Périmètre.** Session conduite après le merge de `PR #843` (Lot 3 runtime, écrivain unique de `aspirateur_retour_observe` corrigé avant merge). Objectif : vérifier que l'instance Home Assistant exécute réellement le runtime mergé, puis exercer `ASP-INV-99`/`100`/`101` en conditions réelles. Quatre tests prévus, un annulé sur instruction opérateur (Annexe — sans intérêt une fois le principe validé sur Étage, `dock_accessible: false` étant la même valeur pour les deux cartes).
+
+**Préambule.** Runtime confirmé conforme au merge de `PR #843` par lecture directe du fichier `11_automations/aspirateur/supervision_mission.yaml` sur l'instance (écrivain unique constaté). Baseline initiale : `sensor.roborock_q7_max_etat = charger_disconnected` (classe R), robot à l'Étage, hors dock, carte Étage sélectionnée, aucune erreur, aucune mission ouverte.
+
+### 11.1 Test 1 — lancement Étage
+
+- **Observation directe.** Préconditions : robot à l'Étage, hors dock, carte Étage sélectionnée, `charger_disconnected`, aucune erreur, aucune mission ouverte. Lancement WC Étage depuis le dashboard Arsenal → aucun `REFUS/ETAT_NON_QUALIFIE` → `segment_cleaning` atteint → verdict `LANCEE/DEMARRAGE_OBSERVE` → `aspirateur_retour_observe = off` à l'ouverture → trace `carte=1|segments=1_22|...`.
+- **Résultat : PASS — non-régression confirmée depuis `charger_disconnected`.** Le point de départ réel était classe R, déjà admissible avant C53 : ce test **ne constitue pas** une validation terrain du sous-cas précis `idle` d'`ASP-INV-100` (cf. §9.1). Une fenêtre ultérieure pour relancer spécifiquement depuis `idle` s'est présentée après le Test 3b (§11.3) mais s'est refermée avant vérification des préconditions — non exploitée, sur consigne explicite de ne pas forcer ni recréer l'état.
+
+### 11.2 Test 2 — fin nominale hors dock
+
+- **Observation directe** (horodatage recorder HA) : `sensor.roborock_q7_max_etat` `segment_cleaning` → `idle` à **15:05:36** ; `input_text.aspirateur_mission_verdict` → `CLOTURE/FIN_NOMINALE_HORS_BASE` à **15:05:36** (même cycle) ; `aspirateur_retour_observe` revenu à `off` à **15:05:36**. Confirmation en langage clair sur le dashboard : « Mission terminée : le cycle est allé à son terme, mais le robot n'a pas pu regagner sa base sur cette carte. »
+- **Déduction structurelle.** Le passage par `returning_home`/`docking` n'est pas lisible seconde par seconde dans l'historique (résolution insuffisante sur un intervalle aussi court) — il n'est **pas observé directement**. Il est établi **structurellement** : la branche `CLOTURE/FIN_NOMINALE_HORS_BASE` exige `aspirateur_retour_observe == on` comme précondition stricte au moment de son évaluation ; ce verdict n'aurait pu s'écrire sans un passage réel par la chaîne de retour.
+- **Résultat : PASS.** Comble le point ouvert 4 du §8 (mission Arsenal ouverte, fin normale hors dock, jamais observée en direct avant ce jour) et satisfait le critère 9.3.
+
+### 11.3 Test 3 — interruption
+
+**3a — bouton Arsenal « Arrêter la mission ».** Verdict obtenu : `CLOTURE/APRES_ARRET_CONFIRME` (engagement `W2`, arrêt opérateur confirmé). **Résultat : PASS** comme preuve de non-régression de `W2` — ce verdict est exactement celui attendu d'un arrêt opérateur reconnu (`A-11`), pas un test de la branche d'interruption de `W3`.
+
+**3b — appel direct `vacuum.stop` sur `vacuum.roborock_q7_max`, hors bouton Arsenal (autorisation explicite).**
+- **Observation directe.** Préconditions vérifiées avant ouverture : `aspirateur_retour_observe = off`, aucune mission ouverte, aucune erreur robot/dock. Nouvelle mission WC Étage ouverte, `segment_cleaning` confirmé, verdict `LANCEE/DEMARRAGE_OBSERVE` confirmé. Appel unique `vacuum.stop` exécuté. `sensor.roborock_q7_max_etat` → `idle` à 15:19:45. Verdict final : `CLOTURE/FIN_NOMINALE_HORS_BASE`. `aspirateur_retour_observe` revenu à `off`.
+- **Déduction structurelle.** Le recorder ne permet pas d'établir directement un passage par `returning_home`/`docking` sur cet intervalle. Il est établi structurellement, par le même raisonnement qu'au §11.2 : `CLOTURE/FIN_NOMINALE_HORS_BASE` n'aurait pu s'écrire sans que `aspirateur_retour_observe` ait été `on` avant la clôture.
+- **Constat terrain, non tranché.** `vacuum.stop` sur ce matériel n'a **pas** produit ici un arrêt brut : le robot est entré dans une séquence assimilable à un retour. La signature `segment_cleaning → idle` directe, sans chaîne de retour, **avait pourtant déjà été établie une fois** sur ce même robot le même jour, par le même moyen (`vacuum.stop`), **avant le merge de C53** (§2.3, 10:16:22 UTC, sous l'ancien code — `ECHEC/MISSION_INTERROMPUE` produit alors correctement). Les deux tentatives de reproduire la même action donnent deux résultats différents : c'est exactement la limite déjà consignée au point ouvert 3 du §8 (« chaque signature n'est établie qu'une seule fois ») — un `n=1` de chaque côté, pas une contradiction du code.
+- **Résultat : INCONCLUANT pour l'objectif visé** (exercer `ECHEC/MISSION_INTERROMPUE` **post-merge**). Ni un défaut du code C53 (le comportement obtenu est celui prévu par le contrat compte tenu du signal réellement reçu), ni une preuve terrain post-merge de la branche d'interruption — celle-ci reste **préexistante à C53**, non modifiée par ce chantier, et son ordre de priorité dans le `choose` de `W3` reste vérifié statiquement par `check_aspirateur_contracts.py --selftest`.
+
+### 11.4 Test 4 — Annexe
+
+**Non exécuté**, sur instruction explicite de l'opérateur en cours de session (sans intérêt une fois `dock_accessible: false` validé sur Étage, valeur identique pour l'Annexe).
+
+### 11.5 Verdict de la preuve terrain
+
+**`Clôturé (2026-09-15) — GO FERMETURE AVEC RÉSERVES DOCUMENTÉES.`**
+
+| Élément | Statut |
+|---|---|
+| `ASP-INV-99` (`dock_accessible`) | PASS terrain (§11.1, §11.2) |
+| `ASP-INV-100` (admissibilité conditionnelle de `idle`) | Validation statique complète (`--selftest`) + non-régression terrain depuis `charger_disconnected` (§11.1). Sous-cas précis lancement depuis `idle` **non exercé terrain** — réserve de couverture, pas défaut fonctionnel. |
+| `ASP-INV-101` (`CLOTURE/FIN_NOMINALE_HORS_BASE`) | PASS terrain (§11.2) |
+| Non-contamination inter-session (`aspirateur_retour_observe`) | PASS terrain (§11.2, §11.3 — reset à l'ouverture et à chaque clôture observé) |
+| Non-régression `W2` (`CLOTURE/APRES_ARRET_CONFIRME`) | PASS terrain (§11.3a) |
+| `ECHEC/MISSION_INTERROMPUE` post-merge | **Non reproduit** pendant cette session (§11.3b) — branche préexistante, non modifiée par C53, ordre statiquement couvert. Réserve de couverture terrain. |
+| `QO-7` (réserve batterie) | **Toujours ouverte, non tranchée.** Corroborée sans être levée par le constat du §11.3b. |
+
+Aucune écriture runtime pendant cette preuve terrain.
+
+---
+
 ## Renvois
 
 - Diagnostic architectural préalable et matrice initiale (conversation opérateur, 2026-09-15) — non publié séparément, absorbé par ce document.
+- Lot 3 runtime : `PR #843` (écrivain unique de `aspirateur_retour_observe` corrigé avant merge, audit indépendant). Preuve terrain post-merge : §11, session du 2026-09-15.
 - Contrats : [`02`](../../../contrats/aspirateur/02_referentiel_cartes_et_pieces.md) · [`06`](../../../contrats/aspirateur/06_integrite_mono_carte.md) · [`07`](../../../contrats/aspirateur/07_moteur_de_mission.md) · [`08`](../../../contrats/aspirateur/08_etats_et_observation.md) · [`09`](../../../contrats/aspirateur/09_refus_et_diagnostics.md) · [`13`](../../../contrats/aspirateur/13_hors_perimetre_arbitrages_et_questions_ouvertes.md) · [`15`](../../../contrats/aspirateur/15_conduite_et_supervision.md)
-- Runtime concerné (non modifié) : [`10_scripts/aspirateur/lancer_mission.yaml`](../../../../10_scripts/aspirateur/lancer_mission.yaml) · [`11_automations/aspirateur/supervision_mission.yaml`](../../../../11_automations/aspirateur/supervision_mission.yaml)
+- Runtime concerné : [`10_scripts/aspirateur/lancer_mission.yaml`](../../../../10_scripts/aspirateur/lancer_mission.yaml) · [`11_automations/aspirateur/supervision_mission.yaml`](../../../../11_automations/aspirateur/supervision_mission.yaml) · [`05_input_booleans/aspirateur/retour_observe.yaml`](../../../../05_input_booleans/aspirateur/retour_observe.yaml)
 - Registre : [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md)

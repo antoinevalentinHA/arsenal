@@ -291,6 +291,16 @@ jamais masquer une alerte réelle.
 réellement déclenché par batterie faible ou critique, sans provoquer cette
 condition artificiellement.
 
+**Constat terrain (2026-09-15, session de preuve post-merge C53).** Un appel
+direct `vacuum.stop`, externe à Arsenal et sans rapport avec une fin de cycle
+ou une batterie faible, a produit `CLOTURE/FIN_NOMINALE_HORS_BASE` plutôt
+qu'un arrêt brut — le robot est entré dans une séquence assimilable à un
+retour, sans qu'aucune cause de batterie ne soit en jeu ici. Ce constat
+**corrobore** le risque déjà écrit ci-dessus (un retour non lié à une fin de
+cycle réussie peut produire la même clôture silencieuse qu'une fin normale)
+**sans le trancher** : il ne prouve toujours pas comment un retour *réellement*
+déclenché par batterie faible ou critique se signale. `QO-7` reste ouverte.
+
 ---
 
 ## 4. Visibilité documentaire du domaine
