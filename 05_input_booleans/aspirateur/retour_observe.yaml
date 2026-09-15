@@ -25,42 +25,46 @@
 #    passage d'état depuis l'ouverture. Un nouveau helper est donc
 #    nécessaire.
 #
-# ✍️ DEUX ÉCRIVAINS, CHACUN SUR UNE TRANSITION DISJOINTE
+# ✍️ UN SEUL ÉCRIVAIN, SUR TROIS TRANSITIONS DISJOINTES
 #    Ni le verdict ni sa discipline (`ASP-INV-86`, trois écrivains
-#    disjoints) ne s'appliquent à ce helper AUXILIAIRE — mais le MÊME
-#    principe (un écrivain par transition, jamais deux qui pourraient
-#    se contredire) est repris :
-#      - `aspirateur_lancer_mission` (W1, moteur) est le SEUL à
-#        REMETTRE À ZÉRO À L'OUVERTURE — action inconditionnelle,
-#        posée au moment même où `LANCEE/DEMARRAGE_OBSERVE` est écrit
-#        (étape 13). C'est une garantie POSITIVE : toute mission qui
-#        s'ouvre démarre avec une mémoire propre, quelle qu'ait été la
-#        manière dont la mission PRÉCÉDENTE s'est refermée ;
-#      - `aspirateur_supervision_mission` (W3) POSE la mémoire à `on`
-#        quand `sensor.roborock_q7_max_etat` transite vers
-#        `returning_home`/`docking` pendant une mission ouverte, ET la
-#        REMET à `off` dans chacune de ses six branches de clôture
-#        (défense en profondeur — redondant avec la remise à zéro de
-#        W1 sur le cas nominal, mais garde la mémoire propre aussi
-#        pendant la fenêtre morte entre deux missions).
-#    Aucun autre fichier n'y écrit : ni le script de conduite (W2), ni
-#    aucune UI.
+#    disjoints) ne s'appliquent à ce helper AUXILIAIRE. Une première
+#    version de ce lot le partageait entre deux fichiers (moteur +
+#    supervision) ; un audit indépendant (2026-09-15, avant merge de la
+#    PR #843) a rejeté ce partage — le `select` natif de carte n'est
+#    pas le seul risque qu'une mémoire à deux écrivains fait courir, et
+#    la même exigence de source unique s'applique ici. Corrigé : le
+#    helper n'a plus qu'un seul écrivain, `aspirateur_supervision_mission`
+#    (W3), sur ses trois transitions :
+#      - REMISE À ZÉRO À L'OUVERTURE — un déclencheur dédié, borné à la
+#        transition du verdict vers sa valeur d'ouverture (la seule
+#        jamais écrite par W3 elle-même — voir le fichier de
+#        l'automation pour pourquoi ce déclencheur échappe à
+#        l'interdiction générale des déclencheurs sur le verdict).
+#        Action INCONDITIONNELLE : toute mission qui s'ouvre
+#        démarre avec une mémoire propre, quelle qu'ait été la manière
+#        dont la mission PRÉCÉDENTE s'est refermée ;
+#      - POSE À `on` quand `sensor.roborock_q7_max_etat` transite vers
+#        `returning_home`/`docking` pendant une mission ouverte ;
+#      - REMISE À `off` dans chacune de ses six branches de clôture.
+#    Aucun autre fichier n'y écrit : ni le moteur (W1), ni le script de
+#    conduite (W2), ni aucune UI.
 #
 # 🔁 CE QUE LA REMISE À ZÉRO À L'OUVERTURE CORRIGE
-#    Une version antérieure de ce helper ne remettait la mémoire à
-#    zéro QUE dans les six branches de clôture de W3. Analyse (2026-09-15,
-#    C53) : le script de conduite (W2) possède SES PROPRES clôtures
-#    terminales (`CLOTURE/APRES_ARRET_CONFIRME`,
-#    `CLOTURE/APRES_ARRET_NON_CONFIRME`, `CLOTURE/APRES_RETOUR_NON_CONFIRME`)
-#    qu'aucune des six branches de W3 ne couvre : une mission refermée
-#    par W2 alors que la mémoire valait `on` (par exemple un retour
-#    naturel en cours au moment d'un arrêt opérateur) l'aurait laissée
-#    `on` pour la mission SUIVANTE. La remise à zéro à l'ouverture,
-#    inconditionnelle et positive, ferme ce cas SANS avoir à énumérer
-#    tous les chemins de fermeture possibles de la mission précédente —
-#    exactement la discipline déjà en vigueur ailleurs dans ce domaine
-#    (préférer une règle positive et fermée à une négation qui doit
-#    rester exhaustive, ASP-INV-64/93).
+#    Le script de conduite (W2) possède SES PROPRES clôtures terminales
+#    (`CLOTURE/APRES_ARRET_CONFIRME`, `CLOTURE/APRES_ARRET_NON_CONFIRME`,
+#    `CLOTURE/APRES_RETOUR_NON_CONFIRME`) qu'aucune des six branches de
+#    clôture de W3 ne couvre : une mission refermée par W2 alors que la
+#    mémoire valait `on` (par exemple un retour naturel en cours au
+#    moment d'un arrêt opérateur) l'aurait laissée `on` pour la mission
+#    SUIVANTE. La remise à zéro à l'ouverture, inconditionnelle et
+#    positive, ferme ce cas SANS avoir à énumérer tous les chemins de
+#    fermeture possibles de la mission précédente — exactement la
+#    discipline déjà en vigueur ailleurs dans ce domaine (préférer une
+#    règle positive et fermée à une négation qui doit rester
+#    exhaustive, ASP-INV-64/93). Le fait que ce soit W3, et non le
+#    moteur, qui observe l'ouverture ne change rien à cette garantie :
+#    le déclencheur dédié réveille W3 exactement au même instant que
+#    l'écriture de `LANCEE/DEMARRAGE_OBSERVE` par le moteur.
 #
 # 🚫 AUCUN `initial:` — et ce que cela NE garantit PAS seul
 #    `input_boolean` est une `RestoreEntity` : sans `initial:`, l'état
@@ -76,7 +80,7 @@
 #    l'état hérité.
 #
 # 🧩 PÉRIMÈTRE
-#    - Écrit par exactement deux fichiers, sur deux transitions
+#    - Écrit par un seul fichier (`W3`), sur trois transitions
 #      disjointes (ci-dessus) ; lu seulement par `W3`
 #    - Ne commande RIEN, ne déclenche AUCUNE action sur l'appareil
 #    - Ne porte AUCUNE portion du verdict de mission (ASP-INV-70,

@@ -1209,10 +1209,14 @@ AUTORITE_PAR_FICHIER = {
         # `LECTEURS_TRACE`, `check_ecrivain_unique`), bornee a la lecture :
         # l'ecrivain de la trace reste le moteur seul.
         # `input_boolean.aspirateur_retour_observe` est la memoire de
-        # mission qu'ASP-INV-101 exige (15 §5.3) : POSEE et remise a zero
-        # a la CLOTURE par ce fichier ; remise a zero a l'OUVERTURE par le
-        # moteur (deux ecrivains sur deux transitions disjointes — voir
-        # son helper, 05_input_booleans/aspirateur/retour_observe.yaml).
+        # mission qu'ASP-INV-101 exige (15 §5.3). ECRIVAIN UNIQUE : ce
+        # fichier, et lui seul, la pose sur `returning_home`/`docking`,
+        # la remet a zero a l'OUVERTURE de toute nouvelle mission (via
+        # le declencheur dedie sur LANCEE/DEMARRAGE_OBSERVE) et a chacune
+        # de ses six clotures. Une version anterieure de ce lot partageait
+        # l'ecriture avec le moteur ; corrige avant merge de la PR #843
+        # (audit independant du 2026-09-15) — voir le fichier du helper,
+        # 05_input_booleans/aspirateur/retour_observe.yaml.
         frozenset({"input_text.aspirateur_mission_verdict",
                    "sensor.roborock_q7_max_etat",
                    "sensor.roborock_q7_max_erreur_de_l_aspirateur",
@@ -10893,86 +10897,105 @@ def selftest() -> None:
         "QO-7) — sinon une erreur concomitante pourrait être absorbée par "
         "une clôture nominale à tort")
 
-    # ---- Volet B : remise à zéro À L'OUVERTURE — invariant « aucune -------
-    #      nouvelle mission ne peut hériter d'un retour_observe=on d'une
-    #      mission antérieure », prouvé indépendamment des clôtures de W3.
-    #
-    # Analyse qui motive ce test : les six branches de W3 ne couvrent PAS
-    # les fermetures que le SCRIPT DE CONDUITE (W2) écrit lui-même —
-    # `CLOTURE/APRES_ARRET_CONFIRME`, `CLOTURE/APRES_ARRET_NON_CONFIRME`,
-    # `CLOTURE/APRES_RETOUR_NON_CONFIRME` — trois valeurs de `VERDICT_W2`.
-    # Une mission refermée par W2 pendant que `retour_observe` valait `on`
-    # (un retour naturel en cours au moment d'un arrêt opérateur, par
-    # exemple) ne le remettrait jamais à zéro par les seules branches de
-    # W3. La remise à zéro à l'OUVERTURE (moteur, étape 13) est la garantie
-    # POSITIVE qui ferme ce cas — vérifiée ici sur le fichier RÉEL.
-    RESET_OUVERTURE = (
-        '                value: "LANCEE/DEMARRAGE_OBSERVE"\n'
-        "            # Amendement C53")
-    assert RESET_OUVERTURE in _mot_txt, (
-        "C53 : l'écriture de LANCEE/DEMARRAGE_OBSERVE et le commentaire de "
-        "la remise à zéro qui la suit sont introuvables ou désolidarisés "
-        "dans le moteur")
-    etape13 = next(
-        s for s in mot0[ID_MOTEUR]["sequence"][::-1]
+    # ---- Volet B : écrivain UNIQUE de aspirateur_retour_observe -----------
+    #      Audit indépendant du 2026-09-15 (avant merge de la PR #843) :
+    #      une première version de ce lot partageait l'écriture entre le
+    #      moteur (reset à l'ouverture) et la supervision (pose + reset aux
+    #      clôtures) — rejeté. Corrigé : la supervision observe elle-même
+    #      l'ouverture, via un déclencheur DÉDIÉ et BORNÉ à la seule valeur
+    #      qu'elle n'écrit jamais (LANCEE/DEMARRAGE_OBSERVE ∈ VERDICT_W1,
+    #      absente de VERDICT_W3 — pas de risque d'auto-annulation), et
+    #      reste l'écrivain unique sur les trois transitions.
+    assert "aspirateur_retour_observe" not in _mot_txt, (
+        "C53 : le moteur référence encore `aspirateur_retour_observe` — "
+        "cette mémoire ne doit plus avoir qu'un seul écrivain, la "
+        "supervision (audit du 2026-09-15, avant la PR #843)")
+
+    sup_trig = sup_auto.get("trigger") or sup_auto.get("triggers") or []
+    trig_ouverture = next(
+        (t for t in sup_trig
+         if isinstance(t, dict) and t.get("id") == "ouverture"), None)
+    assert trig_ouverture is not None, (
+        "C53 : aucun déclencheur `id: ouverture` dans la supervision — le "
+        "mécanisme qui remplace la remise à zéro côté moteur est "
+        "introuvable")
+    assert (trig_ouverture.get("platform") == "state"
+            and trig_ouverture.get("entity_id")
+                == "input_text.aspirateur_mission_verdict"
+            and trig_ouverture.get("to") == "LANCEE/DEMARRAGE_OBSERVE"), (
+        "C53 : le déclencheur `ouverture` doit être borné EXACTEMENT à "
+        "input_text.aspirateur_mission_verdict -> LANCEE/DEMARRAGE_OBSERVE "
+        "— un déclencheur plus large réveillerait la supervision sur ses "
+        "propres écritures de verdict (risque d'auto-annulation, cf. "
+        "en-tête du fichier)")
+
+    # La branche `ouverture` vit dans le `choose` MÉMOIRE — celui qui n'est
+    # PAS `choose_principal` (le `choose` des six clôtures, déjà localisé
+    # ci-dessus).
+    memoire_choose = next(
+        s["choose"] for s in sup_actions
         if isinstance(s, dict) and "choose" in s
-        and any("LANCEE/DEMARRAGE_OBSERVE" in str(o.get("sequence"))
-                for o in (s["choose"]
-                          if isinstance(s["choose"], list) else [])))
-    branche_ouverture = next(
-        o for o in etape13["choose"]
-        if "LANCEE/DEMARRAGE_OBSERVE" in str(o.get("sequence")))
-    seq_ouverture = branche_ouverture["sequence"]
-    assert any(
-        isinstance(s, dict) and s.get("action") == "input_text.set_value"
-        and s.get("data", {}).get("value") == "LANCEE/DEMARRAGE_OBSERVE"
-        for s in seq_ouverture), (
-        "C53 : la branche d'ouverture du moteur n'écrit plus "
-        "LANCEE/DEMARRAGE_OBSERVE — test désynchronisé du fichier réel")
+        and s["choose"] is not choose_principal
+        and any(isinstance(o, dict)
+                and "'id': 'ouverture'" in str(o.get("conditions"))
+                for o in s["choose"]))
+    branche_ouverture_w3 = next(
+        o for o in memoire_choose
+        if isinstance(o, dict) and "'id': 'ouverture'" in str(o.get("conditions")))
+    seq_ouverture_w3 = branche_ouverture_w3["sequence"]
     reset_present = any(
         isinstance(s, dict) and s.get("action") == "input_boolean.turn_off"
         and "input_boolean.aspirateur_retour_observe" in _cibles(s)
-        for s in seq_ouverture)
+        for s in seq_ouverture_w3)
     assert reset_present, (
-        "C53 : le moteur n'écrit aucun `input_boolean.turn_off` sur "
-        "`aspirateur_retour_observe` dans la MÊME branche que "
-        "LANCEE/DEMARRAGE_OBSERVE — l'invariant « aucune mission n'hérite "
-        "d'un retour_observe=on antérieur » n'est plus garanti à "
-        "l'ouverture")
-    # La remise à zéro doit être INCONDITIONNELLE dans cette branche — pas
-    # cachée derrière un second `choose` qui pourrait ne pas s'exécuter :
-    # les deux actions sont des ÉLÉMENTS DIRECTS de la même liste
-    # `sequence`, sans second niveau de `choose`/`conditions` entre elles.
+        "C53 : la branche `ouverture` de la supervision n'écrit aucun "
+        "`input_boolean.turn_off` sur `aspirateur_retour_observe` — "
+        "l'invariant « aucune mission n'hérite d'un retour_observe=on "
+        "antérieur » n'est plus garanti à l'ouverture")
+    # INCONDITIONNELLE dans cette branche — pas cachée derrière un second
+    # `choose` qui pourrait ne pas s'exécuter une fois le déclencheur
+    # `ouverture` retenu.
     assert not any(isinstance(s, dict) and "choose" in s
-                   for s in seq_ouverture), (
-        "C53 : une action de la branche d'ouverture est nichée dans un "
-        "second `choose` — la remise à zéro de `retour_observe` doit rester "
-        "inconditionnelle dans la séquence directe")
-    # Mutation négative : RETIRER le reset de la branche d'ouverture doit
-    # être détectable par CE MÊME test, rejoué sur le texte muté — preuve
-    # que le test teste bien quelque chose, et pas seulement sa propre
-    # présence.
-    _mot_sans_reset = _mot_txt.replace(
+                   for s in seq_ouverture_w3), (
+        "C53 : une action de la branche `ouverture` est nichée dans un "
+        "second `choose` — la remise à zéro doit rester inconditionnelle "
+        "dans la séquence directe")
+
+    # Mutation négative : RETIRER le reset de la branche `ouverture` (côté
+    # supervision, désormais) doit être détectable — preuve que le test
+    # teste bien quelque chose, et pas seulement sa propre présence.
+    _sup_sans_reset_ouverture = sup_txt.replace(
+        "            - condition: trigger\n"
+        "              id: ouverture\n"
+        "          sequence:\n"
         "            - action: input_boolean.turn_off\n"
         "              target:\n"
-        "                entity_id: input_boolean.aspirateur_retour_observe\n"
-        "      default:",
-        "      default:", 1)
-    assert _mot_sans_reset != _mot_txt, (
+        "                entity_id: input_boolean.aspirateur_retour_observe\n",
+        "            - condition: trigger\n"
+        "              id: ouverture\n"
+        "          sequence: []\n",
+        1)
+    assert _sup_sans_reset_ouverture != sup_txt, (
         "C53 : ancre de mutation introuvable — le test de non-régression "
-        "sur le retrait du reset d'ouverture ne prouve rien")
-    seq_sans_reset = next(
-        o for o in next(
-            s for s in yaml.safe_load(_mot_sans_reset)[ID_MOTEUR]["sequence"]
-            if isinstance(s, dict) and "choose" in s
-            and any("LANCEE/DEMARRAGE_OBSERVE" in str(oo.get("sequence"))
-                    for oo in s["choose"]))["choose"]
-        if "LANCEE/DEMARRAGE_OBSERVE" in str(o.get("sequence")))["sequence"]
-    assert not any(
-        isinstance(s, dict) and s.get("action") == "input_boolean.turn_off"
-        and "input_boolean.aspirateur_retour_observe" in _cibles(s)
-        for s in seq_sans_reset), (
-        "C53 : la mutation n'a pas retiré le reset — le test ne teste rien")
+        "sur le retrait du reset d'ouverture (côté supervision) ne prouve "
+        "rien")
+    doc_sans_reset = yaml.safe_load(_sup_sans_reset_ouverture)
+    auto_sans_reset = (doc_sans_reset[0] if isinstance(doc_sans_reset, list)
+                        else doc_sans_reset)
+    actions_sans_reset = (auto_sans_reset.get("action")
+                           or auto_sans_reset.get("actions") or [])
+    choose_mem_sans_reset = next(
+        s["choose"] for s in actions_sans_reset
+        if isinstance(s, dict) and "choose" in s
+        and any(isinstance(o, dict)
+                and "'id': 'ouverture'" in str(o.get("conditions"))
+                for o in s["choose"]))
+    branche_sans_reset = next(
+        o for o in choose_mem_sans_reset
+        if isinstance(o, dict) and "'id': 'ouverture'" in str(o.get("conditions")))
+    assert not (branche_sans_reset.get("sequence") or []), (
+        "C53 : la mutation n'a pas vidé la séquence de la branche "
+        "`ouverture` — le test ne teste rien")
 
     # ---- ASP-CI-37 : la projection de mission, symetrique de l'entretien ---
     N1_L2 = load_runtime_n1()

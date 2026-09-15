@@ -1257,22 +1257,6 @@ aspirateur_lancer_mission:
                 entity_id: input_text.aspirateur_mission_verdict
               data:
                 value: "LANCEE/DEMARRAGE_OBSERVE"
-            # Amendement C53 (ASP-INV-101) — remise a zero INCONDITIONNELLE
-            # de la memoire de retour, exactement au moment ou une mission
-            # est confirmee OUVERTE. C'est une garantie POSITIVE et FERMEE
-            # (« toute mission qui s'ouvre demarre memoire propre »), pas
-            # une enumeration des chemins de cloture de la mission
-            # PRECEDENTE : celle-ci peut avoir ete refermee par W2 (trois
-            # clotures propres, hors de la portee de W3) aussi bien que par
-            # W3, et l'etape 0a garantit qu'aucune mission ne s'ouvre tant
-            # que la precedente ne l'est pas — ce point est donc le SEUL
-            # necessaire pour prouver qu'aucun residu ne contamine jamais
-            # la mission qui commence ici. Complement des remises a zero
-            # de W3 a la cloture (defense en profondeur), jamais un
-            # substitut : les deux gardent leur utilite propre.
-            - action: input_boolean.turn_off
-              target:
-                entity_id: input_boolean.aspirateur_retour_observe
       default:
         - action: input_text.set_value
           target:

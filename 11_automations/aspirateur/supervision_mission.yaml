@@ -47,12 +47,14 @@
 #   par la SEULE différence observée sur le terrain (2026-09-15) : un
 #   passage par `returning_home`/`docking` DEPUIS L'OUVERTURE de la
 #   mission — mémorisé par `input_boolean.aspirateur_retour_observe`,
-#   posé ET remis à zéro à la clôture par cette automation, et remis à
-#   zéro à l'OUVERTURE par le moteur (voir le fichier du helper pour le
-#   partage exact des deux écrivains). La branche d'erreur reste STRICTEMENT prioritaire
-#   (réserve batterie, `QO-7` : rien ne prouve qu'un retour pour charge
-#   se signale, mais s'il se signale, il est intercepté avant d'atteindre
-#   cette clôture).
+#   dont cette automation est l'ÉCRIVAIN UNIQUE (audit indépendant du
+#   2026-09-15 : un partage à deux écrivains, moteur+supervision, a été
+#   corrigé avant merge) : posé sur `returning_home`/`docking`, remis à
+#   zéro à l'OUVERTURE de toute nouvelle mission (déclencheur dédié,
+#   ci-dessous) ET à chacune de ses six clôtures. La branche d'erreur
+#   reste STRICTEMENT prioritaire (réserve batterie, `QO-7` : rien ne
+#   prouve qu'un retour pour charge se signale, mais s'il se signale, il
+#   est intercepté avant d'atteindre cette clôture).
 #
 # ----------------------------------------------------------
 # 🚪 PORTE D'ENTRÉE — LE VERDICT, ET LUI SEUL (ASP-INV-87)
@@ -88,7 +90,7 @@
 #   événement physique (A-11 volet 2).
 #
 # ----------------------------------------------------------
-# ⚙️ DÉCLENCHEURS — CINQ, ET CINQ SEULEMENT
+# ⚙️ DÉCLENCHEURS — SIX, ET SIX SEULEMENT
 #   • sensor.roborock_q7_max_etat — l'autorité de l'activité précise
 #     (08 §2). C'est lui qui porte la cessation d'activité, l'entrée en
 #     erreur, et l'un des deux témoins d'amarrage ;
@@ -101,16 +103,33 @@
 #     par `to:` : sans lui, l'entité `vacuum` réveillerait cette
 #     automation à chaque changement d'attribut ;
 #   • input_boolean.systeme_stable → on — la réconciliation au
-#     redémarrage, patron de readiness du dépôt.
+#     redémarrage, patron de readiness du dépôt ;
+#   • input_text.aspirateur_mission_verdict → `LANCEE/DEMARRAGE_OBSERVE`
+#     — AMENDEMENT C53 (ASP-INV-101), ajouté après audit indépendant du
+#     2026-09-15. SEUL déclencheur borné à une valeur précise du verdict,
+#     et volontairement : c'est le point d'OUVERTURE d'une mission, celui
+#     où la mémoire `aspirateur_retour_observe` doit repartir propre
+#     (voir « écrivain unique » ci-dessus). Il ne rouvre RIEN et n'écrit
+#     aucun verdict — il ne fait que remettre à zéro un helper auxiliaire.
 #
 #   AUCUN déclencheur temporel, aucun `homeassistant.start` nu, aucun
 #   polling : le domaine n'admet aucune temporisation hors de ses deux
 #   constantes (ASP-INV-69), et cette automation n'en porte AUCUNE.
 #
-#   POURQUOI PAS DE DÉCLENCHEUR SUR LE VERDICT. La supervision réagit
-#   aux transitions du ROBOT ; la projection de cycle, elle, réagit au
-#   verdict. Les fusionner ferait s'annuler la supervision en vol à
-#   chaque écriture de verdict par un autre writer (07_MACHINE_L2 §7).
+#   POURQUOI PAS DE DÉCLENCHEUR SUR LE VERDICT, EN GÉNÉRAL. La
+#   supervision réagit aux transitions du ROBOT ; la projection de
+#   cycle, elle, réagit au verdict. Les fusionner ferait s'annuler la
+#   supervision en vol à chaque écriture de verdict PAR ELLE-MÊME OU PAR
+#   UN AUTRE WRITER (07_MACHINE_L2 §7) — un déclencheur non borné sur
+#   `input_text.aspirateur_mission_verdict` réveillerait cette
+#   automation sur ses six propres écritures terminales.
+#
+#   POURQUOI L'EXCEPTION CI-DESSUS Y ÉCHAPPE. `LANCEE/DEMARRAGE_OBSERVE`
+#   est une valeur de `VERDICT_W1` : elle n'est JAMAIS écrite par cette
+#   automation (absente de `VERDICT_W3`). Un déclencheur borné à cette
+#   seule valeur ne peut donc jamais se réveiller sur sa propre écriture
+#   — le risque d'auto-annulation ne s'applique pas à ce cas précis, et
+#   c'est pour cela, et seulement pour cela, qu'il est admis ici.
 #
 # ----------------------------------------------------------
 # 🔁 MODE — `queued`, et pourquoi
@@ -158,9 +177,9 @@
 #   - Aucune commande robot : aucun appel `vacuum.*` / `roborock.*`
 #   - Aucune pression de bouton, aucune remise à zéro de l'INTENTION —
 #     seule la mémoire interne `aspirateur_retour_observe` (ASP-INV-101)
-#     est posée et remise à zéro ici, à la clôture (le moteur la remet
-#     aussi à zéro, séparément, à l'ouverture — voir le fichier du
-#     helper)
+#     est posée et remise à zéro ici, ET SEULEMENT ICI (écrivain
+#     UNIQUE) : à l'ouverture de toute nouvelle mission comme à chacune
+#     de ses six clôtures
 #   - Aucune valeur de classe O : elle ne rouvre ni ne prolonge rien
 #   - Aucune valeur du moteur ni du script de conduite
 #   - Aucune notification persistante : la projection de cycle est un
@@ -253,6 +272,15 @@
       entity_id: input_boolean.systeme_stable
       to: "on"
       id: readiness
+
+    # Amendement C53 (ASP-INV-101) — borné à la SEULE valeur d'ouverture,
+    # jamais écrite par cette automation (voir « pourquoi l'exception »
+    # ci-dessus). Sert uniquement à remettre `aspirateur_retour_observe`
+    # à zéro au bon moment ; n'écrit aucun verdict.
+    - platform: state
+      entity_id: input_text.aspirateur_mission_verdict
+      to: "LANCEE/DEMARRAGE_OBSERVE"
+      id: ouverture
 
   # ======================================================
   # 🔄 Actions
@@ -348,23 +376,47 @@
           - "CONDUITE/RETOUR_ENGAGE"
 
     # ======================================================
-    # 🧭 Mémoire — marquer un passage par la chaîne de retour
+    # 🧭 Mémoire — écrivain UNIQUE de aspirateur_retour_observe
     # ------------------------------------------------------
     # ASP-INV-101 (15 §5.3, C53) : la clôture hors base exige de savoir
     # si `returning_home`/`docking` a été observé DEPUIS L'OUVERTURE de
     # la mission courante. Ce pas est INDÉPENDANT du `choose` de verdict
-    # ci-dessous — il pose la mémoire SANS jamais écrire le verdict ni
-    # arrêter la séquence — pour que la branche de clôture qui la
-    # CONSOMME reste un candidat normal de ce `choose` unique (une seule
-    # branche de verdict écrite par exécution).
+    # plus bas — il pose/remet à zéro la mémoire SANS jamais écrire le
+    # verdict ni arrêter la séquence — pour que la branche de clôture
+    # qui la CONSOMME reste un candidat normal de ce `choose` unique
+    # (une seule branche de verdict écrite par exécution).
     #
-    # Condition sur l'ÉTAT COURANT, pas sur le déclencheur : couvre à la
-    # fois l'observation en direct et la réconciliation au redémarrage
-    # (un redémarrage survenant PENDANT un retour en cours reste ainsi
-    # mémorisé, sans qu'aucune transition ne soit inventée — c'est une
-    # lecture de l'état présent, pas une reconstitution du passé).
+    # DEUX branches, sur les DEUX transitions disjointes de la mémoire —
+    # toutes deux tenues par CETTE seule automation (audit indépendant
+    # du 2026-09-15 : un partage à deux écrivains, moteur+supervision, a
+    # été corrigé avant merge de la PR #843) :
+    #   1. OUVERTURE — le déclencheur `id: ouverture` (ci-dessus) fait
+    #      foi À LUI SEUL : remise à zéro INCONDITIONNELLE, sans lire
+    #      l'état courant. Garantie POSITIVE et FERMÉE (« toute mission
+    #      qui s'ouvre démarre mémoire propre »), qui ferme par
+    #      construction le cas des clôtures propres au script de
+    #      conduite (W2 : trois valeurs terminales que les six branches
+    #      de clôture de CETTE automation ne couvrent pas) — la mission
+    #      SUIVANTE reçoit toujours ce reset à son ouverture, quel
+    #      qu'ait été le chemin de fermeture de la précédente ;
+    #   2. RETOUR OBSERVÉ — condition sur l'ÉTAT COURANT, pas sur le
+    #      déclencheur : couvre à la fois l'observation en direct et la
+    #      réconciliation au redémarrage (un redémarrage survenant
+    #      PENDANT un retour en cours reste ainsi mémorisé, sans
+    #      qu'aucune transition ne soit inventée — c'est une lecture de
+    #      l'état présent, pas une reconstitution du passé).
+    # Les six clôtures, plus bas, portent la TROISIÈME transition (reset
+    # à la clôture) — même écrivain, même fichier.
     # ======================================================
     - choose:
+        - conditions:
+            - condition: trigger
+              id: ouverture
+          sequence:
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.aspirateur_retour_observe
+
         - conditions:
             - condition: template
               value_template: >-
