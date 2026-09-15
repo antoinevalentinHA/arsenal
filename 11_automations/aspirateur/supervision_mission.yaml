@@ -28,16 +28,31 @@
 #   l'écrivain unique vers l'appareil reste le couple moteur/conduite.
 #
 # ----------------------------------------------------------
-# ✍️ CE QU'ELLE ÉCRIT — CINQ VALEURS, ET CINQ SEULEMENT
+# ✍️ CE QU'ELLE ÉCRIT — SIX VALEURS, ET SIX SEULEMENT
 #   input_text.aspirateur_mission_verdict, sur l'ensemble EXACT :
 #     ECHEC/MISSION_INTERROMPUE      ECHEC/ERREUR_EN_MISSION
 #     CLOTURE/FIN_NOMINALE           CLOTURE/APRES_RETOUR_CONFIRME
-#     CLOTURE/ISSUE_OPAQUE_APRES_REDEMARRAGE
+#     CLOTURE/FIN_NOMINALE_HORS_BASE CLOTURE/ISSUE_OPAQUE_APRES_REDEMARRAGE
 #   Les DEUX premières sont des codes du catalogue (09 §3), conservés
-#   TELS QUELS (D-11). Les trois autres sont des valeurs de cycle de vie
+#   TELS QUELS (D-11). Les quatre autres sont des valeurs de cycle de vie
 #   et n'entrent dans aucun catalogue (ASP-INV-70).
-#   Les cinq sont de classe TERMINALE : cette automation ne rouvre
+#   Les six sont de classe TERMINALE : cette automation ne rouvre
 #   jamais une mission, et n'écrit aucune valeur de classe O.
+#
+#   AMENDEMENT C53 (2026-09-15, ASP-INV-101) — `CLOTURE/FIN_NOMINALE_HORS_BASE`
+#   qualifie une mission qui se termine normalement sur une carte SANS
+#   dock accessible (`dock_accessible: false`, 02 §2.2) : le robot tente
+#   un retour automatique qui ne peut aboutir, faute de base sur cette
+#   carte, et se pose en `idle`. Distinguée de `ECHEC/MISSION_INTERROMPUE`
+#   par la SEULE différence observée sur le terrain (2026-09-15) : un
+#   passage par `returning_home`/`docking` DEPUIS L'OUVERTURE de la
+#   mission — mémorisé par `input_boolean.aspirateur_retour_observe`,
+#   posé ET remis à zéro à la clôture par cette automation, et remis à
+#   zéro à l'OUVERTURE par le moteur (voir le fichier du helper pour le
+#   partage exact des deux écrivains). La branche d'erreur reste STRICTEMENT prioritaire
+#   (réserve batterie, `QO-7` : rien ne prouve qu'un retour pour charge
+#   se signale, mais s'il se signale, il est intercepté avant d'atteindre
+#   cette clôture).
 #
 # ----------------------------------------------------------
 # 🚪 PORTE D'ENTRÉE — LE VERDICT, ET LUI SEUL (ASP-INV-87)
@@ -141,7 +156,11 @@
 # ----------------------------------------------------------
 # 🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #   - Aucune commande robot : aucun appel `vacuum.*` / `roborock.*`
-#   - Aucune pression de bouton, aucune remise à zéro
+#   - Aucune pression de bouton, aucune remise à zéro de l'INTENTION —
+#     seule la mémoire interne `aspirateur_retour_observe` (ASP-INV-101)
+#     est posée et remise à zéro ici, à la clôture (le moteur la remet
+#     aussi à zéro, séparément, à l'ouverture — voir le fichier du
+#     helper)
 #   - Aucune valeur de classe O : elle ne rouvre ni ne prolonge rien
 #   - Aucune valeur du moteur ni du script de conduite
 #   - Aucune notification persistante : la projection de cycle est un
@@ -152,7 +171,7 @@
 #     inobservable se clôt de façon OPAQUE (ASP-INV-94, D-R1)
 #
 # ----------------------------------------------------------
-# 🎯 DEUX RÈGLES POSITIVES ET FERMÉES (15 §5)
+# 🎯 TROIS RÈGLES POSITIVES ET FERMÉES (15 §5, §5.3)
 #   L'AMARRAGE se prouve, il ne se déduit pas d'une absence :
 #     `vacuum` == `docked`  OU  état machine == `charging`.
 #   `docking` N'EN FAIT PAS PARTIE : le contrat le classe en état de
@@ -167,6 +186,12 @@
 #   parfaitement nominale, observée au terrain — et produisait alors un
 #   verdict terminal FAUX, une projection éteinte, une supervision
 #   désarmée et une notification mobile mensongère.
+#
+#   LA CLÔTURE HORS BASE (ASP-INV-101, C53) se prouve elle aussi
+#   POSITIVEMENT : `idle` ET un passage par `returning_home`/`docking`
+#   RÉELLEMENT OBSERVÉ depuis l'ouverture — jamais déduite de l'absence
+#   d'amarrage seule, qui ne distinguerait pas une fin normale d'une
+#   interruption réelle (les deux terminent en `idle`).
 #
 #   TOUT AUTRE ÉTAT DE CLASSE N RESTE INDÉTERMINÉ, et n'écrit rien. La
 #   partition R/A/E/N du contrat 07 §5.0 est INCHANGÉE : ce fichier ne
@@ -266,6 +291,43 @@
         # Le SEUL état attesté de cessation. La règle est POSITIVE et
         # FERMÉE : hors de lui, aucune cessation n'est établie.
         arret_atteste: "idle"
+        # Amendement C53 (ASP-INV-99, ASP-INV-101) — copie littérale de
+        # 02 §2.2 : même discipline de duplication que `classe_a`/`retour`
+        # ci-dessus, trois écrivains du domaine ne lisent pas un fichier
+        # Markdown.
+        dock_accessible: {"0": true, "1": false, "2": false}
+        # Carte de LA MISSION OUVERTE — une PROPRIÉTÉ DE SESSION, immuable
+        # pour toute la durée d'une mission : le moteur ne peut pas
+        # s'exécuter tant qu'une mission est ouverte (garde d'étape 0a,
+        # ASP-INV-87), donc la trace qu'il écrit juste avant l'émission
+        # (08 §5) reste stable de bout en bout. C'est elle, et non un
+        # témoin natif MUTABLE (le sélecteur de carte peut en principe
+        # changer en cours de mission), qui fait autorité. Lecture
+        # NOMINATIVE, ouverte à ce seul fichier (ASP-CI-11, ASP-INV-101) —
+        # jamais une écriture, qui reste réservée au moteur seul.
+        # Illisible, absente ou mal formée : chaîne vide, qui ne
+        # correspond à AUCUNE clé de `dock_accessible` — le
+        # `.get(..., true)` de la branche de clôture refuse alors PAR
+        # DÉFAUT (aucune clôture nominale sur une donnée ambiguë).
+        #
+        # ⚠️ CE SCALAIRE EST RETYPÉ PAR HOME ASSISTANT — même piège que
+        # `ctx_carte` dans le moteur (`lancer_mission.yaml`, étape 2).
+        # `Template.async_render(parse_result=True)` reconvertit un rendu
+        # qui RESSEMBLE À UN NOMBRE — "0", "1" ou "2" — en ENTIER Python.
+        # La lecture ci-dessous ne se protège donc PAS en rendant un bloc
+        # (rien ici n'a besoin d'un espace finale à préserver) : c'est la
+        # CONSOMMATION, plus bas, qui neutralise la reconversion via
+        # `| string` avant l'appel à `dock_accessible.get(...)` — sans
+        # ce filtre, la clé cherchée serait l'ENTIER `1`, absente d'un
+        # dictionnaire aux clés TEXTE, et `.get()` échouerait TOUJOURS en
+        # silence vers `true` (dock accessible), quelle que soit la carte
+        # réelle. Prouvé par le selftest (C53).
+        carte_mission: >-
+          {% set trace = states('input_text.aspirateur_derniere_intention_lancee') %}
+          {% set premier = trace.split('|')[0] %}
+          {{ premier.split('=')[1]
+             if (premier.startswith('carte=') and '=' in premier)
+             else '' }}
         # Classe O + O-R — la porte d'entrée (15 §2).
         verdict_ouvert:
           - "LANCEE/DEMARRAGE_OBSERVE"
@@ -284,6 +346,35 @@
           - "CONDUITE/REPRISE_ENGAGEE"
           - "CONDUITE/ARRET_ENGAGE"
           - "CONDUITE/RETOUR_ENGAGE"
+
+    # ======================================================
+    # 🧭 Mémoire — marquer un passage par la chaîne de retour
+    # ------------------------------------------------------
+    # ASP-INV-101 (15 §5.3, C53) : la clôture hors base exige de savoir
+    # si `returning_home`/`docking` a été observé DEPUIS L'OUVERTURE de
+    # la mission courante. Ce pas est INDÉPENDANT du `choose` de verdict
+    # ci-dessous — il pose la mémoire SANS jamais écrire le verdict ni
+    # arrêter la séquence — pour que la branche de clôture qui la
+    # CONSOMME reste un candidat normal de ce `choose` unique (une seule
+    # branche de verdict écrite par exécution).
+    #
+    # Condition sur l'ÉTAT COURANT, pas sur le déclencheur : couvre à la
+    # fois l'observation en direct et la réconciliation au redémarrage
+    # (un redémarrage survenant PENDANT un retour en cours reste ainsi
+    # mémorisé, sans qu'aucune transition ne soit inventée — c'est une
+    # lecture de l'état présent, pas une reconstitution du passé).
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ verdict in verdict_ouvert
+                   and etat in retour
+                   and not is_state('input_boolean.aspirateur_retour_observe', 'on') }}
+          sequence:
+            - action: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.aspirateur_retour_observe
 
     - choose:
 
@@ -319,6 +410,9 @@
                 entity_id: input_text.aspirateur_mission_verdict
               data:
                 value: "CLOTURE/ISSUE_OPAQUE_APRES_REDEMARRAGE"
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.aspirateur_retour_observe
 
         ####################################################
         # 🏠 AMARRAGE APRÈS UN RETOUR ORDONNÉ PAR ARSENAL
@@ -340,6 +434,9 @@
                 entity_id: input_text.aspirateur_mission_verdict
               data:
                 value: "CLOTURE/APRES_RETOUR_CONFIRME"
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.aspirateur_retour_observe
 
         ####################################################
         # ✅ AMARRAGE SANS RETOUR ORDONNÉ — fin nominale
@@ -361,6 +458,9 @@
                 entity_id: input_text.aspirateur_mission_verdict
               data:
                 value: "CLOTURE/FIN_NOMINALE"
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.aspirateur_retour_observe
 
         ####################################################
         # 🚨 ERREUR ROBOT OU DOCK, PENDANT UNE MISSION
@@ -392,6 +492,9 @@
                 entity_id: input_text.aspirateur_mission_verdict
               data:
                 value: "ECHEC/ERREUR_EN_MISSION"
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.aspirateur_retour_observe
 
             - action: script.notification_envoyer_avance
               data:
@@ -400,6 +503,47 @@
                 message: >-
                   Une erreur du robot ou du dock est survenue pendant la
                   mission. Traitez l'erreur sur l'appareil.
+
+        ####################################################
+        # 🧭 CLÔTURE NOMINALE HORS BASE — ASP-INV-101, C53
+        #
+        # Sur une carte sans dock accessible, une fin de cycle réussie
+        # tente un retour automatique qui ne peut aboutir. Distinguée de
+        # l'interruption réelle par la SEULE différence observée sur le
+        # terrain (2026-09-15) : un passage par `returning_home`/`docking`
+        # DEPUIS L'OUVERTURE de cette mission (mémoire posée ci-dessus).
+        #
+        # PRIORITÉ : évaluée APRÈS la branche d'erreur qui précède —
+        # jamais avant. Une erreur robot ou dock, même concomitante d'un
+        # retour, reste `ECHEC/ERREUR_EN_MISSION` (réserve batterie,
+        # QO-7 : si un retour pour charge peuple un jour `err_vac`, la
+        # branche d'erreur l'aura déjà intercepté plus haut, et celle-ci
+        # ne sera jamais atteinte pour ce cas).
+        ####################################################
+        - conditions:
+            - condition: trigger
+              id: observation
+            - condition: template
+              value_template: "{{ verdict in verdict_ouvert }}"
+            - condition: template
+              value_template: "{{ verdict not in engagements }}"
+            - condition: template
+              value_template: "{{ etat == arret_atteste }}"
+            - condition: template
+              value_template: >-
+                {{ is_state('input_boolean.aspirateur_retour_observe', 'on') }}
+            - condition: template
+              value_template: >-
+                {{ not dock_accessible.get(carte_mission | string, true) }}
+          sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.aspirateur_mission_verdict
+              data:
+                value: "CLOTURE/FIN_NOMINALE_HORS_BASE"
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.aspirateur_retour_observe
 
         ####################################################
         # ⛔ INTERRUPTION HORS GESTE OPÉRATEUR
@@ -430,6 +574,9 @@
                 entity_id: input_text.aspirateur_mission_verdict
               data:
                 value: "ECHEC/MISSION_INTERROMPUE"
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.aspirateur_retour_observe
 
             - action: script.notification_envoyer_avance
               data:

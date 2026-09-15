@@ -1,0 +1,93 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN : Aspirateur — retour observé depuis l'ouverture
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Mémoire de mission exigée par `ASP-INV-101` (15 §5.3, chantier
+#    C53) : savoir, au moment où l'état machine atteint `idle`, si
+#    `returning_home` ou `docking` a été observé DEPUIS L'OUVERTURE
+#    de la mission Arsenal en cours. Sans cette mémoire, W3 ne peut
+#    pas distinguer une fin de cycle normale hors dock (retour tenté
+#    puis `idle`) d'une interruption réelle (`idle` direct, sans
+#    tentative de retour) — les deux terrain du 2026-09-15.
+#    Contrat : 00_documentation_arsenal/contrats/aspirateur/
+#              15_conduite_et_supervision.md §5, §5.3 (ASP-INV-101)
+#    Chantier : 00_documentation_arsenal/audits/04_chantiers/aspirateur/
+#              c53_lancement_cloture_carte_sans_dock.md
+#
+# 🔎 AVANT DE CRÉER CE HELPER — vérifié, aucun support existant
+#    Aucune entité déjà exposée par le domaine ne porte cette
+#    information : `binary_sensor.roborock_q7_max_nettoyage` est un
+#    témoin de SESSION INACHEVÉE, désaligné du mouvement dans les
+#    deux sens (ASP-INV-47) — jamais une preuve qu'un retour a été
+#    engagé. La trace de la dernière intention lancée porte la CARTE
+#    de la mission (lue par `W3` pour `dock_accessible`, pas pour
+#    cette mémoire). Aucune autre entité du domaine ne trace un
+#    passage d'état depuis l'ouverture. Un nouveau helper est donc
+#    nécessaire.
+#
+# ✍️ DEUX ÉCRIVAINS, CHACUN SUR UNE TRANSITION DISJOINTE
+#    Ni le verdict ni sa discipline (`ASP-INV-86`, trois écrivains
+#    disjoints) ne s'appliquent à ce helper AUXILIAIRE — mais le MÊME
+#    principe (un écrivain par transition, jamais deux qui pourraient
+#    se contredire) est repris :
+#      - `aspirateur_lancer_mission` (W1, moteur) est le SEUL à
+#        REMETTRE À ZÉRO À L'OUVERTURE — action inconditionnelle,
+#        posée au moment même où `LANCEE/DEMARRAGE_OBSERVE` est écrit
+#        (étape 13). C'est une garantie POSITIVE : toute mission qui
+#        s'ouvre démarre avec une mémoire propre, quelle qu'ait été la
+#        manière dont la mission PRÉCÉDENTE s'est refermée ;
+#      - `aspirateur_supervision_mission` (W3) POSE la mémoire à `on`
+#        quand `sensor.roborock_q7_max_etat` transite vers
+#        `returning_home`/`docking` pendant une mission ouverte, ET la
+#        REMET à `off` dans chacune de ses six branches de clôture
+#        (défense en profondeur — redondant avec la remise à zéro de
+#        W1 sur le cas nominal, mais garde la mémoire propre aussi
+#        pendant la fenêtre morte entre deux missions).
+#    Aucun autre fichier n'y écrit : ni le script de conduite (W2), ni
+#    aucune UI.
+#
+# 🔁 CE QUE LA REMISE À ZÉRO À L'OUVERTURE CORRIGE
+#    Une version antérieure de ce helper ne remettait la mémoire à
+#    zéro QUE dans les six branches de clôture de W3. Analyse (2026-09-15,
+#    C53) : le script de conduite (W2) possède SES PROPRES clôtures
+#    terminales (`CLOTURE/APRES_ARRET_CONFIRME`,
+#    `CLOTURE/APRES_ARRET_NON_CONFIRME`, `CLOTURE/APRES_RETOUR_NON_CONFIRME`)
+#    qu'aucune des six branches de W3 ne couvre : une mission refermée
+#    par W2 alors que la mémoire valait `on` (par exemple un retour
+#    naturel en cours au moment d'un arrêt opérateur) l'aurait laissée
+#    `on` pour la mission SUIVANTE. La remise à zéro à l'ouverture,
+#    inconditionnelle et positive, ferme ce cas SANS avoir à énumérer
+#    tous les chemins de fermeture possibles de la mission précédente —
+#    exactement la discipline déjà en vigueur ailleurs dans ce domaine
+#    (préférer une règle positive et fermée à une négation qui doit
+#    rester exhaustive, ASP-INV-64/93).
+#
+# 🚫 AUCUN `initial:` — et ce que cela NE garantit PAS seul
+#    `input_boolean` est une `RestoreEntity` : sans `initial:`, l'état
+#    est `off` à la toute PREMIÈRE création, mais un redémarrage
+#    RESTAURE la dernière valeur connue — qui peut être `on` si Home
+#    Assistant s'arrête pendant une mission dont le retour est en
+#    cours. Ce n'est PAS un problème : la mission concernée reste la
+#    MÊME après redémarrage (elle n'a pas été refermée), et
+#    `retour_observe = on` y reste une information VRAIE. La garantie
+#    de non-contamination ne vient donc PAS de l'absence de
+#    `initial:` — elle vient de la remise à zéro à l'ouverture
+#    ci-dessus, qui s'applique à la PROCHAINE mission, quel que soit
+#    l'état hérité.
+#
+# 🧩 PÉRIMÈTRE
+#    - Écrit par exactement deux fichiers, sur deux transitions
+#      disjointes (ci-dessus) ; lu seulement par `W3`
+#    - Ne commande RIEN, ne déclenche AUCUNE action sur l'appareil
+#    - Ne porte AUCUNE portion du verdict de mission (ASP-INV-70,
+#      ASP-INV-86) : c'est une mémoire AUXILIAIRE, pas un verdict
+#    - Ne remplace AUCUN témoin natif : il ne fait qu'ENREGISTRER
+#      qu'un état natif est apparu, jamais ne le réinterprète
+#
+# 🏷️ Statut :
+#    Mémoire de mission — domaine aspirateur, lot runtime C53
+# ==========================================================
+
+aspirateur_retour_observe:
+  name: "Aspirateur — Retour observé depuis l'ouverture"
+  icon: mdi:map-marker-path

@@ -251,6 +251,11 @@ aspirateur_lancer_mission:
           "0":
             option: "RDC"
             noms: ["Salon", "Entrée", "WC RDC", "Cage d'escaliers"]
+            # `dock_accessible` (ASP-INV-99, 02 §2.2) : propriété métier du
+            # référentiel, jamais déduite d'une comparaison de carte. Lue
+            # UNIQUEMENT par l'étape 4/11 (ASP-INV-100) pour l'admissibilité
+            # conditionnelle de `idle` — aucun autre usage.
+            dock_accessible: true
             segments:
               "0_16": {index: 16}
               "0_18": {index: 18}
@@ -261,6 +266,7 @@ aspirateur_lancer_mission:
             noms: ["Palier", "Chambre Parents", "Chambre Enfants",
                    "Salle de Jeux", "Dressing", "SDB Parents",
                    "WC Étage", "SDB Enfants"]
+            dock_accessible: false
             segments:
               "1_16": {index: 16}
               "1_17": {index: 17}
@@ -273,6 +279,7 @@ aspirateur_lancer_mission:
           "2":
             option: "Annexe"
             noms: ["Salle de bain", "Chambre"]
+            dock_accessible: false
             segments:
               "2_16": {index: 16}
               "2_19": {index: 19}
@@ -597,9 +604,21 @@ aspirateur_lancer_mission:
               data:
                 value: "REFUS/ROBOT_INDISPONIBLE"
             - stop: "Refus : robot injoignable ou etat illisible"
+        # Amendement C53 (ASP-INV-100, 07 §5.0 bis) : `idle` N'EST PAS
+        # reclasse — il reste, sans exception, un exemple de la classe N.
+        # Seul l'EFFET du refus devient conditionnel : leve UNIQUEMENT pour
+        # `idle`, et UNIQUEMENT lorsque la carte DEMANDEE (ctx_carte, deja
+        # resolue a l'etape 2) porte `dock_accessible: false` (02 §2.2,
+        # ASP-INV-99). Pour le RDC (`dock_accessible: true`), la condition
+        # ci-dessous est inchangee et `idle` refuse exactement comme avant.
+        # Aucun autre etat n'est concerne : un `idle` sur une carte a dock
+        # accessible refuse toujours, et toute autre valeur de classe N
+        # refuse dans tous les cas.
         - conditions:
             - condition: template
-              value_template: "{{ g1_etat not in classe_r }}"
+              value_template: >-
+                {{ g1_etat not in classe_r
+                   and not (g1_etat == 'idle' and not ctx_carte.dock_accessible) }}
           sequence:
             - action: input_text.set_value
               target:
@@ -1082,9 +1101,14 @@ aspirateur_lancer_mission:
               data:
                 value: "REFUS/ROBOT_INDISPONIBLE"
             - stop: "Refus tardif : robot injoignable ou etat illisible"
+        # Amendement C53 (ASP-INV-100) : meme exception qu'a l'etape 4, sur
+        # la relecture tardive. `idle` reste classe N ; seul l'effet du
+        # refus est leve, dans les memes conditions exactes.
         - conditions:
             - condition: template
-              value_template: "{{ g2_etat not in classe_r }}"
+              value_template: >-
+                {{ g2_etat not in classe_r
+                   and not (g2_etat == 'idle' and not ctx_carte.dock_accessible) }}
           sequence:
             - action: input_text.set_value
               target:
@@ -1233,6 +1257,22 @@ aspirateur_lancer_mission:
                 entity_id: input_text.aspirateur_mission_verdict
               data:
                 value: "LANCEE/DEMARRAGE_OBSERVE"
+            # Amendement C53 (ASP-INV-101) — remise a zero INCONDITIONNELLE
+            # de la memoire de retour, exactement au moment ou une mission
+            # est confirmee OUVERTE. C'est une garantie POSITIVE et FERMEE
+            # (« toute mission qui s'ouvre demarre memoire propre »), pas
+            # une enumeration des chemins de cloture de la mission
+            # PRECEDENTE : celle-ci peut avoir ete refermee par W2 (trois
+            # clotures propres, hors de la portee de W3) aussi bien que par
+            # W3, et l'etape 0a garantit qu'aucune mission ne s'ouvre tant
+            # que la precedente ne l'est pas — ce point est donc le SEUL
+            # necessaire pour prouver qu'aucun residu ne contamine jamais
+            # la mission qui commence ici. Complement des remises a zero
+            # de W3 a la cloture (defense en profondeur), jamais un
+            # substitut : les deux gardent leur utilite propre.
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.aspirateur_retour_observe
       default:
         - action: input_text.set_value
           target:

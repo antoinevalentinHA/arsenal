@@ -88,6 +88,11 @@
 #   verrou est donc levé PAR LE LOT QUI FOURNIT L'AUTORITÉ MANQUANTE,
 #   sous revue, et pas autrement.
 #
+#   AMENDEMENT C53 (2026-09-15, ASP-INV-101) — la classe terminale
+#   compte désormais NEUF valeurs : `CLOTURE/FIN_NOMINALE_HORS_BASE`
+#   s'ajoute aux cinq de la supervision, pour une mission close sur une
+#   carte sans dock accessible.
+#
 # ----------------------------------------------------------
 # ⚙️ DÉCLENCHEURS — DEUX, ET DEUX SEULEMENT
 #   • input_text.aspirateur_mission_verdict — TOUT changement. La
@@ -238,16 +243,18 @@
           "CONDUITE/REPRISE_NON_CONFIRMEE": "Reprise non confirmée : la mission reste ouverte."
           "CONDUITE/ARRET_ENGAGE": "Arrêt demandé, en attente de confirmation."
           "CONDUITE/RETOUR_ENGAGE": "Retour à la base en cours."
-        # Classe T — les huit issues terminales. « Sans exception » :
-        # les deux clôtures confirmées, les deux non confirmées, les
-        # deux échecs de supervision, la fin nominale et la clôture
-        # opaque de redémarrage (08_NOTIFICATIONS §3).
+        # Classe T — les NEUF issues terminales depuis le lot C53
+        # (ASP-INV-101) : les deux clôtures confirmées, les deux non
+        # confirmées, les deux échecs de supervision, la fin nominale,
+        # la fin nominale hors base et la clôture opaque de redémarrage
+        # (08_NOTIFICATIONS §3).
         verdict_terminal:
           - "CLOTURE/APRES_ARRET_CONFIRME"
           - "CLOTURE/APRES_ARRET_NON_CONFIRME"
           - "CLOTURE/APRES_RETOUR_CONFIRME"
           - "CLOTURE/APRES_RETOUR_NON_CONFIRME"
           - "CLOTURE/FIN_NOMINALE"
+          - "CLOTURE/FIN_NOMINALE_HORS_BASE"
           - "CLOTURE/ISSUE_OPAQUE_APRES_REDEMARRAGE"
           - "ECHEC/MISSION_INTERROMPUE"
           - "ECHEC/ERREUR_EN_MISSION"
