@@ -1,0 +1,56 @@
+name: Arsenal PR — Contrat de déploiement
+
+# Contrôle ÉTROIT : vérifie uniquement que la section « ## Déploiement » du
+# corps de la PR respecte le contrat structurel défini par
+# .github/pull_request_template.md (DEP-001..DEP-006 — cf.
+# scripts/ci/check_pr_deployment_contract.py). Ne juge jamais la pertinence
+# technique du plan de déploiement déclaré — CI est une frontière, pas un
+# oracle (jugement humain en revue de PR).
+#
+# Déclencheurs : le corps de la PR peut changer SANS nouveau commit (édition
+# de description) — les types par défaut de `pull_request` (opened,
+# synchronize, reopened) ne couvrent pas ce cas, d'où l'ajout explicite
+# d'`edited`. `synchronize` est conservé pour que le check reste rattaché au
+# dernier commit (cohérence avec le reste de la CI, cf. audit CI 2026-08-09).
+# Événement `push` volontairement absent : sans PR, il n'existe aucun corps
+# de PR à vérifier.
+#
+# Orchestrateur (n'appelle aucun scripts/arsenal_contracts/check_*.py) — cf.
+# 00_documentation_arsenal/audits/REGISTRE_COUVERTURE_VERIFICATION.md §3.
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+# Annule les runs obsoletes d'une branche ; ne coupe jamais main (audit CI, P2).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  deployment-contract:
+    name: Contrat de déploiement (DEP-001..DEP-006)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Auto-test du juge (on ne juge pas avec un juge défectueux).
+      - name: Auto-test du checker
+        run: python3 scripts/ci/check_pr_deployment_contract.py --selftest
+
+      # Le corps de la PR est passé par variable d'environnement, JAMAIS
+      # interpolé dans un `run:` shell — le corps est fourni par l'auteur de
+      # la PR et donc non fiable (injection de script GitHub Actions).
+      - name: Contrat de déploiement de la PR
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: python3 scripts/ci/check_pr_deployment_contract.py
