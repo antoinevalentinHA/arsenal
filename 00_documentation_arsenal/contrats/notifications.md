@@ -490,31 +490,20 @@ Elle vise à garantir :
 
 ---
 
-### 🏷️ Titre — Format imposé
+### 🏷️ Titre — Principe de forme
 
-Toute notification Arsenal **doit** posséder un titre conforme au format suivant :
+Toute notification Arsenal **doit** posséder un titre lisible immédiatement,
+identifiant son domaine. Règles obligatoires :
 
-> **<emoji> <Domaine> – <État ou situation>**
-
-Pour les notifications persistantes, cette règle s’applique
-obligatoirement à chaque appel `persistent_notification.create`.
-
-Règles obligatoires :
-
-- le titre commence **toujours par un emoji de domaine**,
-- l’emoji est placé en tout début de titre,
-- l’emoji est suivi d’un espace,
+- le titre commence **toujours par un emoji de domaine**, en tout début de
+  titre, suivi d’un espace,
 - l’emoji identifie le **domaine fonctionnel principal**,
 - le titre décrit un **état** ou une **situation**, jamais une action,
-- le séparateur canonique est : `–` (tiret demi-cadratin).
+- quand un séparateur est utilisé, c’est le tiret demi-cadratin `–` —
+  jamais le cadratin long `—`.
 
-Exemples normatifs :
-
-- `💨 Aération conseillée – RDC`  
-- `🔥 Chauffage – Mode Confort`  
-- `🚿 ECS – Bouclage actif`  
-- `🛡️ Alarme – Mode Visite`  
-- `🔋 Énergie – Batterie faible`  
+Pour les notifications persistantes, ces règles s’appliquent
+obligatoirement à chaque appel `persistent_notification.create`.
 
 Sont interdits dans le titre :
 
@@ -524,6 +513,34 @@ Sont interdits dans le titre :
 - formulations événementielles.
 
 👉 Le titre **désigne un état**, jamais un fait passé.
+
+**Le séparateur `–` n’est pas un gabarit imposé à tous les titres.** Le
+patron `<emoji> <Domaine> – <État>` reste un bon défaut quand domaine et
+état gagnent à être distingués, mais un titre nominal court et déjà
+univoque est tout aussi conforme — le choix relève de la lisibilité, pas
+d’une contrainte mécanique :
+
+- avec séparateur, parce que domaine et état apportent chacun une
+  information distincte : `🔥 Chauffage – Mode Confort`,
+  `🍽️ Lave-vaisselle – Cycle en cours` ;
+- sans séparateur, parce que le titre est déjà un état complet et lisible :
+  `🔒 Alarme activée`, `🔁 Bouclage ECS actif`, `👤 Présence Parent 2`.
+
+Ne pas forcer un séparateur qui n’apporterait aucune séparation sémantique
+réelle ; ne pas le supprimer là où il clarifie effectivement le titre.
+
+**Plusieurs notifications pour un même objet.** Lorsqu’un même équipement
+porte plusieurs notifications persistantes distinctes par leur fonction, le
+titre différencie la fonction plutôt que de répéter un intitulé générique
+de l’objet — par exemple, pour un véhicule portant une notification de
+charge et une notification de climatisation :
+
+- `🔋 Audi A3 e-tron – Charge`
+- `❄️ Audi A3 e-tron – Climatisation`
+
+plutôt qu’un titre générique unique (`🚗 Voiture – Audi A3 e-tron`) répété
+pour deux fonctions différentes. Orientation retenue pour un futur lot
+runtime — non appliquée par la présente modification documentaire.
 
 ---
 
@@ -614,17 +631,95 @@ ni son identité.
 
 ---
 
+### 🔡 Ponctuation et forme du corps
+
+Le corps d’une notification se ponctue selon la nature du contenu, pas
+mécaniquement :
+
+- **Phrase ou proposition rédigée** (naturelle, ou compacte `Label :
+  valeur` constituant un énoncé complet) → **point final obligatoire**.
+  `État : activée.` · `Programme : Confort.` · `Mode maison : Vacances.` ·
+  `Parent 2 est présent.`
+- **Valeur dynamique brute, unité, pourcentage, ou liste jointe terminant
+  le message** → pas de point mécanique lorsqu’il n’a aucun rôle
+  syntaxique et dégrade la lecture d’une valeur.
+  `SOC : {{ states('sensor.bluetti_battery_soc') }} %` ·
+  `Postes dus : {{ state_attr('sensor.aspirateur_entretien_du', 'postes_dus') | join(', ') }}`
+- **Listes** — fragments nominaux courts : pas de point par item ; items
+  formés de phrases complètes : ponctuation normale de phrase.
+
+👉 Une phrase rédigée se ponctue toujours ; un affichage de donnée brute
+n’y est pas mécaniquement contraint. Un même message ne mélange pas une
+ligne rédigée pointée et des lignes de données sans logique explicite
+entre les deux conventions.
+
+### 🗣️ Vocabulaire d’état et de processus
+
+Le contrat n’impose **aucun mot unique** pour désigner un état actif :
+`actif`, `activé(e)`, `présent`, `allumé`, ou tout autre terme métier
+approprié sont conformes — le choix suit le vocabulaire naturel de l’objet
+décrit, pas une convention lexicale forcée.
+
+`en cours` est réservé en priorité aux **processus réellement continus** —
+charge, chauffage/refroidissement/déshumidification, lavage, mission
+aspirateur, ou tout autre déroulement temporel réel :
+
+`État : chauffage en cours.` · `État : refroidissement en cours.` ·
+`État : lavage en cours.`
+
+`en cours` n’est pas un synonyme universel de `actif` : un état stable sans
+déroulement propre reste désigné par le terme métier le plus naturel —
+`🔒 Alarme activée` / `État : activée.`, `🔁 Bouclage ECS actif` /
+`État : actif.`
+
+### 🗨️ Phrases naturelles
+
+Une phrase naturelle est autorisée, et préférable à la forme compacte
+`Label : valeur` lorsqu’elle est plus lisible pour l’objet décrit :
+
+`Parent 2 est présent.` · `L’éclairage du garage est allumé.`
+
+Il n’est pas nécessaire de reformuler ces messages en `État : présent.` ou
+`État : allumé.` pour obtenir une uniformité artificielle : la forme
+compacte et la phrase naturelle coexistent légitimement selon ce qui se lit
+le mieux pour l’objet décrit.
+
+### 🩺 Diagnostics — latitude de style
+
+Une notification de diagnostic ou d’anomalie peut être plus longue,
+multiligne, explicative et techniquement précise lorsque c’est utile à la
+décision humaine — une instruction ou une recommandation explicite y est
+autorisée dès qu’une action humaine est réellement attendue (cf.
+`🔋 Rain Bird – Batterie critique` ci-dessous). Le style diagnostic n’est
+pas contraint à la même concision qu’une simple projection d’état ; il
+reste cependant soumis à la frontière opérateur / mécanique interne
+ci-dessus — la technicité porte sur le fait observé, jamais sur
+l’architecture Arsenal.
+
+### 🖋️ Markdown et mise en valeur
+
+Une mise en valeur (gras, emphase) répond à un besoin réel de lisibilité —
+par exemple souligner le label d’une valeur (`**Postes dus :**`). Éviter
+les particularités de style isolées, propres à un seul domaine, sans
+justification UX transverse.
+
+---
+
 ### 🧾 Exemples normatifs
 
 **Notification persistante**
 
-| Titre | Corps |
-|---|---|
-| `🧰 Aspirateur – Entretien requis` | `Postes dus : Nettoyage des capteurs` |
-| `🔒 Alarme activée` | `État : activée.` |
-| `⚠️ Coupure secteur – Mode panne actif` | `Chauffage confort : neutralisé — régime réduit maintenu` |
+| Catégorie | Titre | Corps |
+|---|---|---|
+| État compact, titre avec demi-cadratin | `🔥 Chauffage – Mode Confort` | `Programme : Confort.` |
+| État compact, titre sans demi-cadratin (conforme) | `🔒 Alarme activée` | `État : activée.` |
+| Phrase naturelle, titre avec demi-cadratin | `💡 Simulation de présence – Garage` | `L’éclairage du garage est allumé.` |
+| Phrase naturelle, titre sans demi-cadratin | `👤 Présence Parent 2` | `Parent 2 est présent.` |
+| Processus en cours | `🍽️ Lave-vaisselle – Cycle en cours` | `État : lavage en cours.` |
+| Valeur dynamique brute | `⚡ Énergie chaudière – Bluetti actif` | `SOC : {{ states('sensor.bluetti_battery_soc') }} %` |
+| Liste | `🧰 Aspirateur – Entretien requis` | `Postes dus : {{ state_attr('sensor.aspirateur_entretien_du', 'postes_dus') \| join(', ') }}` |
 
-**Notification mobile**
+**Notification mobile — diagnostic / action requise**
 
 | Titre | Corps |
 |---|---|
