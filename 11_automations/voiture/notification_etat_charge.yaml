@@ -60,8 +60,8 @@
             - service: persistent_notification.create
               data:
                 notification_id: voiture_etat_charge
-                title: "🔋 Audi A3 e-tron"
-                message: "Charge en cours"
+                title: "🔋 Audi A3 e-tron – Charge"
+                message: "Charge en cours."
 
       default:
         - service: persistent_notification.dismiss

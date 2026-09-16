@@ -57,7 +57,7 @@
                 notification_id: energie_chaudiere_bluetti
                 title: "⚡ Énergie chaudière – Bluetti actif"
                 message: >
-                  Etat : {{ states('sensor.bluetti_sante_synthese') }}
+                  État : {{ states('sensor.bluetti_sante_synthese') }}
 
                   SOC : {{ states('sensor.bluetti_battery_soc') }} %
 
