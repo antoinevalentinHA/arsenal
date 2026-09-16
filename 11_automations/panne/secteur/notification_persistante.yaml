@@ -101,7 +101,7 @@
                 message: >
                   **Chauffage confort :** {{ 'activé (besoin thermique + présence + SOC)'
                   if is_state('input_boolean.mode_confort_chauffage', 'on')
-                  else 'neutralisé — régime réduit maintenu' }}
+                  else 'neutralisé — régime réduit maintenu' }}.
 
       # --------------------------------------------------
       # 🟩 Panne levée → disqualification
