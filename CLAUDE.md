@@ -12,15 +12,11 @@ la règle applicable.
 ## 0. L'état Git réel, jamais un résumé
 
 Ne jamais supposer l'état du dépôt depuis une mémoire de conversation ou un
-résumé. Le reconstruire depuis le terrain avant toute intervention :
-
-- branche courante, HEAD, propreté du working tree ;
-- remote(s) et écart avec `origin/<branche courante>` **et** `origin/main` —
-  un `main` local peut être périmé, ne jamais s'y fier seul ;
-- clone superficiel (`--depth`) : si c'est le cas, aller chercher l'historique
-  nécessaire avant de conclure quoi que ce soit sur des commits absents ;
-- worktrees actifs — un travail en cours ailleurs ne doit pas être ignoré ni
-  écrasé.
+résumé. Appliquer les vérifications déjà normées dans
+[`architecture/03_doctrines/git.md`](00_documentation_arsenal/architecture/03_doctrines/git.md)
+(§ « Vérifications avant toute intervention sur une branche ou un worktree »,
+§ « Sessions et travaux parallèles ») avant toute intervention — ne pas les
+reformuler ici.
 
 ## 1. Point d'entrée documentaire canonique
 
