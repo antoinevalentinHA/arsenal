@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Empêcher qu'une observation déclarée temporaire devienne permanente par inertie. Poser une **norme opposable** de sortie des microscopes Recorder, régulariser les 14 blocs existants, et requalifier en observabilité permanente les entités devenues nécessaires à la relecture d'une décision active. |
 | **Domaine** | Transverse — gouvernance de l'observabilité. Touche arrosage, climatisation, chauffage, éclairage. |
-| **Statut** | **Ouvert (2026-08-31) — lot documentaire D1/D2 livré.** Aucun retrait effectué ; aucune entité ajoutée ni retirée du Recorder. |
+| **Statut** | **Ouvert (2026-08-31) — lot documentaire D1/D2 livré.** **Premier retrait exécuté le 2026-09-18** : `input_datetime.arrosage_session_fin_prevue` (bloc B05) sorti du Recorder — cf. §3.6. Aucun autre ajout ni retrait. |
 | **Priorité** | **P2** — aucun risque fonctionnel ; enjeu de gouvernance et de tenue du contrat Recorder. |
 | **Ouvert le** | 2026-08-31. |
 | **Prochain jalon** | **2026-10-31** — première échéance opposable (arrosage exploratoire). |
@@ -86,9 +86,13 @@ Les sept `Ajouté : à confirmer` sont résolus.
 | Statut | Blocs / parts | Entités |
 |---|---|---|
 | **Observabilité permanente** | B02, B03, B04, B08, B09, parts permanentes de B01 · B05 · B06 · B07 | **41** |
-| **Microscope borné** | parts temporaires de B01 (3) · B05 (1) · B07 (1), B10, B11-B14 | **9** |
+| **Microscope borné** | parts temporaires de B01 (3) · B07 (1), B10, B11-B14 | **8** *(B05 retiré le 2026-09-18 — §3.6)* |
 
 Échéances opposables : **2026-10-31** · **2026-11-16** · **2027-02-07** · **2027-04-30**.
+
+### 3.6 Retrait B05 exécuté (2026-09-18)
+
+`input_datetime.arrosage_session_fin_prevue` sorti de `recorder.yaml`. Conforme à l'action de sortie du bloc (RETRAIT), exécuté avant l'échéance du 2026-10-31 : aucune preuve n'était en attente (valeur dérivable de `arrosage_session_debut` + `arrosage_session_duree_minutes`, toutes deux déjà historisées en observabilité permanente). Les 6 autres entités du bloc B05 (état, session en cours, verdict, début, fin observée, durée figée) restent en observabilité permanente — inchangé depuis le 2026-08-31 ([audit_arrosage_executions_longues_rain_bird.md §8](../../01_rapports/arrosage/audit_arrosage_executions_longues_rain_bird.md)). La valeur reste lue en direct par `11_automations/arrosage/session_fin_watchdog.yaml` ; seule l'historisation cesse.
 
 ### 3.5 Couplage C43 ↔ `jardin_humidite_sol_mediane`
 

@@ -516,19 +516,16 @@ include:
     - binary_sensor.arrosage_session_en_cours
     - sensor.arrosage_session_etat
     - input_datetime.arrosage_session_debut
-    #
-    # ⏳ MICROSCOPE — seule entité réellement exploratoire du bloc
-    # Ajouté       : 2026-07-05 (PR #277)
-    # Autorité     : audit exécutions longues §7-§8
-    # Preuve       : néant — la valeur est DÉRIVABLE exactement (début + durée figée),
-    #                toutes deux historisées ci-dessus.
-    # Échéance     : 2026-10-31 — opposable
-    # Sortie       : RETRAIT
-    # Dépassement  : réévaluation propriétaire obligatoire, aucune reconduction tacite.
-    - input_datetime.arrosage_session_fin_prevue
     - input_datetime.arrosage_session_fin_observee
     - input_number.arrosage_session_duree_minutes
     - input_text.arrosage_session_verdict
+    #
+    # 🔚 Ex-microscope retiré le 2026-09-18 (C44) : input_datetime.arrosage_session_fin_prevue.
+    #    Échéance opposable 2026-10-31 — retrait anticipé, décision propriétaire, aucune
+    #    preuve en attente (valeur dérivable de début + durée figée, toutes deux ci-dessus).
+    #    La valeur reste disponible en direct pour les automations/scripts qui la lisent
+    #    (`11_automations/arrosage/session_fin_watchdog.yaml` notamment) ; seule
+    #    l'historisation Recorder cesse. Cf. c44_gouvernance_sortie_microscopes.md §3.4.
 
     # =====================================================
     # ==== 💧 ARROSAGE — MODULATION DE DURÉE (INSTRUMENTATION TEMPORAIRE C11 P4) ====
