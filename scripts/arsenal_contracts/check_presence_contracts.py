@@ -14,10 +14,17 @@ Instrumente UNIQUEMENT des invariants déjà vrais (anti-régression) :
        au seul périmètre alarme runtime (définisseur exclu ; Lovelace NON autorisé
        dans cette première passe).
   R3 — Voies armement / désarmement alarme verrouillées.
+  R4 — Symétrie des contributeurs parent_1 / parent_2 dans l'agrégat brut
+       de sécurité (presence_famille_securite) : même construction
+       is_state(...), même présence dans la liste des trackers GPS.
+       Ancre le critère de clôture 4 de C33/L7 (requalifié sur symétrie de
+       code, faute d'occurrence naturelle observée sur les deux
+       contributeurs).
 
 Sources normatives citées :
   - 00_documentation_arsenal/contrats/alarme/30_decision_centrale.md
-  - 00_documentation_arsenal/contrats/presence.md
+  - 00_documentation_arsenal/contrats/presence.md (§ Symétrie des
+    contributeurs parent_1 / parent_2)
   - 00_documentation_arsenal/architecture/presence/presence.md
   - 00_documentation_arsenal/audits/02_constats/transverses/cadrage_dette_modelisation_presence.md
 
@@ -53,6 +60,9 @@ F_DEFINISSEUR_ABSENCE = REPO_ROOT / "12_template_sensors/alarme/presence_securit
 # Cœur décisionnel alarme (R3).
 F_DECISION    = REPO_ROOT / "10_scripts/alarme/decision_centrale.yaml"
 F_ARMEMENT    = REPO_ROOT / "12_template_sensors/alarme/armement_possible.yaml"
+
+# Définisseur de l'agrégat brut de sécurité (R4).
+F_PRESENCE_SECURITE = REPO_ROOT / "12_template_sensors/presence/securite/presence.yaml"
 
 # R1 — fichiers "vérité confort" qui ne doivent pas importer la sûreté/l'alarme.
 R1_FICHIERS_CONFORT = [
@@ -303,6 +313,43 @@ def test_r3_armement_lit_confirmee() -> None:
 
 
 # ---------------------------------------------------------------------------
+# R4 — Symétrie des contributeurs parent_1 / parent_2 (agrégat brut sécurité)
+# ---------------------------------------------------------------------------
+
+def test_r4_securite_symetrie_parents() -> None:
+    """R4 — presence_famille_securite (brut) traite parent_1 et parent_2 de
+    façon strictement symétrique : même construction is_state(..., 'Maison
+    securite'), même présence dans la liste des trackers GPS. Contrat :
+    00_documentation_arsenal/contrats/presence.md
+    (§ Symétrie des contributeurs parent_1 / parent_2).
+    Scope : 12_template_sensors/presence/securite/presence.yaml
+    """
+    content = read(F_PRESENCE_SECURITE)
+    if not content:
+        ERRORS.append(f"R4 — fichier introuvable : {rel(F_PRESENCE_SECURITE)}")
+        return
+
+    REQUIRED = [
+        (r"is_state\(\s*['\"]person\.parent_1['\"]\s*,\s*['\"]Maison securite['\"]\s*\)",
+         "is_state('person.parent_1', 'Maison securite')"),
+        (r"is_state\(\s*['\"]person\.parent_2['\"]\s*,\s*['\"]Maison securite['\"]\s*\)",
+         "is_state('person.parent_2', 'Maison securite')"),
+        (r"input_text\.telephone_parent_1_tracker", "input_text.telephone_parent_1_tracker"),
+        (r"input_text\.telephone_parent_2_tracker", "input_text.telephone_parent_2_tracker"),
+    ]
+    ok_flag = True
+    for pattern, label in REQUIRED:
+        if not re.search(pattern, content):
+            ERRORS.append(
+                f"R4 — {rel(F_PRESENCE_SECURITE)} ne référence pas {label} "
+                f"(symétrie parent_1/parent_2 rompue)"
+            )
+            ok_flag = False
+    if ok_flag:
+        print("✔ R4 — presence_famille_securite traite parent_1 et parent_2 de façon symétrique")
+
+
+# ---------------------------------------------------------------------------
 # Auto-tests internes (cas négatifs / faux positifs) — synthétiques, en mémoire.
 # N'écrivent aucun fichier. Échec => sortie 2 (régression du checker lui-même).
 # ---------------------------------------------------------------------------
@@ -337,6 +384,32 @@ def _selftest() -> int:
     decl = "    unique_id: presence_famille_securite_confirmee_alarme"
     expect(not references_entity(decl, ENT_CONFIRMEE, skip_decl=True), "fp-declaration-skip")
 
+    # R4 — positif : les deux constructions symétriques présentes -> détectées
+    r4_ok = (
+        "or is_state('person.parent_1', 'Maison securite')\n"
+        "  or is_state('person.parent_2', 'Maison securite')\n"
+        "  {% set trackers = [states('input_text.telephone_parent_1_tracker'),"
+        " states('input_text.telephone_parent_2_tracker')] %}"
+    )
+    expect(
+        all(re.search(p, r4_ok) for p, _ in [
+            (r"is_state\(\s*['\"]person\.parent_1['\"]\s*,\s*['\"]Maison securite['\"]\s*\)", ""),
+            (r"is_state\(\s*['\"]person\.parent_2['\"]\s*,\s*['\"]Maison securite['\"]\s*\)", ""),
+            (r"input_text\.telephone_parent_1_tracker", ""),
+            (r"input_text\.telephone_parent_2_tracker", ""),
+        ]),
+        "r4-symetrie-detectee",
+    )
+    # R4 — négatif : parent_2 manquant -> doit être détecté comme rompu
+    r4_rompu = "or is_state('person.parent_1', 'Maison securite')"
+    expect(
+        not re.search(
+            r"is_state\(\s*['\"]person\.parent_2['\"]\s*,\s*['\"]Maison securite['\"]\s*\)",
+            r4_rompu,
+        ),
+        "r4-asymetrie-detectee",
+    )
+
     if failures:
         print("❌ AUTO-TESTS CHECKER PRÉSENCE EN ÉCHEC")
         for f in failures:
@@ -358,6 +431,7 @@ TESTS = [
     test_r3_desarmement_pas_de_brut,
     test_r3_absence_stable_lit_confirmee,
     test_r3_armement_lit_confirmee,
+    test_r4_securite_symetrie_parents,
 ]
 
 

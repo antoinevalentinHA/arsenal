@@ -4,11 +4,11 @@
 |---|---|
 | **Chantier** | Retirer les **prénoms adultes** (`antoine`, `valentin`, `constance`) de la **surface exposée** du dépôt public : runtime, libellés UI, contrats actifs. Canon retenu : **`parent_1` / `parent_2`**. Solde des annotations transitoires « ex-… » héritées de C32. Extension du verrou CI **S7** aux prénoms adultes. **Le résidu historique Git est assumé et non traité** (voir D1). |
 | **Domaine** | TRANSVERSE (Présence ↔ Sécurité/Alarme ↔ Notifications mobiles ↔ BSSID/Wi-Fi ↔ UI Lovelace ↔ Doctrine de nommage ↔ Publication/confidentialité). |
-| **Statut** | **ACTIF (2026-07-20) — L0 à L6 livrés ; L6 (validation terrain) SOLDÉ (2026-07-20) ; L7 (clôture) EN COURS.** Runtime dé-identifié (L2 + correctif L2b), documentation active soldée (L2c, L3a, L3c), instance migrée (L5), verrou S7 étendu aux adultes (L4, mergé en dernier). **R4 levé** (notification reçue et confirmée) ; **R1 LEVÉ (2026-07-20)** — l'**établissement** de la chaîne présence → sécurité a été observé en occurrence naturelle, en sus du relâchement déjà acquis. **Seul le critère de clôture 4 reste ouvert** : l'agrégat n'est pas encore éprouvé sur les **deux contributeurs**. **L7 n'est pas prononcé.** |
+| **Statut** | **CLOS (2026-09-18) — L0 à L7 livrés.** Runtime dé-identifié (L2 + correctif L2b), documentation active soldée (L2c, L3a, L3c), instance migrée (L5), verrou S7 étendu aux adultes (L4, mergé en dernier), validation terrain (L6) soldée sous critère 4 requalifié. **Les 5 critères de clôture du §10 sont satisfaits.** Voir [`05_clotures/transverses/cloture_c33_desidentification_surface_exposee.md`](../../05_clotures/transverses/cloture_c33_desidentification_surface_exposee.md). |
 | **Priorité** | **P2** (proposée) — voir §Priorité. |
 | **Ouvert le** | 2026-07-20. |
+| **Clos le** | 2026-09-18. |
 | **Preuve de départ** | Décision propriétaire (le dépôt **reste public**, sa surface exposée doit être assainie) + **inventaire d'impact en lecture seule** §3 + rapport `audit_publication_git.py` du 2026-07-20 (0 `CRITICAL`, 3 `WARNING` S7 en documentation active) + **constat d'exposition** : dépôt public depuis le 2026-05-23, **fork tiers** (`kloggy`, 2026-06-08), star tierce (`aruesberg`). |
-| **Prochain jalon** | **L7 — clôture, conditionnée au critère 4.** Le critère de clôture 4 exige l'agrégat de sécurité éprouvé sur les **deux contributeurs** ; l'établissement observé le 2026-07-20 n'en a mobilisé qu'**un seul**, le second n'étant **pas observable à court terme**. À trancher : **attendre** une occurrence naturelle, ou **requalifier le critère 4** (précédent : correction du critère 5 le 2026-07-20). **Aucune panne fabriquée.** |
 
 > **⚠️ Portée de l'ouverture.** Le présent dossier est **descriptif**. Il consigne la décision
 > propriétaire (§2) et l'inventaire (§3). Il **ne crée aucun contrat, aucun runtime, aucun template,
@@ -246,7 +246,7 @@ n'est introduit qu'**une fois le runtime propre**, faute de quoi la CI casse pen
    *Formulation en liste positive et non en « 0 occurrence » : un compteur nul se satisfait aussi d'un
    motif qui ne matche rien — c'est précisément le défaut qui a produit L2b.*
 3. **0 entité live** portant un prénom, **hors** entités d'intégration listées hors périmètre (§5).
-4. **R1 levé** : `presence_famille_securite` réagit correctement aux deux personnes (preuve terrain). **⚠️ Non satisfait au 2026-07-20** : l'établissement observé n'a mobilisé qu'**un seul contributeur** ; le second n'est **pas observable à court terme**. À trancher — attendre l'occurrence, ou **requalifier le critère** (précédent : correction du critère 5 le 2026-07-20).
+4. **R1 levé** : `presence_famille_securite` réagit correctement aux deux personnes. **✅ Satisfait par preuve de repli (2026-09-18)** — voir correction ci-dessous.
 5. **R4 levé** : notification effectivement **reçue** sur le téléphone `parent_1` (preuve terrain).
 
 > **⚠️ Correction du critère 2 (2026-07-20).** Sa rédaction initiale — `\b(antoine|valentin|constance)\b`,
@@ -262,6 +262,24 @@ n'est introduit qu'**une fois le runtime propre**, faute de quoi la CI casse pen
 > `telephone_parent_2_notify` — et cette unique référence est un **canal de commande**
 > (`script.mobile_high_accuracy_off`, pilotage du GPS), **jamais une notification à lire**. Un seul
 > téléphone reçoit des alertes.
+>
+> **Correction du critère 4 (2026-09-18).** Sa rédaction exigeait une preuve terrain **par contributeur**
+> (`parent_1` **et** `parent_2`) ; seul `parent_1` a déclenché une transition naturelle observable
+> (2026-07-20, §11 Lot 6), `parent_2` restant **non observable à court terme**. Examen du code de
+> `binary_sensor.presence_famille_securite`
+> ([`12_template_sensors/presence/securite/presence.yaml`](../../../../12_template_sensors/presence/securite/presence.yaml))
+> : la construction est **strictement symétrique** — même `is_state(..., 'Maison securite')` pour
+> `person.parent_1` et `person.parent_2`, même boucle sur les deux trackers GPS
+> (`input_text.telephone_parent_1_tracker` / `telephone_parent_2_tracker`), aucune branche ne
+> différencie les deux contributeurs. **Arbitrage propriétaire (2026-09-18)** : le critère est
+> **requalifié** — une preuve terrain sur un seul contributeur, **complétée par une preuve statique de
+> symétrie de code ancrée en CI** (le mécanisme ne distingue pas les personnes, seule l'occurrence
+> diffère), vaut satisfaction du critère 4. Normé au contrat
+> ([`../../../contrats/presence.md`](../../../contrats/presence.md), § « Symétrie des contributeurs
+> parent_1 / parent_2 ») et ancré par le test **R4** de `check_presence_contracts.py` (mutation négative
+> vérifiée : le retrait de la branche `parent_2` fait échouer le checker). **Réserve non bloquante** :
+> si `parent_2` déclenche un jour une transition naturelle isolée, la préférer comme preuve directe —
+> aucune obligation de la provoquer.
 
 ---
 
@@ -457,3 +475,40 @@ de même nature ; celle-ci est jugée **suffisante par arbitrage propriétaire**
 décrit en `D-PRES`, que `presence_famille_securite_confirmee_alarme` (`delay_on 15 s`)
 absorbe par construction — un pic de 6 s ne franchit pas 15 s. Ce capteur n'étant pas
 historisé, le fait est **attendu, non vérifié**. Aucun travail ouvert à ce titre.
+
+#### Lot 6 — solde du critère 4 par symétrie de code (2026-09-18)
+
+**Constat.** Le critère de clôture 4 exigeait une preuve terrain sur les **deux**
+contributeurs ; seul `parent_1` avait déclenché une transition naturelle observable
+(19:03:12 le 2026-07-20). `parent_2` n'a déclenché aucune transition isolée depuis,
+et rien n'impose d'en provoquer une (`aucune panne fabriquée`).
+
+**Examen de code** (lecture seule, aucun comportement modifié) : le template
+`binary_sensor.presence_famille_securite`
+([`12_template_sensors/presence/securite/presence.yaml`](../../../../12_template_sensors/presence/securite/presence.yaml))
+traite `person.parent_1` et `person.parent_2` par une construction **strictement
+identique** — même `is_state(..., 'Maison securite')`, même boucle sur les deux
+trackers GPS. Aucune branche ne différencie les deux contributeurs.
+
+**Décision (arbitrage propriétaire, 2026-09-18)** : requalifier le critère 4 —
+preuve terrain sur un seul contributeur + preuve statique de symétrie de code
+**ancrée en CI** vaut satisfaction (voir encart de correction au §10). Contrat
+amendé ([`contrats/presence.md`](../../../contrats/presence.md), § « Symétrie des
+contributeurs parent_1 / parent_2 ») ; test **R4** ajouté à
+`check_presence_contracts.py` (4 assertions : construction `is_state` +
+tracker, pour chaque contributeur) ; **mutation négative vérifiée** — le retrait
+de la branche `parent_2` fait échouer le checker (`sys.exit(1)`, message
+explicite). `--selftest` étendu (cas positif + cas négatif de la symétrie).
+`check_presence_contracts.py` reste vert (7 → 8 tests). **Aucun runtime, UI ni
+dashboard modifié.**
+
+**Critères 1, 2, 3 et 5** : déjà satisfaits (§11 Lots 3c, 2c, audit fonctionnel
+post-migration). **Les 5 critères du §10 sont désormais réunis. L6 soldé.**
+
+### Lot 7 — clôture (2026-09-18)
+
+Les 5 critères de clôture du §10 sont satisfaits (critère 4 sur preuve de repli,
+voir Lot 6 ; les quatre autres acquis depuis 2026-07-20). **C33 est clos.**
+Document de clôture :
+[`05_clotures/transverses/cloture_c33_desidentification_surface_exposee.md`](../../05_clotures/transverses/cloture_c33_desidentification_surface_exposee.md).
+Registre des chantiers mis à jour dans le même commit (REG-3).
