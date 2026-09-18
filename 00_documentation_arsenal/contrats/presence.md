@@ -295,6 +295,27 @@ et doit être mise à jour à chaque renommage ou restructuration.
 - Toute duplication ou recalcul parallèle
   de la vérité de présence est **interdite**.
 
+### Symétrie des contributeurs (parent_1 / parent_2)
+
+L'entité canonique de sécurité (`binary_sensor.presence_famille_securite`) est
+alimentée par **exactement deux contributeurs de personne**
+(`person.parent_1`, `person.parent_2`), traités par une **construction
+strictement identique** (même test d'état, même zone, même position dans la
+disjonction, même présence dans la liste des trackers GPS) — aucune branche
+ne peut référencer l'un sans référencer l'autre selon le même patron.
+
+Cette symétrie est la garantie qui permet à une **preuve d'établissement
+observée sur un seul contributeur** (occurrence naturelle) de valoir preuve
+de repli pour les deux : le mécanisme ne distingue pas les personnes, seule
+l'occurrence diffère. Une preuve terrain par contributeur reste
+préférable ; en son absence, la symétrie de code — ancrée par un contrôle CI
+dédié — est la preuve retenue à défaut (arbitrage propriétaire, C33/L7,
+2026-09-18).
+
+Toute divergence de traitement entre les deux contributeurs (branche ajoutée
+pour l'un sans son miroir pour l'autre) est une **violation contractuelle**,
+qu'elle soit ou non observable en régime nominal.
+
 ### Projections stabilisées réservées (domaine alarme)
 
 Le domaine alarme matérialise la « confirmation explicite de l'absence »
