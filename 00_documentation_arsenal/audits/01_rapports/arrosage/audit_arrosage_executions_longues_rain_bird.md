@@ -219,6 +219,10 @@ l'arrosage sur les idiomes maison, pas d'inventer.
 > Seule `input_datetime.arrosage_session_fin_prevue` reste un microscope, **échéance opposable
 > 2026-10-31**, car exactement dérivable de `début + durée figée`.
 > Ce §8 conserve toute sa valeur de plan ; il ne conditionne simplement plus une sortie Recorder.
+>
+> **Retrait exécuté (2026-09-18).** `input_datetime.arrosage_session_fin_prevue` est sorti de
+> `recorder.yaml`, par anticipation sur l'échéance du 2026-10-31 — cf.
+> [`c44_gouvernance_sortie_microscopes.md`](../../04_chantiers/transverses/c44_gouvernance_sortie_microscopes.md) §3.6.
 
 ## 8. Plan de refonte par lots
 
