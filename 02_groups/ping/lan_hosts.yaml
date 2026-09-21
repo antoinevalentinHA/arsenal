@@ -32,7 +32,5 @@ ping_lan_hosts:
     - binary_sensor.acces_externe
     - binary_sensor.idiamant
     - binary_sensor.climatiseur
-    - binary_sensor.esp32_proxy_3
-    - binary_sensor.esp32_proxy_4
     - binary_sensor.station_meteo_netatmo_1
     - binary_sensor.station_meteo_netatmo_2

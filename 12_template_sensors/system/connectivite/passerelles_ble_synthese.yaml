@@ -1,0 +1,119 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Système / Connectivité — Synthèse Passerelles BLE
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Fournir une synthèse déterministe de la disponibilité API
+#   ESPHome des 4 passerelles BLE actives (seuil 4/4).
+#
+# 🧩 PÉRIMÈTRE
+#   - Calcul et synthèse uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#   - Ne mesure PAS la couverture Bluetooth ni la présence de
+#     périphériques : uniquement la connectivité API ESPHome
+#     entre chaque passerelle et Home Assistant
+#
+# 🔖 NATURE
+#   synthese
+#
+# 🆔 UNIQUE_ID
+#   passerelles_ble_synthese
+#
+# 🔗 DÉPENDANCES
+#   Lit :
+#     - group.passerelles_ble
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Confondre disponibilité API et couverture BLE réelle
+#
+# 🏷️ STATUT
+#   Synthèse — Arsenal v14.x
+# ==========================================================
+
+- sensor:
+    - name: Passerelles BLE synthese
+      unique_id: passerelles_ble_synthese
+
+      icon: >-
+        {%- if this.state == 'ok' -%}mdi:bluetooth-connect
+        {%- elif this.state == 'degraded' -%}mdi:bluetooth-audio
+        {%- elif this.state == 'critical' -%}mdi:bluetooth-off
+        {%- else -%}mdi:bluetooth-settings
+        {%- endif -%}
+
+      attributes:
+
+        nb_passerelles_total: >-
+          {{- expand('group.passerelles_ble') | list | count -}}
+
+        nb_passerelles_disponibles: >-
+          {{-
+            expand('group.passerelles_ble')
+            | selectattr('state', 'eq', 'on')
+            | list
+            | count
+          -}}
+
+        nb_passerelles_indisponibles: >-
+          {{-
+            expand('group.passerelles_ble')
+            | selectattr('state', 'eq', 'off')
+            | list
+            | count
+          -}}
+
+        passerelles_en_defaut: >-
+          {{-
+            expand('group.passerelles_ble')
+            | selectattr('state', 'eq', 'off')
+            | map(attribute='entity_id')
+            | list
+            | join(', ')
+          -}}
+
+        passerelles_indeterminees: >-
+          {{-
+            expand('group.passerelles_ble')
+            | rejectattr('state', 'eq', 'on')
+            | rejectattr('state', 'eq', 'off')
+            | map(attribute='entity_id')
+            | list
+            | join(', ')
+          -}}
+
+        cause: >-
+          {%- set total = expand('group.passerelles_ble') | list | count -%}
+          {%- set indeterminees = expand('group.passerelles_ble')
+            | rejectattr('state', 'eq', 'on')
+            | rejectattr('state', 'eq', 'off')
+            | map(attribute='entity_id')
+            | list -%}
+          {%- set indisponibles = expand('group.passerelles_ble')
+            | selectattr('state', 'eq', 'off')
+            | list
+            | count -%}
+          {%- if indeterminees | count > 0 -%}indetermine: {{ indeterminees | join(', ') }}
+          {%- elif indisponibles == 0 -%}nominal
+          {%- elif indisponibles == 1 -%}degrade: 1_passerelle_indisponible
+          {%- else -%}critique: {{ indisponibles }}_passerelles_indisponibles
+          {%- endif -%}
+
+      state: >-
+        {%- set indeterminees = expand('group.passerelles_ble')
+          | rejectattr('state', 'eq', 'on')
+          | rejectattr('state', 'eq', 'off')
+          | list
+          | count -%}
+        {%- set total = expand('group.passerelles_ble') | list | count -%}
+        {%- set disponibles = expand('group.passerelles_ble')
+          | selectattr('state', 'eq', 'on')
+          | list
+          | count -%}
+        {%- if indeterminees > 0 -%}unknown
+        {%- elif disponibles == total -%}ok
+        {%- elif disponibles == total - 1 -%}degraded
+        {%- else -%}critical
+        {%- endif -%}

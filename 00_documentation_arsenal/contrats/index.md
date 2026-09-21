@@ -34,6 +34,7 @@
 | [zones.md](./zones.md) | Zones géographiques |
 | [parametres_invalides.md](./parametres_invalides.md) | Paramètres invalides |
 | [ping_lan_synthese.md](./ping_lan_synthese.md) | Synthèse ping LAN |
+| [passerelles_ble_synthese.md](./passerelles_ble_synthese.md) | Synthèse disponibilité API ESPHome des passerelles BLE |
 | [switchbot_transactionnel.md](./switchbot_transactionnel.md) | Socle transactionnel SwitchBot |
 | [nas_transactionnel.md](./nas_transactionnel.md) | Socle transactionnel des commandes NAS (AUDIT / RELEASE_DIFF) — chantier C51, actif/implémenté — livré, déployé et validé terrain pour les deux opérations |
 | [homekit_diagnostic.md](./homekit_diagnostic.md) | Diagnostic station Netatmo HomeKit |
