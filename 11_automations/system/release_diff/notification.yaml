@@ -7,12 +7,16 @@
 #
 # 🎯 RÔLE
 #   Notifier le téléphone d'Parent 1 des occurrences release_diff
-#   (couple produit / échec) relayées par le NAS sur
+#   (couple produit / rejet / échec) relayées par le NAS sur
 #   arsenal/nas/release_diff/event.
 #
 # 🧩 PÉRIMÈTRE
-#   - Couvre : notification événementielle de release_diff_generated
-#     et release_diff_failed
+#   - Couvre : notification événementielle de release_diff_generated,
+#     release_diff_partial et release_diff_failed (arsenal_nas.md §7.2)
+#   - release_diff_partial signale un rejet (run terminé normalement,
+#     au moins un couple rejeté) ; ce n'est JAMAIS présenté comme un
+#     échec d'exécution (arsenal_nas.md §6.2, §8, §11.5)
+#   - release_diff_failed reste exclusif à status=error (§6.3, §11.6)
 #   - Exclut : toute décision, filtrage, fraîcheur, journalisation,
 #     écriture d'état ou de helper
 #
@@ -55,7 +59,7 @@
 
 - id: "10120000000028"
   alias: "Système - arsenal_nas - Notification Release Diff"
-  description: "Notifie le téléphone d'Parent 1 des événements release_diff (généré / échec)."
+  description: "Notifie le téléphone d'Parent 1 des événements release_diff (généré / rejet / échec)."
   mode: queued
 
   trigger:
@@ -81,7 +85,23 @@
                   Fichier : {{ trigger.payload_json.diff_name }}
 
         # ------------------------------------------------------
-        # Échec / run partiel
+        # Run partiel — rejet signalé, jamais un échec (§6.2, §11.5)
+        # ------------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.payload_json.event == 'release_diff_partial' }}"
+          sequence:
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_parent_1_notify
+                titre: "⚠️ Release Diff — couple(s) rejeté(s)"
+                message: |
+                  Run terminé normalement. {{ trigger.payload_json.rejection_summary.count }} couple(s) rejeté(s).
+
+                  Catégories : {{ trigger.payload_json.rejection_summary.categories | join(', ') }}
+
+        # ------------------------------------------------------
+        # Échec d'exécution — exclusivement status=error (§6.3, §11.6)
         # ------------------------------------------------------
         - conditions:
             - condition: template
@@ -90,9 +110,9 @@
             - service: script.notification_envoyer
               data:
                 cible: input_text.telephone_parent_1_notify
-                titre: "⚠️ Release Diff à vérifier"
+                titre: "🛑 Release Diff en échec"
                 message: |
-                  Release Diff à signaler.
+                  Le run release_diff a échoué.
 
                   Statut : {{ trigger.payload_json.status }}
                   Cause : {{ trigger.payload_json.error_reason }}
