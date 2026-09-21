@@ -1,4 +1,4 @@
-# CONTRAT_PING_LAN_SYNTHESE — v1.1
+# CONTRAT_PING_LAN_SYNTHESE — v1.2
 
 <!-- audit:scope=doc -->
 
@@ -36,8 +36,6 @@ L'intégration native Ping surveille les entités suivantes :
 | `192.168.1.33` | `binary_sensor.idiamant` | Contrôleur volets iDiamant |
 | `192.168.1.119` | `binary_sensor.boiler_bridge` | Boiler Bridge |
 | `192.168.1.21` | `binary_sensor.climatiseur` | Climatisation |
-| `192.168.1.95` | `binary_sensor.esp32_proxy_3` | Proxy Bluetooth ESP32 |
-| `192.168.1.91` | `binary_sensor.esp32_proxy_4` | Proxy Bluetooth ESP32 |
 | `maisonarsenal.synology.me` | `binary_sensor.acces_externe` | Accès externe Arsenal |
 | `192.168.1.34` | `binary_sensor.station_meteo_netatmo_1` | Station météo Netatmo 1 |
 | `192.168.1.35` | `binary_sensor.station_meteo_netatmo_2` | Station météo Netatmo 2 |
@@ -53,7 +51,6 @@ Toute modification du périmètre (ajout, retrait, renommage) constitue un amend
 | Accès externe | importante | `binary_sensor.acces_externe` |
 | RF / Volets | importante | `binary_sensor.idiamant` |
 | Climatisation | secondaire | `binary_sensor.climatiseur` |
-| ESP32 Proxy | secondaire (avec règle de seuil) | `binary_sensor.esp32_proxy_3`, `binary_sensor.esp32_proxy_4` |
 | Stations météo | secondaire | `binary_sensor.station_meteo_netatmo_1`, `binary_sensor.station_meteo_netatmo_2` |
 
 La classification détermine la priorité dans la table de vérité, le calcul de la synthèse, le mapping UI, et les futurs comportements automatisés (alertes, redémarrages).
@@ -67,11 +64,7 @@ Entités critiques de supervision :
 - `binary_sensor.internet_disponible`
 - `binary_sensor.boiler_bridge`
 
-Ce sous-ensemble protège la synthèse contre les **gris parasites** : un ESP32 qui démarre, un proxy temporairement `unavailable` au boot, ou une station météo non encore initialisée ne grisera jamais l'ensemble du tableau de bord.
-
-### Découplage groupes ESP32 / secondaire
-
-Les deux proxies ESP32 sont gérés exclusivement par le groupe `ping_lan_esp32` et sont absents du groupe `ping_lan_secondaire`. Ce découplage permet à la règle de seuil ESP32 (criticité émergente par perte de redondance) de s'appliquer sans double-comptage avec la classe secondaire.
+Ce sous-ensemble protège la synthèse contre les **gris parasites** : une station météo non encore initialisée ne grisera jamais l'ensemble du tableau de bord.
 
 ## Architecture
 
@@ -82,8 +75,7 @@ Six groupes statiques agrègent le périmètre selon les classes de criticité e
 - `group.ping_lan_hosts` — exhaustif, support des compteurs globaux
 - `group.ping_lan_critique` — entités de classe critique (coïncide actuellement avec les entités critiques de supervision)
 - `group.ping_lan_importante` — entités de classe importante
-- `group.ping_lan_secondaire` — entités secondaires hors ESP32
-- `group.ping_lan_esp32` — proxies ESP32, gérés par règle de seuil
+- `group.ping_lan_secondaire` — entités secondaires
 - `group.ping_lan_stations_meteo` — stations météo Netatmo
 
 Toute modification d'entité Ping doit être propagée dans le groupe global `ping_lan_hosts` **et** dans le groupe de classe correspondant. La cohérence inter-groupes est une invariante du contrat.
@@ -112,13 +104,11 @@ L'état du `sensor.ping_lan_synthese` est calculé selon la règle de priorité 
 |---|---|---|
 | 1 | `unknown` | Au moins une **entité critique de supervision** en `unknown` ou `unavailable` |
 | 2 | `critical` | Au moins un hôte de classe **critique** KO |
-| 3 | `critical` | Seuil ESP32 dépassé (2 proxies KO) |
-| 4 | `degraded` | Au moins un hôte de classe **importante** KO |
-| 5 | `degraded` | Au moins un hôte de classe **secondaire** KO |
-| 6 | `degraded` | Au moins un proxy ESP32 KO (sans atteinte du seuil critique) |
-| 7 | `ok` | Tous les hôtes répondent |
+| 3 | `degraded` | Au moins un hôte de classe **importante** KO |
+| 4 | `degraded` | Au moins un hôte de classe **secondaire** KO |
+| 5 | `ok` | Tous les hôtes répondent |
 
-Cette table garantit l'exigence de déterminisme et de priorisation. Un état `unknown` sur un hôte non critique de supervision (ex. ESP32 au boot) est traité comme une absence d'information localisée, pas comme une dégradation de la synthèse globale.
+Cette table garantit l'exigence de déterminisme et de priorisation. Un état `unknown` sur un hôte non critique de supervision est traité comme une absence d'information localisée, pas comme une dégradation de la synthèse globale.
 
 ### Traitement des états indéterminés non critiques
 
@@ -131,17 +121,7 @@ Conséquences concrètes :
 
 - ils n'incrémentent pas `nb_hosts_ko`
 - ils n'apparaissent pas dans `hosts_ko`
-- ils restent visibles dans l'attribut de classe correspondant (`esp32_proxy_status`, `stations_meteo_ok`, etc.) sous une valeur explicite (`unknown` plutôt que `ok` par défaut)
-
-### Règle de seuil ESP32
-
-Les proxies ESP32 sont individuellement secondaires, mais leur couverture cumulée conditionne la disponibilité Bluetooth de la maison. Cette logique applique la notion de **criticité émergente par perte de redondance** : aucun proxy n'est critique seul, leur perte totale l'est.
-
-| Proxies KO sur 2 | État contribué à la synthèse | Justification |
-|---|---|---|
-| 0 | aucun impact | couverture nominale |
-| 1 | `degraded` | redondance entamée, couverture suffisante |
-| 2 | `critical` | perte totale de couverture BLE |
+- ils restent visibles dans l'attribut de classe correspondant (`stations_meteo_ok`, etc.) sous une valeur explicite (`unknown` plutôt que `ok` par défaut)
 
 ## Mapping états → couleurs UI
 
@@ -176,10 +156,6 @@ Les attributs reflètent fidèlement les classes définies, afin qu'un opérateu
 - `climatisation_ok`
 - `stations_meteo_ok`
 
-État ternaire pour les proxies ESP32 (règle de seuil) :
-
-- `esp32_proxy_status` : `ok`, `degraded`, `critical`, `unknown`
-
 ### Diagnostic
 
 - `cause` — chaîne explicative justifiant l'état courant. Format préfixé par classe.
@@ -191,29 +167,20 @@ Valeurs possibles de `cause` :
 | `nominal` | Tous les hôtes répondent |
 | `supervision_critique_unknown` | Au moins une entité critique de supervision en `unknown` / `unavailable` |
 | `critique_ko: <entity_id>[, ...]` | Un ou plusieurs hôtes critiques KO |
-| `esp32_critical: 2_proxies_ko` | Deux proxies ESP32 KO simultanément |
 | `importante_ko: <entity_id>[, ...]` | Un ou plusieurs hôtes importants KO |
 | `secondaire_ko: <entity_id>[, ...]` | Un ou plusieurs hôtes secondaires KO |
-| `esp32_degraded: <n>_proxy_ko` | 1 proxy ESP32 KO (sans atteinte du seuil critique) |
 
 ## Tests d'acceptation
 
-Les huit cas suivants sont opposables. Toute implémentation doit les satisfaire avant figeage en production.
+Les cinq cas suivants sont opposables. Toute implémentation doit les satisfaire avant figeage en production.
 
 | # | Setup | `state` attendu | `cause` attendue |
 |---|---|---|---|
 | 1 | Tous hôtes `on` | `ok` | `nominal` |
 | 2 | `internet_disponible = off`, reste `on` | `critical` | `critique_ko: binary_sensor.internet_disponible` |
 | 3 | `boiler_bridge = off`, reste `on` | `critical` | `critique_ko: binary_sensor.boiler_bridge` |
-| 4 | 2 ESP32 `off`, reste `on` | `critical` | `esp32_critical: 2_proxies_ko` |
-| 5 | `idiamant = off`, reste `on` | `degraded` | `importante_ko: binary_sensor.idiamant` |
-| 6 | 1 ESP32 `off` seul, reste `on` | `degraded` | `esp32_degraded: 1_proxy_ko` |
-| 7 | `internet_disponible = unknown` | `unknown` | `supervision_critique_unknown` |
-| 8 | 1 ESP32 `unknown`, reste `on` | `ok` | `nominal` |
-
-Le cas 8 valide spécifiquement la doctrine anti-gris-parasites : un état indéterminé sur un hôte non critique de supervision ne doit pas dégrader la synthèse globale.
-
-Le cas 6 valide spécifiquement le découplage entre `ping_lan_secondaire` et `ping_lan_esp32` : un ESP32 KO seul doit être attribué à la branche ESP32 dégradée, pas à la classe secondaire.
+| 4 | `idiamant = off`, reste `on` | `degraded` | `importante_ko: binary_sensor.idiamant` |
+| 5 | `internet_disponible = unknown` | `unknown` | `supervision_critique_unknown` |
 
 ## Implémentation
 
@@ -225,7 +192,6 @@ Fichiers d'implémentation conformes au présent contrat :
 - `/homeassistant/02_groups/ping_lan_critique.yaml`
 - `/homeassistant/02_groups/ping_lan_importante.yaml`
 - `/homeassistant/02_groups/ping_lan_secondaire.yaml`
-- `/homeassistant/02_groups/ping_lan_esp32.yaml`
 - `/homeassistant/02_groups/ping_lan_stations_meteo.yaml`
 
 ### Capteur (Niveau 2)
@@ -264,5 +230,6 @@ Il doit :
 |---|---|---|
 | v1.0 | 2026-05-07 | Création initiale du contrat. Figeage des trois niveaux (groupes, capteur, carte UI). |
 | v1.1 | 2026-06-26 | Retrait de `binary_sensor.esp32_proxy_2` du périmètre (ESP32 hôte reflashé en pont Rain Bird applicatif, supervisé via signaux MQTT métier du domaine arrosage). Seuil ESP32 critique ramené de 3 à 2 proxies KO. Mise à jour des trois niveaux d'implémentation et des tests d'acceptation. |
+| v1.2 | 2026-09-21 | Retrait complet des ESP32 (`binary_sensor.esp32_proxy_3`, `binary_sensor.esp32_proxy_4`) du périmètre : les deux entités Ping historiques, codées sur des IP obsolètes (`.95`/`.91`), sont remplacées par une supervision dédiée fondée sur la connectivité API ESPHome des 4 passerelles BLE actives — voir [`passerelles_ble_synthese.md`](passerelles_ble_synthese.md). Suppression de la classe ESP32, du groupe `ping_lan_esp32`, de la règle de seuil ESP32, de l'attribut `esp32_proxy_status` et des cas de test associés. Ping redevient strictement une couche de transport réseau. |
 
 Tout amendement futur doit être tracé dans cette table et faire l'objet d'une mise à jour cohérente des trois niveaux d'implémentation.

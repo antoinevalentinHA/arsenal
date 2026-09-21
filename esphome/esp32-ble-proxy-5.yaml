@@ -30,3 +30,7 @@ esp32_ble_tracker:
         active: true
 
 bluetooth_proxy:
+
+binary_sensor:
+  - platform: status
+    name: "Disponibilite Passerelle BLE Petite Maison"

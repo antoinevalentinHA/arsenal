@@ -388,6 +388,9 @@ views:
           - type: custom:button-card
             template: ping_lan_synthese
 
+          - type: custom:button-card
+            template: passerelles_ble_synthese
+
           ####################################################
           # 🌐 INTÉGRATIONS CRITIQUES
           ####################################################

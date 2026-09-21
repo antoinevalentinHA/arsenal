@@ -1,10 +1,11 @@
 # ==========================================================
 # 🧠 ARSENAL — GROUP
-#     Système / Connectivité — Proxies Ping ESP32
+#     Système / Connectivité — Passerelles BLE (ESPHome)
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Regrouper les proxies ESP32 surveillés par Ping afin de
-#   permettre l'évaluation de la couverture Bluetooth locale.
+#   Regrouper les capteurs de disponibilité API ESPHome des
+#   4 passerelles BLE actives afin de permettre le calcul de
+#   la synthèse dédiée.
 #
 # 🧩 PÉRIMÈTRE
 #   - Agrégation statique uniquement
@@ -23,9 +24,11 @@
 #   Socle — Arsenal v14.x
 # ==========================================================
 
-ping_lan_esp32:
-  name: Ping LAN ESP32
+passerelles_ble:
+  name: Passerelles BLE
   icon: mdi:bluetooth-connect
   entities:
-    - binary_sensor.esp32_proxy_3
-    - binary_sensor.esp32_proxy_4
+    - binary_sensor.disponibilite_passerelle_ble_jardin
+    - binary_sensor.disponibilite_passerelle_ble_cave
+    - binary_sensor.disponibilite_passerelle_ble_sdb_enfants
+    - binary_sensor.disponibilite_passerelle_ble_petite_maison
