@@ -1756,6 +1756,30 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Lovelace — Retour contextuel restauré sur `nas-dashboard` (→ `/system-dashboard`) et ajouté sur `meteo-min-max-temperature-dashboard` (→ `/meteo-temperature-dashboard`).
 - Système — carte Audit renommée « Audit Système », affiche désormais la version auditée ; nouveau socle `socle_status_label_xl_sans_icone` (80px).
 
+---
+
+## 🧠 ARSENAL HA — [v18.0.3](changelogs/v18/v18_0_3.md) — STABLE — 2026-09-14
+**Tags :** meteo, recorder, lovelace, contrats
+
+**Signal net :**
+- Météo (tendance température) — contrat `tendance_temperature.md` passé v1.1 → v1.2 : ajout d'une couche de projection statistique ré-échantillonnée (§4.2) corrigeant un faux `indisponible` sur source stable peu bavarde ; six invariants ajoutés (`INV-TEND-15` à `20`).
+- Météo (runtime) — ajout de `12_template_sensors/meteo/tendance/projection.yaml` (trois capteurs de projection) ; six capteurs `statistics` 15/60 min repointés sur leur projection ; inclusion Recorder Population A des trois entités.
+- Lovelace — carte « Audit & Release Diff » renommée sur le dashboard Système.
+- Registre HA — `.storage/core.entity_registry` modifié (diff masqué).
+
+---
+
+## 🧠 ARSENAL HA — [v18.0.4](changelogs/v18/v18_0_4.md) — STABLE — 2026-09-21
+**Tags :** aspirateur, notifications, recorder, registres, presence, ci, connectivite, lovelace, git, changelog
+
+**Signal net :**
+- Aspirateur (C53) — admissibilité conditionnelle de `idle` au lancement sur carte sans dock accessible (`ASP-INV-100`) et nouveau verdict terminal `CLOTURE/FIN_NOMINALE_HORS_BASE` (`ASP-INV-101`) ; mémoire de mission dédiée (`input_boolean.aspirateur_retour_observe`) ; chantier clos avec réserves (batterie critique non tranchée).
+- Notifications — doctrine rédactionnelle formalisée (ponctuation, vocabulaire d'état) ; 4 automations alignées (titres suffixés, ponctuation).
+- Présence (C33) — clôture du chantier, critère 4 requalifié : preuve terrain sur un contributeur + preuve statique de symétrie de code ancrée en CI (`check_presence_contracts.py` R4).
+- Connectivité — supervision dédiée `sensor.passerelles_ble_synthese` (4 passerelles BLE ESPHome) ; retrait complet des ESP32 de `ping_lan_synthese.md` (v1.2).
+- CI — contrat de déploiement des Pull Requests (`pr_deployment_contract.yml`, DEP-001 à DEP-006) ; contrôle REG-3 du registre des chantiers (clôture effective interdite en ① Actifs).
+- Registre / doctrine — retrait anticipé du microscope B05 arrosage (C44) ; conventions Git formalisées (commits, branches, worktrees) ; rédaction rétroactive des changelogs v17.3 à v18.0.2.
+
 ==================================================
 FIN INDEX
 ==================================================
