@@ -1160,8 +1160,8 @@ class AudiService:
                         "climatisationWithoutHVpower": True,
                         "heaterSource": "electric",
                         "climaterElementSettings": {
-                            "isClimatisationAtUnlock": climatisation_at_unlock,
-                            "isMirrorHeatingEnabled": glass_heating,
+                            "isClimatisationAtUnlock": bool(climatisation_at_unlock),
+                            "isMirrorHeatingEnabled": bool(glass_heating),
                             "zoneSettings": {"zoneSetting": zone_settings},
                         },
                     },
@@ -1201,6 +1201,13 @@ class AudiService:
                     vin=vin.upper(),
                     actionid=res["action"]["actionId"],
                 )
+
+            _LOGGER.debug(
+                "startClimatisation accepted for %s, actionId=%s, ack body=%s",
+                vin,
+                res.get("action", {}).get("actionId"),
+                res,
+            )
 
             await self.check_request_succeeded(
                 checkUrl,
@@ -1467,13 +1474,22 @@ class AudiService:
     async def check_request_succeeded(
         self, url: str, action: str, successCode: str, failedCode: str, path: str
     ):
-        for _ in range(MAX_RESPONSE_ATTEMPTS):
+        for attempt in range(MAX_RESPONSE_ATTEMPTS):
             await asyncio.sleep(REQUEST_STATUS_SLEEP)
 
             self._api.use_token(self.vwToken)
             res = await self._api.get(url)
 
             status = get_attr(res, path)
+
+            _LOGGER.debug(
+                "check_request_succeeded(%s) attempt %d/%d: status=%r body=%s",
+                action,
+                attempt + 1,
+                MAX_RESPONSE_ATTEMPTS,
+                status,
+                res,
+            )
 
             if status is None or (failedCode is not None and status == failedCode):
                 raise Exception(f"Cannot {action}, return code '{status}'")
