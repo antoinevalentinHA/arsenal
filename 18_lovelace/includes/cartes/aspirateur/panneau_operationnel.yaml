@@ -56,12 +56,31 @@
 #   La coloration de la tuile Navigation vient exclusivement de
 #   `sensor.etat_aspirateur_dashboard` : cette carte n'en produit aucune.
 #
-# 🧩 HIÉRARCHIE — QUATRE SECTIONS, QUATRE SOUS-SECTIONS
-#   Sections (`section_header`)      : Composition · Lancement ·
-#                                      Conduite · Entretien
+# 🧭 ORDRE — LE GESTE FRÉQUENT D'ABORD (arbitrage opérateur, 2026-09-24)
+#   1. État compact 2 × 2, sans en-tête — la lecture d'entrée.
+#   2. Conduite — seulement pendant une mission Arsenal ouverte.
+#   3. Raccourcis — le geste le plus fréquent, sous le pouce.
+#   4. Lancement — récapitulatif de la composition, puis le bouton.
+#   5. Dernier motif — sous le lancement, là où il répond.
+#   6. Composition détaillée — pour ajuster, puis Réinitialiser.
+#   7. Entretien.
+#   La version précédente suivait l'ordre de LECTURE du cadrage
+#   (09_UI.md §4 : état, composition, lancement, conduite, entretien) :
+#   raccourcis et lancement tombaient après plusieurs écrans de
+#   défilement sur mobile. Le §4 énumère un CONTENU, que cet ordre
+#   conserve entier ; le contrat 11 §4 laisse la disposition hors de
+#   son périmètre.
+#   LE RÉCAPITULATIF EST LA CONTREPARTIE DE CET ORDRE, pas un ornement :
+#   les grilles de composition étant sous le lancement, lui seul met
+#   profil et passages « sous les yeux » au moment de lancer
+#   (10 §3.1, ASP-INV-56). Le retirer rendrait cet ordre non conforme.
+#
+# 🧩 HIÉRARCHIE — CINQ SECTIONS, TROIS SOUS-SECTIONS
+#   Sections (`section_header`)      : Conduite · Raccourcis ·
+#                                      Lancement · Composition · Entretien
 #   Sous-sections (`sub_section_header`) : Pièces · Profil de nettoyage ·
-#                                      Passages · Raccourcis, toutes
-#                                      quatre DANS la composition
+#                                      Passages, toutes trois DANS la
+#                                      composition
 #   Profil et Passages écrivent DEUX sélecteurs distincts : ils ont donc
 #   deux en-têtes, et non un titre commun qui les ferait lire comme un
 #   seul réglage.
@@ -100,7 +119,7 @@
 #   script.aspirateur_conduire_mission     (mission déjà ouverte)
 #
 # 🏷️ STATUT
-#   Interface — domaine aspirateur, lots U0 et U2, corrigée UX
+#   Interface — domaine aspirateur, lots U0 et U2, corrigée UX, réordonnée (geste fréquent en tête)
 # ==========================================================
 
 type: vertical-stack
@@ -231,7 +250,363 @@ cards:
         entity: sensor.roborock_q7_max_batterie
         name: Batterie
 
+  # ==================================================
+  # 4️⃣ CONDUITE — quatre gestes, masqués hors sens physique
+  # --------------------------------------------------
+  # JUSTE SOUS L'ÉTAT, AVANT LES RACCOURCIS. Pendant une mission,
+  # Pause et Arrêt sont les gestes qui comptent ; hors mission, la
+  # section entière disparaît et les raccourcis remontent d'eux-mêmes
+  # en tête. Arbitrage opérateur du 2026-09-24.
+  #
+  # L'AUTORITÉ DE L'OFFRE EST LA MISSION ARSENAL OUVERTE, et elle seule
+  # (ASP-INV-97). L'interface la reçoit par la PROJECTION MÉTIER — elle
+  # ne lit jamais le verdict, ce que le contrat 11 §2 interdit — et
+  # jamais par une combinaison de témoins natifs :
+  #   pause       ← mission Arsenal ouverte, ET nettoyage réel en cours
+  #   reprise     ← mission Arsenal ouverte, ET mission en pause
+  #   arrêt       ← mission Arsenal ouverte, SANS AUTRE GARDE : l'arrêt
+  #                 n'est jamais plus contraint que le lancement
+  #                 (ASP-INV-43), et il ne dépend plus du témoin natif
+  #   retour base ← mission Arsenal ouverte, et le robot ne rentre pas
+  #                 déjà — les trois exclusions sont de SENS PHYSIQUE,
+  #                 conservées telles quelles (ASP-INV-48)
+  # Le backend REVALIDE chacune : masquer ici est une commodité, pas
+  # une autorisation.
+  #
+  # C'EST LA LEVÉE DE RC-02, ET ELLE PORTE SUR LES QUATRE GESTES.
+  # L'affichage et la garde du backend lisent LE MÊME PRÉDICAT
+  # D'AUTORITÉ : aucun bouton n'est présenté puis refusé, et aucun geste
+  # possible n'est masqué. Une mission externe — robot actif qu'Arsenal
+  # n'a pas ouvert — n'expose donc AUCUN geste de conduite Arsenal.
+  #
+  # LES DEUX CONDITIONS SE CUMULENT, ET NE SE CONFONDENT PAS :
+  # l'AUTORITÉ ouvre l'offre — la mission Arsenal, reçue par la
+  # projection —, le SENS PHYSIQUE la restreint. C'est la lettre du
+  # contrat 15 §3.1, dont la garde de Pause est « mission Arsenal
+  # ouverte ET activité en cours », et celle de Reprise « ASP-INV-62,
+  # PLUS mission Arsenal ouverte » (D-07). L'interface n'appliquait que
+  # la moitié physique de ces deux gardes : le lot 8 pose la moitié
+  # d'autorité qui manquait.
+  #
+  # LA SECTION ENTIÈRE, EN-TÊTE COMPRIS, tient dans une condition : la
+  # disjonction EXACTE des quatre gardes ci-dessus. Depuis que les quatre
+  # exigent l'autorité, cette disjonction se réduit à UN SEUL TERME —
+  # « mission Arsenal ouverte » —, et ce n'est pas un raccourci : la
+  # garde d'Arrêt est ce terme NU, et les trois autres le contiennent.
+  # Une disjonction plus large ferait paraître l'en-tête au-dessus de
+  # ZÉRO bouton sur une mission externe, exactement ce que la règle
+  # ci-dessous proscrit.
+  #
+  # Aucun sur-ensemble, aucune approximation : si un seul geste a du
+  # sens, l'en-tête paraît ; si aucun n'en a, rien ne paraît.
+  #
+  # L'INDISPONIBILITÉ DE LA PROJECTION NE VAUT PAS « PAS DE MISSION ».
+  # Elle est rendue comme telle par la projection (ASP-INV-96), et une
+  # condition d'état sur `on` ne la confond donc avec rien : aucun geste
+  # n'est offert quand la responsabilité est inconnaissable. C'est le
+  # sens sûr, et c'est celui du backend.
+  # ==================================================
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: binary_sensor.aspirateur_mission_arsenal_ouverte
+        state: "on"
+    card:
+      type: vertical-stack
+      cards:
+        - type: custom:button-card
+          template: section_header
+          name: 🎛️ Conduite
+
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: binary_sensor.aspirateur_mission_arsenal_ouverte
+              state: "on"
+            - condition: state
+              entity: sensor.aspirateur_etat_canonique
+              state: nettoyage_reel
+          card:
+            type: custom:button-card
+            template: carte_action_standard_warning
+            entity: script.aspirateur_conduire_mission
+            name: Mettre en pause
+            icon: mdi:pause-circle
+            styles:
+              card:
+                - height: 52px
+            variables:
+              confirmation: "Mettre la mission en pause ?"
+              service: script.aspirateur_conduire_mission
+              data:
+                geste: pause
+
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: binary_sensor.aspirateur_mission_arsenal_ouverte
+              state: "on"
+            - condition: state
+              entity: sensor.aspirateur_etat_canonique
+              state: pause
+          card:
+            type: custom:button-card
+            template: carte_action_standard
+            entity: script.aspirateur_conduire_mission
+            name: Reprendre la mission
+            icon: mdi:play-circle
+            styles:
+              card:
+                - height: 52px
+            variables:
+              confirmation: "Reprendre la mission ?"
+              service: script.aspirateur_conduire_mission
+              data:
+                geste: reprise
+
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: binary_sensor.aspirateur_mission_arsenal_ouverte
+              state: "on"
+            - condition: state
+              entity: sensor.aspirateur_etat_canonique
+              state_not: retour_base
+            - condition: state
+              entity: sensor.aspirateur_etat_canonique
+              state_not: amarrage
+            - condition: state
+              entity: sensor.aspirateur_etat_canonique
+              state_not: charge
+          card:
+            type: custom:button-card
+            template: carte_action_standard
+            entity: script.aspirateur_conduire_mission
+            name: Renvoyer à la base
+            icon: mdi:home-import-outline
+            styles:
+              card:
+                - height: 52px
+            variables:
+              confirmation: "Renvoyer le robot à sa base ?"
+              service: script.aspirateur_conduire_mission
+              data:
+                geste: retour_base
+
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: binary_sensor.aspirateur_mission_arsenal_ouverte
+              state: "on"
+          card:
+            type: custom:button-card
+            template: carte_action_standard_warning
+            entity: script.aspirateur_conduire_mission
+            name: Arrêter la mission
+            icon: mdi:stop-circle
+            styles:
+              card:
+                - height: 52px
+            variables:
+              confirmation: "⚠️ Arrêter la mission en cours ?"
+              service: script.aspirateur_conduire_mission
+              data:
+                geste: arret
+
+  # ==================================================
+  # ⚡ RACCOURCIS — les TROIS du chapitre 10 §3
+  # --------------------------------------------------
+  # PREMIÈRE SECTION D'ACTION DE LA PAGE, et non plus dernière
+  # sous-section de la composition : c'est le geste le plus fréquent,
+  # il se trouve donc sous le pouce, juste après la lecture d'état.
+  # Arbitrage opérateur du 2026-09-24 (voir l'en-tête, « ORDRE »).
+  #
+  # Un raccourci PRÉREMPLIT la composition — carte, pièces, profil,
+  # passages — et s'arrête là. IL NE LANCE RIEN : le script appelé
+  # n'écrit que des helpers d'intention, et le bouton de lancement
+  # ci-dessous reste l'unique autorité de lancement (10 §3.1, 11 §3.6).
+  #
+  # Les réglages proposés sont VISIBLES immédiatement dans le
+  # RÉCAPITULATIF placé entre ces boutons et le lancement, et dans les
+  # grilles de la composition détaillée plus bas — les segments bleus
+  # s'y déplacent —, et MODIFIABLES d'un geste avant tout lancement.
+  # C'est la condition exacte à laquelle le second alinéa
+  # d'ASP-INV-56 ouvre cette faculté.
+  #
+  # GÉOMÉTRIE — DEUX RANGÉES, ET POURQUOI CELLE-LÀ.
+  #   Rangée 1, DEUX colonnes : les deux raccourcis du RDC. Ils
+  #   partagent le MÊME périmètre et ne diffèrent que par la nature du
+  #   nettoyage — les apparier est la lecture juste, pas un choix
+  #   décoratif.
+  #   Rangée 2, PLEINE LARGEUR : l'Étage, qui est un autre périmètre.
+  #
+  #   HAUTEUR NATIVE, ET C'EST LA CLÉ. Ces cartes ne forcent AUCUNE
+  #   hauteur : elles gardent les 72px de `carte_base_v2`. À deux
+  #   colonnes sur un téléphone, une cellule offre ~152px de texte utile
+  #   quand « RDC — serpillière complète » en demande ~176 : le libellé
+  #   passe donc sur DEUX lignes, et deux lignes de 13px ne tiennent pas
+  #   sous une icône de 26px dans une carte de 52px. C'est exactement ce
+  #   qu'une hauteur forcée à 52px produirait — un texte tronqué ou
+  #   débordant. La hauteur du socle, elle, les accueille.
+  #
+  #   Le compte y est aussi : deux rangées de 72px font 152px là où
+  #   trois rangées de 52px en faisaient 172. Moins haut, et deux fois
+  #   moins de lignes à parcourir.
+  # ==================================================
+  - type: custom:button-card
+    template: section_header
+    name: ⚡ Raccourcis
+
+  - type: grid
+    square: false
+    columns: 2
+    cards:
+      - type: custom:button-card
+        template: carte_action_standard
+        entity: script.aspirateur_appliquer_raccourci
+        name: RDC — aspiration complète
+        icon: mdi:home-floor-g
+        variables:
+          confirmation: >-
+            Préremplir la composition avec « RDC — aspiration
+            complète » ? Aucune mission ne sera lancée.
+          service: script.aspirateur_appliquer_raccourci
+          data:
+            raccourci: rdc_aspiration
+
+      - type: custom:button-card
+        template: carte_action_standard
+        entity: script.aspirateur_appliquer_raccourci
+        name: RDC — serpillière complète
+        icon: mdi:water-outline
+        variables:
+          confirmation: >-
+            Préremplir la composition avec « RDC — serpillière
+            complète » ? Aucune mission ne sera lancée.
+          service: script.aspirateur_appliquer_raccourci
+          data:
+            raccourci: rdc_serpilliere
+
+  - type: grid
+    square: false
+    columns: 1
+    cards:
+      - type: custom:button-card
+        template: carte_action_standard
+        entity: script.aspirateur_appliquer_raccourci
+        name: Étage — aspiration complète
+        icon: mdi:stairs-up
+        variables:
+          confirmation: >-
+            Préremplir la composition avec « Étage — aspiration
+            complète » ? Aucune mission ne sera lancée.
+          service: script.aspirateur_appliquer_raccourci
+          data:
+            raccourci: etage_aspiration
+
+  # ==================================================
+  # 3️⃣ LANCEMENT — action principale, confirmée
+  # --------------------------------------------------
+  # Une mission est une action physique sur un équipement mobile :
+  # jamais un basculement d'un clic (contrat 11 §3.6). Elle reste donc
+  # CONFIRMÉE, pleine largeur et plus haute que tout le reste.
+  #
+  # JUSTE SOUS LES RACCOURCIS, et c'est ce qui oblige au RÉCAPITULATIF.
+  # Les grilles de composition vivent désormais PLUS BAS : sans lui,
+  # un tap sur un raccourci puis un tap sur « Lancer » partiraient sans
+  # que le profil et les passages proposés aient été vus. Or le
+  # chapitre 10 §3.1 exige qu'au lancement « les quatre champs sont
+  # renseignés et l'opérateur les a sous les yeux » (ASP-INV-56).
+  # Le récapitulatif les met sous les yeux, À L'ENDROIT DU GESTE.
+  #
+  # LE RÉCAPITULATIF LIT, IL NE DÉCIDE RIEN. Il restitue les QUATRE
+  # helpers d'intention tels qu'ils sont écrits : carte, pièces
+  # cochées de CETTE carte, profil, passages. Aucune revalidation,
+  # aucun jugement d'admissibilité — le moteur revalide (ASP-IMC-1).
+  # Les pièces sont nommées par le libellé du HELPER Arsenal (partie
+  # finale de son nom), jamais par un libellé issu de l'appareil ni
+  # par un index de segment nu. La correspondance carte → préfixe de
+  # segment reprend celle des trois conditions de la composition
+  # détaillée : 0 · Rez-de-chaussée, 1 · Étage, 2 · Annexe (02 §2).
+  # Un helper illisible rend « — » : jamais un nominal (ASP-INV-45).
+  # Gris : c'est une observation, pas une alerte.
+  #
+  # Elle n'est PAS orange. L'orange du dépôt signale ce qui interrompt
+  # ou contrarie — Pause et Arrêt, plus haut. Lancer est le geste
+  # attendu de cette page : le peindre en vigilance banaliserait la
+  # vigilance là où elle compte.
+  # ==================================================
+  - type: custom:button-card
+    template: section_header
+    name: 🚀 Lancement
+
+  - type: custom:button-card
+    template: socle_status_label_72
+    entity: input_select.aspirateur_intention_carte
+    name: Récapitulatif
+    icon: mdi:clipboard-list-outline
+    # Le label lit QUATRE helpers et jusqu'à huit booléens de segment :
+    # sans `all`, la carte ne se redessinerait que sur la carte choisie.
+    triggers_update: all
+    label: |
+      [[[
+        const lire = (id) => {
+          const e = states[id];
+          const s = e ? e.state : null;
+          return (!s || s === 'unknown' || s === 'unavailable') ? null : s;
+        };
+        const carte = lire('input_select.aspirateur_intention_carte');
+        const profil = lire('input_select.aspirateur_intention_profil');
+        const passages = lire('input_select.aspirateur_intention_passages');
+        const index = { 'Rez-de-chaussée': 0, 'Étage': 1, 'Annexe': 2 };
+        let pieces = '—';
+        if (carte !== null && carte in index) {
+          const prefixe = `input_boolean.aspirateur_segment_${index[carte]}_`;
+          const cochees = Object.keys(states)
+            .filter((id) => id.startsWith(prefixe) && states[id].state === 'on')
+            .sort((a, b) => Number(a.split('_').pop()) - Number(b.split('_').pop()))
+            .map((id) => {
+              const nom = states[id].attributes.friendly_name || '';
+              const parts = nom.split(' — ');
+              return parts[parts.length - 1];
+            });
+          pieces = cochees.length ? cochees.join(', ') : 'Aucune pièce';
+        }
+        return [carte ?? '—', pieces, profil ?? '—', passages ?? '—']
+          .join(' · ');
+      ]]]
+    styles:
+      card:
+        - height: auto
+        - background-color: rgba(158, 158, 158, 0.2)
+      label:
+        - font-size: 12px
+        - white-space: normal
+        - line-height: 1.3
+
+  - type: grid
+    square: false
+    columns: 1
+    cards:
+      - type: custom:button-card
+        template: carte_action_standard
+        entity: script.aspirateur_composer_intention
+        name: Lancer la mission
+        icon: mdi:robot-vacuum
+        styles:
+          card:
+            - height: 72px
+        variables:
+          confirmation: >-
+            ⚠️ Lancer une mission avec la composition affichée juste
+            au-dessus ? Le robot va se mettre en marche.
+          service: script.aspirateur_composer_intention
+
   # Motif lisible — restitué NON TRONQUÉ, tel que le backend le produit.
+  # JUSTE SOUS LE LANCEMENT, et non plus dans le bloc d'état de tête :
+  # c'est là qu'il répond — un lancement refusé s'explique à l'endroit
+  # même du geste. Le bloc d'état garde ainsi sa forme compacte 2 × 2
+  # en tête de page (arbitrage opérateur du 2026-09-24).
   # CHROME RÉDUIT : plus de hauteur minimale imposée, la carte prend la
   # hauteur de son texte et pas un pixel de plus ; libellé à 12 px, parce
   # qu'un motif long est une phrase à lire, pas un chiffre à repérer.
@@ -258,9 +633,15 @@ cards:
   # ==================================================
   # 2️⃣ COMPOSITION — carte, pièces, profil, passages
   # --------------------------------------------------
-  # Trois sélecteurs segmentés. Un tap écrit l'option ; le segment
-  # actif est bleu et gras. Aucune confirmation : composer est
-  # réversible et ne touche pas l'appareil.
+  # COMPOSITION DÉTAILLÉE, sous le lancement : c'est ici qu'on
+  # AJUSTE ce que le récapitulatif restitue plus haut, ou qu'on compose
+  # sans raccourci. Trois sélecteurs segmentés. Un tap écrit l'option ;
+  # le segment actif est bleu et gras. Aucune confirmation : composer
+  # est réversible et ne touche pas l'appareil.
+  #
+  # « Réinitialiser la composition » ferme la section : c'est un geste
+  # SUR la composition, pas un geste de mission — il n'a rien à faire
+  # à côté du lancement, où il se prenait pour lui.
   #
   # ORDRE : la carte d'abord, ses pièces IMMÉDIATEMENT après — le
   # choix de la carte n'a d'effet visible que sur elles —, puis le
@@ -564,125 +945,10 @@ cards:
           selecteur: input_select.aspirateur_intention_passages
           option: 3 passages
 
-  # ==================================================
-  # ⚡ RACCOURCIS — les TROIS du chapitre 10 §3
-  # --------------------------------------------------
-  # Sous-section de la composition : un raccourci PRÉREMPLIT la
-  # composition — carte, pièces, profil, passages — et s'arrête là.
-  # IL NE LANCE RIEN : le script appelé n'écrit que des helpers
-  # d'intention, et le bouton de lancement ci-dessous reste l'unique
-  # autorité de lancement (10 §3.1, 11 §3.6).
-  #
-  # Les réglages proposés sont VISIBLES immédiatement dans les grilles
-  # ci-dessus — les segments bleus s'y déplacent — et MODIFIABLES d'un
-  # geste avant tout lancement. C'est la condition exacte à laquelle le
-  # second alinéa d'ASP-INV-56 ouvre cette faculté.
-  #
-  # GÉOMÉTRIE — DEUX RANGÉES, ET POURQUOI CELLE-LÀ.
-  #   Rangée 1, DEUX colonnes : les deux raccourcis du RDC. Ils
-  #   partagent le MÊME périmètre et ne diffèrent que par la nature du
-  #   nettoyage — les apparier est la lecture juste, pas un choix
-  #   décoratif.
-  #   Rangée 2, PLEINE LARGEUR : l'Étage, qui est un autre périmètre.
-  #
-  #   HAUTEUR NATIVE, ET C'EST LA CLÉ. Ces cartes ne forcent AUCUNE
-  #   hauteur : elles gardent les 72px de `carte_base_v2`. À deux
-  #   colonnes sur un téléphone, une cellule offre ~152px de texte utile
-  #   quand « RDC — serpillière complète » en demande ~176 : le libellé
-  #   passe donc sur DEUX lignes, et deux lignes de 13px ne tiennent pas
-  #   sous une icône de 26px dans une carte de 52px. C'est exactement ce
-  #   qu'une hauteur forcée à 52px produirait — un texte tronqué ou
-  #   débordant. La hauteur du socle, elle, les accueille.
-  #
-  #   Le compte y est aussi : deux rangées de 72px font 152px là où
-  #   trois rangées de 52px en faisaient 172. Moins haut, et deux fois
-  #   moins de lignes à parcourir.
-  # ==================================================
-  - type: custom:button-card
-    template: sub_section_header
-    name: ⚡ Raccourcis
-
-  - type: grid
-    square: false
-    columns: 2
-    cards:
-      - type: custom:button-card
-        template: carte_action_standard
-        entity: script.aspirateur_appliquer_raccourci
-        name: RDC — aspiration complète
-        icon: mdi:home-floor-g
-        variables:
-          confirmation: >-
-            Préremplir la composition avec « RDC — aspiration
-            complète » ? Aucune mission ne sera lancée.
-          service: script.aspirateur_appliquer_raccourci
-          data:
-            raccourci: rdc_aspiration
-
-      - type: custom:button-card
-        template: carte_action_standard
-        entity: script.aspirateur_appliquer_raccourci
-        name: RDC — serpillière complète
-        icon: mdi:water-outline
-        variables:
-          confirmation: >-
-            Préremplir la composition avec « RDC — serpillière
-            complète » ? Aucune mission ne sera lancée.
-          service: script.aspirateur_appliquer_raccourci
-          data:
-            raccourci: rdc_serpilliere
-
   - type: grid
     square: false
     columns: 1
     cards:
-      - type: custom:button-card
-        template: carte_action_standard
-        entity: script.aspirateur_appliquer_raccourci
-        name: Étage — aspiration complète
-        icon: mdi:stairs-up
-        variables:
-          confirmation: >-
-            Préremplir la composition avec « Étage — aspiration
-            complète » ? Aucune mission ne sera lancée.
-          service: script.aspirateur_appliquer_raccourci
-          data:
-            raccourci: etage_aspiration
-
-  # ==================================================
-  # 3️⃣ LANCEMENT — action principale, confirmée
-  # --------------------------------------------------
-  # Une mission est une action physique sur un équipement mobile :
-  # jamais un basculement d'un clic (contrat 11 §3.6). Elle reste donc
-  # CONFIRMÉE, pleine largeur et plus haute que tout le reste.
-  #
-  # Elle n'est PAS orange. L'orange du dépôt signale ce qui interrompt
-  # ou contrarie — Pause et Arrêt ci-dessous. Lancer est le geste
-  # attendu de cette page : le peindre en vigilance banaliserait la
-  # vigilance là où elle compte.
-  # ==================================================
-  - type: custom:button-card
-    template: section_header
-    name: 🚀 Lancement
-
-  - type: grid
-    square: false
-    columns: 1
-    cards:
-      - type: custom:button-card
-        template: carte_action_standard
-        entity: script.aspirateur_composer_intention
-        name: Lancer la mission
-        icon: mdi:robot-vacuum
-        styles:
-          card:
-            - height: 72px
-        variables:
-          confirmation: >-
-            ⚠️ Lancer une mission avec la composition affichée ? Le robot
-            va se mettre en marche.
-          service: script.aspirateur_composer_intention
-
       - type: custom:button-card
         template: carte_action_standard
         entity: script.aspirateur_reinitialiser_composition
@@ -694,164 +960,6 @@ cards:
         variables:
           confirmation: "Remettre la composition à son état de départ ?"
           service: script.aspirateur_reinitialiser_composition
-
-  # ==================================================
-  # 4️⃣ CONDUITE — quatre gestes, masqués hors sens physique
-  # --------------------------------------------------
-  # L'AUTORITÉ DE L'OFFRE EST LA MISSION ARSENAL OUVERTE, et elle seule
-  # (ASP-INV-97). L'interface la reçoit par la PROJECTION MÉTIER — elle
-  # ne lit jamais le verdict, ce que le contrat 11 §2 interdit — et
-  # jamais par une combinaison de témoins natifs :
-  #   pause       ← mission Arsenal ouverte, ET nettoyage réel en cours
-  #   reprise     ← mission Arsenal ouverte, ET mission en pause
-  #   arrêt       ← mission Arsenal ouverte, SANS AUTRE GARDE : l'arrêt
-  #                 n'est jamais plus contraint que le lancement
-  #                 (ASP-INV-43), et il ne dépend plus du témoin natif
-  #   retour base ← mission Arsenal ouverte, et le robot ne rentre pas
-  #                 déjà — les trois exclusions sont de SENS PHYSIQUE,
-  #                 conservées telles quelles (ASP-INV-48)
-  # Le backend REVALIDE chacune : masquer ici est une commodité, pas
-  # une autorisation.
-  #
-  # C'EST LA LEVÉE DE RC-02, ET ELLE PORTE SUR LES QUATRE GESTES.
-  # L'affichage et la garde du backend lisent LE MÊME PRÉDICAT
-  # D'AUTORITÉ : aucun bouton n'est présenté puis refusé, et aucun geste
-  # possible n'est masqué. Une mission externe — robot actif qu'Arsenal
-  # n'a pas ouvert — n'expose donc AUCUN geste de conduite Arsenal.
-  #
-  # LES DEUX CONDITIONS SE CUMULENT, ET NE SE CONFONDENT PAS :
-  # l'AUTORITÉ ouvre l'offre — la mission Arsenal, reçue par la
-  # projection —, le SENS PHYSIQUE la restreint. C'est la lettre du
-  # contrat 15 §3.1, dont la garde de Pause est « mission Arsenal
-  # ouverte ET activité en cours », et celle de Reprise « ASP-INV-62,
-  # PLUS mission Arsenal ouverte » (D-07). L'interface n'appliquait que
-  # la moitié physique de ces deux gardes : le lot 8 pose la moitié
-  # d'autorité qui manquait.
-  #
-  # LA SECTION ENTIÈRE, EN-TÊTE COMPRIS, tient dans une condition : la
-  # disjonction EXACTE des quatre gardes ci-dessus. Depuis que les quatre
-  # exigent l'autorité, cette disjonction se réduit à UN SEUL TERME —
-  # « mission Arsenal ouverte » —, et ce n'est pas un raccourci : la
-  # garde d'Arrêt est ce terme NU, et les trois autres le contiennent.
-  # Une disjonction plus large ferait paraître l'en-tête au-dessus de
-  # ZÉRO bouton sur une mission externe, exactement ce que la règle
-  # ci-dessous proscrit.
-  #
-  # Aucun sur-ensemble, aucune approximation : si un seul geste a du
-  # sens, l'en-tête paraît ; si aucun n'en a, rien ne paraît.
-  #
-  # L'INDISPONIBILITÉ DE LA PROJECTION NE VAUT PAS « PAS DE MISSION ».
-  # Elle est rendue comme telle par la projection (ASP-INV-96), et une
-  # condition d'état sur `on` ne la confond donc avec rien : aucun geste
-  # n'est offert quand la responsabilité est inconnaissable. C'est le
-  # sens sûr, et c'est celui du backend.
-  # ==================================================
-  - type: conditional
-    conditions:
-      - condition: state
-        entity: binary_sensor.aspirateur_mission_arsenal_ouverte
-        state: "on"
-    card:
-      type: vertical-stack
-      cards:
-        - type: custom:button-card
-          template: section_header
-          name: 🎛️ Conduite
-
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: binary_sensor.aspirateur_mission_arsenal_ouverte
-              state: "on"
-            - condition: state
-              entity: sensor.aspirateur_etat_canonique
-              state: nettoyage_reel
-          card:
-            type: custom:button-card
-            template: carte_action_standard_warning
-            entity: script.aspirateur_conduire_mission
-            name: Mettre en pause
-            icon: mdi:pause-circle
-            styles:
-              card:
-                - height: 52px
-            variables:
-              confirmation: "Mettre la mission en pause ?"
-              service: script.aspirateur_conduire_mission
-              data:
-                geste: pause
-
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: binary_sensor.aspirateur_mission_arsenal_ouverte
-              state: "on"
-            - condition: state
-              entity: sensor.aspirateur_etat_canonique
-              state: pause
-          card:
-            type: custom:button-card
-            template: carte_action_standard
-            entity: script.aspirateur_conduire_mission
-            name: Reprendre la mission
-            icon: mdi:play-circle
-            styles:
-              card:
-                - height: 52px
-            variables:
-              confirmation: "Reprendre la mission ?"
-              service: script.aspirateur_conduire_mission
-              data:
-                geste: reprise
-
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: binary_sensor.aspirateur_mission_arsenal_ouverte
-              state: "on"
-            - condition: state
-              entity: sensor.aspirateur_etat_canonique
-              state_not: retour_base
-            - condition: state
-              entity: sensor.aspirateur_etat_canonique
-              state_not: amarrage
-            - condition: state
-              entity: sensor.aspirateur_etat_canonique
-              state_not: charge
-          card:
-            type: custom:button-card
-            template: carte_action_standard
-            entity: script.aspirateur_conduire_mission
-            name: Renvoyer à la base
-            icon: mdi:home-import-outline
-            styles:
-              card:
-                - height: 52px
-            variables:
-              confirmation: "Renvoyer le robot à sa base ?"
-              service: script.aspirateur_conduire_mission
-              data:
-                geste: retour_base
-
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: binary_sensor.aspirateur_mission_arsenal_ouverte
-              state: "on"
-          card:
-            type: custom:button-card
-            template: carte_action_standard_warning
-            entity: script.aspirateur_conduire_mission
-            name: Arrêter la mission
-            icon: mdi:stop-circle
-            styles:
-              card:
-                - height: 52px
-            variables:
-              confirmation: "⚠️ Arrêter la mission en cours ?"
-              service: script.aspirateur_conduire_mission
-              data:
-                geste: arret
 
   # ==================================================
   # 5️⃣ ENTRETIEN — synthèse compacte, LECTURE SEULE
