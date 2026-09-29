@@ -74,7 +74,7 @@ devices:
     friendly_name: prise_buanderie
   '0xa4c138e56ee153be':
     friendly_name: prise_lampe_parents
-  '0xa4c1384ee54413c5':
+  '0xa4c138110c58ffff':
     friendly_name: prise_lampe_chambre_enfants
   '0xa4c1386bff87702b':
     friendly_name: prise_onduleur
