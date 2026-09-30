@@ -403,6 +403,86 @@ def test_sejour_cibles_inputs() -> None:
 
 
 # ---------------------------------------------------------------------------
+# T13 — script.volets_fermeture_execute : aucune condition sur l'état des
+#       covers (§5.6 — invariant actionneur sans retour d'état)
+#
+# Invariant (§5.6) : close_cover est émis pour chaque cover reçu,
+# indépendamment de l'état logique HA. Toute étape `condition` dans le
+# script, ou toute lecture de 'closed' / current_position, réintroduirait
+# un veto fondé sur un pseudo-état (incident du 2026-09-30).
+# ---------------------------------------------------------------------------
+
+F_SCRIPT_FERMETURE = REPO_ROOT / "10_scripts/volets/fermeture_execute.yaml"
+PSEUDO_ETAT_PATTERN = re.compile(r"condition\s*:|['\"]closed['\"]|current_position")
+
+
+def test_script_sans_veto_etat() -> None:
+    content = read(F_SCRIPT_FERMETURE)
+    if not content:
+        ERRORS.append(f"T13 — Fichier inaccessible : "
+                      f"{F_SCRIPT_FERMETURE.relative_to(REPO_ROOT)}")
+        return
+    violations = []
+    for i, line in enumerate(content.splitlines(), 1):
+        if line.strip().startswith("#"):
+            continue
+        if PSEUDO_ETAT_PATTERN.search(line):
+            violations.append(f"ligne {i}: {line.strip()[:80]}")
+    if "cover.close_cover" not in content:
+        violations.append("appel cover.close_cover absent")
+    if violations:
+        for v in violations:
+            ERRORS.append(f"T13 — Veto fondé sur l'état interdit dans "
+                          f"{F_SCRIPT_FERMETURE.relative_to(REPO_ROOT)} "
+                          f"(§5.6 actionneur sans retour d'état) : {v}")
+    else:
+        print("✔ T13 — script.volets_fermeture_execute : close_cover émis "
+              "sans condition sur l'état des covers")
+
+
+# ---------------------------------------------------------------------------
+# T14 — Notifications de fermeture : construites sur le compte rendu
+#       d'émission, sans affirmation de résultat physique (§6)
+#
+# Invariant (§6) : les automations consomment la réponse du script
+# (response_variable) et aucune notification n'affirme un résultat
+# physique non observable.
+# ---------------------------------------------------------------------------
+
+RESULTAT_PHYSIQUE_PATTERN = re.compile(
+    r"volets?\s+[^\n\"]*ferm[ée]s\b|fermeture\s+confirm|protection\s+[^\n\"]*trait[ée]",
+    re.IGNORECASE,
+)
+
+
+def test_notifications_sans_resultat_physique() -> None:
+    all_ok = True
+    for path in [F_AUTO_SEJOUR, F_AUTO_CHAMBRES]:
+        content = read(path)
+        if not content:
+            ERRORS.append(f"T14 — Fichier inaccessible : "
+                          f"{path.relative_to(REPO_ROOT)}")
+            all_ok = False
+            continue
+        if not re.search(r"response_variable\s*:\s*execution\b", content):
+            ERRORS.append(f"T14 — Compte rendu d'émission non consommé "
+                          f"(response_variable) dans "
+                          f"{path.relative_to(REPO_ROOT)} (§6)")
+            all_ok = False
+        for i, line in enumerate(content.splitlines(), 1):
+            if line.strip().startswith("#"):
+                continue
+            if RESULTAT_PHYSIQUE_PATTERN.search(line):
+                ERRORS.append(f"T14 — Affirmation de résultat physique dans "
+                              f"{path.relative_to(REPO_ROOT)} (§6) : "
+                              f"ligne {i}: {line.strip()[:80]}")
+                all_ok = False
+    if all_ok:
+        print("✔ T14 — Notifications de fermeture fondées sur le compte rendu "
+              "d'émission, sans résultat physique affirmé")
+
+
+# ---------------------------------------------------------------------------
 # Registre des tests
 # ---------------------------------------------------------------------------
 
@@ -419,6 +499,8 @@ TESTS = [
     test_notification_exposition_present,
     test_chambres_cibles_inputs,
     test_sejour_cibles_inputs,
+    test_script_sans_veto_etat,
+    test_notifications_sans_resultat_physique,
 ]
 
 # ---------------------------------------------------------------------------
@@ -426,7 +508,7 @@ TESTS = [
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    print("Arsenal — Validation contractuelle : Volets pluie v2.2.1\n")
+    print("Arsenal — Validation contractuelle : Volets pluie v2.3.0\n")
 
     for test_fn in TESTS:
         test_fn()

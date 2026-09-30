@@ -20,6 +20,9 @@
 #
 #     - Déclenchement principal : intention_pluie_forte → ON
 #     - Déclenchement de reprise : systeme_stable → ON si pluie forte déjà active
+#     - Notification construite sur le compte rendu d'émission du script :
+#         ordre transmis (cibles émises) / échec d'exécution.
+#       Volets sans retour d'état : jamais de « volets fermés ».
 #
 #  🚫 NE FAIT PAS
 #
@@ -29,7 +32,7 @@
 #     - Ne ferme aucun autre volet que le séjour
 #
 #  📐 CONTRAT
-#     CONTRAT_PLUIE_VOLETS.md v2.2.1 — sections 4.2, 5.7
+#     CONTRAT_PLUIE_VOLETS.md v2.3.0 — sections 4.2, 5.6, 5.7, 6
 # ==========================================================
 
 - id: "10160000000010"
@@ -76,14 +79,36 @@
     - service: script.volets_fermeture_execute
       data:
         covers: "{{ cibles_sejour }}"
-    - service: script.notification_envoyer_avance
-      data:
-        cible: input_text.telephone_parent_1_notify
-        titre: "🌧️ Pluie forte – Volets séjour fermés"
-        message: >
-          Pluie forte détectée.
-          Fermeture automatique des volets du séjour à {{ now().strftime('%H:%M') }}.
-          Cibles : {{ cibles_sejour | join(', ') }}.
-        extra:
-          group: "volets"
-          tag: "fermeture_volets_pluie_forte_sejour"
+      response_variable: execution
+      continue_on_error: true
+    - if:
+        - condition: template
+          alias: "Compte rendu d'émission reçu"
+          value_template: "{{ execution is defined and execution.emis is defined }}"
+      then:
+        - service: script.notification_envoyer_avance
+          data:
+            cible: input_text.telephone_parent_1_notify
+            titre: "🌧️ Pluie forte – Ordre de fermeture volets séjour {{ 'transmis' if execution.emis | length > 0 else 'non transmis' }}"
+            message: >
+              Pluie forte détectée à {{ now().strftime('%H:%M') }}.
+              {% if execution.emis | length > 0 %}Ordre de fermeture transmis par Home Assistant : {{ execution.emis | join(', ') }}.{% endif %}
+              {% if execution.indisponibles | length > 0 %}Non transmis par Home Assistant (entité indisponible) : {{ execution.indisponibles | join(', ') }}.{% endif %}
+              Volets sans retour d'état : fermeture physique non confirmée.
+            extra:
+              group: "volets"
+              tag: "fermeture_volets_pluie_forte_sejour"
+      else:
+        - service: script.notification_envoyer_avance
+          data:
+            cible: input_text.telephone_parent_1_notify
+            titre: "🌧️ Pluie forte – Échec de l'ordre de fermeture volets séjour"
+            message: >
+              Pluie forte détectée à {{ now().strftime('%H:%M') }}.
+              Erreur technique pendant l'émission de l'ordre de fermeture :
+              ordre non transmis, ou transmis en partie seulement.
+              Cibles décidées : {{ cibles_sejour | join(', ') }}.
+              Voir la trace de script.volets_fermeture_execute.
+            extra:
+              group: "volets"
+              tag: "fermeture_volets_pluie_forte_sejour"

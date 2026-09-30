@@ -1,6 +1,6 @@
 # volets_pluie.md
 <!-- Arsenal — Domaine : Météo / Protection volets -->
-<!-- Version : 2.2.1 -->
+<!-- Version : 2.3.0 -->
 <!-- Statut : Normatif — à respecter avant toute modification YAML -->
 
 > Les noms d'entités existants sont repris tels quels dans ce contrat,
@@ -142,7 +142,7 @@ Aucune dépendance à l'ouverture des fenêtres séjour.
 
 | Entité | Rôle |
 |---|---|
-| `script.volets_fermeture_execute` | Fermeture idempotente d'une liste de covers |
+| `script.volets_fermeture_execute` | Émission de `cover.close_cover` vers une liste de covers, avec compte rendu d'émission |
 
 **Interface :**
 ```yaml
@@ -156,9 +156,23 @@ fields:
         domain: cover
 ```
 
-Script **pur exécutif** : reçoit `covers`, ferme les covers non déjà `closed`, ignore `unknown`/`unavailable`. Zéro lecture de sensor, zéro politique, zéro notification.
+Script **pur exécutif** : reçoit `covers` et appelle `cover.close_cover` pour **chaque** cover reçu. Zéro lecture de sensor, zéro politique, zéro notification, **zéro condition sur l'état des covers**.
 
-**Invariant idempotence :** l'idempotence est garantie par le script — les automations n'ont pas à s'en protéger.
+**Invariant actionneur sans retour d'état :** les volets de ce périmètre n'ont aucun retour d'état physique fiable (cf. [`architecture/volets.md`](../architecture/volets.md) §3). Pour eux, l'état logique exposé par Home Assistant — `open`, `closed`, `opening`, `closing`, `unknown`, `unavailable`, `current_position` ou toute autre estimation de position — ne constitue **ni une condition de décision, ni une preuve du résultat physique**. Lorsqu'une décision de ce contrat impose une fermeture, la commande de fermeture est émise **indépendamment de cet état logique** : aucun état de cover ne peut servir de veto, ni justifier qu'une commande soit jugée inutile.
+
+**Invariant idempotence :** l'idempotence est assurée par la **répétabilité sûre** de `cover.close_cover` — rejouer la même décision réémet la même commande sans effet de bord — et **non** par la suppression de l'appel sur la base d'un pseudo-état. Les automations n'ont pas à s'en protéger.
+
+**Indisponibilité :** `unavailable` ne transforme pas « fermer ce volet » en « ne rien faire » côté Arsenal : l'appel est tenté. Le cœur de Home Assistant écarte lui-même une entité indisponible d'un appel de service ; l'ordre est alors **tenté mais non transmis**, ce que le compte rendu expose. L'état logique n'est lu qu'à cette fin de diagnostic, jamais pour conditionner l'appel.
+
+**Compte rendu d'émission (réponse du script) :**
+```yaml
+demandes: [covers reçus]
+emis: [covers pour lesquels close_cover a été appelé, entité disponible]
+indisponibles: [covers pour lesquels close_cover a été appelé, entité unavailable — non transmis]
+```
+Le compte rendu décrit l'**action** de Home Assistant, jamais la position physique. Une erreur technique pendant l'émission interrompt le script : **aucun compte rendu n'est produit**, et l'appelant ne peut pas conclure à une émission.
+
+> **Limite connue.** L'interruption sur erreur technique laisse **non tentées** les cibles situées après la cible en erreur dans la liste. Ce n'est pas un veto fondé sur l'état : l'échec est rendu visible (§6) et non masqué. Tenter chaque cible malgré une erreur, tout en gardant une trace par cible, supposerait un script d'émission unitaire supplémentaire, hors du périmètre de la présente révision.
 
 **Invariant unicité d'exécution :** `mode: queued` absorbe les appels concurrents sans collision.
 
@@ -180,5 +194,17 @@ Les notifications d'exposition **ne sont pas inhibées** par `input_boolean.ferm
 | Événement | Nature | Tag |
 |---|---|---|
 | Pluie détectée + présence + fenêtre chambre ouverte | Informative d'exposition | `pluie_fenetres_ouvertes` |
-| Pluie détectée + absence + verrou ON + fermeture volet chambre | Confirmation d'exécution | `fermeture_volets_pluie_chambres` |
-| Pluie forte + volets séjour fermés | Confirmation d'exécution | `fermeture_volets_pluie_forte_sejour` |
+| Pluie détectée + absence + verrou ON + fermeture volet chambre | Trace d'émission de commande (ou d'échec d'exécution) | `fermeture_volets_pluie_chambres` |
+| Pluie forte + fermeture volets séjour décidée | Trace d'émission de commande (ou d'échec d'exécution) | `fermeture_volets_pluie_forte_sejour` |
+
+**Invariant sémantique des notifications de fermeture :** une notification de fermeture décrit uniquement ce qui est établi — la **décision**, l'**appel effectif** de `cover.close_cover` et une éventuelle **erreur d'exécution**. Sans retour d'état physique (§5.6), elle ne peut affirmer aucun résultat physique (« volets fermés », « fermeture confirmée », « protection traitée »…) et doit l'énoncer.
+
+Elle est construite sur le **compte rendu d'émission** du script (§5.6), jamais sur la liste des cibles décidées présentée comme preuve d'appel :
+
+| Compte rendu | Notification |
+|---|---|
+| Reçu, `emis` non vide | Ordre de fermeture **transmis** aux covers `emis` ; covers `indisponibles` signalés **non transmis** |
+| Reçu, `emis` vide | Ordre de fermeture **non transmis** (covers indisponibles) |
+| Absent (erreur technique) | **Échec** de l'ordre de fermeture : transmission non établie, cibles décidées rappelées |
+
+Une erreur non rattrapable (erreur de configuration, `ServiceNotFound`) interrompt l'automation : aucune notification n'est émise. Elle n'est jamais convertie en notification de succès.

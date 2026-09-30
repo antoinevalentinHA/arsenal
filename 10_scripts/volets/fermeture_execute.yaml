@@ -2,20 +2,37 @@
 # 🧠 ARSENAL — SCRIPT : Volets / Fermeture (exécution)
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Fermer une liste de covers de manière idempotente.
+#   Émettre cover.close_cover vers chaque cover de la liste reçue.
 #   Reçoit la liste en paramètre — ne décide rien.
 #
-# ✅ GARDE-FOUS
-#   - ignore unknown / unavailable
-#   - n'appelle close_cover que si l'état n'est pas déjà "closed"
+# 🧱 ACTIONNEUR SANS RETOUR D'ÉTAT
+#   Les volets pilotés n'ont aucun retour d'état physique :
+#   l'état logique HA (open / closed / position / unknown /
+#   unavailable) n'est ni une condition ni une preuve.
+#   → aucun état de cover ne conditionne l'émission.
+#   → l'idempotence est portée par la répétabilité sûre de
+#     cover.close_cover, pas par un saut fondé sur l'état.
+#
+# 📤 COMPTE RENDU (réponse du script)
+#   - demandes      : covers reçus
+#   - emis          : close_cover appelé, entité disponible
+#   - indisponibles : close_cover appelé alors que l'entité était
+#                     unavailable — le cœur HA écarte les entités
+#                     indisponibles d'un appel de service : ordre
+#                     tenté, non transmis
+#   Diagnostic uniquement : jamais une preuve de position.
+#   Une erreur technique interrompt le script : aucun compte
+#   rendu n'est produit (l'appelant ne peut pas conclure à
+#   une émission).
 #
 # 🚫 NE FAIT PAS
 #   - aucune lecture de sensor de décision
 #   - aucune évaluation de politique (pluie, présence, autorisation)
+#   - aucune condition sur l'état des covers
 #   - aucune notification
 #
 # 📐 CONTRAT
-#   CONTRAT_PLUIE_VOLETS.md v2.2.1 — section 5.6
+#   CONTRAT_PLUIE_VOLETS.md v2.3.0 — section 5.6
 # ==========================================================
 
 volets_fermeture_execute:
@@ -33,17 +50,26 @@ volets_fermeture_execute:
           domain: cover
 
   sequence:
+    - variables:
+        emis: []
+        indisponibles: []
     - repeat:
         for_each: "{{ covers }}"
         sequence:
-          - condition: template
-            alias: "Garde-fou : cover dans un état actionnable"
-            value_template: >
-              {{ states(repeat.item) not in ['unknown', 'unavailable'] }}
-          - condition: template
-            alias: "Idempotence : ne ferme que si pas déjà closed"
-            value_template: >
-              {{ states(repeat.item) != 'closed' }}
+          - variables:
+              indisponible_a_l_emission: "{{ is_state(repeat.item, 'unavailable') }}"
           - service: cover.close_cover
             target:
               entity_id: "{{ repeat.item }}"
+          - variables:
+              emis: >
+                {{ emis if indisponible_a_l_emission else emis + [repeat.item] }}
+              indisponibles: >
+                {{ indisponibles + [repeat.item] if indisponible_a_l_emission else indisponibles }}
+    - variables:
+        compte_rendu:
+          demandes: "{{ covers }}"
+          emis: "{{ emis }}"
+          indisponibles: "{{ indisponibles }}"
+    - stop: "Compte rendu d'émission"
+      response_variable: compte_rendu

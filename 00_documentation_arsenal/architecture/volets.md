@@ -80,6 +80,19 @@ côté Volets.
 | **Alimentation** | `switch.prise_palier` — secteur direct (cf. [`infrastructure_puissance.md`](infrastructure_puissance.md)) |
 | **Criticité (supervision LAN)** | *importante* (classe « RF / Volets », cf. [`ping_lan_synthese.md`](../contrats/ping_lan_synthese.md)) |
 | **Covers exposés (relevés)** | `cover.sejour_gauche`, `cover.sejour_droit`, `cover.chambre_enfants`, `cover.salle_de_jeux` — liste non exhaustive |
+| **Retour d'état physique** | **Aucun** — l'état `cover.*` (`open` / `closed`, `current_position`) est une estimation fournie par la passerelle, pas une mesure de la position réelle |
+
+> **Actionneurs sans retour d'état — fait établi.** Arbitrage de Direction du
+> 2026-09-30, corroboré par l'observation : au chargement de l'entrée, la
+> passerelle annonce les 4 volets `closed` / position 0 (2026-08-24 après
+> power-cycle, cf. [`pont_idiamant.md`](../contrats/pont_idiamant.md) §7 ;
+> 2026-09-28 au redémarrage de Home Assistant), et un mouvement physique hors
+> Home Assistant ne modifie pas cet état. Le 2026-09-30, deux volets séjour
+> physiquement ouverts étaient affichés `closed` depuis deux jours.
+>
+> Conséquence d'architecture : l'état `cover.*` n'est **ni une condition ni une
+> preuve** pour Arsenal. La règle opposable est portée par le contrat
+> [`volets_pluie.md`](../contrats/volets_pluie.md) §5.6 et §6.
 
 > ⚠️ **À confirmer :** la **méthode d'intégration exacte** des `cover.*`
 > dans Home Assistant (intégration native, cloud, ou locale) n'est pas
@@ -117,7 +130,8 @@ Pont iDiamant (produit commercial)          ← hôte fixe sur le LAN
 Entités cover.* Home Assistant (transport)  ← PRODUIT PAR LE PONT
         ↓
 Scripts exécutifs Arsenal                    ← APPARTIENT À ARSENAL
-  · script.volets_fermeture_execute (idempotent, pur exécutif)
+  · script.volets_fermeture_execute (pur exécutif : close_cover émis
+    sans condition d'état, compte rendu d'émission)
   · scripts de commande groupée (ouvrir/fermer tout, séjour…)
         ↓
 Orchestration & décision métier              ← APPARTIENT À ARSENAL
