@@ -6,7 +6,7 @@
 #   Outil de maintenance MANUEL permettant de :
 #     - purger les historiques hebdomadaires de température
 #       et d’humidité du stock
-#     - recalibrer les min/max servant de référence qualité
+#     - recaler les min/max de mesure observés
 #
 #   Ce script redéfinit un NOUVEAU CADRE D’ANALYSE
 #   pour le suivi environnemental des zones de stockage.
@@ -35,7 +35,7 @@
 #   ➜ Script à exécuter UNIQUEMENT :
 #     - en début de nouvelle période d’analyse
 #     - après dérive ou incohérence de lecture
-#     - lors d’un changement de référentiel qualité
+#     - lors d’un changement de période d’observation
 #
 # ----------------------------------------------------------
 # 🔒 PROTECTIONS ET GARANTIES
