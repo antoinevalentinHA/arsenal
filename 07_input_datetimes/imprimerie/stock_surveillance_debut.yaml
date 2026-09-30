@@ -1,0 +1,80 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Imprimerie — Surveillance d'ambiance des stocks — Début
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker, pour chaque voie surveillée (zone × grandeur),
+#   l'instant de début du dépassement ouvert. Base de
+#   l'horloge de franchissement de seuil (gestion_du_temps.md
+#   §5) : durée écoulée = maintenant − début, recalculée à
+#   chaque évaluation, jamais une minuterie figée.
+#
+# 🧩 PÉRIMÈTRE
+#   - Mémoire temporelle persistante uniquement
+#   - Aucun calcul temporel autonome
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🔖 NATURE
+#   Repère de pipeline — horodatage de début d'épisode
+#
+# 📋 MODE
+#   has_date: true — has_time: true
+#
+# 🧱 SÉMANTIQUE
+#   La valeur n'a de sens QUE si le suivi de la voie
+#   (input_select.<grandeur>_suivi_hors_plage_<zone>) vaut
+#   `depassement` ou `alarme`. Avec `aucun`, elle est inerte.
+#   Pas de sentinelle : un input_datetime neuf vaut
+#   « aujourd'hui 00:00 » (code HA), pas 1970.
+#
+# 🔒 PERSISTANCE
+#   PAS de clé `initial:` : le début connu survit au redémarrage
+#   de Home Assistant et au rechargement des helpers. Le temps
+#   d'arrêt de Home Assistant est compté comme hors plage (le
+#   dépassement n'est clos que par une vraie mesure revenue dans
+#   la plage) — compromis consigné au contrat.
+#
+# 🔁 ÉCRITURE
+#   Écrivain unique : automation 10180000000007.
+#
+# 🚫 INTERDITS
+#   - Confondre mémoire temporelle et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Utiliser comme déclencheur direct
+#
+# 🏷️ STATUT
+#   Socle — surveillance d'ambiance des stocks v1.0
+# ==========================================================
+
+temperature_debut_hors_plage_stock_carton:
+  name: "Température Début Hors Plage Stock Carton"
+  icon: mdi:clock-start
+  has_date: true
+  has_time: true
+
+humidite_relative_debut_hors_plage_stock_carton:
+  name: "Humidité relative Début Hors Plage Stock Carton"
+  icon: mdi:clock-start
+  has_date: true
+  has_time: true
+
+temperature_debut_hors_plage_stock_pf:
+  name: "Température Début Hors Plage Stock PF"
+  icon: mdi:clock-start
+  has_date: true
+  has_time: true
+
+humidite_relative_debut_hors_plage_stock_pf:
+  name: "Humidité relative Début Hors Plage Stock PF"
+  icon: mdi:clock-start
+  has_date: true
+  has_time: true
+
+# Voie d'ESSAI — distincte des quatre voies réelles.
+temperature_debut_hors_plage_essai_stock:
+  name: "Température Début Hors Plage Essai Stock"
+  icon: mdi:test-tube
+  has_date: true
+  has_time: true

@@ -1,0 +1,95 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSORS
+#     Imprimerie — Surveillance d'ambiance des stocks — Dépassement prolongé
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Décider, pour chaque voie, que la grandeur est restée
+#   CONTINÛMENT hors plage pendant au moins la durée critique :
+#     on ⇔ situation courante = hors_plage
+#          ET suivi ∈ {depassement, alarme}
+#          ET maintenant − début ≥ durée critique
+#
+# 🧩 PÉRIMÈTRE
+#   binary_sensor.temperature_depassement_prolonge_stock_carton
+#   binary_sensor.humidite_relative_depassement_prolonge_stock_carton
+#   binary_sensor.temperature_depassement_prolonge_stock_pf
+#   binary_sensor.humidite_relative_depassement_prolonge_stock_pf
+#   binary_sensor.temperature_depassement_prolonge_essai_stock (ESSAI)
+#
+# ⏱️ HORLOGE DE FRANCHISSEMENT (gestion_du_temps.md §5)
+#   - début : input_datetime.<grandeur>_debut_hors_plage_<zone>
+#     (persistant, écrit par l'automation 10180000000007)
+#   - durée : input_select.duree_critique_hors_plage_stock (h),
+#     relue à CHAQUE évaluation : une modification en cours de
+#     dépassement s'applique immédiatement au temps déjà écoulé
+#     (10 h écoulées, 24 h → 12 h : alarme 2 h plus tard ;
+#      24 h → 8 h : alarme à l'évaluation suivante).
+#   - voie d'essai : durée d'essai FIXE de 2 min, distincte de la
+#     durée de production (jamais lue ni écrite par l'essai).
+#   - réveil : `now()` réévalue le template chaque minute ; aucune
+#     minuterie figée, donc rien n'est perdu au redémarrage ni au
+#     rechargement des automatisations ou des helpers.
+#
+# 🧱 NATURE
+#   Décision pure, sans mémoire, sans effet de bord.
+#   Durée critique illisible ⇒ entité indisponible (abstention),
+#   jamais une durée de repli.
+#
+# 🚫 NE FAIT PAS
+#   - ne décide pas du retour (cf. automation 10180000000007)
+#   - ne se déclenche jamais sur une mesure invalide : une
+#     indisponibilité ne vaut ni dépassement ni retour
+#   - aucune notification, aucune écriture
+# ==========================================================
+
+- binary_sensor:
+    - &depassement_prolonge_stock
+      name: "Température Dépassement Prolongé Stock Carton"
+      unique_id: temperature_depassement_prolonge_stock_carton
+      default_entity_id: binary_sensor.temperature_depassement_prolonge_stock_carton
+      icon: mdi:timer-alert-outline
+      availability: >-
+        {{ this.entity_id.endswith('_essai_stock')
+           or (states('input_select.duree_critique_hors_plage_stock') | float(none)) is not none }}
+      state: >-
+        {% set p = this.entity_id.split('.')[1].split('_depassement_prolonge_') %}
+        {% set g = p[0] %}
+        {% set z = p[1] %}
+        {% set h = states('input_select.duree_critique_hors_plage_stock') | float(none) %}
+        {% set duree_s = 120 if z == 'essai_stock' else (h * 3600 if h is not none else none) %}
+        {% set suivi = states('input_select.' ~ g ~ '_suivi_hors_plage_' ~ z) %}
+        {% set debut = as_timestamp(states('input_datetime.' ~ g ~ '_debut_hors_plage_' ~ z), none) %}
+        {{ duree_s is not none
+           and states('sensor.' ~ g ~ '_surveillance_' ~ z) == 'hors_plage'
+           and suivi in ['depassement', 'alarme']
+           and debut is not none
+           and (now().timestamp() - debut) >= duree_s }}
+      attributes:
+        duree_hors_plage_min: >-
+          {% set p = this.entity_id.split('.')[1].split('_depassement_prolonge_') %}
+          {% set suivi = states('input_select.' ~ p[0] ~ '_suivi_hors_plage_' ~ p[1]) %}
+          {% set debut = as_timestamp(states('input_datetime.' ~ p[0] ~ '_debut_hors_plage_' ~ p[1]), none) %}
+          {{ ((now().timestamp() - debut) / 60) | round(0) | int
+             if suivi in ['depassement', 'alarme'] and debut is not none else none }}
+
+    - <<: *depassement_prolonge_stock
+      name: "Humidité relative Dépassement Prolongé Stock Carton"
+      unique_id: humidite_relative_depassement_prolonge_stock_carton
+      default_entity_id: binary_sensor.humidite_relative_depassement_prolonge_stock_carton
+
+    - <<: *depassement_prolonge_stock
+      name: "Température Dépassement Prolongé Stock PF"
+      unique_id: temperature_depassement_prolonge_stock_pf
+      default_entity_id: binary_sensor.temperature_depassement_prolonge_stock_pf
+
+    - <<: *depassement_prolonge_stock
+      name: "Humidité relative Dépassement Prolongé Stock PF"
+      unique_id: humidite_relative_depassement_prolonge_stock_pf
+      default_entity_id: binary_sensor.humidite_relative_depassement_prolonge_stock_pf
+
+    # Voie d'ESSAI — même logique, durée d'essai fixe 2 min.
+    - <<: *depassement_prolonge_stock
+      name: "Température Dépassement Prolongé Essai Stock"
+      unique_id: temperature_depassement_prolonge_essai_stock
+      default_entity_id: binary_sensor.temperature_depassement_prolonge_essai_stock
+      icon: mdi:test-tube

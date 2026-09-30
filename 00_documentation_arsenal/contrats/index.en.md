@@ -41,7 +41,7 @@ Folderised domains, each with its own `README.md` navigation entry:
 | [`deshumidificateur/`](./deshumidificateur/) | 3 | Cellar dehumidifier. |
 | [`eclairage/`](./eclairage/) | 7 | Lighting. |
 | [`ecs/`](./ecs/) | 29 | Domestic hot water — foundation + execution contracts. |
-| [`imprimerie/`](./imprimerie/) | 4 | Industrial-machine noise (print shop). |
+| [`imprimerie/`](./imprimerie/) | 5 | Industrial-machine noise; storage-area ambient monitoring (print shop). |
 | [`meteo/`](./meteo/) | 21 | Weather — axes, rankings, validation, sub-domains. |
 | [`ouvertures/`](./ouvertures/) | 4 | Openings (doors / windows). |
 | [`pannes/`](./pannes/) | 11 | Outages — internet + mains. |

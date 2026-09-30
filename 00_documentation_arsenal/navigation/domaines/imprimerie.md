@@ -5,13 +5,14 @@
 
 ## Orientation
 
-Monitoring acoustique des machines industrielles d'**Imprimerie** : Bobst, Komori, Media. Trois contrats homogènes (Perception / Signal industriel) — conversion du signal brut en régime acoustique de chaque machine. Domaine **métier/professionnel**, distinct du périmètre résidentiel Arsenal. Aucune architecture dédiée. **Domaine non audité** (état de cycle). Conservé en Tier 1 pour explicitation (carte §6).
+Monitoring acoustique des machines industrielles d'**Imprimerie** : Bobst, Komori, Media. Trois contrats homogènes (Perception / Signal industriel) — conversion du signal brut en régime acoustique de chaque machine. Un quatrième contrat porte la **surveillance d'ambiance des stocks** (Stock carton, Stock produits finis). Domaine **métier/professionnel**, distinct du périmètre résidentiel Arsenal. Aucune architecture dédiée. **Domaine non audité** (état de cycle). Conservé en Tier 1 pour explicitation (carte §6).
 
 ## Contrat — « ce que le système doit faire »
 
 - Bruit Bobst : [`bruit_bobst.md`](../../contrats/imprimerie/bruit_bobst.md) (v1.0 — régime acoustique presse Bobst)
 - Bruit Komori : [`bruit_komori.md`](../../contrats/imprimerie/bruit_komori.md) (v1.1 — régime acoustique presse Komori)
 - Bruit Media : [`bruit_media.md`](../../contrats/imprimerie/bruit_media.md) (v1.0 — régime acoustique capteur Media)
+- Surveillance d'ambiance des stocks : [`surveillance_ambiance_stock.md`](../../contrats/imprimerie/surveillance_ambiance_stock.md) (v1.0 — seuils critiques, alarme de dépassement prolongé, indisponibilité des mesures, essai ; Home Assistant hors système qualité)
 
 ## Audits & état
 

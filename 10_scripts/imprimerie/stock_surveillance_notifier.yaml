@@ -1,0 +1,117 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Imprimerie — Surveillance d'ambiance des stocks — Notification
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Mettre en forme et émettre, par le canal mobile central
+#   (script.notification_envoyer → parent 1), les notifications
+#   de la surveillance d'ambiance des stocks. Point de formatage
+#   UNIQUE : voies réelles, voie d'ESSAI et alerte technique
+#   passent par ce même script.
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : titre et message des événements
+#       alarme          : entrée en alarme (durée critique atteinte)
+#       retour          : retour réel dans la plage après alarme
+#       indisponibilite : mesure non exploitable ≥ durée critique
+#       mesure_retablie : mesure de nouveau exploitable
+#       bilan_essai     : bilan de l'ESSAI de la chaîne d'alarme
+#   - Exclut : toute décision (quand notifier appartient aux
+#     automations 10180000000007 / 10180000000008 et au script
+#     d'essai) ; toute écriture d'état.
+#
+# 🔖 NATURE
+#   Action pure — mise en forme et émission
+#
+# 🔔 NATURE INFORMATIONNELLE (contrat notifications.md)
+#   Événements ponctuels ⇒ canal mobile éphémère. Aucun
+#   persistant, aucun indicateur de tableau de bord.
+#
+# 🧪 ESSAI
+#   Voie `essai_stock` ou événement `bilan_essai` : titre
+#   « 🧪 ESSAI – … » (emoji de tête exigé par notifications.md,
+#   puis « ESSAI ») et message dont le PREMIER MOT est « ESSAI ».
+#   Aucune notification d'essai ne peut être confondue avec une
+#   alarme réelle.
+#
+# 🏷️ SÉMANTIQUE
+#   Home Assistant mesure, surveille et alerte. Ces messages ne
+#   sont ni un enregistrement, ni une preuve, ni un indicateur
+#   qualité : ce sont des alertes de dépassement.
+#
+# ⚙️ MODE
+#   parallel — émissions indépendantes, sans état.
+# ==========================================================
+
+imprimerie_stock_surveillance_notifier:
+  alias: "Imprimerie - Stock - Notification surveillance"
+  mode: parallel
+  fields:
+    evenement:
+      description: "alarme | retour | indisponibilite | mesure_retablie | bilan_essai"
+      example: "alarme"
+    grandeur:
+      description: "temperature | humidite_relative"
+      example: "temperature"
+    zone:
+      description: "stock_carton | stock_pf | essai_stock"
+      example: "stock_pf"
+    valeur:
+      description: "Valeur mesurée (ou simulée pour l'essai), nombre ou vide"
+      example: 36.2
+    duree_min:
+      description: "Durée hors plage en minutes (alarme, retour)"
+      example: 1450
+    motif:
+      description: "Motif d'indisponibilité (indisponibilite)"
+      example: "aucune_remontee"
+    detail:
+      description: "Texte du bilan (bilan_essai)"
+      example: "déclenchement conforme"
+  sequence:
+    - variables:
+        essai: "{{ zone == 'essai_stock' or evenement == 'bilan_essai' }}"
+        zone_lib: >-
+          {{ {'stock_carton': 'Stock carton',
+              'stock_pf': 'Stock produits finis',
+              'essai_stock': 'essai (aucune zone réelle)'}.get(zone, 'Stock') }}
+        grandeur_lib: >-
+          {{ {'temperature': 'Température',
+              'humidite_relative': 'Humidité relative'}.get(grandeur, 'Mesure') }}
+        unite: "{{ '%' if grandeur == 'humidite_relative' else '°C' }}"
+        seuil_bas: >-
+          {% set s = states('input_select.' ~ grandeur ~ '_seuil_critique_bas_stock') | float(none) %}
+          {{ ('%g' | format(s)) if s is not none else '?' }}
+        seuil_haut: >-
+          {% set s = states('input_select.' ~ grandeur ~ '_seuil_critique_haut_stock') | float(none) %}
+          {{ ('%g' | format(s)) if s is not none else '?' }}
+        valeur_txt: >-
+          {% set v = valeur | float(none) %}
+          {{ ('%.1f' | format(v)) | replace('.', ',') if v is not none else 'non disponible' }}
+        duree_txt: >-
+          {% set m = duree_min | int(none) %}
+          {% if m is none %}durée non calculable
+          {% elif m < 60 %}{{ m }} min
+          {% else %}{{ m // 60 }} h {{ '%02d' | format(m % 60) }} min{% endif %}
+        indispo_h: >-
+          {{ states('input_select.duree_critique_indisponibilite_stock') }}
+        titre: >-
+          {% if evenement == 'bilan_essai' %}🧪 ESSAI – Surveillance stock – Bilan
+          {% elif essai %}🧪 ESSAI – {{ grandeur_lib }} {{ 'hors plage' if evenement == 'alarme' else 'dans la plage' }}
+          {% elif evenement == 'alarme' %}📦 {{ zone_lib }} – {{ grandeur_lib }} hors plage
+          {% elif evenement == 'retour' %}📦 {{ zone_lib }} – {{ grandeur_lib }} dans la plage
+          {% elif evenement == 'indisponibilite' %}📡 {{ zone_lib }} – Mesure {{ grandeur_lib | lower }} indisponible
+          {% else %}📡 {{ zone_lib }} – Mesure {{ grandeur_lib | lower }} disponible{% endif %}
+        message: >-
+          {% set prefixe = 'ESSAI – valeur simulée, aucune mesure réelle. ' if essai and evenement != 'bilan_essai' else '' %}
+          {% if evenement == 'bilan_essai' %}ESSAI – {{ detail }}
+          {% elif evenement == 'alarme' %}{{ prefixe }}Zone : {{ zone_lib }}. {{ grandeur_lib }} : {{ valeur_txt }} {{ unite }}. Plage attendue : {{ seuil_bas }}–{{ seuil_haut }} {{ unite }}. Hors plage depuis {{ duree_txt }}.
+          {% elif evenement == 'retour' %}{{ prefixe }}Zone : {{ zone_lib }}. {{ grandeur_lib }} : {{ valeur_txt }} {{ unite }}, de nouveau dans la plage {{ seuil_bas }}–{{ seuil_haut }} {{ unite }}. Durée totale hors plage : {{ duree_txt }}.
+          {% elif evenement == 'indisponibilite' %}Zone : {{ zone_lib }}. {{ {'valeur_non_exploitable': 'Aucune valeur exploitable', 'aucune_remontee': 'Aucune nouvelle remontée du capteur', 'absente': 'Capteur introuvable'}.get(motif, 'Mesure non exploitable') }} depuis au moins {{ indispo_h }} h. Cette alerte ne concerne pas les conditions de stockage elles-mêmes.
+          {% else %}Zone : {{ zone_lib }}. {{ grandeur_lib }} : {{ valeur_txt }} {{ unite }}.{% endif %}
+
+    - action: script.notification_envoyer
+      data:
+        cible: input_text.telephone_parent_1_notify
+        titre: "{{ titre }}"
+        message: "{{ message }}"
