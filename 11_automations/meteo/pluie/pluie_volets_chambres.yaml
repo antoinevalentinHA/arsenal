@@ -23,6 +23,9 @@
 #
 #     - Déclenchement principal : pluie_en_cours → ON
 #     - Déclenchement de reprise : systeme_stable → ON si pluie déjà active
+#     - Notification de fermeture construite sur le compte rendu
+#       d'émission du script : ordre transmis / échec d'exécution.
+#       Volets sans retour d'état : jamais de résultat physique affirmé.
 #
 #  🚫 NE FAIT PAS
 #
@@ -32,7 +35,7 @@
 #     - Ne notifie pas sur la base des fenêtres séjour
 #
 #  📐 CONTRAT
-#     CONTRAT_PLUIE_VOLETS.md v2.2.1 — sections 4.1, 5.7
+#     CONTRAT_PLUIE_VOLETS.md v2.3.0 — sections 4.1, 5.6, 5.7, 6
 # ==========================================================
 
 - id: "10160000000011"
@@ -111,14 +114,36 @@
             - service: script.volets_fermeture_execute
               data:
                 covers: "{{ cibles_chambres }}"
-            - service: script.notification_envoyer_avance
-              data:
-                cible: input_text.telephone_parent_1_notify
-                titre: "🌧️ Pluie – Protection chambres traitée"
-                message: >
-                  Pluie détectée.
-                  Fermeture volets chambres demandée à {{ now().strftime('%H:%M') }}.
-                  Cibles : {{ cibles_chambres | join(', ') }}.
-                extra:
-                  group: "volets"
-                  tag: "fermeture_volets_pluie_chambres"
+              response_variable: execution
+              continue_on_error: true
+            - if:
+                - condition: template
+                  alias: "Compte rendu d'émission reçu"
+                  value_template: "{{ execution is defined and execution.emis is defined }}"
+              then:
+                - service: script.notification_envoyer_avance
+                  data:
+                    cible: input_text.telephone_parent_1_notify
+                    titre: "🌧️ Pluie – Ordre de fermeture volets chambres {{ 'transmis' if execution.emis | length > 0 else 'non transmis' }}"
+                    message: >
+                      Pluie détectée à {{ now().strftime('%H:%M') }}.
+                      {% if execution.emis | length > 0 %}Ordre de fermeture transmis par Home Assistant : {{ execution.emis | join(', ') }}.{% endif %}
+                      {% if execution.indisponibles | length > 0 %}Non transmis par Home Assistant (entité indisponible) : {{ execution.indisponibles | join(', ') }}.{% endif %}
+                      Volets sans retour d'état : fermeture physique non confirmée.
+                    extra:
+                      group: "volets"
+                      tag: "fermeture_volets_pluie_chambres"
+              else:
+                - service: script.notification_envoyer_avance
+                  data:
+                    cible: input_text.telephone_parent_1_notify
+                    titre: "🌧️ Pluie – Échec de l'ordre de fermeture volets chambres"
+                    message: >
+                      Pluie détectée à {{ now().strftime('%H:%M') }}.
+                      Erreur technique pendant l'émission de l'ordre de fermeture :
+                      ordre non transmis, ou transmis en partie seulement.
+                      Cibles décidées : {{ cibles_chambres | join(', ') }}.
+                      Voir la trace de script.volets_fermeture_execute.
+                    extra:
+                      group: "volets"
+                      tag: "fermeture_volets_pluie_chambres"
