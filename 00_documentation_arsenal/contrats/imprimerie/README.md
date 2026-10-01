@@ -15,7 +15,7 @@ la surveillance et l'alerte de dépassement des conditions de stockage déclaré
 | [`bruit_bobst.md`](bruit_bobst.md) | Traitement du signal brut de bruit — machine Bobst |
 | [`bruit_komori.md`](bruit_komori.md) | Traitement du signal brut de bruit — machine Komori |
 | [`bruit_media.md`](bruit_media.md) | Traitement du signal brut de bruit — média |
-| [`surveillance_ambiance_stock.md`](surveillance_ambiance_stock.md) | Surveillance d'ambiance des stocks — seuils critiques, alarme de dépassement prolongé, indisponibilité des mesures, essai |
+| [`surveillance_ambiance_stock.md`](surveillance_ambiance_stock.md) | Surveillance d'ambiance des stocks — une alerte si une mesure reste hors plage 24 h d'affilée |
 
 ## Navigation
 
