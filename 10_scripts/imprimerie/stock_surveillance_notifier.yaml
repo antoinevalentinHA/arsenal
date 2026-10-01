@@ -69,6 +69,18 @@ imprimerie_stock_surveillance_notifier:
       description: "Texte du bilan (bilan_essai)"
       example: "déclenchement conforme"
   sequence:
+    # Normalisation des champs : un champ NON transmis est INDÉFINI pour
+    # Home Assistant, et `| float(none)` / `| int(none)` ne protègent pas
+    # d'une variable indéfinie (Jinja lève une erreur, le script échoue).
+    # Chaque appelant ne transmet que les champs de son événement : les
+    # champs facultatifs sont donc ramenés ici à une valeur définie.
+    # (evenement, grandeur et zone sont transmis par tous les appelants.)
+    - variables:
+        valeur_n: "{{ valeur if valeur is defined else none }}"
+        duree_min_n: "{{ duree_min if duree_min is defined else none }}"
+        motif_n: "{{ motif if motif is defined else '' }}"
+        detail_n: "{{ detail if detail is defined else '' }}"
+
     - variables:
         essai: "{{ zone == 'essai_stock' or evenement == 'bilan_essai' }}"
         zone_lib: >-
@@ -89,11 +101,11 @@ imprimerie_stock_surveillance_notifier:
         # un littéral Python, il reste une chaîne quel que soit le typage
         # des variables de script (« 39,5 » seul serait lu comme un tuple).
         valeur_txt: >-
-          {% set v = valeur | float(none) %}
+          {% set v = valeur_n | float(none) %}
           {% set u = '%' if grandeur == 'humidite_relative' else '°C' %}
           {{ (('%.1f' | format(v)) | replace('.', ',')) ~ ' ' ~ u if v is not none else 'non disponible' }}
         duree_txt: >-
-          {% set m = duree_min | int(none) %}
+          {% set m = duree_min_n | int(none) %}
           {% if m is none %}durée non calculable
           {% elif m < 60 %}{{ m }} min
           {% else %}{{ m // 60 }} h {{ '%02d' | format(m % 60) }} min{% endif %}
@@ -108,10 +120,10 @@ imprimerie_stock_surveillance_notifier:
           {% else %}📡 {{ zone_lib }} – Mesure {{ grandeur_lib | lower }} disponible{% endif %}
         message: >-
           {% set prefixe = 'ESSAI – valeur simulée, aucune mesure réelle. ' if essai and evenement != 'bilan_essai' else '' %}
-          {% if evenement == 'bilan_essai' %}ESSAI – {{ detail }}
+          {% if evenement == 'bilan_essai' %}ESSAI – {{ detail_n }}
           {% elif evenement == 'alarme' %}{{ prefixe }}Zone : {{ zone_lib }}. {{ grandeur_lib }} : {{ valeur_txt }}. Plage attendue : {{ seuil_bas }}–{{ seuil_haut }} {{ unite }}. Hors plage depuis {{ duree_txt }}.
           {% elif evenement == 'retour' %}{{ prefixe }}Zone : {{ zone_lib }}. {{ grandeur_lib }} : {{ valeur_txt }}, de nouveau dans la plage {{ seuil_bas }}–{{ seuil_haut }} {{ unite }}. Durée totale hors plage : {{ duree_txt }}.
-          {% elif evenement == 'indisponibilite' %}Zone : {{ zone_lib }}. {{ {'valeur_non_exploitable': 'Aucune valeur exploitable', 'aucune_remontee': 'Aucune nouvelle remontée du capteur', 'absente': 'Capteur introuvable'}.get(motif, 'Mesure non exploitable') }} depuis au moins {{ indispo_h }} h. Cette alerte ne concerne pas les conditions de stockage elles-mêmes.
+          {% elif evenement == 'indisponibilite' %}Zone : {{ zone_lib }}. {{ {'valeur_non_exploitable': 'Aucune valeur exploitable', 'aucune_remontee': 'Aucune nouvelle remontée du capteur', 'absente': 'Capteur introuvable'}.get(motif_n, 'Mesure non exploitable') }} depuis au moins {{ indispo_h }} h. Cette alerte ne concerne pas les conditions de stockage elles-mêmes.
           {% else %}Zone : {{ zone_lib }}. {{ grandeur_lib }} : {{ valeur_txt }}.{% endif %}
 
     - action: script.notification_envoyer

@@ -1,7 +1,7 @@
 # 🧠 ARSENAL — CONTRAT
 ## Imprimerie — Surveillance d'ambiance des stocks
 
-**Version** : v1.0
+**Version** : v1.0.1
 **Domaine** : Imprimerie — mesure, surveillance et alerte de l'ambiance des zones de stockage
 **Date** : 2026-09-30
 **Statut** : normatif
@@ -324,6 +324,22 @@ statistiques.
 - Aucun seuil statistique dynamique n'est lu.
 - Aucune notification d'essai sans le marquage `ESSAI`.
 - Home Assistant mesure, surveille et alerte ; il ne qualifie rien.
+
+---
+
+## Historique de version
+
+- **v1.0** — création : seuils critiques réglables, alarme de dépassement
+  prolongé, retour, indisponibilité par capteur, ESSAI.
+- **v1.0.1** — correctif runtime, sans changement de règle. Le script de
+  notification lisait des champs facultatifs (`valeur`, `duree_min`, `motif`,
+  `detail`) que certains appelants ne transmettent pas. Or, pour Home
+  Assistant, un champ non transmis est **indéfini**, et `| float(none)` /
+  `| int(none)` ne protègent pas d'une variable indéfinie : le script échouait.
+  Effets constatés : le bilan d'ESSAI n'était pas émis (premier essai
+  terrain, alarme et retour d'ESSAI reçus conformes) ; par la même cause,
+  l'alerte d'indisponibilité (§6) aurait échoué. Les champs facultatifs sont
+  désormais normalisés en tête du script.
 
 ---
 
