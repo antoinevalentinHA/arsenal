@@ -1,0 +1,95 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT
+#     Imprimerie — Surveillance d'ambiance des stocks — Suivi
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter, pour chaque voie surveillée (zone × grandeur), la
+#   vérité persistante du suivi de dépassement : aucun
+#   dépassement ouvert, dépassement ouvert, alarme notifiée.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage de sélection persistante uniquement
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#   - Aucune action directe sur un équipement
+#
+# 🔖 NATURE
+#   État de référence — mémoire de séquence par voie
+#
+# 📋 OPTIONS
+#   - aucun       : aucun dépassement ouvert (l'horodatage de
+#                   début associé est sans signification)
+#   - depassement : dépassement ouvert, alarme non encore
+#                   déclenchée ; début dans
+#                   input_datetime.<grandeur>_debut_hors_plage_<zone>
+#   - alarme      : durée critique atteinte, alarme notifiée ;
+#                   soldée UNIQUEMENT par une vraie mesure
+#                   numérique revenue dans la plage
+#
+# 🔒 PERSISTANCE
+#   PAS de clé `initial:` : l'état est restauré au redémarrage
+#   (un dépassement ouvert ou une alarme survivent au reboot).
+#   Première valeur au tout premier démarrage = `aucun`
+#   (première option, comportement natif input_select) —
+#   bootstrap sûr, jamais un fallback.
+#
+#   Ce sélecteur est la SEULE autorité « dépassement ouvert » :
+#   un input_datetime neuf ne vaut pas 1970 mais « aujourd'hui
+#   00:00 » (code HA input_datetime), il ne peut donc pas servir
+#   seul de sentinelle.
+#
+# 🔁 ÉCRITURE
+#   Écrivain unique : automation 10180000000007
+#   (Imprimerie - Stock - Surveillance des conditions de stockage),
+#   et le script d'essai pour la seule voie `essai_stock`
+#   (remise à `aucun` en fin d'essai).
+#
+# 🚫 INTERDITS
+#   - Écrire depuis l'UI ou un autre écrivain
+#   - Solder une alarme sur une valeur non numérique
+#   - Constituer à lui seul une autorité décisionnelle
+#
+# 🏷️ STATUT
+#   Socle — surveillance d'ambiance des stocks v1.0
+# ==========================================================
+
+temperature_suivi_hors_plage_stock_carton:
+  name: "Température Suivi Hors Plage Stock Carton"
+  icon: mdi:thermometer-alert
+  options:
+    - aucun
+    - depassement
+    - alarme
+
+humidite_relative_suivi_hors_plage_stock_carton:
+  name: "Humidité relative Suivi Hors Plage Stock Carton"
+  icon: mdi:water-alert
+  options:
+    - aucun
+    - depassement
+    - alarme
+
+temperature_suivi_hors_plage_stock_pf:
+  name: "Température Suivi Hors Plage Stock PF"
+  icon: mdi:thermometer-alert
+  options:
+    - aucun
+    - depassement
+    - alarme
+
+humidite_relative_suivi_hors_plage_stock_pf:
+  name: "Humidité relative Suivi Hors Plage Stock PF"
+  icon: mdi:water-alert
+  options:
+    - aucun
+    - depassement
+    - alarme
+
+# Voie d'ESSAI — distincte des quatre voies réelles.
+temperature_suivi_hors_plage_essai_stock:
+  name: "Température Suivi Hors Plage Essai Stock"
+  icon: mdi:test-tube
+  options:
+    - aucun
+    - depassement
+    - alarme

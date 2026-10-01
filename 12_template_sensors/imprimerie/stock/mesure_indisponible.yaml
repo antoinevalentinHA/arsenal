@@ -1,0 +1,112 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSORS
+#     Imprimerie — Surveillance d'ambiance des stocks — Mesure indisponible
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Signaler, capteur par capteur, qu'une mesure de stockage
+#   n'est plus exploitable depuis au moins la durée critique
+#   d'indisponibilité (input_select.duree_critique_indisponibilite_stock,
+#   2 h par défaut). Événement TECHNIQUE, distinct du dépassement
+#   des conditions de stockage.
+#
+# 🧩 PÉRIMÈTRE
+#   binary_sensor.temperature_mesure_indisponible_stock_carton
+#   binary_sensor.humidite_relative_mesure_indisponible_stock_carton
+#   binary_sensor.temperature_mesure_indisponible_stock_pf
+#   binary_sensor.humidite_relative_mesure_indisponible_stock_pf
+#   Source lue dans l'entity_id : sensor.<grandeur>_<zone>.
+#
+# 🔍 TROIS CAS DISTINCTS (attribut `motif`)
+#   - valeur_non_exploitable : état unknown / unavailable / non
+#     numérique. Durée mesurée depuis `last_changed`, c.-à-d.
+#     depuis l'ENTRÉE dans cet état — et NON comme mesure de
+#     fraîcheur : le coordinateur SwitchBot Cloud réécrit l'état
+#     `unavailable` à chaque cycle, ce qui rafraîchit
+#     `last_reported` sans rendre la mesure exploitable.
+#   - aucune_remontee : valeur numérique mais AUCUNE nouvelle
+#     remontée de l'intégration depuis la durée critique.
+#     Référence : `last_reported` (liveness), conformément à
+#     resilience_integrations.md §2 et au canon
+#     12_template_sensors/system/integrations/age_des_donnees.yaml.
+#     Applicable ici : écriture périodique du coordinateur cloud
+#     constatée (02_groups/integrations/switchbot.yaml).
+#   - nominale : valeur numérique remontée récemment. Une valeur
+#     IDENTIQUE mais régulièrement remontée n'est jamais une
+#     indisponibilité (`last_changed` n'est pas utilisé comme
+#     proxy de fraîcheur).
+#   Capteur absent de Home Assistant ⇒ motif `absente`, on.
+#
+# ⚠️ REDÉMARRAGE
+#   Au démarrage de Home Assistant, les états d'intégration sont
+#   réécrits : le décompte des 2 h repart de zéro. Compromis
+#   consigné au contrat.
+#
+# 🔗 RAPPORT AU MÉCANISME EXISTANT
+#   La chaîne de résilience SwitchBot Cloud (contrat
+#   resilience_integrations.md) relance l'INTÉGRATION quand ses
+#   8 capteurs sont gelés ou tous indisponibles ; elle ne voit
+#   pas la perte d'UN capteur. Ce capteur ne relance rien : il
+#   signale, par capteur. Aucun recouvrement de responsabilité.
+#
+# 🧱 NATURE
+#   Décision pure, sans mémoire, sans effet de bord.
+#   `now()` réévalue le template chaque minute.
+#   Durée critique illisible ⇒ entité indisponible (abstention).
+# ==========================================================
+
+- binary_sensor:
+    - &mesure_indisponible_stock
+      name: "Température Mesure Indisponible Stock Carton"
+      unique_id: temperature_mesure_indisponible_stock_carton
+      default_entity_id: binary_sensor.temperature_mesure_indisponible_stock_carton
+      device_class: problem
+      icon: mdi:access-point-network-off
+      availability: >-
+        {{ (states('input_select.duree_critique_indisponibilite_stock') | float(none)) is not none }}
+      state: >-
+        {% set p = this.entity_id.split('.')[1].split('_mesure_indisponible_') %}
+        {% set src = 'sensor.' ~ p[0] ~ '_' ~ p[1] %}
+        {% set h = states('input_select.duree_critique_indisponibilite_stock') | float(none) %}
+        {% set e = expand(src) | first | default(none) %}
+        {% if h is none %}
+          {{ false }}
+        {% elif e is none %}
+          {{ true }}
+        {% elif (e.state | float(none)) is none %}
+          {{ (now().timestamp() - as_timestamp(e.last_changed)) >= h * 3600 }}
+        {% else %}
+          {{ (now().timestamp() - as_timestamp(e.last_reported)) >= h * 3600 }}
+        {% endif %}
+      attributes:
+        motif: >-
+          {% set p = this.entity_id.split('.')[1].split('_mesure_indisponible_') %}
+          {% set src = 'sensor.' ~ p[0] ~ '_' ~ p[1] %}
+          {% set h = states('input_select.duree_critique_indisponibilite_stock') | float(none) %}
+          {% set e = expand(src) | first | default(none) %}
+          {% if e is none %}
+            absente
+          {% elif (e.state | float(none)) is none %}
+            valeur_non_exploitable
+          {% elif h is not none and (now().timestamp() - as_timestamp(e.last_reported)) >= h * 3600 %}
+            aucune_remontee
+          {% else %}
+            nominale
+          {% endif %}
+        source: >-
+          {% set p = this.entity_id.split('.')[1].split('_mesure_indisponible_') %}
+          sensor.{{ p[0] }}_{{ p[1] }}
+
+    - <<: *mesure_indisponible_stock
+      name: "Humidité relative Mesure Indisponible Stock Carton"
+      unique_id: humidite_relative_mesure_indisponible_stock_carton
+      default_entity_id: binary_sensor.humidite_relative_mesure_indisponible_stock_carton
+
+    - <<: *mesure_indisponible_stock
+      name: "Température Mesure Indisponible Stock PF"
+      unique_id: temperature_mesure_indisponible_stock_pf
+      default_entity_id: binary_sensor.temperature_mesure_indisponible_stock_pf
+
+    - <<: *mesure_indisponible_stock
+      name: "Humidité relative Mesure Indisponible Stock PF"
+      unique_id: humidite_relative_mesure_indisponible_stock_pf
+      default_entity_id: binary_sensor.humidite_relative_mesure_indisponible_stock_pf
