@@ -1,224 +1,80 @@
 # ==========================================================
 # 🧠 ARSENAL — AUTOMATION
-#     Imprimerie — Stock — Surveillance des conditions de stockage
+#     Imprimerie — Stock — Alerte conditions de stockage
 # ----------------------------------------------------------
 # 🆔 IDENTIFIANT
 #   "10180000000007"
 #
 # 🎯 RÔLE
-#   Tenir, pour chaque voie (zone × grandeur), la mémoire de
-#   dépassement et émettre les alertes d'entrée en alarme et de
-#   retour dans la plage, à partir des décisions publiées par
-#   12_template_sensors/imprimerie/stock/.
+#   Une alerte mobile, simple et rare, quand une mesure de
+#   stockage reste hors plage pendant 24 h d'affilée.
 #
 # 🧩 PÉRIMÈTRE
-#   - Couvre : Stock carton et Stock produits finis ×
-#     température et humidité relative (4 voies réelles), et la
-#     voie d'ESSAI `essai_stock` ; remise à zéro de l'essai.
-#   - Exclut : l'indisponibilité technique des capteurs
-#     (automation 10180000000008) ; toute statistique ; tout
-#     enregistrement qualité.
+#   Stock carton et Stock produits finis × température et
+#   humidité relative. Plages (bornes incluses) :
+#     - température        : 10 – 35 °C
+#     - humidité relative  : 30 – 80 %
+#   Pour changer une plage ou la durée : modifier ce fichier.
 #
-# 🔖 NATURE
-#   Application — écrivain unique des mémoires de suivi
+# 📜 CONTRAT
+#   00_documentation_arsenal/contrats/imprimerie/surveillance_ambiance_stock.md
 #
-# ⚙️ MODE
-#   queued — chaque transition d'une voie est traitée dans
-#   l'ordre ; les écritures d'une voie ne se chevauchent pas.
+# 🧠 RÈGLES
+#   - numeric_state + `for` : un pic bref ne notifie jamais ;
+#     la mesure doit rester hors plage 24 h sans interruption.
+#   - Une seule notification par dépassement ; aucun message
+#     de retour, aucune alerte d'indisponibilité capteur.
 #
-# 🧠 RÈGLES APPLIQUÉES (contrat surveillance_ambiance_stock.md)
-#   A. situation = hors_plage et suivi = aucun
-#        ⇒ début = maintenant ; suivi = depassement
-#   B. situation = dans_plage (vraie valeur numérique entre les
-#      bornes incluses) et suivi ≠ aucun
-#        ⇒ si suivi = alarme : notification de retour (valeur,
-#          durée totale) ; puis suivi = aucun
-#        Une seule vraie mesure dans la plage remet le compteur
-#        à zéro (continuité stricte, pas d'hystérésis).
-#   C. dépassement prolongé = on et suivi = depassement
-#        ⇒ suivi = alarme ; notification d'alarme
-#        Une alarme déjà active le reste si la durée critique est
-#        ensuite augmentée : seul B la solde.
-#   D. mesure_invalide / parametres_indisponibles
-#        ⇒ AUCUNE écriture : le dépassement n'est ni fermé ni
-#          ouvert, le début connu est conservé ; jamais un retour.
-#   E. voie d'essai `inactif` ⇒ suivi d'essai = aucun (muet).
-#
-# 🔁 REDÉMARRAGE / RECHARGEMENT
-#   Mémoires persistantes (input_select + input_datetime, sans
-#   `initial`) : un dépassement ouvert ou une alarme survivent au
-#   redémarrage ; le temps écoulé est recalculé depuis le début
-#   connu. Au démarrage : réconciliation des 4 voies réelles et
-#   remise à zéro de l'essai. Aucune notification en double : C
-#   exige suivi = depassement.
-#
-# 🚫 NE FAIT PAS
-#   - ne modifie aucun capteur source, aucun seuil, aucune durée
-#   - ne décide pas du hors plage ni de la durée (templates)
-#   - ne publie aucun indicateur de tableau de bord
+# ⚠️ REDÉMARRAGE
+#   Le décompte des 24 h repart à zéro à chaque redémarrage
+#   ou rechargement des automations. Compromis assumé :
+#   l'alerte peut être retardée, jamais inventée.
 # ==========================================================
 
 - id: "10180000000007"
-  alias: "Imprimerie - Stock - Surveillance des conditions de stockage"
+  alias: "Imprimerie - Stock - Alerte conditions de stockage"
   description: >
-    Tient la mémoire de dépassement de chaque voie de stockage et
-    notifie l'entrée en alarme (hors plage pendant la durée critique)
-    et le retour réel dans la plage. Traite aussi la voie d'essai.
+    Notifie une mesure de stockage (température ou humidité relative)
+    restée hors plage pendant 24 h d'affilée.
   mode: queued
-  max: 50
 
   trigger:
-    - platform: state
+    - platform: numeric_state
       entity_id:
-        - sensor.temperature_surveillance_stock_carton
-        - sensor.humidite_relative_surveillance_stock_carton
-        - sensor.temperature_surveillance_stock_pf
-        - sensor.humidite_relative_surveillance_stock_pf
-        - sensor.temperature_surveillance_essai_stock
-      to: ~
-      id: surveillance
-    - platform: state
+        - sensor.temperature_stock_carton
+        - sensor.temperature_stock_pf
+      below: 10
+      for: "24:00:00"
+    - platform: numeric_state
       entity_id:
-        - binary_sensor.temperature_depassement_prolonge_stock_carton
-        - binary_sensor.humidite_relative_depassement_prolonge_stock_carton
-        - binary_sensor.temperature_depassement_prolonge_stock_pf
-        - binary_sensor.humidite_relative_depassement_prolonge_stock_pf
-        - binary_sensor.temperature_depassement_prolonge_essai_stock
-      to: "on"
-      id: prolonge
-    - platform: state
-      entity_id: script.imprimerie_stock_essai_alarme
-      to: "off"
-      id: fin_essai
-    - platform: homeassistant
-      event: start
-      id: demarrage
-
-  variables:
-    voies_reelles:
-      - g: temperature
-        z: stock_carton
-      - g: humidite_relative
-        z: stock_carton
-      - g: temperature
-        z: stock_pf
-      - g: humidite_relative
-        z: stock_pf
+        - sensor.temperature_stock_carton
+        - sensor.temperature_stock_pf
+      above: 35
+      for: "24:00:00"
+    - platform: numeric_state
+      entity_id:
+        - sensor.humidite_relative_stock_carton
+        - sensor.humidite_relative_stock_pf
+      below: 30
+      for: "24:00:00"
+    - platform: numeric_state
+      entity_id:
+        - sensor.humidite_relative_stock_carton
+        - sensor.humidite_relative_stock_pf
+      above: 80
+      for: "24:00:00"
 
   action:
-    # ------------------------------------------------------
-    # Remise à zéro de l'essai (démarrage, fin ou interruption)
-    # ------------------------------------------------------
-    - if:
-        - condition: template
-          value_template: "{{ trigger.id in ['demarrage', 'fin_essai'] }}"
-      then:
-        - action: input_select.select_option
-          target:
-            entity_id: input_select.essai_alarme_stock
-          data:
-            option: inactif
-        - action: input_select.select_option
-          target:
-            entity_id: input_select.temperature_suivi_hors_plage_essai_stock
-          data:
-            option: aucun
-
-    # ------------------------------------------------------
-    # Voies à traiter
-    # ------------------------------------------------------
     - variables:
-        voies: >-
-          {% if trigger.id == 'demarrage' %}
-            {{ voies_reelles }}
-          {% elif trigger.id in ['surveillance', 'prolonge'] %}
-            {% set sep = '_surveillance_' if trigger.id == 'surveillance' else '_depassement_prolonge_' %}
-            {% set p = trigger.entity_id.split('.')[1].split(sep) %}
-            {{ [{'g': p[0], 'z': p[1]}] }}
-          {% else %}
-            {{ [] }}
-          {% endif %}
+        hr: "{{ 'humidite_relative' in trigger.entity_id }}"
+        zone: "{{ 'Stock carton' if trigger.entity_id.endswith('_carton') else 'Stock produits finis' }}"
+        grandeur: "{{ 'Humidité relative' if hr else 'Température' }}"
+        plage: "{{ '30–80 %' if hr else '10–35 °C' }}"
+        valeur: >-
+          {{ trigger.to_state.state | replace('.', ',') }} {{ '%' if hr else '°C' }}
 
-    - repeat:
-        for_each: "{{ voies }}"
-        sequence:
-          - variables:
-              g: "{{ repeat.item.g }}"
-              z: "{{ repeat.item.z }}"
-              e_situation: "sensor.{{ repeat.item.g }}_surveillance_{{ repeat.item.z }}"
-              e_prolonge: "binary_sensor.{{ repeat.item.g }}_depassement_prolonge_{{ repeat.item.z }}"
-              e_suivi: "input_select.{{ repeat.item.g }}_suivi_hors_plage_{{ repeat.item.z }}"
-              e_debut: "input_datetime.{{ repeat.item.g }}_debut_hors_plage_{{ repeat.item.z }}"
-
-          # A — ouverture d'un dépassement
-          - if:
-              - condition: template
-                value_template: >-
-                  {{ is_state(e_situation, 'hors_plage') and is_state(e_suivi, 'aucun') }}
-            then:
-              - action: input_datetime.set_datetime
-                target:
-                  entity_id: "{{ e_debut }}"
-                data:
-                  timestamp: "{{ now().timestamp() | int }}"
-              - action: input_select.select_option
-                target:
-                  entity_id: "{{ e_suivi }}"
-                data:
-                  option: depassement
-
-          # B — retour réel dans la plage
-          - if:
-              - condition: template
-                value_template: >-
-                  {{ is_state(e_situation, 'dans_plage') and not is_state(e_suivi, 'aucun') }}
-            then:
-              - if:
-                  - condition: template
-                    value_template: "{{ is_state(e_suivi, 'alarme') }}"
-                then:
-                  - action: script.imprimerie_stock_surveillance_notifier
-                    data:
-                      evenement: retour
-                      grandeur: "{{ g }}"
-                      zone: "{{ z }}"
-                      valeur: "{{ state_attr(e_situation, 'valeur') }}"
-                      duree_min: >-
-                        {% set d = as_timestamp(states(e_debut), none) %}
-                        {{ ((now().timestamp() - d) / 60) | round(0) | int if d is not none else none }}
-              - action: input_select.select_option
-                target:
-                  entity_id: "{{ e_suivi }}"
-                data:
-                  option: aucun
-
-          # C — entrée en alarme
-          - if:
-              - condition: template
-                value_template: >-
-                  {{ is_state(e_prolonge, 'on') and is_state(e_suivi, 'depassement') }}
-            then:
-              - action: input_select.select_option
-                target:
-                  entity_id: "{{ e_suivi }}"
-                data:
-                  option: alarme
-              - action: script.imprimerie_stock_surveillance_notifier
-                data:
-                  evenement: alarme
-                  grandeur: "{{ g }}"
-                  zone: "{{ z }}"
-                  valeur: "{{ state_attr(e_situation, 'valeur') }}"
-                  duree_min: "{{ state_attr(e_prolonge, 'duree_hors_plage_min') }}"
-
-          # E — voie d'essai inactive : suivi d'essai muet à zéro
-          - if:
-              - condition: template
-                value_template: >-
-                  {{ is_state(e_situation, 'inactif') and not is_state(e_suivi, 'aucun') }}
-            then:
-              - action: input_select.select_option
-                target:
-                  entity_id: "{{ e_suivi }}"
-                data:
-                  option: aucun
+    - service: script.notification_envoyer
+      data:
+        cible: input_text.telephone_parent_1_notify
+        titre: "📦 {{ zone }} – {{ grandeur }} hors plage depuis 24 h"
+        message: "{{ grandeur }} : {{ valeur }}. Plage attendue : {{ plage }}."

@@ -12,7 +12,7 @@ Monitoring acoustique des machines industrielles d'**Imprimerie** : Bobst, Komor
 - Bruit Bobst : [`bruit_bobst.md`](../../contrats/imprimerie/bruit_bobst.md) (v1.0 — régime acoustique presse Bobst)
 - Bruit Komori : [`bruit_komori.md`](../../contrats/imprimerie/bruit_komori.md) (v1.1 — régime acoustique presse Komori)
 - Bruit Media : [`bruit_media.md`](../../contrats/imprimerie/bruit_media.md) (v1.0 — régime acoustique capteur Media)
-- Surveillance d'ambiance des stocks : [`surveillance_ambiance_stock.md`](../../contrats/imprimerie/surveillance_ambiance_stock.md) (v1.0 — seuils critiques, alarme de dépassement prolongé, indisponibilité des mesures, essai ; Home Assistant hors système qualité)
+- Surveillance d'ambiance des stocks : [`surveillance_ambiance_stock.md`](../../contrats/imprimerie/surveillance_ambiance_stock.md) (v2.0.0 — une alerte si une mesure reste hors plage 24 h d'affilée ; Home Assistant hors système qualité)
 
 ## Audits & état
 
