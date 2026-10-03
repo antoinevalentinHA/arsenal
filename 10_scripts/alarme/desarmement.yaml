@@ -7,11 +7,16 @@
 # 🧱 RESPONSABILITE
 #   Ce script applique le desarmement de facon centralisee
 #   et priorise l'arret immediat de la sirene avant toute
-#   autre action.
+#   autre action, lorsque la sirene a pu etre lancee.
 #
 # ✅ GARANTIES
 #   - Validation / normalisation de `origine`
-#   - Arret immediat de la sirene, sans condition
+#   - Arret immediat de la sirene si le panneau est
+#     `triggered` (seul etat ou Arsenal lance la sirene
+#     forte), quel que soit le mode test
+#   - Aucun `warning/stop` hors `triggered` : la commande
+#     d'arret est elle-meme sonore sur la Develco
+#     (incident 2026-10-03, contrat 70, C54)
 #   - Desarmement reel uniquement si l'alarme est dans
 #     un etat armed_away / arming / pending / triggered
 #   - Si le guard de desarmement passe :
@@ -51,14 +56,16 @@
 #
 # 🔁 SEMANTIQUE ARSENAL
 #   - Toute demande de desarmement doit passer par ce script
-#   - Le silence de la sirene est prioritaire
+#   - Le silence de la sirene est prioritaire : on n'emet
+#     pas de commande sonore pour arreter une sirene muette
 #   - La decision est externe, l'execution est ici
 # ==========================================================
 
 alarme_desarmer:
   alias: "Alarme - Désarmer"
   description: >
-    Arrete immediatement la sirene, desarme l'alarme si
+    Arrete immediatement la sirene si l'alarme est
+    declenchee, desarme l'alarme si
     necessaire, normalise l'origine, ecrit un marqueur
     minimal, joue un bip hors mode test et envoie une
     notification.
@@ -82,9 +89,22 @@ alarme_desarmer:
           {{ o if o in ['dashboard', 'clavier', 'badge', 'automatisme'] else 'inconnu' }}
 
     # ------------------------------------------------------
-    # 1) Arret immediat de la sirene
+    # 1) Arret immediat de la sirene — uniquement si le
+    #    panneau est `triggered`, seul etat dans lequel
+    #    Arsenal lance la sirene forte (10020000000011).
+    #    Volontairement independant du mode test : une
+    #    sirene reelle doit pouvoir etre coupee meme si le
+    #    mode test a ete active pendant le hurlement.
+    #    Hors `triggered`, aucun stop : `warning/stop` est
+    #    sonore sur la Develco (incident 2026-10-03, C54).
     # ------------------------------------------------------
-    - action: script.arret_sirene
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: alarm_control_panel.alarme_maison
+              state: triggered
+          sequence:
+            - action: script.arret_sirene
 
     # ------------------------------------------------------
     # 2) Desarmement reel si l'alarme est dans un etat

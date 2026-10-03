@@ -15,6 +15,11 @@
 #   - Publie une commande MQTT de type "squawk".
 #   - Niveau sonore faible, sans strobe.
 #   - Aucun usage du mode "burglar" ou "emergency".
+#   - Verrou mode test (contrat 70, C54) : aucune émission
+#     si `input_boolean.mode_test_alarme` vaut `on` — le mode
+#     test de l'alarme impose le silence physique, y compris
+#     pour ce test matériel (désactiver le mode test pour
+#     éprouver la sirène).
 #
 # 🚫 Ce script NE FAIT PAS :
 #   - Ne déclenche PAS d’alarme
@@ -23,6 +28,7 @@
 #   - Ne journalise PAS d’événement critique
 #
 # 🧱 Dépendances :
+#   - input_boolean.mode_test_alarme
 #   - MQTT / Zigbee2MQTT
 #   - Sirène Zigbee compatible commande "squawk"
 #
@@ -46,6 +52,12 @@ sirene_test:
   alias: Alarme - Test sirène
   mode: single
   sequence:
+    # 🔇 Verrou mode test (contrat 70, C54) — fail-open : seul
+    #    `on` explicite bloque ; état absent ou dégradé n'inhibe pas
+    - condition: template
+      value_template: >-
+        {{ not is_state('input_boolean.mode_test_alarme', 'on') }}
+
     - action: mqtt.publish
       data:
         topic: zigbee2mqtt/sirene/set

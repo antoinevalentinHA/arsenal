@@ -13,6 +13,8 @@
 #   - Envoie deux commandes MQTT successives à la sirène.
 #   - Chaque commande déclenche un bip court (1 seconde).
 #   - Les deux bips sont espacés d’un délai fixe (2 secondes).
+#   - Verrou mode test (contrat 70, C54) : aucune émission
+#     si `input_boolean.mode_test_alarme` vaut `on`.
 #
 # 🚫 Ce script NE FAIT PAS :
 #   - Ne décide PAS du désarmement
@@ -21,6 +23,7 @@
 #   - Ne déclenche PAS d’alerte ou de sirène continue
 #
 # 🧱 Dépendances :
+#   - input_boolean.mode_test_alarme
 #   - MQTT / Zigbee2MQTT
 #   - Sirène Zigbee (topic zigbee2mqtt/sirene)
 #
@@ -33,7 +36,9 @@
 # 🔁 Remarque sémantique :
 #   - À la différence de `script.sirene_bip`,
 #     ce script est purement déclaratif (feedback UX)
-#     et ne comporte aucune logique de sécurité.
+#     et ne comporte aucune logique de sécurité ; seul le
+#     verrou mode test (veto physique, non décisionnel)
+#     le conditionne.
 #
 # ✅ Architecture :
 #   Arsenal v6+
@@ -47,6 +52,12 @@ sirene_bip_bip:
   mode: restart
 
   sequence:
+    # 🔇 Verrou mode test (contrat 70, C54) — fail-open : seul
+    #    `on` explicite bloque ; état absent ou dégradé n'inhibe pas
+    - condition: template
+      value_template: >-
+        {{ not is_state('input_boolean.mode_test_alarme', 'on') }}
+
     - repeat:
         count: 2
         sequence:

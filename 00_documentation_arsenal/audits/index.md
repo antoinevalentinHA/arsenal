@@ -335,6 +335,7 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 - [alarme/plan_implementation_CH2_alarme.md](04_chantiers/alarme/plan_implementation_CH2_alarme.md)
 - [alarme/backlog_alarme.md](04_chantiers/alarme/backlog_alarme.md)
 - [alarme/chantier_restitution_triggered_indisponibilite_ui.md](04_chantiers/alarme/chantier_restitution_triggered_indisponibilite_ui.md)  _(**Chantier C23 — ouverture (cadrage validé, patch UI non engagé)** ; corrige les 2 verdicts PARTIEL de l'audit d'exposition diagnostique : restitution explicite de l'état réel `triggered` (ALM-DIAG-001) et priorité du gris d'indisponibilité sur la divergence (ALM-DIAG-003) ; UI-only, 2 cartes sœurs, non-mutualisation ; protocole de validation sûr ; aucun patch dans la PR d'ouverture)_
+- [alarme/chantier_c54_silence_physique_mode_test.md](04_chantiers/alarme/chantier_c54_silence_physique_mode_test.md)  _(**Chantier C54 — ouverture + lot 1** ; incident 2026-10-03 : la commande d'arrêt `warning/stop` fait sonner la sirène Develco et partait à chaque désarmement, mode test compris ; stop restreint à `triggered`, verrou mode test fail-open sur les scripts sirène émetteurs, checker S3/S4/S5 ; lot 2 (payload stop) sur essai autorisé)_
 
 ### Lovelace
 - [lovelace/exploitation_audit_19_button_card_templates.md](04_chantiers/lovelace/exploitation_audit_19_button_card_templates.md)

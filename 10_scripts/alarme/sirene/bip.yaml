@@ -3,7 +3,8 @@
 # ----------------------------------------------------------
 # 🧠 Rôle :
 #   Émettre un bip sonore court via la sirène Zigbee,
-#   uniquement si celle-ci est considérée comme disponible.
+#   uniquement si celle-ci est considérée comme disponible
+#   et hors mode test.
 #
 # 🎯 Objectif :
 #   Fournir un retour sonore discret (confirmation / feedback)
@@ -11,6 +12,8 @@
 #   non joignable ou en état indéterminé.
 #
 # ⚙️ Fonctionnement :
+#   - Verrou mode test (contrat 70, C54) : aucune émission
+#     si `input_boolean.mode_test_alarme` vaut `on`.
 #   - Vérifie la disponibilité INDIRECTE de la sirène
 #     via l’état du capteur de batterie associé.
 #   - Si la batterie est connue :
@@ -25,6 +28,7 @@
 #   - Ne déclenche PAS la sirène en continu
 #
 # 🧱 Dépendances :
+#   - input_boolean.mode_test_alarme
 #   - sensor.sirene_battery
 #   - MQTT / Zigbee2MQTT
 #
@@ -45,6 +49,12 @@ sirene_bip:
   max: 3
 
   sequence:
+    # 🔇 Verrou mode test (contrat 70, C54) — fail-open : seul
+    #    `on` explicite bloque ; état absent ou dégradé n'inhibe pas
+    - condition: template
+      value_template: >-
+        {{ not is_state('input_boolean.mode_test_alarme', 'on') }}
+
     # 🔒 Vérifie que la sirène est disponible (battery connue)
     - condition: template
       value_template: >

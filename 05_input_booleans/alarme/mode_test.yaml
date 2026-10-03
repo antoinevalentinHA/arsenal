@@ -27,6 +27,8 @@
 #     - Lue par :
 #         • automatisations d’intrusion
 #         • automatisations de sirène
+#         • scripts sirène sonores (verrou en tête,
+#           contrat 70, C54)
 #         • scripts d’armement / désarmement
 #         • capteurs de cohérence
 #     - Sert à court-circuiter toute action
