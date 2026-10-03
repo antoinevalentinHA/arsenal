@@ -16,6 +16,8 @@
 #   - La durée d’activation est lue dynamiquement depuis
 #     `number.sirene_max_duration`.
 #   - Aucun redémarrage automatique ni répétition.
+#   - Verrou mode test (contrat 70, C54) : aucune émission
+#     si `input_boolean.mode_test_alarme` vaut `on`.
 #
 # 🚫 Ce script NE FAIT PAS :
 #   - Ne décide PAS du déclenchement de l’alarme
@@ -27,6 +29,7 @@
 #   - MQTT / Zigbee2MQTT
 #   - Sirène Zigbee compatible mode "warning"
 #   - Helper : number.sirene_max_duration
+#   - input_boolean.mode_test_alarme
 #
 # 📊 Type :
 #   Script d’exécution directe (action terminale)
@@ -35,7 +38,9 @@
 #   script.sirene_brutale
 #
 # 🔁 Remarque sémantique :
-#   - Ce script est volontairement simple et non conditionnel.
+#   - Ce script est volontairement simple : sa seule condition
+#     est le verrou mode test (veto physique, non décisionnel),
+#     qui garantit le silence même si un appelant l'oublie.
 #   - Toute logique de sécurité, de délai ou de validation
 #     est externalisée dans les automatisations appelantes.
 #
@@ -49,6 +54,12 @@ sirene_brutale:
   mode: single
 
   sequence:
+    # 🔇 Verrou mode test (contrat 70, C54) — fail-open : seul
+    #    `on` explicite bloque ; état absent ou dégradé n'inhibe pas
+    - condition: template
+      value_template: >-
+        {{ not is_state('input_boolean.mode_test_alarme', 'on') }}
+
     - action: mqtt.publish
       data:
         topic: zigbee2mqtt/sirene/set

@@ -98,6 +98,11 @@ Toute automation de détection doit implémenter un comportement distinct en mod
 
 La bifurcation est portée par `input_boolean.mode_test_alarme`.
 
+Cette bifurcation n'est **pas** la garantie de silence : elle est doublée, au niveau
+des actionneurs, par le **verrou mode test** des scripts sirène émetteurs
+(`70_sirene_actions_terminales.md` § Verrou mode test, C54). Mode test actif ⇒ aucune
+émission sonore de la chaîne alarme, quel que soit le chemin d'appel.
+
 > **ALM-A2-2 (audit 2026-06) — RÉSOLU.** `10020000000032` (fin de délai) bifurque
 > désormais sur `input_boolean.mode_test_alarme` (commit `db9fba8c`) : hors mode test,
 > déclenchement réel + notification critique ; en mode test, notification de test

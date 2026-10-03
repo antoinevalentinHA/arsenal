@@ -9,6 +9,8 @@ import re
 import sys
 from pathlib import Path
 
+import yaml
+
 # ---------------------------------------------------------------------------
 # Racine du repo Arsenal
 # ---------------------------------------------------------------------------
@@ -77,6 +79,30 @@ SCRIPTS_SIRENE = [
     "script.sirene_bip_bip",
     "script.sirene_brutale",
     "script.arret_sirene",
+]
+
+# Scripts sirène émetteurs de son, soumis au verrou mode test (70_sirene, C54).
+# script.arret_sirene en est exclu : exécutable à tout moment, sans condition.
+SCRIPTS_SIRENE_EMETTEURS = [
+    "sirene_bip",
+    "sirene_bip_bip",
+    "sirene_brutale",
+    "sirene_test",
+]
+SCRIPT_ARRET_SIRENE = "arret_sirene"
+DIR_SCRIPTS_SIRENE  = DIR_SCRIPTS / "alarme/sirene"
+TOPIC_SIRENE_SET    = "zigbee2mqtt/sirene/set"
+MODE_TEST           = "input_boolean.mode_test_alarme"
+# Forme canonique fail-open du verrou (espaces et guillemets normalisés)
+VERROU_MODE_TEST    = f"{{{{notis_state('{MODE_TEST}','on')}}}}"
+
+# Couches runtime pouvant porter un appel de service (C54 — publication sirène)
+DIRS_RUNTIME_ACTIONS = [
+    REPO_ROOT / "10_scripts",
+    REPO_ROOT / "11_automations",
+    REPO_ROOT / "18_lovelace",
+    REPO_ROOT / "19_button_card_templates",
+    REPO_ROOT / "blueprints",
 ]
 
 # Entités blocage armement (60_blocage, 61_watchdog)
@@ -589,6 +615,136 @@ def test_arret_sirene_sans_condition_alarme() -> None:
         return
 
 
+def script_defs(*directories: Path) -> dict[str, tuple[Path, dict]]:
+    """Scripts déclarés (nom → (chemin, définition)) dans les fichiers YAML donnés.
+
+    Fichiers illisibles par PyYAML (tags HA) ignorés : les scripts sirène n'en portent pas.
+    """
+    defs: dict[str, tuple[Path, dict]] = {}
+    for p in yaml_files(*directories):
+        try:
+            data = yaml.safe_load(read(p))
+        except yaml.YAMLError:
+            continue
+        if isinstance(data, dict):
+            for name, body in data.items():
+                if isinstance(body, dict) and "sequence" in body:
+                    defs[name] = (p, body)
+    return defs
+
+
+def norm(s: object) -> str:
+    return re.sub(r"\s+", "", str(s)).replace('"', "'")
+
+
+def test_verrou_mode_test_scripts_sonores() -> None:
+    """70 / C54 — Chaque script sirène émetteur porte en première étape le verrou
+    mode test fail-open (silence physique absolu en mode test)."""
+    defs = script_defs(DIR_SCRIPTS)
+    ok = True
+    for name in SCRIPTS_SIRENE_EMETTEURS:
+        if name not in defs:
+            ERRORS.append(f"S3 — script.{name} introuvable (70_sirene § Verrou mode test, C54)")
+            ok = False
+            continue
+        path, body = defs[name]
+        seq = body.get("sequence") or []
+        first = seq[0] if seq and isinstance(seq[0], dict) else {}
+        if not (
+            first.get("condition") == "template"
+            and norm(first.get("value_template", "")) == VERROU_MODE_TEST
+        ):
+            ERRORS.append(
+                f"S3 — script.{name} : première étape ≠ verrou mode test fail-open "
+                f"`{{{{ not is_state('{MODE_TEST}', 'on') }}}}` "
+                f"(70_sirene § Verrou mode test, C54) : {path.relative_to(REPO_ROOT)}"
+            )
+            ok = False
+    if ok:
+        print("✔ S3 — Verrou mode test fail-open en tête des scripts sirène émetteurs (C54)")
+
+
+def test_publication_sirene_canonique() -> None:
+    """70 / C54 — Seuls les scripts sirène canoniques publient vers la sirène :
+    aucun autre chemin ne peut contourner le verrou mode test."""
+    autorises = set(SCRIPTS_SIRENE_EMETTEURS) | {SCRIPT_ARRET_SIRENE}
+    problems = []
+    for p in yaml_files(*DIRS_RUNTIME_ACTIONS):
+        if TOPIC_SIRENE_SET not in active_content(read(p)):
+            continue
+        if DIR_SCRIPTS_SIRENE not in p.parents:
+            problems.append(f"publication hors 10_scripts/alarme/sirene/ : {p.relative_to(REPO_ROOT)}")
+    for name, (p, body) in script_defs(DIR_SCRIPTS_SIRENE).items():
+        if TOPIC_SIRENE_SET in str(body) and name not in autorises:
+            problems.append(f"script.{name} publie vers la sirène hors liste canonique : {p.relative_to(REPO_ROOT)}")
+    if problems:
+        for pb in problems:
+            ERRORS.append(f"S4 — {pb} (70_sirene § Interdictions, C54)")
+    else:
+        print("✔ S4 — Publication vers la sirène réservée aux scripts sirène canoniques (C54)")
+
+
+def _references_arret(node: object) -> bool:
+    return f"script.{SCRIPT_ARRET_SIRENE}" in str(node)
+
+
+def _garde_triggered(conditions: object) -> bool:
+    conds = conditions if isinstance(conditions, list) else [conditions]
+    return any(
+        isinstance(c, dict)
+        and c.get("condition") == "state"
+        and c.get("entity_id") == PANNEAU
+        and c.get("state") == "triggered"
+        for c in conds
+    )
+
+
+def test_desarmer_stop_sur_triggered_uniquement() -> None:
+    """70 / C54 — script.alarme_desarmer n'appelle script.arret_sirene que sous la
+    garde panneau == triggered (warning/stop est sonore sur la Develco)."""
+    defs = script_defs(DIR_SCRIPTS)
+    name = SCRIPT_DESARMER.replace("script.", "")
+    if name not in defs:
+        ERRORS.append(f"S5 — {SCRIPT_DESARMER} introuvable (70_sirene § Chemin d'arrêt, C54)")
+        return
+    path, body = defs[name]
+    seq = body.get("sequence") or []
+    appels_gardes = 0
+    for step in seq:
+        if not isinstance(step, dict) or not _references_arret(step):
+            continue
+        options = step.get("choose") if "choose" in step else None
+        if not isinstance(options, list):
+            ERRORS.append(
+                f"S5 — {SCRIPT_DESARMER} appelle script.{SCRIPT_ARRET_SIRENE} hors choose "
+                f"gardé par `triggered` (70_sirene § Chemin d'arrêt, C54) : {path.relative_to(REPO_ROOT)}"
+            )
+            return
+        for opt in options:
+            if _references_arret(opt.get("sequence")):
+                if not _garde_triggered(opt.get("conditions")):
+                    ERRORS.append(
+                        f"S5 — {SCRIPT_DESARMER} : appel de script.{SCRIPT_ARRET_SIRENE} sans garde "
+                        f"`{PANNEAU} == triggered` (70_sirene § Chemin d'arrêt, C54) : "
+                        f"{path.relative_to(REPO_ROOT)}"
+                    )
+                    return
+                appels_gardes += 1
+        if _references_arret(step.get("default")):
+            ERRORS.append(
+                f"S5 — {SCRIPT_DESARMER} : script.{SCRIPT_ARRET_SIRENE} dans la branche default "
+                f"(70_sirene § Chemin d'arrêt, C54) : {path.relative_to(REPO_ROOT)}"
+            )
+            return
+    if appels_gardes == 0:
+        ERRORS.append(
+            f"S5 — {SCRIPT_DESARMER} n'appelle plus script.{SCRIPT_ARRET_SIRENE} sur `triggered` "
+            f"— coupe immédiate perdue (70_sirene § Chemin d'arrêt, C54) : {path.relative_to(REPO_ROOT)}"
+        )
+        return
+    print("✔ S5 — Désarmement : arret_sirene appelé uniquement sous garde triggered (C54)")
+
+
 def test_sirene_brutale_pas_dans_cerveau() -> None:
     """70/30 — script.sirene_brutale absent du script de décision."""
     for path in yaml_files(DIR_SCRIPTS):
@@ -930,6 +1086,10 @@ TESTS = [
     # §70 Sirène
     test_arret_sirene_sans_condition_alarme,
     test_sirene_brutale_pas_dans_cerveau,
+    # §70 Sirène — silence physique en mode test (C54)
+    test_verrou_mode_test_scripts_sonores,
+    test_publication_sirene_canonique,
+    test_desarmer_stop_sur_triggered_uniquement,
     # §80 Notifications
     test_notification_alarme_etat_unique_source,
     # §95 Diagnostics
