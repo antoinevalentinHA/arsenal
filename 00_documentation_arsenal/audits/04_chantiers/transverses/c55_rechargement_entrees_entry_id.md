@@ -2,7 +2,7 @@
 
 ## 📌 Statut
 
-- **Ouvert (2026-10-11) — lot 1 fusionné (#867) et déployé le 2026-10-11. Vérifications post-déploiement constatées le 2026-10-11 (§9, lot 2) : 2 conforme ; 1 et 4 non conformes, corrigées par #868 (redéploiement et contrôle à suivre) ; 3 à constater après redéploiement ; 5 opportuniste en attente.** Réserves 1 et 2 levées (§5.5, §5.6). Ouverture documentaire : #865.
+- **Ouvert (2026-10-11) — lot 1 déployé, vérifications 1–4 conformes le 2026-10-11 ; vérification 5 opportuniste en attente, puis clôture (§10).** Les vérifications 1 et 4, d'abord non conformes, ont été corrigées par #868, redéployée et reconstatée le même jour (§9, lot 2). Réserves 1 et 2 levées (§5.5, §5.6). Ouverture documentaire : #865.
 - **Identifiant global** : **C55** — attribué selon la règle de gouvernance du registre (plus grand identifiant existant + 1 : `C54` → `C55`), unicité contrôlée sur le dépôt (aucune occurrence), le registre et l'historique des pull requests GitHub (aucune occurrence).
 - **Domaine** : transverse — résilience des intégrations (contrat [`resilience_integrations.md`](../../../contrats/resilience_integrations.md) v3.4, registre CI [`resilience_integrations_registre.yaml`](../../../../scripts/arsenal_contracts/resilience_integrations_registre.yaml)).
 - **Priorité** : **P1** — échéance externe datée (Home Assistant 2027.4) ; à cette version, l'action de **8 des 10 chaînes** de résilience cesserait de fonctionner **en silence** (§3.3).
@@ -452,6 +452,25 @@ group.homekit_prise_control : entrées=1 egal_ancrage=True domaines=['homekit_co
 
 **Correction de l'écart d'ancrage** : le membre `sensor.petite_maison_electric_power_consumption`, désactivé le 2026-05-04, est retiré de `group.petite_maison_cumulus`. Cela n'a aucun effet sur les axes, car `expand` ignorait déjà ce membre absent de l'état. Cela n'en a pas non plus sur l'action : l'entrée `overkiz` reste représentée par les 14 autres membres (vérification 2 : `entrées=1`).
 
+
+
+**Contrôle après redéploiement de #868 — 2026-10-11, constaté via l'interface HA (L1)** :
+
+L'opérateur a mis à jour le clone runtime, lancé « Vérifier la configuration », puis rechargé dans cet ordre `script.reload`, `group.reload` et `template.reload` (vers 21:04, heure de Paris). Avant tout contrôle, la configuration chargée a été relue :
+
+- le script canon porte `seuil: "{{ (seuil_minutes | default(45)) | float(45) }}"` et `is_state(wan_entity | default(''), 'on')` ;
+- `group.petite_maison_cumulus` compte 14 membres, dont aucun n'est le membre retiré.
+
+| Vérification | Résultat |
+|---|---|
+| 1. Contrôle d'ancrage | **Conforme** — à 21:06, `binary_sensor.ancrage_chaines_resilience_non_conforme` est à `off` depuis 21:05:02, `detail` « ancrage conforme sur tous les perimetres declares ». |
+| 3. Garde d'appelant | **Conforme** — à 21:06:44, appel manuel `script.resilience_integration_recover` avec `op: attempt` et `appelant: automation.inexistante`. La trace s'arrête à la première étape (`sequence/0`) sur « Appel refusé : pas l'exécution en cours de l'automatisation de la chaîne ». Aucune action de service n'est exécutée. Les 10 compteurs `*_reload_tentatives` et les 12 timers `*_reload_backoff` sont identiques au relevé de référence (`0.0` et `idle`, inchangés depuis 16:18:08). |
+| 4. Chaînes sans erreur | **Conforme** — les 9 automatisations « Système - Relance … » sont présentes et activées. À 21:07:12, `automation.trigger` est lancé sur « Système - Relance SwitchBot BLE », avec l'indisponibilité franche à `off`, vérifiée au préalable. L'automatisation passe par la branche `attempt`. Le script canon franchit la garde d'appelant et le bloc `variables` sans `UndefinedError`. Il s'arrête sur la condition d'incident (`sequence/12`, résultat `false`) : incident non confirmé, aucun service appelé, compteurs et timers inchangés. Le journal du cœur (démarrage courant) ne contient aucune ligne postérieure à 16:19:40, donc aucune erreur après le redéploiement. |
+
+**Limites** :
+
+- La chaîne HomeKit Prise Control n'a pas été déclenchée. Elle emprunte le même chemin du script : même champ absent, même ligne corrigée.
+- Le `system_log` de HA était vide aux deux lectures. Le constat sur les journaux repose sur le journal brut du cœur, lu par l'API du superviseur.
 
 1. « Vérifier la configuration » dans HA, puis recharger scripts, automatisations et modèles.
 2. **L1 — immédiat** :
