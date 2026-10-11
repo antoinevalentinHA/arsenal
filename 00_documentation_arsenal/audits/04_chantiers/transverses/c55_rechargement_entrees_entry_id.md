@@ -2,7 +2,7 @@
 
 ## 📌 Statut
 
-- **Ouvert (2026-10-11) — conception arbitrée, réserves 1 et 2 levées (§5.5, §5.6), plan validé sur le principe ; lot 1 engagé en PR distincte, aucun déploiement Home Assistant.**
+- **Ouvert (2026-10-11) — lot 1 fusionné (#867) et déployé par l'opérateur le 2026-10-11 ; preuves post-déploiement non encore consignées (§9, lot 2).** Réserves 1 et 2 levées (§5.5, §5.6). Ouverture documentaire : #865.
 - **Identifiant global** : **C55** — attribué selon la règle de gouvernance du registre (plus grand identifiant existant + 1 : `C54` → `C55`), unicité contrôlée sur le dépôt (aucune occurrence), le registre et l'historique des pull requests GitHub (aucune occurrence).
 - **Domaine** : transverse — résilience des intégrations (contrat [`resilience_integrations.md`](../../../contrats/resilience_integrations.md) v3.4, registre CI [`resilience_integrations_registre.yaml`](../../../../scripts/arsenal_contracts/resilience_integrations_registre.yaml)).
 - **Priorité** : **P1** — échéance externe datée (Home Assistant 2027.4) ; à cette version, l'action de **8 des 10 chaînes** de résilience cesserait de fonctionner **en silence** (§3.3).
@@ -377,7 +377,9 @@ Nouvelle règle **R20** du checker `check_resilience_integrations_contracts.py` 
 
 Document de chantier, ligne C55 au registre, dette [C56](c56_dette_inhibition_tentative_sans_reprise.md), règle d'attribution des identifiants au registre, entrées d'index. **Aucun runtime.**
 
-### Lot 1 — contrat, CI et runtime (une pull request, commits ordonnés) — *implémenté le 2026-10-11, en revue, non déployé*
+### Lot 1 — contrat, CI et runtime (une pull request, commits ordonnés) — *fusionné le 2026-10-11 (#867)*
+
+*#866, première PR du lot, a été fermée automatiquement par GitHub à la suppression de sa branche de base (fusion de #865 par squash) ; #867 la remplace, contenu identique.*
 
 | Ordre | Contenu |
 |---|---|
@@ -409,6 +411,17 @@ Document de chantier, ligne C55 au registre, dette [C56](c56_dette_inhibition_te
 **Ce qu'aucun de ces contrôles ne prouve** : le chargement par Home Assistant (configuration, alias YAML, fonctions de template réelles). C'est l'objet du lot 2.
 
 ### Lot 2 — déploiement opérateur (après fusion, sur autorisation)
+
+**État au 2026-10-11** : déploiement **effectué par l'opérateur** (déclaration de l'opérateur, ordre et rechargements ciblés de #867). Les vérifications ci-dessous **n'ont pas été constatées par l'agent** — la session n'avait accès ni à Home Assistant ni à ses journaux — et **ne sont pas encore consignées**. Tant qu'elles ne le sont pas, le lot 2 n'est pas prouvé.
+
+| Vérification (#867) | Statut |
+|---|---|
+| 1. `binary_sensor.ancrage_chaines_resilience_non_conforme` à `off`, `detail` conforme | non consignée |
+| 2. Résolveur égal au contrôle d'ancrage sur les 9 périmètres | non consignée |
+| 3. Exécution manuelle du script refusée par la garde, compteurs et timers inchangés | non consignée |
+| 4. 9 automatisations « Système - Relance … » chargées sans erreur | non consignée |
+| 5. Plus d'avertissement de dépréciation ; ligne « Résilience intégration » en base | opportuniste — attend une tentative réelle |
+
 
 1. « Vérifier la configuration » dans HA, puis recharger scripts, automatisations et modèles.
 2. **L1 — immédiat** :
@@ -448,3 +461,5 @@ Critères : §10.
 | RS-4 | Affichage UI des entrées `logbook.log` sans `entity_id` | hypothèse, sans effet probatoire |
 | RS-5 | Axe indisponibilité franche aveugle à l'échec d'une entrée sur N (SwitchBot BLE) | antérieure, hors périmètre ; inchangée par la migration |
 | RS-6 | Attribution des 3 occurrences du 2026-10-11 | non établie (§1.3) |
+| RS-7 | **Fenêtre avant le bail** : une tentative issue d'une expiration de backoff, interrompue par un rechargement des automatisations ou des scripts avant l'armement du timer (calcul du plan, ou service du script momentanément absent pendant `script.reload`), laisse un compteur > 0 sans timer. Un rechargement ne fait pas repasser `systeme_stable` à `on` : la chaîne attend une transition d'axe, un retour constaté ou un redémarrage. Fenêtre de l'ordre de la milliseconde | résiduelle, documentée — même famille que [C56](c56_dette_inhibition_tentative_sans_reprise.md) |
+| RS-8 | **Rechargement interrompu** : un rechargement des automatisations ou des scripts pendant un `reload_config_entry` en cours l'annule. Le bail garantit la tentative suivante ; si l'entrée restait `setup_in_progress`, le plan l'écarterait et la tentative compterait en échec, jusqu'au blocage par épuisement | hypothèse non vérifiée dans le code HA ; précondition de déploiement de #867 (aucune tentative en cours) |
