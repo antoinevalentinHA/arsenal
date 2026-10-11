@@ -2,7 +2,7 @@
 
 ## 📌 Statut
 
-- **Ouvert (2026-10-11) — diagnostic établi, conception arbitrée, plan d'exécution soumis à validation. Aucun runtime, contrat, checker ni registre de domaine modifié.**
+- **Ouvert (2026-10-11) — conception arbitrée, réserves 1 et 2 levées (§5.5, §5.6), plan validé sur le principe ; lot 1 engagé en PR distincte, aucun déploiement Home Assistant.**
 - **Identifiant global** : **C55** — attribué selon la règle de gouvernance du registre (plus grand identifiant existant + 1 : `C54` → `C55`), unicité contrôlée sur le dépôt (aucune occurrence), le registre et l'historique des pull requests GitHub (aucune occurrence).
 - **Domaine** : transverse — résilience des intégrations (contrat [`resilience_integrations.md`](../../../contrats/resilience_integrations.md) v3.4, registre CI [`resilience_integrations_registre.yaml`](../../../../scripts/arsenal_contracts/resilience_integrations_registre.yaml)).
 - **Priorité** : **P1** — échéance externe datée (Home Assistant 2027.4) ; à cette version, l'action de **8 des 10 chaînes** de résilience cesserait de fonctionner **en silence** (§3.3).
@@ -61,7 +61,7 @@ Source : `home-assistant/core`, étiquette **2026.10.1** (la ligne 351 de `compo
 | H6 | `expand()` (template) **ignore** les membres sans état (entités désactivées) | ne reproduit pas exactement H2 ; reste l'outil du contrôle d'ancrage |
 | H7 | Script en `mode: single` déjà en cours : nouvel appel **refusé** (« Already running », niveau warning) | voir D1, D2 |
 | H8 | Appel `script.<nom>` depuis une automatisation : **bloquant** ; annulation de l'automatisation ⇒ arrêt **attendu** de l'exécution du script | exclusivité par chaîne (§5.6) |
-| H9 | Exécution d'automatisation : contexte neuf **sans `user_id`** ; appel manuel (interface, API utilisateur) : `user_id` renseigné | garde-fou effectif contre l'exécution manuelle (§5.6) |
+| H9 | Exécution d'automatisation : contexte neuf, écrit dans l'état de l'automatisation à son démarrage ; appel manuel ou externe : contexte distinct | garde d'appelant authentifié (§5.6) |
 | H10 | Timer restauré expiré pendant l'arrêt : `timer.finished` émis **pendant la mise en place**, avant l'armement des déclencheurs d'automatisation (armés juste avant la fin du démarrage) | événement **perdu** (T1) |
 | H11 | Sauvegarde de l'état restauré : toutes les **15 min** et à l'arrêt propre | après arrêt brutal, timers et compteurs restaurés à une valeur vieille de 15 min au plus (T3) |
 | H12 | SwitchBot : à l'installation d'une entrée, attente de la première annonce BLE, **30 s maximum** | borne du rechargement séquentiel (§5.2) |
@@ -111,12 +111,15 @@ Si HA refuse l'appel ciblé : le script s'arrête en erreur après incrément du
 | A5 | Correction de D1 et D2 dans ce chantier |
 | A6 | Observabilité par `logbook.log` ; aucune nouvelle entité |
 | A7 | Contrat porté en **v3.5** |
-| R-1 | Script canon en `mode: parallel`, `max` contrôlé en CI ; l'interdiction contractuelle de l'exécution manuelle **ne suffit pas** : garde-fou technique exigé (§5.6) |
+| R-1 | Script canon en `mode: parallel`, `max` contrôlé en CI ; l'interdiction contractuelle de l'exécution manuelle **ne suffit pas** : garde-fou technique exigé (§5.6, réserve 1) |
 | R-2 | Blocage **dès le 5ᵉ échec** |
 | R-3 | Anomalie de domaine ⇒ **blocage immédiat**, **distingué** du blocage par épuisement dans les notifications et les preuves (§5.5) |
 | R-4 | Reprise après stabilisation ajoutée aux automatisations des chaînes |
 | R-5 | Critère de preuve `logbook.log` : constat d'une ligne en base après déploiement, sans niveau présumé (§5.8) |
 | R-6 | Dette des gardes d'inhibition enregistrée séparément ([C56](c56_dette_inhibition_tentative_sans_reprise.md)) |
+| Réserve 1 (2026-10-11) | La garde `context.user_id` n'est pas une preuve d'exclusivité ⇒ remplacée par la **garde d'appelant authentifié par contexte**, démontrée au §5.6 |
+| Réserve 2 (2026-10-11) | Le blocage pour anomalie de domaine ne détourne pas le compteur ⇒ **prédicat recalculé** sur la configuration, compteur inchangé, timer arrêté, relance humaine après correction (§5.5) |
+| Lot 1 | Autorisé par l'opérateur sous condition de levée démontrable des deux réserves ; PR distincte de la PR documentaire ; **aucun déploiement Home Assistant sans validation explicite** |
 
 ---
 
@@ -142,18 +145,21 @@ Si HA refuse l'appel ciblé : le script s'arrête en erreur après incrément du
 
 ### 5.3 Séquence d'une tentative
 
-1. Garde exécution manuelle (§5.6), gardes existantes (panne secteur, WAN, paramètres, cohérence des axes).
-2. Plafond atteint ⇒ rien (état bloqué, déjà notifié — §5.5).
-3. Incident non confirmé ⇒ arrêt (inchangé).
-4. **Bail** : timer de backoff armé **avant** toute action, pour la durée calculée.
-5. Incrément du compteur.
-6. **Couche A — plan** (§5.4) ; refus ⇒ §5.5.
-7. **Couche B — appels**.
-8. **Couche C — observation**.
-9. `logbook.log` (§5.8).
-10. **Couche D — décision** : attente sur les axes (ignorée si aucun appel), puis succès (arrêt du timer, compteur à 0, notification) ou échec (timer relancé pour une durée pleine, notification ; **5ᵉ échec ⇒ blocage par épuisement**).
+1. **Garde d'appelant** (§5.6) — refus de tout appel qui n'émane pas de l'exécution en cours de l'automatisation de la chaîne.
+2. Gardes existantes (panne secteur, WAN, paramètres, cohérence des axes).
+3. Plafond atteint ⇒ rien (bloqué par épuisement, déjà notifié — §5.5).
+4. `op: reprise` et timer actif ⇒ rien (§5.7).
+5. Incident non confirmé ⇒ arrêt (inchangé).
+6. **Couche A — plan** (§5.4), calcul pur sans effet. Anomalie de domaine ⇒ **refus** (§5.5) : rien d'autre n'est écrit.
+7. **Bail** : timer de backoff armé pour la durée calculée.
+8. Incrément du compteur (`tentative + 1`).
+9. Plan vide (A3) ⇒ échec compté (§5.5), sans appel ni attente.
+10. **Couche B — appels**.
+11. **Couche C — observation**.
+12. **Couche D — décision** : attente sur les axes, puis succès (arrêt du timer, compteur à 0, notification) ou échec (timer relancé pour une durée pleine, notification ; **5ᵉ échec ⇒ blocage par épuisement**).
+13. `logbook.log` (§5.8) à chaque issue : refus, échec, succès, blocage.
 
-**Invariant du bail** : durée minimale du bail (10 min) > durée maximale de la boucle + délai d'attente (≈ 5 min 30 au pire). Toute interruption après l'étape 4 laisse un timer restauré qui provoquera une nouvelle tentative.
+**Invariant du bail** : durée minimale du bail (10 min) > durée maximale de la boucle + délai d'attente (≈ 5 min 30 au pire). Toute interruption après l'étape 7 laisse un timer restauré qui provoquera une nouvelle tentative.
 
 ### 5.4 Séparation résultat technique / observation / décision
 
@@ -168,61 +174,126 @@ Si HA refuse l'appel ciblé : le script s'arrête en erreur après incrément du
 - **Vérifiable en CI** : les conditions de la couche D ne référencent aucune variable des couches A, B ou C.
 - **Notifications** : le titre ne dépend que de la couche D (ou du blocage, §5.5). Le corps reste à la maille opérateur (contrat [`notifications.md`](../../../contrats/notifications.md), § Frontière opérateur / mécanique interne) : **aucun `entry_id`, aucune mention de couche**. Le détail A/B/C va au journal (§5.8), pas au message.
 
-### 5.5 Deux blocages distincts (R-2, R-3)
+### 5.5 Deux blocages distincts (R-2, R-3) — représentation et reprise
+
+**Réserve opérateur du 2026-10-11** : le blocage pour anomalie de domaine doit garder une sémantique déterministe après redémarrage, **sans détourner le compteur de tentatives**. La proposition antérieure (compteur porté au plafond sans tentative) est **retirée**.
+
+#### Représentation
 
 | | Blocage par **épuisement** | Blocage pour **anomalie de domaine** |
 |---|---|---|
-| Déclencheur | 5ᵉ tentative en échec (couche D) | entrée hors `domaine_attendu` détectée au plan (couche A) |
-| Appel de rechargement | oui (les 5 tentatives) | **aucun** — refus de l'action entière |
-| Effets | compteur = plafond, timer arrêté | compteur = plafond, timer arrêté |
-| Notification | `⛔ <Chaîne> — blocage sécurité` · « 5 tentatives consécutives échouées. Relances automatiques arrêtées. » | `⛔ <Chaîne> — relance refusée` · « Le groupe surveillé contient une intégration étrangère (<domaines>). Aucune relance automatique. Action : vérifier la composition du groupe. » |
-| Journal (`logbook.log`) | `blocage=epuisement` | `blocage=anomalie_domaine`, domaines trouvés / attendu |
-| Indicateur persistant | — | `binary_sensor.ancrage_chaines_resilience_non_conforme` (étendu au domaine attendu, §6) |
-| Levée | retour constaté (R-RECOV-2) | retour constaté ; une nouvelle tentative refusera de nouveau tant que le groupe n'est pas corrigé |
+| Nature | état **mémorisé** de l'épisode | prédicat **recalculé** sur la configuration |
+| Représentation | compteur ≥ plafond (5 tentatives **réellement** faites), timer arrêté | `P(chaîne)` : une entrée résolue depuis la liste déclarée du groupe a un domaine ≠ `domaine_attendu` |
+| Entrées de la représentation | `input_number` et `timer`, restaurés par HA | groupe déclaré, registre des entités, `domaine_attendu` — **configuration persistante**, indépendante de toute restauration d'état |
+| Compteur | réel | **inchangé** par le refus (aucune tentative n'a lieu) |
+| Timer | arrêté | arrêté par le refus (relancer est vain tant que la configuration est fausse) |
+| Notification | `⛔ <Chaîne> — blocage sécurité` · « 5 tentatives consécutives échouées. Relances automatiques arrêtées. » | `⛔ <Chaîne> — relance refusée` · « Le groupe surveillé contient des éléments d'une autre intégration (<domaines>). Aucune relance automatique tant que le groupe n'est pas corrigé. » |
+| Journal | `issue=blocage_epuisement` | `issue=refus_anomalie_domaine`, domaines trouvés et attendu |
+| Indicateur persistant | `binary_sensor.recovery_en_cours_<chaîne>` (compteur > 0) | `binary_sensor.ancrage_chaines_resilience_non_conforme`, attribut `detail` (domaine attendu, §6) — recalculé au démarrage |
+| Levée | retour constaté (R-RECOV-2) | correction du groupe : la tentative suivante ne refuse plus |
 
-- **Pas de valeur sentinelle dans le compteur** : un compteur `input_number` à une valeur conventionnelle afficherait un faux nombre de tentatives à l'interface. La distinction est portée par la notification, le journal et l'indicateur d'ancrage — jamais par l'état du compteur.
-- Une **seule** valeur d'état « bloqué » (compteur = plafond, timer arrêté) : la reprise (§5.7) n'a pas à distinguer les deux causes.
+**Pourquoi aucun état mémorisé pour l'anomalie** : elle n'est pas un fait de l'épisode, c'est une propriété de la configuration. La mémoriser créerait une deuxième vérité qui pourrait diverger de la configuration réelle (groupe corrigé, état encore « bloqué », ou l'inverse). Recalculée, elle ne peut pas être périmée.
 
-### 5.6 Exclusivité par chaîne et garde-fou contre l'exécution manuelle (R-1)
+#### Distinction avec les autres états, à tout instant
 
-**Démontré (H7, H8)** : pour une chaîne, les exécutions du script se suivent strictement si les conditions suivantes tiennent.
+| Compteur `n` | Timer | `P` | Incident | État |
+|---|---|---|---|---|
+| 0 | arrêté | — | non | nominal |
+| ≥ 1 | **actif** | — | — | **attente normale** (backoff) |
+| ≥ 5 | arrêté | — | — | bloqué par épuisement |
+| < 5 | arrêté | **vrai** | oui | **bloqué pour anomalie** (refus à chaque évaluation) |
+| 1 à 4 | arrêté | faux | oui | épisode à relancer (expiration perdue — T1/T2) |
+| ≥ 1 | arrêté | faux | non | épisode en attente de `retour_ok` |
 
-| # | Condition | Garantie |
-|---|---|---|
-| C1 | L'automatisation de la chaîne est le seul appelant pour son compteur et son timer | CI (§7, contrôle f) |
-| C2 | Automatisation en `mode: single` | CI R11 (existante) |
-| C3 | Appel direct et bloquant (`service:`/`action: script.resilience_integration_recover`), jamais `script.turn_on` | CI (§7, contrôle f) |
-| C4 | Aucun auto-appel du script | CI (§7, contrôle c) |
-| C5 | Aucun appel manuel | **garde-fou technique** ci-dessous |
+Les lignes sont exclusives : l'attente normale est la **seule** à timer actif ; l'anomalie est la **seule** où `P` est vrai sous le plafond ; l'épuisement est le **seul** au plafond.
 
-**Garde-fou effectif (H9)** — première étape du script :
+#### Après redémarrage
+
+- **Épuisement** : compteur et timer restaurés ; la reprise voit `n ≥ 5` ⇒ rien. **Maintenu.**
+- **Anomalie** : rien à restaurer. À la reprise (§5.7), si l'incident est confirmé, le plan recalcule `P` :
+  - `P` vrai ⇒ nouveau refus notifié — **maintenu**, une notification par stabilisation ;
+  - `P` faux (groupe corrigé entre-temps) ⇒ tentative normale — **repris**.
+- **Correction sans redémarrage** (rechargement des groupes) : aucune transition d'axe n'a lieu. La relance est **délibérément humaine** : déclencher manuellement l'automatisation de la chaîne (`automation.trigger`), qui passe la garde d'appelant (§5.6). Un blocage pour incohérence de configuration se lève par l'opérateur qui corrige ; il ne se lève pas tout seul. Faire réagir la chaîne au capteur d'ancrage aurait fait déclencher une action par la couche observation, ce que R-AXE3-5 et l'en-tête de `ancrage.yaml` interdisent.
+- Fréquence des refus notifiés : au plus un par transition d'axe (gel, indisponibilité, échec de configuration, tous débouncés) et un par stabilisation après démarrage.
+
+#### Interactions
+
+- Refus avec `n ≥ 1` (anomalie apparue en cours d'épisode) : l'épisode reste ouvert (`recovery_en_cours` = on), `retour_ok` peut le refermer et la fermeture est notifiée (R-RECOV-3).
+- Refus avec `n = 0` : aucun épisode n'est ouvert ; la notification de refus est la seule trace opérateur. Aucune fermeture n'est notifiée si l'intégration revient seule : le refus porte sur la configuration, pas sur l'épisode.
+
+### 5.6 Exclusivité par chaîne — démonstration (R-1)
+
+**Réserve opérateur du 2026-10-11** : la garde `context.user_id` n'est qu'un complément ; l'exclusivité doit être **démontrée** pour un appel concurrent en contexte système. Elle est **remplacée** par une garde d'appelant authentifié par contexte.
+
+#### Ce qu'un appel concurrent corromprait sans garde
+
+Deux exécutions de la même chaîne lisent `tentative` au démarrage puis écrivent `tentative + 1` : **mise à jour perdue**. L'une peut remettre le compteur à 0 et arrêter le timer pendant que l'autre relance le timer ou bloque : **couple compteur/timer incohérent**, notifications contradictoires. La garde doit donc rendre ce chevauchement impossible, pas seulement improbable.
+
+#### Garde d'appelant authentifié
+
+Chaque appel des automatisations transmet `appelant: "{{ this.entity_id }}"`. Première étape du script, pour **toutes** les opérations :
 
 ```yaml
-- if: "{{ context.user_id is not none }}"
+- if:
+    - condition: template
+      value_template: >
+        {{ appelant_safe | length == 0
+           or states[appelant_safe] is none
+           or states[appelant_safe].context.id != context.id }}
   then:
-    - stop: "Exécution manuelle refusée — procédure interne"
+    - stop: "Appel refusé : pas l'exécution en cours de l'automatisation de la chaîne"
 ```
 
-- Toute exécution d'automatisation porte un contexte sans `user_id` ; tout appel humain (interface, outils de développement, API par jeton utilisateur) en porte un. Le déclenchement manuel **de l'automatisation** (`automation.trigger`) reste possible et sûr : il passe par C2.
-- **Risque résiduel documenté** : un appelant non humain **hors dépôt** sans `user_id` (moteur d'automatisation externe utilisant un contexte système) contournerait la garde. Aucun n'existe dans le dépôt ; la CI ne peut pas voir l'extérieur du dépôt. Conséquence en cas de chevauchement : lecture-écriture concurrente du compteur (une tentative non comptée), bornée par le plafond.
+#### Faits HA mobilisés (code 2026.10.1)
+
+| # | Fait |
+|---|---|
+| E1 | Chaque exécution d'automatisation crée un **contexte neuf** (`Context(parent_id=…)`, identifiant aléatoire) |
+| E2 | Avant de lancer ses actions, l'automatisation écrit son état (`last_triggered`, `current`) **avec ce contexte** (`async_set_context` puis écriture au démarrage de l'exécution) |
+| E3 | Un déclenchement refusé par `mode: single` n'écrit pas d'état (refus avant le démarrage) |
+| E4 | L'appel `script.<nom>` est bloquant et propage le contexte de l'exécution ; le script le reçoit dans la variable `context` |
+| E5 | Annuler l'exécution de l'automatisation arrête et attend l'exécution du script (H8) |
+| E6 | Toute automatisation déclenchée par un événement porteur de ce contexte crée **son propre** contexte (E1) |
+
+#### Démonstration
+
+Soit une exécution S du script qui passe la garde avec `appelant = A`. Alors `context.id(S) = états[A].context.id = c`.
+
+1. Par E2 et E3, `c` est le contexte de l'exécution `k` de A dont le démarrage a écrit l'état ; par E1 il n'a été créé que pour elle.
+2. Seul du code qui détient l'objet contexte `c` peut appeler un service avec ce contexte. Le détiennent : l'exécution `k` de A et les services qu'elle appelle (E4). Une autre automatisation porte un autre contexte (E6). Un appel humain ou système porte le sien. Le script canon ne s'appelle pas lui-même (CI).
+3. L'exécution `k` de A appelle le script **une seule fois** (structure vérifiée en CI : un appel par branche exclusive).
+4. Donc au plus **une** exécution du script par exécution de A. Les exécutions de A sont séquentielles (`mode: single`, R11) et une exécution du script ne survit pas à la sienne (E5).
+5. Chaque automatisation passe **son** compteur et **son** timer, propres à la chaîne (CI R16 et R20-f).
+
+**Conclusion** : deux exécutions du script ne peuvent jamais manipuler simultanément le même compteur ou le même timer. Les écritures d'une chaîne sont totalement ordonnées ; aucune mise à jour perdue ni couple incohérent n'est possible.
+
+#### Hypothèse et limite
+
+- **Hypothèse unique** : aucun code ne **fabrique** un objet contexte portant l'identifiant de celui d'une exécution d'automatisation. Cela suppose un code Python exécuté dans HA avec accès à ses objets internes — hors du modèle de menace de la configuration YAML, et invisible à la CI.
+- La garde subsume l'ancienne `context.user_id` : un appel humain porte un contexte neuf, donc refusé.
+- Déclencher **l'automatisation** à la main (`automation.trigger`) reste possible et sûr : c'est une exécution de A au sens de la démonstration.
+- **Écrivains hors script** : aucun fichier du dépôt n'écrit les compteurs ni les timers de backoff en dehors du script canon (vérifié le 2026-10-11 ; seul `etat.yaml` les lit). Une écriture manuelle depuis l'interface reste possible ; elle n'est pas concurrente d'une mise à jour perdue (pas de lecture-écriture), et la reprise ramène la chaîne dans un état du tableau §5.5.
 - **Réserve indépendante (déjà présente)** : un rechargement qui ne se termine jamais immobilise la chaîne ; HA ne borne pas la durée d'un appel de service dans un script. Non corrigeable en YAML ; documenté.
 
 ### 5.7 Reprise après redémarrage (R-4)
 
+**Pourquoi elle est nécessaire (fait HA 2026.10.1)** : les binaires de gel, d'indisponibilité et de retour OK sont des capteurs template à `delay_on` qui **restaurent** leur dernier état au démarrage. Un incident en cours au moment de l'arrêt revient donc à `on` **sans transition** : aucun déclencheur ne se réarme. Combinée à T1/T2, cette restauration laisse un épisode sans relance.
+
 - Nouveau déclencheur dans chaque automatisation de chaîne : `input_boolean.systeme_stable` passe à `on` (id `reprise`).
 - Décision dans l'automatisation : `retour_ok` à `on` ⇒ `op: reset` ; sinon ⇒ `op: reprise`.
-- `op: reprise` dans le script :
+- `op: reprise` dans le script — mêmes gardes et même procédure qu'une tentative, avec une seule différence : un timer actif n'est **pas** préempté.
 
 | État restauré | Action |
 |---|---|
-| compteur = 0 | rien |
-| compteur ≥ plafond | rien (bloqué, déjà notifié) |
+| compteur ≥ plafond | rien (bloqué par épuisement, déjà notifié) |
 | timer actif | rien (il expirera après la stabilisation) |
-| 0 < compteur < plafond, timer arrêté | **tentative** complète (gardes, incident confirmé, bail…) |
-| incident non confirmé | rien ; `retour_ok` refermera l'épisode |
+| incident non confirmé | rien ; `retour_ok` refermera un épisode ouvert |
+| incident confirmé, `P` vrai | refus notifié (§5.5) |
+| incident confirmé, `P` faux | **tentative** complète (bail, plan, appels, décision) |
 
-- **Invariant** : une fois le système stabilisé, tout épisode ouvert a un timer actif, ou est bloqué et notifié, ou est relancé, ou attend `retour_ok`.
-- T3 accepté : au pire une tentative non comptée ou un retour OK différé ; la reprise ramène toujours la chaîne à un état du tableau.
+- Le cas « compteur = 0, incident confirmé » est inclus : il couvre une transition d'axe perdue pendant le démarrage.
+- **Invariant** : une fois le système stabilisé, toute chaîne en incident a un timer actif, ou est bloquée et notifiée, ou est relancée.
+- T3 accepté : au pire une tentative non comptée ou un retour OK différé ; la reprise ramène toujours la chaîne à un état du tableau §5.5.
 
 ### 5.8 Journal `logbook.log` — conservation et valeur probatoire (A6, R-5)
 
@@ -267,8 +338,8 @@ Nouvelle règle **R20** du checker `check_resilience_integrations_contracts.py` 
 | f | Chaque compteur et chaque timer de backoff référencés par une seule automatisation ; script canon appelé uniquement par les automatisations du registre, jamais via `script.turn_on` |
 | g | Conditions de décision (attente, succès) sans référence aux variables des couches A, B, C |
 | h | `logbook.log` du script canon sans `entity_id` |
-| i | Garde `context.user_id` en première étape du script canon |
-| j | Opération `reprise` présente ; déclencheur `reprise` sur `input_boolean.systeme_stable` dans chaque automatisation de chaîne |
+| i | Garde d'appelant authentifié (`states[appelant].context.id == context.id`) en première étape du script canon ; chaque appel des automatisations transmet `appelant: "{{ this.entity_id }}"` |
+| j | Opération `reprise` présente ; déclencheur `reprise` sur `input_boolean.systeme_stable` dans chaque automatisation de chaîne ; appel `op: reprise` identique à l'appel `op: attempt` hors `op` |
 
 **Preuve de mutation exigée** : chaque contrôle doit échouer sur le code actuel (ou sur une mutation ciblée) avant d'être déclaré efficace. Les commentaires de **R18** sont mis à jour (le ciblage devient une résolution).
 
@@ -280,11 +351,12 @@ Texte **proposé**, appliqué au contrat dans le **même lot** que le runtime et
 
 1. **§4 Anatomie, ligne « Action »** — remplacer « `entry_id` désignant l'entrée effectivement observée » par : « entrées **résolues à l'exécution** depuis le périmètre observé (§12.5), rechargées une à une par `entry_id` ».
 2. **§4.1** — ajouter :
-   - **R-RECOV-4** — *Bail* : le timer de backoff est armé avant toute action ; tout chemin terminal d'une tentative laisse un timer actif, un compteur à zéro ou un blocage notifié.
-   - **R-RECOV-5** — *Reprise* : à la stabilisation après démarrage, tout épisode ouvert sans timer actif et sous plafond est relancé ; un `retour_ok` présent le referme.
-   - **R-RECOV-6** — *Deux blocages* : le blocage par épuisement (5ᵉ échec) et le blocage pour anomalie de domaine sont distincts dans les notifications et le journal ; ils partagent l'état « bloqué » et la levée par retour constaté.
+   - **R-RECOV-4** — *Bail* : le timer de backoff est armé avant toute action ; tout chemin terminal d'une tentative laisse un timer actif, un compteur à zéro, un blocage notifié ou un refus notifié.
+   - **R-RECOV-5** — *Reprise* : à la stabilisation après démarrage, toute chaîne en incident confirmé, sans timer actif et sous plafond, est réévaluée comme une tentative ; un `retour_ok` présent referme l'épisode.
+   - **R-RECOV-6** — *Deux blocages* : le blocage par épuisement est un état mémorisé de l'épisode (compteur au plafond après 5 tentatives réelles) ; le blocage pour anomalie de domaine est un prédicat recalculé sur la configuration, qui ne modifie jamais le compteur. Ils sont distincts dans les notifications et le journal.
+   - **R-RECOV-7** — *Exclusivité* : le script canon refuse tout appel qui n'émane pas de l'exécution en cours de l'automatisation de la chaîne (contexte d'appel égal au contexte d'état de l'automatisation appelante).
 3. **§5 Invariants** — invariant 7 : « au 5ᵉ échec, blocage immédiat » ; invariant 9 : notification de blocage **effectivement émise** (correction D1) ; nouvel invariant 16 : **exclusivité par chaîne** (C1–C5) ; nouvel invariant 17 : **séparation plan / résultat technique / observation / décision** (§5.4).
-4. **§6 Interdictions** — ajouter : appel `reload_config_entry` par cible ; exécution manuelle du script canon ; appel du script canon par `script.turn_on` ; condition de décision lisant le plan, le résultat technique ou l'observation.
+4. **§6 Interdictions** — ajouter : appel `reload_config_entry` par cible ; appel du script canon par autre chose que l'exécution en cours de l'automatisation de la chaîne ; appel du script canon par `script.turn_on` ; condition de décision lisant le plan, le résultat technique ou l'observation.
 5. **§12.5** — R-ANCRAGE-5 : distinguer le **principe** (l'action dérive du périmètre) du **moyen** (résolution à l'exécution, §12.5.3). Requalifier la note « comportement vérifié le 2026-08-24 » comme preuve **historique** de l'ancien moyen.
 6. **Nouveau §12.5.3 « Résolution à l'exécution — Home Assistant 2027.4 »** :
    - **R-ANCRAGE-10** — *Équivalence* : la résolution lit la liste déclarée du groupe et le registre des entités ; les groupes de périmètre sont plats.
@@ -311,7 +383,7 @@ Document de chantier, ligne C55 au registre, dette [C56](c56_dette_inhibition_te
 |---|---|
 | 1a | Contrat v3.5 (§8) |
 | 1b | Checker : R20 (a à j), commentaires R18 ; **preuve de mutation** sur le code actuel |
-| 1c | Script canon : garde manuelle, `mode: parallel` / `max`, blocage intégré, bail, `reprise`, résolution, couches A–D, `logbook.log`, champ `domaine_attendu`, notifications distinctes |
+| 1c | Script canon : garde d'appelant authentifié, `mode: parallel` / `max`, blocage intégré, bail, `reprise`, résolution, couches A–D, `logbook.log`, champ `domaine_attendu`, notifications distinctes |
 | 1d | 9 automatisations de chaîne : `domaine_attendu`, déclencheur `reprise` (aucun renommage, aucun nouvel identifiant) |
 | 1e | `ancrage.yaml` : liste déclarée vs vue, domaine attendu par groupe |
 | 1f | Registre C55 mis à jour (co-commit) |
@@ -326,7 +398,7 @@ Document de chantier, ligne C55 au registre, dette [C56](c56_dette_inhibition_te
 2. **L1 — immédiat** :
    - outils de développement, rendu du résolveur pour les 9 périmètres : comparaison avec le contrôle d'ancrage (aucun écart attendu) ;
    - `binary_sensor.ancrage_chaines_resilience_non_conforme` à `off` ;
-   - exécution manuelle du script : **refusée** (trace) ;
+   - exécution manuelle du script : **refusée** par la garde d'appelant (trace) ;
    - aucune nouvelle occurrence de l'avertissement de dépréciation, aucune « Already running ».
 3. **Opportuniste (réserve non bloquante)** : première tentative réelle :
    - ligne `logbook_entry` constatée en base (critère R-5) ;
@@ -345,7 +417,7 @@ Critères : §10.
 1. Aucun appel par cible dans le dépôt (R20 a) et aucune occurrence de l'avertissement dans les journaux après déploiement.
 2. Contrat v3.5 en vigueur ; R20 vert avec preuve de mutation.
 3. Résolveur rendu égal au contrôle d'ancrage sur les 9 périmètres (L1).
-4. Garde manuelle constatée (L1).
+4. Garde d'appelant constatée (L1).
 5. Au moins une tentative réelle observée avec ligne de journal en base, **ou** réserve opportuniste explicitement qualifiée non bloquante (doctrine [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md)).
 
 ---
@@ -354,7 +426,7 @@ Critères : §10.
 
 | Réf. | Réserve | Qualification |
 |---|---|---|
-| RS-1 | Appelant externe sans `user_id` (§5.6) | résiduelle, documentée |
+| RS-1 | Fabrication d'un objet contexte par du code Python interne à HA (§5.6) | hors modèle de menace YAML, documentée |
 | RS-2 | Rechargement sans fin (§5.6) | résiduelle, non corrigeable en YAML |
 | RS-3 | Arrêt brutal : écart de restauration de 15 min au plus (T3) | acceptée, bornée |
 | RS-4 | Affichage UI des entrées `logbook.log` sans `entity_id` | hypothèse, sans effet probatoire |
