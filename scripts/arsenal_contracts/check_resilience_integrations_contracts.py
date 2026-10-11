@@ -623,6 +623,60 @@ def violations_canon(doc):
     return (problemes, script.get("max"))
 
 
+# R20-champs — un champ du canon qu'au moins un appel ne transmet pas est
+# indéfini dans le script : HA lève alors `UndefinedError` dès qu'un filtre
+# autre que `default` lui est appliqué (`float(default=…)` compris). Constaté
+# le 2026-10-11 sur `seuil_minutes` (chaînes à `axe_fraicheur: false`, C55).
+RE_JINJA = re.compile(r"\{\{.*?\}\}|\{%.*?%\}", re.S)
+RE_LITTERAL = re.compile(r"'[^']*'|\"[^\"]*\"")
+
+
+def _gabarits(node):
+    """Chaînes de la séquence qui contiennent du Jinja (valeurs seulement)."""
+    if isinstance(node, dict):
+        for v in node.values():
+            yield from _gabarits(v)
+    elif isinstance(node, list):
+        for v in node:
+            yield from _gabarits(v)
+    elif isinstance(node, str) and ("{{" in node or "{%" in node):
+        yield node
+
+
+def _ligne_source(texte_source, ligne_gabarit):
+    """Numéro de ligne (1-based) du fichier source portant cette ligne de gabarit."""
+    cible = ligne_gabarit.strip()
+    for n, ligne in enumerate(texte_source.splitlines(), 1):
+        if cible and cible in ligne:
+            return n
+    return None
+
+
+def violations_champs(doc, appels, texte_source=""):
+    """R20-champs : tout champ non transmis par au moins un appel est lu sous `| default(`."""
+    script = (doc or {}).get("resilience_integration_recover") if isinstance(doc, dict) else None
+    if not isinstance(script, dict):
+        return ["script canon introuvable ou illisible"]
+    champs = list((script.get("fields") or {}).keys())
+    problemes = []
+    for champ in champs:
+        manquants = sum(1 for data in appels if champ not in data)
+        if not manquants:
+            continue
+        motif = re.compile(r"(?<![\w.])" + re.escape(champ) + r"\b(?!\s*\|\s*default\()")
+        for gabarit in _gabarits(script.get("sequence", [])):
+            for bloc in RE_JINJA.finditer(gabarit):
+                expr = RE_LITTERAL.sub(lambda m: " " * len(m.group(0)), bloc.group(0))
+                for m in motif.finditer(expr):
+                    pos = bloc.start() + m.start()
+                    ligne_g = gabarit[:pos].count("\n")
+                    ligne = _ligne_source(texte_source, gabarit.splitlines()[ligne_g])
+                    problemes.append(
+                        f"champ « {champ} » non transmis par {manquants} appel(s), "
+                        f"lu sans | default( (ligne {ligne if ligne else '?'})")
+    return sorted(set(problemes))
+
+
 def domaines_attendus_ancrage():
     """Les dictionnaires `domaines_attendus` de ancrage.yaml (bloc state et attribut detail)."""
     if not FILE_ANCRAGE.exists():
@@ -1455,6 +1509,21 @@ def main():
                f"boucle entry_id, mode parallel (max {max_runs} >= {len(chaines)} chaînes), "
                f"garde d'appelant, décision sur les axes seuls, reprise")
 
+    appels_chaines = []
+    for i in chaines:
+        autom = load_automation(ROOT / i["automation"]["fichier"])
+        if autom is not None:
+            appels_chaines.extend(recover_calls(autom))
+    texte_canon = FILE_SCRIPT_CANON.read_text(encoding="utf-8", errors="ignore") \
+        if FILE_SCRIPT_CANON.is_file() else ""
+    viol_champs = violations_champs(load_yaml(FILE_SCRIPT_CANON), appels_chaines, texte_canon)
+    if viol_champs:
+        record("Action canon", "R20-champs", FAIL, " ; ".join(viol_champs))
+    else:
+        record("Action canon", "R20-champs", PASS,
+               f"champs non transmis par tous les {len(appels_chaines)} appels "
+               f"toujours lus sous | default(")
+
     autorises = {FILE_SCRIPT_CANON.relative_to(ROOT).as_posix()}
     autorises |= {i["automation"]["fichier"] for i in chaines}
     hors = references_canon_hors_chaines(autorises)
@@ -1624,6 +1693,21 @@ def selftest():
         {"service": RELOAD_SVC, "continue_on_error": True, "data": {"entry_id": "x"}})
     assert any("hors boucle" in p for p in violations_canon(hors_boucle)[0]), \
         "selftest R20-canon: rechargement hors boucle non détecté"
+
+    # ── R20-champs — champ non transmis lu sans `| default(` ──
+    def script_x(gabarit):
+        return {"resilience_integration_recover": {
+            "fields": {"op": {}, "x": {}},
+            "sequence": [{"variables": {"v": gabarit}}]}}
+    appels_x = [{"op": "attempt", "x": 1}, {"op": "reset"}]
+    assert violations_champs(script_x("{{ x | float(1) }}"), appels_x), \
+        "selftest R20-champs: champ non transmis lu par float non détecté"
+    assert violations_champs(script_x("{{ (x | default(1)) | float(1) }}"), appels_x) == [], \
+        "selftest R20-champs: faux positif sur lecture sous default"
+    assert violations_champs(script_x("{{ op == 'x' }} x={{ 'x' }}"), appels_x) == [], \
+        "selftest R20-champs: faux positif hors expression ou dans un littéral"
+    assert violations_champs(script_x("{{ x | float(1) }}"), [{"op": "a", "x": 1}]) == [], \
+        "selftest R20-champs: faux positif sur champ transmis par tous les appels"
 
     print("selftest OK")
 

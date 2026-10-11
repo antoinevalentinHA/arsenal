@@ -2,7 +2,7 @@
 
 ## 📌 Statut
 
-- **Ouvert (2026-10-11) — conception arbitrée, réserves 1 et 2 levées (§5.5, §5.6), plan validé sur le principe ; lot 1 engagé en PR distincte, aucun déploiement Home Assistant.**
+- **Ouvert (2026-10-11) — lot 1 fusionné (#867) et déployé le 2026-10-11. Vérifications post-déploiement constatées le 2026-10-11 (§9, lot 2) : 2 conforme ; 1 et 4 non conformes, corrigées par #868 (redéploiement et contrôle à suivre) ; 3 à constater après redéploiement ; 5 opportuniste en attente.** Réserves 1 et 2 levées (§5.5, §5.6). Ouverture documentaire : #865.
 - **Identifiant global** : **C55** — attribué selon la règle de gouvernance du registre (plus grand identifiant existant + 1 : `C54` → `C55`), unicité contrôlée sur le dépôt (aucune occurrence), le registre et l'historique des pull requests GitHub (aucune occurrence).
 - **Domaine** : transverse — résilience des intégrations (contrat [`resilience_integrations.md`](../../../contrats/resilience_integrations.md) v3.4, registre CI [`resilience_integrations_registre.yaml`](../../../../scripts/arsenal_contracts/resilience_integrations_registre.yaml)).
 - **Priorité** : **P1** — échéance externe datée (Home Assistant 2027.4) ; à cette version, l'action de **8 des 10 chaînes** de résilience cesserait de fonctionner **en silence** (§3.3).
@@ -339,6 +339,7 @@ Nouvelle règle **R20** du checker `check_resilience_integrations_contracts.py` 
 | g | Conditions de décision (attente, succès) sans référence aux variables des couches A, B, C |
 | h | `logbook.log` du script canon sans `entity_id` |
 | i | Garde d'appelant authentifié (`states[appelant].context.id == context.id`) en première étape du script canon ; chaque appel des automatisations transmet `appelant: "{{ this.entity_id }}"` |
+| champs | *(ajouté par #868)* Tout champ de `fields` que l'un au moins des appels des chaînes ne transmet pas est lu sous `\| default(` dans les gabarits de la séquence |
 | j | Opération `reprise` présente ; déclencheur `reprise` sur `input_boolean.systeme_stable` dans chaque automatisation de chaîne ; appel `op: reprise` identique à l'appel `op: attempt` hors `op` |
 
 **Preuve de mutation exigée** : chaque contrôle doit échouer sur le code actuel (ou sur une mutation ciblée) avant d'être déclaré efficace. Les commentaires de **R18** sont mis à jour (le ciblage devient une résolution).
@@ -377,7 +378,9 @@ Nouvelle règle **R20** du checker `check_resilience_integrations_contracts.py` 
 
 Document de chantier, ligne C55 au registre, dette [C56](c56_dette_inhibition_tentative_sans_reprise.md), règle d'attribution des identifiants au registre, entrées d'index. **Aucun runtime.**
 
-### Lot 1 — contrat, CI et runtime (une pull request, commits ordonnés) — *implémenté le 2026-10-11, en revue, non déployé*
+### Lot 1 — contrat, CI et runtime (une pull request, commits ordonnés) — *fusionné le 2026-10-11 (#867)*
+
+*#866, première PR du lot, a été fermée automatiquement par GitHub à la suppression de sa branche de base (fusion de #865 par squash) ; #867 la remplace, contenu identique.*
 
 | Ordre | Contenu |
 |---|---|
@@ -409,6 +412,46 @@ Document de chantier, ligne C55 au registre, dette [C56](c56_dette_inhibition_te
 **Ce qu'aucun de ces contrôles ne prouve** : le chargement par Home Assistant (configuration, alias YAML, fonctions de template réelles). C'est l'objet du lot 2.
 
 ### Lot 2 — déploiement opérateur (après fusion, sur autorisation)
+
+**État au 2026-10-11** : #867 a été déployé par l'opérateur, avec un redémarrage de HA à 16:17. L'agent a constaté les vérifications ci-dessous le soir même, via l'interface HA, en lecture seule. Deux écarts, 1 et 4, ont été trouvés puis corrigés par #868 (§ « Corrections apportées par #868 »). Leur contrôle après redéploiement est consigné à la suite.
+
+| Vérification (#867) | Statut |
+|---|---|
+| 1. `binary_sensor.ancrage_chaines_resilience_non_conforme` à `off`, `detail` conforme | **NON CONFORME** — constaté le 2026-10-11 à 20:46 (heure de Paris) via l'interface HA (L1), HA 2026.10.1. État `on` depuis 16:18:40, soit 32 s après les rechargements du déploiement (16:18:08). `detail` tel quel : « group.petite_maison_cumulus : membre(s) declare(s) absent(s) de l etat (desactive ou supprime) : sensor.petite_maison_electric_power_consumption ». Au registre des entités HA, cette entité (plateforme `overkiz`) est désactivée par l'utilisateur, avec une dernière modification le 2026-05-04 : la désactivation est antérieure à C55. Elle reste déclarée dans [`02_groups/integrations/petite_maison_cumulus.yaml`](../../../../02_groups/integrations/petite_maison_cumulus.yaml). Le contrôle d'ancrage du lot 1 (liste déclarée vs vue) révèle donc un écart préexistant. Corrigé par #868 : le membre est retiré du groupe (décision opérateur ; l'entité n'est pas réactivée). |
+| 2. Résolveur égal au contrôle d'ancrage sur les 9 périmètres | **Conforme** — constaté le 2026-10-11 à 20:51 (heure de Paris) via l'interface HA (L1), gabarit rendu par le moteur de modèles. Sortie ci-dessous (§ « Sortie de la vérification 2 »). |
+| 3. Exécution manuelle du script refusée par la garde, compteurs et timers inchangés | **non exécutée avant correction** — suspendue après l'écart constaté en 4, sur instruction opérateur, et reportée après le redéploiement de #868. Relevé de référence pris à 20:46 : 10 compteurs `*_reload_tentatives` à `0.0`, 12 timers `*_reload_backoff` à `idle`, tous inchangés depuis 16:18:08. |
+| 4. 9 automatisations « Système - Relance … » chargées sans erreur | **NON CONFORME** — constaté le 2026-10-11 vers 20:52 (heure de Paris) via l'interface HA (L1) : journal du cœur et liste des automatisations. Les 9 sont présentes et activées. Toutes se sont déclenchées à 16:19:40 (`reprise` à la stabilisation après le redémarrage de déploiement de 16:17). **Deux ont échoué** : `Système - Relance HomeKit Prise Control` et `Système - Relance SwitchBot BLE`. Le script canon a levé l'erreur « Error rendering template for variables at pos 6: UndefinedError: 'seuil_minutes' is undefined » (2 occurrences du script et 4 lignes par automatisation, toutes à 16:19:40). Voir § « Écart de la vérification 4 ». Aucune autre erreur ne concerne les chaînes, le script ou `ancrage`. Le `system_log` de HA était vide au moment de la lecture ; le constat s'appuie sur le journal brut du cœur. Corrigé par #868. |
+| 5. Plus d'avertissement de dépréciation ; ligne « Résilience intégration » en base | **opportuniste — en attente** — constaté le 2026-10-11 vers 20:52 (heure de Paris) via l'interface HA (L1). Dernière occurrence de l'avertissement « Reloading a config entry by target is deprecated » : 2026-10-11 13:11:18, **antérieure** au déploiement. Les 3 occurrences du journal sont celles de §1 : 08:09:00, 08:33:27, 13:11:18. Aucune entrée « Résilience intégration » au logbook depuis 16:00. Aucune tentative réelle n'a eu lieu depuis le déploiement. |
+
+**Sortie de la vérification 2** (aucun `entry_id`) :
+
+```text
+group.netatmo_capteurs : entrées=1 egal_ancrage=True domaines=['netatmo'] attendu=netatmo ok=True
+group.fujitsu_capteurs : entrées=1 egal_ancrage=True domaines=['fujitsu_airstage'] attendu=fujitsu_airstage ok=True
+group.homekit_station_enfants : entrées=1 egal_ancrage=True domaines=['homekit_controller'] attendu=homekit_controller ok=True
+group.homekit_station_salle_de_jeux : entrées=1 egal_ancrage=True domaines=['homekit_controller'] attendu=homekit_controller ok=True
+group.petite_maison_cumulus : entrées=1 egal_ancrage=True domaines=['overkiz'] attendu=overkiz ok=True
+group.switchbot_ble_capteurs : entrées=5 egal_ancrage=True domaines=['switchbot'] attendu=switchbot ok=True
+group.switchbot_cloud_capteurs : entrées=1 egal_ancrage=True domaines=['switchbot_cloud'] attendu=switchbot_cloud ok=True
+group.synology_capteurs : entrées=1 egal_ancrage=True domaines=['synology_dsm'] attendu=synology_dsm ok=True
+group.homekit_prise_control : entrées=1 egal_ancrage=True domaines=['homekit_controller'] attendu=homekit_controller ok=True
+```
+
+**Écart de la vérification 4 — constat** :
+
+- Erreur constatée le 2026-10-11 à 16:19:40 : `UndefinedError: 'seuil_minutes' is undefined`, sur les chaînes HomeKit Prise Control et SwitchBot BLE. Ce sont les deux seules qui transmettent `axe_fraicheur: false` **sans** `seuil_minutes` ; les sept autres le transmettent.
+- **Cause** : le script canon évaluait sans condition `seuil: "{{ seuil_minutes | float(default=45) }}"`, dans le bloc `variables` qui suit la garde de paramètres. Un champ non transmis est indéfini, et tout filtre autre que `default` lève alors `UndefinedError`. Le `default=` du filtre `float` ne l'empêche pas.
+- **Défaut latent depuis #704** : la ligne est antérieure à #867. #704 a retiré la sentinelle `seuil_minutes: 100000` de ces deux chaînes. Le journal disponible (depuis le 2026-10-06) ne contient aucune occurrence avant 16:19:40. C'est la `reprise` introduite par le lot 1 qui l'a révélé au premier démarrage.
+- **Conséquence (déduite du code, non observée au-delà de la `reprise`)** : toute exécution du script pour ces deux chaînes (`attempt`, `reprise`, `reset`) s'arrêtait sur cette erreur. Leur résilience était donc inopérante.
+
+**Corrections apportées par #868** :
+
+- **Script canon** : `seuil: "{{ (seuil_minutes | default(45)) | float(45) }}"`. Le contrôle de tout le script a relevé **un seul autre cas du même type** : `is_state(wan_entity, 'on')`, dans la garde WAN, avec un champ non transmis par 30 appels sur 36. Il était protégé à l'exécution par le court-circuit du `and` qui le précède, et il est désormais lu sous `| default('')`. Les autres champs sont soit transmis par tous les appels (`op`, `appelant`, `attempts_entity`, `backoff_timer`, `age_entity`, ainsi que `ok_minutes` et `backoff_minutes_cap`), soit déjà lus sous `| default(`.
+- **CI** : contrôle global **R20-champs** dans `check_resilience_integrations_contracts.py`. Pour chaque champ de `fields`, il compte les appels des chaînes du registre qui ne le transmettent pas. Si au moins un appel ne le transmet pas, chaque occurrence du champ dans une expression Jinja de la séquence doit être suivie de `| default(`. Sinon le contrôle est en FAIL, avec le champ, le nombre d'appels et la ligne. Mutation ajoutée au `--selftest` : `{{ x | float(1) }}`, avec `x` non transmis, est détecté.
+- **Preuve de mutation** (2026-10-11, en local) : sur le script d'origine, R20-champs est en **FAIL** (« seuil_minutes » non transmis par 8 appels, ligne 176 ; « wan_entity » non transmis par 30 appels, ligne 143), code de sortie 1 avec `STRICT_ON_NEW=1`. Après correction, il est en **PASS** (36 appels), avec 0 FAIL et un code de sortie 0.
+
+**Correction de l'écart d'ancrage** : le membre `sensor.petite_maison_electric_power_consumption`, désactivé le 2026-05-04, est retiré de `group.petite_maison_cumulus`. Cela n'a aucun effet sur les axes, car `expand` ignorait déjà ce membre absent de l'état. Cela n'en a pas non plus sur l'action : l'entrée `overkiz` reste représentée par les 14 autres membres (vérification 2 : `entrées=1`).
+
 
 1. « Vérifier la configuration » dans HA, puis recharger scripts, automatisations et modèles.
 2. **L1 — immédiat** :
@@ -448,3 +491,6 @@ Critères : §10.
 | RS-4 | Affichage UI des entrées `logbook.log` sans `entity_id` | hypothèse, sans effet probatoire |
 | RS-5 | Axe indisponibilité franche aveugle à l'échec d'une entrée sur N (SwitchBot BLE) | antérieure, hors périmètre ; inchangée par la migration |
 | RS-6 | Attribution des 3 occurrences du 2026-10-11 | non établie (§1.3) |
+| RS-7 | **Fenêtre avant le bail** : une tentative issue d'une expiration de backoff, interrompue par un rechargement des automatisations ou des scripts avant l'armement du timer (calcul du plan, ou service du script momentanément absent pendant `script.reload`), laisse un compteur > 0 sans timer. Un rechargement ne fait pas repasser `systeme_stable` à `on` : la chaîne attend une transition d'axe, un retour constaté ou un redémarrage. Fenêtre de l'ordre de la milliseconde | résiduelle, documentée — même famille que [C56](c56_dette_inhibition_tentative_sans_reprise.md) |
+| RS-8 | **Rechargement interrompu** : un rechargement des automatisations ou des scripts pendant un `reload_config_entry` en cours l'annule. Le bail garantit la tentative suivante ; si l'entrée restait `setup_in_progress`, le plan l'écarterait et la tentative compterait en échec, jusqu'au blocage par épuisement | hypothèse non vérifiée dans le code HA ; précondition de déploiement de #867 (aucune tentative en cours) |
+| RS-9 | **Couverture du banc de simulation** : le banc Jinja du lot 1 (32/32) rendait les gabarits avec un jeu de données générique, pas avec les données réelles de chaque chaîne. Il n'a donc pas vu `seuil_minutes` indéfini sur les deux chaînes à `axe_fraicheur: false`, constaté en production le 2026-10-11 (§9, vérification 4). | levée pour ce cas : **R20-champs** (#868) confronte désormais chaque champ du script aux appels réels des chaînes |

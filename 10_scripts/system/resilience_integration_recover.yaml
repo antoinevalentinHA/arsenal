@@ -140,7 +140,7 @@ resilience_integration_recover:
               value_template: >
                 {{ (op | default('attempt')) in ['attempt', 'reprise']
                    and (wan_entity | default('')) | length > 0
-                   and is_state(wan_entity, 'on') }}
+                   and is_state(wan_entity | default(''), 'on') }}
           sequence:
             - stop: "Inhibé : contexte WAN indisponible (reload d'intégration cloud futile)"
 
@@ -173,7 +173,10 @@ resilience_integration_recover:
              and is_state(fail_entity_safe, 'on') }}
         age_state: "{{ states(age_entity_safe) }}"
         age: "{{ states(age_entity_safe) | float(default=none) }}"
-        seuil: "{{ seuil_minutes | float(default=45) }}"
+        # Non transmis par les chaînes à `axe_fraicheur: false` : un champ
+        # absent est indéfini, et tout filtre autre que `default` lève
+        # UndefinedError. `default` d'abord (C55, CI R20-champs).
+        seuil: "{{ (seuil_minutes | default(45)) | float(45) }}"
         ok: "{{ ok_minutes | float(default=10) }}"
         tentative: "{{ states(attempts_entity) | int(0) }}"
         plafond_n: 5
