@@ -1,7 +1,7 @@
 # ARSENAL — Contrat de résilience des intégrations
 
 **Composant :** `arsenal-ha`
-**Version :** v3.4
+**Version :** v3.5
 **Scope :** Détection et relance automatique des intégrations critiques (gel des données, indisponibilité des entités, échec de configuration d'une entrée).
 **Maille de couverture :** l'**entrée de configuration** (*config entry*) — voir §12.
 **Mode d'application :** report-only — voir §10 et le registre.
@@ -39,7 +39,7 @@ Les trois axes doivent exister **séparément**. Aucun ne peut servir de substit
 | **Fraîcheur** | Âge des données, dérivé du `last_reported` le plus récent des membres exploitables du groupe source, plafonné. Mesure la *liveness* (l'intégration rapporte-t-elle encore ?), pas la stabilité de la valeur. `last_reported` se rafraîchit à chaque écriture du coordinateur même valeur identique ; `last_updated`/`last_changed` ne bougent qu'au changement de valeur et feraient passer une intégration saine mais « calme » pour gelée. |
 | **Disponibilité** | Présence d'au moins un membre exploitable du groupe source. L'**indisponibilité franche** = « 0 membre exploitable » maintenu sur une temporisation. Mesure la disparition. |
 | **Échec de configuration** | État de l'**entrée** elle-même : elle n'est pas chargée et ne se charge pas. Porte sur l'entrée, jamais sur ses entités (§13). |
-| **Recovery** | Procédure de relance déléguée au script canon `resilience_integration_recover` (attempt / reset / block), bornée par backoff et plafond, inhibée en panne secteur. |
+| **Recovery** | Procédure de relance déléguée au script canon `resilience_integration_recover` (attempt / reprise / reset ; blocage au plafond intégré depuis la v3.5), bornée par backoff et plafond, inhibée en panne secteur. |
 | **Épisode de recovery** | Séquence ouverte à la première tentative et fermée par un **retour constaté**. Un épisode reste ouvert tant que le backoff tourne **ou** que le compteur de tentatives est non nul. **N'est pas** synonyme de « backoff actif » : l'expiration du backoff est un événement *interne* à l'épisode (§4.1). |
 | **Chaîne complète** | Entrée possédant tous les maillons des couches diagnostic, décision, action, UI (§4), câblant **les trois** axes applicables à son mode. |
 | **Chaîne orpheline** | Infrastructure de diagnostic et/ou d'action présente, mais **aucune automation de décision** ne la consomme. L'incident est diagnostiqué, jamais traité. **Non conforme.** |
@@ -109,7 +109,7 @@ périmètre parfaitement sain**.
 
 **Diagnostic** — groupe source **restreint à une entrée** (§12.3) ; capteur d'âge ; binaire gel avéré ; binaire indisponibilité franche ; binaire échec de configuration ; binaire retour OK ; binaire recovery en cours.
 **Décision** — automation déclenchant sur gel **et** indisponibilité **et** échec de configuration **et** fin de backoff **et** retour OK, sous garde `input_boolean.systeme_stable = on`, en `mode: single`, sans `time_pattern`.
-**Action** — délégation à `script.resilience_integration_recover` ; timer de backoff dédié ; compteur de tentatives dédié ; `entry_id` désignant l'entrée effectivement observée.
+**Action** — délégation à `script.resilience_integration_recover`, par appel direct de l'automatisation de la chaîne, appelant authentifié (R-RECOV-7) ; timer de backoff dédié ; compteur de tentatives dédié ; entrées **résolues à l'exécution** depuis le périmètre observé (§12.5.3) et rechargées une à une par `entry_id`.
 **UI** — exposition non trompeuse de l'état des axes et du recovery, à la maille de l'entrée (§12.6).
 
 ### 4.1 Cycle de vie d'un épisode de recovery
@@ -144,6 +144,52 @@ l'épisode, elles ne le referment pas.
 > sur le « retour OK », qui doit être effectivement câblée et non seulement
 > déclarée.
 
+> **R-RECOV-4 (opposable) — bail.** Le timer de backoff est armé **avant** toute
+> action de recovery. Tout chemin terminal d'une tentative laisse un timer actif,
+> un compteur à zéro, un blocage notifié ou un refus notifié. Une interruption
+> (erreur d'appel, redémarrage, rechargement des scripts) laisse donc toujours
+> un timer, restauré par Home Assistant, qui provoquera une nouvelle tentative.
+> La durée minimale du bail excède la durée maximale de la boucle de
+> rechargement augmentée du délai d'attente.
+
+> **R-RECOV-5 (opposable) — reprise.** À la stabilisation après démarrage
+> (`input_boolean.systeme_stable` → `on`), chaque chaîne se réévalue : un retour
+> déjà constaté referme l'épisode ; sinon, une chaîne en incident confirmé, sans
+> timer actif et sous plafond, est traitée comme une tentative. Un timer actif
+> n'est jamais préempté.
+>
+> Motif : les binaires d'axe à `delay_on` **restaurent** leur état au démarrage,
+> sans transition ; une expiration de backoff survenue pendant l'arrêt est
+> émise avant l'armement des déclencheurs, donc perdue. Sans reprise, un
+> épisode en cours au redémarrage n'est plus jamais relancé.
+
+> **R-RECOV-6 (opposable) — deux blocages.** Le **blocage par épuisement** est
+> un état **mémorisé** de l'épisode : au **5ᵉ échec**, le compteur porte cinq
+> tentatives réellement faites, le timer est arrêté et le blocage est notifié
+> immédiatement. Le **blocage pour anomalie de domaine** est un **prédicat
+> recalculé** sur la configuration (R-ANCRAGE-11) : il ne modifie **jamais** le
+> compteur, arrête le timer et se notifie à chaque évaluation qui le constate.
+> Les deux sont distincts dans les notifications et dans le journal. Le premier
+> se lève par retour constaté (R-RECOV-2) ; le second par correction du
+> périmètre, la relance étant alors déclenchée par l'opérateur (déclenchement de
+> l'automatisation de la chaîne) ou par la reprise au démarrage.
+
+> **R-RECOV-7 (opposable) — exclusivité par chaîne.** Le script canon refuse
+> tout appel qui n'émane pas de l'exécution **en cours** de l'automatisation de
+> la chaîne : le contexte de l'appel doit être égal au contexte de l'état de
+> l'automatisation appelante, transmise par `appelant`. Chaque exécution
+> d'automatisation crée un contexte neuf et l'écrit dans son état à son
+> démarrage ; elle seule le détient. Avec `mode: single` sur l'automatisation et
+> l'arrêt en cascade du script quand l'automatisation est interrompue, deux
+> exécutions du script ne peuvent jamais manipuler simultanément le compteur et
+> le timer d'une même chaîne. Démonstration : chantier C55 §5.6. Hypothèse
+> unique : aucun code ne fabrique un objet contexte portant l'identifiant de
+> celui d'une automatisation — hors du modèle de menace de la configuration.
+>
+> Le mode du script canon (`parallel`) n'est **pas** ce qui garantit
+> l'exclusivité : il garantit seulement qu'une chaîne ne bloque pas les
+> tentatives des autres.
+
 ---
 
 ## 5. Invariants obligatoires
@@ -154,15 +200,17 @@ l'épisode, elles ne le referment pas.
 4. **Recovery** — convergence vers le script canon unique, jamais une seconde chaîne d'action.
 5. **Retour OK** — détecté explicitement, conditionné à un **épisode de recovery ouvert** (§4.1, R-RECOV-1) — et non au seul backoff actif —, débouncé, et **notifié** (R-RECOV-3).
 6. **Backoff** — borné par un cap.
-7. **Plafond tentatives** — au-delà du plafond, passage en `block` et arrêt des relances. Le blocage borne les relances **sans être terminal** : un retour constaté referme l'épisode, réarme la chaîne et le notifie (R-RECOV-2).
+7. **Plafond tentatives** — au 5ᵉ échec, blocage immédiat et notifié, arrêt des relances (R-RECOV-6). Le blocage borne les relances **sans être terminal** : un retour constaté referme l'épisode, réarme la chaîne et le notifie (R-RECOV-2).
 8. **Inhibition panne secteur** — aucune tentative pendant `panne_secteur_en_cours = on` ; le reset reste autorisé.
-9. **Observabilité** — état des axes, compteur, backoff exposables ; notifications sur attempt/échec/block/retour OK.
+9. **Observabilité** — état des axes, compteur, backoff exposables ; notifications **effectivement émises** sur échec, blocage par épuisement, refus pour anomalie de domaine et retour OK ; une ligne de journal par issue (§13.3).
 10. **Absence de boucle agressive** — `mode: single`, `max_exceeded: silent`, déclenchement sur transition, garde `systeme_stable`. **En couche décision uniquement** : le réveil périodique de la couche observation autorisé par R-AXE3-5 ne déroge pas à cet invariant (§13.3).
-11. **Support WAN disponible** — une intégration de classe `cloud_wan` ne tente aucun recovery (`op == attempt`) tant que le contexte WAN est indisponible (`binary_sensor.contexte_wan_indisponible = on`). Cette inhibition ne concerne **que** les intégrations `cloud_wan` ; les intégrations `local_lan` n'y sont jamais soumises. Comme pour l'inhibition panne secteur (invariant 8), seul `attempt` est inhibé ; `reset` et `block` restent autorisés.
+11. **Support WAN disponible** — une intégration de classe `cloud_wan` ne tente aucun recovery (`op` `attempt` ou `reprise`) tant que le contexte WAN est indisponible (`binary_sensor.contexte_wan_indisponible = on`). Cette inhibition ne concerne **que** les intégrations `cloud_wan` ; les intégrations `local_lan` n'y sont jamais soumises. Comme pour l'inhibition panne secteur (invariant 8), seules les tentatives (`attempt`, `reprise`) sont inhibées ; `reset` reste autorisé.
 12. **Maille entrée de configuration** — la couverture se déclare, se câble et se vérifie **par entrée**, jamais par domaine ni par nom commercial (§12).
 13. **Ancrage détection ↔ action** — le périmètre observé appartient à l'entrée que l'action répare (§12.3).
 14. **Axe échec de configuration** — troisième axe, observé sur l'état de l'entrée, débouncé, soumis aux gardes communes (§13).
 15. **Honnêteté de l'indicateur** — aucun indicateur ne peut afficher sain un domaine dont une entrée est en échec ou non couverte (§12.6).
+16. **Exclusivité par chaîne** — jamais deux exécutions simultanées du script canon pour une même chaîne : appel direct et bloquant par la seule automatisation de la chaîne, en `mode: single`, appelant authentifié (R-RECOV-7).
+17. **Séparation dans l'action** — dans une tentative, le **plan** (résolution, exclusions, refus), le **résultat technique** (appels émis), l'**observation** (état des entrées après rechargement) et la **décision** (axes seuls) restent distincts ; aucune condition de décision ne lit les trois premiers (§9).
 
 ---
 
@@ -183,6 +231,11 @@ l'épisode, elles ne le referment pas.
 - **Déclencher un recovery sur `setup_retry` sans débounce**, en concurrence avec le réessai natif de Home Assistant (§13.2).
 - **Exposer un indicateur de santé agrégé** calculé sur un sous-ensemble des entrées d'un domaine (§12.5).
 - **Énumérer les entrées par balayage runtime** des entités : l'énumération est déclarative, elle vient du registre (§13.3).
+- **Recharger une entrée par cible** (`target`, `entity_id`, `device_id`, `area_id`, `floor_id`, `label_id`) : mécanisme déprécié, retiré en Home Assistant 2027.4 ; `entry_id` obligatoire (§12.5.3).
+- **Appeler le script canon** autrement que par l'exécution en cours de l'automatisation de la chaîne : appel manuel, appel d'une autre automatisation, `script.turn_on`, auto-appel (R-RECOV-7).
+- **Exécuter partiellement** une action dont le périmètre résout une entrée hors du domaine attendu (R-ANCRAGE-11).
+- **Fonder une décision** de succès ou d'échec sur le plan, le résultat technique ou l'observation de l'état des entrées (invariant 17).
+- **Porter le compteur de tentatives** à une valeur qui ne correspond pas à des tentatives réellement faites (R-RECOV-6).
 
 ---
 
@@ -206,7 +259,7 @@ Une intégration peut déroger au canon d'âge si elle dispose d'un signal de di
 |---|---|
 | Diagnostic | `02_groups/integrations/`, `12_template_sensors/system/integrations/` |
 | Décision | `11_automations/system/reload_integrations/` |
-| Action | `10_scripts/system/resilience_integration_recover.yaml` |
+| Action | `10_scripts/system/resilience_integration_recover.yaml` — en interne : plan, appels, observation, décision (invariant 17) ; journal `logbook.log` |
 | UI | `18_lovelace/` |
 
 ### 9.1 Réveil au déploiement — la couche observation doit parler quand on déploie
@@ -258,6 +311,8 @@ la première fois ; c'est l'objet de cette section.
 La conformité est vérifiée par `scripts/arsenal_contracts/check_resilience_integrations_contracts.py`, dont la source d'autorité est le registre `resilience_integrations_registre.yaml`. Le checker raisonne par registre, **jamais** par nom de fichier (rappel : `fujitsu.yaml` porte l'intégration Airstage).
 
 Le registre type chaque maillon par un statut fermé : `present`, `absent_non_conforme_temporaire` (dette tolérée en report-only via les exceptions du registre), ou `non_applicable` (hors périmètre pour le mode de l'intégration, jamais une dette). Une dérogation légitime n'est pas un statut de maillon mais un bloc `exception_documentee` au niveau de l'intégration. Le checker lit ces statuts tels quels, sans inférence.
+
+La règle **R20** (v3.5) vérifie l'action canon : aucun rechargement par cible dans le runtime ; rechargement par `entry_id` dans une boucle aux erreurs isolées ; pas de `mode: single` ni d'auto-appel ; `max` suffisant pour toutes les chaînes ; garde d'appelant en première étape ; décision sans lecture du plan, du résultat technique ni de l'observation ; journal sans `entity_id` ; reprise câblée ; et, par chaîne, appelant transmis, compteur et timer propres, domaine attendu égal au registre, périmètre plat, script canon cité par les seules chaînes. Son `--selftest` prouve par mutation que chaque contrôle détecte l'écart qu'il vise.
 
 Le contrat s'applique en **mode report-only** : les écarts connus inscrits au registre n'échouent pas la CI ; tout écart **nouveau ou non documenté** échoue dès `STRICT_ON_NEW=1`.  La résorption d'une dette se traduit par la suppression de sa ligne d'exception au registre.
 
@@ -389,13 +444,13 @@ Il est `on` si une campagne de remédiation réseau est active (`input_boolean.r
 |---|---|
 | `meta.inhibition_wan` (registre) | nom canonique du signal WAN : `binary_sensor.contexte_wan_indisponible`. Déclaré **une seule fois**. |
 | `classe_reseau` (registre, par entrée) | `cloud_wan` ou `local_lan`. **Seule clé de vérité** ; aucune clé `garde_wan` concurrente. |
-| `wan_entity` (paramètre du script canon) | optionnel. Transmis par l'appel `op: attempt` d'une intégration `cloud_wan`, jamais par une `local_lan`. |
+| `wan_entity` (paramètre du script canon) | optionnel. Transmis par les appels `op: attempt` et `op: reprise` d'une intégration `cloud_wan`, jamais par une `local_lan`. |
 
 **Règles de câblage :**
 
 - Pour une intégration **`cloud_wan`** avec automation active, l'appel `op: attempt` à `script.resilience_integration_recover` transmet `wan_entity: binary_sensor.contexte_wan_indisponible`.
 - Pour une intégration **`local_lan`**, l'appel `op: attempt` ne transmet **jamais** `wan_entity`.
-- Dans le script canon, la garde WAN est **optionnelle et paramétrée** : elle ne s'arme que si `wan_entity` est défini, inhibe uniquement `op == attempt`, bloque si l'entité transmise est `on`, et ne bloque jamais `reset` ni `block`. Elle ne code jamais le binaire en dur.
+- Dans le script canon, la garde WAN est **optionnelle et paramétrée** : elle ne s'arme que si `wan_entity` est défini, inhibe uniquement les tentatives (`attempt`, `reprise`), bloque si l'entité transmise est `on`, et ne bloque jamais `reset`. Elle ne code jamais le binaire en dur.
 
 **Classification :**
 
@@ -500,9 +555,11 @@ Cette configuration ne rend pas la maille caduque : chaque entrée charge et
 > réparée alors qu'elle n'a traité qu'une fraction du périmètre.
 
 **Moyen canonique de la satisfaire.** Le script canon accepte, en alternative
-exclusive à `entry_id`, un paramètre **`reload_target`** : l'action **cible le
-périmètre lui-même**, Home Assistant remonte aux entrées de chaque entité ciblée
-et les recharge toutes.
+exclusive à `entry_id`, un paramètre **`reload_target`** : l'action **dérive du
+périmètre lui-même**. Depuis la v3.5, les entrées sont résolues à l'exécution
+depuis la liste déclarée du groupe, puis rechargées une à une par `entry_id`
+(§12.5.3). Le principe — l'action dérive du périmètre — est inchangé ; seul le
+moyen a changé, le ciblage Home Assistant par `target` étant retiré en 2027.4.
 
 > **R-ANCRAGE-5.** Quand l'action cible le périmètre, elle en **dérive** — elle ne
 > peut donc plus en diverger. R-ANCRAGE-1 cesse d'être une règle qu'on vérifie
@@ -518,9 +575,10 @@ et les recharge toutes.
 > transmette réellement `reload_target` revient à faire taire un écart réel.**
 > La déclaration de contrôle et le câblage de l'action doivent bouger ensemble.
 
-*Comportement vérifié en terrain le 2026-08-24 : un appel ciblé sur un groupe de
-24 entités réparties sur 6 entrées a rechargé les 6, constaté par le saut
-simultané de leurs horodatages.*
+*Preuve historique de l'ancien moyen (ciblage HA), 2026-08-24 : un appel ciblé
+sur un groupe de 24 entités réparties sur 6 entrées a rechargé les 6, constaté
+par le saut simultané de leurs horodatages. Elle ne vaut pas preuve du moyen
+v3.5 (§12.5.3), dont la preuve terrain reste à produire (chantier C55).*
 
 > **R-ANCRAGE-6 (opposable — condition d'éligibilité au ciblage).** Une chaîne ne
 > peut cibler son périmètre que si ce périmètre est **fermé sur son domaine
@@ -627,6 +685,50 @@ Corollaire opérationnel : tout remplacement d'appareil doit être suivi d'une
 relecture du contrôle d'ancrage. Le système ne peut pas deviner qu'un objet a
 changé de nature derrière un nom stable — mais il peut le constater.
 
+### 12.5.3 Résolution à l'exécution — Home Assistant 2027.4
+
+Home Assistant a déprécié le rechargement d'une entrée **par cible** ; il cesse
+de fonctionner en 2027.4. Le service n'accepte, à la place, qu'**un** `entry_id`
+par appel. Le moyen de R-ANCRAGE-5 devient donc une résolution faite par le
+script canon lui-même.
+
+> **R-ANCRAGE-10 (opposable) — équivalence.** Les entrées d'un périmètre ciblé
+> sont résolues en lisant la **liste déclarée** du groupe (attribut `entity_id`,
+> membres configurés, indisponibles compris), puis l'entrée de chaque membre au
+> **registre des entités** (`config_entry_id`). C'est exactement la résolution
+> que Home Assistant appliquait à un appel ciblé sur un groupe plat. Les groupes
+> de périmètre **DOIVENT** être plats (aucun membre `group.*`) : la résolution
+> ne les développe pas.
+
+> **R-ANCRAGE-11 (opposable) — refus.** Chaque chaîne transmet son
+> `domaine_attendu`, égal au `domaine_integration` du registre. Si une entrée
+> résolue appartient à un autre domaine, l'action **entière** est refusée —
+> jamais exécutée partiellement : une incohérence de configuration ne doit pas
+> être masquée. Le refus ne modifie pas le compteur (R-RECOV-6).
+
+> **R-ANCRAGE-12 (opposable) — indépendance du contrôle.** Le contrôle runtime
+> d'ancrage ne réutilise pas le chemin de résolution de l'action : il lit les
+> membres présents dans l'état (`expand`), les compare à la liste déclarée, et
+> vérifie le domaine résolu contre le domaine attendu déclaré en clair et
+> recoupé en CI avec le registre. Une erreur commune à l'action et à son
+> contrôle ne peut donc pas valider un mauvais ciblage.
+
+**Exclusions techniques**, journalisées mais non contractuelles : entrée
+inconnue du registre, entrée désactivée (§13.2), entrée dans un état que Home
+Assistant refuse de recharger (`migration_error`, `failed_unload`,
+`setup_in_progress`, `unload_in_progress`). Si plus aucune entrée ne reste à
+recharger, la tentative est comptée en échec, sans appel.
+
+**Rechargement séquentiel.** Les entrées sont rechargées une à une ; une
+exception sur l'une n'empêche pas les suivantes. Le pire cas est borné par
+l'attente d'annonce des appareils à l'installation (30 s par entrée SwitchBot) ;
+la durée minimale du bail l'excède (R-RECOV-4).
+
+**Ce que l'action affirme.** Les appels sont « émis », jamais « réussis » :
+l'exception éventuelle d'un appel n'est pas lisible par le script (elle reste
+dans la trace et le journal système). La récupération n'est constatée que par
+les axes (invariant 17).
+
 ### 12.6 Honnêteté de l'indicateur
 
 > **R-UI-1 (opposable).** Un indicateur de santé **ne doit jamais** afficher sain un domaine dont une entrée est en échec ou non couverte.
@@ -681,12 +783,23 @@ La preuve est l'état de l'entrée, lu par `config_entry_attr(entry_id, 'state')
 
 > **R-AXE3-6.** Est **interdit** un capteur qui énumérerait les entrées par balayage de l'ensemble des entités du système : un tel capteur s'abonne à **tous** les changements d'état, ce qui est un coût permanent injustifiable pour une observation rare. **L'énumération des entrées à surveiller est déclarative** : elle vient du registre (§12.1), jamais d'un balayage runtime.
 
+**Journal de l'action canon (v3.5).** Chaque issue d'une tentative (succès,
+échec, blocage par épuisement, refus pour anomalie de domaine, clôture) écrit
+une ligne `logbook.log` **sans `entity_id`** : avec un `entity_id` hors de la
+liste blanche du recorder, l'événement ne serait pas enregistré. Valeur
+probatoire **non présumée** : enregistrable en base (L2 conditionnel) pendant
+`purge_keep_days` (30 jours, L3), puis seulement en sauvegarde (L4), **à
+démontrer** par le constat d'une ligne en base après déploiement. C'est une
+**déclaration du script** : elle ne prouve ni le rechargement, ni la
+récupération, qui restent constatés par les axes. Elle ne cite jamais un
+`entry_id`.
+
 ### 13.4 Débounce, gardes et bornes
 
 - **Débounce sur `setup_retry`** — jamais inférieur au délai de gel de référence du registre. Il confirme que le réessai natif de Home Assistant ne converge pas.
 - **Échec terminal** (`setup_error`, `migration_error`) — pas de débounce requis : Home Assistant ne réessaiera pas de lui-même.
 - **Gardes communes inchangées** — `input_boolean.systeme_stable = on` (garde de démarrage), inhibition panne secteur (invariant 8), garde WAN pour les entrées `cloud_wan` (invariant 11).
-- **Bornes inchangées** — backoff plafonné, plafond de tentatives, passage en `block` au-delà. Cet axe n'ouvre **aucun régime dérogatoire** : il alimente le script canon comme les deux autres.
+- **Bornes inchangées** — backoff plafonné, plafond de tentatives, blocage au 5ᵉ échec (R-RECOV-6). Cet axe n'ouvre **aucun régime dérogatoire** : il alimente le script canon comme les deux autres.
 
 ---
 
@@ -843,6 +956,7 @@ Cette leçon **ne désigne aucune remédiation** pour le pont concerné. Elle é
 
 ## 16. Historique de version
 
+- **v3.5** — **Rechargement par `entry_id` (Home Assistant 2027.4) et défauts de résilience liés** (chantier C55). Le ciblage HA par `target`, prescrit par R-ANCRAGE-5/8, est déprécié et cesse de fonctionner en 2027.4 : l'action de 8 chaînes sur 10 serait devenue inopérante en silence. Ajout du **§12.5.3** — **R-ANCRAGE-10** (résolution à l'exécution sur la liste déclarée, équivalente au ciblage sur groupe plat), **R-ANCRAGE-11** (refus entier pour entrée hors domaine attendu), **R-ANCRAGE-12** (contrôle d'ancrage sur un chemin de résolution distinct). R-ANCRAGE-5 distingue désormais le principe du moyen ; la preuve terrain du 2026-08-24 est requalifiée en preuve historique. Ajout de **R-RECOV-4** (bail), **R-RECOV-5** (reprise après stabilisation), **R-RECOV-6** (deux blocages, compteur jamais détourné), **R-RECOV-7** (exclusivité par chaîne, appelant authentifié par contexte). Invariants 7, 9 et 11 amendés (blocage au 5ᵉ échec, notifications effectivement émises — le blocage au plafond passait par un auto-appel refusé par HA et n'était jamais notifié) ; ajout des invariants **16** (exclusivité) et **17** (séparation plan / résultat technique / observation / décision). Cinq interdictions ajoutées (§6). Journal `logbook.log` qualifié au §13.3, sans niveau probatoire présumé. Ajout de **R20** au checker.
 - **v3.4** — Ajout de **R-COUVERTURE-4** (§10.2) : une dérogation de couverture se déclare par **entité témoin**, jamais par titre ni par motif de nommage. Conséquence directe de R-ANCRAGE-9 (v3.3) — le contrôle de couverture indexait encore par titre, alors que les deux stations HomeKit prouvent qu'un titre n'est pas une clé ; une dérogation pouvait en dérober deux en silence. Un motif aurait été pire : il auto-dérogerait les entrées futures **et** manquerait celles hors convention. Le mode de défaillance d'un témoin est bruyant par construction — un témoin disparu rend l'entrée non couverte, donc visible — et le détail du contrôle nomme désormais le témoin mort.
 - **v3.3** — **Ciblage par défaut.** Ajout de **R-ANCRAGE-8** (§12.5.2) : sur un périmètre éligible, l'action DOIT cibler le périmètre ; `entry_id` n'est retenu que là où la **détection** en exige déjà un — aujourd'hui l'axe échec de configuration seul. Motif décisif : la justesse d'un `entry_id` n'est **vérifiable par personne**, aucun contrôle ne pouvant lire `secrets.yaml` ; une chaîne pouvait observer une entrée et en réparer une autre sans qu'un seul indicateur bouge. Ajout de **R-ANCRAGE-9** : le titre d'une entrée n'est ni stable ni unique — les deux stations HomeKit portent le même — et ne doit jamais servir de clé. Réserve « entrée sans entité intargetable » **levée et bornée** : une entité `unavailable` reste ciblable (mesuré), et le seul cas dangereux vide le périmètre, que le contrôle d'ancrage signale déjà. Six chaînes migrées ; ajout de **R18** au checker. Le classement des familles de périmètres passe du mécanisme à l'**invariant** : migrer au ciblage ne fait pas sortir de `mono`.
 - **v3.2** — Ajout du **§9.1** et de **R-OBS-1** : tout capteur de la couche observation de la résilience doit inclure `event_template_reloaded`. Un rechargement des modèles ne déclenche ni `homeassistant: start` ni un tick, et les sources d'un capteur de résilience ne bougent pas en fonctionnement normal — le capteur restait donc `unknown` jusqu'au prochain incident, affichant un gris indiscernable d'une panne. **R-AXE3-4 est amendée** : sa formulation d'origine, qui n'exigeait que le tick et le démarrage, était incomplète et a produit le défaut deux fois. Ajout de **R17** au checker, borné aux fichiers énumérés de cette couche — la règle n'est **pas** étendue aux ~700 blocs à déclencheurs du dépôt, dont les sources tiquent assez pour que la fenêtre aveugle se referme seule.

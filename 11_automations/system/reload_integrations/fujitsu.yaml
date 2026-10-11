@@ -75,6 +75,15 @@
       to: "on"
       id: retour_ok
 
+    # 🔁 Reprise après stabilisation (C55, R-RECOV-5) : les binaires à
+    # delay_on restaurent leur état au démarrage SANS transition, et une
+    # expiration de backoff pendant l'arrêt est perdue. Sans ce déclencheur,
+    # un épisode en cours au redémarrage ne serait plus jamais relancé.
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: reprise
+
   condition:
     - condition: state
       entity_id: input_boolean.systeme_stable
@@ -90,6 +99,7 @@
             - service: script.resilience_integration_recover
               data:
                 op: reset
+                appelant: "{{ this.entity_id }}"
                 notify_title_prefix: "Airstage"
                 age_entity: sensor.fujitsu_age_donnees
                 ok_minutes: 10
@@ -98,11 +108,54 @@
                 backoff_timer: timer.airstage_reload_backoff
                 backoff_minutes_cap: 60
 
+        # 🔁 Reprise après stabilisation : retour déjà constaté ⇒ clôture ;
+        # sinon réévaluation complète par le script canon (op reprise).
+        - conditions:
+            - condition: trigger
+              id: reprise
+          sequence:
+            - choose:
+                - conditions:
+                    - condition: state
+                      entity_id: binary_sensor.retour_ok_airstage
+                      state: "on"
+                  sequence:
+                    - service: script.resilience_integration_recover
+                      data:
+                        op: reset
+                        appelant: "{{ this.entity_id }}"
+                        notify_title_prefix: "Airstage"
+                        age_entity: sensor.fujitsu_age_donnees
+                        ok_minutes: 10
+                        seuil_minutes: 45
+                        attempts_entity: input_number.airstage_reload_tentatives
+                        backoff_timer: timer.airstage_reload_backoff
+                        backoff_minutes_cap: 60
+              default:
+                - service: script.resilience_integration_recover
+                  data:
+                    op: reprise
+                    appelant: "{{ this.entity_id }}"
+                    kind: reload_entry
+                    domaine_attendu: fujitsu_airstage
+                    notify_title_prefix: "Airstage"
+                    age_entity: sensor.fujitsu_age_donnees
+                    unavail_entity: binary_sensor.indisponibilite_franche_airstage
+                    seuil_minutes: 45
+                    ok_minutes: 10
+                    attempts_entity: input_number.airstage_reload_tentatives
+                    backoff_timer: timer.airstage_reload_backoff
+                    reload_target: group.fujitsu_capteurs
+                    backoff_minutes_cap: 60
+                    wait_timeout: "00:03:00"
+
       default:
         - service: script.resilience_integration_recover
           data:
             op: attempt
+            appelant: "{{ this.entity_id }}"
             kind: reload_entry
+            domaine_attendu: fujitsu_airstage
             notify_title_prefix: "Airstage"
             age_entity: sensor.fujitsu_age_donnees
             unavail_entity: binary_sensor.indisponibilite_franche_airstage

@@ -347,7 +347,7 @@ Nouvelle règle **R20** du checker `check_resilience_integrations_contracts.py` 
 
 ## 8. Projet d'amendement du contrat — v3.4 → v3.5
 
-Texte **proposé**, appliqué au contrat dans le **même lot** que le runtime et la CI (§9, lot 1) : appliqué seul, le contrat décrirait un comportement que le runtime n'a pas.
+**Appliqué au contrat (v3.5) dans le lot 1**, avec le runtime et la CI : appliqué seul, le contrat aurait décrit un comportement que le runtime n'a pas. La liste ci-dessous reste la trace de ce qui a été amendé ; le contrat fait foi.
 
 1. **§4 Anatomie, ligne « Action »** — remplacer « `entry_id` désignant l'entrée effectivement observée » par : « entrées **résolues à l'exécution** depuis le périmètre observé (§12.5), rechargées une à une par `entry_id` ».
 2. **§4.1** — ajouter :
@@ -377,7 +377,7 @@ Texte **proposé**, appliqué au contrat dans le **même lot** que le runtime et
 
 Document de chantier, ligne C55 au registre, dette [C56](c56_dette_inhibition_tentative_sans_reprise.md), règle d'attribution des identifiants au registre, entrées d'index. **Aucun runtime.**
 
-### Lot 1 — contrat, CI et runtime (une pull request, commits ordonnés) — *soumis à validation du présent plan*
+### Lot 1 — contrat, CI et runtime (une pull request, commits ordonnés) — *implémenté le 2026-10-11, en revue, non déployé*
 
 | Ordre | Contenu |
 |---|---|
@@ -391,6 +391,22 @@ Document de chantier, ligne C55 au registre, dette [C56](c56_dette_inhibition_te
 **Contrôles avant fusion** : `check_resilience_integrations_contracts.py`, `check_notifications_contracts.py`, `check_registre_chantiers.py`, `check_configuration_includes.py`, gates `docs_lint` (`docs_lint`, `docs_ci_orphan_report`, `docs_ci_contract_counts`, `docs_ci_naming`, `docs_ci_navigation_leaf_pages`, `docs_ci_changelog_index`), ensemble `contracts_all`. Relecture adversariale du diff.
 
 **Limite** : aucune CI ne valide le chargement par Home Assistant. Ce point relève du lot 2.
+
+**Résultats des contrôles du lot 1 (2026-10-11, en local, conditions CI)** :
+
+| Contrôle | Résultat |
+|---|---|
+| R20 sur le runtime **antérieur** (preuve de mutation) | **12 FAIL**, code 1 — rechargement par cible, mode single, auto-appel, `block`, hors boucle, sans `continue_on_error`, décision non isolée, garde absente, reprise absente, domaines attendus absents, 9 chaînes sans appelant ni reprise |
+| R20 sur le runtime du lot 1 | 0 FAIL (183 PASS, 8 DETTE et 1 EXCEPTION préexistantes) |
+| `--selftest` (mutations R20 ajoutées) | OK |
+| `contracts_all` (87 checkers, `STRICT_ON_NEW=1`) | 87/87 conformes |
+| `doctrine.yml`, `check_configuration_includes` | OK |
+| Gates documentaires (`docs_lint`, DOC-CI-1/2/3/5/6) | OK |
+| Scanner de publication (`--fail-on critical`, selftest, Z2M) | OK, aucun CRITICAL |
+| yamllint (informatif) sur les fichiers modifiés | 4 erreurs avant, 4 après (virgules, ligne préexistante) |
+| Banc de simulation Jinja (hors dépôt) | 32/32 : résolution (indisponible, désactivée, non récupérable, inconnue), refus de domaine, plan vide, `entry_id` direct, observation, garde d'appelant (4 cas), rendu des 25 gabarits de messages et de décision, ancrage (conforme, membre invisible, domaine étranger) |
+
+**Ce qu'aucun de ces contrôles ne prouve** : le chargement par Home Assistant (configuration, alias YAML, fonctions de template réelles). C'est l'objet du lot 2.
 
 ### Lot 2 — déploiement opérateur (après fusion, sur autorisation)
 

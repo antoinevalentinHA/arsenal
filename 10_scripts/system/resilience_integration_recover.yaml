@@ -5,22 +5,47 @@
 #  🎯 RÔLE
 #     Procédure unique de résilience pour intégrations critiques :
 #     - attempt : tentative de récupération (reload/restart)
+#     - reprise : réévaluation à la stabilisation après démarrage
+#                 (comme attempt, sans préempter un backoff actif)
 #     - reset   : remise à zéro (retour OK)
-#     - block   : blocage plafond (sécurité)
 #
 #  🧱 PRINCIPE
 #     - Aucun trigger ici (piloté par automations)
 #     - Paramétré via fields (entités, seuils, action)
 #     - Notifications mobiles via script.notification_envoyer
+#
+#  📐 CONTRAT — resilience_integrations.md v3.5 (chantier C55)
+#     - Garde d'appelant authentifié (R-RECOV-7) : seule l'exécution
+#       EN COURS de l'automatisation de la chaîne peut appeler ce
+#       script. C'est elle qui garantit qu'une chaîne n'a jamais deux
+#       exécutions simultanées sur son compteur et son timer — le
+#       `mode: parallel` ne sert qu'à ne plus bloquer les AUTRES chaînes.
+#     - Rechargement par `entry_id`, résolu à l'exécution depuis la
+#       liste DÉCLARÉE du périmètre (R-ANCRAGE-10). Le ciblage par
+#       `target` est déprécié et cesse de fonctionner en HA 2027.4.
+#     - Entrée hors du domaine attendu : refus de l'action ENTIÈRE,
+#       compteur inchangé (R-ANCRAGE-11, R-RECOV-6).
+#     - Bail : backoff armé AVANT l'action (R-RECOV-4).
+#     - Quatre couches dans la tentative, jamais mélangées :
+#         A. plan          — résolution, exclusions, refus
+#         B. appels        — ce qui a été émis, jamais « réussi »
+#         C. observation   — état des entrées après la boucle
+#         D. décision      — les AXES seuls (`verdict_axes`)
+#       Aucune condition de décision ne lit A, B ou C (CI R20).
+#     - Journal `logbook.log` SANS entity_id : sinon filtré par la
+#       liste blanche du recorder, donc jamais enregistré.
 # ==========================================================
 
 resilience_integration_recover:
   alias: "Système - Résilience intégration"
-  mode: single
+  mode: parallel
+  max: 10
 
   fields:
     op:
-      description: "attempt | reset | block"
+      description: "attempt | reprise | reset"
+    appelant:
+      description: "Obligatoire. Entité de l'automatisation appelante, transmise par `{{ this.entity_id }}`. Le script refuse tout appel dont le contexte n'est pas celui de l'exécution en cours de cette automatisation (R-RECOV-7)."
     kind:
       description: "reload_entry | restart_addon"
     notify_title_prefix:
@@ -44,9 +69,11 @@ resilience_integration_recover:
     backoff_timer:
       description: "Ex: timer.vicare_reload_backoff"
     entry_id:
-      description: "Config entry_id (si kind=reload_entry)"
+      description: "Config entry_id (si kind=reload_entry). Exclusif avec reload_target ; réservé aux chaînes dont la détection exige déjà un entry_id (R-ANCRAGE-8)."
     reload_target:
-      description: "Optionnel, exclusif avec entry_id. Entite (souvent le groupe source) dont TOUTES les entrees de configuration doivent etre rechargees. A utiliser quand le perimetre couvre legitimement plusieurs entrees (contrat §12.5, R-ANCRAGE-4) : recharger une entree sur N serait une remediation partielle silencieuse. Verifie le 2026-08-24 : un appel cible sur un groupe etend le groupe, remonte aux entrees de chaque entite et les recharge toutes."
+      description: "Exclusif avec entry_id. Groupe de périmètre dont les entrées de configuration sont résolues À L'EXÉCUTION (liste déclarée du groupe, puis registre des entités) et rechargées une à une par entry_id (R-ANCRAGE-10). Le groupe doit être plat (CI R20)."
+    domaine_attendu:
+      description: "Obligatoire si kind=reload_entry. Domaine d'intégration déclaré au registre pour la chaîne. Une entrée résolue d'un autre domaine fait refuser l'action entière (R-ANCRAGE-11)."
     addon_slug:
       description: "Addon slug (si kind=restart_addon)"
     backoff_minutes_cap:
@@ -57,6 +84,27 @@ resilience_integration_recover:
   sequence:
 
     # =========================
+    # 🔐 GARDE D'APPELANT AUTHENTIFIÉ (R-RECOV-7)
+    # =========================
+    # Toute exécution d'automatisation crée un contexte neuf et l'écrit dans
+    # son état au démarrage ; son appel à ce script propage ce contexte.
+    # Seule l'exécution EN COURS de l'automatisation de la chaîne détient
+    # donc un contexte égal à celui de son état. Un appel humain, système ou
+    # d'une autre automatisation porte un autre contexte : refusé.
+    # Conséquence démontrée (C55 §5.6) : au plus une exécution de ce script
+    # par chaîne à la fois — aucune mise à jour perdue du compteur, aucun
+    # couple compteur/timer incohérent.
+    - if:
+        - condition: template
+          value_template: >
+            {% set a = appelant | default('') %}
+            {{ a | length == 0
+               or states[a] is none
+               or states[a].context.id != context.id }}
+      then:
+        - stop: "Appel refusé : pas l'exécution en cours de l'automatisation de la chaîne"
+
+    # =========================
     # 🛡️ GARDE PANNE SECTEUR
     # =========================
     # Pendant une coupure secteur (coupure_secteur=on) ou tant que l'épisode
@@ -64,14 +112,14 @@ resilience_integration_recover:
     # perte d'alimentation du périphérique — un KO ATTENDU, pas un blocage
     # logiciel. Un reload de config_entry serait futile (le device est éteint)
     # et générerait spam de tentatives + backoff + notifications.
-    # On n'inhibe QUE la tentative (op=attempt) ; le reset (retour OK) reste
-    # autorisé. À la sortie de panne, le device se ré-alimente et l'intégration
-    # récupère naturellement, sans reload.
+    # On n'inhibe QUE la tentative (op=attempt / reprise) ; le reset (retour
+    # OK) reste autorisé. À la sortie de panne, le device se ré-alimente et
+    # l'intégration récupère naturellement, sans reload.
     - choose:
         - conditions:
             - condition: template
               value_template: >
-                {{ (op | default('attempt')) == 'attempt'
+                {{ (op | default('attempt')) in ['attempt', 'reprise']
                    and is_state('binary_sensor.panne_secteur_en_cours', 'on') }}
           sequence:
             - stop: "Inhibé : panne secteur active (reload d'intégration futile)"
@@ -85,12 +133,12 @@ resilience_integration_recover:
     # FUTILE — le support distant est inatteignable. KO ATTENDU, pas un blocage.
     # Garde PARAMÉTRÉE (jamais codée en dur) : inerte si wan_entity non transmis,
     # donc les intégrations local_lan ne sont jamais inhibées par effet de bord.
-    # On n'inhibe QUE la tentative (op=attempt) ; reset et block restent autorisés.
+    # On n'inhibe QUE la tentative (op=attempt / reprise) ; reset reste autorisé.
     - choose:
         - conditions:
             - condition: template
               value_template: >
-                {{ (op | default('attempt')) == 'attempt'
+                {{ (op | default('attempt')) in ['attempt', 'reprise']
                    and (wan_entity | default('')) | length > 0
                    and is_state(wan_entity, 'on') }}
           sequence:
@@ -104,6 +152,9 @@ resilience_integration_recover:
         prefix: "{{ notify_title_prefix | default('Integration') }}"
 
     - choose:
+        - conditions: "{{ (op | default('')) not in ['attempt', 'reprise', 'reset'] }}"
+          sequence:
+            - stop: "op inconnu"
         - conditions: "{{ age_entity_safe | length > 0 }}"
           sequence: []
       default:
@@ -125,12 +176,16 @@ resilience_integration_recover:
         seuil: "{{ seuil_minutes | float(default=45) }}"
         ok: "{{ ok_minutes | float(default=10) }}"
         tentative: "{{ states(attempts_entity) | int(0) }}"
+        plafond_n: 5
         cap: "{{ backoff_minutes_cap | int(60) }}"
         timeout: "{{ wait_timeout | default('00:03:00') }}"
-        plafond: "{{ tentative >= 5 }}"
+        plafond: "{{ tentative >= plafond_n }}"
         delai_min: >
           {% set d = (tentative + 1) * 10 %}
           {{ [d, cap] | min }}
+        duree_bail: >
+          {% set m = delai_min | int(10) %}
+          {{ '%02d:%02d:%02d' | format((m // 60), (m % 60), 0) }}
 
     # =========================
     # 🧱 GARDE COHERENCE AXES
@@ -153,16 +208,19 @@ resilience_integration_recover:
     # =========================
     # `entry_id` et `reload_target` sont EXCLUSIFS : l'un designe une entree
     # unique, l'autre un perimetre d'entrees. Les transmettre ensemble rendrait
-    # la portee reelle du rechargement ambigue.
+    # la portee reelle du rechargement ambigue. Le domaine attendu est
+    # obligatoire : sans lui, une entree etrangere ne serait pas detectee.
     - variables:
         reload_target_safe: "{{ reload_target | default('') }}"
         entry_id_safe: "{{ entry_id | default('') }}"
+        domaine_attendu_safe: "{{ domaine_attendu | default('') }}"
+        addon_slug_safe: "{{ addon_slug | default('') }}"
 
     - choose:
         - conditions:
             - condition: template
               value_template: >
-                {{ (op | default('attempt')) == 'attempt'
+                {{ op in ['attempt', 'reprise']
                    and (kind | default('')) == 'reload_entry'
                    and reload_target_safe | length > 0
                    and entry_id_safe | length > 0 }}
@@ -172,18 +230,26 @@ resilience_integration_recover:
         - conditions:
             - condition: template
               value_template: >
-                {{ (op | default('attempt')) == 'attempt'
+                {{ op in ['attempt', 'reprise']
                    and (kind | default('')) == 'reload_entry'
                    and reload_target_safe | length == 0
                    and entry_id_safe | length == 0 }}
           sequence:
             - stop: "kind=reload_entry sans entry_id ni reload_target"
 
-    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ op in ['attempt', 'reprise']
+                   and (kind | default('')) == 'reload_entry'
+                   and domaine_attendu_safe | length == 0 }}
+          sequence:
+            - stop: "kind=reload_entry sans domaine_attendu"
 
-        # =========================
-        # ✅ RESET (retour OK)
-        # =========================
+    # =========================
+    # ✅ RESET (retour OK)
+    # =========================
+    - choose:
         - conditions: "{{ op == 'reset' }}"
           sequence:
             # Notification AVANT remise a zero : `tentative` porte encore la
@@ -223,6 +289,16 @@ resilience_integration_recover:
                           {{ now().strftime('%d/%m %H:%M') }}
                           Retour constaté après {{ tentative }} tentative(s)
                           infructueuse(s). Compteur remis à zéro.
+            - if:
+                - condition: template
+                  value_template: "{{ tentative > 0 }}"
+              then:
+                - service: logbook.log
+                  data:
+                    name: "Résilience intégration"
+                    message: >
+                      chaine={{ prefix }} op=reset issue=episode_clos
+                      tentatives={{ tentative }}
             - service: timer.cancel
               target:
                 entity_id: "{{ backoff_timer }}"
@@ -233,37 +309,26 @@ resilience_integration_recover:
                 value: 0
             - stop: "reset"
 
-        # =========================
-        # ⛔ BLOCK (plafond)
-        # =========================
-        - conditions: "{{ op == 'block' }}"
-          sequence:
-            - service: timer.cancel
-              target:
-                entity_id: "{{ backoff_timer }}"
-            - service: script.notification_envoyer
-              data:
-                cible: input_text.telephone_parent_1_notify
-                titre: "⛔ {{ prefix }} — blocage sécurité"
-                message: >
-                  {{ now().strftime('%d/%m %H:%M') }}
-                  5 tentatives consécutives échouées.
-                  Arrêt des relances automatiques.
-            - stop: "block"
+    # =========================
+    # ATTEMPT / REPRISE
+    # =========================
 
-    # =========================
-    # ATTEMPT (tentative)
-    # =========================
-    - choose:
-        - conditions: "{{ plafond }}"
-          sequence:
-            - service: script.resilience_integration_recover
-              data:
-                op: block
-                notify_title_prefix: "{{ prefix }}"
-                attempts_entity: "{{ attempts_entity }}"
-                backoff_timer: "{{ backoff_timer }}"
-            - stop: "plafond"
+    # ⛔ Plafond : la chaîne est déjà bloquée par épuisement, et ce blocage a
+    # été notifié au 5ᵉ échec (R-RECOV-6). Rien à faire jusqu'au retour
+    # constaté (R-RECOV-2).
+    - if:
+        - condition: template
+          value_template: "{{ plafond }}"
+      then:
+        - stop: "Chaîne bloquée par épuisement — relances suspendues jusqu'au retour constaté"
+
+    # 🔁 Reprise après stabilisation : un backoff actif n'est jamais préempté,
+    # il expirera normalement (R-RECOV-5).
+    - if:
+        - condition: template
+          value_template: "{{ op == 'reprise' and is_state(backoff_timer, 'active') }}"
+      then:
+        - stop: "Reprise : backoff actif, expiration normale attendue"
 
     # Si gel non confirmé / valeur non numérique : on ne fait rien
     # Incident confirmé si l'âge dépasse le seuil (gel silencieux)
@@ -276,10 +341,112 @@ resilience_integration_recover:
       value_template: >
         {{ (fraicheur and age is not none and age >= seuil) or unavail or fail }}
 
-    # Annule un backoff pendu (si on relance à cause d’un nouveau gel)
-    - service: timer.cancel
+    # =========================
+    # A. PLAN — calcul pur, aucun effet
+    # =========================
+    # Résolution (R-ANCRAGE-10) : liste DÉCLARÉE du groupe (attribut entity_id,
+    # membres configurés, indisponibles compris), puis registre des entités.
+    # C'est exactement ce que faisait HA pour un appel ciblé sur un groupe plat.
+    # Exclusions techniques (journalisées, non contractuelles) : entrée
+    # inconnue, désactivée, ou dans un état que HA refuse de recharger.
+    - variables:
+        non_recuperables: ['migration_error', 'failed_unload', 'setup_in_progress', 'unload_in_progress']
+        resolues: >-
+          {%- if (kind | default('')) != 'reload_entry' -%}
+            []
+          {%- elif reload_target_safe | length > 0 -%}
+            {{ (state_attr(reload_target_safe, 'entity_id') or []) | map('config_entry_id')
+               | reject('none') | unique | sort | list }}
+          {%- else -%}
+            {{ [entry_id_safe] }}
+          {%- endif -%}
+        hors_domaine: >-
+          {%- set ns = namespace(l=[]) -%}
+          {%- for e in resolues -%}
+            {%- set d = config_entry_attr(e, 'domain') -%}
+            {%- if d is not none and d != domaine_attendu_safe -%}
+              {%- set ns.l = ns.l + [d] -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {{ ns.l | unique | sort | list }}
+        a_recharger: >-
+          {%- set ns = namespace(l=[]) -%}
+          {%- for e in resolues -%}
+            {%- if config_entry_attr(e, 'domain') is not none
+                  and config_entry_attr(e, 'disabled_by') is none
+                  and config_entry_attr(e, 'state') not in non_recuperables -%}
+              {%- set ns.l = ns.l + [e] -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {{ ns.l }}
+        ecartees: >-
+          {%- set ns = namespace(l=[]) -%}
+          {%- for e in resolues -%}
+            {%- if config_entry_attr(e, 'domain') is none -%}
+              {%- set ns.l = ns.l + ['inconnue'] -%}
+            {%- elif config_entry_attr(e, 'disabled_by') is not none -%}
+              {%- set ns.l = ns.l + ['desactivee'] -%}
+            {%- elif config_entry_attr(e, 'state') in non_recuperables -%}
+              {%- set ns.l = ns.l + ['etat_non_recuperable:' ~ config_entry_attr(e, 'state')] -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {{ ns.l }}
+        actions_prevues: >-
+          {%- if (kind | default('')) == 'reload_entry' -%}
+            {{ a_recharger | count }}
+          {%- else -%}
+            {{ 1 if addon_slug_safe | length > 0 else 0 }}
+          {%- endif -%}
+        motif_echec: >-
+          {{ "aucun élément de l'intégration ne pouvait être relancé"
+             if actions_prevues | int(0) == 0
+             else "retour non constaté dans le délai" }}
+        etats_apres: []
+
+    # ⛔ Refus pour anomalie de domaine (R-ANCRAGE-11, R-RECOV-6).
+    # Incohérence de CONFIGURATION, pas d'épisode : le compteur n'est JAMAIS
+    # modifié. Le timer est arrêté : relancer est vain tant que le groupe n'est
+    # pas corrigé. Le blocage n'est pas mémorisé — il est recalculé à chaque
+    # évaluation, donc toujours conforme à la configuration réelle, y compris
+    # après redémarrage. Levée : correction du groupe, puis relance par
+    # déclenchement de l'automatisation de la chaîne (ou reprise au démarrage).
+    - if:
+        - condition: template
+          value_template: "{{ hors_domaine | count > 0 }}"
+      then:
+        - service: timer.cancel
+          target:
+            entity_id: "{{ backoff_timer }}"
+        - service: script.notification_envoyer
+          data:
+            cible: input_text.telephone_parent_1_notify
+            titre: "⛔ {{ prefix }} — relance refusée"
+            message: >
+              {{ now().strftime('%d/%m %H:%M') }}
+              Le groupe surveillé contient des éléments d'une autre
+              intégration ({{ hors_domaine | join(', ') }}). Aucune relance
+              automatique tant que le groupe n'est pas corrigé.
+        - service: logbook.log
+          data:
+            name: "Résilience intégration"
+            message: >
+              chaine={{ prefix }} op={{ op }} issue=refus_anomalie_domaine
+              domaine_attendu={{ domaine_attendu_safe }}
+              domaines_trouves={{ hors_domaine | join('+') }}
+              tentatives={{ tentative }}
+        - stop: "Refus : entrée hors du domaine attendu"
+
+    # =========================
+    # BAIL — backoff armé AVANT toute action (R-RECOV-4)
+    # =========================
+    # Toute interruption à partir d'ici (erreur, redémarrage, rechargement des
+    # scripts) laisse un timer, restauré par HA, qui provoquera une nouvelle
+    # tentative. Durée minimale 10 min > boucle + attente au pire (~5 min 30).
+    - service: timer.start
       target:
         entity_id: "{{ backoff_timer }}"
+      data:
+        duration: "{{ duree_bail }}"
 
     # Incrément tentative
     - service: input_number.set_value
@@ -288,29 +455,103 @@ resilience_integration_recover:
       data:
         value: "{{ tentative + 1 }}"
 
-    # Action : reload_entry ou restart_addon
-    - choose:
-        # Perimetre multi-entrees : on recharge TOUTES les entrees des entites
-        # ciblees (R-ANCRAGE-4). L'action derive alors du perimetre observe,
-        # elle ne peut pas en diverger.
-        - conditions: >
-            {{ kind == 'reload_entry' and reload_target_safe | length > 0 }}
-          sequence:
-            - service: homeassistant.reload_config_entry
+    # Plan vide (A3) : tentative comptée en échec, sans appel ni attente.
+    - if:
+        - condition: template
+          value_template: "{{ actions_prevues | int(0) == 0 }}"
+      then:
+        - &echec_tentative
+          choose:
+            # ⛔ 5ᵉ échec : blocage par épuisement, notifié ICI (R-RECOV-6).
+            - conditions:
+                - condition: template
+                  value_template: "{{ tentative + 1 >= plafond_n }}"
+              sequence:
+                - service: timer.cancel
+                  target:
+                    entity_id: "{{ backoff_timer }}"
+                - service: script.notification_envoyer
+                  data:
+                    cible: input_text.telephone_parent_1_notify
+                    titre: "⛔ {{ prefix }} — blocage sécurité"
+                    message: >
+                      {{ now().strftime('%d/%m %H:%M') }}
+                      {{ plafond_n }} tentatives consécutives échouées
+                      ({{ motif_echec }}). Relances automatiques arrêtées
+                      jusqu'au retour de l'intégration.
+                - service: logbook.log
+                  data:
+                    name: "Résilience intégration"
+                    message: >
+                      chaine={{ prefix }} op={{ op }} issue=blocage_epuisement
+                      tentative={{ tentative + 1 }}
+                      entrees_resolues={{ resolues | count }}
+                      a_recharger={{ a_recharger | count }}
+                      ecartees={{ ecartees | join('+') }}
+                      etats_apres={{ etats_apres | join('+') }}
+          default:
+            - service: timer.start
               target:
-                entity_id: "{{ reload_target_safe }}"
-
-        - conditions: "{{ kind == 'reload_entry' }}"
-          sequence:
-            - service: homeassistant.reload_config_entry
+                entity_id: "{{ backoff_timer }}"
               data:
-                entry_id: "{{ entry_id }}"
-        - conditions: "{{ kind == 'restart_addon' }}"
-          sequence:
-            - service: hassio.addon_restart
+                duration: "{{ duree_bail }}"
+            - service: script.notification_envoyer
               data:
-                addon: "{{ addon_slug }}"
+                cible: input_text.telephone_parent_1_notify
+                titre: "🚨 {{ prefix }} — relance en échec"
+                message: >
+                  {{ now().strftime('%d/%m %H:%M') }}
+                  Tentative n°{{ tentative + 1 }} échouée ({{ motif_echec }}).
+                  Prochaine tentative après backoff (~{{ delai_min }} min).
+            - service: logbook.log
+              data:
+                name: "Résilience intégration"
+                message: >
+                  chaine={{ prefix }} op={{ op }} issue=echec
+                  tentative={{ tentative + 1 }}
+                  entrees_resolues={{ resolues | count }}
+                  a_recharger={{ a_recharger | count }}
+                  ecartees={{ ecartees | join('+') }}
+                  etats_apres={{ etats_apres | join('+') }}
+        - stop: "Échec : aucun élément à relancer"
 
+    # =========================
+    # B. APPELS — une entrée à la fois (A2)
+    # =========================
+    # `entry_id` n'accepte qu'une chaîne : boucle séquentielle. Une exception
+    # (entrée disparue, état devenu non récupérable) est isolée par
+    # continue_on_error : les entrées suivantes sont tout de même tentées.
+    # L'exception reste dans la trace et dans home-assistant.log ; elle n'est
+    # pas lisible ici — la couche B dit « émis », jamais « réussi ».
+    - if:
+        - condition: template
+          value_template: "{{ (kind | default('')) == 'reload_entry' }}"
+      then:
+        - repeat:
+            for_each: "{{ a_recharger }}"
+            sequence:
+              - service: homeassistant.reload_config_entry
+                continue_on_error: true
+                data:
+                  entry_id: "{{ repeat.item }}"
+      else:
+        - service: hassio.addon_restart
+          continue_on_error: true
+          data:
+            addon: "{{ addon_slug_safe }}"
+
+    # =========================
+    # C. OBSERVATION — information seulement
+    # =========================
+    # `setup_retry` est normal juste après un rechargement (BLE en attente
+    # d'annonce) : cet état n'entre dans AUCUNE décision.
+    - variables:
+        appels_emis: "{{ actions_prevues | int(0) }}"
+        etats_apres: "{{ a_recharger | map('config_entry_attr', 'state') | list }}"
+
+    # =========================
+    # D. DÉCISION — les axes, et rien d'autre
+    # =========================
     # Attente “retour réel”
     # Succès = données fraîches (âge < ok) ET indisponibilité franche levée
     # ET échec de configuration levé. Tant qu'un binaire unavail ou fail est
@@ -327,16 +568,19 @@ resilience_integration_recover:
       timeout: "{{ timeout }}"
       continue_on_timeout: true
 
+    - variables:
+        verdict_axes: >
+          {% set v = states(age_entity_safe) | float(default=none) %}
+          {% set still_unavail = unavail_entity_safe | length > 0
+             and is_state(unavail_entity_safe, 'on') %}
+          {% set still_fail = fail_entity_safe | length > 0
+             and is_state(fail_entity_safe, 'on') %}
+          {% set frais = (not fraicheur) or (v is not none and v < ok) %}
+          {{ frais and not still_unavail and not still_fail }}
+
     # Succès ?
     - choose:
-        - conditions: >
-            {% set v = states(age_entity_safe) | float(default=none) %}
-            {% set still_unavail = unavail_entity_safe | length > 0
-               and is_state(unavail_entity_safe, 'on') %}
-            {% set still_fail = fail_entity_safe | length > 0
-               and is_state(fail_entity_safe, 'on') %}
-            {% set frais = (not fraicheur) or (v is not none and v < ok) %}
-            {{ frais and not still_unavail and not still_fail }}
+        - conditions: "{{ verdict_axes }}"
           sequence:
             - service: timer.cancel
               target:
@@ -357,21 +601,16 @@ resilience_integration_recover:
                   {% else %}
                   Entrée rechargée, axes de disponibilité revenus au vert.
                   {% endif %}
+            - service: logbook.log
+              data:
+                name: "Résilience intégration"
+                message: >
+                  chaine={{ prefix }} op={{ op }} issue=succes
+                  tentative={{ tentative + 1 }}
+                  entrees_resolues={{ resolues | count }}
+                  appels_emis={{ appels_emis }}
+                  ecartees={{ ecartees | join('+') }}
+                  etats_apres={{ etats_apres | join('+') }}
 
       default:
-        - service: timer.start
-          target:
-            entity_id: "{{ backoff_timer }}"
-          data:
-            duration: >
-              {% set m = delai_min | int(10) %}
-              {{ '%02d:%02d:%02d' | format((m // 60), (m % 60), 0) }}
-
-        - service: script.notification_envoyer
-          data:
-            cible: input_text.telephone_parent_1_notify
-            titre: "🚨 {{ prefix }} — relance en échec"
-            message: >
-              {{ now().strftime('%d/%m %H:%M') }}
-              Tentative n°{{ tentative + 1 }} échouée (timeout).
-              Prochaine tentative après backoff (~{{ delai_min }} min).
+        - *echec_tentative

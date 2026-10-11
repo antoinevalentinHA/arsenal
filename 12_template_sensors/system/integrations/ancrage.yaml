@@ -29,6 +29,18 @@
 #     - groupe vide ou introuvable
 #     - périmètre couvrant PLUSIEURS entrées alors que l'action
 #       ne recharge qu'une entrée -> mal ancré (R-ANCRAGE-1)
+#     - membre DÉCLARÉ dans le groupe mais absent de l'état
+#       (entité désactivée ou supprimée). Compare les deux chemins
+#       de résolution : l'action lit la liste déclarée (C55,
+#       R-ANCRAGE-10), ce contrôle lit l'état (`expand`). Une
+#       divergence entre l'action et son contrôle devient visible
+#       ici (R-ANCRAGE-12).
+#     - domaine résolu différent du DOMAINE ATTENDU déclaré au
+#       registre (`domaines_attendus`, recoupé en CI par R20-e).
+#       Un périmètre entièrement passé sur un autre domaine resterait
+#       sinon « fermé » et invisible ; l'action, elle, refuserait
+#       (R-ANCRAGE-11). Les deux dictionnaires de ce fichier doivent
+#       rester identiques.
 #     - périmètre NON FERMÉ sur son domaine : ses entrées
 #       appartiennent à plusieurs intégrations. Contrôle ajouté
 #       après l'incident du 2026-08-24 — `group.switchbot_capteurs`
@@ -123,14 +135,31 @@
         ] %}
         {% set cibles = ['group.switchbot_ble_capteurs',
                          'group.switchbot_cloud_capteurs'] %}
+        {% set domaines_attendus = {
+          'group.netatmo_capteurs': 'netatmo',
+          'group.fujitsu_capteurs': 'fujitsu_airstage',
+          'group.homekit_station_enfants': 'homekit_controller',
+          'group.homekit_station_salle_de_jeux': 'homekit_controller',
+          'group.petite_maison_cumulus': 'overkiz',
+          'group.synology_capteurs': 'synology_dsm',
+          'group.homekit_prise_control': 'homekit_controller',
+          'group.audi_capteurs': 'audiconnect',
+          'group.withings_capteurs': 'withings',
+          'group.switchbot_ble_capteurs': 'switchbot',
+          'group.switchbot_cloud_capteurs': 'switchbot_cloud'
+        } %}
         {% set ns = namespace(fautifs=0) %}
         {% for g in mono + cibles %}
           {% set membres = expand(g) | map(attribute='entity_id') | list %}
+          {% set declares = (state_attr(g, 'entity_id') or []) | list %}
+          {% set invisibles = declares | reject('in', membres) | list %}
           {% set entrees = membres | map('config_entry_id') | unique | list %}
           {% set domaines = entrees | reject('none') | map('config_entry_attr','domain') | unique | list %}
           {% if membres | count == 0
+                or invisibles | count > 0
                 or none in entrees
                 or domaines | count > 1
+                or domaines != [domaines_attendus.get(g)]
                 or (g in mono and entrees | count != 1) %}
             {% set ns.fautifs = ns.fautifs + 1 %}
           {% endif %}
@@ -152,16 +181,36 @@
           ] %}
           {% set cibles = ['group.switchbot_ble_capteurs',
                            'group.switchbot_cloud_capteurs'] %}
+          {% set domaines_attendus = {
+            'group.netatmo_capteurs': 'netatmo',
+            'group.fujitsu_capteurs': 'fujitsu_airstage',
+            'group.homekit_station_enfants': 'homekit_controller',
+            'group.homekit_station_salle_de_jeux': 'homekit_controller',
+            'group.petite_maison_cumulus': 'overkiz',
+            'group.synology_capteurs': 'synology_dsm',
+            'group.homekit_prise_control': 'homekit_controller',
+            'group.audi_capteurs': 'audiconnect',
+            'group.withings_capteurs': 'withings',
+            'group.switchbot_ble_capteurs': 'switchbot',
+            'group.switchbot_cloud_capteurs': 'switchbot_cloud'
+          } %}
           {% set ns = namespace(lignes=[]) %}
           {% for g in mono + cibles %}
             {% set membres = expand(g) | map(attribute='entity_id') | list %}
+            {% set declares = (state_attr(g, 'entity_id') or []) | list %}
+            {% set invisibles = declares | reject('in', membres) | list %}
             {% set entrees = membres | map('config_entry_id') | unique | list %}
+            {% set domaines = entrees | reject('none') | map('config_entry_attr','domain') | unique | list %}
             {% if membres | count == 0 %}
               {% set ns.lignes = ns.lignes + [g ~ ' : groupe vide'] %}
+            {% elif invisibles | count > 0 %}
+              {% set ns.lignes = ns.lignes + [g ~ ' : membre(s) declare(s) absent(s) de l etat (desactive ou supprime) : ' ~ (invisibles | join(', '))] %}
             {% elif none in entrees %}
               {% set ns.lignes = ns.lignes + [g ~ ' : membre(s) sans entree de configuration'] %}
             {% elif (entrees | reject('none') | map('config_entry_attr','domain') | unique | list | count) > 1 %}
               {% set ns.lignes = ns.lignes + [g ~ ' : perimetre NON FERME, domaines = ' ~ (entrees | reject('none') | map('config_entry_attr','domain') | unique | list | join('+'))] %}
+            {% elif domaines != [domaines_attendus.get(g)] %}
+              {% set ns.lignes = ns.lignes + [g ~ ' : domaine ' ~ (domaines | join('+')) ~ ' au lieu de ' ~ domaines_attendus.get(g)] %}
             {% elif g in mono and entrees | count != 1 %}
               {% set ns.lignes = ns.lignes + [g ~ ' : ' ~ (entrees | count) ~ ' entrees pour un perimetre declare mono-entree'] %}
             {% endif %}

@@ -494,6 +494,172 @@ def pont_sante_no_rssi_gate():
 
 
 # ──────────────────────────────────────────────────────────────
+# R20 — action canon : rechargement par entry_id, exclusivité, couches
+# (contrat §12.5.3, R-ANCRAGE-10..12, R-RECOV-4..7 ; chantier C55)
+# ──────────────────────────────────────────────────────────────
+
+RELOAD_SVC = "homeassistant.reload_config_entry"
+CANON_SVC = "script.resilience_integration_recover"
+# Clés de ciblage HA : leur présence sur un rechargement d'entrée désigne
+# l'entrée « par cible », mécanisme déprécié (retiré en Home Assistant 2027.4).
+CIBLE_KEYS = ("target", "entity_id", "device_id", "area_id", "floor_id", "label_id")
+# Variables des couches plan (A), résultat technique (B) et observation (C) du
+# script canon. Aucune ne doit entrer dans une condition de décision (D).
+VARIABLES_HORS_DECISION = ("resolues", "a_recharger", "ecartees", "hors_domaine",
+                           "etats_apres", "actions_prevues", "appels_emis")
+APPELANT_ATTENDU = "{{ this.entity_id }}"
+FILE_ANCRAGE = ROOT / "12_template_sensors" / "system" / "integrations" / "ancrage.yaml"
+RE_DOMAINES_ATTENDUS = re.compile(r"set\s+domaines_attendus\s*=\s*\{(.*?)\}", re.S)
+DIRS_RUNTIME_YAML = [p for p in ROOT.iterdir()
+                     if p.is_dir() and re.match(r"^\d\d_", p.name)]
+
+
+def fichiers_runtime_yaml():
+    """Fichiers YAML runtime (dossiers NN_*) ; certains dossiers portent un nom en .yaml."""
+    for d in sorted(DIRS_RUNTIME_YAML):
+        for f in sorted(d.rglob("*.yaml")):
+            if f.is_file():
+                yield f
+
+
+def _noeuds(node, ancetres=()):
+    """Parcours en profondeur : (noeud, ancêtres) pour chaque dict."""
+    if isinstance(node, dict):
+        yield node, ancetres
+        for v in node.values():
+            yield from _noeuds(v, ancetres + (node,))
+    elif isinstance(node, list):
+        for v in node:
+            yield from _noeuds(v, ancetres + (node,))
+
+
+def _service(node):
+    svc = node.get("service") or node.get("action")
+    return svc if isinstance(svc, str) else None
+
+
+def violations_rechargement(doc):
+    """R20-a : tout rechargement d'entrée désigne l'entrée par `entry_id`, jamais par cible."""
+    problemes = []
+    for node, _anc in _noeuds(doc):
+        if _service(node) != RELOAD_SVC:
+            continue
+        data = node.get("data") if isinstance(node.get("data"), dict) else {}
+        cibles = [k for k in CIBLE_KEYS if k in node or k in data]
+        if cibles:
+            problemes.append("rechargement par cible (" + ", ".join(cibles) + ")")
+        if "entry_id" not in data:
+            problemes.append("rechargement sans entry_id")
+    return problemes
+
+
+def violations_canon(doc):
+    """R20-b/c/g/h/i/j : structure du script canon. Retourne (problèmes, max)."""
+    problemes = []
+    if not isinstance(doc, dict) or "resilience_integration_recover" not in doc:
+        return (["script canon introuvable ou illisible"], None)
+    script = doc["resilience_integration_recover"] or {}
+
+    # c — mode et auto-appel
+    if script.get("mode", "single") == "single":
+        problemes.append("mode single : une chaîne bloque les tentatives des autres (D2)")
+    for node, _anc in _noeuds(script):
+        if _service(node) == CANON_SVC:
+            problemes.append("auto-appel du script canon (refusé par HA en cours d'exécution, D1)")
+            break
+    if "'block'" in str(script.get("sequence")):
+        problemes.append("opération block résiduelle (auto-appel D1)")
+
+    # b — rechargement dans une boucle for_each, erreurs isolées
+    nb_reload = 0
+    for node, anc in _noeuds(script):
+        if _service(node) != RELOAD_SVC:
+            continue
+        nb_reload += 1
+        dans_boucle = any(isinstance(a, dict) and isinstance(a.get("repeat"), dict)
+                          and "for_each" in a["repeat"] for a in anc)
+        if not dans_boucle:
+            problemes.append("rechargement hors boucle repeat/for_each")
+        if node.get("continue_on_error") is not True:
+            problemes.append("rechargement sans continue_on_error: true")
+    if nb_reload == 0:
+        problemes.append("aucun rechargement d'entrée dans le script canon")
+
+    # g — les conditions de décision ne lisent ni le plan, ni le résultat
+    #     technique, ni l'observation
+    decisions = []
+    for node, _anc in _noeuds(script):
+        if isinstance(node.get("wait_template"), str):
+            decisions.append(("wait_template", node["wait_template"]))
+        vars_ = node.get("variables")
+        if isinstance(vars_, dict) and isinstance(vars_.get("verdict_axes"), str):
+            decisions.append(("verdict_axes", vars_["verdict_axes"]))
+    if not any(nom == "verdict_axes" for nom, _t in decisions):
+        problemes.append("variable de décision verdict_axes absente")
+    for nom, tpl in decisions:
+        lues = [v for v in VARIABLES_HORS_DECISION if re.search(rf"\b{v}\b", tpl)]
+        if lues:
+            problemes.append(f"{nom} lit des variables hors décision : " + ", ".join(lues))
+
+    # h — journal sans entity_id (sinon filtré par la liste blanche du recorder)
+    for node, _anc in _noeuds(script):
+        if _service(node) == "logbook.log":
+            data = node.get("data") if isinstance(node.get("data"), dict) else {}
+            if "entity_id" in data or "entity_id" in node:
+                problemes.append("logbook.log avec entity_id (non enregistré par le recorder)")
+
+    # i — garde d'appelant authentifié en première étape
+    seq = script.get("sequence") or []
+    premiere = seq[0] if isinstance(seq, list) and seq else {}
+    garde = str(premiere.get("if", "")) if isinstance(premiere, dict) else ""
+    alors = str(premiere.get("then", "")) if isinstance(premiere, dict) else ""
+    if not ("appelant" in garde and "context.id" in garde and "stop" in alors):
+        problemes.append("garde d'appelant authentifié absente de la première étape")
+
+    # j — opération reprise traitée
+    if "'reprise'" not in str(seq):
+        problemes.append("opération reprise non traitée")
+
+    return (problemes, script.get("max"))
+
+
+def domaines_attendus_ancrage():
+    """Les dictionnaires `domaines_attendus` de ancrage.yaml (bloc state et attribut detail)."""
+    if not FILE_ANCRAGE.exists():
+        return None
+    txt = FILE_ANCRAGE.read_text(encoding="utf-8")
+    dicts = []
+    for bloc in RE_DOMAINES_ATTENDUS.findall(txt):
+        dicts.append(dict(re.findall(r"'([^']+)'\s*:\s*'([^']+)'", bloc)))
+    return dicts
+
+
+def references_canon_hors_chaines(fichiers_autorises):
+    """R20-f : fichiers runtime citant le script canon hors des chaînes déclarées."""
+    hors = []
+    for f in fichiers_runtime_yaml():
+        rel = f.relative_to(ROOT).as_posix()
+        if rel in fichiers_autorises:
+            continue
+        for ligne in f.read_text(encoding="utf-8", errors="ignore").splitlines():
+            if ligne.strip().startswith("#"):
+                continue
+            if "resilience_integration_recover" in ligne:
+                hors.append(rel)
+                break
+    return hors
+
+
+def references_textuelles_canon(path):
+    """Nombre de références non commentées au script canon dans un fichier."""
+    n = 0
+    for ligne in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+        if not ligne.strip().startswith("#") and CANON_SVC in ligne:
+            n += 1
+    return n
+
+
+# ──────────────────────────────────────────────────────────────
 # Cœur : évaluation d'une intégration contre le dépôt
 # ──────────────────────────────────────────────────────────────
 
@@ -880,8 +1046,11 @@ def evaluate(integ, ctx):
     #   - `entry_id`      : l'entrée est NOMMÉE, via un secret. Le couplage
     #                       détection ↔ action est déclaratif — et INVÉRIFIABLE,
     #                       aucun contrôle ne pouvant lire un secret.
-    #   - `reload_target` : l'action CIBLE le périmètre observé. Le couplage
-    #                       devient structurel (R-ANCRAGE-5).
+    #   - `reload_target` : l'action DÉRIVE du périmètre observé. Le couplage
+    #                       devient structurel (R-ANCRAGE-5). Depuis C55, ses
+    #                       entrées sont résolues à l'exécution puis rechargées
+    #                       par entry_id (R-ANCRAGE-10) : le ciblage HA par
+    #                       `target` est retiré en Home Assistant 2027.4 (R20).
     #
     # Ce que cette règle interdit :
     #  a) les deux ensemble — le script canon les refuse déjà au runtime, mais
@@ -921,6 +1090,67 @@ def evaluate(integ, ctx):
         else:
             record(nom, "R18", FAIL,
                    "ni entry_id ni reload_target : l'action ne désigne aucune entrée")
+
+    # ---------- R20 : câblage de la chaîne vers l'action canon (C55) ----------
+    # d — périmètre ciblé plat : la résolution à l'exécution lit la liste
+    #     déclarée du groupe sans la développer (équivalence R-ANCRAGE-10).
+    # e — domaine attendu transmis = domaine déclaré au registre (R-ANCRAGE-11).
+    # f — appelant authentifié, compteur et timer propres à la chaîne, aucune
+    #     référence au canon autre que les appels directs (exclusivité R-RECOV-7).
+    # j — reprise après stabilisation câblée, payload identique à la tentative.
+    if mode not in ("disponibilite_native", "orpheline_a_arbitrer") and autom_obj is not None:
+        appels = recover_calls(autom_obj)
+        data20 = attempt_call(autom_obj) or {}
+        problemes = []
+
+        cible = data20.get("reload_target")
+        if cible:
+            imbriques = [m for m in membres_groupe(short_id(cible)) if m.startswith("group.")]
+            if imbriques:
+                problemes.append("périmètre ciblé non plat : " + ", ".join(imbriques))
+
+        if data20.get("domaine_attendu") != integ.get("domaine_integration"):
+            problemes.append(f"domaine_attendu ({data20.get('domaine_attendu')}) "
+                             f"!= domaine_integration ({integ.get('domaine_integration')})")
+
+        cpt_eid = maillon("compteur_tentatives").get("entity_id")
+        tmr_eid = maillon("timer_backoff").get("entity_id")
+        for d in appels:
+            op = d.get("op")
+            if d.get("appelant") != APPELANT_ATTENDU:
+                problemes.append(f"op {op} : appelant non transmis ({APPELANT_ATTENDU} attendu)")
+            if cpt_eid and d.get("attempts_entity") != cpt_eid:
+                problemes.append(f"op {op} : compteur étranger à la chaîne")
+            if tmr_eid and d.get("backoff_timer") != tmr_eid:
+                problemes.append(f"op {op} : timer étranger à la chaîne")
+        fichier = ROOT / autom_decl["fichier"]
+        if references_textuelles_canon(fichier) != len(appels):
+            problemes.append("référence au script canon hors appel direct (script.turn_on ?)")
+
+        reprise = [d for d in appels if d.get("op") == "reprise"]
+        if len(reprise) != 1:
+            problemes.append("appel op: reprise absent ou multiple")
+        elif {k: v for k, v in reprise[0].items() if k != "op"} != \
+                {k: v for k, v in data20.items() if k != "op"}:
+            problemes.append("appel op: reprise différent de l'appel op: attempt")
+        triggers = autom_obj.get("trigger") or []
+        if not any(isinstance(t, dict) and t.get("entity_id") == ctx["garde"]
+                   and str(t.get("to")) == "on" and t.get("id") == "reprise"
+                   for t in triggers):
+            problemes.append(f"déclencheur reprise ({ctx['garde']} -> on) absent")
+
+        attendus = ctx["domaines_attendus"]
+        grp_eid = maillon("groupe_source").get("entity_id")
+        if grp_eid and attendus and attendus[0].get(grp_eid) != integ.get("domaine_integration"):
+            problemes.append(f"ancrage.yaml : domaine attendu de {grp_eid} "
+                             f"({attendus[0].get(grp_eid)}) != registre")
+
+        if problemes:
+            record(nom, "R20", FAIL, " ; ".join(problemes))
+        else:
+            record(nom, "R20", PASS,
+                   f"action canon câblée ({len(appels)} appels, appelant authentifié, "
+                   f"domaine {integ.get('domaine_integration')})")
 
     # ---------- R13 : garde réseau WAN (intégrations cloud) ----------
     # Exclut le mode disponibilite_native (Zigbee).
@@ -994,6 +1224,7 @@ def main():
             "compteur_keys": mapping_keys(DIR_COMPTEURS),
             "garde": garde,
             "inhibition_wan": inhibition_wan,
+            "domaines_attendus": domaines_attendus_ancrage() or [],
         }
     except Exception as exc:
         print(f"❌ ERREUR INTERNE : lecture du dépôt impossible ({exc})")
@@ -1191,6 +1422,73 @@ def main():
             print(f"  {sym} {regle}{tag} {msg}")
     print()
 
+    # ---------- R20 global : action canon (C55) ----------
+    # a — aucun rechargement d'entrée par cible dans le runtime (déprécié,
+    #     retiré en Home Assistant 2027.4) ; entry_id obligatoire.
+    # b/c/g/h/i/j — structure du script canon (boucle entry_id, pas de mode
+    #     single ni d'auto-appel, décision sur les seuls axes, journal
+    #     enregistrable, garde d'appelant, reprise).
+    # f — le canon n'est cité que par les automatisations des chaînes.
+    # e — ancrage.yaml déclare le domaine attendu de chaque périmètre, à
+    #     l'identique dans ses deux blocs et conformément au registre.
+    print("[Action canon — rechargement par entry_id (R20)]  global")
+    viol_a = []
+    for f in fichiers_runtime_yaml():
+        for prob in violations_rechargement(load_yaml(f)):
+            viol_a.append(f"{f.relative_to(ROOT).as_posix()} : {prob}")
+    if viol_a:
+        record("Action canon", "R20-a", FAIL, " ; ".join(viol_a))
+    else:
+        record("Action canon", "R20-a", PASS,
+               "aucun rechargement d'entrée par cible ; entry_id partout")
+
+    chaines = [i for i in registre["integrations"]
+               if (i.get("automation") or {}).get("statut") == "present"
+               and i.get("mode") != "disponibilite_native"]
+    viol_canon, max_runs = violations_canon(load_yaml(FILE_SCRIPT_CANON))
+    if not isinstance(max_runs, int) or max_runs < len(chaines):
+        viol_canon.append(f"max ({max_runs}) < nombre de chaînes appelantes ({len(chaines)})")
+    if viol_canon:
+        record("Action canon", "R20-canon", FAIL, " ; ".join(viol_canon))
+    else:
+        record("Action canon", "R20-canon", PASS,
+               f"boucle entry_id, mode parallel (max {max_runs} >= {len(chaines)} chaînes), "
+               f"garde d'appelant, décision sur les axes seuls, reprise")
+
+    autorises = {FILE_SCRIPT_CANON.relative_to(ROOT).as_posix()}
+    autorises |= {i["automation"]["fichier"] for i in chaines}
+    hors = references_canon_hors_chaines(autorises)
+    if hors:
+        record("Action canon", "R20-f", FAIL,
+               "script canon cité hors des chaînes déclarées : " + ", ".join(hors))
+    else:
+        record("Action canon", "R20-f", PASS,
+               f"script canon cité par les {len(chaines)} chaînes déclarées seulement")
+
+    dicts = ctx["domaines_attendus"]
+    attendu_reg = {(i.get("groupe_source") or {}).get("entity_id"): i.get("domaine_integration")
+                   for i in registre["integrations"]
+                   if (i.get("groupe_source") or {}).get("statut") == "present"}
+    if len(dicts) != 2:
+        record("Action canon", "R20-e", FAIL,
+               f"{FILE_ANCRAGE.name} : 2 dictionnaires domaines_attendus attendus, {len(dicts)} trouvé(s)")
+    elif dicts[0] != dicts[1]:
+        record("Action canon", "R20-e", FAIL,
+               f"{FILE_ANCRAGE.name} : les deux dictionnaires domaines_attendus divergent")
+    elif dicts[0] != attendu_reg:
+        ecarts = sorted(set(dicts[0].items()) ^ set(attendu_reg.items()))
+        record("Action canon", "R20-e", FAIL,
+               f"{FILE_ANCRAGE.name} : domaines attendus != registre : {ecarts}")
+    else:
+        record("Action canon", "R20-e", PASS,
+               f"{len(attendu_reg)} périmètres, domaine attendu aligné registre/ancrage")
+    for (_i, regle, cat, msg) in RESULTS:
+        if _i == "Action canon":
+            sym = {PASS: "✔", DETTE: "⚠", EXCEPTION: "✔", WARN: "⚠", FAIL: "✗"}[cat]
+            tag = "" if cat == PASS else f" {cat}"
+            print(f"  {sym} {regle}{tag} {msg}")
+    print()
+
     try:
         for integ in registre["integrations"]:
             print(f"[{integ['nom']}]  {integ.get('statut_attendu', '')}")
@@ -1279,6 +1577,53 @@ def selftest():
     )
     assert any("fraîcheur" in p for p in _pont_sante_state_violations(no_frais)), \
         "selftest: dépendance fraîcheur manquante non détectée"
+
+    # ── R20 (C55) — mutation-style sur les contrôles de l'action canon ──
+    ok_reload = {"service": RELOAD_SVC, "data": {"entry_id": "{{ repeat.item }}"}}
+    assert violations_rechargement([ok_reload]) == [], "selftest R20-a: faux positif"
+    assert violations_rechargement([{"service": RELOAD_SVC, "target": {"entity_id": "group.x"}}]), \
+        "selftest R20-a: rechargement par cible non détecté"
+    assert violations_rechargement([{"action": RELOAD_SVC, "data": {"entity_id": "sensor.x"}}]), \
+        "selftest R20-a: cible dans data non détectée"
+
+    def canon(**mut):
+        boucle = {"repeat": {"for_each": "{{ a_recharger }}", "sequence": [
+            dict({"service": RELOAD_SVC, "continue_on_error": True,
+                  "data": {"entry_id": "{{ repeat.item }}"}}, **mut.get("appel", {}))]}}
+        seq = [
+            {"if": [{"condition": "template",
+                     "value_template": "{{ states[appelant].context.id != context.id }}"}],
+             "then": [{"stop": "refus"}]},
+            {"if": [{"condition": "template", "value_template": "{{ op == 'reprise' }}"}],
+             "then": [{"stop": "x"}]},
+            boucle,
+            {"wait_template": mut.get("wait", "{{ is_state('binary_sensor.u', 'off') }}")},
+            {"variables": {"verdict_axes": "{{ is_state('binary_sensor.u', 'off') }}"}},
+            {"service": "logbook.log", "data": dict({"name": "n", "message": "m"},
+                                                     **mut.get("journal", {}))},
+        ] + mut.get("extra", [])
+        if mut.get("sans_garde"):
+            seq = seq[1:]
+        return {"resilience_integration_recover": {"mode": mut.get("mode", "parallel"),
+                                                   "max": 10, "sequence": seq}}
+
+    probs, _m = violations_canon(canon())
+    assert probs == [], f"selftest R20-canon: faux positif ({probs})"
+    mutations = {
+        "mode single": canon(mode="single"),
+        "auto-appel": canon(extra=[{"service": CANON_SVC, "data": {"op": "block"}}]),
+        "continue_on_error": canon(appel={"continue_on_error": False}),
+        "décision lisant l'observation": canon(wait="{{ etats_apres | count > 0 }}"),
+        "journal avec entity_id": canon(journal={"entity_id": "sensor.x"}),
+        "garde d'appelant absente": canon(sans_garde=True),
+    }
+    for nom, doc in mutations.items():
+        assert violations_canon(doc)[0], f"selftest R20-canon: mutation « {nom} » non détectée"
+    hors_boucle = canon()
+    hors_boucle["resilience_integration_recover"]["sequence"].append(
+        {"service": RELOAD_SVC, "continue_on_error": True, "data": {"entry_id": "x"}})
+    assert any("hors boucle" in p for p in violations_canon(hors_boucle)[0]), \
+        "selftest R20-canon: rechargement hors boucle non détecté"
 
     print("selftest OK")
 
