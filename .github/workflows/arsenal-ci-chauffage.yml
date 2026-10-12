@@ -73,7 +73,7 @@ jobs:
           python-version: "3.12"
 
       - name: Installer les dependances
-        run: pip install pyyaml pytest
+        run: pip install pyyaml pytest jinja2
 
       - name: Executer la suite de tests (1.1 / 1.2 / 1.3)
         run: PYTHONPATH=tools python -m pytest tools/arsenal_ci/tests/ -q

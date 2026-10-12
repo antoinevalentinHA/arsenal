@@ -52,7 +52,7 @@ jobs:
           python-version: "3.12"
 
       - name: Installer les dependances
-        run: pip install pyyaml pytest
+        run: pip install pyyaml pytest jinja2
 
       - name: Suite arsenal_ci (oracle structurel + gate live runtime)
         run: PYTHONPATH=tools python -m pytest tools/arsenal_ci/tests/ -q
