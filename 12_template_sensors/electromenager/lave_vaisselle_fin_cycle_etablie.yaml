@@ -1,0 +1,58 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR :
+#     Électroménager – Lave-vaisselle – Fin de cycle établie
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Décision : la fin du cycle de lave-vaisselle est
+#   ÉTABLIE. Autorité unique lue par l'automation de fin
+#   `10080000000002` (déclencheur ET condition).
+#
+#   Vrai quand, de façon continue pendant 10 min (delay_on) :
+#     - un cycle est ouvert (flag `lave_vaisselle_cycle` = on) ;
+#     - la puissance MESURÉE est < 2 W ;
+#     - le cycle dure depuis plus de 45 min (anti-pause).
+#
+# 🧱 NATURE
+#   - Décision sur ÉTAT (niveau), jamais sur front : elle est
+#     recalculable à tout moment, donc une fin rejetée trop tôt
+#     ou un front manqué (redémarrage, rechargement) n'est
+#     jamais définitif (incident C57).
+#   - Durée de cycle lue sur l'horodatage PERSISTANT
+#     `input_datetime.lave_vaisselle_debut_cycle`, jamais sur
+#     `last_changed` du flag — sauf repli si cet horodatage est
+#     inconnu : `last_changed` minore alors la durée réelle
+#     (fin retardée au pire, jamais anticipée).
+#
+# 🛡️ MESURE ABSENTE
+#   Une puissance `unknown` / `unavailable` / non numérique
+#   n'est PAS une puissance basse : elle rend la décision
+#   fausse et réarme le delay_on. Aucune fin sur absence de
+#   mesure.
+#
+# 🚫 NE FAIT PAS
+#   - N'écrit aucun helper, ne notifie pas, n'agit pas
+#   - Ne remet jamais le flag à off (rôle de `10080000000002`)
+#
+# 📍 Entité : binary_sensor.lave_vaisselle_fin_cycle_etablie
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Électroménager – Lave-vaisselle – Fin de cycle établie"
+      unique_id: lave_vaisselle_fin_cycle_etablie
+      default_entity_id: binary_sensor.lave_vaisselle_fin_cycle_etablie
+
+      # Puissance basse continue (seuil contractuel : < 2 W pendant 10 min).
+      delay_on: "00:10:00"
+
+      state: >
+        {% set p = states('sensor.prise_lave_vaisselle_power') %}
+        {% set basse = is_number(p) and (p | float) < 2 %}
+        {% set debut = state_attr('input_datetime.lave_vaisselle_debut_cycle', 'timestamp') %}
+        {% if not is_number(debut) %}
+          {% set debut = as_timestamp(states.input_boolean.lave_vaisselle_cycle.last_changed, none) %}
+        {% endif %}
+        {{ is_state('input_boolean.lave_vaisselle_cycle', 'on')
+           and basse
+           and is_number(debut)
+           and (now().timestamp() - (debut | float)) > 2700 }}

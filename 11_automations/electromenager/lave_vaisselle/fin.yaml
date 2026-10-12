@@ -1,53 +1,65 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Lave-vaisselle – Détection de fin de cycle
+#     Lave-vaisselle – Clôture de fin de cycle
 #
 #  ID : 10080000000002
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
-#     Automation de DÉTECTION événementielle.
+#     Automation d’ACTION.
 #
-#     Elle confirme la fin effective d’un cycle
-#     de lave-vaisselle en constatant une absence
-#     prolongée de consommation électrique,
-#     sous réserve d’une durée minimale de cycle.
-#
-#     Elle marque la sortie de l’état "cycle en cours"
-#     et notifie l’utilisateur.
+#     Elle clôt le cycle de lave-vaisselle quand sa fin est
+#     ÉTABLIE par la décision
+#     `binary_sensor.lave_vaisselle_fin_cycle_etablie`
+#     (puissance mesurée < 2 W pendant 10 min, cycle de plus
+#     de 45 min), après une fenêtre de confirmation sans
+#     reprise, puis notifie l’utilisateur.
 #
 #  🧱 NATURE
 #
-#     - Détection technique post-événement
-#     - Confirmation par absence de signal
-#     - Protection contre faux positifs (pause / micro-arrêt)
-#     - Aucune décision métier autonome
+#     - Action réactive à une décision sur ÉTAT (autorité unique)
+#     - Aucun calcul de durée, aucun seuil de fin local
+#     - Protection contre faux positifs (reprise après arrêt)
 #
 #  ⚙️ PRINCIPE
 #
-#     - Seuil bas (< 2 W) maintenu 10 minutes
-#     - Vérification que le cycle est actif
-#     - Vérification d’une durée minimale de cycle (≥ 45 min)
-#     - Phase de confirmation :
-#         • surveillance d’une éventuelle reprise (> 5 W)
-#         • délai maximal de 5 minutes
-#     - En l’absence de reprise :
-#         • fin de cycle confirmée
-#         • notification utilisateur
-#         • extinction du flag de suivi
+#     - Déclenchement :
+#         • passage de la décision à on (cas nominal)
+#         • réconciliation : systeme_stable → on (redémarrage HA)
+#         • réconciliation : automation_reloaded (rechargement)
+#     - Condition unique : la décision est on
+#     - Confirmation : aucune reprise (> 5 W) pendant 5 minutes
+#       ET décision toujours on au terme de la fenêtre
+#     - Clôture : extinction du flag, PUIS notification de fin
+#
+#  🔄 RÉCONCILIATION (C57)
+#
+#     La fin ne dépend plus d’un front unique. Incident du
+#     2026-10-11 : un redémarrage avait remis à zéro
+#     last_changed du flag ; le seul front « < 2 W pendant
+#     10 min » avait été rejeté par la durée minimale, sans
+#     réarmement — flag bloqué à on. Désormais :
+#       - la durée est lue sur un horodatage persistant ;
+#       - la décision est un niveau, recalculé en continu ;
+#       - un front consommé, un rechargement pendant la
+#         fenêtre basse ou une exécution tuée pendant la
+#         confirmation sont rattrapés par les déclencheurs
+#         de réconciliation.
+#
+#  🔁 IDEMPOTENCE
+#
+#     Le flag est éteint AVANT la notification : la décision
+#     retombe aussitôt, tout déclenchement ultérieur échoue
+#     sur la condition. Une clôture et une notification au
+#     plus par cycle.
 #
 #  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
 #     - Ne pilote pas le lave-vaisselle
-#     - Ne décide pas de la durée d’un cycle
-#     - Ne force pas une fin de cycle
-#     - Ne corrige pas un état incohérent préexistant
-#
-#  🔗 UTILISATION
-#
-#     - Termine explicitement l’état "cycle en cours"
-#     - Sert de signal de sortie aux logiques
-#       de suivi ou d’archivage éventuelles
+#     - Ne force jamais une fin sans décision établie
+#       (aucune remise à off sur mesure absente ou par délai)
+#     - Ne gère pas la notification persistante d’état
+#       (projection 10080000000006)
 #
 #  ✅ COMPATIBILITÉ
 #
@@ -57,36 +69,40 @@
 - id: "10080000000002"
   alias: "Électroménager - Lave-vaisselle - Fin cycle"
   description: >
-    Détecte la fin du cycle du lave-vaisselle si la puissance reste basse
-    pendant 10 min. Confirme avec 5 min d’attente sans reprise, puis
-    notifie et désactive l’état de cycle.
+    Clôt le cycle du lave-vaisselle quand sa fin est établie
+    (décision sur état), après 5 min de confirmation sans reprise,
+    puis notifie. Réconcilie au redémarrage et au rechargement.
 
   mode: restart
 
   # ======================================================
-  # 🔔 Déclencheur — Conso < 2 W pendant 10 min
+  # 🔔 Déclencheurs — Décision établie + réconciliation
   # ======================================================
   trigger:
-    - platform: numeric_state
-      entity_id: sensor.prise_lave_vaisselle_power
-      below: 2
-      for: "00:10:00"
+    - id: fin_etablie
+      platform: state
+      entity_id: binary_sensor.lave_vaisselle_fin_cycle_etablie
+      to: "on"
+
+    - id: reconciliation_systeme_stable
+      platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+    - id: reconciliation_rechargement
+      platform: event
+      event_type: automation_reloaded
 
   # ======================================================
-  # ✅ Conditions — Flag actif + durée cycle ≥ 45 min
+  # ✅ Condition — Autorité unique : fin établie
   # ======================================================
   condition:
     - condition: state
-      entity_id: input_boolean.lave_vaisselle_cycle
+      entity_id: binary_sensor.lave_vaisselle_fin_cycle_etablie
       state: "on"
 
-    - condition: template
-      value_template: >
-        {% set start = states.input_boolean.lave_vaisselle_cycle.last_changed %}
-        {{ start is not none and (now() - start).total_seconds() > 2700 }}
-
   # ======================================================
-  # 🔄 Action — Vérification finale + notification + extinction
+  # 🔄 Action — Confirmation + extinction + notification
   # ======================================================
   action:
 
@@ -98,19 +114,27 @@
       timeout: "00:05:00"
       continue_on_timeout: true
 
-    - choose:
-        - conditions: "{{ wait.trigger is none }}"
-          sequence:
-            # Push mobile de fin (événement). La disqualification de la
-            # notification persistante d'état est portée par la projection
-            # (extinction de lave_vaisselle_cycle ci-dessous — NOTIF-03).
-            - action: script.notification_envoyer
-              data:
-                cible: input_text.telephone_parent_1_notify
-                titre: "🍽️ Lave-vaisselle – Cycle terminé"
-                message: >
-                  Le cycle du lave-vaisselle est terminé ✅
+    # Fin confirmée : aucune reprise ET décision toujours établie
+    # (une mesure perdue ou remontée pendant la fenêtre la fait
+    # retomber : pas de clôture, la décision réarmera la suite).
+    - alias: "Confirmation de fin"
+      condition: template
+      value_template: >
+        {{ wait.trigger is none
+           and is_state('binary_sensor.lave_vaisselle_fin_cycle_etablie', 'on') }}
 
-            - action: input_boolean.turn_off
-              target:
-                entity_id: input_boolean.lave_vaisselle_cycle
+    # Clôture logique d'abord : la décision retombe, toute
+    # réexécution ultérieure échoue sur la condition. La
+    # disqualification de la notification persistante d'état est
+    # portée par la projection (NOTIF-03).
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.lave_vaisselle_cycle
+
+    # Push mobile de fin (événement).
+    - action: script.notification_envoyer
+      data:
+        cible: input_text.telephone_parent_1_notify
+        titre: "🍽️ Lave-vaisselle – Cycle terminé"
+        message: >
+          Le cycle du lave-vaisselle est terminé ✅

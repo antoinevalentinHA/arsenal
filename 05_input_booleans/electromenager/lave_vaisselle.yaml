@@ -27,8 +27,14 @@
 #         • automatisations de début de cycle
 #         • automatisations de fin de cycle
 #     - Lu par :
-#         • automatisations de gestion énergétique
-#         • notifications de début / fin de cycle
+#         • décision binary_sensor.lave_vaisselle_fin_cycle_etablie
+#         • automatisation de début (garde « cycle inactif »)
+#         • projection de la notification persistante
+#           (10080000000006)
+#     - Son last_changed n'est PAS une durée de cycle : il est
+#       remis à l'heure du démarrage à chaque redémarrage HA.
+#       La durée se lit sur input_datetime.lave_vaisselle_debut_cycle
+#       (C57).
 #
 #  🧠 Principe Arsenal :
 #     - Un cycle applicatif est représenté
