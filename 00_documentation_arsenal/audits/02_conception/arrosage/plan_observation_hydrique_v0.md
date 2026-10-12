@@ -429,6 +429,12 @@ Confrontation du journal T04→T08 à la checklist ci-dessus, **arbitrage propri
 > Les entités du canal réservoir sol sont désormais classées par C44 : la médiane, les points frais et
 > le seuil de déclenchement en **observabilité permanente** (entrées de la décision V1) ; minimum,
 > hétérogénéité et état qualitatif en **microscope borné au 2026-10-31**.
+>
+> **Mise à jour (2026-10-12).** Ces trois microscopes sont **retirés du Recorder**, échéance tenue
+> ([`c44_gouvernance_sortie_microscopes.md`](../../04_chantiers/transverses/c44_gouvernance_sortie_microscopes.md) §3.7).
+> **Rectification** des notes T05 et T08 ci-dessus : le « gate point sec » qu'elles supposent n'existe
+> pas. Les déclenchements à médiane ≥ seuil s'expliquent par l'hystérésis du besoin V1 (bande de
+> maintien `[seuil ; seuil + hystérésis[`). Les notes d'origine sont conservées.
 
 ---
 
