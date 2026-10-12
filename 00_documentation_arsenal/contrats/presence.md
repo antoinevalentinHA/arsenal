@@ -295,6 +295,27 @@ et doit être mise à jour à chaque renommage ou restructuration.
 - Toute duplication ou recalcul parallèle
   de la vérité de présence est **interdite**.
 
+### Déclencheurs sur `person.*`
+
+Une entité `person.*` publie ses **attributs de localisation** (latitude,
+longitude, précision GPS…) à **chaque mise à jour** du tracker qui la
+porte, sans que son **état** (`home`, `not_home`, zone) change. Un
+déclencheur d'état **nu** sur `person.*` (sans `from:`, `to:`, `not_from:`,
+`not_to:` ni `attribute:`) rejoue donc l'automation à chaque position.
+
+- Tout déclencheur `state` sur `person.*` **DOIT être borné** : `to: null`
+  pour réagir à tout changement d'état en ignorant les mises à jour
+  d'attributs seules, ou `from:` / `to:` / `not_from:` / `not_to:` explicites.
+- Un déclencheur qui veut réagir à un **attribut** le nomme
+  (`attribute:`) : ce choix est alors explicite et borné.
+
+Constat d'origine (2026-10-12, `recorder_20261012.db`) : l'automation de
+notification de présence (`10210000000001`), déclenchée nue, a émis
+**162 343** créations et **52 621** suppressions de notification en
+31 jours, soit 48 % des événements enregistrés par le Recorder sur la
+période, pour un résultat identique. Contrôle : règle **R5** de
+`scripts/arsenal_contracts/check_presence_contracts.py`.
+
 ### Symétrie des contributeurs (parent_1 / parent_2)
 
 L'entité canonique de sécurité (`binary_sensor.presence_famille_securite`) est

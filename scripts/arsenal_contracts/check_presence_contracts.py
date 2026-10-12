@@ -20,11 +20,14 @@ Instrumente UNIQUEMENT des invariants déjà vrais (anti-régression) :
        Ancre le critère de clôture 4 de C33/L7 (requalifié sur symétrie de
        code, faute d'occurrence naturelle observée sur les deux
        contributeurs).
+  R5 — Déclencheurs person.* bornés : aucun déclencheur `state` nu sur
+       person.* dans 11_automations (un déclencheur nu rejoue l'automation à
+       chaque mise à jour des attributs de localisation).
 
 Sources normatives citées :
   - 00_documentation_arsenal/contrats/alarme/30_decision_centrale.md
   - 00_documentation_arsenal/contrats/presence.md (§ Symétrie des
-    contributeurs parent_1 / parent_2)
+    contributeurs parent_1 / parent_2 ; § Déclencheurs sur person.*)
   - 00_documentation_arsenal/architecture/presence/presence.md
   - 00_documentation_arsenal/audits/02_constats/transverses/cadrage_dette_modelisation_presence.md
 
@@ -39,6 +42,8 @@ Usage :
 import re
 import sys
 from pathlib import Path
+
+import yaml
 
 # ---------------------------------------------------------------------------
 # Racine du repo Arsenal
@@ -350,6 +355,71 @@ def test_r4_securite_symetrie_parents() -> None:
 
 
 # ---------------------------------------------------------------------------
+# R5 — Déclencheurs person.* bornés
+# ---------------------------------------------------------------------------
+
+# Clés qui bornent un déclencheur d'état (une seule suffit, valeur null comprise :
+# `to: null` réagit à tout changement d'ÉTAT et ignore les attributs seuls).
+R5_CLES_BORNANTES = ("from", "to", "not_from", "not_to", "attribute")
+
+
+class _R5Loader(yaml.SafeLoader):
+    """SafeLoader tolérant aux tags HA (!input, !secret, …)."""
+
+
+_R5Loader.add_constructor(None, lambda loader, node: None)
+_R5Loader.add_multi_constructor("!", lambda loader, suffix, node: None)
+
+
+def r5_declencheurs_person_nus(text: str) -> list[tuple[str, str]]:
+    """Retourne [(id_automation, entité person.*)] pour chaque déclencheur
+    `state` nu (sans clé bornante) visant une entité person.*. Pur, sans E/S."""
+    try:
+        docs = yaml.load(text, Loader=_R5Loader)
+    except yaml.YAMLError:
+        return []
+    if not isinstance(docs, list):
+        docs = [docs]
+    nus: list[tuple[str, str]] = []
+    for auto in docs:
+        if not isinstance(auto, dict):
+            continue
+        triggers = auto.get("trigger") or auto.get("triggers") or []
+        if isinstance(triggers, dict):
+            triggers = [triggers]
+        for trig in triggers:
+            if not isinstance(trig, dict):
+                continue
+            if (trig.get("platform") or trig.get("trigger")) != "state":
+                continue
+            ents = trig.get("entity_id")
+            ents = [ents] if isinstance(ents, str) else (ents or [])
+            if any(k in trig for k in R5_CLES_BORNANTES):
+                continue
+            for ent in ents:
+                if str(ent).startswith("person."):
+                    nus.append((str(auto.get("id")), str(ent)))
+    return nus
+
+
+def test_r5_declencheurs_person_bornes() -> None:
+    """R5 — aucun déclencheur `state` nu sur person.* dans 11_automations.
+    Contrat : 00_documentation_arsenal/contrats/presence.md
+    (§ Déclencheurs sur person.*). Un déclencheur nu rejoue l'automation à
+    chaque mise à jour des attributs de localisation."""
+    violations = 0
+    for path in yaml_files(REPO_ROOT / "11_automations"):
+        for auto_id, ent in r5_declencheurs_person_nus(read(path)):
+            ERRORS.append(
+                f"R5 — {rel(path)} (automation {auto_id}) : déclencheur state nu sur "
+                f"{ent} — ajouter `to: null` (ou from/to/not_to/attribute explicites)"
+            )
+            violations += 1
+    if not violations:
+        print("✔ R5 — tout déclencheur state sur person.* est borné (attributs seuls ignorés)")
+
+
+# ---------------------------------------------------------------------------
 # Auto-tests internes (cas négatifs / faux positifs) — synthétiques, en mémoire.
 # N'écrivent aucun fichier. Échec => sortie 2 (régression du checker lui-même).
 # ---------------------------------------------------------------------------
@@ -410,6 +480,25 @@ def _selftest() -> int:
         "r4-asymetrie-detectee",
     )
 
+    # R5 — négatif : déclencheur nu sur person.* -> détecté
+    r5_nu = "- id: '1'\n  trigger:\n    - platform: state\n      entity_id: person.parent_1\n"
+    expect(r5_declencheurs_person_nus(r5_nu) == [("1", "person.parent_1")], "r5-nu-detecte")
+    # R5 — négatif : liste d'entités, syntaxe `triggers:` / `trigger: state` -> détecté
+    r5_liste = ("- id: '2'\n  triggers:\n    - trigger: state\n"
+                "      entity_id: [person.parent_2, sensor.x]\n")
+    expect(r5_declencheurs_person_nus(r5_liste) == [("2", "person.parent_2")], "r5-liste-detectee")
+    # R5 — positif : `to: null` borne le déclencheur -> NON détecté
+    r5_borne = ("- id: '3'\n  trigger:\n    - platform: state\n"
+                "      entity_id: person.parent_1\n      to: null\n")
+    expect(r5_declencheurs_person_nus(r5_borne) == [], "r5-to-null-accepte")
+    # R5 — positif : attribut nommé -> NON détecté
+    r5_attr = ("- id: '4'\n  trigger:\n    - platform: state\n"
+               "      entity_id: person.parent_1\n      attribute: latitude\n")
+    expect(r5_declencheurs_person_nus(r5_attr) == [], "r5-attribut-accepte")
+    # R5 — faux positif à éviter : déclencheur nu sur une autre entité -> NON détecté
+    r5_autre = "- id: '5'\n  trigger:\n    - platform: state\n      entity_id: input_boolean.x\n"
+    expect(r5_declencheurs_person_nus(r5_autre) == [], "r5-autre-entite-ignoree")
+
     if failures:
         print("❌ AUTO-TESTS CHECKER PRÉSENCE EN ÉCHEC")
         for f in failures:
@@ -432,6 +521,7 @@ TESTS = [
     test_r3_absence_stable_lit_confirmee,
     test_r3_armement_lit_confirmee,
     test_r4_securite_symetrie_parents,
+    test_r5_declencheurs_person_bornes,
 ]
 
 
