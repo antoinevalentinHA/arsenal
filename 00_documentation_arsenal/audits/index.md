@@ -119,6 +119,7 @@
 ### Alarme
 - [alarme/audit_alarme_rapport_officiel.md](01_rapports/alarme/audit_alarme_rapport_officiel.md)
 - [alarme/audit_exposition_diagnostics_alarme.md](01_rapports/alarme/audit_exposition_diagnostics_alarme.md)  _(Audit de l'exposition diagnostique vs contrats — 13 exigences, 11 conformes, 2 partielles (ALM-DIAG-001, ALM-DIAG-003), lecture seule.)_
+- [alarme/audit_latence_desarmement_automatique.md](01_rapports/alarme/audit_latence_desarmement_automatique.md)  _(diagnostic **L4, lecture seule, version publiée agrégée** — latence du désarmement automatique au retour : Arsenal ne coûte que les 15 s du `delay_on` (< 10 ms ensuite, 86/86) ; toute la variabilité vient de l'arrivée dans HA d'une position dans les 40 m ; 4 mécanismes (fix tardif, livraison retardée, position hors rayon, retombée sur position périmée) ; 37 % des délais d'entrée expirés sur 105 jours, masqués par le mode test ; conditions avant désactivation du mode test ; propositions P1–P3 non implémentées ; rattachement à arbitrer (D-PRES / C1) ; rectifie `cloture_ch1_alarme.md` §10)_
 
 ### Lovelace
 - [lovelace/audit_19_button_card_templates.md](01_rapports/lovelace/audit_19_button_card_templates.md)
