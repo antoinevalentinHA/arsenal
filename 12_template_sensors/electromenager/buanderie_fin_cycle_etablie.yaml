@@ -1,0 +1,47 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR :
+#     Électroménager – Buanderie – Fin de cycle établie
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Décision : la fin du cycle de la buanderie est ÉTABLIE.
+#   Autorité unique lue par l'automation de fin
+#   `10080000000004` (déclencheur ET condition).
+#
+#   Vrai quand, de façon continue pendant 15 min (delay_on) :
+#     - un cycle est ouvert (flag `buanderie_cycle` = on) ;
+#     - la puissance MESURÉE est < 2 W.
+#
+# 🧱 NATURE
+#   - Décision sur ÉTAT (niveau), jamais sur front : un front
+#     manqué (rechargement pendant la fenêtre basse, exécution
+#     tuée pendant la confirmation) n'est jamais définitif
+#     (C57).
+#   - Pas de durée minimale de cycle : la buanderie n'en a
+#     jamais eu (contrat electromenager, aucun seuil inventé).
+#
+# 🛡️ MESURE ABSENTE
+#   Une puissance `unknown` / `unavailable` / non numérique
+#   n'est PAS une puissance basse : elle rend la décision
+#   fausse et réarme le delay_on. Aucune fin sur absence de
+#   mesure.
+#
+# 🚫 NE FAIT PAS
+#   - N'écrit aucun helper, ne notifie pas, n'agit pas
+#   - Ne remet jamais le flag à off (rôle de `10080000000004`)
+#
+# 📍 Entité : binary_sensor.buanderie_fin_cycle_etablie
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Électroménager – Buanderie – Fin de cycle établie"
+      unique_id: buanderie_fin_cycle_etablie
+      default_entity_id: binary_sensor.buanderie_fin_cycle_etablie
+
+      # Puissance basse continue (seuil contractuel : < 2 W pendant 15 min).
+      delay_on: "00:15:00"
+
+      state: >
+        {% set p = states('sensor.prise_buanderie_power') %}
+        {{ is_state('input_boolean.buanderie_cycle', 'on')
+           and is_number(p) and (p | float) < 2 }}

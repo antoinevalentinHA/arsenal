@@ -1,0 +1,46 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Électroménager — Lave-vaisselle — Début du cycle
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker l'instant de début du cycle de lave-vaisselle
+#   en cours (ou du dernier cycle), comme référence
+#   temporelle PERSISTANTE de la durée minimale de cycle
+#   (garde-fou anti-pause de 45 min, contrat electromenager).
+#
+#   Remplace la lecture de `last_changed` du flag
+#   `input_boolean.lave_vaisselle_cycle`, que tout redémarrage
+#   de Home Assistant remet à l'heure du démarrage (incident
+#   C57 du 2026-10-11 : fin de cycle rejetée, flag bloqué).
+#
+# 🧩 PÉRIMÈTRE
+#   - Mémoire temporelle persistante uniquement
+#   - Aucun calcul temporel autonome
+#   - Aucune logique métier locale
+#   - Écrit UNIQUEMENT par l'automation de début
+#     `10080000000001`, AVANT la mise à ON du flag
+#   - Lu UNIQUEMENT par la décision
+#     `binary_sensor.lave_vaisselle_fin_cycle_etablie`
+#
+# 🏷️ NATURE
+#   Horodatage de référence | Repère temporel de cycle
+#
+# 🧮 SÉMANTIQUE
+#   Significatif tant que le flag est à ON. Hors cycle, il
+#   date le début du dernier cycle détecté (non relu).
+#   Valeur inconnue (premier démarrage) : la décision se
+#   replie sur `last_changed` du flag, borne basse de la
+#   durée réelle (repli prudent, jamais une fin anticipée).
+#
+# 🚫 INTERDITS
+#   - Servir de déclencheur direct
+#   - Être écrit par une autre autorité que le début de cycle
+# ==========================================================
+
+lave_vaisselle_debut_cycle:
+  name: "Lave-vaisselle — Début du cycle"
+  has_date: true
+  has_time: true
+  # PAS de clé `initial` (doctrine restauration_etat_helpers) : la
+  # restauration au redémarrage est précisément ce qui est recherché.
+  icon: mdi:ray-start-arrow

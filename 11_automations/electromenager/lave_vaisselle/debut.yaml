@@ -25,8 +25,11 @@
 #
 #     - Surconsommation > 30 W maintenue 3 minutes
 #     - Vérification que le cycle n’est pas déjà actif
+#     - Horodatage persistant du début
+#       (input_datetime.lave_vaisselle_debut_cycle)
 #     - Activation d’un flag binaire de suivi
-#     - Notification persistante
+#     - Notification persistante : projetée par
+#       notification_persistante.yaml (10080000000006)
 #
 #  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
@@ -50,8 +53,8 @@
   alias: "Électroménager - Lave-vaisselle - Début cycle"
   description: >
     Détecte le début de cycle du lave-vaisselle via seuil
-    de consommation (30 W pendant 3 min). Active un flag
-    et affiche une notification persistante.
+    de consommation (30 W pendant 3 min). Horodate le début
+    du cycle puis active le flag de cycle en cours.
 
   mode: single
 
@@ -76,6 +79,17 @@
   # 🔄 Action — Flag ON + notification
   # ======================================================
   action:
+    # Horodatage PERSISTANT du début, écrit AVANT le flag : tout flag
+    # posé par cette automation a donc un début daté. La durée minimale
+    # de cycle (anti-pause, 45 min) est lue par la décision
+    # binary_sensor.lave_vaisselle_fin_cycle_etablie sur cet horodatage,
+    # jamais sur last_changed du flag, remis à zéro au redémarrage (C57).
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.lave_vaisselle_debut_cycle
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
     # Marque l'entrée en cycle. La notification persistante d'état est
     # projetée par notification_persistante.yaml (projection de
     # lave_vaisselle_cycle + systeme_stable → on), pour être recréable
