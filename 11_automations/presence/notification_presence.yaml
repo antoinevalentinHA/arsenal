@@ -71,12 +71,20 @@
   # 🔔 Déclencheurs — Changement de présence ou stabilisation boot
   # ======================================================
   trigger:
-    # Présence individuelle : tout changement d’état
+    # Présence individuelle : tout changement d’ÉTAT, jamais un changement
+    # d’attribut seul. `to: null` ignore les mises à jour d’attributs
+    # (latitude, longitude, gps_accuracy… publiés à chaque position du
+    # tracker) sans filtrer aucune transition d’état réelle. Sans lui,
+    # l’automation se rejouait à chaque position : 162 343 créations et
+    # 52 621 suppressions en 31 jours (2026-09-11 → 2026-10-12), pour un
+    # résultat identique (contrat présence § Déclencheurs sur person.*).
     - platform: state
       entity_id: person.parent_1
+      to: null
 
     - platform: state
       entity_id: person.parent_2
+      to: null
 
     # Stabilisation post-démarrage : re-projection depuis l’état courant
     - platform: state
