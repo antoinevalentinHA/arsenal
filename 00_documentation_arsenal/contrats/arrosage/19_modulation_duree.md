@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — ARROSAGE
 ## 19 — Modulation bornée de la durée d'arrosage (P4)
 
-**Version contrat :** v0.3 — amendée 2026‑08‑11 (T08, mois plein 6 sondes) : §5.3 **corrigé** — la réduction sol n'est PAS inaccessible en automatique (elle s'exerce déjà, 24 min ; limite = amplitude vs sur-remplissage systématique +20 pts, levier dominant = durée de base opérateur) ; §6 — seuils climat re-documentés (haut décile ~P87/P86, non « quartile supérieur »), conservés. — v0.2 (2026‑07‑29) : statut aligné sur le runtime livré et branché ; accessibilité de la réduction sol explicitée (§5.3).
+**Version contrat :** v0.3 — rectifiée 2026‑10‑12 (§5.3 : la cause des déclenchements à médiane ≥ seuil est l'hystérésis du besoin V1, non une porte « point sec » ; aucune règle modifiée). — Amendée 2026‑08‑11 (T08, mois plein 6 sondes) : §5.3 **corrigé** — la réduction sol n'est PAS inaccessible en automatique (elle s'exerce déjà, 24 min ; limite = amplitude vs sur-remplissage systématique +20 pts, levier dominant = durée de base opérateur) ; §6 — seuils climat re-documentés (haut décile ~P87/P86, non « quartile supérieur »), conservés. — v0.2 (2026‑07‑29) : statut aligné sur le runtime livré et branché ; accessibilité de la réduction sol explicitée (§5.3).
 **Statut :** **Normatif — spécification P4 ; runtime livré et branché, en validation runtime (§12).** Définit la
 **fonction de modulation** de la **durée** d'un arrosage de la station 1 par des
 **critères physiques** (réservoir sol, demande climatique), sa **composition**,
@@ -150,6 +150,18 @@ Sur un signal **fiable et explicitement qualifié**, `facteur_sol` peut :
 > `facteur_sol` (p. ex. graduation par la **marge sol** `médiane − seuil`, canal
 > sol pur, sans fusion climatique §5.2) sont **recalibrables par preuve runtime**
 > (§6, §12) — **décision propriétaire**, aucune valeur imposée ici.
+>
+> **Rectification (2026-10-12) — cause du déclenchement à médiane ≥ seuil.** La
+> phrase ci-dessus attribue ces déclenchements à d'« autres portes » de la décision
+> « quand » (point sec / hétérogénéité). **C'est inexact** : le runtime n'en comporte
+> aucune. `binary_sensor.arrosage_besoin_sol` ne lit que la médiane, le seuil et
+> l'**hystérésis** ([`17`](17_decision_v1.md) §138-§140) ; armé à `médiane < seuil`,
+> le besoin ne retombe qu'au-dessus de `seuil + hystérésis`. Les départs à médiane
+> ≥ seuil sont des départs **en bande de maintien** : sur 22 départs réels (août et
+> septembre 2026), les 17 concernés ont un besoin armé plus tôt sous le seuil, et la
+> médiane au départ ne dépasse jamais 33,2. **La conclusion est inchangée** : la
+> réduction est accessible en automatique, et sa limite reste l'amplitude. Seule la
+> cause était mal nommée. Preuve : [`c44_gouvernance_sortie_microscopes.md`](../../audits/04_chantiers/transverses/c44_gouvernance_sortie_microscopes.md) §3.7.
 
 ### 5.4 Rôle du canal climatique (secondaire)
 

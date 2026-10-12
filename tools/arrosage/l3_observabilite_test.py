@@ -33,9 +33,10 @@ MICROSCOPE = [
 NON_AJOUT = ["sensor.arrosage_modulation_reco_sol", "sensor.arrosage_modulation_reco_climat"]
 DEJA_PRESENT = [
     "input_number.arrosage_session_duree_minutes",
-    "input_datetime.arrosage_session_fin_prevue",
     "input_number.arrosage_rainbird_station_1_duree_minutes",
 ]
+# input_datetime.arrosage_session_fin_prevue : retirée du recorder le 2026-09-18
+# (C44, ex-microscope B05) — n'est plus une trace « déjà présente ».
 # (template, entité attendue à l'instanciation)
 XL_CARDS = {
     "carte_arrosage_sol_synthese_xl": "binary_sensor.arrosage_besoin_sol",

@@ -362,27 +362,22 @@ include:
     # Ex-microscope : ajouté 2026-06-27 (737c60a0, PR #103), requalifié C44 le 2026-08-31.
     - sensor.jardin_humidite_sol_mediane
     #
-    # ⏳ MICROSCOPE — observation exploratoire de dispersion (2 entités ci-dessous)
-    # Ajouté       : 2026-06-27 (737c60a0, PR #103)
-    # Autorité     : audits/02_conception/arrosage/plan_observation_hydrique_v0.md §4
-    # Preuve       : caractérisation du point sec et de la dispersion inter-sondes ;
-    #                statut d'entrée du « gate point sec » évoqué en T05, à confirmer.
-    # Échéance     : 2026-10-31 — opposable (fin de saison d'arrosage)
-    # Sortie       : RETRAIT si le statut d'entrée n'est pas établi ;
-    #                REQUALIFICATION PERMANENTE s'il l'est.
-    # Dépassement  : réévaluation propriétaire obligatoire, aucune reconduction tacite.
-    - sensor.jardin_humidite_sol_minimum
-    - sensor.jardin_humidite_sol_heterogeneite
-    #
     # ✅ OBSERVABILITÉ PERMANENTE (suite) — gate d'exploitabilité de la médiane
     - sensor.jardin_humidite_sol_points_frais
     #
-    # ⏳ MICROSCOPE (suite du bloc ci-dessus) — état qualitatif exploratoire
-    # Les six champs sont ceux du bloc MICROSCOPE de ce même canal : ajouté 2026-06-27
-    # (737c60a0, PR #103) · autorité plan_observation_hydrique_v0.md §4 · preuve = statut
-    # exploratoire à confirmer · échéance 2026-10-31 opposable · sortie RETRAIT ou
-    # REQUALIFICATION · dépassement = réévaluation obligatoire, aucune reconduction tacite.
-    - sensor.jardin_reservoir_sol_etat
+    # 🔚 Ex-microscope B01 retiré le 2026-10-12 (C44) : sensor.jardin_humidite_sol_minimum,
+    #    sensor.jardin_humidite_sol_heterogeneite, sensor.jardin_reservoir_sol_etat.
+    #    Échéance opposable 2026-10-31 — retrait anticipé, application de la règle de sortie
+    #    du bloc (« RETRAIT si le statut d'entrée n'est pas établi ») :
+    #    - minimum / hétérogénéité : le « gate point sec » supposé en T05/T08 n'existe pas.
+    #      binary_sensor.arrosage_besoin_sol ne lit que médiane, seuil et hystérésis ; les
+    #      déclenchements à médiane ≥ seuil sont la bande d'hystérésis. Aucun consommateur
+    #      runtime : seules les tuiles KPI du dashboard diagnostic (état courant) les lisent.
+    #    - état qualitatif : fonction exacte des points frais ci-dessus (167/167 lignes
+    #      cohérentes, recorder_20261012.db) ; la décision C11 en porte de plus la trace
+    #      dans l'attribut `sol_motif` de sensor.arrosage_modulation_duree_applicable.
+    #    Les trois entités restent disponibles en direct ; seule l'historisation cesse.
+    #    Cf. c44_gouvernance_sortie_microscopes.md §3.7.
     #
     # ✅ OBSERVABILITÉ PERMANENTE — paramètre de la décision V1 (contrat 17 §138)
     # Ajouté     : 2026-06-28, commit distinct « graphe humidité du sol au dashboard » —

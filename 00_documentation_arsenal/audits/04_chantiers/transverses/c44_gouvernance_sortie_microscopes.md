@@ -4,10 +4,10 @@
 |---|---|
 | **Chantier** | Empêcher qu'une observation déclarée temporaire devienne permanente par inertie. Poser une **norme opposable** de sortie des microscopes Recorder, régulariser les 14 blocs existants, et requalifier en observabilité permanente les entités devenues nécessaires à la relecture d'une décision active. |
 | **Domaine** | Transverse — gouvernance de l'observabilité. Touche arrosage, climatisation, chauffage, éclairage. |
-| **Statut** | **Ouvert (2026-08-31) — lot documentaire D1/D2 livré.** **Premier retrait exécuté le 2026-09-18** : `input_datetime.arrosage_session_fin_prevue` (bloc B05) sorti du Recorder — cf. §3.6. Aucun autre ajout ni retrait. |
+| **Statut** | **Ouvert (2026-08-31) — lot documentaire D1/D2 livré.** **Premier retrait exécuté le 2026-09-18** : `input_datetime.arrosage_session_fin_prevue` (bloc B05) sorti du Recorder — cf. §3.6. **Échéance du 2026-10-31 tenue le 2026-10-12** : les trois entités temporaires de B01 sortent du Recorder — cf. §3.7. Aucun ajout. |
 | **Priorité** | **P2** — aucun risque fonctionnel ; enjeu de gouvernance et de tenue du contrat Recorder. |
 | **Ouvert le** | 2026-08-31. |
-| **Prochain jalon** | **2026-10-31** — première échéance opposable (arrosage exploratoire). |
+| **Prochain jalon** | **2026-11-16** — échéance opposable C20 (`clim_extinction_absence_prolongee_autorisee`). L'échéance du 2026-10-31 (arrosage exploratoire) est tenue — §3.7. |
 | **Registre** | Chantier **C44** — ① Actifs, cf. [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). **Ce document est la source faisant foi pointée par la ligne.** |
 | **Mesure amont** | `arsenal-runtime/analyses/recorder_churn_attributs_20260831/` (hors dépôt gouverné) — base `recorder_20260831.db`. |
 
@@ -86,13 +86,26 @@ Les sept `Ajouté : à confirmer` sont résolus.
 | Statut | Blocs / parts | Entités |
 |---|---|---|
 | **Observabilité permanente** | B02, B03, B04, B08, B09, parts permanentes de B01 · B05 · B06 · B07 | **41** |
-| **Microscope borné** | parts temporaires de B01 (3) · B07 (1), B10, B11-B14 | **8** *(B05 retiré le 2026-09-18 — §3.6)* |
+| **Microscope borné** | B07 (1), B10 (1), B11-B14 (6 + 5 + 4 + 2) | **19** *(B05 retiré le 2026-09-18 — §3.6 ; parts temporaires de B01 retirées le 2026-10-12 — §3.7)* |
 
-Échéances opposables : **2026-10-31** · **2026-11-16** · **2027-02-07** · **2027-04-30**.
+> **Rectification du décompte (2026-10-12).** La cellule portait « 9 », puis « 8 » après le retrait B05. Elle sous-comptait les blocs chauffage B11-B14, qui portent 17 entités et non quelques-unes. Recomptage dans `recorder.yaml` : 23 microscopes au 2026-08-31, 22 après B05, **19 après B01**. Le classement bloc par bloc n'est pas modifié ; seul le total était faux.
+
+Échéances opposables : ~~**2026-10-31**~~ (tenue — §3.7) · **2026-11-16** · **2027-02-07** · **2027-04-30**.
 
 ### 3.6 Retrait B05 exécuté (2026-09-18)
 
 `input_datetime.arrosage_session_fin_prevue` sorti de `recorder.yaml`. Conforme à l'action de sortie du bloc (RETRAIT), exécuté avant l'échéance du 2026-10-31 : aucune preuve n'était en attente (valeur dérivable de `arrosage_session_debut` + `arrosage_session_duree_minutes`, toutes deux déjà historisées en observabilité permanente). Les 6 autres entités du bloc B05 (état, session en cours, verdict, début, fin observée, durée figée) restent en observabilité permanente — inchangé depuis le 2026-08-31 ([audit_arrosage_executions_longues_rain_bird.md §8](../../01_rapports/arrosage/audit_arrosage_executions_longues_rain_bird.md)). La valeur reste lue en direct par `11_automations/arrosage/session_fin_watchdog.yaml` ; seule l'historisation cesse.
+
+### 3.7 Retrait B01 exécuté (2026-10-12) — échéance du 2026-10-31 tenue
+
+`sensor.jardin_humidite_sol_minimum`, `sensor.jardin_humidite_sol_heterogeneite` et `sensor.jardin_reservoir_sol_etat` sortis de `recorder.yaml`. C'est l'application de la règle de sortie écrite dans le bloc : « RETRAIT si le statut d'entrée n'est pas établi ; REQUALIFICATION PERMANENTE s'il l'est ».
+
+- **Minimum et hétérogénéité — le statut d'entrée est réfuté, pas seulement non établi.** Le bloc demandait de confirmer le « gate point sec » supposé en T05, puis repris en T08 et au contrat 19 : 11 déclenchements sur 14 ont une médiane ≥ seuil, d'où l'hypothèse d'une autre porte de décision. Lecture du runtime : `binary_sensor.arrosage_besoin_sol` (`12_template_sensors/arrosage/besoin_sol.yaml`) ne lit que la médiane, le seuil et l'hystérésis. Une fois le besoin actif, il ne retombe qu'au-dessus de `seuil + hystérésis` : c'est cette bande de maintien qui explique les déclenchements à médiane ≥ seuil. Vérification sur les **22 départs réels** des bases `recorder_20260831.db` (14) et `recorder_20261012.db` (8) : les 17 départs à médiane ≥ seuil (30) ont tous un `besoin_sol` armé plus tôt à médiane < seuil (22,9 à 29,9), et la médiane au départ ne dépasse jamais 33,2, soit moins que `seuil + hystérésis` (35 avec l'hystérésis par défaut ; le helper n'est pas historisé). `binary_sensor.arrosage_intention` ne lit, en plus, que l'exploitabilité de la médiane. Aucun automatisme, template ou checker ne lit ces deux grandeurs. Leurs seuls lecteurs sont les deux tuiles KPI du dashboard diagnostic (`18_lovelace/dashboards/arrosage/diagnostic.yaml`), qui affichent l'état courant sans historique, et un test structurel d'interface.
+- **État qualitatif — entrée de décision, mais entièrement redondant.** `sensor.jardin_reservoir_sol_etat` est lu en direct par la modulation C11 (`modulation_duree.yaml`) et sert de déclencheur à l'arbitrage pluie. Son historisation n'apporte pourtant aucune information de relecture : c'est une fonction exacte de `sensor.jardin_humidite_sol_points_frais`, historisé en observabilité permanente. Mesure sur `recorder_20261012.db` : **167 lignes sur 167** appariées et cohérentes avec la règle 5–6 → `complet`, 3–4 → `degrade`, 1–2 → `insuffisant`, 0 → `indisponible`. De plus, la décision C11 en garde la trace dans l'attribut `sol_motif` de `sensor.arrosage_modulation_duree_applicable`, lui aussi historisé en permanent. La règle « sortir du régime microscope ≠ sortir du Recorder » est donc respectée : la relecture des décisions actives reste complète.
+
+Les trois entités restent disponibles en direct. Preuve structurelle (chargement YAML de `recorder.yaml`, `origin/main` → branche) : 363 → 360 entités, exactement ces trois retirées, aucun ajout, ordre conservé, `auto_purge` / `purge_keep_days` / `commit_interval` identiques ; `check_recorder_contracts.py` conforme.
+
+Rectification liée : la « porte point sec / hétérogénéité » affirmée au contrat 19 et au plan d'observation hydrique v0 (T08) est une erreur de lecture. Les deux documents sont rectifiés au même commit, le texte d'origine étant conservé.
 
 ### 3.5 Couplage C43 ↔ `jardin_humidite_sol_mediane`
 
@@ -170,7 +183,7 @@ Aucun retrait R2. Aucun checker CI. Aucune hystérésis. Aucun seuil, trigger, t
 
 ## 9. Critères de clôture
 
-1. Les quatre échéances opposables sont tenues ou explicitement réévaluées, sans reconduction tacite.
+1. Les quatre échéances opposables sont tenues ou explicitement réévaluées, sans reconduction tacite. *(2026-10-31 : tenue le 2026-10-12, §3.7.)*
 2. Les lots R2 sont exécutés ou abandonnés par décision motivée.
 3. Le checker anti-inertie (lot CI distinct) rend la norme §2 opposable en CI.
 4. Aucun bloc de `recorder.yaml` ne porte plus d'échéance non vérifiable.
