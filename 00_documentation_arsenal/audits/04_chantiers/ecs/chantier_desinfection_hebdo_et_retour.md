@@ -285,6 +285,25 @@ ni n'ouvre les lots 3-5.
 > **Critère de clôture révisé (Lot 2) :** au minimum les scénarios 1 (retour nominal → `reussite`,
 > dette OFF, bouclage 5 min) et 4 (timeout réel par préemption) du §10.10, observés en runtime. La CI
 > seule ne clôt pas ce lot — elle était verte pendant toute la durée du défaut.
+>
+> **Constat L4 du 2026-10-12 — scénario 1 acquis, scénario 4 non observé.** Sauvegardes
+> `recorder_20260811`, `_20260831`, `_20260918` et `_20261012` (événements du 2026-07-11 au
+> 2026-10-12) ; analyse `arsenal-runtime/analyses/c46_c3_desinfection_retour_20261012`. Verdict, dette
+> et timer ne sont pas historisés : ils sont reconstitués par les appels de service (`R-L2-1`).
+> - **Scénario 1 — acquis (2026-08-22, vrai retour programmé).** Verdict `en_cours` à 14:30:10,
+>   cycle lancé à 14:35:10, fin de cycle à 14:55:45, `reussite` à 15:10:46 (maximum 59,6 °C), dette
+>   OFF, un seul bouclage (`switch.prise_bouclage` de 15:10:46 à 15:15:46). **Le correctif §10.14 est
+>   prouvé en conditions réelles** : la fenêtre d'inertie, annulée au démarrage du cycle alors qu'elle
+>   était au repos, ne pose plus `timeout`.
+> - **Idempotence** : 29 démarrages HA après la réussite, sans nouvelle écriture du verdict ni relance.
+> - **Lot 1** : créneaux hebdomadaires non lancés en Vacances (2026-08-07, 08-14, 08-21) ; 7 sur 7
+>   lancés en Normal du 2026-08-28 au 2026-10-09. Le cas « interrupteur manuel » n'est pas observé.
+> - **Scénario 4 — jamais observé** : aucune écriture `timeout`, `echec` ni `preuve_indisponible`. Il
+>   exige qu'un autre cycle ECS démarre dans la fenêtre d'inertie suivant un cycle de retour.
+>   **Décision propriétaire due** : autoriser un test provoqué (`R-VERROU-2`) ou le requalifier en
+>   réserve opportuniste non bloquante (`R-VERROU-1`).
+> - **Défaut résiduel relevé (2026-08-09)** — voir le chantier C3 (`VAC-IMP-5` §7) : une dette a été
+>   consommée par un cycle lancé pendant les Vacances.
 
 ---
 

@@ -408,6 +408,19 @@ réellement branchée**.
 > et les abstentions n'apparaissent **qu'en évaluation continue** (jamais consommés par un Run réel — aucun
 > arrosage n'a coïncidé avec une demande climatique forte) ; une **seule base** (25 min) a été exercée.
 > La réserve P2 « fenêtre 6 sondes » est **atteinte** (`points_frais = 6` au 17/08).
+>
+> **Relevé L4 du 2026-10-12** — `recorder_20261012.db` et LTS horaires du 2026-07-01 au 2026-10-12 ;
+> analyse `arsenal-runtime/analyses/c11_p4_cloture_20261012`. **28 Runs réels depuis le déploiement P4**
+> (2026-07-29), tous entre 05:30 et 05:56, tous en climat `neutre`, tous en base 25. Dans la fenêtre du
+> 2026-09-11 au 2026-10-12 : 8 Runs, durées figées 22 à 25 min, égales à la durée applicable 8 fois sur 8,
+> sessions toutes `close_nominale` ; plus aucun Run après le 2026-09-27. **Demande forte à 05 h : jamais**
+> en 102 jours (VPD maximum à 05 h : 1,57 kPa pour un seuil de 2,3 ; ET₀ : 4,21 pour 6,0 ; aucun
+> franchissement entre 02 h et 08 h). La non-coïncidence avec l'heure d'arrosage est donc structurelle.
+> **Base** : 25 sans aucune écriture depuis le 2026-07-19, soit avant P4 ; aucune base ≠ 25 exercée.
+> **Deux décisions propriétaires conditionnent la clôture** : (i) acter comme non bloquante la
+> consommation d'un motif d'allongement par un Run réel (`R-VERROU-1`, proposition C44 §5) ; (ii) soit
+> changer la base avant un Run réel (l'opérateur en est l'unique écrivain, §4), soit requalifier ce point
+> avec un motif écrit. C44 §5 ne traitait pas (ii).
 
 ---
 

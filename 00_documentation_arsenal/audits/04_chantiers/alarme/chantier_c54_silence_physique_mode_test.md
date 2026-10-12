@@ -2,7 +2,7 @@
 
 ## 📌 Statut
 
-- **Ouvert (2026-10-03) — lot 1 implémenté (runtime + contrats + CI), validation terrain en attente ; lot 2 non engagé.**
+- **Ouvert (2026-10-03) — lot 1 implémenté et déployé (HA rechargé le 2026-10-03 à 19:04:32, établi en L4) ; volet automatique du critère 2 acquis en L4 le 2026-10-12 ; restent le désarmement dashboard, le constat sonore opérateur (L5) et le lot 2 (§8).**
 - **Identifiant global** : **C54**
 - **Domaine** : Sécurité / Alarme — actionneurs sonores (contrat [`70_sirene_actions_terminales.md`](../../../contrats/alarme/70_sirene_actions_terminales.md))
 - **Priorité** : **P1** — nuisance sonore réelle et répétée (plusieurs fois par jour) sur le foyer, et réserve ouverte sur l'**efficacité** de la coupe sirène en alarme réelle.
@@ -73,3 +73,12 @@ Les gardes existantes (armement, délai d'entrée, bifurcations d'intrusion, sir
 1. Lot 1 mergé **et** déployé (clone runtime à jour, HA rechargé) — quatre états distincts (merge ≠ runtime ≠ HA ≠ terrain).
 2. **Preuve terrain** : un désarmement en mode test (automatique et dashboard) ne produit **aucun** son, traces à l'appui (`arret_sirene` non exécuté).
 3. Lot 2 instruit : R1–R3 résolues (payload validé par essai autorisé) **ou** requalifiées explicitement par l'opérateur.
+
+## 8. Constat L4 du 2026-10-12
+
+Source : sauvegarde `recorder_20261012.db` (états du 2026-09-11 au 2026-10-12 02:28), analyse `arsenal-runtime/analyses/c54_c1_c23_c55_c57_preuves_l4_20261012`. Les appels de service sont historisés hors liste blanche ; ils portent la preuve.
+
+- **Critère 1 — déploiement établi côté Home Assistant.** #864 est fusionnée le 2026-10-03 à 19:03:47 ; un `script.reload` utilisateur suit à 19:04:32. Le dernier désarmement à l'ancien comportement date du 2026-10-03 à 18:47:44.
+- **Critère 2, volet automatique — acquis en L4.** Avant le déploiement, chaque désarmement appelait `script.arret_sirene` puis publiait `warning/stop` (74 appels `arret_sirene` sur la fenêtre). Après le déploiement : **21 désarmements automatiques, tous en mode test, 0 appel `arret_sirene`, 0 publication vers `zigbee2mqtt/sirene/set`, 0 appel `sirene_bip` / `sirene_bip_bip` / `sirene_brutale` / `sirene_test`**. Home Assistant n'émet donc plus la commande sonore. Le silence physique lui-même reste une preuve L5, à constater par l'opérateur.
+- **Non exercé.** Aucun désarmement depuis le dashboard après le déploiement (0 sur 21) ; il ne surviendra pas de lui-même et relève d'un acte opérateur. Le verrou en tête des scripts sirène n'a pas été sollicité, les appelants filtrant déjà en amont. Aucun état `triggered`.
+- **Observation hors critère.** `input_boolean.mode_test_alarme` (non historisé, reconstruit par ses écritures) est resté à `on` du 2026-09-13 15:14:46 jusqu'à la fin de la sauvegarde. Sur la période, **15 délais d'entrée sont arrivés à échéance** avant le désarmement automatique ; hors mode test, ils auraient produit 15 déclenchements réels.
