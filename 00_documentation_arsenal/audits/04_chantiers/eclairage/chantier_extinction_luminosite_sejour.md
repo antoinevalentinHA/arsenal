@@ -1,7 +1,7 @@
 # Chantier C22 — Éclairage séjour : extinction sur luminosité réelle
 
 **Domaine :** éclairage — séjour
-**Statut :** runtime livré (PR #368, mergé 2026-07-15) — **validation terrain en attente**
+**Statut :** runtime livré (PR #368, mergé 2026-07-15) — **clôture conditionnelle acquise (2026-10-12)** : points 1, 2 (été) et 3 soldés ; **réserve hiver** seule ouverte, bornée par le microscope lux (fenêtre 2026-12-01 → 2027-01-31, échéance opposable 2027-02-07)
 **Contrat de référence :** [`eclairage/sejour.md`](../../../contrats/eclairage/sejour.md) (v1.1.0)
 **Actionneur unique :** `switch.prise_lampe_sejour`
 
@@ -241,6 +241,30 @@ aucune action physique** : l'automation `10070000000035` a son `last_triggered` 
 2026-07-24). **Point 3 en observation multi-jours** — à surveiller sur les prochains jours
 clairs : autorité `on` en milieu de matinée (lux > 50), extinction du séjour en présence +
 plein jour, **absence de ré-allumage** sous 5 min ; **repli** = helper à `0`. Suivi opérateur.
+
+**Relevé du point 3 (2026-10-12, L4) — soldé.** Sauvegardes du 2026-06-29 au 2026-10-12, sans trou ;
+analyse `arsenal-runtime/analyses/c22_non_regression_allumage_20261012`. La preuve passe par les appels
+de service, historisés hors liste blanche et rattachés à leur contexte (`R-L2-1`) : l'automation lux est
+le seul appelant de `script.sejour_off` hors mode astronomie.
+- **Helper** : une seule écriture sur toute la période, `set_value` à 50 le 2026-07-24 à 12:30:11.
+- **Extinctions** : **23**, du 2026-07-27 au 2026-10-11, sur 23 jours distincts, entre 08:14 et 10:50 ;
+  chacune causée par un franchissement lux et suivie d'un `switch.turn_off` dans le même contexte. Dix
+  tombent dans la fenêtre du 2026-09-11 au 2026-10-12.
+- **Ré-allumages** : **aucun** à moins de 30 min, aucun par un utilisateur. Le rallumage suivant est
+  chaque fois celui du soir (19:03 à 21:32), 8,7 à 12,9 h plus tard.
+- **Battement de l'autorité (C44 §6)** : il persiste, mais diminue (553 fronts montants sur 30 jours,
+  médiane 15/jour, contre 949 et 29/jour au 2026-08-31). **Son effet mesuré est nul** : seuls 10 fronts
+  tombent lampe allumée, et tous ont produit l'extinction attendue. Aucun correctif n'a été livré ;
+  l'hystérésis reste un sujet séparé, non requis par la clôture.
+- **Limites** : la présence au moment de l'extinction n'est pas prouvée (`mouvement_sejour` non
+  historisé) ; la branche de rattrapage au démarrage ou au rechargement n'a pas été exercée.
+- **Rectification** : la note C44 §6 et l'analyse `c22_reserve_hiver_20260831` §3.4 jugeaient le
+  point 3 non solvable hors ligne, faute de résolution de la lampe (horaire). Les appels de service
+  donnent une résolution à la seconde, avec la cause de chaque appel.
+
+**Conséquence.** Les conditions de la clôture « sous la seule réserve hiver » posée ci-dessus sont
+réunies. La réserve hiver n'est pas perpétuelle : le microscope lux (`recorder.yaml`) en fixe la
+fenêtre, l'échéance et l'action de sortie. La clôture définitive suivra l'analyse hivernale.
 
 ---
 

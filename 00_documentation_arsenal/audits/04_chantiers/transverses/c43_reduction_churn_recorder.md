@@ -137,6 +137,49 @@ ls -d /config/node-red /config/appdaemon 2>/dev/null
 3. Gain mesuré sur une sauvegarde postérieure d'au moins 30 jours.
 4. Aucun consommateur cassé.
 
+## 7. Mesure du gain (2026-10-12, L4)
+
+Base `recorder_20261012.db` (2026-09-11 04:12 → 2026-10-12 02:30, 30,9 jours) ; analyse
+`arsenal-runtime/analyses/c43_mesure_gain_churn_20261012`. Méthode de référence rejouée à l'identique :
+le script d'origine tourne tel quel sur la nouvelle base, et la re-simulation sur la base du 2026-08-31
+redonne exactement 254 952 lignes.
+
+- **Déploiement établi par la base** : lots A et B ensemble le **2026-08-31 à 09:58:13**, par
+  rechargement des templates, sans redémarrage. Première ligne sans attribut à 09:58:12–13 pour les six
+  entités du lot A ; plus aucune clé retirée dans les bases du 2026-09-18 et du 2026-10-12. La fenêtre
+  mesurée commence 10,8 jours après le déploiement : elle lui est entièrement postérieure.
+- **Gain brut, à fenêtres de même durée** : lot A **197 620** lignes (attendu 198 476, soit 99,6 %) ;
+  lot B **66 104** (attendu 56 476) ; **total 263 724 lignes, 28,6 %** de la base de référence
+  (attendu 254 952, 27,7 %). À périmètre constant (357 entités), on passe de 920 521 à 639 606 lignes
+  (−30,5 %), et la part de lignes écrites sans changement d'état tombe de **39,2 % à 18,4 %**. Les
+  autres entités, qui servent de témoin, varient de +1,1 %.
+- **À activité constante**, le lot A reste à 99,4 % de l'attendu. Le lot B dépend de l'activité :
+  B1 est proportionnel à la durée d'absence (116,7 h contre 598,7 h en août ; −83,0 % par heure
+  d'absence, pour −83,1 % simulés) ; B2 interagit avec A1, qui avait déjà divisé par deux les
+  changements de sa source — interaction non prévue par le §3.
+
+**Critères 1 à 3 : remplis.** Le critère 1 l'est par preuve indirecte : la sauvegarde ne contient pas
+le journal HA, mais les attributs restent exposés et quantifiés.
+
+**Critère 4 : à arbitrer par le propriétaire.** Rien n'est en panne, mais le déploiement a changé le
+comportement de trois consommateurs, ce que la recherche du §4.3 (consommateurs d'attributs) ne
+pouvait pas voir : ils réagissaient aux **mises à jour** de leur source, attributs compris.
+- **Statistique « Temperature exterieure moyenne jour »** (`sampling_size: 300`, source
+  `sensor.temperature_jardin`) : elle échantillonnait chaque mise à jour, y compris d'attribut. Sa
+  fenêtre effective est passée d'environ 2,9 h à environ 8,1 h, avec un saut au moment exact du
+  déploiement. **C'est une entrée de la décision d'arrosage** (température moyenne de l'ET₀, donc
+  `climat_statut`, C11) : l'affirmation « aucune entrée de décision modifiée » est donc inexacte en
+  fonctionnement. L'effet est favorable (écart à une vraie moyenne 24 h, mesuré à 05 h : de 2,65 à
+  1,05 °C), mais la statistique n'est une moyenne 24 h **ni avant ni après**. C'est un défaut antérieur
+  à C43, du domaine arrosage/météo (contrat 16), signalé ici sans chantier ouvert d'office.
+- **Automatisation `coexistence_rain_delay`** : son déclencheur `fraicheur` (sans `to:`) réagissait
+  chaque minute au changement de `uptime_age_secondes`. Les appels du script de rain delay et de
+  `number.set_value` passent d'environ 1 470 à environ 5 par jour : environ 1 465 commandes
+  quotidiennes vers le pont Rain Bird ont disparu. Le comportement correspond désormais à l'en-tête de
+  l'automatisation.
+- **`update_temperature_max/min`** se déclenchent environ trois fois moins souvent. Aucune perte n'est
+  attendue (elles ne lisent que l'état), mais c'est une inférence, pas une mesure.
+
 ---
 
 *Chantier ouvert le 2026-08-31. Source faisant foi pour la ligne C43 du registre.*
