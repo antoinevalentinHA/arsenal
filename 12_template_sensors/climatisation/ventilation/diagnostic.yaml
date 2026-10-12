@@ -25,9 +25,14 @@
 #                    que la clim ne tourne pas (contrat 12 §7). Aucune cible
 #                    n'est appliquée → comparer réel/cible n'a pas de sens :
 #                    pas de pilotage possible ⇒ pas d'écart possible.
+#   - hors_pilotage : climatisation en mode « dry » — le Fujitsu gouverne
+#                    lui-même la ventilation et l'autorité d'application
+#                    s'abstient (contrat 12 §7bis). Aucune cible n'est
+#                    appliquée → pas d'écart possible (même raisonnement que
+#                    repos, clim pourtant en marche).
 #   - indisponible : entrées de décision ou réel non exploitables
 #
-#   Priorité du verdict : indisponible (R6) > repos > conforme/ecart.
+#   Priorité du verdict : indisponible (R6) > repos > hors_pilotage > conforme/ecart.
 #
 #   Cible effective = recommandation après les arbitrages EFFECTIFS du runtime
 #   (application_mode.yaml, 10030000000120), dans l'ordre EXACT :
@@ -42,7 +47,7 @@
 #   est ALIGNÉ avec l'application absence → Fort (livrés dans le même lot).
 #
 # 🔢 cause_ecart (fini) :
-#   none / clim_au_repos / entrees_indisponibles /
+#   none / clim_au_repos / mode_dry / entrees_indisponibles /
 #   recommandation_indisponible / fujitsu_non_exploitable / auto_fujitsu /
 #   silencieux_auto / recommandation_non_appliquee / mode_manuel /
 #   incoherence_mapping / non_couvert
@@ -50,6 +55,9 @@
 #   - clim_au_repos : clim à l'arrêt → fan_mode figé, aucune cible appliquée.
 #     N'est PAS un écart d'application : l'autorité s'abstient légitimement
 #     (contrat 12 §7). Sert de cause au verdict « repos ».
+#   - mode_dry : clim en déshumidification → ventilation gouvernée par
+#     l'appareil, aucune cible appliquée (contrat 12 §7bis). Cause du verdict
+#     « hors_pilotage ».
 #
 #   - En « Auto Arsenal », un écart réel ≠ cible effective est un écart
 #     d'APPLICATION (recommandation_non_appliquee), pas un override.
@@ -63,7 +71,8 @@
 #
 # 🎨 couleur (clé sémantique, décidée backend, R6 gris prime) :
 #   - conforme                            -> vert
-#   - repos (clim à l'arrêt)              -> repos (= Gris neutre « Inactif /
+#   - repos (clim à l'arrêt) et
+#     hors_pilotage (mode dry)            -> repos (= Gris neutre « Inactif /
 #                                            Aucune demande », charte couleurs
 #                                            02_palette ; R5 : ne masque aucun
 #                                            problème connu — au repos il n'y a
@@ -121,6 +130,8 @@
           indisponible
         {% elif not clim_actif %}
           repos
+        {% elif is_state('climate.clim', 'dry') %}
+          hors_pilotage
         {% elif reel == cible_effective %}
           conforme
         {% else %}
@@ -223,6 +234,8 @@
             fujitsu_non_exploitable
           {% elif not clim_actif %}
             clim_au_repos
+          {% elif is_state('climate.clim', 'dry') %}
+            mode_dry
           {% elif reel == cible_effective %}
             none
           {% elif reel == 'auto' %}
@@ -260,7 +273,7 @@
                                          else ('low' if reco_tech == 'quiet' else reco_tech)) %}
           {% if not niveau_ok or not reco_ok or reel in unav %}
             indisponible
-          {% elif not clim_actif %}
+          {% elif not clim_actif or is_state('climate.clim', 'dry') %}
             repos
           {% elif reel == cible_effective %}
             vert

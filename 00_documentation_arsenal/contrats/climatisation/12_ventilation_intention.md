@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — CLIMATISATION
 ## 12 — Ventilation (fan_mode) — Intention persistante (Modèle B)
 
-**Version contrat :** v2.0
+**Version contrat :** v2.1 — 2026-10-12 : §7bis **mode dry** (abstention de la résolution, sortie du dry réconciliée, verdict de diagnostic `hors_pilotage`). — v2.0
 **Statut :** Normatif — **aligné runtime** (Modèle B + recalibrage « Auto Arsenal »
 mergés). La résolution est implémentée (automation `10030000000120`,
 `application_mode.yaml`) ; l'arbitrage **absence → Fort** y est porté (§2).
@@ -290,11 +290,15 @@ notamment par :
 - changement de **présence** (`binary_sensor.presence_confort_thermique_stabilisee`,
   `input_boolean.presence_visiteur`) : absence → Fort en « Auto Arsenal »,
   retour présence → relâche Fort (§2) ;
+- **sortie du mode `dry`** (`climate.clim` quittant `dry`, §7bis) : la
+  résolution s'étant abstenue pendant la déshumidification, l'intention est
+  réappliquée dès que la clim passe dans un mode piloté (`cool`, `heat`) ;
 - détection d'un écart entre mode appliqué et mode effectif attendu.
 
 ### Règle de convergence
 
 > **Si** l'override silencieux est **OFF**
+> **et** la clim n'est **pas** en mode `dry` (§7bis)
 > **et** `mode appliqué ≠ mode_effectif` (résolu selon §2),
 > **alors** réappliquer le mode effectif (via la résolution, §3),
 > **sous réserve** de compatibilité (§8) et de disponibilité (§9).
@@ -333,6 +337,47 @@ Côté UI, `repos` est rendu avec le **Gris neutre** `rgba(158, 158, 158, 0.2)`
 indisponibilité `rgba(158, 158, 158, 0.1)` qui prime (R6). La règle R5
 (« le gris neutre ne masque jamais un problème connu ») est respectée : au
 repos il n'existe aucune divergence de conformité à masquer.
+
+---
+
+## 7bis. Mode `dry` — ventilation gouvernée par l'appareil
+
+En déshumidification (`climate.clim` = `dry`), le Fujitsu **gouverne lui-même
+la ventilation** et ramène le `fan_mode` à `auto`. Commander une vitesse dans
+ce mode crée un **duel** avec l'appareil : la résolution renvoie la vitesse
+résolue, l'appareil repasse en `auto`, la dérive vers `auto` redéclenche la
+résolution. **Mesure** (sauvegarde `recorder_20261012.db`, 2026-09-11 →
+2026-10-12) : **4 564 commandes `set_fan_mode` sur 4 596 (99,3 %)** émises clim
+en `dry`, environ une par minute, jusqu'à 437 par jour.
+
+Règles :
+
+- **Abstention.** Tant que `climate.clim` est en `dry`, l'autorité de
+  résolution (`10030000000120`) **n'émet aucune commande** `fan_mode`, quelle
+  que soit l'intention (manuelle, « Auto Arsenal », absence → Fort).
+- **L'intention est conservée** (§1) : elle n'est ni modifiée ni oubliée.
+- **Sortie du dry réconciliée** (§6) : un déclencheur borné sur `climate.clim`
+  quittant `dry` réapplique le mode effectif dès que la clim passe dans un mode
+  piloté (`cool`, `heat`). `dry → off` reste gouverné par §7 (clim éteinte,
+  abstention). Ce déclencheur ne boucle pas : `set_fan_mode` modifie un
+  attribut, jamais l'état principal.
+- **Les autres modes sont inchangés** : `cool`, `heat` et l'arrêt suivent
+  strictement §2 à §7.
+- **Silence non concerné** : la mesure ne montre aucune commande du domaine
+  silence (`switch.clim_quiet_fan`) en `dry`. Ce paragraphe ne modifie pas
+  l'automation silence `10030000000020`.
+
+### Observabilité : verdict `hors_pilotage`
+
+En `dry`, aucune cible n'est appliquée : comparer le réel (`auto` imposé par
+l'appareil) à une cible n'a pas de sens. Le diagnostic
+(`sensor.clim_ventilation_diagnostic`) expose le verdict dédié
+**`hors_pilotage`** (cause `mode_dry`, couleur `repos`). Ordre de priorité :
+`indisponible` (R6) > `repos` > `hors_pilotage` > `conforme` / `ecart`. Côté
+UI, il est rendu avec le **Gris neutre** `rgba(158, 158, 158, 0.2)`
+(« Inactif / Aucune demande »), sans cible effective ni arbitrage, comme le
+repos. R5 est respectée : en `dry`, aucune divergence de conformité n'existe,
+puisque rien n'est piloté.
 
 ---
 
@@ -452,7 +497,12 @@ ex-ID `10030000000121`, retiré) : plus aucune perception n'écrit l'intention.
   `12_template_sensors/climatisation/ventilation/diagnostic.yaml`
   (cible effective alignée sur l'arbitrage absence → Fort) ;
 - UI : `carte_clim_ventilation` consomme l'origine et n'affiche plus le
-  « Souhaité : X » tautologique (§10).
+  « Souhaité : X » tautologique (§10) ;
+- **mode `dry`** (§7bis, 2026-10-12) : condition d'abstention `not mode_dry`
+  et déclencheur borné `from: "dry"` dans `application_mode.yaml` ; verdict
+  `hors_pilotage` / cause `mode_dry` dans `diagnostic.yaml`, rendu par
+  `carte_clim_ventilation_diagnostic_xl` ; contrôles T24 à T26 de
+  `check_climatisation_ventilation_contracts.py`.
 
 ### Encore hors périmètre
 

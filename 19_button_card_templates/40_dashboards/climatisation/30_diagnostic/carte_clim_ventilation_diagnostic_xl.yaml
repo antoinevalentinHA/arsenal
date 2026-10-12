@@ -22,7 +22,9 @@
 #     - vert         -> conforme
 #     - repos        -> Gris neutre rgba(158,158,158,0.2) « Inactif / Aucune
 #                       demande » (charte couleurs 02_palette) : clim a l'arret,
-#                       fan_mode fige. Distinct du gris indispo 0.1 (R6).
+#                       fan_mode fige ; aussi verdict hors_pilotage (mode dry,
+#                       ventilation gouvernee par l'appareil, contrat 12 §7bis).
+#                       Distinct du gris indispo 0.1 (R6).
 #     - bleu         -> ecart explicable (mode manuel / silencieux auto)
 #     - orange       -> attention (auto constructeur / situation non couverte)
 #     - rouge        -> incoherence de mapping
@@ -68,12 +70,13 @@ carte_clim_ventilation_diagnostic_xl:
       if (v === 'conforme') return 'mdi:fan';
       if (v === 'ecart') return 'mdi:fan-alert';
       if (v === 'repos') return 'mdi:fan-clock';
+      if (v === 'hors_pilotage') return 'mdi:water-percent';
       return 'mdi:fan-off';
     ]]]
 
   state_display: |
     [[[
-      const map = { conforme: 'Conforme', ecart: 'Écart', repos: 'Au repos', indisponible: 'Indisponible' };
+      const map = { conforme: 'Conforme', ecart: 'Écart', repos: 'Au repos', hors_pilotage: 'Hors pilotage', indisponible: 'Indisponible' };
       return map[entity.state] || 'Indisponible';
     ]]]
 
@@ -88,6 +91,7 @@ carte_clim_ventilation_diagnostic_xl:
       const causeFR = {
         none: '',
         clim_au_repos: 'clim à l’arrêt — fan_mode figé, aucune cible appliquée',
+        mode_dry: 'déshumidification — ventilation gouvernée par la clim',
         entrees_indisponibles: 'entrées de décision indisponibles',
         recommandation_indisponible: 'recommandation indisponible',
         fujitsu_non_exploitable: 'état Fujitsu non exploitable',
@@ -103,6 +107,10 @@ carte_clim_ventilation_diagnostic_xl:
       const cause = a.cause_ecart;
 
       const repos = (verdict === 'repos');
+      // Mode dry : aucune cible appliquée non plus (l'autorité s'abstient,
+      // contrat 12 §7bis) — même rendu sans cible ni arbitrage que le repos.
+      const horsPilotage = (verdict === 'hors_pilotage');
+      const sansCible = repos || horsPilotage;
 
       let out = '';
       out += '<b>Besoin froid :</b> ' + cap(a.niveau_besoin);
@@ -111,13 +119,15 @@ carte_clim_ventilation_diagnostic_xl:
       out += '<b>Recommandé :</b> ' + (UNAV.includes(a.recommande) ? '—' : a.recommande) + '<br>';
       // Au repos, aucune cible n'est appliquée (l'autorité s'abstient, clim à
       // l'arrêt) : on n'affiche pas de cible effective et on marque le réel figé.
-      if (!repos) out += '<b>Cible effective :</b> ' + fr(a.cible_effective) + '<br>';
+      if (!sansCible) out += '<b>Cible effective :</b> ' + fr(a.cible_effective) + '<br>';
       out += '<b>Réel brut :</b> ' + fr(a.reel) + (repos ? ' (figé)' : '') + '<br>';
 
       if (verdict === 'conforme') {
         out += '<b>Conformité :</b> réel aligné sur la cible effective';
       } else if (repos) {
         out += '<b>Clim à l’arrêt :</b> fan_mode figé sur la dernière résolution — aucun pilotage en cours, l’intention sera réappliquée à la reprise';
+      } else if (horsPilotage) {
+        out += '<b>Déshumidification :</b> la clim gouverne sa ventilation — Arsenal n’envoie aucune commande, l’intention sera réappliquée à la sortie du mode dry';
       } else if (verdict === 'indisponible') {
         out += '<b>Diagnostic indisponible :</b> ' + (causeFR[cause] || '—');
       } else {
@@ -135,12 +145,12 @@ carte_clim_ventilation_diagnostic_xl:
       };
       // Au repos, l'arbitrage porte sur une cible non appliquée : on le tait
       // pour ne pas suggérer un pilotage actif.
-      const arbitrage = repos ? null : arbitrageFR[a.raison_arbitrage];
+      const arbitrage = sansCible ? null : arbitrageFR[a.raison_arbitrage];
       if (arbitrage) {
         out += '<br><b>Arbitrage :</b> ' + arbitrage;
       }
 
-      if (a.auto_fujitsu_evite === false || a.auto_fujitsu_evite === 'false') {
+      if (!horsPilotage && (a.auto_fujitsu_evite === false || a.auto_fujitsu_evite === 'false')) {
         out += '<br>⚠️ État constructeur (auto) — non piloté par Arsenal';
       }
 

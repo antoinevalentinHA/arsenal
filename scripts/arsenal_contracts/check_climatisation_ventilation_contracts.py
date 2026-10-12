@@ -649,6 +649,88 @@ def test_23_ui_rend_les_4_arbitrages():
 
 
 # ---------------------------------------------------------------------------
+# [G] Mode dry — contrat 12 §7bis
+# ---------------------------------------------------------------------------
+
+def test_24_dry_abstention():
+    """24. Mode dry : la résolution s'abstient — 'mode_dry' défini sur
+    is_state('climate.clim', 'dry') et condition 'not mode_dry' dans le bloc
+    condition: (aucune commande fan_mode en déshumidification)."""
+    if not APPLICATION_MODE.is_file():
+        return
+    content = read(APPLICATION_MODE)
+    ok = True
+    if not re.search(
+        r"mode_dry\s*:\s*['\"]?\{\{\s*is_state\(\s*'climate\.clim'\s*,\s*'dry'\s*\)",
+        content,
+    ):
+        fail("application_mode.yaml : 'mode_dry' non défini sur is_state('climate.clim', 'dry') (contrat 12 §7bis).")
+        ok = False
+    cond = strip_comments(extract_block(content, r"\n\s*condition:", r"\n\s*action:") or "")
+    if not re.search(r"not\s+mode_dry", cond):
+        fail("application_mode.yaml : condition 'not mode_dry' absente du bloc condition: (duel low↔auto en dry).")
+        ok = False
+    if ok:
+        print("  ✔ mode dry : mode_dry défini + condition not mode_dry (abstention)")
+
+
+def test_25_dry_sortie_reconciliee():
+    """25. Sortie du dry réconciliée : un trigger d'état climate.clim borné
+    from: "dry" existe (sinon dry → cool laisserait l'auto imposé)."""
+    if not APPLICATION_MODE.is_file():
+        return
+    block = extract_block(read(APPLICATION_MODE), r"\n\s*trigger:", r"\n\s*variables:")
+    block = strip_comments(block or "")
+    items = re.split(r"-\s*platform\s*:", block)
+    found = any(
+        re.search(r"entity_id\s*:\s*climate\.clim\b", it)
+        and re.search(r"\bfrom\s*:\s*['\"]?dry['\"]?\s*$", it, re.MULTILINE)
+        for it in items
+    )
+    if found:
+        print("  ✔ trigger climate.clim from: \"dry\" (sortie du dry réconciliée)")
+    else:
+        fail("application_mode.yaml : trigger climate.clim from: \"dry\" absent (sortie du dry non réconciliée, contrat 12 §6/§7bis).")
+
+
+def test_26_diagnostic_hors_pilotage():
+    """26. Diagnostic : verdict 'hors_pilotage' (clim en dry) placé après
+    'repos' et avant 'conforme' ; cause 'mode_dry' ; couleur 'repos' en dry ;
+    la carte rend le verdict et la cause."""
+    ok = True
+    if DIAGNOSTIC.is_file():
+        content = read(DIAGNOSTIC)
+        state = extract_block(content, r"\n\s*state:\s*>", r"\n\s*attributes:") or ""
+        i_repos = state.find("repos")
+        i_hp = state.find("hors_pilotage")
+        i_conf = state.find("conforme")
+        if not (0 <= i_repos < i_hp < i_conf):
+            fail("diagnostic.yaml : verdict 'hors_pilotage' absent ou mal ordonné (attendu : repos > hors_pilotage > conforme).")
+            ok = False
+        if not re.search(r"is_state\(\s*'climate\.clim'\s*,\s*'dry'\s*\)\s*%\}\s*hors_pilotage", state):
+            fail("diagnostic.yaml : 'hors_pilotage' non conditionné à is_state('climate.clim', 'dry').")
+            ok = False
+        cause = extract_block(content, r"\n\s*cause_ecart\s*:\s*>", r"\n\s*couleur\s*:") or ""
+        if not re.search(r"is_state\(\s*'climate\.clim'\s*,\s*'dry'\s*\)\s*%\}\s*mode_dry", cause):
+            fail("diagnostic.yaml : cause_ecart 'mode_dry' absente (ou non conditionnée au dry).")
+            ok = False
+        coul = extract_block(content, r"\n\s*couleur\s*:\s*>", r"\Z") or ""
+        if not re.search(
+            r"not\s+clim_actif\s+or\s+is_state\(\s*'climate\.clim'\s*,\s*'dry'\s*\)\s*%\}\s*repos", coul
+        ):
+            fail("diagnostic.yaml : couleur 'repos' non appliquée au mode dry.")
+            ok = False
+    if CARTE_DIAG_XL.is_file():
+        carte = read(CARTE_DIAG_XL)
+        for k in ("hors_pilotage", "mode_dry"):
+            if k not in carte:
+                fail(f"carte_clim_ventilation_diagnostic_xl.yaml : '{k}' non rendu.")
+                ok = False
+    if ok:
+        print("  ✔ diagnostic hors_pilotage / mode_dry (ordre, cause, couleur, carte)")
+
+
+# ---------------------------------------------------------------------------
 # Registre des tests
 # ---------------------------------------------------------------------------
 
@@ -683,6 +765,10 @@ TESTS = [
     test_22_principe_reel_egal_cible,
     # [F] UI
     test_23_ui_rend_les_4_arbitrages,
+    # [G] Mode dry (contrat 12 §7bis)
+    test_24_dry_abstention,
+    test_25_dry_sortie_reconciliee,
+    test_26_diagnostic_hors_pilotage,
 ]
 
 # ---------------------------------------------------------------------------

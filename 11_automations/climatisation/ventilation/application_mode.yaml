@@ -25,6 +25,12 @@
 #   silence (switch.clim_quiet_fan / automation 10030000000020). Hors plage
 #   silencieuse, une cible résolue à quiet est bornée à low (Faible) pour ne
 #   pas entrer en conflit avec l'automation silence (boucle quiet↔auto).
+#   MODE DRY → ABSTENTION (contrat 12 §7bis) : en déshumidification, le Fujitsu
+#   gouverne lui-même la ventilation et ramène le fan_mode à « auto ». La
+#   résolution N'ENVOIE AUCUNE commande tant que climate.clim est en « dry »
+#   (sinon : duel low ↔ auto, ~1 commande/min, 4 564 commandes mesurées du
+#   2026-09-11 au 2026-10-12). L'intention est conservée et réappliquée à la
+#   sortie du dry (trigger borné from: "dry").
 #
 # 🧩 PÉRIMÈTRE
 #   - Couvre : résolution intention → mode effectif → script.clim_set_fan_mode
@@ -53,6 +59,8 @@
 #     input_boolean.presence_visiteur) : absence → Fort en Auto Arsenal ;
 #     retour présence → relâche Fort (re-résolution)
 #   - Système stabilisé (input_boolean.systeme_stable → on : boot / reload)
+#   - Sortie du mode dry (climate.clim from: "dry", borné) : réapplique
+#     l'intention en cool/heat ; dry → off reste gardé par clim_actif
 #
 #   NB : climate.clim n'est PAS un déclencheur (effet matériel de l'action →
 #   éviterait une boucle de rétroaction). Il reste lu en variables/conditions
@@ -159,6 +167,14 @@
       entity_id: climate.clim
       attribute: fan_mode
       to: "auto"
+    # Sortie du mode dry (contrat 12 §7bis) : pendant le dry, la résolution
+    # s'abstient (ventilation gouvernée par l'appareil). Aucun autre trigger ne
+    # réagit à dry → cool : sans celui-ci, le fan_mode resterait sur l'auto
+    # imposé par le dry. Trigger BORNÉ (from: "dry") ; NON bouclant :
+    # set_fan_mode change un attribut, pas l'état principal.
+    - platform: state
+      entity_id: climate.clim
+      from: "dry"
 
   variables:
     # « Auto Arsenal » (et la valeur héritée « Auto » par sécurité) suit la
@@ -202,6 +218,8 @@
     override_actif: "{{ is_state('binary_sensor.clim_silencieux_autorise', 'on') }}"
     clim_actif: >
       {{ states('climate.clim') not in ['off', 'unknown', 'unavailable'] }}
+    # Mode dry : ventilation gouvernée par l'appareil (contrat 12 §7bis).
+    mode_dry: "{{ is_state('climate.clim', 'dry') }}"
 
   condition:
     # Système stable (anti-rejeu au boot avant stabilisation)
@@ -213,6 +231,11 @@
     # Climatisation active : l'intention ne rallume jamais la clim (contrat §7)
     - condition: template
       value_template: "{{ clim_actif }}"
+    # Mode dry : abstention — le Fujitsu gouverne la ventilation en
+    # déshumidification (contrat §7bis). Intention conservée, réappliquée à la
+    # sortie du dry (trigger from: "dry").
+    - condition: template
+      value_template: "{{ not mode_dry }}"
     # Intention exploitable et compatible matériel (contrat §8)
     - condition: template
       value_template: "{{ target is not none and target in fan_modes }}"
