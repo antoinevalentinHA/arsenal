@@ -255,6 +255,8 @@ def test_presence_wifi_fraicheur_gps() -> None:
         (r"input_text\.telephone_parent_2_tracker", "tracker parent_2 (helper)"),
         (r"['\"]not_home['\"]", "état not_home"),
         (r"last_changed\s*>\s*\w+\.last_changed", "comparaison des last_changed GPS > BSSID"),
+        (r"last_updated\)\s*-\s*as_timestamp\(\s*\w+\.last_changed\s*\)\s*>\s*600",
+         "clause de durée (GPS not_home > 10 min après le changement du BSSID)"),
     ]:
         if not re.search(pattern, code):
             error(f"T17: règle de fraîcheur incomplète — {label} absent de presence_wifi_maison (§11.1)")

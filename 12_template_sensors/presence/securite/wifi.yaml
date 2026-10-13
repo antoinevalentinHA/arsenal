@@ -14,7 +14,9 @@
 #     2026-03-31 au correctif C58).
 #   - Fraîcheur (contrat bssid.md §11.1) : le Wi-Fi d'un téléphone ne compte
 #     plus si le GPS DU MÊME téléphone a signalé une absence (`not_home`)
-#     PLUS RÉCEMMENT que le dernier changement de son BSSID. Un BSSID figé
+#     PLUS RÉCEMMENT que le dernier changement de son BSSID, ou s'il continue de
+#     rapporter des positions hors domicile plus de 10 min après ce changement
+#     (redémarrage HA : les deux last_changed repartent ensemble). Un BSSID figé
 #     (transition non reçue par HA) ne peut donc pas maintenir une présence
 #     fictive une fois le téléphone localisé hors du domicile. Un GPS
 #     indisponible ne retire jamais le Wi-Fi.
@@ -63,9 +65,15 @@
             {# Fraîcheur (bssid.md §11.1) : absence GPS plus récente que le BSSID ? #}
             {% set wifi_st = expand(wifi_ent) | first %}
             {% set gps_st = expand(tracker_ent) | first %}
+            {# Veto si le GPS est not_home ET :
+               - il y est passé APRÈS le dernier changement du BSSID, ou
+               - il continue de rapporter des positions hors domicile plus de
+                 10 min après ce changement (couvre le redémarrage HA, qui remet
+                 les deux last_changed au même instant). #}
             {% set gps_absent_plus_recent = gps_st is defined and wifi_st is defined
                  and gps_st.state == 'not_home'
-                 and gps_st.last_changed > wifi_st.last_changed %}
+                 and (gps_st.last_changed > wifi_st.last_changed
+                      or as_timestamp(gps_st.last_updated) - as_timestamp(wifi_st.last_changed) > 600) %}
             {% if not gps_absent_plus_recent %}
               {% set ns.present = true %}
             {% endif %}

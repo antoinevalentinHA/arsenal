@@ -54,7 +54,7 @@
 ### 3.1 Lot 1 — Wi-Fi (préparé)
 
 - **Normalisation** : référentiel **et** valeur observée passés par `lower | replace(':','') | replace('-','')`, validation 12 hex, conformément à `bssid.md` §6. La sémantique OU est conservée : un seul téléphone en Wi-Fi domestique suffit.
-- **Fraîcheur** (`bssid.md` §11.1) : le Wi-Fi d'un téléphone ne compte plus si le GPS **du même téléphone** est passé à `not_home` **après** le dernier changement de son BSSID. La source la plus récente l'emporte. Un GPS muet ne retire jamais le Wi-Fi. Aucune expiration temporelle (limite assumée, §11.1).
+- **Fraîcheur** (`bssid.md` §11.1) : le Wi-Fi d'un téléphone ne compte plus si le GPS **du même téléphone** est `not_home` et, soit y est passé **après** le dernier changement de son BSSID, soit continue de rapporter des positions hors domicile **plus de 10 min** après ce changement (cas du redémarrage de Home Assistant). La source la plus récente l'emporte. Seul `not_home` contredit le Wi-Fi : la dérive GPS au domicile ne crée pas de fausse absence. Un GPS muet ne retire jamais le Wi-Fi. Aucune expiration temporelle (limite assumée, §11.1).
 - **Effets attendus** :
   - le Wi-Fi redevient une source de présence, indépendante du GPS, typiquement à la porte ;
   - une fausse absence au domicile devient plus rare, ce qui réduit les armements avec occupants quand un téléphone est connecté ;
@@ -64,7 +64,24 @@
 
 ---
 
-## 4. Critères de clôture
+## 4. Cycle désarmement / réarmement — constats (2026-10-13)
+
+Analyse hors ligne de 31 jours de traces et lecture du code (détail hors dépôt : `arsenal-runtime/analyses/alarme_cycle_rearmement_20261013/`).
+
+- **L'armement automatique est fiable** : tous les armements automatiques de la période surviennent 5 min après la chute de la présence (projection d'absence confirmée, contrat 30) ; **aucun armement manqué**. Chaque désarmement transitoire de proximité observé est suivi d'un réarmement 5 min après le départ.
+- **Le réarmement n'est pas une conséquence automatique d'un passage à `off`** : il résulte de la projection d'absence confirmée (5 min), qui déclenche la décision centrale. Celle-ci n'est relancée que par ses déclencheurs (projections, mode, visite, blocage, délai, stabilisation au démarrage). Aucune réconciliation périodique n'existe.
+- **Le OU de la présence privilégie toujours la présence** : toute source figée à `on` empêche à elle seule l'armement. D'où l'importance de la fraîcheur de chaque source (Wi-Fi : lot 1 ; GPS et `person.*` : aucune garde aujourd'hui).
+
+Défauts de cycle relevés, **à qualifier par l'opérateur** (aucune modification de la politique d'armement sans arbitrage) :
+
+| Id | Constat | Niveau |
+|---|---|---|
+| **D7** | Aucune réconciliation de l'état armé lorsque l'alarme se retrouve désarmée sans nouveau signal de présence (certaines voies de désarmement manuel) | code |
+| **D8** | Un désarmement manuel en l'absence de présence suivie est suivi d'un réarmement automatique après la fin du blocage | code |
+| **D9** | Hypothèse : un blocage d'armement dont le timer expire pendant un arrêt de Home Assistant pourrait rester actif au redémarrage | hypothèse, à vérifier |
+| **D10** | Absence de garde de fraîcheur sur les sources GPS et `person.*` (position ancienne livrée après une récente, téléphone muet) | code + traces |
+
+## 5. Critères de clôture
 
 1. L1 déployé, puis la présence Wi-Fi constatée en conditions réelles (un téléphone connecté au Wi-Fi domestique produit `binary_sensor.presence_wifi_maison = on`), et la règle de fraîcheur constatée au départ.
 2. L2 et L3 réalisés et consignés (sans données sensibles).
