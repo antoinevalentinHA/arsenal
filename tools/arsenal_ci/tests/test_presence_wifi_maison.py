@@ -41,10 +41,11 @@ _Loader.add_constructor(None, lambda loader, node: None)
 
 
 class _State:
-    def __init__(self, entity_id, state, last_changed):
+    def __init__(self, entity_id, state, last_changed, last_updated=None):
         self.entity_id = entity_id
         self.state = state
         self.last_changed = last_changed
+        self.last_updated = last_updated or last_changed
 
 
 def _template():
@@ -53,9 +54,10 @@ def _template():
 
 
 def _render(states):
-    """states : {entity_id: (state, last_changed)}."""
+    """states : {entity_id: (state, last_changed[, last_updated])}."""
     env = jinja2.Environment(extensions=["jinja2.ext.loopcontrols"])
-    objs = {k: _State(k, v[0], v[1]) for k, v in states.items()}
+    objs = {k: _State(k, *v) for k, v in states.items()}
+    env.globals["as_timestamp"] = lambda dt: dt.timestamp()
     env.globals["states"] = lambda eid: objs[eid].state if eid in objs else "unknown"
     env.globals["expand"] = lambda eid: [objs[eid]] if eid in objs else []
     env.filters["regex_match"] = lambda value, pattern: re.match(pattern, str(value)) is not None
@@ -146,6 +148,22 @@ def test_gps_dans_une_zone_domicile_ne_retire_pas_le_wifi():
     for etat in ("home", "Approche securite", "Maison securite"):
         s = _base(b1="a1:b2:c3:d4:e5:f6", t_b1=T0, g1=(etat, LATER))
         assert _render(s) == "True", etat
+
+
+def test_redemarrage_bssid_fige_gps_toujours_absent_au_dela_de_10_min_off():
+    # redémarrage HA : last_changed BSSID et GPS remis au même instant T0 ;
+    # le GPS continue de rapporter not_home 12 min plus tard → BSSID périmé
+    s = _base(b1="a1:b2:c3:d4:e5:f6", t_b1=T0,
+              g1=("not_home", T0, T0 + timedelta(minutes=12)))
+    assert _render(s) == "False"
+
+
+def test_arrivee_position_absente_tardive_sous_10_min_ne_retire_pas_le_wifi():
+    # arrivée : Wi-Fi maison à T0+5 min ; une position not_home livrée en
+    # retard met à jour le tracker à T0+8 min (état inchangé) → le Wi-Fi compte
+    s = _base(b1="a1:b2:c3:d4:e5:f6", t_b1=LATER,
+              g1=("not_home", T0, T0 + timedelta(minutes=8)))
+    assert _render(s) == "True"
 
 
 def test_un_seul_telephone_suffit():

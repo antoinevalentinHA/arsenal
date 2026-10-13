@@ -284,8 +284,15 @@ doit pas établir indéfiniment une présence fictive.
 
 **Règle** : pour chaque téléphone, le Wi-Fi ne compte plus pour `binary_sensor.presence_wifi_maison`
 si le `device_tracker` **du même téléphone** (helper `input_text.telephone_*_tracker`) est à `not_home`
-et que ce passage (`last_changed`) est **plus récent** que le dernier changement du capteur BSSID
-(`last_changed`). Autrement dit, **la source la plus récente l'emporte** :
+**et** que l'une de ces conditions est vraie :
+
+- ce passage à `not_home` (`last_changed`) est **plus récent** que le dernier changement du capteur
+  BSSID (`last_changed`) ;
+- le GPS continue de rapporter des positions hors domicile (`last_updated`) **plus de 10 min** après le
+  dernier changement du BSSID. Cette clause couvre le **redémarrage** de Home Assistant, qui remet les
+  deux `last_changed` au même instant, alors qu'un téléphone resté `not_home` ne change plus d'état.
+
+Autrement dit, **la source la plus récente l'emporte** :
 
 | Situation | Wi-Fi compte ? | Motif |
 |---|---|---|
@@ -293,11 +300,19 @@ et que ce passage (`last_changed`) est **plus récent** que le dernier changemen
 | BSSID maison, GPS `not_home` **avant** la connexion Wi-Fi | oui | arrivée : le Wi-Fi est la donnée la plus fraîche |
 | BSSID maison, GPS `not_home` **après** le dernier changement du BSSID | **non** | BSSID périmé, téléphone localisé hors du domicile |
 | BSSID maison, GPS `unknown` / `unavailable` / absent | oui | un GPS muet ne retire jamais le Wi-Fi |
-| Horodatages égaux (redémarrage, états restaurés) | oui | aucune contradiction plus récente |
+| Horodatages égaux (redémarrage, états restaurés) | oui, puis **non** si le GPS rapporte encore `not_home` au-delà de 10 min | contradiction établie par la durée |
+| Arrivée : une position `not_home` livrée en retard, moins de 10 min après la connexion Wi-Fi | oui | retard de livraison GPS, état inchangé |
 
 **Comparaison sur le capteur Companion lui-même**, via l'indirection `input_text.telephone_*_wifi_bssid`,
 et non sur `sensor.telephone_*_bssid_dynamic` : le `last_changed` d'un capteur template est remis à zéro
 par chaque rechargement des templates, ce qui ferait paraître frais un BSSID périmé.
+
+**Seul `not_home` contredit le Wi-Fi.** Les états `home`, `Approche securite` et `Maison securite` ne le
+retirent jamais : au domicile, la position GPS dérive régulièrement au-delà des 40 m de
+`zone.maison_securite`, et retirer le Wi-Fi sur cette dérive créerait de fausses absences, donc des
+armements avec occupants. Conséquence : un BSSID figé n'est pas contredit tant que le téléphone reste dans
+le rayon de `zone.home`. En pratique, cette fenêtre est bornée quand l'application fonctionne : un envoi
+de capteur échoué est renvoyé au passage périodique suivant (environ 15 min), ce qui corrige le BSSID.
 
 **Limite assumée** : si le téléphone cesse **toute** transmission (éteint, application arrêtée), le GPS
 est figé lui aussi. Aucune source ne contredit alors le Wi-Fi, et la présence reste établie jusqu'à la
