@@ -6,10 +6,31 @@
 #   au réseau Wi-Fi de la maison (basé sur les BSSID connus).
 #
 # ⚙️ Fonctionnement :
-#   - Compare les BSSID des appareils utilisés
-#     avec la liste des BSSID de la maison.
-#   - ON  → au moins un appareil connecté au Wi-Fi domestique
-#   - OFF → aucun appareil connecté au réseau local
+#   - Compare, APRÈS NORMALISATION DES DEUX CÔTÉS (contrat bssid.md §6,
+#     §11), le BSSID courant de chaque téléphone avec le référentiel
+#     input_text.bssid_maison (format canonique 12 hex, sans séparateur).
+#     Le capteur Companion publie le format brut aa:bb:cc:dd:ee:ff : sans
+#     normalisation, aucune comparaison ne peut aboutir (branche inerte du
+#     2026-03-31 au correctif C58).
+#   - Fraîcheur (contrat bssid.md §11.1) : le Wi-Fi d'un téléphone ne compte
+#     plus si le GPS DU MÊME téléphone a signalé une absence (`not_home`)
+#     PLUS RÉCEMMENT que le dernier changement de son BSSID, ou s'il continue de
+#     rapporter des positions hors domicile plus de 10 min après ce changement
+#     (redémarrage HA : les deux last_changed repartent ensemble). Un BSSID figé
+#     (transition non reçue par HA) ne peut donc pas maintenir une présence
+#     fictive une fois le téléphone localisé hors du domicile. Un GPS
+#     indisponible ne retire jamais le Wi-Fi.
+#   - ON  → au moins un téléphone connecté au Wi-Fi domestique (et non
+#           contredit par une absence GPS plus récente)
+#   - OFF → aucun téléphone connecté au réseau local
+#
+# 🔌 Sources (lecture seule) :
+#   - input_text.bssid_maison (référentiel, contrat bssid.md §11)
+#   - input_text.telephone_parent_{1,2}_wifi_bssid → capteur BSSID Companion
+#     (indirection lue directement : son last_changed n'est pas remis à
+#     zéro par un rechargement des templates)
+#   - input_text.telephone_parent_{1,2}_tracker → device_tracker du même
+#     téléphone (fraîcheur)
 #
 # 📊 Type : Template Binary Sensor
 # 📍 Entité générée : binary_sensor.presence_wifi_maison
@@ -23,20 +44,40 @@
       device_class: presence
 
       state: >
-        {# --- BSSID considérés comme "maison" --- #}
-        {% set raw = states('input_text.bssid_maison') | lower %}
-        {% set bssids_maison = raw.split(',') | map('trim') | list %}
+        {# --- Référentiel BSSID "maison", normalisé (contrat bssid.md §6) --- #}
+        {% set ns = namespace(maison=[], present=false) %}
+        {% for item in (states('input_text.bssid_maison') | string).split(',') %}
+          {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
+          {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
+            {% set ns.maison = ns.maison + [b] %}
+          {% endif %}
+        {% endfor %}
 
-        {# --- Entités des capteurs Wi-Fi via helpers --- #}
-        {% set wifi_parent_1   = states('input_text.telephone_parent_1_wifi_bssid') %}
-        {% set wifi_parent_2 = states('input_text.telephone_parent_2_wifi_bssid') %}
+        {# --- Téléphones : (capteur BSSID, device_tracker) via helpers --- #}
+        {% set telephones = [
+          (states('input_text.telephone_parent_1_wifi_bssid'), states('input_text.telephone_parent_1_tracker')),
+          (states('input_text.telephone_parent_2_wifi_bssid'), states('input_text.telephone_parent_2_tracker'))
+        ] %}
 
-        {# --- BSSID actuels des téléphones --- #}
-        {% set bssid_parent_1   = states(wifi_parent_1)   | lower %}
-        {% set bssid_parent_2 = states(wifi_parent_2) | lower %}
+        {% for wifi_ent, tracker_ent in telephones %}
+          {% set b = states(wifi_ent) | string | trim | lower | replace(':', '') | replace('-', '') %}
+          {% if b in ns.maison %}
+            {# Fraîcheur (bssid.md §11.1) : absence GPS plus récente que le BSSID ? #}
+            {% set wifi_st = expand(wifi_ent) | first %}
+            {% set gps_st = expand(tracker_ent) | first %}
+            {# Veto si le GPS est not_home ET :
+               - il y est passé APRÈS le dernier changement du BSSID, ou
+               - il continue de rapporter des positions hors domicile plus de
+                 10 min après ce changement (couvre le redémarrage HA, qui remet
+                 les deux last_changed au même instant). #}
+            {% set gps_absent_plus_recent = gps_st is defined and wifi_st is defined
+                 and gps_st.state == 'not_home'
+                 and (gps_st.last_changed > wifi_st.last_changed
+                      or as_timestamp(gps_st.last_updated) - as_timestamp(wifi_st.last_changed) > 600) %}
+            {% if not gps_absent_plus_recent %}
+              {% set ns.present = true %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
 
-        {# --- Présence si un téléphone est connecté à un BSSID "maison" --- #}
-        {{
-          bssid_parent_1 in bssids_maison
-          or bssid_parent_2 in bssids_maison
-        }}
+        {{ ns.present }}

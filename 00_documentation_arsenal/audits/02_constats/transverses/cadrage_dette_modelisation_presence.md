@@ -95,6 +95,8 @@ Signaux bruts, sans sémantique métier propre :
 - Présence Wi-Fi par BSSID (`binary_sensor.presence_wifi_maison`).
 - Présences contextuelles explicites (`binary_sensor.presence_enfants`, `input_boolean.presence_visiteur`).
 
+> **Note (2026-10-13, C58).** La présence Wi-Fi par BSSID était **inerte** du 2026-03-31 au correctif C58 (comparaison sans normalisation de la valeur observée, `bssid.md` §11). La « diversité de mode de panne » du Wi-Fi décrite ci-dessous était donc théorique pendant cette période.
+
 **Constat** : ces preuves n'ont **pas d'entité de couche dédiée**. Elles sont consommées directement par les vérités de domaine, sans normalisation intermédiaire. Leur **diversité de mode de panne** n'est pas exploitée : GPS et distance dérivent de la *même* position rapportée ; seul le Wi-Fi diffère réellement, mais il ne couvre que la proximité immédiate.
 
 ### 4.2 Présence sécurité (vérité du domaine alarme)

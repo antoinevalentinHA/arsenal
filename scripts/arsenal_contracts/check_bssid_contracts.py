@@ -206,6 +206,63 @@ def test_presence_wifi_reads_bssid_maison_only() -> None:
     ok("T09 — presence_wifi_maison consomme bssid_maison")
 
 
+def test_presence_wifi_normalisation_deux_cotes() -> None:
+    """
+    T16 — binary_sensor.presence_wifi_maison normalise le référentiel ET la
+    valeur observée avant comparaison (§6, §11). Le capteur Companion publie le
+    format brut aa:bb:cc:dd:ee:ff ; le référentiel est canonique (12 hex). Une
+    comparaison sans normalisation de la valeur observée est structurellement
+    toujours fausse (défaut C58 : branche inerte du 2026-03-31 au correctif).
+    Exige au moins deux occurrences de chaque transformation (référentiel +
+    valeur observée).
+    Scope : 12_template_sensors/presence/securite/wifi.yaml
+    """
+    if not FILE_WIFI_PRESENCE.is_file():
+        error("T16: wifi.yaml introuvable dans 12_template_sensors/presence/securite/")
+        return
+    content = read(FILE_WIFI_PRESENCE)
+    code = "\n".join(l for l in content.splitlines() if not l.lstrip().startswith("#"))
+    for transform, label in [
+        (r'\|\s*lower', "| lower"),
+        (r"replace\(\s*['\"]:['\"]", "replace(':','')"),
+        (r"replace\(\s*['\"]-['\"]", "replace('-','')"),
+    ]:
+        n = len(re.findall(transform, code))
+        if n < 2:
+            error(
+                f"T16: normalisation '{label}' présente {n} fois dans presence_wifi_maison "
+                f"(attendu ≥ 2 : référentiel ET valeur observée) — contrat §6/§11 non respecté"
+            )
+    ok("T16 — presence_wifi_maison normalise le référentiel et la valeur observée")
+
+
+def test_presence_wifi_fraicheur_gps() -> None:
+    """
+    T17 — binary_sensor.presence_wifi_maison applique la règle de fraîcheur
+    (§11.1) : le Wi-Fi d'un téléphone ne compte plus si le GPS du même
+    téléphone (helper input_text.telephone_*_tracker) a signalé `not_home`
+    plus récemment que le dernier changement de son BSSID (comparaison de
+    last_changed).
+    Scope : 12_template_sensors/presence/securite/wifi.yaml
+    """
+    if not FILE_WIFI_PRESENCE.is_file():
+        error("T17: wifi.yaml introuvable dans 12_template_sensors/presence/securite/")
+        return
+    content = read(FILE_WIFI_PRESENCE)
+    code = "\n".join(l for l in content.splitlines() if not l.lstrip().startswith("#"))
+    for pattern, label in [
+        (r"input_text\.telephone_parent_1_tracker", "tracker parent_1 (helper)"),
+        (r"input_text\.telephone_parent_2_tracker", "tracker parent_2 (helper)"),
+        (r"['\"]not_home['\"]", "état not_home"),
+        (r"last_changed\s*>\s*\w+\.last_changed", "comparaison des last_changed GPS > BSSID"),
+        (r"last_updated\)\s*-\s*as_timestamp\(\s*\w+\.last_changed\s*\)\s*>\s*600",
+         "clause de durée (GPS not_home > 10 min après le changement du BSSID)"),
+    ]:
+        if not re.search(pattern, code):
+            error(f"T17: règle de fraîcheur incomplète — {label} absent de presence_wifi_maison (§11.1)")
+    ok("T17 — presence_wifi_maison applique la règle de fraîcheur GPS (§11.1)")
+
+
 def test_apprentissage_triggered_by_nouveau_bssid() -> None:
     """
     T10 — L'automation d'apprentissage se déclenche sur binary_sensor.wifi_nouveau_bssid.
@@ -355,6 +412,8 @@ TESTS = [
     test_nouveau_bssid_enforces_source_person_coupling,
     test_nouveau_bssid_normalisation,
     test_presence_wifi_reads_bssid_maison_only,
+    test_presence_wifi_normalisation_deux_cotes,
+    test_presence_wifi_fraicheur_gps,
     test_apprentissage_triggered_by_nouveau_bssid,
     test_apprentissage_writes_bssid_maison,
     test_apprentissage_enforces_source_person_coupling,
