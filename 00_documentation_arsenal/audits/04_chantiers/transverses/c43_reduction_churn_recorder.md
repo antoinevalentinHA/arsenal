@@ -154,8 +154,7 @@ redonne exactement 254 952 lignes.
   (−30,5 %), et la part de lignes écrites sans changement d'état tombe de **39,2 % à 18,4 %**. Les
   autres entités, qui servent de témoin, varient de +1,1 %.
 - **À activité constante**, le lot A reste à 99,4 % de l'attendu. Le lot B dépend de l'activité :
-  B1 est proportionnel à la durée d'absence (116,7 h contre 598,7 h en août ; −83,0 % par heure
-  d'absence, pour −83,1 % simulés) ; B2 interagit avec A1, qui avait déjà divisé par deux les
+  B1 est proportionnel à la durée d'absence cumulée (−83,0 % par heure d'absence, pour −83,1 % simulés) ; B2 interagit avec A1, qui avait déjà divisé par deux les
   changements de sa source — interaction non prévue par le §3.
 
 **Critères 1 à 3 : remplis.** Le critère 1 l'est par preuve indirecte : la sauvegarde ne contient pas

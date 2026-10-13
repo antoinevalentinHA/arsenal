@@ -131,7 +131,7 @@ sauvegarde (**L4**), canal déjà éprouvé et propriété du dépôt d'audit ru
 >
 > **Relevé du 2026-10-12** (`recorder_20261012.db`, fenêtre du 2026-09-11 au 2026-10-12) :
 > `input_number.clim_duree_absence_longue` reste **constant à 14.0** sur toute la fenêtre. Des
-> absences ont bien été ancrées (`clim_debut_absence`, presque chaque jour), mais le helper n'a jamais
+> absences ont bien été ancrées (`clim_debut_absence`) sur la fenêtre, mais le helper n'a jamais
 > été modifié pendant l'une d'elles. **S7/S8 toujours non exercés.** L'échéance opposable du
 > microscope C20 est le **2026-11-16**.
 
