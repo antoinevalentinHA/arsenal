@@ -52,10 +52,10 @@ xxxxxxxxxxxx
 | casse | minuscules uniquement |
 | séparateurs | aucun (ni `:` ni `-`) |
 
-**Exemple**
+**Exemple** (valeur fictive)
 
 ```
-3460f9386080
+a1b2c3d4e5f6
 ```
 
 ---
@@ -268,6 +268,43 @@ Le référentiel est utilisé comme :
 
 **Règle** : la comparaison doit se faire après normalisation des deux côtés.
 
+> **Défaut constaté (2026-10-13, C58).** `binary_sensor.presence_wifi_maison` ne normalisait que le
+> référentiel, pas la valeur observée. Le capteur Companion publie le format brut `aa:bb:cc:dd:ee:ff`,
+> le référentiel est canonique (12 hex, §4) : la comparaison était **toujours fausse**. La branche Wi-Fi
+> de la présence sécurité a été **inerte depuis le 2026-03-31** (passage du référentiel au format
+> canonique) jusqu'au correctif. `binary_sensor.wifi_nouveau_bssid`, qui normalisait les deux côtés,
+> n'était pas affecté. Contrôle : `check_bssid_contracts.py` T16.
+
+### 11.1 Fraîcheur de la présence Wi-Fi
+
+Le capteur BSSID Companion n'est publié qu'à un **changement d'état réseau** (et lors des mises à jour
+périodiques, seulement si sa valeur a changé). Si une transition n'atteint pas Home Assistant
+(application arrêtée, envoi perdu), la dernière valeur **reste figée sans expiration**. Un BSSID figé ne
+doit pas établir indéfiniment une présence fictive.
+
+**Règle** : pour chaque téléphone, le Wi-Fi ne compte plus pour `binary_sensor.presence_wifi_maison`
+si le `device_tracker` **du même téléphone** (helper `input_text.telephone_*_tracker`) est à `not_home`
+et que ce passage (`last_changed`) est **plus récent** que le dernier changement du capteur BSSID
+(`last_changed`). Autrement dit, **la source la plus récente l'emporte** :
+
+| Situation | Wi-Fi compte ? | Motif |
+|---|---|---|
+| BSSID maison, GPS au domicile (`home`, `Approche securite`, `Maison securite`) | oui | cohérent |
+| BSSID maison, GPS `not_home` **avant** la connexion Wi-Fi | oui | arrivée : le Wi-Fi est la donnée la plus fraîche |
+| BSSID maison, GPS `not_home` **après** le dernier changement du BSSID | **non** | BSSID périmé, téléphone localisé hors du domicile |
+| BSSID maison, GPS `unknown` / `unavailable` / absent | oui | un GPS muet ne retire jamais le Wi-Fi |
+| Horodatages égaux (redémarrage, états restaurés) | oui | aucune contradiction plus récente |
+
+**Comparaison sur le capteur Companion lui-même**, via l'indirection `input_text.telephone_*_wifi_bssid`,
+et non sur `sensor.telephone_*_bssid_dynamic` : le `last_changed` d'un capteur template est remis à zéro
+par chaque rechargement des templates, ce qui ferait paraître frais un BSSID périmé.
+
+**Limite assumée** : si le téléphone cesse **toute** transmission (éteint, application arrêtée), le GPS
+est figé lui aussi. Aucune source ne contredit alors le Wi-Fi, et la présence reste établie jusqu'à la
+reprise des transmissions. Aucune expiration temporelle n'est appliquée : un téléphone immobile au
+domicile ne publie pas de battement régulier, et une expiration ferait tomber la présence d'occupants
+endormis. Contrôle : `check_bssid_contracts.py` T17 ; comportement : `tools/arsenal_ci/tests/test_presence_wifi_maison.py`.
+
 `binary_sensor.presence_wifi_maison` est le **seul point d'accès décisionnel** au référentiel pour la qualification de présence.
 
 La lecture directe de `input_text.bssid_maison` n'est autorisée que pour :
@@ -311,6 +348,7 @@ Toute autre lecture directe constitue une violation de ce contrat.
 - limite de 255 caractères imposée par HA, non contournable via `max`
 - dépendance au support `input_text`
 - absence de TTL / purge automatique
+- présence Wi-Fi d'un téléphone qui a cessé toute transmission : non expirée (§11.1, limite assumée)
 - couplage source ↔ personne défini en dur dans le contrat ; toute évolution du parc téléphonique requiert une révision contractuelle
 - la cohérence source ↔ personne ne couvre pas les pollutions par BSSID externe perçu depuis le domicile (cf. §10.4) ; ce vecteur reste couvert par la validation §8.4 et l'invariant d'appartenance §13
 

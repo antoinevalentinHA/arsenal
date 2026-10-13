@@ -66,6 +66,12 @@ binary_sensor.presence_wifi_maison    (présence Wi-Fi métier)
 - exploitable inter-domaines
 - stable
 - contractuel
+- compare **après normalisation des deux côtés** (contrat `bssid.md` §6, §11) le BSSID du capteur
+  Companion (format brut `aa:bb:…`) et le référentiel canonique
+- applique la **règle de fraîcheur** (`bssid.md` §11.1) : le Wi-Fi d'un téléphone ne compte plus si son
+  GPS a signalé `not_home` plus récemment que le dernier changement de son BSSID
+- contributeur direct de la présence sécurité (`binary_sensor.presence_famille_securite`, terme OU) :
+  une connexion au Wi-Fi domestique suffit à établir la présence, sans confirmation GPS simultanée
 
 ---
 
