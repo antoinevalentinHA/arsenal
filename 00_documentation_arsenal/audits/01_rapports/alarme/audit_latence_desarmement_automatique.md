@@ -8,7 +8,7 @@
 |---|---|
 | **Nature** | Diagnostic probatoire **L4** hors ligne ([`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md)). Lecture seule. Aucune proposition implémentée. |
 | **Date** | 2026-10-12 (dépôt de référence `origin/main` = `5e7cefe2`). |
-| **Sources** | Sauvegarde Recorder du 2026-10-12 (HA 2026.10.1, fenêtre de 31 jours) et sept sauvegardes antérieures (couverture continue sur 105 jours) ; registres `.storage` de la même sauvegarde. |
+| **Sources** | Sauvegarde Recorder du 2026-10-12 (Home Assistant, fenêtre de 31 jours) et sept sauvegardes antérieures (couverture continue sur 105 jours) ; registres `.storage` de la même sauvegarde. |
 | **Version intégrale** | `arsenal-runtime/analyses/alarme_latence_desarmement_20261012/` (hors dépôt gouverné) : `RAPPORT.md`, scripts relançables, `resultats.txt`. |
 | **Rattachement** | Aucun chantier ouvert par ce rapport. Candidats : dossier dormant **D-PRES** (domaine présence) et **C1** (test S3) — cf. §9. |
 
@@ -70,7 +70,7 @@ La causalité est suivie par les contextes : décision, désarmement et `alarm_d
 1. **Wi-Fi.** Ni les capteurs BSSID ni `presence_wifi_maison` ne sont historisés. Un front décisif sans géofence concomitante (4 retours expirés sur 15) peut venir du Wi-Fi ou d'une mise à jour de position hors géofence. Ce n'est **pas tranchable**.
 2. **Branche du brut.** Le brut passe à `on` soit par `person.* == 'Maison securite'` (zone de 40 m), soit par la distance comparée à `input_number.zone_securite_radius`. La valeur de ce dernier n'est pas observable dans la sauvegarde.
 3. **Horloge du téléphone.** L'écart fix → réception mélange retard de livraison et décalage d'horloge (borné à environ 2 s par le minimum observé).
-4. **Autres sources locales.** Aucune source Bluetooth, routeur ou ping ne vise les téléphones (trackers `ping` désactivés, capteurs BLE de l'application désactivés, aucun `private_ble_device`).
+4. **Autres sources locales.** Aucune autre source locale de présence n'est exploitée.
 
 ---
 
@@ -114,31 +114,21 @@ Valeurs en secondes relatives à T0 (négatif = avant l'ouverture), min / média
 - **F4.** La géofence du téléphone se déclenche régulièrement entre 40 et 78 m, là où HA ne compte pas encore la présence.
 - **F5.** Les 18 paliers `on` interrompus du brut durent tous **moins de 15 s** (0 à 14,9 s, médiane 6,0 s) : le `delay_on` les a tous filtrés, **aucun faux désarmement**. Deux retours ont expiré à cause d'une retombée sub-seconde liée à une position périmée.
 - **F6.** Fréquence stable : 37 % des démarrages du délai expirent, sur 105 jours.
-- **F7.** Un contact d'accès resté bloqué à `on` empêche le délai d'entrée de démarrer (un cas observé).
+- **F7.** Une anomalie de contact d'accès est relevée (un cas) ; sa qualification relève du contrat `51_ouvrants_entree` (détail hors dépôt).
 
 **Hypothèses (non tranchées).**
 - **H1.** Le retard de livraison de P1 vient de l'optimisation batterie ou du *batching* des géofences. Il faudrait un relevé des réglages du téléphone (L5).
 - **H2.** Les retombées sub-seconde viennent d'une livraison hors d'ordre (position récente puis position périmée), et non du template. Il faudrait l'historique attributaire de `device_tracker.*` (L2).
 - **H3.** Les fronts décisifs sans géofence viennent du Wi-Fi ou d'une position hors géofence. Il faudrait historiser temporairement les capteurs BSSID et `presence_wifi_maison` (L2).
-- **H4.** Le fix tardif de P2 s'explique par une arrivée en voiture au garage : géofence évaluée à basse fréquence en mouvement, puis fix pris à l'arrêt.
+- **H4.** Le fix tardif de P2 s'explique par une arrivée en véhicule : géofence évaluée à basse fréquence en mouvement, puis fix pris à l'arrêt.
 
 ---
 
-## 5. Ce que le mode test neutralise
+## 5. Portée probatoire des expirations observées
 
-`input_boolean.mode_test_alarme` fait bifurquer, au titre du contrat 50 §I2, toutes les voies qui produiraient `triggered` : fin de délai (`10020000000032`), mouvement (`10020000000009`), autres ouvrants (`10020000000007`). Il neutralise aussi la sirène forte (`10020000000011`), tous les bips et, depuis C54, les scripts sonores (contrat 70, verrou *fail-open*). La décision centrale, l'armement, le désarmement, les timers et la haute précision **ne sont pas** neutralisés.
+Une expiration naturelle du délai d'entrée **n'est pas un essai contrôlé** : elle ne démontre pas la chaîne jusqu'à `triggered` et la sirène. La garantie positive `ALM-CRIT-2` reste donc **à établir par le test S3**, conduit dans un cadre autorisé (essai planifié, sirène acceptée). Cf. la rectification de [`cloture_ch1_alarme.md`](../../05_clotures/alarme/cloture_ch1_alarme.md) §10.
 
-**Conséquence probatoire.** Sur la période étudiée, les expirations du délai ont toutes eu lieu en mode test. Elles sont donc observées jusqu'à la bifurcation (« fin de délai simulée »), mais jamais jusqu'à `triggered`. La garantie positive `ALM-CRIT-2` reste à établir par le test S3, **hors mode test** (cf. §7 et la rectification de [`cloture_ch1_alarme.md`](../../05_clotures/alarme/cloture_ch1_alarme.md) §10).
-
-**Conditions à réunir avant de désactiver le mode test** (liste, sans recommandation) :
-1. un délai d'entrée compatible avec la latence mesurée (queue à 105,7 s), ou une latence réduite et mesurée ;
-2. aucun armement possible avec des occupants dans la maison : la période montre des armements sur fausse absence (visiteur ou garde d'enfants déclarés après l'armement, occupant à la frontière des 40 m) ;
-3. le cas du contact d'accès bloqué qualifié au contrat `51_ouvrants_entree` ;
-4. C54 : constat L5 du silence au désarmement depuis le dashboard, puis réserves R2/R3 (efficacité et payload du `stop`) ;
-5. C54 : réserve R4 (visibilité de l'état du mode test) ;
-6. C1 : le test S3, qui ne peut se faire qu'hors mode test et dans un cadre autorisé ;
-7. la cohérence `sirene_max_duration` / `trigger_time` du contrat 70, vérifiée sur l'appareil ;
-8. l'information du foyer.
+Les préalables à ce test, et les constats opérationnels qui les motivent, sont tenus dans la version intégrale, hors dépôt.
 
 ---
 
@@ -164,15 +154,14 @@ Une instrumentation **temporaire**, au sens du contrat Recorder (§ Instrumentat
 2. Choix parmi P1, P2, P3 (combinables), ou statu quo motivé.
 3. Instrumentation temporaire (§6).
 4. Relevé des réglages Companion des deux téléphones (L5).
-5. Statut d'usage du mode test.
-6. Qualification des armements sur fausse absence et du contact bloqué.
+5. Qualification des constats opérationnels consignés hors dépôt (version intégrale).
 
 ---
 
 ## 9. Rattachement — éléments pour l'arbitrage
 
 - **D-PRES** ([`cadrage_dette_modelisation_presence.md`](../../02_constats/transverses/cadrage_dette_modelisation_presence.md)) est l'autorité thématique de la cause mesurée : il décrit déjà la haute précision « asservie à l'état de l'alarme » (R4), la piste P-D (« rebrancher la haute précision sur un signal d'approche neutre ») et la question §9-6 (« quelqu'un rentre » comme état d'anticipation). Son déclencheur de réveil (« ouverture explicite d'une question d'arbitrage ») est un acte de l'opérateur.
-- **C1** dépend de ce constat : S3 exige un mode test désactivé, donc une latence maîtrisée (condition 1 du §5).
+- **C1** dépend de ce constat : S3 exige une latence de désarmement maîtrisée.
 - **C54** n'est pas concerné par la latence.
 
 ---
