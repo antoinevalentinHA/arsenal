@@ -154,7 +154,7 @@ architecture, implémentation, ou solution simple) n'est pas décidée puis, le 
 > **Constat L4 du 2026-10-12** — `recorder_20261012.db`, analyse
 > `arsenal-runtime/analyses/c42_c45_c50_c47_c32_c19_c25_preuves_l4_20261012`. **18 commandes** depuis le
 > bouton Arsenal (21 °C / comfort) entre le 2026-09-11 et le 2026-10-12 : **11 « Confirmée », 7 « Non
-> confirmée (timeout) »**. Les 7 échecs sont **consécutifs**, du 2026-09-21 12:33 au 2026-09-25 12:59,
+> confirmée (timeout) »**. Les 7 échecs sont **consécutifs**, sur cinq jours de septembre,
 > véhicule en charge ou chargé ; `climatisation_state` reste `off` après la fenêtre. **Aucune fausse
 > « Confirmée »** : l'honnêteté terminale tient sur 7 échecs réels. Les 5 commandes passées avec
 > `notReadyForCharging` (véhicule probablement non branché) ont toutes été confirmées, ce qui

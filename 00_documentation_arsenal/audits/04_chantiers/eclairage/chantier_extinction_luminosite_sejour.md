@@ -251,7 +251,7 @@ le seul appelant de `script.sejour_off` hors mode astronomie.
   chacune causée par un franchissement lux et suivie d'un `switch.turn_off` dans le même contexte. Dix
   tombent dans la fenêtre du 2026-09-11 au 2026-10-12.
 - **Ré-allumages** : **aucun** à moins de 30 min, aucun par un utilisateur. Le rallumage suivant est
-  chaque fois celui du soir (19:03 à 21:32), 8,7 à 12,9 h plus tard.
+  chaque fois celui du soir, 8,7 à 12,9 h plus tard.
 - **Battement de l'autorité (C44 §6)** : il persiste, mais diminue (553 fronts montants sur 30 jours,
   médiane 15/jour, contre 949 et 29/jour au 2026-08-31). **Son effet mesuré est nul** : seuls 10 fronts
   tombent lampe allumée, et tous ont produit l'extinction attendue. Aucun correctif n'a été livré ;

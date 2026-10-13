@@ -158,13 +158,13 @@ Tant que la **validation runtime** n'est pas réalisée, `VAC-IMP-5` reste **ouv
 > **Constat L4 du 2026-10-12 — les quatre scénarios sont observés en conditions réelles ; un défaut résiduel bloque la clôture.**
 > Sauvegardes `recorder_20260811`, `_20260831`, `_20260918` et `_20261012` (événements du 2026-07-11 au 2026-10-12) ; analyse `arsenal-runtime/analyses/c46_c3_desinfection_retour_20261012`. Timer, dette et verdict sont reconstitués par les appels de service (`R-L2-1`).
 >
-> - **S-COMPLETION-NATURELLE** : dette posée exactement 144 h après le démarrage du timer, deux fois (timer lancé le 2026-08-01 à 10:00:00 → dette le 2026-08-07 à 10:00:00 ; timer lancé le 2026-08-10 à 07:46:09 → dette le 2026-08-16 à 07:46:09).
-> - **S-RETOUR-ANTICIPE** : timer annulé sans dette, deux fois (2026-08-10 après 9 h, 2026-09-13 après 23 h), sans aucun cycle.
+> - **S-COMPLETION-NATURELLE** : dette posée exactement 144 h après le démarrage du timer, deux fois sur la fenêtre observée.
+> - **S-RETOUR-ANTICIPE** : timer annulé sans dette, deux fois (après 9 h et après 23 h de Vacances), sans aucun cycle.
 > - **S-BOOT-APRES-COMPLETION** : 2 puis 3 démarrages HA entre la pose et le retour ; la dette survit et rien n'est lancé pendant les Vacances.
 > - **S-IDEMPOTENCE** : dette remise à OFF seulement après `reussite`, un seul cycle par légitimité, aucune relance sur 5 puis 29 démarrages HA.
-> - **Consommation nominale** : le retour réel du 2026-08-22 (cf. C46).
+> - **Consommation nominale** : le retour réel de la fenêtre observée (cf. C46).
 >
-> **Défaut résiduel (2026-08-09).** À 22:44:37, un rechargement des templates fait passer le mode maison à `Normal` pendant 3 s (retour à `Vacances` à 22:44:40). Le lanceur `10250000000021` ne vérifie `mode_maison == Normal` qu'**avant** son délai de 5 min : le cycle part à 22:49:37 **maison en Vacances**, et la dette est consommée par une `reussite` à 23:24:33. Le retour réel du 2026-08-22 n'a été désinfecté que parce qu'une autre bascule, le 2026-08-10, avait relancé le timer de 6 jours. La cause amont (flap au rechargement des templates) est corrigée par #681 ; **le chemin aval reste sans garde**. Instruire ce défaut est une décision propriétaire, préalable à la clôture de `VAC-IMP-5`.
+> **Défaut résiduel (été 2026).** Un rechargement des templates fait passer le mode maison à `Normal` pendant quelques secondes, puis il revient à `Vacances`. Le lanceur `10250000000021` ne vérifie `mode_maison == Normal` qu'**avant** son délai de 5 min : le cycle part **maison en Vacances**, et la dette est consommée par une `reussite`. Le retour réel suivant n'a été désinfecté que parce qu'une autre bascule avait relancé le timer de 6 jours. La cause amont (flap au rechargement des templates) est corrigée par #681 ; **le chemin aval reste sans garde**. Instruire ce défaut est une décision propriétaire, préalable à la clôture de `VAC-IMP-5`.
 >
 > **Rectification** : le paragraphe ci-dessus désigne la consommation par « ECS - Désinfection fin vacances » ; depuis le Lot 2 de C46, c'est l'automation `10250000000033` qui consomme la dette, sur `reussite`.
 
