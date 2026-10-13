@@ -230,9 +230,16 @@ y compris `not_home`, est considéré comme `absent`.
 La présence sécurité **ne consomme aucune projection `person.*`**.
 Elle est calculée exclusivement à partir de la **distance GPS explicite**
 (trackers téléphone via helpers `input_text.telephone_*_tracker`),
-du **WiFi/BSSID** (`binary_sensor.presence_wifi_maison`),
+du **WiFi/BSSID** (`binary_sensor.presence_wifi_maison` — comparaison normalisée des deux côtés et règle de fraîcheur, [`bssid.md`](bssid.md) §11 et §11.1 ; le Wi-Fi seul suffit, sans confirmation GPS simultanée),
 de la **présence enfants** (`binary_sensor.presence_enfants`)
 et de la **présence visiteur** (`input_boolean.presence_visiteur`).
+
+> **Divergence connue, à trancher (C58, D4 — 2026-10-13).** Le runtime
+> (`12_template_sensors/presence/securite/presence.yaml`) teste aussi
+> `person.parent_* == 'Maison securite'`, ce que le paragraphe ci-dessus et le
+> tableau ci-dessous excluent. Tant que l'arbitrage n'est pas rendu (aligner le
+> contrat sur le code, ou retirer ce terme du code), ce paragraphe décrit
+> l'intention contractuelle et non le runtime.
 
 En conséquence, **aucun état `person.*` n'est une projection valide
 de la présence sécurité** :
