@@ -107,7 +107,7 @@ sauvegarde (**L4**), canal déjà éprouvé et propriété du dépôt d'audit ru
 > **Provenance des entrées ci-dessous (2026-08-11).** Preuves recueillies par **analyse hors ligne
 > L4** (canal prévu au §2 bis / Rétention) de la sauvegarde `recorder_20260811.db` — `states` pleine
 > résolution 2026-07-11 → 2026-08-11, microscope Population B en place depuis le 2026-07-19, incluant un
-> **épisode Vacances réel du 2026-08-01 12:09 au 2026-08-09 22:44**. Analyse reproductible :
+> **épisode Vacances réel de l'été 2026**. Analyse reproductible :
 > `arsenal-runtime/analyses/c20_absence_cool_terrain_20260811/` (`analyse_c20.py`, lecture seule
 > `?mode=ro`). **Aucune panne provoquée.** Ces entrées sont issues des données ; la ratification et le
 > geste opérateur restant (S7/S8) demeurent à la charge de l'opérateur.
@@ -115,15 +115,15 @@ sauvegarde (**L4**), canal déjà éprouvé et propriété du dépôt d'audit ru
 | # | Date | Résultat | Observation / preuve (Historique) |
 |---|---|---|---|
 | S1 | 2026-07/08 | **PASS** | `duree_ecoulee_h` court de 0 vers le seuil (14 h) sans extinction ⇒ veto sous-seuil `off` (corroboré par S2/S11) |
-| S2 | 2026-08-09 22:44 | **PASS** | veto `cause=absence_prolongee` ; `autorisation_clim_cool=off` au même instant |
-| S3 | 2026-08-01→02 | **PASS** | extinction `on` sur absence débutant en week-end (samedi 01/08 12:09) ; veto maintenu jusqu'au retour |
-| S4 | 2026-08-01 12:09:05 | **PASS** | veto `cause=vacances` **immédiat**, extinction_absence encore `off` ⇒ veto sans attendre le seuil |
-| S5 | 2026-08-01 19:40 | **PASS** | boot traversé avec `vacances_actives=on` **maintenu** (reconstruit au démarrage) |
-| S6 | 2026-08-04 18:34 | **PASS** | reboot pendant absence > seuil : `clim_debut_absence=2026-08-01 12:09:10` **conservé**, extinction `on` de part et d'autre (continuité physique) |
+| S2 | épisode Vacances | **PASS** | veto `cause=absence_prolongee` ; `autorisation_clim_cool=off` au même instant |
+| S3 | épisode Vacances | **PASS** | extinction `on` sur absence débutant en week-end ; veto maintenu jusqu'au retour |
+| S4 | épisode Vacances | **PASS** | veto `cause=vacances` **immédiat**, extinction_absence encore `off` ⇒ veto sans attendre le seuil |
+| S5 | épisode Vacances | **PASS** | boot traversé avec `vacances_actives=on` **maintenu** (reconstruit au démarrage) |
+| S6 | épisode Vacances | **PASS** | reboot pendant absence > seuil : `clim_debut_absence` **conservé**, extinction `on` de part et d'autre (continuité physique) |
 | S7 | *(à faire)* | **NON EXERCÉ** | `clim_duree_absence_longue` **constant à 14.0** sur toute la fenêtre ⇒ réduction du helper jamais réalisée. **Acte opérateur requis (bloquant §5).** Non prouvable par l'Historique |
 | S8 | *(à faire)* | **NON EXERCÉ** | idem S7 : augmentation du helper jamais réalisée. Acte opérateur |
-| S9 | 2026-08-02 02:10 | **PASS** | veto `cause=cumulé` (Vacances **ET** absence longue simultanées) |
-| S10 | 2026-07-19 15:54 | **PASS** | `clim_debut_absence` repasse à la sentinelle 1970 après absence réelle ; extinction `off` ; veto tombe |
+| S9 | épisode Vacances | **PASS** | veto `cause=cumulé` (Vacances **ET** absence longue simultanées) |
+| S10 | 2026-07 | **PASS** | `clim_debut_absence` repasse à la sentinelle 1970 après absence réelle ; extinction `off` ; veto tombe |
 | S11 | 2026-07/08 | **PASS** | **0** extinction `on` sur ancre `aucune` sur toute la fenêtre ⇒ fail-closed respecté |
 | S12 | *(UI)* | **L5 — opérateur** | rendu/action de tuile non prouvable par l'Historique (§2 bis) — **non bloquant** |
 
