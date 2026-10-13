@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Rendre fiable et rapide le cycle **présence → désarmement → absence → réarmement** de l'alarme, en traitant les causes de latence et d'incohérence dans les **sources de présence**, sans complexifier la décision. |
 | **Domaine** | Transverse — présence (sécurité) ; consommateur principal : alarme. |
-| **Statut** | **Ouvert (2026-10-13) — lot 1 (Wi-Fi) préparé, non déployé.** |
+| **Statut** | **Ouvert (2026-10-13) — lot 1 (Wi-Fi) fusionné (#879), non déployé ; référentiel BSSID vérifié et assaini.** |
 | **Priorité** | P1 |
 | **Ouvert le** | 2026-10-13, par promotion partielle du dossier dormant **D-PRES** sur décision de l'opérateur. |
 | **Dossier d'origine** | [`cadrage_dette_modelisation_presence.md`](../../02_constats/transverses/cadrage_dette_modelisation_presence.md) (D-PRES) — questions §9-1, §9-4 et §9-6, risques R4, R7, R8. Le reste de D-PRES demeure dormant. |
@@ -44,7 +44,7 @@
 
 | Lot | Contenu | Nature | État |
 |---|---|---|---|
-| **L1** | Wi-Fi : normalisation des deux côtés + règle de fraîcheur (`bssid.md` §11.1) ; contrôles T16/T17 ; test de rendu | runtime + contrat + CI | **préparé (PR), non déployé** |
+| **L1** | Wi-Fi : normalisation des deux côtés + règle de fraîcheur (`bssid.md` §11.1) ; contrôles T16/T17 ; test de rendu | runtime + contrat + CI | **fusionné (#879), non déployé** ; précondition (référentiel) levée |
 | **L2** | Réglages des téléphones (Parent 2 prioritaire, puis Parent 1), relevé de l'historique de localisation Companion | acte opérateur sur les téléphones | à faire |
 | **L3** | Retrait de l'appareil inutilisé des trackers de `person.parent_1`, après inventaire des dépendances | configuration HA (interface Personnes) | à faire, sur GO |
 | **L4** | Mesure avant / après (analyse hors ligne d'une sauvegarde) | analyse | après L1–L3 |
@@ -113,7 +113,7 @@ Procédure (configuration hors Git, donc à consigner ici une fois faite) :
 - **D1 confirmé en production** : un téléphone connecté à une borne du domicile publie son BSSID au format brut. Ce BSSID est absent du référentiel tel quel, présent une fois normalisé, et `binary_sensor.presence_wifi_maison` vaut `off`.
 - **`input_number.zone_securite_radius` = 60 m** : la branche « distance » de la présence est donc plus large que `zone.maison_securite` (40 m).
 - **Appareil inutilisé** : son tracker est `unknown`, sans coordonnées, et `person.parent_1` a le téléphone pour source. Sa contribution est nulle aujourd'hui ; le retrait (L3) est un nettoyage sans effet attendu sur la présence.
-- **Référentiel BSSID** : 13 entrées au format canonique. Le classement par entrée est conservé hors dépôt.
+- **Référentiel BSSID** : 13 entrées au format canonique, comparées aux bornes du domicile (application Deco). **10** correspondent aux 5 bornes Deco (deux radios chacune), **2** à la box opérateur, **1** à aucun point d'accès du domicile (adresse administrée localement). **Assaini par l'opérateur le 2026-10-13** : l'entrée non identifiée est retirée, il reste 12 entrées (`bssid.md` §13, appartenance à l'infrastructure locale). Le détail par entrée est conservé hors dépôt. Pour éviter un réapprentissage, le réseau correspondant doit être oublié sur les téléphones.
 
 ## 4. Cycle désarmement / réarmement — constats (2026-10-13)
 
