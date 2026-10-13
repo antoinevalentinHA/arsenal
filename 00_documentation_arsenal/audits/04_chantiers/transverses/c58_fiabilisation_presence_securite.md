@@ -108,6 +108,13 @@ Procédure (configuration hors Git, donc à consigner ici une fois faite) :
 - `input_number.zone_securite_radius` (branche « distance » de la présence) n'a pas de valeur initiale. Sa valeur effective, probablement supérieure à 40 m d'après le comportement observé, est à **relever dans l'interface**.
 - Ordre de grandeur estimé hors ligne : un rayon de 80 à 100 m rattraperait une part des retours tardifs (estimation fortement dépendante de la vitesse d'approche). En contrepartie, les épisodes de présence par passage à proximité seraient deux à quatre fois plus nombreux, ce qui touche aussi l'éclairage du jardin et les volets pluie. À instruire **après** la mesure L4.
 
+### 3.6 Relevés en direct (2026-10-13, lecture seule de l'interface)
+
+- **D1 confirmé en production** : un téléphone connecté à une borne du domicile publie son BSSID au format brut. Ce BSSID est absent du référentiel tel quel, présent une fois normalisé, et `binary_sensor.presence_wifi_maison` vaut `off`.
+- **`input_number.zone_securite_radius` = 60 m** : la branche « distance » de la présence est donc plus large que `zone.maison_securite` (40 m).
+- **Appareil inutilisé** : son tracker est `unknown`, sans coordonnées, et `person.parent_1` a le téléphone pour source. Sa contribution est nulle aujourd'hui ; le retrait (L3) est un nettoyage sans effet attendu sur la présence.
+- **Référentiel BSSID** : 13 entrées au format canonique. Le classement par entrée est conservé hors dépôt.
+
 ## 4. Cycle désarmement / réarmement — constats (2026-10-13)
 
 Analyse hors ligne de 31 jours de traces et lecture du code (détail hors dépôt : `arsenal-runtime/analyses/alarme_cycle_rearmement_20261013/`).
@@ -118,13 +125,12 @@ Analyse hors ligne de 31 jours de traces et lecture du code (détail hors dépô
 
 Défauts de cycle relevés, **à qualifier par l'opérateur** (aucune modification de la politique d'armement sans arbitrage) :
 
-| Id | Constat | Niveau |
-|---|---|---|
-| **D7** | Aucune réconciliation de l'état armé lorsque l'alarme se retrouve désarmée sans nouveau signal de présence (certaines voies de désarmement manuel) | code |
-| **D8** | Un désarmement manuel en l'absence de présence suivie est suivi d'un réarmement automatique après la fin du blocage | code |
-| **D9** | Hypothèse : un blocage d'armement dont le timer expire pendant un arrêt de Home Assistant pourrait rester actif au redémarrage | hypothèse, à vérifier |
-| **D10** | Absence de garde de fraîcheur sur les sources GPS et `person.*` (position ancienne livrée après une récente, téléphone muet) | code + traces |
-| **D11** | Hors cycle : `12_template_sensors/presence/securite/approche.yaml` teste un nom de zone qui n'existe pas ; ses capteurs sont toujours `off` (aucun consommateur trouvé) | code |
+| Id | Constat | Impact réel | Fréquence observée (31 j) | Priorité | Correction envisageable (non engagée) | Effets secondaires |
+|---|---|---|---|---|---|---|
+| **D8** | Un désarmement manuel en l'absence de présence suivie est suivi d'un réarmement automatique à la fin du blocage | **confort** : une personne non suivie présente à l'intérieur peut se retrouver sous alarme armée | rare (un désarmement manuel sur la période) | **haute** (risque sonore) | ne réarmer automatiquement qu'après un nouveau cycle présence → absence, au lieu de la seule fin du blocage | l'alarme peut rester désarmée si la personne part sans téléphone suivi (sécurité réduite, conforme à l'orientation confort) |
+| **D10** | Aucune garde de fraîcheur sur les sources GPS et `person.*` (position ancienne livrée après une récente, téléphone muet) | **confort** (fausse absence → armement avec occupants) et sécurité (présence fictive) | quelques géofences reçues hors ordre ; des armements suivis d'un mouvement dans les 5 min | **haute**, traitée d'abord par le Wi-Fi (L1), puis mesurée (L4) | aucune expiration (exclue par l'opérateur) ; la source Wi-Fi rétablie compense la fausse absence au domicile | — |
+| **D9** | Un blocage d'armement dont le timer expire pendant un arrêt de Home Assistant peut rester actif au redémarrage : l'événement de fin est émis pendant le chargement, et le watchdog `10020000000034` ne réagit qu'au passage `off → on` de l'incohérence | sécurité (plus d'armement automatique), pas de risque sonore | jamais observé | moyenne | faire réagir le watchdog existant aussi à l'état incohérent présent au démarrage (sans nouvel ID) | aucun attendu |
+| **D7** | Aucune réconciliation de l'état armé lorsque l'alarme se retrouve désarmée sans nouveau signal de présence (désarmement manuel depuis l'état déclenché) | sécurité, pas de risque sonore | jamais observé | basse | réconciliation de la décision sur l'état du panneau | à évaluer |
 
 ## 5. Critères de clôture
 
