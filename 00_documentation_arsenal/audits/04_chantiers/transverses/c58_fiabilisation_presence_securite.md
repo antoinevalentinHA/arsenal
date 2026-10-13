@@ -64,6 +64,50 @@
 
 ---
 
+### 3.2 Lot 2 — Réglages des téléphones (acte opérateur)
+
+Diagnostic (détail hors dépôt : `arsenal-runtime/analyses/alarme_pixel6a_tablette_rayon_20261013/`) :
+
+- **Téléphone de Parent 2 (prioritaire).** Problème d'**acquisition**, pas de transmission. Le fix « dans les 40 m » est pris tard (médiane 31 s après l'ouverture), puis transmis en moins de 2 s. **La haute précision commandée par Arsenal ne démarre que dans 29 % des cas**, contre 93 % sur le téléphone de Parent 1. Hypothèse forte : Android interdit le démarrage d'un service de localisation au premier plan depuis l'arrière-plan, sauf exemption d'optimisation de batterie ou message FCM prioritaire. Les commandes partent sans priorité.
+- **Téléphone de Parent 1.** Problème de **transmission par lots**. L'acquisition est précoce, et la haute précision démarre en 2,8 s en médiane.
+
+Réglages à vérifier, puis à consigner (avant / après), sur chaque téléphone, Parent 2 d'abord :
+
+| # | Écran | Valeur cible | Mécanisme visé |
+|---|---|---|---|
+| 1 | Paramètres › Applications › Home Assistant › Utilisation de la batterie par l'appli | autoriser l'arrière-plan, **Non restreinte** | démarrage de la haute précision (P2), lots (P1) |
+| 2 | même écran | **Suspendre l'activité si inutilisée** : désactivé | hibernation |
+| 3 | Applications › Home Assistant › Autorisations › Position | **Toujours autoriser** + **Utiliser la position exacte** | précision des fix, capteur BSSID |
+| 4 | Paramètres › Position › Services de localisation | **Précision de la localisation Google**, **recherche Wi-Fi**, **recherche Bluetooth** : activés | qualité et rapidité des fix, géofences |
+| 5 | Paramètres › Batterie | relever économiseur de batterie et batterie adaptative | restrictions d'arrière-plan |
+| 6 | App › Paramètres › Application compagnon › Gérer les capteurs › Localisation en arrière-plan | activé ; précision minimale **200** (ne pas abaisser) ; haute précision 5 s ; **« uniquement en entrant dans une zone » désactivé** tant qu'Arsenal envoie `turn_off` | cohérence avec Arsenal |
+| 7 | même écran › Localisation des zones / Localisation précise unique | activés | géofences, rattrapage de précision |
+| 8 | App › Paramètres › serveur | **Connexion persistante : Toujours** ; réseau maison (SSID) renseigné ; URL interne et externe correctes | commandes livrées sans délai FCM |
+| 9 | App › Paramètres › Suivi de la localisation | **historique de localisation activé** | mesure (§3.4) |
+| 10 | Play Store | application Companion à jour | correctifs |
+
+### 3.3 Lot 3 — Retrait de l'appareil inutilisé de `person.parent_1` (configuration HA, sur GO)
+
+Dépendances vérifiées : aucune référence à cet appareil dans le dépôt. Aucune automatisation ni notification ne le cible. Aucune activité dans les sauvegardes disponibles. Aucun code ne lit l'attribut `device_trackers`. Le risque de présence fictive reste théorique (aucune occurrence observée), mais le chemin existe : HA retient le tracker GPS mis à jour le plus récemment.
+
+Procédure (configuration hors Git, donc à consigner ici une fois faite) :
+1. **Avant** : dans Outils de développement › États, relever `person.parent_1` (attributs `source`, `device_trackers`) et vérifier que `input_text.telephone_parent_1_tracker` désigne le téléphone de Parent 1. Sauvegarder la configuration.
+2. **Retrait** : Paramètres › Personnes › Parent 1 › retirer l'appareil inutilisé de la liste des appareils suivis › Mettre à jour. Les entités et l'intégration de l'appareil sont conservées.
+3. **Après** : la source de `person.parent_1` est le téléphone, et l'état est inchangé.
+
+### 3.4 Lot 4 — Mesures
+
+- **Avant** (référence du constat d'entrée) : 58 retours avec ouverture sur 73 désarmés à T0 + 60 s ou avant ; 37 % de délais d'entrée expirés.
+- **Après** L1, L2 et L3 : analyse hors ligne d'une sauvegarde couvrant au moins 20 retours avec ouverture.
+- **Indicateurs** : part des retours désarmés avant l'échéance ; part de ceux portés par le Wi-Fi ; démarrage effectif de la haute précision par téléphone ; acquisition et transmission par téléphone ; armements suivis d'un mouvement dans les 5 min (fausse absence) ; absences non reconnues durables.
+- **Historique Companion** (L5 opérateur), après quelques retours : dernière position avant l'arrivée, première dans les 40 m, présence d'entrées « High accuracy », positions écartées et leur motif.
+
+### 3.5 Rayon — éléments pour un arbitrage futur (L5)
+
+- `zone.maison_securite` sert à la fois de zone HA, de géofence Android des téléphones, de condition d'apprentissage BSSID, et elle est figée à 40 m par le contrat `zones.md` (contrôle `check_zones_contracts.py` T3).
+- `input_number.zone_securite_radius` (branche « distance » de la présence) n'a pas de valeur initiale. Sa valeur effective, probablement supérieure à 40 m d'après le comportement observé, est à **relever dans l'interface**.
+- Ordre de grandeur estimé hors ligne : un rayon de 80 à 100 m rattraperait une part des retours tardifs (estimation fortement dépendante de la vitesse d'approche). En contrepartie, les épisodes de présence par passage à proximité seraient deux à quatre fois plus nombreux, ce qui touche aussi l'éclairage du jardin et les volets pluie. À instruire **après** la mesure L4.
+
 ## 4. Cycle désarmement / réarmement — constats (2026-10-13)
 
 Analyse hors ligne de 31 jours de traces et lecture du code (détail hors dépôt : `arsenal-runtime/analyses/alarme_cycle_rearmement_20261013/`).
@@ -80,6 +124,7 @@ Défauts de cycle relevés, **à qualifier par l'opérateur** (aucune modificati
 | **D8** | Un désarmement manuel en l'absence de présence suivie est suivi d'un réarmement automatique après la fin du blocage | code |
 | **D9** | Hypothèse : un blocage d'armement dont le timer expire pendant un arrêt de Home Assistant pourrait rester actif au redémarrage | hypothèse, à vérifier |
 | **D10** | Absence de garde de fraîcheur sur les sources GPS et `person.*` (position ancienne livrée après une récente, téléphone muet) | code + traces |
+| **D11** | Hors cycle : `12_template_sensors/presence/securite/approche.yaml` teste un nom de zone qui n'existe pas ; ses capteurs sont toujours `off` (aucun consommateur trouvé) | code |
 
 ## 5. Critères de clôture
 
