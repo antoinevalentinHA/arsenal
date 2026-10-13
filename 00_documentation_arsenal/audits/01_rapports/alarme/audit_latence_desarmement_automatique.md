@@ -126,7 +126,7 @@ Valeurs en secondes relatives à T0 (négatif = avant l'ouverture), min / média
 
 ## 5. Portée probatoire des expirations observées
 
-Une expiration naturelle du délai d'entrée **n'est pas un essai contrôlé** : elle ne démontre pas la chaîne jusqu'à `triggered` et la sirène. La garantie positive `ALM-CRIT-2` reste donc **à établir par le test S3**, conduit dans un cadre autorisé (essai planifié, sirène acceptée). Cf. la rectification de [`cloture_ch1_alarme.md`](../../05_clotures/alarme/cloture_ch1_alarme.md) §10.
+La garantie positive `ALM-CRIT-2` relève d'un **essai contrôlé** (test S3, conduit dans un cadre autorisé), qu'aucune observation passive ne remplace. Cf. la rectification de [`cloture_ch1_alarme.md`](../../05_clotures/alarme/cloture_ch1_alarme.md) §10.
 
 Les préalables à ce test, et les constats opérationnels qui les motivent, sont tenus dans la version intégrale, hors dépôt.
 
