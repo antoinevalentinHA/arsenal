@@ -105,24 +105,24 @@ Trois éléments du cadrage initial sont **rectifiés par les données**. Ils so
 
 | Fait | Valeur |
 |---|---|
-| `input_datetime.debut_vacances` | `2026-08-01 10:00:00` |
-| `input_datetime.fin_vacances` | `2026-08-22 14:30:00` |
+| `input_datetime.debut_vacances` | J − 21 (début des vacances) |
+| `input_datetime.fin_vacances` | J, T0 |
 | Durée de la fenêtre | 21 j 4 h 30 (cohérent avec « environ trois semaines ») |
-| `binary_sensor.vacances_actives` → `off` | **2026-08-22 14:30:00** |
-| `input_select.mode_maison` `Vacances` → `Normal` | 2026-08-22 14:30:10 |
-| `binary_sensor.presence_famille_unifiee` → `on` | **2026-08-22 15:13:48** |
+| `binary_sensor.vacances_actives` → `off` | **T0 + 00 s** |
+| `input_select.mode_maison` `Vacances` → `Normal` | T0 + 10 s |
+| `binary_sensor.presence_famille_unifiee` → `on` | **T0 + 43 min 48 s** |
 
-Le retour terrain est le **22 août 2026**, non le 24. Le 24 août est la date de l'audit.
+Le retour terrain (jour **J**) précède la date de l'audit ; les temps ci-dessous sont relatifs à J et à T0 (franchissement de `fin_vacances`).
 
 **Corroboration physique indépendante — PROUVÉ.** Trois séries sans lien avec la chaîne de présence concordent :
 
-| Grandeur | 20/08 | 21/08 | **22/08** | 23/08 | 24/08 |
+| Grandeur | J − 2 | J − 1 | **J** | J + 1 | J + 2 |
 |---|---|---|---|---|---|
 | `sensor.co2_sejour` (max jour, ppm) | 431 | 420 | **838** | 813 | 774 |
 | `sensor.bruit_chambre_enfants` (max jour, dB) | 32 | 32 | **58** | 55 | 43 |
 | `switch.clim_power` (durée `on`, h) | 0,00 | 0,00 | **6,90** | 7,17 | 7,47 |
 
-Le bruit en chambre enfants quitte son plancher de 32 dB entre **15:12:03 et 15:22:02** le 22/08 — l'arrivée physique se situe dans cette fenêtre, cohérente avec la détection de présence à 15:13:48.
+Le bruit en chambre enfants quitte son plancher de 32 dB entre **T0 + 42 min 03 s et T0 + 52 min 02 s** le jour J — l'arrivée physique se situe dans cette fenêtre, cohérente avec la détection de présence à T0 + 43 min 48 s.
 
 ### A.2 L'état thermique au retour — PROUVÉ
 
@@ -130,20 +130,20 @@ La maison n'était **pas** proche de 30 °C à l'arrivée : elle était à **26,
 
 | Date | `temperature_moyenne_maison` (moy. jour) | `temperature_max_chambres` (max jour) | `temperature_jardin` (max jour) |
 |---|---|---|---|
-| 01/08 (départ) | 24,8 | 26,8 | 31,0 |
-| 08/08 | 27,5 | 28,6 | 35,0 |
-| 13/08 | 29,4 | 30,9 | **38,2** |
-| **14/08 (pic intérieur)** | **30,0** | **31,2** | 35,2 |
-| 18/08 | 28,8 | 29,7 | 32,1 |
-| 20/08 | 28,1 | 28,7 | 25,0 |
-| 21/08 | 27,2 | 28,0 | 25,4 |
-| **22/08 (retour)** | 26,0 | 27,1 | 29,1 |
+| J − 21 (départ) | 24,8 | 26,8 | 31,0 |
+| J − 14 | 27,5 | 28,6 | 35,0 |
+| J − 9 | 29,4 | 30,9 | **38,2** |
+| **J − 8 (pic intérieur)** | **30,0** | **31,2** | 35,2 |
+| J − 4 | 28,8 | 29,7 | 32,1 |
+| J − 2 | 28,1 | 28,7 | 25,0 |
+| J − 1 | 27,2 | 28,0 | 25,4 |
+| **J (retour)** | 26,0 | 27,1 | 29,1 |
 
-Le pic à 30,8–31,2 °C date du **14 août**. Un épisode extérieur frais les 20–22/08 (maxima 25,0 / 25,4 °C) a permis une décroissance **passive** de 30,0 → 26,4 °C entre le 14/08 et le 22/08 au matin, soit **≈ 0,45 °C/jour ≈ 0,019 °C/h**. Le souvenir d'une maison « proche de 30 °C » correspond à la réalité du séjour, pas à celle de l'arrivée.
+Le pic à 30,8–31,2 °C date de **J − 8**. Un épisode extérieur frais de J − 2 à J (maxima 25,0 / 25,4 °C) a permis une décroissance **passive** de 30,0 → 26,4 °C entre le J − 8 et le jour J au matin, soit **≈ 0,45 °C/jour ≈ 0,019 °C/h**. Le souvenir d'une maison « proche de 30 °C » correspond à la réalité du séjour, pas à celle de l'arrivée.
 
 ### A.3 Le refroidissement n'a pas commencé avant l'arrivée — PROUVÉ
 
-`switch.clim_power` passe à `on` le **2026-08-22 à 15:18:49**, soit **5 minutes et 1 seconde après** la détection de présence (15:13:48) et **quelques minutes après** l'arrivée physique (15:12–15:22). Le refroidissement a été **déclenché par** le retour, pas engagé en anticipation de celui-ci. Le ressenti « ça avait déjà commencé » est exact à la minute près et parfaitement compatible avec ce mécanisme — mais la cause n'est pas une anticipation.
+`switch.clim_power` passe à `on` le **T0 + 48 min 49 s**, soit **5 minutes et 1 seconde après** la détection de présence (T0 + 43 min 48 s) et **quelques minutes après** l'arrivée physique (T0 + 42 min–T0 + 52 min). Le refroidissement a été **déclenché par** le retour, pas engagé en anticipation de celui-ci. Le ressenti « ça avait déjà commencé » est exact à la minute près et parfaitement compatible avec ce mécanisme — mais la cause n'est pas une anticipation.
 
 ---
 
@@ -218,9 +218,9 @@ Contrats `12_ventilation_intention.md` (Modèle B), `13_intensite_besoin_froid.m
 
 Le mécanisme n'existe pas (§B.3). Mais le constat va plus loin que « zéro », et c'est le point le plus important de cet audit :
 
-Le 22/08 à **14:30:00**, `fin_vacances` est franchi et `vacances_actives` tombe à `off`. Pourtant `sensor.clim_verdict_cool` passe de `absence_et_vacances` à **`absence_prolongee`** : la **seconde branche** du veto composite — l'absence longue qualifiée, seuil `input_number.clim_duree_absence_longue = 14,0 h` — reste vraie, puisque la présence est toujours absente. Le COOL demeure interdit.
+Le jour J à **T0 + 00 s**, `fin_vacances` est franchi et `vacances_actives` tombe à `off`. Pourtant `sensor.clim_verdict_cool` passe de `absence_et_vacances` à **`absence_prolongee`** : la **seconde branche** du veto composite — l'absence longue qualifiée, seuil `input_number.clim_duree_absence_longue = 14,0 h` — reste vraie, puisque la présence est toujours absente. Le COOL demeure interdit.
 
-Le veto ne tombe qu'à **15:13:48**, sur retour de présence.
+Le veto ne tombe qu'à **T0 + 43 min 48 s**, sur retour de présence.
 
 > **Conséquence structurelle — PROUVÉ.** L'horizon d'anticipation du refroidissement n'est pas gouverné par la date de retour mais par la **présence effective**. Avancer `fin_vacances` de vingt-quatre heures ne déclencherait rien, `clim_extinction_absence_prolongee_autorisee` restant `on`. Toute anticipation calendaire est **inopérante** tant que la neutralisation sélective du composite prévue par C21 (I-C21-2) n'existe pas.
 
@@ -233,7 +233,7 @@ Valeurs relevées dans `core.restore_state` de la sauvegarde :
 | Valeur nominale | `input_number.duree_prechauffage_retour_vacances` = **8,0 h** |
 | Bornes runtime | `min: 3`, `max: 24`, `step: 1`, `mode: box`, **clé `initial` absente** (`03_input_numbers/chauffage/duree_prechauffage_vacances.yaml`) |
 | Fenêtre | `[fin_vacances − 8 h ; fin_vacances[` — **aucun arrondi calendaire**, résolution à la seconde |
-| Fenêtre du cycle observé | `pre_confort_debut_calcule` = `2026-08-22 06:30:00` · `pre_confort_fin_calcule` = `2026-08-22 14:30:00` |
+| Fenêtre du cycle observé | `pre_confort_debut_calcule` = `T0 − 8 h 00 min 00 s` · `pre_confort_fin_calcule` = J, T0 |
 | État des mémoires de cycle | `pre_confort_enable = on` · `pre_confort_cycle_consomme = off` · `pre_confort_cycle_override = off` |
 | Conditions nécessaires | cf. §B.2 — six conditions cumulatives, dont `vacances_actives = on` |
 | Horaires ou fenêtres calendaires | **aucun** — la fenêtre est purement relative à `fin_vacances` |
@@ -245,47 +245,47 @@ Valeurs relevées dans `core.restore_state` de la sauvegarde :
 
 ---
 
-## D. Chronologie terrain horodatée — 2026-08-22
+## D. Chronologie terrain — jour J du retour (temps relatifs à T0, franchissement de `fin_vacances`)
 
-Heures locales (Europe/Paris). Chaque ligne est issue d'un enregistrement Recorder sauf mention contraire.
+Temps relatifs à T0 (franchissement de `fin_vacances`, jour J). Chaque ligne est issue d'un enregistrement Recorder sauf mention contraire.
 
 | Heure | Fait constaté | Qualification |
 |---|---|---|
-| 06:30:00 | `pre_confort_debut_calcule` atteint — ouverture de la fenêtre de pré-confort chauffage | PROUVÉ |
-| 06:30:09 | `input_select.chauffage_dernier_mode_decide` : `reduced` → **`comfort`** | PROUVÉ |
-| 06:30:21 | `sensor.programme_chauffage` : `Eco` → **`Confort`** | PROUVÉ |
-| 14:30:00 | `binary_sensor.vacances_actives` : `on` → **`off`** (franchissement de `fin_vacances`) | PROUVÉ |
-| 14:30:00 | `sensor.clim_verdict_cool` : `absence_et_vacances` → **`absence_prolongee`** — **veto COOL maintenu** | PROUVÉ |
-| 14:30:10 | `chauffage_dernier_mode_decide` → `reduced` ; `mode_maison` → `Normal` | PROUVÉ |
-| 14:30:18 | `sensor.programme_chauffage` → `Eco` | PROUVÉ |
-| 15:12:03 → 15:22:02 | `sensor.bruit_chambre_enfants` quitte son plancher : 32 → 38 dB — arrivée physique | FORTEMENT INFÉRÉ |
-| **15:13:48** | `presence_famille_unifiee` et `presence_confort_thermique_stabilisee` → **`on`** | PROUVÉ |
-| 15:13:48 | `clim_veto_absence_vacances` et `clim_extinction_absence_prolongee_autorisee` → **`off`** | PROUVÉ |
-| 15:13:48 | `autorisation_clim_cool` → **`on`** ; `clim_verdict_cool` → `autorise_attente` | PROUVÉ |
-| 15:13:48 | `clim_intensite_besoin_froid` : 2,1 → **2,6 °C** ; niveau `eleve` ; `clim_fan_mode_recommande` = **`Fort`** | PROUVÉ |
-| 15:13:53 | `input_datetime.clim_debut_absence` effacé (sentinelle `1970-01-01 01:00:00`) | PROUVÉ |
-| **15:18:48** | `besoin_clim_cool_admissible` → `on` — **porte 2 : autorisation stable depuis 5 min** ; `clim_target_mode` → `cool` | PROUVÉ |
-| **15:18:49** | `switch.clim_power` → **`on`** ; `sensor.clim_mode_local` = `cool` | PROUVÉ |
-| 15:18:50 | `clim_ventilation_diagnostic` → `conforme` (cible `Fort` appliquée) | PROUVÉ |
-| 15:20:46 | `binary_sensor.fenetre_ouverte_rdc` → `on` — **action humaine** | PROUVÉ |
-| 15:21:36 | `aeration_confirmee`, `aeration_episode_en_cours`, `ouverture_qualifiee_maison` → `on` | PROUVÉ |
-| **15:21:37** | `switch.clim_power` → **`off`**, raison `fenetre_ouverte` — **après 2 min 48 s de fonctionnement** | PROUVÉ |
-| 15:46:04 | `fenetre_ouverte_etage` → `on` | PROUVÉ |
-| 16:02:12 → 16:38:59 | `temperature_max_chambres` : **26,7 → 27,1 °C** pendant l'aération, `temperature_jardin` à **29,0 °C** | PROUVÉ |
-| 16:02:38 | (dépôt) commit `0fa1c217` — PR #696, garde thermique du pré-confort | PROUVÉ |
-| 16:05:19 → 16:05:25 | indisponibilité générale des templates (≈ 3 s) — rechargement de configuration, déploiement de #696 | FORTEMENT INFÉRÉ |
-| 16:32:31 | `clim_intensite_besoin_froid_niveau` → **`extreme`** | PROUVÉ |
-| 16:48:54 | fenêtres refermées ; `aeration_*` → `off` | PROUVÉ |
-| **16:53:54** | `switch.clim_power` → **`on`**, `cool`, ventilation `Fort` — reprise **après 1 h 32 min d'arrêt** | PROUVÉ |
-| 19:34:17 | `clim_fan_mode_recommande` : `Fort` → `Moyen` (intensité retombée à 1,4 °C) | PROUVÉ |
-| 20:15:00 | recommandation → `Faible` ; `clim_target_mode` : `cool` → `dry` (besoin de froid satisfait) | PROUVÉ |
-| 20:52:14 et 21:27:58 | deux nouvelles ouvertures brèves → deux coupures supplémentaires de la clim | PROUVÉ |
-| **23/08 00:00:00** | `temperature_max_chambres` passe sous **25,0 °C** — soit **8 h 47** après l'arrivée | PROUVÉ |
-| **23/08 05:55:29** | `temperature_min_chambres` passe sous **24,0 °C** (seuil d'extinction présence) — **14 h 42** après l'arrivée | PROUVÉ |
+| T0 − 8 h 00 min 00 s | `pre_confort_debut_calcule` atteint — ouverture de la fenêtre de pré-confort chauffage | PROUVÉ |
+| T0 − 7 h 59 min 51 s | `input_select.chauffage_dernier_mode_decide` : `reduced` → **`comfort`** | PROUVÉ |
+| T0 − 7 h 59 min 39 s | `sensor.programme_chauffage` : `Eco` → **`Confort`** | PROUVÉ |
+| T0 + 00 s | `binary_sensor.vacances_actives` : `on` → **`off`** (franchissement de `fin_vacances`) | PROUVÉ |
+| T0 + 00 s | `sensor.clim_verdict_cool` : `absence_et_vacances` → **`absence_prolongee`** — **veto COOL maintenu** | PROUVÉ |
+| T0 + 10 s | `chauffage_dernier_mode_decide` → `reduced` ; `mode_maison` → `Normal` | PROUVÉ |
+| T0 + 18 s | `sensor.programme_chauffage` → `Eco` | PROUVÉ |
+| T0 + 42 min 03 s → T0 + 52 min 02 s | `sensor.bruit_chambre_enfants` quitte son plancher : 32 → 38 dB — arrivée physique | FORTEMENT INFÉRÉ |
+| **T0 + 43 min 48 s** | `presence_famille_unifiee` et `presence_confort_thermique_stabilisee` → **`on`** | PROUVÉ |
+| T0 + 43 min 48 s | `clim_veto_absence_vacances` et `clim_extinction_absence_prolongee_autorisee` → **`off`** | PROUVÉ |
+| T0 + 43 min 48 s | `autorisation_clim_cool` → **`on`** ; `clim_verdict_cool` → `autorise_attente` | PROUVÉ |
+| T0 + 43 min 48 s | `clim_intensite_besoin_froid` : 2,1 → **2,6 °C** ; niveau `eleve` ; `clim_fan_mode_recommande` = **`Fort`** | PROUVÉ |
+| T0 + 43 min 53 s | `input_datetime.clim_debut_absence` effacé (sentinelle `1970-01-01 01:00:00`) | PROUVÉ |
+| **T0 + 48 min 48 s** | `besoin_clim_cool_admissible` → `on` — **porte 2 : autorisation stable depuis 5 min** ; `clim_target_mode` → `cool` | PROUVÉ |
+| **T0 + 48 min 49 s** | `switch.clim_power` → **`on`** ; `sensor.clim_mode_local` = `cool` | PROUVÉ |
+| T0 + 48 min 50 s | `clim_ventilation_diagnostic` → `conforme` (cible `Fort` appliquée) | PROUVÉ |
+| T0 + 50 min 46 s | `binary_sensor.fenetre_ouverte_rdc` → `on` — **action humaine** | PROUVÉ |
+| T0 + 51 min 36 s | `aeration_confirmee`, `aeration_episode_en_cours`, `ouverture_qualifiee_maison` → `on` | PROUVÉ |
+| **T0 + 51 min 37 s** | `switch.clim_power` → **`off`**, raison `fenetre_ouverte` — **après 2 min 48 s de fonctionnement** | PROUVÉ |
+| T0 + 1 h 16 min 04 s | `fenetre_ouverte_etage` → `on` | PROUVÉ |
+| T0 + 1 h 32 min 12 s → T0 + 2 h 08 min 59 s | `temperature_max_chambres` : **26,7 → 27,1 °C** pendant l'aération, `temperature_jardin` à **29,0 °C** | PROUVÉ |
+| T0 + 1 h 32 min 38 s | (dépôt) commit `0fa1c217` — PR #696, garde thermique du pré-confort | PROUVÉ |
+| T0 + 1 h 35 min 19 s → T0 + 1 h 35 min 25 s | indisponibilité générale des templates (≈ 3 s) — rechargement de configuration, déploiement de #696 | FORTEMENT INFÉRÉ |
+| T0 + 2 h 02 min 31 s | `clim_intensite_besoin_froid_niveau` → **`extreme`** | PROUVÉ |
+| T0 + 2 h 18 min 54 s | fenêtres refermées ; `aeration_*` → `off` | PROUVÉ |
+| **T0 + 2 h 23 min 54 s** | `switch.clim_power` → **`on`**, `cool`, ventilation `Fort` — reprise **après 1 h 32 min d'arrêt** | PROUVÉ |
+| T0 + 5 h 04 min 17 s | `clim_fan_mode_recommande` : `Fort` → `Moyen` (intensité retombée à 1,4 °C) | PROUVÉ |
+| T0 + 5 h 45 min 00 s | recommandation → `Faible` ; `clim_target_mode` : `cool` → `dry` (besoin de froid satisfait) | PROUVÉ |
+| T0 + 6 h 22 min 14 s et T0 + 6 h 57 min 58 s | deux nouvelles ouvertures brèves → deux coupures supplémentaires de la clim | PROUVÉ |
+| **J + 1, T0 + 9 h 30 min** | `temperature_max_chambres` passe sous **25,0 °C** — soit **8 h 47** après l'arrivée | PROUVÉ |
+| **J + 1 T0 − 8 h 34 min 31 s** | `temperature_min_chambres` passe sous **24,0 °C** (seuil d'extinction présence) — **14 h 42** après l'arrivée | PROUVÉ |
 
 ### D.1 Le séjour, en synthèse — PROUVÉ
 
-Répartition de `sensor.clim_verdict_cool` du 01/08 10:00 au 22/08 15:14 (509,2 h couvertes) :
+Répartition de `sensor.clim_verdict_cool` du J − 21 T0 − 4 h 30 min au J T0 + 44 min (509,2 h couvertes) :
 
 | Verdict | Durée | Part |
 |---|---|---|
@@ -296,11 +296,11 @@ Répartition de `sensor.clim_verdict_cool` du 01/08 10:00 au 22/08 15:14 (509,2 
 
 Les verdicts `absence_et_vacances`, `vacances` et `absence_prolongee` sont émis **sous garde `cool_besoin`** (`15` §7, cascade `raison` rang 9) : leur présence atteste que **le besoin de froid existait**. Le refroidissement a donc été **nécessaire et refusé pendant 92,7 % du séjour** — conformément au contrat, la sobriété en absence étant une politique imposée et non un défaut.
 
-`switch.clim_power` totalise **0 h d'allumage du 02/08 au 21/08 inclus**.
+`switch.clim_power` totalise **0 h d'allumage du J − 20 au J − 1 inclus**.
 
 ### D.2 Vitesse de rattrapage mesurée — PROUVÉ
 
-Mesure du 22/08 16:53:54 → 20:40, climatisation en `cool`, ventilation `Fort`, extérieur passant de 26,9 à 24,9 °C :
+Mesure du jour J, T0 + 2 h 23 min 54 s → T0 + 6 h 10 min, climatisation en `cool`, ventilation `Fort`, extérieur passant de 26,9 à 24,9 °C :
 
 | Grandeur | Début | Fin | Vitesse |
 |---|---|---|---|
@@ -318,23 +318,23 @@ Mesure du 22/08 16:53:54 → 20:40, climatisation en `cool`, ventilation `Fort`,
 
 **C1 — Absence totale d'anticipation du rafraîchissement (cause racine).** Le chantier C21 est parqué, aucun runtime n'existe. Le COOL a été interdit 92,7 % du séjour puis autorisé au retour de présence. Le système n'a **jamais eu l'intention** de préparer la maison. Ce n'est pas une défaillance d'exécution : c'est le périmètre assumé et déclaré de C20 (§9, INV-VETO-9).
 
-**C2 — Le verrou réel est la présence, pas la date.** Développé en §C.1. Le franchissement de `fin_vacances` à 14:30 n'a libéré aucune des deux branches du composite ; seul le retour de présence à 15:13:48 l'a fait.
+**C2 — Le verrou réel est la présence, pas la date.** Développé en §C.1. Le franchissement de `fin_vacances` à T0 + 0 min n'a libéré aucune des deux branches du composite ; seul le retour de présence à T0 + 43 min 48 s l'a fait.
 
-**C3 — Cinq minutes de délai supplémentaire par verrou de requalification.** L'automation `10030000000114` déclenche la porte 2 sur `autorisation_clim_cool` à `on` `for: 5 minutes`. Écart mesuré : 15:13:48 → 15:18:48, soit **exactement 5 min 00 s**. Comportement **conforme** au verrou de requalification (`README` climatisation, principe de séparation des couches : *« un besoin préexistant à une interdiction ne devient jamais admissible par simple retour de l'autorisation »*), mais il s'ajoute au retard total.
+**C3 — Cinq minutes de délai supplémentaire par verrou de requalification.** L'automation `10030000000114` déclenche la porte 2 sur `autorisation_clim_cool` à `on` `for: 5 minutes`. Écart mesuré : T0 + 43 min 48 s → T0 + 48 min 48 s, soit **exactement 5 min 00 s**. Comportement **conforme** au verrou de requalification (`README` climatisation, principe de séparation des couches : *« un besoin préexistant à une interdiction ne devient jamais admissible par simple retour de l'autorisation »*), mais il s'ajoute au retard total.
 
-**C4 — Aération humaine thermiquement défavorable : 1 h 32 de refroidissement perdu et +0,5 °C repris.** Fenêtres ouvertes à 15:20:46 avec **29,0 °C extérieurs contre 26,6 °C intérieurs**. Arsenal a réagi **correctement** en coupant la climatisation (blocage par `fenetre_ouverte_maison_avec_delai` puis épisode d'aération). Le résultat net est néanmoins un **réchauffement** de 26,6 à 27,1 °C et le passage de l'intensité de besoin en `extreme`. En volume horaire, c'est **le premier contributeur mesuré** au constat « chambres encore trop chaudes le soir ».
+**C4 — Aération humaine thermiquement défavorable : 1 h 32 de refroidissement perdu et +0,5 °C repris.** Fenêtres ouvertes à T0 + 50 min 46 s avec **29,0 °C extérieurs contre 26,6 °C intérieurs**. Arsenal a réagi **correctement** en coupant la climatisation (blocage par `fenetre_ouverte_maison_avec_delai` puis épisode d'aération). Le résultat net est néanmoins un **réchauffement** de 26,6 à 27,1 °C et le passage de l'intensité de besoin en `extreme`. En volume horaire, c'est **le premier contributeur mesuré** au constat « chambres encore trop chaudes le soir ».
 
 **C5 — Capacité de rattrapage limitée face à l'inertie du bâti.** 0,56 °C/h de refroidissement mécanique contre 0,019 °C/h de décroissance passive. Ramener les chambres de 27,1 à 24,0 °C demande **≈ 5 h 30 de fonctionnement continu** ; avec les coupures d'aération, il en a fallu **14 h 42**.
 
-**C6 — Pré-confort chauffage déclenché en plein été (déjà audité et corrigé).** `sensor.programme_chauffage` = `Confort` de 06:30:21 à 14:30:18 le 22/08, maison à 26,8 °C, extérieur atteignant 29 °C. Il s'agit de la **seule occurrence** de décision `comfort` sur tout le mois couvert par Recorder, et elle coïncide **exactement** avec `[fin_vacances − 8 h ; fin_vacances[`.
+**C6 — Pré-confort chauffage déclenché en plein été (déjà audité et corrigé).** `sensor.programme_chauffage` = `Confort` de T0 − 7 h 59 min 39 s à T0 + 18 s le J, maison à 26,8 °C, extérieur atteignant 29 °C. Il s'agit de la **seule occurrence** de décision `comfort` sur tout le mois couvert par Recorder, et elle coïncide **exactement** avec `[fin_vacances − 8 h ; fin_vacances[`.
 
-La cause est établie : la garde thermique n'était **pas encore déployée**. La version déployée dans la sauvegarde du 24/08 porte bien, dans `data/10_scripts/chauffage/decision_centrale.yaml`, la condition `and is_state('sensor.chauffage_autorisation_cible', 'comfort')` sur les deux axes — mais le commit qui l'introduit (`0fa1c217`, PR #696) est daté du **22/08 à 16:02:38**, soit **1 h 32 après la fermeture de la fenêtre**, et son déploiement correspond au rechargement observé à 16:05:19.
+La cause est établie : la garde thermique n'était **pas encore déployée**. La version déployée dans la sauvegarde du J + 2 porte bien, dans `data/10_scripts/chauffage/decision_centrale.yaml`, la condition `and is_state('sensor.chauffage_autorisation_cible', 'comfort')` sur les deux axes — mais le commit qui l'introduit (`0fa1c217`, PR #696) est daté du **J à T0 + 1 h 32 min 38 s**, soit **1 h 32 après la fermeture de la fenêtre**, et son déploiement correspond au rechargement observé à T0 + 1 h 35 min 19 s.
 
 Cet épisode est **déjà audité** par #695 et **corrigé le jour même**. Il est consigné ici parce qu'il constitue la démonstration terrain la plus directe du principe énoncé par l'amendement de `65` : **une anticipation purement temporelle, sans garde physique opposable, produit un effet contraire à son objet.** Sans effet sur le froid, il éclaire directement l'évaluation de la section G.
 
 ### E.2 Causes PROBABLES (faisceau concordant, non prouvées faute d'historisation)
 
-**P1 — Durcissement de la référence de satisfaction au retour de présence.** `input_number.clim_seuil_extinction_absence` = 24,5 °C contre `_presence` = 24,0 °C. À 15:13:48, `clim_intensite_besoin_froid` saute de 2,1 à 2,6 °C **sans que la température ait bougé** — signature du basculement de référence contextualisée (`13` §3, contextualisation C2 assumée). Effet modeste (+0,5 °C de déficit affiché), mais il **allonge** mécaniquement la phase de rattrapage. `sensor.seuil_extinction_clim_applique` n'étant pas historisé, la démonstration reste indirecte.
+**P1 — Durcissement de la référence de satisfaction au retour de présence.** `input_number.clim_seuil_extinction_absence` = 24,5 °C contre `_presence` = 24,0 °C. À T0 + 43 min 48 s, `clim_intensite_besoin_froid` saute de 2,1 à 2,6 °C **sans que la température ait bougé** — signature du basculement de référence contextualisée (`13` §3, contextualisation C2 assumée). Effet modeste (+0,5 °C de déficit affiché), mais il **allonge** mécaniquement la phase de rattrapage. `sensor.seuil_extinction_clim_applique` n'étant pas historisé, la démonstration reste indirecte.
 
 **P2 — Sensibilité de la mémoire de cycle du pré-confort aux micro-bascules de présence.** Réserve déjà consignée par #361 (§9.2), liée au débruitage limité de `presence_famille_unifiee`. **Non observée** sur ce cycle.
 
@@ -343,14 +343,14 @@ Cet épisode est **déjà audité** par #695 et **corrigé le jour même**. Il e
 | Hypothèse examinée | Verdict | Preuve |
 |---|---|---|
 | Horizon d'anticipation trop court côté froid | **ÉCARTÉE** — il n'existe aucun horizon | Recherche runtime exhaustive · C21 parqué · #361 F-COOL-4 |
-| Trigger trop tardif | **ÉCARTÉE** — chaîne événementielle, réaction en 5 min 01 s après la présence | Horodatage 15:13:48 → 15:18:49 |
+| Trigger trop tardif | **ÉCARTÉE** — chaîne événementielle, réaction en 5 min 01 s après la présence | Horodatage T0 + 43 min 48 s → T0 + 48 min 49 s |
 | Fréquence d'évaluation insuffisante | **ÉCARTÉE** — aucun `time_pattern` dans la chaîne ; convergence sur événements | `orchestrateur.yaml` invariants V3 · `application_mode.yaml` |
 | Pré-confort limité par une autre condition | **ÉCARTÉE côté froid** (il n'existe pas) ; **côté chaud il s'est au contraire déclenché** | §E.1 C6 |
-| Redémarrage HA ayant perdu l'état pendant la fenêtre critique | **ÉCARTÉE** — le seul rechargement du 22/08 est à 16:05:19, postérieur à toute la séquence décisive | Recorder |
-| VMC forte concurrençant la climatisation | **ÉCARTÉE** — `input_boolean.vmc_haute_vitesse` est **`off` sans interruption depuis le 2026-07-30 08:14:11** et ne bascule à aucun moment du séjour | Recorder, historique complet de l'entité |
-| Température extérieure défavorable au retour | **ÉCARTÉE** — 25,8 °C à 15:13, sous la température intérieure. Le seul épisode défavorable (29,0 °C) coïncide avec l'aération humaine | Recorder |
+| Redémarrage HA ayant perdu l'état pendant la fenêtre critique | **ÉCARTÉE** — le seul rechargement du J est à T0 + 1 h 35 min 19 s, postérieur à toute la séquence décisive | Recorder |
+| VMC forte concurrençant la climatisation | **ÉCARTÉE** — `input_boolean.vmc_haute_vitesse` est **`off` sans interruption depuis fin juillet** et ne bascule à aucun moment du séjour | Recorder, historique complet de l'entité |
+| Température extérieure défavorable au retour | **ÉCARTÉE** — 25,8 °C à T0 + 43 min, sous la température intérieure. Le seul épisode défavorable (29,0 °C) coïncide avec l'aération humaine | Recorder |
 | Retour de présence modifiant trop tôt le régime | **ÉCARTÉE** — le régime a changé au bon moment ; le problème est qu'il **ne pouvait pas** changer avant | §C.1 |
-| Stratégie jour/nuit défavorable | **ÉCARTÉE** — `clim_mode_nuit_effectif` sans effet sur la plage 15:00–20:00 | `13` §3 |
+| Stratégie jour/nuit défavorable | **ÉCARTÉE** — `clim_mode_nuit_effectif` sans effet sur la plage T0 + 30 min–T0 + 5 h 30 min | `13` §3 |
 | Capacité frigorifique insuffisante | **NUANCÉE, non retenue comme cause** — 0,56 °C/h est modeste mais suffisante : le déficit initial de 2,6 °C était rattrapable en ≈ 5 h. Le paramètre déficient est l'**heure de départ**, pas la puissance | §D.2 |
 
 ---
@@ -359,13 +359,13 @@ Cet épisode est **déjà audité** par #695 et **corrigé le jour même**. Il e
 
 ### F.1 De quelle ventilation s'agissait-il ? — **la climatisation, pas la VMC. PROUVÉ.**
 
-`input_boolean.vmc_haute_vitesse` est resté **`off` du 2026-07-30 08:14:11 jusqu'à la fin de la période couverte**. `binary_sensor.vmc_haute_vitesse_requise` est `off` sur toute la période (seuls des `unavailable` transitoires lors des rechargements). Les trois porteurs de besoin — `vmc_etat_besoin_co2_sejour`, `vmc_etat_besoin_sdb_parents`, `vmc_etat_besoin_sdb_enfants` — sont `off`. **La VMC n'a jamais été en haute vitesse pendant le séjour ni au retour.**
+`input_boolean.vmc_haute_vitesse` est resté **`off` depuis fin juillet jusqu'à la fin de la période couverte**. `binary_sensor.vmc_haute_vitesse_requise` est `off` sur toute la période (seuls des `unavailable` transitoires lors des rechargements). Les trois porteurs de besoin — `vmc_etat_besoin_co2_sejour`, `vmc_etat_besoin_sdb_parents`, `vmc_etat_besoin_sdb_enfants` — sont `off`. **La VMC n'a jamais été en haute vitesse pendant le séjour ni au retour.**
 
 Ce qui soufflait fort était le **ventilateur interne de l'unité Fujitsu**, `fan_mode = high` (« Fort »).
 
 ### F.2 Pourquoi « Fort » ? — décision métier identifiée, conforme au contrat
 
-`sensor.clim_fan_mode_recommande` valait **`Fort`** dès avant l'arrivée et jusqu'à 19:34:17, puis `Moyen`, puis `Faible` à 20:15:00. Le moteur est `clim_intensite_besoin_froid`, à 2,6 puis 3,1 °C, niveau `eleve` puis **`extreme`** à 16:32:31. `sensor.clim_ventilation_diagnostic` est resté **`conforme`**, ce qui atteste que le réel suivait la cible.
+`sensor.clim_fan_mode_recommande` valait **`Fort`** dès avant l'arrivée et jusqu'à T0 + 5 h 04 min 17 s, puis `Moyen`, puis `Faible` à T0 + 5 h 45 min 00 s. Le moteur est `clim_intensite_besoin_froid`, à 2,6 puis 3,1 °C, niveau `eleve` puis **`extreme`** à T0 + 2 h 02 min 31 s. `sensor.clim_ventilation_diagnostic` est resté **`conforme`**, ce qui atteste que le réel suivait la cible.
 
 Deux voies pouvaient produire `Fort`. **Une seule s'applique ici :**
 
@@ -389,7 +389,7 @@ Le constat « ventilation forte à l'arrivée » n'est donc **pas un défaut** :
 | Refroidissement mécanique | `clim_target_mode` et sa chaîne d'autorisation/blocage | ✅ modélisé |
 | **Rattrapage thermique massif avant occupation** | — | ❌ **n'existe pas** (C21 parqué) |
 
-**Point de doctrine à signaler.** `binary_sensor.aeration_conseillee` n'est consommé par aucune couche du domaine climatisation, alors que son contrat prévoit qu'il *« peut être utilisé comme contrainte inhibitrice par des domaines consommateurs »*. Le 22/08 à 15:20, avec 29 °C dehors et 26,6 °C dedans, la recommandation était nécessairement défavorable — mais rien ne l'a signalé, et **aucune trace décisionnelle de cet arbitrage n'existe**. Comportement fonctionnel non documenté (§I, É3).
+**Point de doctrine à signaler.** `binary_sensor.aeration_conseillee` n'est consommé par aucune couche du domaine climatisation, alors que son contrat prévoit qu'il *« peut être utilisé comme contrainte inhibitrice par des domaines consommateurs »*. Le jour J à T0 + 50 min, avec 29 °C dehors et 26,6 °C dedans, la recommandation était nécessairement défavorable — mais rien ne l'a signalé, et **aucune trace décisionnelle de cet arbitrage n'existe**. Comportement fonctionnel non documenté (§I, É3).
 
 ---
 
@@ -399,7 +399,7 @@ L'hypothèse soumise à l'audit — avancer d'environ vingt-quatre heures le dé
 
 ### G.1 Effet dans le cas observé
 
-Fenêtre J-1 = 21/08 14:30 → 22/08 14:30. Sur ces 24 h, `temperature_jardin ≥ 19,0 °C` (garde `input_number.clim_seuil_temperature_exterieure_minimum`, inconditionnellement opposable) pendant **14,9 h, soit 62 %**. La maison était à 27,4 °C au 21/08 14:30. À 0,56 °C/h mesurés, atteindre 24,0 °C en chambres demande **≈ 6 h**.
+Fenêtre J-1 = J − 1 T0 + 0 min → J T0 + 0 min. Sur ces 24 h, `temperature_jardin ≥ 19,0 °C` (garde `input_number.clim_seuil_temperature_exterieure_minimum`, inconditionnellement opposable) pendant **14,9 h, soit 62 %**. La maison était à 27,4 °C au J − 1 T0 + 0 min. À 0,56 °C/h mesurés, atteindre 24,0 °C en chambres demande **≈ 6 h**.
 
 **Thermiquement, la cible aurait été atteinte largement avant le retour**, avec environ 9 h de fenêtre inutilisée.
 
@@ -418,7 +418,7 @@ Fenêtre J-1 = 21/08 14:30 → 22/08 14:30. Sur ces 24 h, `temperature_jardin �
 | Coût énergétique | **Excessif en l'état** : ≈ 15 h de fenêtre pour ≈ 6 h de besoin, en maison vide, avec cycles d'extinction/relance sur hystérésis. Contraire à `65` §5bis (*« déclencher le pré-confort au plus tard nécessaire »*, *« éviter toute anticipation excessive »*, *« préserver strictement la sobriété en absence »*) |
 | Risque de refroidir pour rien lors d'un retour décalé | **Élevé.** `65` §7 consomme le droit de cycle **dès la première activation** ; I-C21-5 impose qu'une fenêtre écoulée sans retour rétablisse le veto. Un retour retardé produirait donc 24 h de climatisation en pure perte, **suivies d'aucune reprise** |
 | Gestion d'un changement de date de retour | **Traitée contractuellement** (D13, I-C21-6 : une modification explicite de `fin_vacances` recalcule et peut réarmer), mais **jamais implémentée ni testée** côté froid. Le risque R1 du chantier (oscillation ou préparation manquée) reste entier |
-| Une durée fixe est-elle conceptuellement suffisante ? | **Non.** `65` §5bis l'énonce déjà : *« aucune valeur fixe ne peut s'y substituer durablement »*. Le 22/08 il fallait ≈ 6 h ; le 15/08, maison à 30,5 °C, il en aurait fallu ≈ 12 h ; par 15 °C extérieurs, aucune |
+| Une durée fixe est-elle conceptuellement suffisante ? | **Non.** `65` §5bis l'énonce déjà : *« aucune valeur fixe ne peut s'y substituer durablement »*. Le J il fallait ≈ 6 h ; le J − 7, maison à 30,5 °C, il en aurait fallu ≈ 12 h ; par 15 °C extérieurs, aucune |
 
 ### G.4 Conclusion sur l'hypothèse
 
@@ -454,9 +454,9 @@ Comparaison de **principes**, sans conception ni implémentation. Aucune de ces 
 
 | # | Écart constaté | Qualification |
 |---|---|---|
-| **É1** | L'amendement de `65` (§12) affirme : *« Tant que ce lot runtime n'est pas livré, le runtime demeure en écart connu et documenté »*. **Or le runtime est conforme** : `10_scripts/chauffage/decision_centrale.yaml` porte la garde `and is_state('sensor.chauffage_autorisation_cible', 'comfort')` sur **les deux axes** `desired_mode` et `reason`, en égalité positive sans valeur par défaut — conformément à INV-PCV-1, INV-PCV-2 et INV-PCV-6. Livré par PR #696 (`0fa1c217`, 2026-08-22 16:02:38) et **présent dans la version déployée** de la sauvegarde. **C'est le document d'autorité qui est périmé, pas le code.** | **Écart documentaire actif** — PROUVÉ |
+| **É1** | L'amendement de `65` (§12) affirme : *« Tant que ce lot runtime n'est pas livré, le runtime demeure en écart connu et documenté »*. **Or le runtime est conforme** : `10_scripts/chauffage/decision_centrale.yaml` porte la garde `and is_state('sensor.chauffage_autorisation_cible', 'comfort')` sur **les deux axes** `desired_mode` et `reason`, en égalité positive sans valeur par défaut — conformément à INV-PCV-1, INV-PCV-2 et INV-PCV-6. Livré par PR #696 (`0fa1c217`, T0 + 1 h 32 min 38 s) et **présent dans la version déployée** de la sauvegarde. **C'est le document d'autorité qui est périmé, pas le code.** | **Écart documentaire actif** — PROUVÉ |
 | **É2** | `climatisation/15` §9 déclare le point d'extension C21 ; le runtime n'en implémente que la partie C20. **Écart déclaré et assumé** (INV-VETO-9, C21 parqué au registre) — conformité par construction | Conforme (dette déclarée) |
-| **É3** | `binary_sensor.aeration_conseillee` n'est consommé par aucune couche du domaine climatisation, alors que son contrat prévoit cet usage inhibiteur possible. Le 22/08, une aération thermiquement défavorable a coûté 1 h 32 de refroidissement et +0,5 °C **sans aucune trace décisionnelle ni signalement** | **Comportement fonctionnel non documenté — à signaler** |
+| **É3** | `binary_sensor.aeration_conseillee` n'est consommé par aucune couche du domaine climatisation, alors que son contrat prévoit cet usage inhibiteur possible. Le J, une aération thermiquement défavorable a coûté 1 h 32 de refroidissement et +0,5 °C **sans aucune trace décisionnelle ni signalement** | **Comportement fonctionnel non documenté — à signaler** |
 | **É4** | `input_number.duree_prechauffage_retour_vacances` est borné `max: 24`. `65` §5bis n'énonce **aucune borne supérieure** et prescrit un délai physique calculé. Borne d'implémentation non adossée à une règle contractuelle | **À signaler** (mineur) — PROUVÉ |
 | **É5** | `sensor.clim_ventilation_diagnostic` produit **405 à 471 transitions par jour** dès que la climatisation fonctionne (2 par jour le reste du temps), pour un cumul de **1,0 h en état `ecart` contre 99,2 h en `conforme`** sur le mois couvert. Le contrat `14` ne décrit pas ce régime d'oscillation `conforme ↔ ecart` de quelques secondes. Sans conséquence décisionnelle établie | **À signaler** (mineur, hors périmètre — appelle une vérification propre) — PROUVÉ |
 
@@ -470,8 +470,8 @@ Les entités suivantes sont **hors allowlist `recorder.yaml`**. Leur état penda
 
 **Bloquant pour l'analyse a posteriori**
 
-1. `input_boolean.pre_confort_actif_calcule` et `sensor.pre_confort_raison` — le déclenchement du pré-confort du 22/08 n'est établi que **par corrélation** (`chauffage_dernier_mode_decide` à 06:30:09 face à `pre_confort_debut_calcule` = 06:30:00). Le mécanisme central de l'anticipation n'a **aucune trace propre**.
-2. `sensor.chauffage_autorisation_cible` — impossible d'établir si la garde thermique, si elle avait été déployée, aurait effectivement bloqué le passage en Confort du 22/08.
+1. `input_boolean.pre_confort_actif_calcule` et `sensor.pre_confort_raison` — le déclenchement du pré-confort du J n'est établi que **par corrélation** (`chauffage_dernier_mode_decide` à T0 − 7 h 59 min 51 s face à `pre_confort_debut_calcule` = T0 − 8 h 00 min 00 s). Le mécanisme central de l'anticipation n'a **aucune trace propre**.
+2. `sensor.chauffage_autorisation_cible` — impossible d'établir si la garde thermique, si elle avait été déployée, aurait effectivement bloqué le passage en Confort du J.
 3. `input_datetime.fin_vacances`, `input_datetime.debut_vacances`, `input_boolean.vacances_fenetre_active`, `binary_sensor.vacances_demandees`, `binary_sensor.vacances_planifiees_actives` — la date de retour connue d'Arsenal n'est reconstituable que via `core.restore_state`, donc **uniquement à l'instant de la sauvegarde**. Un changement de `fin_vacances` en cours de séjour serait **invisible**.
 4. `sensor.seuil_extinction_clim_applique` — la référence de tout le calcul d'intensité, donc de toute la ventilation, n'est pas historisée. Les 2,6 °C d'intensité au retour ne sont convertibles en température cible que par déduction (cf. P1).
 5. `binary_sensor.besoin_clim_cool` et `binary_sensor.besoin_clim_cool_admissible` — l'existence du besoin pendant le séjour n'est établie qu'**indirectement**, par la garde `cool_besoin` de la cascade `clim_verdict_cool`.
@@ -484,8 +484,8 @@ Les entités suivantes sont **hors allowlist `recorder.yaml`**. Leur état penda
 **Limites de confort d'analyse**
 
 8. `input_select.clim_fan_mode_cible` et `sensor.clim_mode_de_ventilation_local` — le régime auto/manuel de la ventilation et le `fan_mode` réel ne sont pas historisés. La valeur « Fort » est **FORTEMENT INFÉRÉE** (recommandation `Fort` + diagnostic `conforme` + `clim_fan_mode_cible = « Auto Arsenal »` dans `core.restore_state`), non directement prouvée.
-9. `binary_sensor.aeration_conseillee` et `binary_sensor.aeration_preferable_*` — impossible d'établir si Arsenal jugeait l'aération du 22/08 16:00 défavorable.
-10. `sensor.clim_consommation_estimee_aujourd_hui` relève **0,0** les 22 et 23/08 alors que la climatisation a fonctionné environ 7 h chaque jour. **Capteur apparemment non fonctionnel**, à vérifier séparément. Toute évaluation chiffrée du surcoût énergétique d'un pré-refroidissement en est privée.
+9. `binary_sensor.aeration_conseillee` et `binary_sensor.aeration_preferable_*` — impossible d'établir si Arsenal jugeait l'aération du J T0 + 1 h 30 min défavorable.
+10. `sensor.clim_consommation_estimee_aujourd_hui` relève **0,0** les 22 et J + 1 alors que la climatisation a fonctionné environ 7 h chaque jour. **Capteur apparemment non fonctionnel**, à vérifier séparément. Toute évaluation chiffrée du surcoût énergétique d'un pré-refroidissement en est privée.
 
 ### J.1 Le piège conceptuel — Arsenal ne modélise pas l'énergie du bâti
 
@@ -510,7 +510,7 @@ Des grandeurs déjà historisées pourraient en constituer des approximations �
 | Question | Réponse |
 |---|---|
 | Le constat terrain est-il confirmé ? | **Oui, intégralement.** Maison encore chaude, chambres trop chaudes, ventilation forte : les trois observations sont vérifiées et chiffrées. |
-| Le cadrage initial est-il exact ? | **Non, sur trois points.** Retour le 22/08 et non le 24 ; maison à 26,6 °C et non ~30 °C ; refroidissement déclenché **par** l'arrivée et non avant elle. Rectifié en §A. |
+| Le cadrage initial est-il exact ? | **Non, sur trois points.** Retour le jour J et non le 24 ; maison à 26,6 °C et non ~30 °C ; refroidissement déclenché **par** l'arrivée et non avant elle. Rectifié en §A. |
 | Y a-t-il défaillance d'un mécanisme ? | **Non.** Chaque composant a fonctionné conformément à son contrat. L'insuffisance provient d'un **mécanisme absent**, pas d'un mécanisme fautif. |
 | L'absence de pré-rafraîchissement est-elle une dérive ? | **Non.** Elle est déclarée, bornée et tracée : `15` §9, INV-VETO-9, C21 parqué au registre, #361 F-COOL-4. |
 | Le comportement de la ventilation est-il un défaut ? | **Non.** Il est conforme, explicable et physiquement utile. |
@@ -525,7 +525,7 @@ Des grandeurs déjà historisées pourraient en constituer des approximations �
 |---|---|---|
 | **R1** | **Récurrence certaine.** Le mécanisme étant absent, tout retour de Vacances en période chaude reproduira le même schéma : besoin vétoé pendant tout le séjour, puis rattrapage engagé après l'arrivée, à ≈ 0,6 °C/h. La sévérité croît avec la température atteinte pendant l'absence. | fonctionnel |
 | **R2** | **Mémoire de cycle et retour décalé.** Une fenêtre de préparation consommée puis un retour retardé laisserait la maison sans reprise (I-C21-5). I-C21-6 prévoit le réarmement sur modification **explicite** de `fin_vacances`, mais **pas** sur un retard non déclaré. C'est le risque R1 du chantier C21, **non résolu**. | conception future |
-| **R3** | **Ancrage temporel ambigu.** `fin_vacances` est une frontière de **régime**, pas une **heure d'arrivée**. Les deux ont coïncidé à 43 minutes près le 22/08, mais rien ne le garantit. | conception future |
+| **R3** | **Ancrage temporel ambigu.** `fin_vacances` est une frontière de **régime**, pas une **heure d'arrivée**. Les deux ont coïncidé à 43 minutes près le J, mais rien ne le garantit. | conception future |
 | **R4** | **Aération défavorable non signalée.** Premier contributeur mesuré au retard (1 h 32 et +0,5 °C), sans trace ni avertissement (É3). | fonctionnel |
 | **R5** | **Sur-anticipation.** Toute durée fixe longue est soit trop courte au pire moment, soit consommatrice le reste du temps — contraire à la sobriété prescrite par `65` §5bis. | conception future |
 | **R6** | **Absence d'observation du refroidissement.** Sans caractérisation de la vitesse, tout horizon retenu resterait une constante arbitraire, reproduisant côté froid la dette que `65` §5ter assume côté chaud depuis l'origine. | conception future |

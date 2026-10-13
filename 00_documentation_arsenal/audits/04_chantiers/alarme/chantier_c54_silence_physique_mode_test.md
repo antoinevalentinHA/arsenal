@@ -21,17 +21,17 @@
 
 Sources : traces HA (`trace/get`), historique recorder, journaux Zigbee2MQTT (`info`), lus en lecture seule.
 
-| Heure | Événement | Effet |
+| Temps (T0 = ouverture de l'accès) | Événement | Effet |
 |---|---|---|
-| 16:41:59 | Armement automatique (`script.alarme_armer`) | mode test lu `on` → pas de `sirene_bip` |
-| 16:57:09 | Ouverture porte d'entrée → `10020000000031` | `timer.delai_entree` (60 s) ; bip non exécuté (mode test `on`) |
-| 16:57:35 | `binary_sensor.presence_famille_securite` → `on` | — |
-| 16:57:50.147 | Présence confirmée → `10020000000027` → `DISARMED` → `script.alarme_desarmer` (origine `automatisme`) | — |
-| **16:57:50.152** | `script.arret_sirene` → `mqtt.publish zigbee2mqtt/sirene/set {"warning":{"mode":"stop"}}` | **son émis par la sirène** |
+| T0 − 15 min 10 s | Armement automatique (`script.alarme_armer`) | mode test lu `on` → pas de `sirene_bip` |
+| T0 | Ouverture de l'accès → `10020000000031` | `timer.delai_entree` (60 s) ; bip non exécuté (mode test `on`) |
+| T0 + 26 s | `binary_sensor.presence_famille_securite` → `on` | — |
+| T0 + 41,1 s | Présence confirmée → `10020000000027` → `DISARMED` → `script.alarme_desarmer` (origine `automatisme`) | — |
+| **T0 + 41,1 s (+ 5 ms)** | `script.arret_sirene` → `mqtt.publish zigbee2mqtt/sirene/set {"warning":{"mode":"stop"}}` | **son émis par la sirène** |
 
 - Panneau jamais `triggered` ; `sirene_bip`, `sirene_bip_bip`, `sirene_brutale`, `sirene_test` sans aucune trace d'exécution ; aucune action clavier (Zigbee2MQTT : rapports périodiques seuls) ; aucun événement spontané de la sirène.
-- **Reproduction opérateur** : armement puis désarmement dashboard (18:47:42 / 18:47:44, mode test `on`) → seul `warning/stop` envoyé → séquence à deux tons (~4 cycles) ; bouton UI « Arrêt sirène » (18:51:00) → même payload, même son. **Attribution confirmée par l'opérateur.**
-- Incident antérieur de la semaine (bruits subis en mode test) : chaque désarmement automatique tracé (02/10 ×3, 03/10 ×2) a émis ce même `warning/stop` — mécanisme identique, très probable ; heure du bruit non disponible.
+- **Reproduction opérateur** : armement puis désarmement dashboard à 2 s d'intervalle, en mode test → seul `warning/stop` envoyé → séquence à deux tons (~4 cycles) ; bouton UI « Arrêt sirène » → même payload, même son. **Attribution confirmée par l'opérateur.**
+- Incident antérieur de la semaine (bruits subis en mode test) : chaque désarmement automatique tracé sur deux jours (5 au total) a émis ce même `warning/stop` — mécanisme identique, très probable ; heure du bruit non disponible.
 
 ## 3. Cause
 

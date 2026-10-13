@@ -258,13 +258,13 @@ NOMINATIVE_PATTERN      = re.compile(r"\bpresence\b.*\bantoine\b|\bantoine\b.*\b
 #
 # Trois formes complémentaires, calibrées sur le dépôt réel (0 FP CRITICAL) :
 #   1. KEYED — clé géo + valeur décimale. Séparateur ':' '=' (YAML/JSON/INI)
-#      ou '|' (tableau Markdown : « | Latitude | 44.8522979 | »).
+#      ou '|' (tableau Markdown : « | Latitude | NN.NNNNNNN | »).
 #   2. PAIR  — deux décimales haute précision adjacentes séparées par une
-#      virgule (« 44.8522979, -0.5875885 ») : forme narrative / liste / GeoJSON.
+#      virgule (« NN.NNNNNNN, -NN.NNNNNNN ») : forme narrative / liste / GeoJSON.
 #   3. BARE  — filet heuristique (WARNING) : décimale isolée à signature GPS
 #      (>= 6 décimales, dernier chiffre non nul pour exclure les valeurs
 #      « rondes » type températures). Attrape les littéraux de coordonnées
-#      sans clé ni paire (ex. constantes LATITUDE_REF = "44.8522979").
+#      sans clé ni paire (ex. constantes LATITUDE_REF = "NN.NNNNNNN").
 GEO_COORD_KEYED_PATTERN = re.compile(
     r"\b(?:latitude|longitude)\b\s*[:=|]\s*[+-]?\d{1,3}\.\d+", re.I
 )
@@ -790,7 +790,7 @@ _HISTORY_PATTERNS: list[tuple[str, str, re.Pattern[str]]] = [
     ("S4", "CRITICAL", re.compile(r"(alarm_code\s*[:=]\s*\d+|bssid\s*[:=])", re.I)),
     ("S4", "WARNING",  re.compile(r"\b(alarme|clavier|intrusion)\b", re.I)),
     # S8 — coordonnée GPS keyed : forme exacte de la fuite historique
-    # (« latitude: 44.8522979 » dans 17_zones/*_securite.yaml@parent-du-fix).
+    # (« latitude: NN.NNNNNNN » dans 17_zones/*_securite.yaml@parent-du-fix).
     ("S8", "CRITICAL", re.compile(r"\b(latitude|longitude)\b\s*[:=|]\s*[+-]?\d{1,3}\.\d+", re.I)),
     # S9 — clé réseau Zigbee : forme exacte de la fuite historique
     # (network_key en bloc littéral dans zigbee2mqtt/configuration.yaml).
