@@ -17,9 +17,20 @@
 #       C'est le cas d'un pont HomeKit gelé : aucune relance
 #       logicielle ne le réveille, seul un power-cycle récupère.
 #
+#     Rattrapage (contrat homekit_diagnostic.md §9.1, v1.5) :
+#     les deux déclencheurs ci-dessus ne voient qu'une TRANSITION.
+#     Une transition survenue pendant le démarrage de Home Assistant
+#     ou pendant qu'une garde était fausse est perdue, et la station
+#     reste muette sans remédiation (incident du 2026-10-17 : station
+#     muette ~15 h). Le déclencheur `rattrapage` agit sur l'ÉTAT :
+#     station muette ET toutes les gardes vraies, en continu pendant
+#     30 min. Borné à une impulsion par 24 h.
+#
 #     Cette automation :
 #     - consomme un diagnostic externe dédié
 #     - vérifie l'absence de campagne de remédiation réseau
+#     - n'agit que sur une prise ALLUMÉE (une prise éteinte est une
+#       coupure volontaire : elle n'est jamais rallumée ici)
 #     - exécute un redémarrage électrique ciblé
 #     - notifie l'événement par canal mobile
 #
@@ -29,12 +40,14 @@
 #     - aucune remédiation secondaire pendant campagne réseau
 #     - action uniquement en état réseau nominal
 #     - muet_ping_ok temporisé (débounce) ; muet_ping_ko immédiat
+#     - rattrapage sur état, au plus une impulsion par 24 h
 #     - aucune boucle ni retry
 # ==========================================================
 
 - id: "10160000000008"
   alias: "Météo - Netatmo - Redémarrage Salle de Jeux"
   mode: single
+  max_exceeded: silent
 
   trigger:
     # Boîtier mort / injoignable : redémarrage immédiat.
@@ -52,6 +65,25 @@
       for: "00:20:00"
       id: ping_ok
 
+    # Rattrapage sur état : station muette avec toutes les gardes
+    # vraies depuis 30 min. Couvre la transition perdue au démarrage
+    # (systeme_stable repasse off puis on à chaque démarrage, ce qui
+    # réarme ce déclencheur) et la transition survenue garde fausse
+    # (campagne réseau, panne secteur, prise éteinte). Les gardes
+    # sont DANS le gabarit : le déclencheur ne s'arme que lorsqu'il
+    # peut réellement agir. 30 min > 20 min : en cas nominal, ping_ok
+    # agit d'abord et la borne de 24 h neutralise ce déclencheur.
+    - platform: template
+      value_template: >
+        {{ states('sensor.diagnostic_netatmo_salle_de_jeux') in ['muet_ping_ko', 'muet_ping_ok']
+           and is_state('input_boolean.systeme_stable', 'on')
+           and is_state('input_boolean.reboot_box_en_cours', 'off')
+           and is_state('binary_sensor.acces_externe', 'on')
+           and is_state('binary_sensor.panne_secteur_en_cours', 'off')
+           and is_state('switch.prise_salle_de_jeux', 'on') }}
+      for: "00:30:00"
+      id: rattrapage
+
   condition:
     - condition: state
       entity_id: input_boolean.systeme_stable
@@ -68,10 +100,31 @@
     # Pendant une panne secteur, la station muette traduit la perte
     # d'alimentation (KO attendu) : power-cycler sa prise (non secourue) est
     # futile. acces_externe peut rester ON en coupure LOCALE (box sur UPS),
-    # d'où cette garde explicite. Reporté en sortie de panne.
+    # d'où cette garde explicite. Reporté en sortie de panne par le
+    # déclencheur `rattrapage`.
     - condition: state
       entity_id: binary_sensor.panne_secteur_en_cours
       state: "off"
+
+    # Prise éteinte = coupure volontaire (opérateur) : la station muette
+    # est un KO attendu. script.reboot_netatmo rallumerait la prise ;
+    # on s'abstient, sans notification.
+    - condition: state
+      entity_id: switch.prise_salle_de_jeux
+      state: "on"
+
+    # Borne du rattrapage : au plus une impulsion par 24 h, quel que
+    # soit le déclencheur qui a agi en dernier. Une station qui reste
+    # muette après un power-cycle n'est pas relancée en boucle.
+    - condition: template
+      value_template: >
+        {% if trigger.id != 'rattrapage' %}
+          true
+        {% else %}
+          {% set dernier = state_attr(this.entity_id, 'last_triggered') %}
+          {{ dernier is none
+             or (now().timestamp() - as_timestamp(dernier, 0)) >= 86400 }}
+        {% endif %}
 
   action:
     - action: script.reboot_netatmo
@@ -85,5 +138,6 @@
         message: >
           Station Netatmo Salle de Jeux redémarrée après détection
           {% if trigger.id == 'ping_ok' %}d'une station muette
-          joignable (service figé, ping OK){% else %}d'une station
+          joignable (service figé, ping OK){% elif trigger.id == 'rattrapage' %}d'une
+          station restée muette sans remédiation (rattrapage){% else %}d'une station
           muette sans ping{% endif %}.

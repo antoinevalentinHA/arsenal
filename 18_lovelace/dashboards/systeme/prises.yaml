@@ -48,6 +48,15 @@ views:
                 entity: switch.prise_chambre_enfants
                 name: Netatmo Enfants
                 icon: mdi:thermometer
+                show_label: true
+                label: >
+                  [[[
+                    const d = states['sensor.diagnostic_netatmo_enfants']?.state;
+                    if (d === 'ok') return 'Station : OK';
+                    if (d === 'muet_ping_ok') return 'Station muette (réseau OK)';
+                    if (d === 'muet_ping_ko') return 'Station muette (réseau KO)';
+                    return 'Station : indéterminée';
+                  ]]]
                 tap_action:
                   action: toggle
                   confirmation:
@@ -59,6 +68,15 @@ views:
                 entity: switch.prise_salle_de_jeux
                 name: Netatmo Salle de Jeux
                 icon: mdi:thermometer
+                show_label: true
+                label: >
+                  [[[
+                    const d = states['sensor.diagnostic_netatmo_salle_de_jeux']?.state;
+                    if (d === 'ok') return 'Station : OK';
+                    if (d === 'muet_ping_ok') return 'Station muette (réseau OK)';
+                    if (d === 'muet_ping_ko') return 'Station muette (réseau KO)';
+                    return 'Station : indéterminée';
+                  ]]]
                 tap_action:
                   action: toggle
                   confirmation:
