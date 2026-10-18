@@ -6,7 +6,7 @@
 
 | Champ | Valeur |
 |---|---|
-| **Nature** | Revue du journal système de l'instance, preuve **L3** (base courante, [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md)). Lecture seule. Aucune proposition implémentée. |
+| **Nature** | Revue du journal système de l'instance, preuve **L3** (base courante, [`solvabilite_probatoire.md`](../../../architecture/03_doctrines/solvabilite_probatoire.md)). Lecture seule. Aucune proposition des §2–§3 implémentée ; le complément du §7 (2026-10-18) s'accompagne de correctifs livrés à part. |
 | **Date** | 2026-10-17 (dépôt de référence `origin/main` = `adfa4738` ; Home Assistant 2026.10.1). |
 | **Sources** | Journal système (`system_log/list`, 23 entrées dédupliquées sur trois jours), historique et registres de l'instance, lus par l'interface web en session opérateur ; YAML et contrats du dépôt. |
 | **Version intégrale** | `arsenal-runtime/analyses/journal_systeme_20261017/RAPPORT.md` (hors dépôt gouverné) : relevé brut des 23 entrées, horodatages, chronologies. |
@@ -134,3 +134,43 @@ Remise à zéro immédiate : l'état actuel peut être ramené à « Au repos »
 Ce rapport ne change l'état d'aucun chantier : le registre n'est pas modifié.
 
 **Déploiement.** Rien n'est à déployer : aucun YAML n'est modifié.
+
+---
+
+## 7. Complément du 2026-10-18 — station Netatmo Enfants muette sans remédiation
+
+> Ajouté après la publication initiale. Preuve **L3** (traces d'automatisation et de script, états courants). Ce complément, lui, s'accompagne d'un correctif : voir §7.4.
+
+### 7.1 Fait observé
+
+Le lendemain du relevé, l'opérateur constate une station Netatmo hors service. Il coupe puis rétablit l'alimentation des **deux** prises de station, faute de savoir laquelle est en cause, et la station revient.
+
+Les traces établissent la séquence :
+
+1. Juste après un redémarrage de Home Assistant, le diagnostic de la **station 1 (Enfants)** passe à `muet_ping_ok`, **avant** que `input_boolean.systeme_stable` ne repasse à `on`.
+2. La chaîne de résilience HomeKit de cette station recharge l'entrée **cinq fois**, à intervalles croissants, sans effet, puis s'arrête au plafond. C'est la confirmation de la leçon terrain du contrat ([`homekit_diagnostic.md`](../../../contrats/homekit_diagnostic.md) §11) : le rechargement ne réveille pas une station figée.
+3. Le diagnostic reste `muet_ping_ok` **environ 15 h**. L'automatisation de redémarrage électrique (`10160000000007`) **ne s'exécute jamais** : aucune trace avant l'intervention de l'opérateur.
+4. La coupure manuelle fait passer les deux stations à `muet_ping_ko`. Les **deux** automatisations de redémarrage se déclenchent et exécutent `script.reboot_netatmo`, qui coupe puis rallume chaque prise. Ce sont **leurs** commandes qui remettent les prises sous tension en dernier, et chacune notifie un « redémarrage ».
+
+La station 2 (Salle de Jeux) était saine pendant cet épisode : elle n'explique pas les décrochages du §2.5.
+
+### 7.2 Causes établies
+
+| # | Cause | Effet |
+|---|---|---|
+| **D1** | Les déclencheurs de la remédiation ne voient qu'une **transition** (`to: muet_ping_ok`, `for: 20 min`). Survenue pendant le démarrage, elle n'est jamais vue ; l'état ne change plus ensuite. | Intention du contrat §9.1 non tenue : station muette pendant 15 h, preuve présente en continu, aucune action. Même famille de défaut que C19 (front consommé pendant une garde fausse). |
+| **D2** | `script.reboot_netatmo` n'exige qu'une prise non indisponible : une prise **éteinte** est coupée puis **rallumée**. | Une coupure volontaire de l'opérateur est traitée comme une panne et annulée, avec une notification trompeuse. |
+| **D3** | Le dashboard prises nomme les prises des stations, mais n'affiche pas l'état de chaque station. | L'opérateur ne peut pas savoir quelle prise couper. |
+
+### 7.3 Défaut résiduel non corrigé
+
+**D4 — chaîne HomeKit Enfants bloquée au plafond.** Juste après le démarrage, l'âge des données de l'entrée paraît récent par construction. `binary_sensor.retour_ok_homekit_station_enfants` est ainsi passé à `on` alors que la station était muette. Son unique déclenchement de remise à zéro a été ignoré, une exécution étant déjà en cours (`mode: single`), et le signal n'a plus changé depuis. Le compteur `input_number.homekit_station_enfants_reload_tentatives` est resté à 5 : à la prochaine panne de cette station, la chaîne HomeKit sera déjà au plafond.
+Correctif à arbitrer : âge des données au démarrage, et remise à zéro sur état plutôt que sur transition, dans le domaine résilience des intégrations ([`resilience_integrations.md`](../../../contrats/resilience_integrations.md)). Remise à zéro manuelle du compteur possible en attendant.
+
+### 7.4 Correctifs livrés avec ce complément
+
+| Défaut | Correctif | Document faisant foi |
+|---|---|---|
+| D1 | Déclencheur `rattrapage` sur **état** : station muette et toutes les gardes vraies depuis 30 min, au plus une impulsion par 24 h. | [`homekit_diagnostic.md`](../../../contrats/homekit_diagnostic.md) §9.1 (v1.5) |
+| D2 | Garde **prise allumée** dans les deux automatisations de station : une prise éteinte n'est jamais rallumée, aucune notification. Le script partagé n'est pas modifié ; le pont iDiamant garde son comportement. | idem |
+| D3 | État du diagnostic affiché en libellé sur les deux cartes de prise de station. | — (UI, texte seul) |

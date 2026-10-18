@@ -1,5 +1,5 @@
 # Contrat — Diagnostic station météo Netatmo
-**Arsenal** · Couche observation · v1.4
+**Arsenal** · Couche observation · v1.5
 
 ---
 
@@ -252,7 +252,7 @@ Il est **interdit** de combiner ping et preuves de vie dans une même condition 
 - **Désigner une cause de panne dans le nom d'un état**
 - **Pré-câbler une remédiation à un état observationnel sans politique explicite**
 
-### 9.1 Politique de remédiation externe (v1.3)
+### 9.1 Politique de remédiation externe (v1.3, rattrapage v1.5)
 
 > Cette politique est **externe** au diagnostic : elle est portée par des automatisations dédiées (`11_automations/meteo/reboot_station/*.yaml`) qui *consomment* l'état. Le capteur de diagnostic reste strictement observationnel (§9 « Autorisé ») et les noms d'états restent descriptifs (§10). L'existence de cette section satisfait l'exigence §9 d'une **politique explicite** : la remédiation n'est plus ni implicite ni absente.
 
@@ -270,7 +270,10 @@ Invariants de la politique :
 > **Mise à jour 2026-08-24.** Le capteur agrégé qui motivait cet avertissement (`sensor.homekit_age_donnees`) **n'existe plus** : la scission à la maille « entrée de configuration » lui a substitué un capteur d'âge **par station**, chacun ancré sur le groupe de sa propre entrée (cf. [`resilience_integrations.md`](resilience_integrations.md) §12). L'invariant de ciblage par station est inchangé — il est désormais **structurellement soutenu** au lieu d'être seulement prescrit.
 - **Débounce sur `muet_ping_ok` uniquement.** La temporisation (`for: 00:20:00`) confirme la persistance. `muet_ping_ko` reste immédiat.
 - **Tir unique, aucune boucle ni retry.** Une impulsion par épisode (`mode: single`) ; aucune escalade ni relance automatique en cas d'échec.
+- **Rattrapage sur état (v1.5).** Les déclencheurs `muet_ping_ko` et `muet_ping_ok` ne voient qu'une **transition**. Une transition survenue avant que l'automatisation n'écoute (démarrage de Home Assistant) ou pendant qu'une garde était fausse est perdue : la station reste muette sans remédiation, alors que la preuve est présente en continu. Chaque automatisation porte donc un troisième déclencheur, `rattrapage`, qui agit sur l'**état** : station dans un état muet **et toutes les gardes vraies**, en continu pendant **30 min**. Les gardes figurent dans le gabarit du déclencheur, qui ne s'arme que lorsqu'une action est possible ; `systeme_stable` repassant à `off` puis `on` à chaque démarrage, le rattrapage se réarme après tout redémarrage. En cas nominal, `muet_ping_ok` (20 min) agit avant lui.
+- **Borne du rattrapage (v1.5).** Le rattrapage n'agit que si l'automatisation n'a exécuté **aucune** impulsion depuis **24 h** (`last_triggered`). Une station restée muette après un power-cycle n'est donc pas relancée en boucle : au plus une impulsion de rattrapage par jour, sans escalade. Les déclencheurs de transition gardent leur comportement antérieur.
 - **Gardes communes aux deux états.** L'action n'est exécutée que si : `input_boolean.systeme_stable = on` (garde de démarrage, §3), `binary_sensor.panne_secteur_en_cours = off` (un silence sous coupure secteur est un KO attendu, non un gel — la prise est elle-même sur secteur), `input_boolean.reboot_box_en_cours = off` et `binary_sensor.acces_externe = on` (pas de superposition à une campagne de remédiation réseau).
+- **Prise éteinte = coupure volontaire (v1.5).** L'action n'est exécutée que si la prise de la station est **allumée** (`state = on`). Une prise éteinte traduit une coupure volontaire (geste opérateur) : la station muette est un KO attendu, et `script.reboot_netatmo` — qui coupe puis **rallume** — remettrait sous tension un équipement que l'opérateur a choisi d'éteindre. L'automatisation s'abstient, sans notification. Cette garde est portée par les automatisations de station, non par le script, partagé avec le pont iDiamant ([`pont_idiamant.md`](pont_idiamant.md), R-PONT-5).
 
 ---
 
@@ -330,8 +333,9 @@ Conséquence architecturale (v1.1 → v1.2) : à ce stade, aucune remédiation a
 - **v1.1** — Renommage des états vers une forme strictement observationnelle suite à une leçon terrain (§11). `ko_homekit` → `muet_ping_ok`, `ko_reseau` → `muet_ping_ko`. Ajout du §10 (règle de nommage), du §11 (leçon terrain), précision en §2.3 sur la portée réelle du ping. Aucune modification de la logique d'évaluation.
 - **v1.2** — Précision de la garde de démarrage en §3 (`muet_ping_ko`) : la remédiation automatique consommant cet état (redémarrage électrique de station) est subordonnée à `input_boolean.systeme_stable = on`, afin d'éviter un power-cycle parasite déclenché par un `muet_ping_ko` artefact d'initialisation post-redémarrage de Home Assistant. Aucune modification de la logique d'évaluation.
 - **v1.4** — Ajout du §2.4 et de **R-DIAG-1** : une preuve de vie doit être un capteur de la station, jamais une entité dérivée. Correction des deux preuves petite maison de la station 1, qui étaient des façades inter-intégrations (HomeKit + SwitchBot) à mémoire : elles pouvaient maintenir le diagnostic à `ok` station morte, et donc inhiber la remédiation du §9.1. Mise à jour du §9.1 : le capteur agrégé `sensor.homekit_age_donnees` n'existe plus, remplacé par un capteur d'âge par entrée. Aucune modification de la logique d'évaluation ni des noms d'états.
+- **v1.5** — Incident du 2026-10-17 (station 1) : diagnostic `muet_ping_ok` **en continu pendant environ 15 h** après un redémarrage de Home Assistant, sans aucun power-cycle — la transition est survenue pendant le démarrage et n'a jamais été vue par l'automatisation ; cinq rechargements de l'entrée HomeKit sont restés sans effet (confirmation du §11). Ajout en §9.1 du **rattrapage sur état** (station muette et gardes vraies depuis 30 min, borné à une impulsion par 24 h) et de la garde **prise allumée** (une prise éteinte est une coupure volontaire, jamais rallumée par la remédiation). Aucune modification de la logique d'évaluation du diagnostic ni des noms d'états. Trace : [`audit_journal_systeme_ha_20261017.md`](../audits/01_rapports/transverses/audit_journal_systeme_ha_20261017.md) §7.
 - **v1.3** — Levée de l'abstention de remédiation sur `muet_ping_ok` (§11) au profit d'une **politique explicite et bornée** (§9.1), motivée par la leçon terrain 2026-05-06 et sa récurrence 2026-07 : un unique power-cycle de la prise de la station, **ciblé par station**, déclenché sur `muet_ping_ok` **après persistance ≥ 20 min** (débounce), `muet_ping_ko` restant immédiat. Extension explicite de la garde de démarrage `systeme_stable` à `muet_ping_ok` (§3). Gardes communes inchangées (`systeme_stable`, `panne_secteur_en_cours`, `reboot_box_en_cours`, `acces_externe`). **Aucune modification de la logique d'évaluation du diagnostic** ni des noms d'états, qui restent purement observationnels (§10).
 
 ---
 
-*Arsenal — document contractuel · couche observation · diagnostic Netatmo · v1.4*
+*Arsenal — document contractuel · couche observation · diagnostic Netatmo · v1.5*

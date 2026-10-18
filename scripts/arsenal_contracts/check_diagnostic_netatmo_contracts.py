@@ -4,10 +4,11 @@
 Arsenal — Validation contractuelle
 Domaine : Diagnostic station meteo Netatmo
 Contrat (source normative) : 00_documentation_arsenal/contrats/homekit_diagnostic.md
-(« Diagnostic station météo Netatmo », couche observation ; document en v1.3,
-invariants vérifiés ici = socle v1.1 — écart de version noté en résiduel C14 Lot 1A.
-La v1.3 n'ajoute qu'une politique de remédiation externe (§9.1) : aucun invariant
-structurel du diagnostic n'est modifié, ce checker reste inchangé sur le fond.)
+(« Diagnostic station météo Netatmo », couche observation ; document en v1.5,
+invariants vérifiés ici = socle v1.1 du diagnostic — écart de version noté en
+résiduel C14 Lot 1A — plus, depuis la v1.5, deux invariants de la politique de
+remédiation externe §9.1 portés par les automatisations de station : T10 rattrapage
+sur état borné à 24 h, T11 garde « prise allumée ».)
 
 Le script verifie les invariants testables sans ambiguite du contrat
 v1.1, en se restreignant au fichier canonique pour les invariants
@@ -43,6 +44,19 @@ CANONICAL_FILE = (
 )
 
 TEMPLATE_SENSORS_DIR = ROOT / "12_template_sensors"
+
+# Automatisations de remédiation §9.1 : fichier -> (diagnostic, prise).
+REBOOT_DIR = ROOT / "11_automations" / "meteo" / "reboot_station"
+REBOOT_AUTOMATIONS = {
+    "enfants.yaml": (
+        "sensor.diagnostic_netatmo_enfants",
+        "switch.prise_chambre_enfants",
+    ),
+    "salle_de_jeux.yaml": (
+        "sensor.diagnostic_netatmo_salle_de_jeux",
+        "switch.prise_salle_de_jeux",
+    ),
+}
 DOCUMENTATION_DIR = ROOT / "00_documentation_arsenal"
 
 # ---------------------------------------------------------------------------
@@ -410,6 +424,95 @@ def test_ping_in_elif_branch() -> None:
           "non combine avec les preuves")
 
 
+def _section(content: str, start: str, end: str) -> str:
+    """Bloc YAML entre deux cles de premier niveau d'automatisation."""
+    m = re.search(
+        rf"^\s*{start}:\s*$(.*?)^\s*{end}:\s*$",
+        content,
+        re.DOTALL | re.MULTILINE,
+    )
+    return m.group(1) if m else ""
+
+
+def test_reboot_rattrapage_sur_etat() -> None:
+    """T10 - §9.1 v1.5 : rattrapage sur etat, gardes dans le gabarit, borne 24 h.
+
+    Chaque automatisation de station porte un declencheur `template`
+    d'id `rattrapage`, temporise a 30 min, dont le gabarit exige la
+    station muette ET toutes les gardes (dont la prise allumee) ; une
+    condition borne ce declencheur a une impulsion par 24 h via
+    `last_triggered`. Forme observable minimale, pas un parseur Jinja.
+    """
+    for name, (diag, prise) in REBOOT_AUTOMATIONS.items():
+        path = REBOOT_DIR / name
+        if not path.is_file():
+            ERRORS.append(f"T10 - Automatisation introuvable : {path}")
+            continue
+        content = _read(path)
+        triggers = _section(content, "trigger", "condition")
+        m = re.search(
+            r"-\s*platform:\s*template\s*\n(.*?)\bid:\s*rattrapage\b",
+            triggers,
+            re.DOTALL,
+        )
+        if not m:
+            ERRORS.append(f"T10 - {name} : declencheur template 'rattrapage' absent")
+            continue
+        bloc = m.group(1)
+        requis = (
+            diag,
+            "muet_ping_ko",
+            "muet_ping_ok",
+            "is_state('input_boolean.systeme_stable', 'on')",
+            "is_state('input_boolean.reboot_box_en_cours', 'off')",
+            "is_state('binary_sensor.acces_externe', 'on')",
+            "is_state('binary_sensor.panne_secteur_en_cours', 'off')",
+            f"is_state('{prise}', 'on')",
+            'for: "00:30:00"',
+        )
+        manquants = [r for r in requis if r not in bloc]
+        if manquants:
+            ERRORS.append(
+                f"T10 - {name} : gabarit 'rattrapage' incomplet, manque {manquants}"
+            )
+            continue
+        conditions = _section(content, "condition", "action")
+        if not (
+            "trigger.id != 'rattrapage'" in conditions
+            and "last_triggered" in conditions
+            and "86400" in conditions
+        ):
+            ERRORS.append(
+                f"T10 - {name} : borne 24 h du rattrapage absente des conditions"
+            )
+            continue
+    if not any(e.startswith("T10") for e in ERRORS):
+        print("✔ T10 - Rattrapage sur etat present et borne (2 stations)")
+
+
+def test_reboot_garde_prise_allumee() -> None:
+    """T11 - §9.1 v1.5 : la remediation n'agit que sur une prise allumee.
+
+    Une prise eteinte est une coupure volontaire ; script.reboot_netatmo
+    la rallumerait. La garde vit dans les conditions de l'automatisation
+    (donc aucune notification sur abstention), pas dans le script partage.
+    """
+    for name, (_diag, prise) in REBOOT_AUTOMATIONS.items():
+        path = REBOOT_DIR / name
+        if not path.is_file():
+            ERRORS.append(f"T11 - Automatisation introuvable : {path}")
+            continue
+        conditions = _section(_read(path), "condition", "action")
+        garde = re.compile(
+            rf"-\s*condition:\s*state\s*\n\s*entity_id:\s*{re.escape(prise)}\s*\n"
+            r"\s*state:\s*['\"]on['\"]"
+        )
+        if not garde.search(conditions):
+            ERRORS.append(f"T11 - {name} : garde '{prise} = on' absente des conditions")
+    if not any(e.startswith("T11") for e in ERRORS):
+        print("✔ T11 - Garde prise allumee presente (2 stations)")
+
+
 # ---------------------------------------------------------------------------
 # Orchestration
 # ---------------------------------------------------------------------------
@@ -423,11 +526,13 @@ TESTS = (
     test_no_negative_selection_antipatterns,
     test_preuves_only_sensors,
     test_ping_in_elif_branch,
+    test_reboot_rattrapage_sur_etat,
+    test_reboot_garde_prise_allumee,
 )
 
 
 def main() -> int:
-    print("Arsenal — Validation contractuelle : Diagnostic Netatmo (v1.1)")
+    print("Arsenal — Validation contractuelle : Diagnostic Netatmo (v1.5)")
     print(f"ROOT = {ROOT}")
     print()
     for test in TESTS:
