@@ -26,8 +26,16 @@ seule dans Home Assistant ; détail horodaté hors dépôt :
    (46) **avant** son vidage, et a démarré le timer de 30 s.
 4. À l'expiration, le déclenchement exige une consigne de session valide : elle est vide. Abandon
    **silencieux**, `retry_pending` laissé à `on`, aucun état terminal.
-5. La chaudière applique néanmoins 46 °C environ 52 s après la commande, hors cycle. Le gardien
-   hors cycle la ramène à 10 °C (comportement conforme). Le ballon gagne à peine 1,3 °C.
+5. La commande a néanmoins été exécutée : la **télémétrie** de consigne passe à une valeur ≠ 10
+   environ 52 s après l'émission, hors cycle. Le gardien hors cycle la ramène à 10 °C
+   (comportement conforme). Le ballon gagne à peine 1,3 °C.
+
+   *Rectificatif (instruction du 2026-11-04, §12).* Une version antérieure de ce point disait que
+   la chaudière avait appliqué la consigne « environ 52 s après la commande ». Ce n'est pas
+   établi. `binary_sensor.ecs_chauffe_en_cours_local` ne mesure pas une chauffe : il vaut
+   « consigne télémétrée ≠ 10 » (`12_template_sensors/ecs/chauffe_en_cours.yaml`, l. 36-41).
+   L'instant d'écriture dans la chaudière est seulement **borné** : après l'émission, au plus tard
+   à l'arrivée de la télémétrie (+52 s).
 
 ---
 
@@ -560,13 +568,264 @@ Checkers existants à exécuter et garder verts :
   correction et de tests.
 - **Arbitrages rendus (2026-11-04)** : AR-1, AR-6 et AR-7 validés ; AR-2 validé sous condition ;
   AR-3 en accord de principe (§5.1).
-- **À instruire avant la relecture architecturale et contractuelle** : EX-R1, EX-N1 à EX-N3, EX-D1,
-  EX-D2 et EX-S1 (§5.1).
+- **Instruits le 2026-11-04 (§12)** : EX-S1, EX-R1, EX-N1 à EX-N3, EX-D1, EX-D2. Par lecture du dépôt
+  et des traces déjà relevées ; quatre relevés runtime restent **à faire** (§12.6).
+- **Nouveaux arbitrages soumis** :
+  - AR-8 : fermer W7 (watchdog pendant la tentative 2) ;
+  - AR-9 : second correcteur après un échec de cycle ;
+  - AR-10 : défauts des gardiens et du watchdog, **hors C59** ;
+  - pour AR-2, la recommandation passe à N-2 (no-op contourné seulement sur le chemin
+    transactionnel du cycle et du retry).
 - **Attendu ensuite de l'opérateur** : relecture et validation des textes du §6, puis GO du Lot 1
   (contrats), puis du Lot 2 (runtime et tests).
 - **Hors périmètre, signalé** :
   - AR-4 et AR-5 ;
-  - par lecture de `10_scripts/ecs/cycle.yaml` et de `08_timers/ecs/watchdog.yaml` (30 min), la
-    somme des attentes bornées d'un cycle (signature 4 min 30, chauffe 20 ou 40 min, boost 10 ou
-    20 min) peut dépasser la durée du watchdog, notamment en désinfection. **À vérifier**, sans
-    conclusion à ce stade ; le contrat `06_temps_timers_watchdogs.md` n'a pas été relu sur ce point.
+  - la durée maximale des cycles face au watchdog : **instruite au §12.4** (EX-D1).
+
+---
+
+## 12. Instruction des points ouverts (2026-11-04)
+
+**Méthode et limites.** L'instruction repose sur la lecture du dépôt à `origin/main` = `6a5c83c3`,
+sur les contrats, et sur les traces Home Assistant déjà relevées pour l'incident (§1, niveau L3).
+Aucune lecture runtime supplémentaire n'a été faite : l'accès à l'interface n'était pas disponible
+dans des conditions acceptables pour l'opérateur. Les faits qui exigent HA sont listés comme
+**à relever** (§12.6).
+
+Légende :
+- **[F]** fait démontré, avec sa référence ;
+- **[L]** établi par lecture du code, non observé en fonctionnement ;
+- **[H]** hypothèse, non démontrée.
+
+**Aucune garantie matérielle n'est déduite de la lecture du code.**
+
+### 12.1 EX-S1 et EX-R1 — Commande haute tardive, robustesse du retour à 10 °C
+
+**Mécanismes de retour à 10 °C hors cycle, tels qu'ils existent :**
+
+| Mécanisme | Référence | Quand il agit | Limites |
+|---|---|---|---|
+| Gardien hors cycle (`10250000000006`) | `11_automations/ecs/consigne_10/gardien_consigne_reduite.yaml` | `binary_sensor.ecs_consigne_hors_cycle_incoherente` passe à `on` et y reste 20 s ; ou `systeme_stable → on` | deux tentatives espacées de 10 s, **une seule fois par passage à `on`** ; aucune notification |
+| Capteur d'incohérence | `12_template_sensors/ecs/consigne_incoherente.yaml` | `systeme_stable = on` ∧ `ecs_cycle_en_cours = off` ∧ `ecs_pipeline_en_cours = off` ∧ télémétrie numérique ≠ 10 | aveugle si la télémétrie n'est pas numérique, ou si `ecs_pipeline_en_cours` reste à `on` |
+| Gardien post-prélèvement (`10250000000005`) | `11_automations/ecs/consigne_10/applique_consigne_post_delai.yaml` | fin de `timer.ecs_gardien_post_prelevement` (25 / 12 / 45 min selon le mode) | armé **uniquement** à l'étape 9 du cycle (`10_scripts/ecs/cycle.yaml` l. 405), donc **jamais après un échec** ; deux tentatives, puis notification |
+| Watchdog (`10250000000008`) | `11_automations/ecs/consigne_10/watchdog.yaml` | expiration de `timer.ecs_cycle_watchdog` (30 min après l'ouverture de session) | un seul appel au bridge, sans vérification ; éteint `ecs_cycle_en_cours` mais **pas** `ecs_pipeline_en_cours` |
+| Alerte « chauffe sans demande » (`10250000000018`) | `11_automations/ecs/alerte_rebond.yaml` | `binary_sensor.ecs_chauffe_en_cours_local → on` plus de 8 min après le dernier lancement de cycle | **détecte et notifie, ne corrige pas** ; muette si la consigne était déjà ≠ 10 avant (pas de transition) |
+
+**Faits et constats :**
+
+- **[F]** Le capteur `binary_sensor.ecs_chauffe_en_cours_local` vaut « télémétrie de consigne ≠ 10 »
+  (`12_template_sensors/ecs/chauffe_en_cours.yaml` l. 36-41). Ce n'est pas une mesure de chauffe.
+- **[F]** Le 2026-11-04, la télémétrie est revenue à 10 environ 34 s après l'`applied` du gardien.
+  C'est ce retard qui a provoqué sa seconde tentative (traces, §1).
+- **[L]** La télémétrie `sensor.boiler_dhw_setpoint` est un capteur MQTT sans `expire_after`
+  (`14_mqtt_sensors/boiler/boiler_telemetry.yaml` l. 101-108). Elle conserve indéfiniment sa
+  dernière valeur. Le capteur d'incohérence ne vérifie pas sa fraîcheur, contrairement à la garde
+  de commandabilité (`12_template_sensors/boiler/telemetry_status.yaml` l. 146-166).
+- **[L]** Les sorties en échec du cycle **après** une émission de consigne haute (l. 264, 370, 399)
+  ferment la session sans armer le gardien post-prélèvement. Après un échec du retour basse
+  (l. 370) ou un retour basse non observé (l. 399), la consigne est vraisemblablement haute, et
+  **le seul mécanisme correcteur restant est le gardien hors cycle**.
+- **[H]** L'ordre d'exécution des commandes par l'écrivain souverain (une commande acceptée plus tôt
+  peut-elle s'exécuter **après** une commande émise plus tard ?) n'est documenté nulle part dans le
+  dépôt. Ses internes relèvent de l'axe B, externe, de C48. On ne peut donc ni exclure ni confirmer
+  qu'une commande haute acceptée s'exécute après un retour à 10 °C confirmé.
+
+**Fenêtres pendant lesquelles une consigne haute peut subsister hors cycle :**
+
+| Réf | Fenêtre | Durée | Établi | Indépendante du retry ? |
+|---|---|---|---|---|
+| **W1** | Latence nominale de correction : retard de télémétrie + 20 s de confirmation + ACK | ~1 à 1,5 min ; le 2026-11-04, consigne haute hors cycle au plus de 15:40:15 à ~15:41:18 | [F] | oui |
+| **W2** | **Double échec du gardien hors cycle** : l'incohérence reste à `on`, aucun nouveau passage à `on`, donc plus aucun déclenchement | **non bornée**, sans notification (sauf si la consigne haute est apparue plus de 8 min après le lancement) | [L] | oui |
+| **W3** | **Télémétrie non numérique ou figée** : incohérence fausse ou valeur périmée | non bornée | [L] (le gel lui-même est [H]) | oui |
+| **W4** | `panne_secteur_active = on` : gardien inhibé par contrat (`07` §3.2) | durée de l'épisode de panne | [F] (contrat) | oui ; dérogation assumée |
+| **W5** | Après le watchdog : `ecs_pipeline_en_cours` reste à `on`, ce qui inhibe le gardien jusqu'à ce que le script de cycle ferme lui-même sa session ; le cycle peut réappliquer une consigne haute entre-temps (**ECS-WD-2**, comportement assumé par `audits/02_arbitrages/ecs/arbitrage_watchdog_ecs.md` §8) | jusqu'à la fin du script | [L] | oui |
+| **W6** | Redémarrage pendant un cycle : `ecs_cycle_en_cours` et `ecs_pipeline_en_cours` sont restaurés à `on` ; `guard_pipeline_demarrage` ne purge rien si le cycle est `on` ; le watchdog restauré éteint seulement le verrou. Si son unique appel échoue, le gardien reste inhibé par `pipeline = on` | jusqu'au cycle suivant | [L] | oui |
+| **W7** | **Propre à la cible C59** : le watchdog expire pendant une tentative 2 (`emis`). Son appel est ignoré par le bridge occupé (`mode: single`, `appliquer_consigne_bridge.yaml` l. 165) ; T2 peut ensuite appliquer une consigne haute alors que le verrou est libéré | jusqu'à la fermeture du cycle | [L] | **non : introduite par B si rien ne l'empêche** |
+
+**Réponse à EX-S1.** Si une commande haute est appliquée tardivement après la confirmation du
+retour à 10 °C :
+- **hors cycle**, la correction est assurée **indépendamment du retry** par le gardien hors cycle,
+  dans la fenêtre W1, **à condition** que la télémétrie soit fraîche (W3) et que le gardien
+  réussisse au premier épisode (W2) ;
+- **dans la cible C59**, le retry ne peut pas réémettre une consigne haute après un retour basse : le
+  retour basse écrit une nouvelle intention, ce qui annule l'épisode par V1 et par le §11.10. Seule
+  W7 est propre à la cible.
+
+**Réponse à EX-R1.** Après l'échec d'un cycle, le retour à 10 °C repose **sur un seul mécanisme à
+un coup** (W2), sans alerte. Ce point est antérieur à C59, et C59 le réduit sans le fermer : le
+retour basse bénéficie d'une seconde tentative avant l'échec.
+
+**Propositions d'arbitrage :**
+
+| Réf | Proposition | Portée |
+|---|---|---|
+| **AR-8** | **Fermer W7 dans la cible** : le script d'attente ne rend `succes` que si `ecs_cycle_en_cours` est toujours à `on` ; sinon `annule` / `cycle_ferme`, et le cycle ferme sa session sans poursuivre. Le déclenchement revérifie aussi V2 **après** le retour de T2, et journalise une T2 conclue après la libération du verrou. Effet : C59 n'étend pas ECS-WD-2. | C59, sans toucher aux gardiens ni au watchdog |
+| **AR-9** | **Réduire W2 après un échec de cycle** : sur les trois sorties en échec postérieures à une émission haute (l. 264, 370, 399), armer aussi le gardien post-prélèvement via le script existant `ecs_armer_gardien_post_prelevement`. Cela donne un second correcteur, différé, qui alerte en cas de double échec. Aucun gardien n'est modifié ; seul `cycle.yaml` l'est, et il fait déjà partie du Lot 2. | C59 (recommandé) |
+| **AR-10** | W2 en régime général (réenclenchement du gardien hors cycle tant que l'incohérence persiste, alerte après échec), W3 (fraîcheur de la télémétrie dans le capteur d'incohérence), W5 et W6 (`ecs_pipeline_en_cours` non libéré par le watchdog). Tous touchent un gardien ou le watchdog, en dehors du périmètre arbitré pour C59 (EX-G ; arbitrage watchdog). | **Hors C59** : à ouvrir comme chantier distinct si l'opérateur le décide |
+
+### 12.2 EX-N1 à EX-N3 — Le no-op local du bridge
+
+**EX-N1 — Recensement des consommateurs.** Le no-op (`10_scripts/ecs/appliquer_consigne_bridge.yaml`
+l. 217-227) arrête le script **avant** l'écriture du helper de requête, sans ACK et sans résultat
+rendu. L'appelant lit ensuite `sensor.boiler_ack_dhw_set_setpoint_status`, qui décrit alors **la
+transaction précédente**.
+
+| Appelant | Référence | Peut-il atteindre le no-op ? | Effet aujourd'hui | Effet d'une suppression globale |
+|---|---|---|---|---|
+| Cycle : consigne haute (via confirmee) | `cycle.yaml` l. 253 | oui, si la télémétrie vaut déjà la cible (consigne restée haute) [L] | statut périmé : le cycle poursuit ou échoue selon la transaction précédente | une écriture réelle, conclusion corrélée |
+| Boost (via confirmee) | `cycle_boost_si_necessaire.yaml` l. 98 | rare [L] | statut périmé, journalisé seulement | idem |
+| Cycle : retour basse (via confirmee) | `cycle.yaml` l. 356 | oui, si la télémétrie vaut déjà 10 (watchdog passé, par exemple) [L] | statut périmé : faux échec possible, la session est fermée | idem |
+| Sortie de panne (via confirmee, `retour_basse`) | `11_automations/panne/secteur/desactivation_mode_panne.yaml` l. 137 | oui, si déjà à 10 [L] | statut périmé | une écriture de plus |
+| Gardien hors cycle, 1re et 2e tentative | `gardien_consigne_reduite.yaml` l. 112, 131 | **pratiquement non** : il n'agit que si la télémétrie est ≠ 10, et la seconde tentative exige que l'incohérence persiste [L] | — | aucun changement observable |
+| **Gardien post-prélèvement** | `applique_consigne_post_delai.yaml` l. 86-96 | **oui, à chaque cycle réussi** : la télémétrie vaut déjà 10 [F, trace du bridge de 06:18:04 terminée en `sequence/2/then/0`] | conclut « confirmée par ACK » sur l'`applied` **périmé** du retour basse du cycle | **une écriture réelle par cycle** ; conclusion sur un ACK réel |
+| Watchdog | `watchdog.yaml` l. 54 | oui, si déjà à 10 [L] | aucun contrôle du résultat | une écriture de plus |
+| Retry, tentative 2 | `retry_transactionnel/declenchement.yaml` l. 107 | **oui** : application tardive de T1, ou consigne déjà conforme [L] | D6 : épisode bloqué, compteur à 1 | **nécessaire** pour une preuve corrélée (AR-2) |
+
+**EX-N2 — Peut-on limiter la modification au chemin du retry ?** **Oui** [L]. Il suffit d'une
+entrée optionnelle de l'exécuteur (nom indicatif `transaction_obligatoire`, valeur par défaut :
+faux) qui saute le no-op. Les appelants qui ne la passent pas gardent un comportement inchangé à
+l'identique. C'est un amendement de `application_consigne.md`, dont l'entrée unique est aujourd'hui
+`target_temp` : le contrat réserve déjà une V2 pour des paramètres optionnels. La portée peut être :
+
+- **N-1 — tentative 2 seulement.** Portée minimale. Mais une T1 du cycle qui tombe sur le no-op ne
+  produit **aucun** résultat corrélé : la conclusion de confirmee (A-CF-2) resterait sans preuve
+  dans ce cas.
+- **N-2 — tentative 2 et appels via confirmee** (cycle, boost, sortie de panne). C'est le chemin
+  transactionnel du cycle. Toute conclusion qui conditionne le cycle repose alors sur un ACK
+  corrélé. Gardiens et watchdog sont inchangés. **Recommandé.** Effet sur la sortie de panne : au
+  plus une écriture de plus, lorsque la consigne est déjà à 10.
+- **N-3 — suppression globale.** Elle n'est **plus nécessaire** pour satisfaire C59. Elle changerait
+  aussi le gardien post-prélèvement (une écriture par cycle), ce qui est hors du périmètre arbitré.
+
+**EX-N3 — Ce qui est connu du comportement de la chaudière sur une écriture identique :**
+
+- **[F]** Le 2026-11-04, l'écrivain souverain a acquitté `applied` (en ~7 s) une commande à 10 °C
+  émise 10 s après une autre commande à 10 °C qu'il avait acquittée `applied` (en ~6 s). Traces :
+  bridge `4ce76a…` puis `570724…`, relevé hors dépôt.
+- **[F]** L'épreuve A-5 de la migration (`architecture/chauffage/migration_boiler_bridge_vers_boilerack.md`
+  §12.1) a, elle aussi, enchaîné deux commandes du gardien à 10 °C. Le document ne consigne pas
+  l'ACK de chaque tentative.
+- **Non établi :**
+  - ce que garantit `applied` côté matériel (écriture effective, relecture) ;
+  - si l'écrivain souverain court-circuite une valeur identique ;
+  - si une écriture répétée a un coût matériel (usure d'une mémoire non volatile, par exemple).
+  
+  Rien dans le dépôt ne le documente. Sur le seul fondement des faits ci-dessus, **la réponse
+  `applied` à une écriture identique est observée, pas garantie**.
+- **Proposition** : retenir N-2. Faire de P3 (§9) la preuve terrain de la réponse à une écriture
+  identique, en requalifiant P3 : elle n'est plus « à chaque retour post-prélèvement », puisque sous
+  N-2 ce chemin garde son no-op. P3 devient une **réserve opportuniste**, plus un verrou. Pour le
+  coût matériel, interroger la documentation de l'écrivain souverain (hors dépôt, axe B de C48).
+  Rien n'est conclu.
+
+### 12.3 EX-D2 — Points de départ des délais et articulation
+
+Notation : E0 = publication de T1 par le bridge.
+
+| Instant | Événement | Référence | Établi |
+|---|---|---|---|
+| E0 − ε | confirmee écrit l'intention (`etat = emise`, `ts`) | cible A-CF-1 | cible |
+| E0 | publication de T1 ; `expires_at = E0 + 15 s` | `appliquer_consigne_bridge.yaml` l. 242 | [L] |
+| ≤ E0 + 15 s | clôture locale de T1, appelée **E1** (attente ACK de 15 s) | idem l. 290-296 | [L] |
+| E1 + ε | armement : `timer.ecs_retry` (30 s) | `08_timers/ecs/retry.yaml` | [L] |
+| E1 + ε | **départ des 90 s** : début de l'attente du cycle, au retour de confirmee | cible A-PC-1 | cible |
+| E1 + 30 s ≈ E0 + 45 s | expiration du timer : contrôle V1–V6, avec âge de l'intention ≈ 45 s | cible §4.3 | cible |
+| ≤ E0 + 60 s | clôture de T2 (attente ACK de 15 s) | bridge l. 290-296 | cible |
+| E1 + 90 s ≈ E0 + 105 s | échéance de l'attente du cycle : fermeture de session si aucune issue | cible | cible |
+| intention.`ts` + 120 s ≈ E0 + 120 s | **échéance de validité** de l'intention (V3) | cible | cible |
+| ouverture de session + 30 min | expiration du watchdog, **indépendante** des délais ci-dessus | `08_timers/ecs/watchdog.yaml` ; `cycle_session_open.yaml` | [L] |
+
+**Cohérence :**
+
+- **Nominal** : la marge entre la clôture de T2 (≤ E0 + 60 s) et l'échéance du cycle (E0 + 105 s)
+  est de 45 s.
+- **Rôle non commandable** (`attente_commandabilite`) : T2 n'est possible que si la
+  commandabilité revient avant E0 + 75 s environ. Au-delà, le cycle se ferme à E0 + 105 s, ce qui
+  annule l'épisode (`cycle_ferme`) **avant** que la validité de 120 s soit atteinte. **V3 est donc
+  une défense de second rang** : elle ne sert que si le cycle n'a pas fermé (anomalie). Une borne de
+  120 s reste supérieure à 105 s, condition nécessaire pour ne jamais expirer une intention que le
+  cycle attend encore.
+- **Expirations des commandes** : `expires_at` borne seulement la **réception** par l'écrivain
+  souverain (`mqtt_ack_ha.md` §4.3 : `expired` = « dépassé à la réception »).
+  - **[F]** Le 2026-11-04, une commande acceptée avant son échéance a été exécutée, et rapportée par
+    la télémétrie 52 s après l'émission.
+  - **[H]** Rien ne borne, dans le dépôt, le délai d'exécution d'une commande acceptée.
+  - Conséquence : l'expiration ne protège pas d'une exécution tardive. Seul le gardien le fait
+    (§12.1).
+- **ACK tardifs** : sans borne connue, un `applied` tardif de T1 peut arriver à tout moment. La
+  cible l'ignore (§4.4). V5 l'admet comme compatible : son `request_id` est `attempt1_id`.
+- **Réserve AR-5** : le contrat du bridge prévoit 30 s de TTL et 20 s d'attente ACK, le runtime
+  15 s et 15 s. Si AR-5 aligne le runtime sur le contrat, la chronologie devient : E1 = E0 + 20 s,
+  clôture de T2 ≤ E0 + 70 s, échéance du cycle à E0 + 110 s. Les deux bornes restent cohérentes
+  (110 < 120), avec une marge plus faible.
+- **Proposition** : ancrer **explicitement** les deux délais au contrat, comme ci-dessus : 90 s
+  à partir du retour de confirmee (E1), 120 s à partir de `intention.ts` (≈ E0). Ajouter l'invariant
+  de construction « validité de l'intention > attente ACK + attente du cycle », à revérifier à
+  toute modification de ces délais.
+
+### 12.4 EX-D1 — Durées maximales des cycles et watchdog de 30 minutes
+
+**Durées bornées, par lecture de `10_scripts/ecs/cycle.yaml` et `cycle_boost_si_necessaire.yaml`
+[L]** (chaque application de consigne ≤ 15 s) :
+
+| Étape | Référence | Ponctuel / vaisselle | Désinfection |
+|---|---|---|---|
+| consigne haute | `cycle.yaml` l. 253 | 0:15 | 0:15 |
+| attente de la signature thermique | l. 290-293 | 4:30 | 4:30 |
+| boost 1 (conditionnel) : application + attente | l. 307 ; `boost` l. 98, 123-131 | 10:15 | 20:15 |
+| attente d'atteinte | l. 318-329 | 20:00 | 40:00 |
+| boost 2 (conditionnel) | l. 345 | 10:15 | 20:15 |
+| retour basse + attente de télémétrie | l. 356, 375-381 | 1:45 | 1:45 |
+| **total sans boost** | | **26:30** | **46:30** |
+| **total avec les deux boosts** | | **47:00** | **87:00** |
+
+**Constats :**
+
+- **[L]** Un cycle ponctuel ou vaisselle **sans boost** tient dans les 30 min (26 min 30 au pire).
+  **Un seul boost suffit à dépasser le watchdog.**
+- **[L]** Un cycle de **désinfection** dépasse le watchdog **même sans boost**, dès que l'attente
+  d'atteinte excède environ 23 min 30.
+- **[F]** Ce dépassement est l'objet d'ECS-WD-2 : réapplication d'une consigne haute après la
+  libération du verrou par le watchdog. L'arbitrage en vigueur l'**assume** (« conditionnée à une
+  occurrence non observée », `arbitrage_watchdog_ecs.md` §8). C59 ne le rouvre pas.
+- **Incidence de C59** :
+  - aucune attente supplémentaire en régime nominal : sans timeout, le cycle n'attend rien ;
+  - au pire, + 90 s par application en timeout, soit + 6 min pour quatre applications (haute,
+    boost 1, boost 2, retour basse) ;
+  - **effet indirect** : aujourd'hui, un timeout sur la consigne haute **abrège** le cycle (arrêt
+    immédiat). Avec C59, le cycle rattrapé va à son terme et s'expose au watchdog comme un cycle
+    normal.
+  
+  L'exposition à ECS-WD-2 augmente donc marginalement ; elle ne change pas de nature.
+- **[L]** Si le watchdog expire **pendant** une attente C59, la cible annule l'épisode
+  (`cycle_ferme`), et le cycle ferme sa session : c'est **plus sûr** qu'aujourd'hui. Le cas
+  dangereux est W7 (watchdog pendant `emis`), que ferme AR-8.
+- **À relever** (§12.6) : les durées réelles des cycles, et en particulier des désinfections, ainsi
+  que l'existence ou non d'expirations réelles du watchdog. Sans ces relevés, la probabilité d'un
+  dépassement **n'est pas établie**.
+- **Propositions** : retenir AR-8, qui empêche C59 d'aggraver ECS-WD-2. Signaler à l'opérateur que
+  la prémisse d'ECS-WD-2 (« occurrence non observée ») est **vérifiable** par le relevé du §12.6.
+  Un éventuel réexamen de cet arbitrage reste **hors C59** et relève de sa seule décision.
+
+### 12.5 Effets sur la cible et sur les arbitrages
+
+- **AR-2** (validé sous condition) : l'instruction conduit à recommander **N-2**, sans suppression
+  globale. Le texte A-AC-2 du §6.2 sera réécrit en ce sens à la relecture.
+- **AR-3** (accord de principe) : ancrages précisés (§12.3). Pas de changement de valeur.
+- **Nouveaux arbitrages proposés** : AR-8 (W7, dans C59), AR-9 (second correcteur après un échec
+  de cycle, dans C59), AR-10 (W2 en régime général, W3, W5, W6 : hors C59).
+- **Tests à ajouter au §8 si AR-8 et AR-9 sont retenus** :
+  - T17 : watchdog pendant l'attente d'issue → fermeture, sans poursuite ;
+  - T18 : watchdog pendant `emis` → aucune poursuite, T2 journalisée comme postérieure au verrou ;
+  - T19 : échec du retour basse → gardien post-prélèvement armé.
+
+### 12.6 À relever dans Home Assistant (lecture seule, quand l'accès sera disponible)
+
+1. Historique de `sensor.ecs_consigne_chaudiere_securisee` (historisée) autour de l'incident :
+   instants exacts des changements de consigne télémétrée.
+2. Cadence de publication réelle de `sensor.boiler_dhw_setpoint` (attribut `last_reported`).
+3. `last_triggered` et traces de `automation.ecs_watchdog_fin_de_cycle` (`10250000000008`) : le
+   watchdog a-t-il déjà expiré en conditions réelles ?
+4. Historique de `input_number.ecs_duree_dernier_cycle_figee` et de
+   `input_text.ecs_resume_dernier_cycle_fige` (historisés) : durées réelles par mode, désinfection
+   en tête.
