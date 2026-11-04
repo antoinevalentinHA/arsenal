@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Corriger l'orchestrateur de retry de la consigne ECS (`dhw_setpoint`) pour qu'un timeout de confirmation pendant un cycle soit rattrapé **sans jamais** produire une consigne fausse, obsolète ou hors cycle. |
 | **Domaine** | ECS (exécution transactionnelle via l'écrivain souverain). Contrat générique impliqué : `contrats/boiler/retry_transactionnel.md`. |
-| **Statut** | **Ouvert (2026-11-04) — cadrage livré : constats, architecture cible A + B + C validée dans son principe par l'opérateur, amendements contractuels et plan d'intervention proposés. Aucun contrat, runtime, checker ni test modifié.** Implémentation **non autorisée** à ce stade : validation finale opérateur attendue (§11). |
+| **Statut** | **Ouvert (2026-11-04) — cadrage livré : constats, architecture cible A + B + C validée dans son principe par l'opérateur, arbitrages AR-1 à AR-7 rendus (§5.1 ; AR-2 sous condition), amendements contractuels proposés et en attente de relecture. Aucun contrat, runtime, checker ni test modifié.** Implémentation **non autorisée** à ce stade (§11). |
 | **Priorité** | P1 — un cycle ECS peut échouer sans rattrapage (constaté) ; le mécanisme actuel peut, par lecture du code, appliquer une valeur fausse (boost) ou une consigne haute hors cycle (chemin watchdog). |
 | **Ouvert le** | 2026-11-04, sur décision de l'opérateur, à la suite de l'incident du jour (§1). |
 | **Registre** | Ligne **C59**, ① Actifs, [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). Ce document est la source faisant foi. |
@@ -297,6 +297,30 @@ par le cycle, émise après revalidation V1–V6.
 | **AR-6** | Autoriser un **test provoqué** sur le terrain (timeout réel) ? | **Non par défaut.** Les dix scénarios sont prouvés en CI (§8). Le timeout réel reste une **réserve opportuniste**, non bloquante (§9). Provoquer un timeout exigerait d'agir sur la chaîne de l'écrivain souverain (R-VERROU-2). |
 | **AR-7** | Historiser `input_select.ecs_retry_etat` et `input_text.ecs_retry_motif` (faible fréquence) ? | **Oui**, conformément au contrat recorder (`architecture/01_recorder/contrat.md`, fiche de décision) : c'est la condition d'une preuve L3/L4 (§9). Les ACK restent exclus (Population B). |
 
+### 5.1 Arbitrages rendus par l'opérateur (2026-11-04)
+
+Ces arbitrages **priment** sur les recommandations du tableau ci-dessus. Les textes du §6 restent
+des propositions : leur validation est **en attente**, après relecture des formulations exactes.
+
+| Réf | Décision | Suite à donner avant la relecture architecturale |
+|---|---|---|
+| **AR-1** | **Validé.** Le retry ECS est limité aux décisions émises par un cycle toujours actif. Les retours à 10 °C hors cycle restent sous la responsabilité des gardiens. | **EX-R1** : vérifier explicitement la robustesse du retour bas après l'échec d'un cycle, c'est-à-dire la chaîne fermeture de session → gardien hors cycle, y compris lorsque `ecs_pipeline_en_cours` n'est pas libéré. |
+| **AR-2** | **Validation conditionnelle.** Validé : la tentative 2 est toujours une vraie transaction, conclue par un `applied` corrélé. **Non validé à ce stade : la suppression globale du no-op.** | **EX-N1** : recenser les consommateurs du no-op local. **EX-N2** : établir si la modification peut être limitée au chemin transactionnel du retry. **EX-N3** : confirmer le comportement réel de la chaudière sur une consigne identique. Indice préliminaire (L3, à confirmer) : le 2026-11-04, la seconde tentative du gardien hors cycle a émis 10 °C peu après un `applied` à 10 °C, et a reçu `applied` en ~7 s. |
+| **AR-3** | **Accord de principe** : 90 s d'attente maximale, 120 s de validité de l'intention. | **EX-D2** : préciser l'événement de départ de chaque délai, et vérifier leur cohérence avec `timer.ecs_retry` (30 s), l'attente ACK du bridge (15 s), le TTL des commandes (15 s) et le watchdog (30 min). |
+| **AR-6** | **Validé.** Aucun test de défaillance provoquée sur l'installation réelle. Modèle et contrôles structurels acceptés pour la qualification préalable ; un incident réel complétera la validation terrain. | — (§9, P5 inchangée : réserve opportuniste) |
+| **AR-7** | **Validé.** Historisation du retry avec ce qu'il faut pour le reconstituer : états, motifs de terminaison, horodatages, éléments de corrélation. **Sans journalisation excessive.** | Arrêter, au Lot 2, la liste minimale des entités historisées, avec leur fréquence d'écriture attendue. |
+
+**Exigences complémentaires (2026-11-04) :**
+
+- **EX-S1** — Vérifier le scénario d'une **commande haute appliquée tardivement après la
+  confirmation du retour à 10 °C**. La sécurité doit rester garantie **indépendamment du retry**.
+- **EX-D1** — Examiner l'incidence de l'attente supplémentaire sur la **durée maximale des cycles**,
+  notamment en désinfection, et sur le **watchdog de 30 minutes**. Cela rejoint l'observation déjà
+  signalée au §11.
+
+**Autorisations en vigueur** : publication de la branche et PR du Lot 0, **sans fusion**. Aucune
+modification des contrats normatifs, du runtime, des checkers ni des tests.
+
 ---
 
 ## 6. Amendements contractuels proposés — NON APPLIQUÉS
@@ -534,8 +558,12 @@ Checkers existants à exécuter et garder verts :
 
 - **Fait (Lot 0)** : ouverture, constats D1–D9, architecture cible, amendements proposés, plan de
   correction et de tests.
-- **Attendu de l'opérateur** : trancher AR-1, AR-2, AR-3, AR-6 et AR-7 ; valider les textes du §6 ;
-  donner le GO du Lot 1 (contrats), puis celui du Lot 2 (runtime et tests).
+- **Arbitrages rendus (2026-11-04)** : AR-1, AR-6 et AR-7 validés ; AR-2 validé sous condition ;
+  AR-3 en accord de principe (§5.1).
+- **À instruire avant la relecture architecturale et contractuelle** : EX-R1, EX-N1 à EX-N3, EX-D1,
+  EX-D2 et EX-S1 (§5.1).
+- **Attendu ensuite de l'opérateur** : relecture et validation des textes du §6, puis GO du Lot 1
+  (contrats), puis du Lot 2 (runtime et tests).
 - **Hors périmètre, signalé** :
   - AR-4 et AR-5 ;
   - par lecture de `10_scripts/ecs/cycle.yaml` et de `08_timers/ecs/watchdog.yaml` (30 min), la
