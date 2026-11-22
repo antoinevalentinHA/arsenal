@@ -1,8 +1,8 @@
 # Contrat — `10_scripts/ecs/appliquer_consigne_bridge.yaml`
 
 **Arsenal** | Domaine : ECS | Couche : Exécution  
-**Version** : V1.2 | **Statut** : Validé  
-**Auteur** : Arsenal Architecture | **Date** : 2026-09-06
+**Version** : V1.3 | **Statut** : Validé  
+**Auteur** : Arsenal Architecture | **Date** : 2026-11-22
 
 > ### AMENDÉ — surface de commande portée sur l'écrivain souverain
 >
@@ -42,6 +42,34 @@
 > dette documentaire V1 restent en l'état.
 >
 > Référence : [`C49`](../../audits/04_chantiers/chauffage/c49_suppression_restitution_transactions_ack.md)
+
+> ### AMENDÉ (V1.3) — la publication ne peut plus laisser le helper occupé
+>
+> **Le statut du présent contrat est CONSERVÉ.** Une garantie est ajoutée ; rien
+> n'est retiré.
+>
+> **Incident du 2026-11-22.** `mqtt.publish` a été refusé (`Unauthorized`) pour
+> un utilisateur non administrateur. L'erreur a interrompu le script **après**
+> l'écriture du helper et **avant** sa libération, puis elle a interrompu les
+> appelants : la fermeture de session n'a pas été atteinte. Le précheck du
+> runtime sur le helper résiduel a ensuite fait avorter tous les appels
+> suivants. Aucune commande ECS n'a pu partir pendant 1 h 35.
+>
+> **Garantie ajoutée.** La publication est **non bloquante** : une erreur
+> levée par l'appel de publication (`HomeAssistantError`) ne remonte pas. Sans
+> ACK corrélé, l'attente expire, la conclusion est le *timeout local HA*, et
+> le helper est libéré. Même règle que la couche Exécution de la
+> climatisation (« la couche Exécution conclut toujours ») ; même limite : une
+> exception qui n'est pas une `HomeAssistantError` traverse la garde.
+>
+> **Réserve, non traitée ici.** Ce contrat déclare la vérification
+> d'occupation du helper « non implémentée V1 ». Le runtime la fait pourtant
+> (arrêt en précheck si le helper n'est pas vide). Cette divergence est
+> antérieure à cet amendement. Sa conséquence reste ouverte : si le script est
+> interrompu autrement (arrêt de l'appelant, redémarrage de HA pendant une
+> transaction), le helper reste occupé et bloque les appels suivants.
+>
+> Référence : [`C59`](../../audits/04_chantiers/ecs/c59_retry_transactionnel_ecs.md), constat D10.
 
 ---
 
@@ -131,6 +159,8 @@ Ces ressources sont fixes en V1. Ce script n'est pas un framework générique.
 - utilise un TTL fixe de **30 s** et une fenêtre d'attente ACK de **20 s**
 - attend une conclusion ACK parmi : `applied` / `rejected` / `timeout`
 - tente le nettoyage du helper de requête en fin d'exécution, dans le flux nominal du script
+- ne propage pas une erreur de publication (`HomeAssistantError`) : l'exécution
+  continue jusqu'à la conclusion *timeout local HA* et au nettoyage du helper (V1.3)
 - laisse la conclusion lisible via la conjonction
   `sensor.boiler_ack_dhw_set_setpoint_status` **ET**
   `sensor.boiler_ack_dhw_set_setpoint_request_id`
