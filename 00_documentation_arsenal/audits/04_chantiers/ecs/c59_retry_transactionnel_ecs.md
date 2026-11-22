@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Corriger l'orchestrateur de retry de la consigne ECS (`dhw_setpoint`) pour qu'un timeout de confirmation pendant un cycle soit rattrapé **sans jamais** produire une consigne fausse, obsolète ou hors cycle. |
 | **Domaine** | ECS (exécution transactionnelle via l'écrivain souverain). Contrat générique impliqué : `contrats/boiler/retry_transactionnel.md`. |
-| **Statut** | **Ouvert (2026-11-04) — cadrage livré : constats, architecture cible A + B + C validée dans son principe par l'opérateur, arbitrages AR-1 à AR-7 rendus (§5.1 ; AR-2 sous condition), amendements contractuels proposés et en attente de relecture.** Implémentation de l'architecture cible **non autorisée** à ce stade (§11). **Seule exception : correctif ciblé D10 (Lot 0-bis, 2026-11-22, §13), demandé par l'opérateur après l'incident du jour — contrat `application_consigne.md` V1.3, script bridge, checker T17.** |
+| **Statut** | **Ouvert (2026-11-04) — cadrage livré : constats, architecture cible A + B + C validée dans son principe par l'opérateur, arbitrages AR-1 à AR-7 rendus (§5.1 ; AR-2 sous condition), amendements contractuels proposés et en attente de relecture.** Implémentation de l'architecture cible **non autorisée** à ce stade (§11). **Seule exception : correctif ciblé D10 (Lot 0-bis, 2026-11-22, §13), demandé par l'opérateur après l'incident du jour — contrat `application_consigne.md` V1.3, script bridge, checker T17 ; fusionné et déployé le 2026-11-22, chemin nominal validé en L4.** |
 | **Priorité** | P1 — un cycle ECS peut échouer sans rattrapage (constaté) ; le mécanisme actuel peut, par lecture du code, appliquer une valeur fausse (boost) ou une consigne haute hors cycle (chemin watchdog). |
 | **Ouvert le** | 2026-11-04, sur décision de l'opérateur, à la suite de l'incident du jour (§1). |
 | **Registre** | Ligne **C59**, ① Actifs, [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md). Ce document est la source faisant foi. |
@@ -580,7 +580,8 @@ Checkers existants à exécuter et garder verts :
 - **Attendu ensuite de l'opérateur** : relecture et validation des textes du §6, puis GO du Lot 1
   (contrats), puis du Lot 2 (runtime et tests).
 - **Lot 0-bis (2026-11-22, §13)** : correctif ciblé de D10 appliqué sur demande de l'opérateur
-  (publication non bloquante du bridge). D7 et le reste de l'architecture cible restent soumis au
+  (publication non bloquante du bridge). Fusionné (#884), déployé le 2026-11-22, chemin nominal
+  validé en L4 ; chemin d'erreur non établi (réserve opportuniste). D7 et le reste de l'architecture cible restent soumis au
   GO des Lots 1 et 2.
 - **Hors périmètre, signalé** :
   - AR-4 et AR-5 ;
@@ -883,9 +884,11 @@ non observée sur le correctif.
   `courbe_de_chauffe/application_parallele.yaml`, `courbe_de_chauffe/application_pente.yaml`) :
   même construction (helper écrit, puis `mqtt.publish` sans garde) **[L]**. Hors C59 (en-tête,
   « Dépendances »). Signalé comme **AR-12**, sans correctif.
-- **Recorder** : l'API d'historique a renvoyé une liste vide pour toutes les entités interrogées le
-  2026-11-22. Les relevés du §12.6 ne sont donc pas faisables par l'historique tant que ce point
-  n'est pas instruit. Hors C59.
+- **Recorder — rectificatif.** Une première rédaction disait que le recorder ne restituait aucun
+  historique. C'est **inexact** : l'historique vide concernait des entités absentes de la liste
+  `include` de `recorder.yaml` (`sensor.boiler_dhw_temperature`, `sensor.boiler_dhw_setpoint`,
+  helpers de requête), donc non historisées par conception. `sensor.ecs_consigne_chaudiere_securisee`
+  est historisée : le relevé n° 1 du §12.6 reste faisable.
 
 **Arbitrages proposés.**
 
@@ -894,8 +897,13 @@ non observée sur le correctif.
 | **AR-11** | Libérer un helper de requête ECS orphelin (occupé alors que le bridge ne tourne pas), au démarrage de HA ou à l'ouverture de session ? | **Oui, dans l'architecture cible** (Lot 2) : sans cela, toute interruption autre qu'une erreur de publication bloque encore l'ECS. |
 | **AR-12** | Appliquer la même garde aux trois scripts chauffage ? | **Oui, hors C59** : même défaut, autre domaine ; à ouvrir ou rattacher par l'opérateur. |
 
-**Déploiement et preuves.** Le correctif est écrit et vérifié en CI locale. Un merge sur `main`
-**ne le déploie pas** : il faut mettre à jour le clone runtime, puis recharger les scripts dans HA.
-Preuve attendue : **L4**, une publication refusée qui conclut *timeout local HA* et laisse le helper
-vide. Elle n'est pas provoquée (même logique que AR-6) ; elle reste une **réserve opportuniste**.
+**Déploiement et preuves.**
+
+| État | Fait (2026-11-22, heure locale) |
+|---|---|
+| Git | Fusionné sur `main` : `bd789f62` (#884). |
+| Clone runtime | `/config` avancé de `6a5c83c3` à `bd789f62` par `git merge --ff-only origin/main`, à 22:0x. Les modifications locales préexistantes, sans rapport avec C59, n'ont pas été touchées. |
+| Home Assistant | `check_config` = `valid`, puis `script.reload` à 22:16, hors cycle ECS et sans aucun script en cours. La configuration chargée de `script.ecs_appliquer_consigne_bridge` porte `continue_on_error: true` sur `mqtt.publish`. |
+| Validation, chemin nominal | **L4**. 22:17:06 : appel manuel du bridge à 11 °C (sous la température du ballon, sans effet thermique). Trace `finished` jusqu'à l'étape 9, ACK `applied` corrélé (même `request_id`), helper vide, `getTempWWsoll` = 11 sur la chaudière. 22:18:16 et 22:18:32 : le gardien hors cycle (`10250000000006`) ramène la consigne à 10 °C par deux transactions `finished` ; dernier ACK `applied` corrélé ; `getTempWWsoll` = 10 sur la chaudière. |
+| Validation, chemin d'erreur | **Non établie.** Une publication refusée qui conclut *timeout local HA* et laisse le helper vide n'est pas provoquée (même logique que AR-6). Elle reste une **réserve opportuniste**. |
 
