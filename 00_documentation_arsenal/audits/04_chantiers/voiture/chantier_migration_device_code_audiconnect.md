@@ -4,7 +4,7 @@
 |---|---|
 | **Chantier** | Migration de l'intégration HACS **`audiconnect`** vers l'authentification **Device Authorization Grant (RFC 8628)** suite à la coupure CARIAD / Play Integrity. |
 | **Domaine** | Voiture — Audi A3 e-tron — couche d'ingestion cloud (`custom_components/audiconnect`). |
-| **Statut** | **Ouvert — correctif vendorisé en production, en attente du merge upstream.** Le device-code tourne en local (voiture fonctionnelle). Deux PR ouvertes sur le dépôt officiel : **#777** (correctif de fond) et **#778** (traductions FR). Aucune release upstream ne contient encore le device-code. |
+| **Statut** | **CLOS (2026-11-22) — objectif atteint : le device-code est livré par les releases officielles, et la copie vendorisée suit l'amont (v2.5.2, #886). Voir §8.** Les §2 à §6 décrivent l'intérim de 2026 et sont conservés pour l'historique. |
 | **Priorité** | **P1 pendant la panne (résolue localement) → P3 en suivi** : la voiture fonctionne ; le reste est de la gouvernance de mise à jour. |
 | **Dépôt officiel** | `audiconnect/audi_connect_ha` (cf. `manifest.json` : `documentation`, `issue_tracker`). |
 | **Issue amont** | [`audiconnect/audi_connect_ha#772`](https://github.com/audiconnect/audi_connect_ha/issues/772) — changement backend CARIAD (attestation Play Integrity) début juillet 2026. |
@@ -99,3 +99,33 @@ Contre-exemple à éviter : si un mainteneur publie un **hotfix intermédiaire**
 - Audit du domaine (état runtime) : [`audits/01_rapports/voiture/audit_domaine_audi.md`](../../01_rapports/voiture/audit_domaine_audi.md).
 - Manifeste de l'intégration : `custom_components/audiconnect/manifest.json`.
 - Amont : issue #772, PR #777, PR #778 (`audiconnect/audi_connect_ha`).
+
+---
+
+## 8. Clôture (2026-11-22)
+
+**Constat**, sur la copie vendorisée v2.5.2 (dépôt, #886) et sur le runtime :
+
+| Critère (§6) | Constat |
+|---|---|
+| Auth device-code opérationnelle | Le config-flow device-code fait partie de la release officielle (`async_step_device`, `request_device_code` dans `config_flow.py`). Sur le runtime, l'entrée `audiconnect` est `loaded`, la dernière synchronisation date du 2026-11-22 à 10:12, et le journal système ne contient aucune entrée Audi. |
+| Scope `mbb` présent | `DEVICE_CODE_SCOPE = "openid mbb profile badge cars dealers vin"` dans `audi_services.py`. |
+| Capteurs métier peuplés | Kilométrage et horodatage de mise à jour à jour. 15 entités sur 68 sont `unknown` ou `unavailable` (trajets, autonomie hybride et thermique, temps de climatisation restant, bouton) : **non instruit ici**, sans lien établi avec l'authentification. |
+| UI FR | `translations/fr.json` contient les chaînes device-code. |
+| `manifest.json` | `2.5.2`, version de la release adoptée. |
+| Dépôt = runtime | Oui depuis #886 ; `git status` vide dans `/config` le 2026-11-22. |
+
+**Phase B réalisée dans les faits.** Les releases officielles ont été adoptées par le gestionnaire de
+mises à jour (v2.5.0, `b90c6d0a`, puis v2.5.2, #886). La règle d'or du §3 n'a plus d'objet : la
+release adoptée contient le device-code.
+
+**Ce qui reste, sans relever de ce chantier :**
+- **Patch local `38b00837`** (`bool()` sur `isClimatisationAtUnlock` et `isMirrorHeatingEnabled`
+  dans `audi_services.py`) : c'est le seul écart connu avec l'amont. Une mise à jour peut l'écraser ;
+  il faut vérifier sa présence après chaque mise à jour, comme on l'a fait pour la v2.5.2.
+- **HACS remplacé par Marketplace.** Depuis Home Assistant 2026.11, l'intégration native
+  Marketplace remplace HACS : migration automatique le 2026-11-14, `custom_components/hacs/` retiré
+  du dépôt par #887. Les mentions de HACS aux §3 à §6 se lisent désormais « Marketplace ».
+  Marketplace affiche la version installée `v2.5.3b1` alors que `manifest.json` indique `2.5.2` :
+  écart d'étiquette, non instruit.
+
