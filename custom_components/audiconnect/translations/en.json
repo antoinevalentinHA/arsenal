@@ -4,13 +4,18 @@
       "already_configured": "Account has already been configured",
       "reauth_successful": "Re-authentication was successful",
       "reconfigure_successful": "Reconfiguration was successful",
-      "device_auth_failed": "Could not start device sign-in with Audi. Please try again later."
+      "device_auth_failed": "Could not start device sign-in with Audi. Please try again later.",
+      "auth0_auth_failed": "Could not start browser sign-in with Audi. Please try again later."
     },
     "create_entry": {},
     "error": {
       "authorization_pending": "Sign-in not detected yet. Approve the request in your browser, then press OK.",
       "device_auth_failed": "Device sign-in failed. Please start again.",
-      "invalid_credentials": "Invalid credentials"
+      "invalid_credentials": "Invalid credentials",
+      "invalid_auth0_callback": "The myAudi callback URL is invalid or belongs to a different sign-in attempt.",
+      "auth0_denied": "Audi sign-in was cancelled or denied.",
+      "auth0_auth_failed": "Audi rejected the authorization code. Start the sign-in again.",
+      "unexpected": "Unexpected error"
     },
     "step": {
       "user": {
@@ -30,6 +35,20 @@
       "device": {
         "title": "Sign in to Audi",
         "description": "Open the following link and sign in with your Audi account to authorise Home Assistant:\n\n[{verification_uri}]({verification_uri})\n\nIf you are asked for a code, enter: **{user_code}**\n\nOnce you have approved it, press **OK**."
+      },
+      "auth0": {
+        "title": "Sign in to Audi",
+        "description": "Open [{authorization_url}]({authorization_url}) in a private browser window and sign in. Audi then redirects to a localhost page that may show an unable-to-connect error; this is expected. Copy the complete URL from the browser address bar and paste it below.",
+        "data": {
+          "callback_url": "myAudi callback URL"
+        }
+      },
+      "reauth_auth0": {
+        "title": "Re-authenticate with Audi",
+        "description": "Open [{authorization_url}]({authorization_url}) in a private browser window and sign in. Audi then redirects to a localhost page that may show an unable-to-connect error; this is expected. Copy the complete URL from the browser address bar and paste it below.",
+        "data": {
+          "callback_url": "myAudi callback URL"
+        }
       },
       "reauth_confirm": {
         "title": "Re-authenticate with Audi",
@@ -72,19 +91,52 @@
         "data": {
           "scan_initial": "Cloud Update at Startup",
           "refresh_vehicle_data_after_action": "Refresh Vehicle Data After Action",
+          "climate_quick_start": "Quick start climate using car-stored settings",
           "update_sleep": "Cloud Refresh Delay",
           "scan_interval": "Scan Interval",
-          "filter_vins": "Excluded VINs"
+          "filter_vins": "Excluded VINs",
+          "edit_local_dealer": "Edit dealer and local service details",
+          "experimental_commands": "Enable experimental vehicle controls"
         },
         "title": "Audi Connect Options",
         "data_description": {
           "scan_initial": "Perform a cloud update immediately upon startup.",
+          "climate_quick_start": "When the climate card is switched on, send a bodyless CARIAD start request using settings already stored in the vehicle. Does not send the temperature shown in Home Assistant. Optional workaround for newer cars; leave disabled unless needed.",
           "refresh_vehicle_data_after_action": "Send a vehicle refresh command after every service action (e.g. climate, lock). This is typically not required as the vehicle will check in with the cloud on its own after a command. Each vehicle refresh counts against the API rate limit. To improve responsiveness, increase the Cloud Refresh Delay instead.",
           "update_sleep": "Seconds to wait after a service action before refreshing cloud data. A longer delay gives the vehicle more time to report its updated state to the cloud.",
           "scan_interval": "Minutes between cloud polling updates.",
-          "filter_vins": "Comma-separated VIN list to exclude from setup and updates."
+          "filter_vins": "Comma-separated VIN list to exclude from setup and updates.",
+          "edit_local_dealer": "Open the form to save dealership, service appointment and warranty details locally, without any Audi API requests.",
+          "experimental_commands": "Show additional user-triggered CARIAD charging, window heating and wake-up actions. Off by default. Verify real operation; HTTP 200 is not proof the vehicle acted."
+        }
+      },
+      "dealer_vehicle": {
+        "title": "Choose vehicle",
+        "data": {
+          "vehicle": "Audi vehicle"
+        }
+      },
+      "dealer": {
+        "title": "Dealer and service (local)",
+        "description": "The details remain in Home Assistant. This feature does not retrieve dealer information from Audi.",
+        "data": {
+          "dealer_name": "Dealer name",
+          "dealer_city": "City",
+          "dealer_address": "Address",
+          "dealer_phone": "Phone",
+          "dealer_website": "Website",
+          "next_service_date": "Next service appointment",
+          "warranty_expiry": "Warranty expiry",
+          "clear": "Remove this vehicle's local details"
         }
       }
+    },
+    "error": {
+      "invalid_dealer": "Check date, website and field lengths.",
+      "invalid_vehicle": "Select a valid vehicle."
+    },
+    "abort": {
+      "no_vehicle_available": "No Audi vehicle is currently loaded."
     }
   },
   "selector": {
@@ -237,6 +289,26 @@
         "target_soc": {
           "name": "Target State of Charge",
           "description": "Target state of charge percentage (20-100%)."
+        }
+      }
+    },
+    "start_engine": {
+      "name": "Start Engine",
+      "description": "Remotely start the vehicle engine. Requires the S-PIN to be set in the configuration.",
+      "fields": {
+        "device_id": {
+          "name": "Vehicle",
+          "description": "The Audi vehicle to start the engine on."
+        }
+      }
+    },
+    "stop_engine": {
+      "name": "Stop Engine",
+      "description": "Remotely stop the vehicle engine.",
+      "fields": {
+        "device_id": {
+          "name": "Vehicle",
+          "description": "The Audi vehicle to stop the engine on."
         }
       }
     }
