@@ -17,8 +17,15 @@ from aiohttp import ClientResponseError
 from bs4 import BeautifulSoup
 
 from .audi_api import AudiAPI
+from .api_probe import run_read_only_probes
+from .capability_jobs import (
+    BASE_SELECTIVE_JOBS,
+    capability_snapshot,
+    observed_readable_jobs,
+    select_jobs,
+)
 from .audi_models import TripDataResponse, VehicleDataResponse, VehiclesResponse
-from .const import DEFAULT_API_LEVEL
+from .const import AUTH0_REDIRECT_URI, AUTH0_REFRESH_TOKEN_PREFIX, DEFAULT_API_LEVEL
 from .util import get_attr, to_byte_array
 
 MAX_RESPONSE_ATTEMPTS = 10
@@ -228,6 +235,12 @@ REQUEST_FAILED = "request_failed"
 # other scopes cover account identity and the CARIAD BFF vehicle data.
 DEVICE_CODE_SCOPE = "openid mbb profile badge cars dealers vin"
 
+# Auth0 tokens target CARIAD directly and cannot use the legacy IDK endpoint.
+_AUTH0_AUTHORIZATION_ENDPOINT = "https://group.identity.vwgroup.io/authorize"
+_AUTH0_TOKEN_ENDPOINT = "https://group.identity.vwgroup.io/oauth/token"
+_AUTH0_AUDIENCE = "https://api.cariad.com"
+_AUTH0_SCOPE = "openid profile offline_access"
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -249,7 +262,7 @@ class AudiTokenRefreshError(Exception):
 # retried instead of raising an un-actionable reauth prompt. Listing the hard
 # failures (rather than the transient ones) means an unknown code degrades to a
 # retry, which is the harmless direction.
-_REFRESH_REAUTH_ERRORS = frozenset({"invalid_grant"})
+_REFRESH_REAUTH_ERRORS = frozenset({"invalid_grant", "invalid assertion headers"})
 
 
 def _raise_refresh_rejected(context: str, parsed: dict, raw: str) -> NoReturn:
@@ -289,6 +302,12 @@ class AudiService:
         self._tokenEndpoint = ""
         self._authorizationEndpoint = ""
         self._bearer_token_json = None
+        self._uses_auth0 = False
+        # Scoped to the live session: next polling cycles omit explicitly
+        # unsupported CARIAD jobs, without any additional Audi requests.
+        self._cariad_capabilities: dict[str, tuple[frozenset[str], frozenset[str]]] = {}
+        # Fixed job labels only, never data values. Scoped to this Audi session.
+        self._cariad_observed_jobs: dict[str, frozenset[str]] = {}
         self._client_id = ""
         self._authorizationServerBaseURLLive = ""
         self._api_level = api_level
@@ -352,42 +371,68 @@ class AudiService:
             f"{await self._get_home_region(vin.upper())}/fs-car/bs/rs/v1/{self._type}/{self._country}/vehicles/{vin.upper()}/status"
         )
 
+    async def probe_known_read_only_paths(
+        self, vin: str, *, extended: bool = False
+    ) -> dict[str, Any]:
+        """Use current CARIAD credentials for opt-in diagnostic GET probes.
+
+        Does not create/refresh an auth session or send an action.
+        """
+        token = self._bearer_token_json
+        access_token = token.get("access_token") if isinstance(token, dict) else None
+        if not isinstance(access_token, str) or not access_token:
+            raise ValueError("Active CARIAD access token unavailable")
+        self._api.use_token(token)
+        return await run_read_only_probes(
+            self._api,
+            access_token,
+            lambda suffix: self.__get_cariad_url_for_vin(vin, suffix),
+            extended=extended,
+        )
+
     async def get_stored_vehicle_data(self, vin: str):
-        redacted_vin = "*" * (len(vin) - 4) + vin[-4:]
-        JOBS2QUERY = {
-            "access",
-            "activeVentilation",
-            "auxiliaryHeating",
-            "batteryChargingCare",
-            "batterySupport",
-            "charging",
-            "chargingProfiles",
-            "chargingTimers",
-            "climatisation",
-            "climatisationTimers",
-            "departureProfiles",
-            "departureTimers",
-            "fuelStatus",
-            "honkAndFlash",
-            "hybridCarAuxiliaryHeating",
-            "lvBattery",
-            "measurements",
-            "oilLevel",
-            "readiness",
-            "userCapabilities",
-            "vehicleHealthInspection",
-            "vehicleHealthWarnings",
-            "vehicleLights",
-        }
+        """Poll CARIAD with explicit aliases and previously observed valid jobs.
+
+        A 207 or a partial payload may contain useful jobs alongside errors.
+        Preserve the evidence and mark incomplete reports for conservative
+        state merging; do not add retries or extra network calls.
+        """
+        key = vin.upper()
+        known = self._cariad_capabilities.get(key)
+        observed = self._cariad_observed_jobs.get(key, frozenset())
+        jobs = (
+            select_jobs(*known, observed=observed)
+            if known is not None
+            else select_jobs()
+        )
         self._api.use_token(self._bearer_token_json)
         data = await self._api.get(
             self.__get_cariad_url_for_vin(
-                vin, "selectivestatus?jobs={jobs}", jobs=",".join(JOBS2QUERY)
+                vin, "selectivestatus?jobs={jobs}", jobs=",".join(jobs)
             )
         )
-
-        _LOGGER.debug("Vehicle data returned for VIN: %s: %s", redacted_vin, data)
-        return VehicleDataResponse(data)
+        snapshot = capability_snapshot(data)
+        if snapshot is not None:
+            self._cariad_capabilities[key] = snapshot
+        learned = observed_readable_jobs(data, jobs)
+        if learned:
+            self._cariad_observed_jobs[key] = observed | learned
+        response = VehicleDataResponse(data)
+        # Pruned requests and missing job keys are never complete snapshots.
+        # A successful HTTP status (including 207) does not change this.
+        response.partial_response = (
+            len(jobs) != len(BASE_SELECTIVE_JOBS)
+            or not isinstance(data, dict)
+            or any(job not in data for job in jobs)
+        )
+        _LOGGER.debug(
+            "Vehicle selective-status received (%d jobs; capabilities %s; "
+            "partial=%s; payload redacted)",
+            len(jobs),
+            "known" if snapshot is not None else "unknown",
+            response.partial_response,
+        )
+        return response
 
     async def get_charger(self, vin: str):
         self._api.use_token(self.vwToken)
@@ -452,15 +497,23 @@ class AudiService:
             rsp_wtxt=True,
         )
         vins = json.loads(rep_rsptxt)
-        if "errors" in vins:
-            raise Exception(f"API returned errors: {vins['errors']}")
-
         if "data" not in vins or vins["data"] is None:
+            if "errors" in vins:
+                raise Exception(f"API returned errors: {vins['errors']}")
             raise Exception("No data in API response")
 
         if vins["data"].get("userVehicles") is None:
+            if "errors" in vins:
+                raise Exception(f"API returned errors: {vins['errors']}")
             raise Exception(
                 "No vehicle data in API response - possible authentication issue"
+            )
+
+        # GraphQL may return usable vehicle data with enrichment errors.
+        if "errors" in vins:
+            _LOGGER.debug(
+                "Vehicle discovery returned non-fatal enrichment errors: %s",
+                [error.get("message") for error in vins["errors"]],
             )
 
         response = VehiclesResponse()
@@ -685,6 +738,65 @@ class AudiService:
         return self.__build_url(base_url, path_and_query, **path_and_query_kwargs)
 
     async def set_vehicle_lock(self, vin: str, lock: bool):
+        """Use the CARIAD access API with Auth0, legacy RLU only with legacy auth.
+
+        Audi's 2026 Auth0 sessions no longer authorize the old
+        rolesrights/rlu_v1 PIN challenge used by the pre-2026 integration.
+        Do not retry a failed access command on another backend: unlocking is a
+        security-sensitive mutation and blind retries can have side effects.
+        """
+        if self._uses_auth0:
+            return await self._set_vehicle_lock_cariad(vin, lock)
+        return await self._set_vehicle_lock_legacy(vin, lock)
+
+    async def _set_vehicle_lock_cariad(self, vin: str, lock: bool) -> None:
+        """Modern /access/lock and /access/unlock route (Audi connector reference).
+
+        The Audi BFF expects the S-PIN as a JSON field, unlike legacy RLU
+        challenge/response. Never log the payload, VIN, or authorization data.
+        HTTP 200 means *accepted by gateway*, not proven physical door state.
+        """
+        if not self._spin:
+            raise ValueError("An Audi S-PIN is required for remote door control")
+        if not self._bearer_token_json or not self._bearer_token_json.get(
+            "access_token"
+        ):
+            raise AudiAuthError("Audi Auth0 access token is unavailable")
+        action = "lock" if lock else "unlock"
+        headers = {
+            "Authorization": "Bearer " + self._bearer_token_json["access_token"],
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        }
+        self._api.use_token(self._bearer_token_json)
+        try:
+            reply = await self._api.request(
+                "POST",
+                self.__get_cariad_url_for_vin(vin, f"access/{action}"),
+                headers=headers,
+                data=json.dumps({"spin": self._spin}),
+            )
+        except ClientResponseError as err:
+            # CARIAD may acknowledge a mutation with 204 No Content.
+            # This is only a transport acknowledgement, not a door-state check.
+            if err.status != 204:
+                raise
+            reply = None
+        request_id = (
+            get_attr(reply, "data.requestID") if isinstance(reply, dict) else None
+        )
+        if request_id:
+            await self._confirm_vehicle_request(
+                vin, action, request_id, noun="Door lock"
+            )
+        else:
+            _LOGGER.debug(
+                "Door %s request acknowledged without a confirmation id; "
+                "verify lock status after the next vehicle refresh",
+                action,
+            )
+
+    async def _set_vehicle_lock_legacy(self, vin: str, lock: bool) -> None:
         security_token = await self._get_security_token(
             vin, "rlu_v1/operations/" + ("LOCK" if lock else "UNLOCK")
         )
@@ -850,34 +962,42 @@ class AudiService:
 
         for _ in range(attempts):
             await asyncio.sleep(sleep)
-            res = await self._api.request(
-                "GET",
-                self.__get_cariad_url_for_vin(vin, "pendingrequests"),
-                headers=headers,
-                data=None,
-            )
+            try:
+                res = await self._api.request(
+                    "GET",
+                    self.__get_cariad_url_for_vin(vin, "pendingrequests"),
+                    headers=headers,
+                    data=None,
+                )
+            except ClientResponseError as err:
+                if err.status != 204:
+                    raise
+                res = None
 
-            for pending_request in get_attr(res, "data") or []:
+            entries = get_attr(res, "data") or []
+            if not isinstance(entries, list):
+                entries = []
+            for pending_request in entries:
+                if not isinstance(pending_request, dict):
+                    continue
                 if pending_request.get("id") != request_id:
                     continue
                 status = pending_request.get("status")
                 if status == "in_progress":
                     break
                 if status == "successful":
-                    _LOGGER.debug("%s %s confirmed for %s", noun, action, vin)
+                    _LOGGER.debug("%s %s confirmed by CARIAD", noun, action)
                     return
-                raise Exception(
-                    f"{noun} {action} for {vin} was rejected by the vehicle "
-                    f"(request {request_id} reached status {status})"
+                raise RuntimeError(
+                    f"{noun} {action} rejected by the vehicle "
+                    f"(confirmation state {str(status)[:32]})"
                 )
 
         _LOGGER.warning(
-            "%s %s was accepted for %s but not confirmed within %ds. The command "
-            "may still be carried out; check the vehicle state after the next "
-            "refresh.",
+            "%s %s was accepted but not confirmed within %ds. "
+            "The command may still be carried out; verify vehicle state.",
             noun,
             action,
-            vin,
             attempts * sleep,
         )
 
@@ -1014,6 +1134,26 @@ class AudiService:
             data=json.dumps(body),
         )
 
+    async def get_charging_settings_raw(self, vin: str) -> dict[str, Any]:
+        """Read actual car charging settings before an Auth0 settings mutation.
+
+        CARIAD charging/settings can replace several settings. Never overwrite
+        unknown car preferences with a partial request or guessed defaults.
+        """
+        self._api.use_token(self._bearer_token_json)
+        response = await self._api.get(
+            self.__get_cariad_url_for_vin(
+                vin, "selectivestatus?jobs={jobs}", jobs="charging"
+            )
+        )
+        settings = (response or {}).get("charging", {}).get("chargingSettings", {})
+        value = settings.get("value") if isinstance(settings, dict) else None
+        if not isinstance(value, dict) or not value:
+            raise ValueError(
+                "Audi has not returned charging settings; refusing blind update"
+            )
+        return value
+
     async def set_target_state_of_charge(self, vin: str, target_soc: int):
         """Set the target state of charge (battery percentage)."""
         if not (20 <= target_soc <= 100):
@@ -1025,6 +1165,30 @@ class AudiService:
         headers = {"Authorization": "Bearer " + self._bearer_token_json["access_token"]}
 
         data = {"targetSOC_pct": target_soc}
+        if self._uses_auth0:
+            current = await self.get_charging_settings_raw(vin)
+            # A CARIAD PUT may replace the complete object. Unknown vehicle
+            # settings must not be silently dropped or replayed blindly.
+            writable = frozenset(
+                (
+                    "maxChargeCurrentAC_A",
+                    "maxChargeCurrentAC",
+                    "autoUnlockPlugWhenChargedAC",
+                    "targetSOC_pct",
+                )
+            )
+            metadata = frozenset({"carCapturedTimestamp"})
+            if set(current) - writable - metadata:
+                raise ValueError(
+                    "Audi reported unrecognized charging settings; refusing "
+                    "a potentially destructive full-replacement PUT"
+                )
+            data = {
+                key: current[key]
+                for key in writable
+                if key in current and current[key] is not None
+            }
+            data["targetSOC_pct"] = target_soc
 
         await self._api.request(
             "PUT",
@@ -1053,8 +1217,19 @@ class AudiService:
         )
         return value if isinstance(value, dict) else {}
 
+    def _climate_api_level(self) -> int:
+        """Auth0 tokens cannot authorize legacy fs-car climatisation actions.
+
+        Route Auth0 sessions to the existing CARIAD command implementation even
+        if the entry still holds the historical API Level 0 configuration.
+        Do not change other endpoints or the saved user preference.
+        """
+        if self._uses_auth0:
+            return 1
+        return self._api_level
+
     async def set_climatisation(self, vin: str, start: bool):
-        api_level = self._api_level
+        api_level = self._climate_api_level()
         country = self._country
 
         if start:
@@ -1112,12 +1287,27 @@ class AudiService:
                 headers = {
                     "Authorization": "Bearer " + self._bearer_token_json["access_token"]
                 }
-                res = await self._api.request(
-                    "POST",
-                    self.__get_cariad_url_for_vin(vin, "climatisation/stop"),
-                    headers=headers,
-                    data=data,
-                )
+                try:
+                    res = await self._api.request(
+                        "POST",
+                        self.__get_cariad_url_for_vin(vin, "climatisation/stop"),
+                        headers=headers,
+                        data=data,
+                    )
+                except ClientResponseError as err:
+                    if err.status != 204:
+                        raise
+                    res = None
+                request_id = get_attr(res, "data.requestID")
+                if request_id:
+                    await self._confirm_vehicle_request(
+                        vin,
+                        "stop",
+                        request_id,
+                        noun="Climatisation",
+                        attempts=CLIMATISATION_CONFIRM_ATTEMPTS,
+                        sleep=CLIMATISATION_CONFIRM_SLEEP,
+                    )
 
                 # checkUrl = "https://emea.bff.cariad.digital/vehicle/v1/vehicles/{vin}/pendingrequests".format(
                 #     vin=vin.upper(),
@@ -1145,7 +1335,7 @@ class AudiService:
         climatisation_at_unlock: bool | None = None,
         climatisation_mode: str | None = None,
     ):
-        api_level = self._api_level
+        api_level = self._climate_api_level()
         country = self._country
         target_temperature = None
 
@@ -1293,12 +1483,19 @@ class AudiService:
             headers = {
                 "Authorization": "Bearer " + self._bearer_token_json["access_token"]
             }
-            res = await self._api.request(
-                "POST",
-                self.__get_cariad_url_for_vin(vin, "climatisation/start"),
-                headers=headers,
-                data=data,
-            )
+            try:
+                res = await self._api.request(
+                    "POST",
+                    self.__get_cariad_url_for_vin(vin, "climatisation/start"),
+                    headers=headers,
+                    data=data,
+                )
+            except ClientResponseError as err:
+                # No-content is a valid acknowledgement for certain BFF
+                # actions. Never mistake it for a verified vehicle transition.
+                if err.status != 204:
+                    raise
+                res = None
 
             # The 200 is the gateway accepting the request, not the car acting on
             # it. Measured on a live vehicle 2026-09-13: a start the car ignored
@@ -1335,7 +1532,50 @@ class AudiService:
             #     "action.actionState",
             # )
 
+    async def trigger_vehicle_wakeup(self, vin: str) -> None:
+        """Explicit modern CARIAD vehicle wake-up; never called by polling.
+
+        Based on CarConnectivity-connector-audi's wake command. The API can
+        acknowledge a request without the car actually waking. Use only on a
+        direct user action, respecting Audi's request limits.
+        """
+        if not self._uses_auth0:
+            raise AudiAuthError("Modern CARIAD wake-up requires Auth0")
+        headers = {
+            "Authorization": "Bearer " + self._bearer_token_json["access_token"],
+            "Content-Type": "application/json",
+        }
+        try:
+            await self._api.request(
+                "POST",
+                self.__get_cariad_url_for_vin(vin, "vehiclewakeuptrigger"),
+                headers=headers,
+                data="{}",
+            )
+        except ClientResponseError as err:
+            if err.status != 204:
+                raise
+
     async def set_window_heating(self, vin: str, start: bool):
+        if self._uses_auth0:
+            # The legacy fs-car XML endpoint cannot be authorized by Auth0.
+            # Do not accidentally reroute proven climate START/STOP here.
+            headers = {
+                "Authorization": "Bearer " + self._bearer_token_json["access_token"],
+                "Content-Type": "application/json",
+            }
+            suffix = "windowheating/start" if start else "windowheating/stop"
+            try:
+                await self._api.request(
+                    "POST",
+                    self.__get_cariad_url_for_vin(vin, suffix),
+                    headers=headers,
+                    data="{}",
+                )
+            except ClientResponseError as err:
+                if err.status != 204:
+                    raise
+            return
         data = '<?xml version="1.0" encoding= "UTF-8" ?><action><type>{action}</type></action>'.format(
             action="startWindowHeating" if start else "stopWindowHeating"
         )
@@ -1566,6 +1806,89 @@ class AudiService:
         # v1:01da27b0:fbdb6e4ba3109bc68040cb83f380796f4d3bb178a626c4cc7e166815b806e4b5
         return "v1:01da27b0:" + xqmauth_val
 
+    async def _request_auth0_token(
+        self, data: dict[str, str], context: str
+    ) -> dict[str, Any]:
+        headers = {
+            "Accept": "application/json",
+            "Accept-Charset": "utf-8",
+            "User-Agent": AudiAPI.HDR_USER_AGENT,
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+        encoded = urlencode(data, encoding="utf-8").replace("+", "%20")
+        _rsp, rsptxt = await self._api.request(
+            "POST",
+            _AUTH0_TOKEN_ENDPOINT,
+            encoded,
+            headers=headers,
+            allow_redirects=False,
+            rsp_wtxt=True,
+        )
+        result = json.loads(rsptxt)
+        if "access_token" not in result:
+            _raise_refresh_rejected(context, result, rsptxt)
+        return result
+
+    def _set_auth0_session(self, result: dict[str, Any]) -> None:
+        self._uses_auth0 = True
+        self._bearer_token_json = result
+        self.audiToken = result
+        self.vwToken = result
+        self.mbboauthToken = None
+        self.xclientId = None
+        self._api.set_xclient_id(None)
+
+    async def get_auth0_authorization_url(self, code_challenge: str, state: str) -> str:
+        """Return the interactive myAudi Auth0 authorization URL."""
+        await self._discover_endpoints()
+        params = {
+            "client_id": self._client_id,
+            "audience": _AUTH0_AUDIENCE,
+            "redirect_uri": AUTH0_REDIRECT_URI,
+            "response_type": "code",
+            "scope": _AUTH0_SCOPE,
+            "code_challenge": code_challenge,
+            "code_challenge_method": "S256",
+            "state": state,
+            "ui_locales": f"{self._language}-{self._country.upper()}",
+        }
+        return f"{_AUTH0_AUTHORIZATION_ENDPOINT}?{urlencode(params)}"
+
+    async def login_with_auth0_code(self, code: str, code_verifier: str) -> str:
+        """Exchange an interactive Auth0 authorization code."""
+        if not self._client_id:
+            await self._discover_endpoints()
+        result = await self._request_auth0_token(
+            {
+                "client_id": self._client_id,
+                "grant_type": "authorization_code",
+                "code": code,
+                "code_verifier": code_verifier,
+                "redirect_uri": AUTH0_REDIRECT_URI,
+            },
+            "Auth0 code exchange rejected",
+        )
+        if "refresh_token" not in result:
+            raise AudiAuthError("Auth0 did not issue a refresh token")
+        self._set_auth0_session(result)
+        return AUTH0_REFRESH_TOKEN_PREFIX + result["refresh_token"]
+
+    async def _refresh_auth0_token(self, refresh_token: str) -> dict[str, Any]:
+        """Refresh a token issued by the myAudi Auth0 public client."""
+        result = await self._request_auth0_token(
+            {
+                "client_id": self._client_id,
+                "grant_type": "refresh_token",
+                "refresh_token": refresh_token,
+                "audience": _AUTH0_AUDIENCE,
+                "scope": _AUTH0_SCOPE,
+            },
+            "Auth0 refresh rejected",
+        )
+        result.setdefault("refresh_token", refresh_token)
+        self._set_auth0_session(result)
+        return result
+
     # TR/2021-12-01: Refresh token before it expires
     # returns True when refresh was required and successful, otherwise False
     async def refresh_token_if_necessary(self, elapsed_sec: int) -> bool:
@@ -1586,6 +1909,12 @@ class AudiService:
             return False
 
         try:
+            if self._uses_auth0:
+                await self._refresh_auth0_token(
+                    self._bearer_token_json["refresh_token"]
+                )
+                return True
+
             # mbboauth refresh — only when a refresh_token is available. The auth
             # response no longer always includes one; when it doesn't, vwToken
             # keeps its current value instead of blocking the IDK refresh below.
@@ -2027,12 +2356,19 @@ class AudiService:
         return "error"
 
     async def login_with_refresh_token(self, refresh_token: str) -> str:
-        """Obtain a session from a stored IDK refresh token.
+        """Obtain a session from a stored IDK or Auth0 refresh token.
 
-        Uses the standard ``refresh_token`` grant, which needs no Play Integrity
-        attestation. Returns the (possibly rotated) refresh token to persist.
+        Auth0 refresh tokens are persisted with a provider prefix so they use
+        the direct Auth0 issuer instead of the attestation-gated IDK BFF.
         """
         await self._discover_endpoints()
+
+        if refresh_token.startswith(AUTH0_REFRESH_TOKEN_PREFIX):
+            raw_refresh_token = refresh_token[len(AUTH0_REFRESH_TOKEN_PREFIX) :]
+            result = await self._refresh_auth0_token(raw_refresh_token)
+            return AUTH0_REFRESH_TOKEN_PREFIX + result["refresh_token"]
+
+        self._uses_auth0 = False
         headers = {
             "Accept": "application/json",
             "Accept-Charset": "utf-8",
@@ -2062,10 +2398,18 @@ class AudiService:
         return self._bearer_token_json.get("refresh_token", refresh_token)
 
     def current_refresh_token(self) -> str | None:
-        """Return the current IDK refresh token (rotates on each refresh)."""
+        """Return the current provider-tagged refresh token."""
         if self._bearer_token_json is None:
             return None
-        return self._bearer_token_json.get("refresh_token")
+        refresh_token = self._bearer_token_json.get("refresh_token")
+        if refresh_token and self._uses_auth0:
+            return AUTH0_REFRESH_TOKEN_PREFIX + refresh_token
+        return refresh_token
+
+    @property
+    def uses_auth0(self) -> bool:
+        """Return whether this session uses the modern CARIAD Auth0 API."""
+        return self._uses_auth0
 
     def get_id_token_subject(self) -> str | None:
         """Return a stable account identifier (email or sub) from the id token."""

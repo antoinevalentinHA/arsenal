@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import base64
 import logging
+import secrets
 from collections.abc import Mapping
+from hashlib import sha256
 from typing import Any
+from urllib.parse import parse_qs, urlparse
 
 import voluptuous as vol
 from homeassistant.config_entries import (
@@ -24,9 +28,15 @@ from homeassistant.helpers.selector import (
 )
 
 from .audi_connect_account import AudiConnectAccount
-from .audi_services import AudiAuthError
+from .audi_services import AudiAuthError, AudiTokenRefreshError
+from .local_extensions import (
+    DEALER_FIELDS,
+    get_local_dealer,
+    update_local_dealer_options,
+)
 from .const import (
     API_LEVELS,
+    AUTH0_REDIRECT_URI,
     CONF_API_LEVEL,
     CONF_FILTER_VINS,
     CONF_PASSWORD,
@@ -44,14 +54,49 @@ from .const import (
     MIN_UPDATE_INTERVAL,
     REGIONS,
     UPDATE_SLEEP,
-    entry_uses_device_code,
-    uses_device_code,
+    entry_uses_auth0,
+    uses_auth0,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 REGION_OPTIONS = {str(k): v for k, v in REGIONS.items()}
 REGION_REVERSE = {v: k for k, v in REGIONS.items()}
+CONF_CALLBACK_URL = "callback_url"
+
+
+def _generate_auth0_pkce() -> tuple[str, str, str]:
+    """Return a PKCE verifier, challenge and OAuth state."""
+    verifier = secrets.token_urlsafe(48)
+    digest = sha256(verifier.encode()).digest()
+    challenge = base64.urlsafe_b64encode(digest).decode().rstrip("=")
+    return verifier, challenge, secrets.token_urlsafe(24)
+
+
+def _parse_auth0_callback(callback_url: str, expected_state: str) -> str:
+    """Validate a myAudi callback and return its authorization code."""
+    parsed = urlparse(callback_url.strip())
+    expected = urlparse(AUTH0_REDIRECT_URI)
+    params = parse_qs(parsed.query)
+    if (
+        parsed.scheme,
+        parsed.hostname,
+        parsed.port,
+        parsed.path,
+    ) != (
+        expected.scheme,
+        expected.hostname,
+        expected.port,
+        expected.path,
+    ):
+        raise ValueError("invalid_auth0_callback")
+    if params.get("error"):
+        raise ValueError("auth0_denied")
+    state = (params.get("state") or [None])[0]
+    code = (params.get("code") or [None])[0]
+    if not state or not secrets.compare_digest(state, expected_state) or not code:
+        raise ValueError("invalid_auth0_callback")
+    return code
 
 
 class AudiConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -63,6 +108,9 @@ class AudiConfigFlow(ConfigFlow, domain=DOMAIN):
         self._device_code: str | None = None
         self._verification_uri: str | None = None
         self._user_code: str | None = None
+        self._auth0_verifier: str | None = None
+        self._auth0_state: str | None = None
+        self._auth0_authorization_url: str | None = None
         self._reauth_entry: ConfigEntry | None = None
 
     def _build_connection(
@@ -91,8 +139,8 @@ class AudiConfigFlow(ConfigFlow, domain=DOMAIN):
                     MIN_UPDATE_INTERVAL,
                 ),
             }
-            if uses_device_code(self._flow_data[CONF_REGION]):
-                return await self.async_step_device()
+            if uses_auth0(self._flow_data[CONF_REGION]):
+                return await self.async_step_auth0()
             return await self.async_step_credentials()
 
         return self.async_show_form(
@@ -194,6 +242,66 @@ class AudiConfigFlow(ConfigFlow, domain=DOMAIN):
             },
         )
 
+    async def async_step_auth0(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Interactive Auth0 login using the myAudi PKCE client."""
+        errors: dict[str, str] = {}
+        if self._connection is None:
+            self._connection = self._build_connection()
+
+        if self._auth0_authorization_url is None:
+            verifier, challenge, state = _generate_auth0_pkce()
+            try:
+                authorization_url = await self._connection.get_auth0_authorization_url(
+                    challenge, state
+                )
+            except Exception:
+                _LOGGER.exception("Audi Auth0 authorization failed")
+                return self.async_abort(reason="auth0_auth_failed")
+            self._auth0_verifier = verifier
+            self._auth0_state = state
+            self._auth0_authorization_url = authorization_url
+
+        if user_input is not None:
+            assert self._auth0_state is not None
+            assert self._auth0_verifier is not None
+            try:
+                code = _parse_auth0_callback(
+                    user_input[CONF_CALLBACK_URL], self._auth0_state
+                )
+            except ValueError as err:
+                errors["base"] = str(err)
+            else:
+                try:
+                    await self._connection.login_with_auth0_code(
+                        code, self._auth0_verifier
+                    )
+                except (AudiAuthError, AudiTokenRefreshError):
+                    errors["base"] = "auth0_auth_failed"
+                except Exception:
+                    _LOGGER.exception("Audi Auth0 token exchange failed")
+                    errors["base"] = "unexpected"
+                else:
+                    return await self._finish_token_login()
+
+        step_id = "reauth_auth0" if self._reauth_entry is not None else "auth0"
+        return self.async_show_form(
+            step_id=step_id,
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_CALLBACK_URL,
+                        default=(user_input or {}).get(CONF_CALLBACK_URL, ""),
+                    ): TextSelector()
+                }
+            ),
+            description_placeholders={
+                "authorization_url": self._auth0_authorization_url or ""
+            },
+            errors=errors,
+        )
+
     async def async_step_device(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
@@ -223,7 +331,7 @@ class AudiConfigFlow(ConfigFlow, domain=DOMAIN):
                 status = None
                 errors["base"] = "device_auth_failed"
             if status == "ok":
-                return await self._finish_device_login()
+                return await self._finish_token_login()
             if status in ("authorization_pending", "slow_down"):
                 errors["base"] = "authorization_pending"
             elif status == "expired":
@@ -244,7 +352,7 @@ class AudiConfigFlow(ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def _finish_device_login(self) -> ConfigFlowResult:
+    async def _finish_token_login(self) -> ConfigFlowResult:
         assert self._connection is not None
         refresh_token = self._connection.refresh_token
         if not refresh_token:
@@ -253,7 +361,7 @@ class AudiConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if self._reauth_entry is not None:
             # Schedule the reload ourselves (see _finish_password_login). A
-            # device-code reauth only changes the refresh token, which the
+            # token reauth only changes the refresh token, which the
             # update listener deliberately ignores, so the reload has to be
             # scheduled here explicitly.
             self.hass.config_entries.async_schedule_reload(self._reauth_entry.entry_id)
@@ -290,12 +398,9 @@ class AudiConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_reauth_confirm(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        # Re-authenticate with the method this entry already uses, so an entry that
-        # was set up with device-code outside Europe isn't pushed onto the password
-        # login it never had credentials for.
         assert self._reauth_entry is not None
-        if entry_uses_device_code(self._reauth_entry.data):
-            return await self.async_step_device(user_input)
+        if entry_uses_auth0(self._reauth_entry.data):
+            return await self.async_step_auth0(user_input)
         return await self.async_step_credentials(user_input)
 
     async def async_step_reauth_credentials(
@@ -303,6 +408,12 @@ class AudiConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Reauth form id for the credentials path (see async_step_credentials)."""
         return await self.async_step_credentials(user_input)
+
+    async def async_step_reauth_auth0(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Reauth form id for the Auth0 path."""
+        return await self.async_step_auth0(user_input)
 
     async def async_step_reconfigure(
         self, user_input: dict[str, Any] | None = None
@@ -375,22 +486,146 @@ class AudiConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class OptionsFlowHandler(OptionsFlow):
+    """Configure polling and optional per-vehicle, local dealer details."""
+
+    _pending_options: dict[str, Any] | None = None
+    _dealer_vin: str | None = None
+
+    def _dealer_vehicles(self) -> list[tuple[str, str]]:
+        """Vehicles already loaded in this account; no extra Audi API request."""
+        runtime = getattr(self.config_entry, "runtime_data", None)
+        items: list[tuple[str, str]] = []
+        for config_vehicle in getattr(
+            getattr(runtime, "account", None), "config_vehicles", []
+        ):
+            vehicle = getattr(config_vehicle, "vehicle", None)
+            vin = getattr(vehicle, "vin", None)
+            if not isinstance(vin, str) or not vin:
+                continue
+            name = (
+                getattr(vehicle, "title", None)
+                or getattr(vehicle, "model", None)
+                or "Audi"
+            )
+            items.append((vin, f"{name} (…{vin[-4:]})"))
+        return items
+
+    async def async_step_dealer_vehicle(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        vehicles = self._dealer_vehicles()
+        if not vehicles:
+            return self.async_abort(reason="no_vehicle_available")
+        if len(vehicles) == 1:
+            self._dealer_vin = vehicles[0][0]
+            return await self.async_step_dealer()
+        if user_input is not None:
+            vin = user_input.get("vehicle")
+            if vin not in {key for key, _ in vehicles}:
+                return self.async_show_form(
+                    step_id="dealer_vehicle",
+                    data_schema=vol.Schema(
+                        {vol.Required("vehicle"): vol.In(dict(vehicles))}
+                    ),
+                    errors={"base": "invalid_vehicle"},
+                )
+            self._dealer_vin = vin
+            return await self.async_step_dealer()
+        return self.async_show_form(
+            step_id="dealer_vehicle",
+            data_schema=vol.Schema(
+                {
+                    vol.Required("vehicle", default=vehicles[0][0]): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[
+                                {"value": vin, "label": label}
+                                for vin, label in vehicles
+                            ],
+                            mode=SelectSelectorMode.DROPDOWN,
+                        )
+                    ),
+                }
+            ),
+        )
+
+    async def async_step_dealer(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        vin = self._dealer_vin
+        if not vin:
+            return await self.async_step_dealer_vehicle()
+        pending = self._pending_options or dict(self.config_entry.options)
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            updates = {
+                key: user_input[key] for key in DEALER_FIELDS if key in user_input
+            }
+            try:
+                options = update_local_dealer_options(
+                    pending, vin, updates, clear=bool(user_input.get("clear", False))
+                )
+            except ValueError:
+                errors["base"] = "invalid_dealer"
+            else:
+                return self.async_create_entry(title="", data=options)
+        existing = get_local_dealer(pending, vin)
+        data_schema = vol.Schema(
+            {
+                **{
+                    vol.Optional(
+                        key,
+                        default=(
+                            user_input.get(key, existing.get(key, ""))
+                            if user_input is not None
+                            else existing.get(key, "")
+                        ),
+                    ): TextSelector()
+                    for key in DEALER_FIELDS
+                },
+                vol.Optional("clear", default=False): bool,
+            }
+        )
+        return self.async_show_form(
+            step_id="dealer", data_schema=data_schema, errors=errors
+        )
+
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         if user_input is not None:
+            user_input = dict(user_input)
+            edit_dealer = bool(user_input.pop("edit_local_dealer", False))
             user_input[CONF_SCAN_INTERVAL] = max(
                 int(user_input[CONF_SCAN_INTERVAL]), MIN_UPDATE_INTERVAL
             )
+            # OptionsFlow replaces all options; preserve per-vehicle metadata.
+            if "local_dealers" in self.config_entry.options:
+                user_input["local_dealers"] = self.config_entry.options["local_dealers"]
+            if edit_dealer:
+                self._pending_options = user_input
+                return await self.async_step_dealer_vehicle()
             return self.async_create_entry(title="", data=user_input)
 
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
                 {
+                    vol.Optional("edit_local_dealer", default=False): bool,
                     vol.Required(
                         CONF_SCAN_INITIAL,
                         default=self.config_entry.options.get(CONF_SCAN_INITIAL, True),
+                    ): bool,
+                    vol.Required(
+                        "climate_quick_start",
+                        default=self.config_entry.options.get(
+                            "climate_quick_start", False
+                        ),
+                    ): bool,
+                    vol.Required(
+                        "experimental_commands",
+                        default=self.config_entry.options.get(
+                            "experimental_commands", False
+                        ),
                     ): bool,
                     vol.Required(
                         CONF_REFRESH_AFTER_ACTION,
