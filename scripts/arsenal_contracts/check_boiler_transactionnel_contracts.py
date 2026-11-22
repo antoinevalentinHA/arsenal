@@ -358,6 +358,39 @@ def test_script_ecs_verifies_helper_post_write() -> None:
     ok("T06 — script ECS vérifie le helper après écriture")
 
 
+def test_script_ecs_publish_non_blocking() -> None:
+    """
+    T17 — Le script ECS porte continue_on_error: true sur son étape mqtt.publish.
+    Contrat ecs/application_consigne.md V1.3 : une erreur de publication
+    (HomeAssistantError, ex. Unauthorized) ne remonte pas ; le script conclut
+    en timeout local HA et libère le helper. Sans cette garde, l'erreur laisse
+    le helper occupé et le précheck bloque tous les appels suivants
+    (C59, constat D10, incident du 2026-11-22).
+    Scope : 10_scripts/ecs/appliquer_consigne_bridge.yaml
+    """
+    if not FILE_SCRIPT_ECS.is_file():
+        error("T17: appliquer_consigne_bridge.yaml introuvable")
+        return
+    content = read(FILE_SCRIPT_ECS)
+    # L'étape de publication : du "- service|action: mqtt.publish" jusqu'à la
+    # prochaine étape de même niveau ("    - ") ou la fin du fichier.
+    step = re.search(
+        r'^([ \t]*)- (?:service|action):[ \t]*mqtt\.publish[ \t]*\n'
+        r'(?P<body>(?:\1  .*\n|[ \t]*\n)*)',
+        content, re.MULTILINE,
+    )
+    if not step:
+        error("T17: étape mqtt.publish introuvable dans le script ECS")
+        return
+    if not re.search(r'^\s*continue_on_error:\s*true\s*$', step.group("body"), re.MULTILINE):
+        error(
+            "T17: l'étape mqtt.publish du script ECS ne porte pas continue_on_error: true "
+            "— une erreur de publication laisserait le helper occupé (V1.3)"
+        )
+        return
+    ok("T17 — publication MQTT du script ECS non bloquante")
+
+
 def test_script_chauffage_checks_bridge_online() -> None:
     """
     T07 — Le script chauffage vérifie que le bridge est online avant publication.
@@ -757,6 +790,7 @@ TESTS = [
     test_script_ecs_checks_bridge_online,
     test_script_ecs_writes_helper_before_publish,
     test_script_ecs_verifies_helper_post_write,
+    test_script_ecs_publish_non_blocking,
     test_script_chauffage_checks_bridge_online,
     test_script_chauffage_writes_helper_before_publish,
     test_retry_automations_declared,

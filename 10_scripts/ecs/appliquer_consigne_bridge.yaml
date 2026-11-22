@@ -70,6 +70,10 @@
 #     - Aucune publication si helper residuel non nettoye
 #     - Aucun faux succes
 #     - Nettoyage transactionnel systematique
+#     - Publication non bloquante : une erreur de publication
+#       (HomeAssistantError) conduit au timeout local HA puis
+#       a la liberation du helper ; elle ne remonte pas a
+#       l'appelant
 #     - Aucune transaction fantome
 #
 # ----------------------------------------------------------
@@ -268,8 +272,16 @@ ecs_appliquer_consigne_bridge:
 
     # ======================================================
     # ETAPE 6 : PUBLICATION MQTT
+    # Publication NON BLOQUANTE (continue_on_error).
+    # Un refus de publication (HomeAssistantError, ex.
+    # Unauthorized pour un utilisateur non admin) ne doit
+    # pas interrompre le script apres l'ancrage du helper :
+    # sans ACK corrélé, l'etape 7 expire, l'etape 8 conclut
+    # en timeout local HA et l'etape 9 libere le helper.
+    # Ref : C59, constat D10 (incident du 2026-11-22).
     # ======================================================
     - service: mqtt.publish
+      continue_on_error: true
       data:
         topic: "boilerack/command"
         qos: 1
